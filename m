@@ -1,48 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbYBKUpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbYBKUr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757848AbYBKUpz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 15:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbYBKUpr
+	id S1757594AbYBKUr4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYBKUrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 15:45:47 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:44788 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751961AbYBKUpq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 15:45:46 -0500
-Date: Mon, 11 Feb 2008 12:45:45 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: David Rientjes <rientjes@google.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-In-Reply-To: <alpine.DEB.1.00.0802111156420.17652@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0802111244140.26158@schroedinger.engr.sgi.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0802111131270.24563@schroedinger.engr.sgi.com>
- <alpine.DEB.1.00.0802111135090.1671@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0802111146590.25590@schroedinger.engr.sgi.com>
- <alpine.DEB.1.00.0802111156420.17652@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Feb 2008 15:47:49 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:46879 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbYBKUrs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 15:47:48 -0500
+Date: Mon, 11 Feb 2008 22:47:46 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: clameter@sgi.com
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] slub: kmalloc page allocator pass-through cleanup
+Message-ID: <Pine.LNX.4.64.0802112246550.7687@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, David Rientjes wrote:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> On Mon, 11 Feb 2008, Christoph Lameter wrote:
-> 
-> > Then you could follow through with the enum mempolicy thing 
-> > throughtout. Why not use enum mempolicy in struct mempolicy?
-> > 
-> 
-> Mempolicy flags, as I implemented them in patch 2 in this series, are not 
-> integer constants that are enumerated starting at 0.  They are individual 
-> bits that are shifted a pre-defined length and intersected with the 
-> enumerated mode.  This allows both the mode and the flags to be stored in 
-> the same object.
+This adds a proper function for kmalloc page allocator pass-through. While it
+simplifies any code that does slab tracing code a lot, I think it's a
+worthwhile cleanup in itself.
 
-Ok. Now are you are making the same point that I did before. Lets leave 
-enum out if we need to do these tricks with the upper bits.
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/linux/slub_def.h |    8 ++++++--
+ mm/slub.c                |   14 ++++++--------
+ 2 files changed, 12 insertions(+), 10 deletions(-)
+
+Index: linux-2.6/include/linux/slub_def.h
+===================================================================
+--- linux-2.6.orig/include/linux/slub_def.h	2008-02-11 22:29:00.000000000 +0200
++++ linux-2.6/include/linux/slub_def.h	2008-02-11 22:30:34.000000000 +0200
+@@ -162,12 +162,16 @@
+ void *kmem_cache_alloc(struct kmem_cache *, gfp_t);
+ void *__kmalloc(size_t size, gfp_t flags);
+ 
++static __always_inline void *kmalloc_large(size_t size, gfp_t flags)
++{
++	return (void *)__get_free_pages(flags | __GFP_COMP, get_order(size));
++}
++
+ static __always_inline void *kmalloc(size_t size, gfp_t flags)
+ {
+ 	if (__builtin_constant_p(size)) {
+ 		if (size > PAGE_SIZE / 2)
+-			return (void *)__get_free_pages(flags | __GFP_COMP,
+-							get_order(size));
++			return kmalloc_large(size, flags);
+ 
+ 		if (!(flags & SLUB_DMA)) {
+ 			struct kmem_cache *s = kmalloc_slab(size);
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2008-02-11 22:30:37.000000000 +0200
++++ linux-2.6/mm/slub.c	2008-02-11 22:32:14.000000000 +0200
+@@ -2518,8 +2518,7 @@
+ 	struct kmem_cache *s;
+ 
+ 	if (unlikely(size > PAGE_SIZE / 2))
+-		return (void *)__get_free_pages(flags | __GFP_COMP,
+-							get_order(size));
++		return kmalloc_large(size, flags);
+ 
+ 	s = get_slab(size, flags);
+ 
+@@ -2536,8 +2535,7 @@
+ 	struct kmem_cache *s;
+ 
+ 	if (unlikely(size > PAGE_SIZE / 2))
+-		return (void *)__get_free_pages(flags | __GFP_COMP,
+-							get_order(size));
++		return kmalloc_large(size, flags);
+ 
+ 	s = get_slab(size, flags);
+ 
+@@ -3050,8 +3048,8 @@
+ 	struct kmem_cache *s;
+ 
+ 	if (unlikely(size > PAGE_SIZE / 2))
+-		return (void *)__get_free_pages(gfpflags | __GFP_COMP,
+-							get_order(size));
++		return kmalloc_large(size, gfpflags);
++
+ 	s = get_slab(size, gfpflags);
+ 
+ 	if (unlikely(ZERO_OR_NULL_PTR(s)))
+@@ -3066,8 +3064,8 @@
+ 	struct kmem_cache *s;
+ 
+ 	if (unlikely(size > PAGE_SIZE / 2))
+-		return (void *)__get_free_pages(gfpflags | __GFP_COMP,
+-							get_order(size));
++		return kmalloc_large(size, gfpflags);
++
+ 	s = get_slab(size, gfpflags);
+ 
+ 	if (unlikely(ZERO_OR_NULL_PTR(s)))
