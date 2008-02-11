@@ -1,53 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbYBKURd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYBKURr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbYBKURd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 15:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751561AbYBKURX
+	id S1755095AbYBKURr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:17:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbYBKURh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 15:17:23 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:53762 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751507AbYBKURW (ORCPT
+	Mon, 11 Feb 2008 15:17:37 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:62022 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755653AbYBKURg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 15:17:22 -0500
-Date: Mon, 11 Feb 2008 12:25:03 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [SCSI] ses: fix memory leaks
-In-reply-to: <1202749326.3122.39.camel@localhost.localdomain>
-To: James Bottomley <James.Bottomley@hansenpartnership.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       kristen.c.accardi@intel.com
-Message-id: <200802111225.04021.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802090413.53275.yinghai.lu@sun.com>
- <1202747000.3122.28.camel@localhost.localdomain>
- <1202749326.3122.39.camel@localhost.localdomain>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Mon, 11 Feb 2008 15:17:36 -0500
+Message-ID: <47B0ACBA.4090207@oracle.com>
+Date: Mon, 11 Feb 2008 12:14:50 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 4/4 v2] mempolicy: update NUMA memory policy documentation
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507560.11145@chino.kir.corp.google.com> <20080211081053.446a4152.randy.dunlap@oracle.com> <alpine.DEB.1.00.0802111205040.19986@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0802111205040.19986@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 February 2008 09:02:06 am James Bottomley wrote:
+David Rientjes wrote:
+> Updates Documentation/vm/numa_memory_policy.txt and
+> Documentation/filesystems/tmpfs.txt to describe optional mempolicy mode
+> flags.
 > 
-> On Mon, 2008-02-11 at 10:23 -0600, James Bottomley wrote:
-> > On Sun, 2008-02-10 at 23:25 -0800, Yinghai Lu wrote:
-> > > please check it...
-> > 
-> > This one looks perfect, thanks!
-> 
-> Well, nearly perfect.  I corrected this typo:
-> 
-> +       if (!buf)
-> +               goto simple_polulate;
->                             ^^^^^^^^
-> 
-> Which a compile check before you submitted the patch would have picked
-> up ...
+> Cc: Paul Jackson <pj@sgi.com>
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-sorry for that.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+Thanks.
+
+> ---
+>  Includes fixes to problems identified by Randy Dunlap.
+> 
+>  Documentation/filesystems/tmpfs.txt     |   11 ++++++++
+>  Documentation/vm/numa_memory_policy.txt |   41 +++++++++++++++++++++++++++----
+>  2 files changed, 47 insertions(+), 5 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/tmpfs.txt b/Documentation/filesystems/tmpfs.txt
+> --- a/Documentation/filesystems/tmpfs.txt
+> +++ b/Documentation/filesystems/tmpfs.txt
+> @@ -92,6 +92,17 @@ NodeList format is a comma-separated list of decimal numbers and ranges,
+>  a range being two hyphen-separated decimal numbers, the smallest and
+>  largest node numbers in the range.  For example, mpol=bind:0-3,5,7,9-15
+>  
+> +It is possible to specify a static NodeList by appending '=static' to
+> +the memory policy mode in the mpol= argument.  This will require that
+> +tasks or VMA's restricted to a subset of allowed nodes are only allowed
+> +to effect the memory policy over those nodes.  No remapping of the
+> +NodeList when the policy is rebound, which is the default behavior, is
+> +allowed when '=static' is specified.  For example:
+> +
+> +mpol=bind=static:NodeList	will only allocate from each node in
+> +				the NodeList without remapping the
+> +				NodeList if the policy is rebound
+> +
+>  Note that trying to mount a tmpfs with an mpol option will fail if the
+>  running kernel does not support NUMA; and will fail if its nodelist
+>  specifies a node which is not online.  If your system relies on that
+> diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
+> --- a/Documentation/vm/numa_memory_policy.txt
+> +++ b/Documentation/vm/numa_memory_policy.txt
+> @@ -135,9 +135,11 @@ most general to most specific:
+>  
+>  Components of Memory Policies
+>  
+> -    A Linux memory policy is a tuple consisting of a "mode" and an optional set
+> -    of nodes.  The mode determine the behavior of the policy, while the
+> -    optional set of nodes can be viewed as the arguments to the behavior.
+> +    A Linux memory policy consists of a "mode", optional mode flags, and an
+> +    optional set of nodes.  The mode determines the behavior of the policy,
+> +    the optional mode flags determine the behavior of the mode, and the
+> +    optional set of nodes can be viewed as the arguments to the policy
+> +    behavior.
+>  
+>     Internally, memory policies are implemented by a reference counted
+>     structure, struct mempolicy.  Details of this structure will be discussed
+> @@ -145,7 +147,12 @@ Components of Memory Policies
+>  
+>  	Note:  in some functions AND in the struct mempolicy itself, the mode
+>  	is called "policy".  However, to avoid confusion with the policy tuple,
+> -	this document will continue to use the term "mode".
+> +	this document will continue to use the term "mode".  Since the mode and
+> +	optional mode flags are stored in the same struct mempolicy member
+> +	(specifically, pol->policy), you must use mpol_mode(pol->policy) to
+> +	access only the mode and mpol_flags(pol->policy) to access only the
+> +	flags.  Any function with a formal of type enum mempolicy_mode only
+> +	refers to the mode.
+>  
+>     Linux memory policy supports the following 4 behavioral modes:
+>  
+> @@ -231,6 +238,28 @@ Components of Memory Policies
+>  	    the temporary interleaved system default policy works in this
+>  	    mode.
+>  
+> +   Linux memory policy supports the following optional mode flag:
+> +
+> +	MPOL_F_STATIC_NODES:  This flag specifies that the nodemask passed by
+> +	the user should not be remapped if the task or VMA's set of accessible
+> +	nodes changes after the memory policy has been defined.
+> +
+> +	    Without this flag, anytime a mempolicy is rebound because of a
+> +	    change in the set of accessible nodes, the node (Preferred) or
+> +	    nodemask (Bind, Interleave) is remapped to the new set of
+> +	    accessible nodes.  This may result in nodes being used that were
+> +	    previously undesired.  With this flag, the policy is either
+> +	    effected over the user's specified nodemask or the Default
+> +	    behavior is used.
+> +
+> +	    For example, consider a task that is attached to a cpuset with
+> +	    mems 1-3 that sets an Interleave policy over the same set.  If
+> +	    the cpuset's mems change to 3-5, the Interleave will now occur
+> +	    over nodes 3, 4, and 5.  With this flag, however, since only
+> +	    node 3 is accessible from the user's nodemask, the "interleave"
+> +	    only occurs over that node.  If no nodes from the user's
+> +	    nodemask are now accessible, the Default behavior is used.
+> +
+>  MEMORY POLICY APIs
+>  
+>  Linux supports 3 system calls for controlling memory policy.  These APIS
+> @@ -251,7 +280,9 @@ Set [Task] Memory Policy:
+>  	Set's the calling task's "task/process memory policy" to mode
+>  	specified by the 'mode' argument and the set of nodes defined
+>  	by 'nmask'.  'nmask' points to a bit mask of node ids containing
+> -	at least 'maxnode' ids.
+> +	at least 'maxnode' ids.  Optional mode flags may be passed by
+> +	combining the 'mode' argument with the flag (for example:
+> +	MPOL_INTERLEAVE | MPOL_F_STATIC_NODES).
+>  
+>  	See the set_mempolicy(2) man page for more details
+>  
+
+
+-- 
+~Randy
