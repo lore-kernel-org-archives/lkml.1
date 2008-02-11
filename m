@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761083AbYBKTip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbYBKTmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761083AbYBKTip (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 14:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbYBKTii
+	id S1760104AbYBKTmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYBKTmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 14:38:38 -0500
-Received: from colo.lackof.org ([198.49.126.79]:35890 "EHLO colo.lackof.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757237AbYBKTih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 14:38:37 -0500
-Date: Mon, 11 Feb 2008 12:38:16 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Camuso <tcamuso@redhat.com>, Loic Prylli <loic@myri.com>,
-       Adrian Bunk <bunk@kernel.org>, Arjan van de Ven <arjan@infradead.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       linux-pci@atrey.karlin.mff.cuni.cz, Martin Mares <mj@ucw.cz>
-Subject: Re: raw_pci_read in quirk_intel_irqbalance
-Message-ID: <20080211193816.GB9798@colo.lackof.org>
-References: <20080210072116.GA12375@kroah.com> <20080210145122.GC5299@parisc-linux.org> <86802c440802101216t3b04c0b4y89a05ac9a04a0ac5@mail.gmail.com> <alpine.LFD.1.00.0802101222560.2896@woody.linux-foundation.org> <20080210204556.GG5299@parisc-linux.org> <20080210230204.GH5299@parisc-linux.org> <20080211050415.GJ5299@parisc-linux.org> <20080211074954.GA11388@colo.lackof.org> <20080211161550.GL5299@parisc-linux.org> <alpine.LFD.1.00.0802110917460.2920@woody.linux-foundation.org>
+	Mon, 11 Feb 2008 14:42:38 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49994 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757167AbYBKTmh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:42:37 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47B0A50D.6060807@s5r6.in-berlin.de>
+Date: Mon, 11 Feb 2008 20:42:05 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802110917460.2920@woody.linux-foundation.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Jarod Wilson <jwilson@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/9] firewire: fw-sbp2: don't add scsi_device twice
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <tkrat.2ef253adcedcb9ea@s5r6.in-berlin.de> <47B083A0.4090900@redhat.com>
+In-Reply-To: <47B083A0.4090900@redhat.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 09:18:49AM -0800, Linus Torvalds wrote:
-> I put it in the commit message, but it wasn't on page 34 when I checked (I 
-> changed it to 69),
-
-Sorry - page 34 was just the first reference to "Extended Configuration
-Registers" when I originally scrounged up the info for willy.
-Page 69 is in fact what I wanted to point at ("DEVPRES1" reg).
-
-> and I added the naem for the datasheet so that if/when 
-> it moves, maybe google can help.
-
-It should. But doing a quick check now only shows one other copy
-(in .es domain :) when searching for "30300702.pdf". 
-
-Searching for the full document title results in several intel.com
-locations and lots of other misc references that don't look quite right.
-Many of those just reference the "product brief" and not the data sheet.
-
-yahoo.com gives similar results.
-
-thanks,
-grant
-
-
-
+Jarod Wilson wrote:
+> Stefan Richter wrote:
+>> When a reconnect failed but re-login succeeded, __scsi_add_device was
+>> called again.
+>>
+>> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 > 
-> 		Linus
+> Was the spurious __scsi_add_device simply failing, or was it causing
+> other problems as well? I can't remember if I've hit that or not. In
+> either case, not calling it when we know we don't need to makes sense.
+
+SCSI core looks up whether the scsi_target and the scsi_device already
+exist.  If so, __scsi_add_device succeeds (there should also be a log
+message "scsi scan: device exists on %s\n") and returns the pointer to
+the existing scsi_device.
+
+The code in fw-sbp2 before this patch series would then continue
+appropriately ... except that it misses to call sbp2_cancel_orbs.  Right
+now I am not quite sure which consequences that has; probably no serious
+ones right now.  SCSI core would call fw-sbp2's eh_abort_handler
+eventually which would reset the fetch agent once more and cancel the
+timed out ORBs.  So, besides the needless lookups and temporary
+allocations in SCSI core, we avoid the additional stall and timeout
+until eh_abort_handler hits.
+
+I shall add this to the changelog.
+
+BTW, since the addition of the blocking and unblocking between bus reset
+and reconnect/re-login we also need the unblocking call in the re-login
+case but not (necessarily) in the first login case.
+-- 
+Stefan Richter
+-=====-==--- --=- -=-==
+http://arcgraph.de/sr/
