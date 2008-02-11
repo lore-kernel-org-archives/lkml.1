@@ -1,105 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbYBKJgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756746AbYBKJhQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbYBKJgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 04:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbYBKJek
+	id S1756746AbYBKJhQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 04:37:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbYBKJel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 04:34:40 -0500
+	Mon, 11 Feb 2008 04:34:41 -0500
 Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:16588 "EHLO
 	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYBKJei (ORCPT
+	with ESMTP id S1751417AbYBKJej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 04:34:38 -0500
+	Mon, 11 Feb 2008 04:34:39 -0500
 From: Andi Kleen <ak@suse.de>
 References: <200802111034.764275766@suse.de>
 In-Reply-To: <200802111034.764275766@suse.de>
 To: ying.huang@intel.com, tglx@linutronix.de, mingo@elte.hu,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] [7/8] Implement true end_pfn_mapped for 32bit
-Message-Id: <20080211093435.E6FC21B41CE@basil.firstfloor.org>
-Date: Mon, 11 Feb 2008 10:34:35 +0100 (CET)
-X-OriginalArrivalTime: 11 Feb 2008 09:28:15.0099 (UTC) FILETIME=[6DA9BCB0:01C86C90]
+Subject: [PATCH] [8/8] RFC: Fix some EFI problems
+Message-Id: <20080211093436.EAFB11B41CE@basil.firstfloor.org>
+Date: Mon, 11 Feb 2008 10:34:36 +0100 (CET)
+X-OriginalArrivalTime: 11 Feb 2008 09:28:16.0115 (UTC) FILETIME=[6E44C430:01C86C90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Even on 32bit 2MB pages can map more memory than is in the true
-max_low_pfn if end_pfn is not highmem and not aligned to 2MB. 
-Add a end_pfn_map similar to x86-64 that accounts for this 
-fact. This is important for code that really needs to know about
-all mapping aliases. Needed for followup patches (in this case EFI)
+>From code review the EFI memory map handling has a couple of problems:
+
+- The test for _WB memory was reversed so it would set cache able memory
+to uncached
+- It would always set a wrong uninitialized zero address to uncached
+(so I suspect it always set the first few pages in phys memory to uncached,
+that is why it may have gone unnoticed) 
+- It would call set_memory_x() on a fixmap address that it doesn't
+handle correct.
+- Some other problems I commented in the code (but was unable to solve
+for now) 
+
+I changed the ioremaps to set the correct caching attributes
+and also corrected the ordering so it looks roughly correct now.
+
+This is an RFC, because I don't have a EFI system to test.
 
 Cc: ying.huang@intel.com
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
 ---
- arch/x86/mm/init_32.c     |    5 +++++
- include/asm-x86/page.h    |    4 +++-
- include/asm-x86/page_64.h |    1 -
- 3 files changed, 8 insertions(+), 2 deletions(-)
+ arch/x86/kernel/efi.c    |   14 ++++++++------
+ arch/x86/kernel/efi_64.c |    6 ++++--
+ include/asm-x86/efi.h    |    5 +++--
+ 3 files changed, 15 insertions(+), 10 deletions(-)
 
-Index: linux/arch/x86/mm/init_32.c
+Index: linux/arch/x86/kernel/efi.c
 ===================================================================
---- linux.orig/arch/x86/mm/init_32.c
-+++ linux/arch/x86/mm/init_32.c
-@@ -50,6 +50,8 @@
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -423,13 +423,15 @@ void __init efi_enter_virtual_mode(void)
+ 		size = md->num_pages << EFI_PAGE_SHIFT;
+ 		end = md->phys_addr + size;
  
- unsigned int __VMALLOC_RESERVE = 128 << 20;
+-		if ((end >> PAGE_SHIFT) <= max_pfn_mapped)
++		/* RED-PEN does not handle overlapped areas */
++		if ((end >> PAGE_SHIFT) <= max_pfn_mapped) {
+ 			va = __va(md->phys_addr);
+-		else
+-			va = efi_ioremap(md->phys_addr, size);
+-
+-		if (md->attribute & EFI_MEMORY_WB)
+-			set_memory_uc(md->virt_addr, size);
++			/* RED-PEN spec and ia64 have a lot more flags */
++			if (!(md->attribute & EFI_MEMORY_WB))
++				set_memory_uc(md->virt_addr, size);
++		} else
++			va = efi_ioremap(md->phys_addr, size,
++				!!(md->attribute & EFI_MEMORY_WB));
  
-+unsigned long end_pfn_map;
-+
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- unsigned long highstart_pfn, highend_pfn;
+ 		md->virt_addr = (u64) (unsigned long) va;
  
-@@ -193,6 +195,7 @@ static void __init kernel_physical_mappi
- 				set_pmd(pmd, pfn_pmd(pfn, prot));
- 
- 				pfn += PTRS_PER_PTE;
-+				end_pfn_map = pfn;
- 				continue;
- 			}
- 			pte = one_page_table_init(pmd);
-@@ -207,6 +210,7 @@ static void __init kernel_physical_mappi
- 
- 				set_pte(pte, pfn_pte(pfn, prot));
- 			}
-+			end_pfn_map = pfn;
- 		}
- 	}
+Index: linux/arch/x86/kernel/efi_64.c
+===================================================================
+--- linux.orig/arch/x86/kernel/efi_64.c
++++ linux/arch/x86/kernel/efi_64.c
+@@ -109,7 +109,8 @@ void __init efi_reserve_bootmem(void)
+ 				memmap.nr_map * memmap.desc_size);
  }
-Index: linux/include/asm-x86/page.h
+ 
+-void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size)
++void __iomem * __init efi_ioremap(unsigned long phys_addr, unsigned long size,
++				  int cache)
+ {
+ 	static unsigned pages_mapped;
+ 	unsigned i, pages;
+@@ -124,7 +125,8 @@ void __iomem * __init efi_ioremap(unsign
+ 
+ 	for (i = 0; i < pages; i++) {
+ 		__set_fixmap(FIX_EFI_IO_MAP_FIRST_PAGE - pages_mapped,
+-			     phys_addr, PAGE_KERNEL);
++			     phys_addr,
++			     cache ? PAGE_KERNEL : PAGE_KERNEL_NOCACHE);
+ 		phys_addr += PAGE_SIZE;
+ 		pages_mapped++;
+ 	}
+Index: linux/include/asm-x86/efi.h
 ===================================================================
---- linux.orig/include/asm-x86/page.h
-+++ linux/include/asm-x86/page.h
-@@ -36,7 +36,7 @@
- #define max_pfn_mapped		end_pfn_map
- #else
- #include <asm/page_32.h>
--#define max_pfn_mapped		max_low_pfn
-+#define max_pfn_mapped		end_pfn_map
- #endif	/* CONFIG_X86_64 */
+--- linux.orig/include/asm-x86/efi.h
++++ linux/include/asm-x86/efi.h
+@@ -33,7 +33,8 @@ extern unsigned long asmlinkage efi_call
+ #define efi_call_virt6(f, a1, a2, a3, a4, a5, a6)	\
+ 	efi_call_virt(f, a1, a2, a3, a4, a5, a6)
  
- #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
-@@ -51,6 +51,8 @@
- extern int page_is_ram(unsigned long pagenr);
- extern int devmem_is_allowed(unsigned long pagenr);
+-#define efi_ioremap(addr, size)			ioremap_cache(addr, size)
++#define efi_ioremap(addr, size, cache)	\
++	(cache ? ioremap_cache(addr, size) : ioremap_nocache(addr, size))
  
-+extern unsigned long end_pfn_map;
-+
- struct page;
+ #else /* !CONFIG_X86_32 */
  
- static void inline clear_user_page(void *page, unsigned long vaddr,
-Index: linux/include/asm-x86/page_64.h
-===================================================================
---- linux.orig/include/asm-x86/page_64.h
-+++ linux/include/asm-x86/page_64.h
-@@ -55,7 +55,6 @@ void clear_page(void *page);
- void copy_page(void *to, void *from);
+@@ -86,7 +87,7 @@ extern u64 efi_call6(void *fp, u64 arg1,
+ 	efi_call6((void *)(efi.systab->runtime->f), (u64)(a1), (u64)(a2), \
+ 		  (u64)(a3), (u64)(a4), (u64)(a5), (u64)(a6))
  
- extern unsigned long end_pfn;
--extern unsigned long end_pfn_map;
- extern unsigned long phys_base;
+-extern void *efi_ioremap(unsigned long addr, unsigned long size);
++extern void *efi_ioremap(unsigned long addr, unsigned long size, int cache);
  
- extern unsigned long __phys_addr(unsigned long);
+ #endif /* CONFIG_X86_32 */
+ 
