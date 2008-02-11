@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbYBKS6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757819AbYBKTCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759117AbYBKS6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbYBKS6h
+	id S1757819AbYBKTCz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 14:02:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbYBKTCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:58:37 -0500
-Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:24457 "EHLO
-	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbYBKS6g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:58:36 -0500
-Date: Mon, 11 Feb 2008 13:58:34 -0500
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: John David Anglin <dave@hiauly1.hia.nrc.ca>,
-       James.Bottomley@HansenPartnership.com, kyle@parisc-linux.org,
-       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH?][arch/parisc/kernel/pci-dma.c]
-	pcxl_dma_ops.alloc_noncoherent
-Message-ID: <20080211185834.GB4516@phobos.i.cabal.ca>
-References: <200802111708.m1BH8q3p008073@hiauly1.hia.nrc.ca> <47B09A4A.3030907@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B09A4A.3030907@tiscali.nl>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 11 Feb 2008 14:02:48 -0500
+Received: from waste.org ([66.93.16.53]:47931 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752037AbYBKTCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 14:02:47 -0500
+Subject: Re: [PATCH] Configure out DMI scanning code
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Linux-tiny@selenic.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080211175844.3358a49b@crazy>
+References: <20080211175844.3358a49b@crazy>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 13:01:18 -0600
+Message-Id: <1202756478.28085.35.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 07:56:10PM +0100, Roel Kluin wrote:
-> +/*
-> + * dma_alloc_noncoherent is a fallback for boxes PA7200 and below which
-> + * cannot allocate coherent memory.
-> + */
->  static void *pa11_dma_alloc_noncoherent(struct device *dev, size_t size,
->  					  dma_addr_t *dma_handle, gfp_t flag)
->  {
 
-Why? This is located below pcxl_dma_ops so its obviously only relevant
-for pcx.
-
-> @@ -586,6 +590,10 @@ static void pa11_dma_free_noncoherent(struct device *dev, size_t size,
->  	return;
->  }
->  
-> +/*
-> + * PCXL allocates coherent memory even for dma_alloc_noncoherent() due to the
-> + * uncached trick for coherent memory.
-> + */
-
-This isn't correct either.
-
->  struct hppa_dma_ops pcx_dma_ops = {
->  	.dma_supported =	pa11_dma_supported,
->  	.alloc_consistent =	fail_alloc_consistent,
+On Mon, 2008-02-11 at 17:58 +0100, Thomas Petazzoni wrote:
+> Hi,
 > 
+> The enclosed patch allows to remove the DMI scanning code when
+> CONFIG_EMBEDDED is defined. It's basically the dma_blacklist patch of
+> Linux-Tiny ported to 2.6.25-rc1, with the required modifications. It
+> allows to remove ~10k from the kernel code/data size.
+
+Looks ok. Please preserve original authorship (ie me) in some fashion in
+your description.
+
+> On top of this patch, I've tested if removing the big dmi tables in the
+> code (for example in arch/x86/kernel/reboot.c) would allow to make more
+> space optimizations. However, it seems that simply defining
+> dmi_check_system() to an empty static inlined function already allows
+> gcc to optimize out the dmi tables, because there are not present in
+> the code. Is that possible, or is my understanding incorrect ?
+
+That's possible with modern gccs, yes.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
+
