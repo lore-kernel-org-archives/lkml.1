@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbYBKRcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbYBKRdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbYBKRcc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYBKRcY
+	id S1760081AbYBKRdV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbYBKRdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:32:24 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:47257 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752796AbYBKRcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:32:23 -0500
-Message-ID: <47B086A3.9040508@sgi.com>
-Date: Mon, 11 Feb 2008 09:32:19 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 11 Feb 2008 12:33:12 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:47343 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753427AbYBKRdK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 12:33:10 -0500
+Message-ID: <47B086BF.4000702@redhat.com>
+Date: Mon, 11 Feb 2008 12:32:47 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
 MIME-Version: 1.0
-To: Dave Jones <davej@codemonkey.org.uk>, Mike Travis <travis@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       cpufreq@lists.linux.org.uk
-Subject: Re: [PATCH 1/4] cpufreq: change cpu freq tables to per_cpu	variables
-References: <20080208233738.108449000@polaris-admin.engr.sgi.com> <20080208233738.292421000@polaris-admin.engr.sgi.com> <20080211024835.GD26696@codemonkey.org.uk>
-In-Reply-To: <20080211024835.GD26696@codemonkey.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/9] firewire: fw-sbp2: logout and login after failed
+ reconnect
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <tkrat.4988439f2c8906f5@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.4988439f2c8906f5@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Fri, Feb 08, 2008 at 03:37:39PM -0800, Mike Travis wrote:
->  > Change cpu frequency tables from arrays to per_cpu variables.
->  > 
->  > Based on linux-2.6.git + x86.git
+Stefan Richter wrote:
+> If fw-sbp2 was too late with requesting the reconnect, the target would
+> reject this.  In this case, log out before attempting the reconnect.
+> Else several firmwares will deny the re-login because they somehow
+> didn't invalidate the old login.
 > 
-> Looks ok to me.   Would you like me to push this though cpufreq.git,
-> or do you want the series to go through all in one?
+> Also, don't retry reconnects in this situation.  The retries won't
+> succeed either.
 > 
-> 	Dave
+> These changes improve chances for successful re-login and shorten the
+> period during which the logical unit is inaccessible.
 > 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-Thanks Dave.  The patches are pretty much independent but it is
-easier to keep track of them if they go in together.  Btw, I have
-another set coming shortly that I'm testing now.  It should remove
-most of the remaining references to NR_CPUS.
+Good stuff, easy to see how these will help our chances.
 
-Thanks again,
-Mike
+Signed-off-by: Jarod Wilson <jwilson@redhat.com>
+
+-- 
+Jarod Wilson
+jwilson@redhat.com
+
