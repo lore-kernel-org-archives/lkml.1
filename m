@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYBKRf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760136AbYBKRf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbYBKRf0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbYBKRfP
+	id S1760136AbYBKRf6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759241AbYBKRfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:35:15 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:44287 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751963AbYBKRfM (ORCPT
+	Mon, 11 Feb 2008 12:35:47 -0500
+Received: from rn-out-0910.google.com ([64.233.170.191]:29625 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752200AbYBKRfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:35:12 -0500
+	Mon, 11 Feb 2008 12:35:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:organization:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=L8UlTpWSYonrkJuOBynEiCtGxUZxr9Gow6kBaQqli/2BF60Dd+B7C6dRYAEtUTEcxeXhDvX650sHuIkYZqvcd99b1/9nCelyE8iEDF1UbrIDEjtQOl+bACjrhjzrsSWnTQD9V1DQf3WbvoJRmmZc3qXn2lAkjw3FCcSZIaKUT6c=
-From: Mike Frysinger <vapier.adi@gmail.com>
-Organization: ADI
-To: gerg@uclinux.org
-Subject: [patch] FLAT binaries: drop BINFMT_FLAT bad header magic warning
-Date: Mon, 11 Feb 2008 12:35:03 -0500
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, bernds_cb1@t-online.de
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=PAUa8Qbby9csnq2CpbfR4Eu4ajSi6fQiGs6Yi81a4yB0nLxYwao/pR7x98+u5zO84GhtLV+Y3hf+VPsG474IyvZ4NLo9K0dWgt1NxE2nIG4asUoQl9Knhk4sK4jQixUFEXzQIicSCJDYFcSkJH6esmjB30OnwgkscAiO+0p8yvQ=
+Message-ID: <82e4877d0802110935v11e4bdf8l783a9834ca0a950d@mail.gmail.com>
+Date: Mon, 11 Feb 2008 12:35:39 -0500
+From: "Parag Warudkar" <parag.warudkar@gmail.com>
+To: "Jean Delvare" <khali@linux-fr.org>
+Subject: Re: [PATCH] dmi: Prevent linked list corruption (resent)
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+In-Reply-To: <20080211182440.071c47d9@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802111235.03761.vapier.adi@gmail.com>
+References: <20080211182235.14a5a641@hyperion.delvare>
+	 <20080211182440.071c47d9@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The warning issued by fs/binfmt_flat.c when the format handler is given a
-non-FLAT and non-script executable is annoying to say the least when working
-with FDPIC ELF objects.  If you build a kernel that supports both FLAT and
-FDPIC ELFs on no-mmu, every time you execute an FDPIC ELF, the kernel spits
-out this message.  While I understand a lot of newcomers to the no-mmu world
-screw up generation of FLAT binaries, this warning is not usable for systems
-that support more than just FLAT.
+On Feb 11, 2008 12:24 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> [Once more without forgetting the last "quilt refresh", sorry.]
+>
+> Adding the same item to a given linked list more than once is guaranteed
+> to break and corrupt the list. This is however what we do in dmi_scan
+> since commit 79da4721117fcf188b4b007b775738a530f574da.
+>
+> Given that there is absolutely no interest in saving empty OEM
+> strings anyway, I propose the simple and efficient fix below: we
+> discard the empty OEM strings altogether.
+>
+> Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> Cc: Parag Warudkar <parag.warudkar@gmail.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
 
-Signed-off-by: Jie Zhang <jie.zhang@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-CC: Bernd Schmidt <bernds_cb1@t-online.de>
-CC: Greg Ungerer <gerg@snapgear.com>
----
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index d8a02f1..0498b18 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -443,12 +443,12 @@ static int load_flat_file(struct linux_binprm * bprm,
- 
- 	if (strncmp(hdr->magic, "bFLT", 4)) {
- 		/*
-+		 * Previously, here was a printk to tell people
-+		 *   "BINFMT_FLAT: bad header magic".
-+		 * But for the kernel which also use ELF FD-PIC format, this
-+		 * error message is confusing.
- 		 * because a lot of people do not manage to produce good
--		 * flat binaries,  we leave this printk to help them realise
--		 * the problem.  We only print the error if its not a script file
- 		 */
--		if (strncmp(hdr->magic, "#!", 2))
--			printk("BINFMT_FLAT: bad header magic\n");
- 		ret = -ENOEXEC;
- 		goto err;
- 	}
+I suppose the list would be corrupted only if there are deletions from
+the list? (Which there aren't.)
+
+Anyway not adding the empty strings is way better and I don't see now
+how they could've been useful.
+(I added them out of the doubt of breaking something.)
+
+Acked-By: Parag Warudkar <parag.warudkar@gmail.com>
+
+Thanks
+
+Parag
