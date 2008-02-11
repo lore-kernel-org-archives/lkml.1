@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYBKS32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbYBKS3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbYBKS32 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:29:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759938AbYBKS3G
+	id S1760315AbYBKS3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:29:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760002AbYBKS3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:29:06 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:13725 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756632AbYBKS3E (ORCPT
+	Mon, 11 Feb 2008 13:29:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36581 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757315AbYBKS3N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:29:04 -0500
-Date: Mon, 11 Feb 2008 10:26:49 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: ananth@in.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>, Christoph Hellwig <hch@infradead.org>,
-       sam@ravnborg.org, Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 0/8] Create and populate toplevel tests/ for kernel
- tests
-Message-Id: <20080211102649.2ab423ec.randy.dunlap@oracle.com>
-In-Reply-To: <20080211104452.GB7944@in.ibm.com>
-References: <20080211104452.GB7944@in.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 11 Feb 2008 13:29:13 -0500
+Date: Mon, 11 Feb 2008 20:04:38 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Prevent IDE boot ops on NUMA system in mainline
+Message-ID: <20080211190438.GB21824@one.firstfloor.org>
+References: <20080211003520.GA32082@basil.nowhere.org> <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802110936231.2920@woody.linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802110936231.2920@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 16:14:52 +0530 Ananth N Mavinakayanahalli wrote:
-
-> The following series of patches create and populate the toplevel tests/
-> directory. This will henceforth be the place where all in-kernel tests
-> live.
+On Mon, Feb 11, 2008 at 09:37:18AM -0800, Linus Torvalds wrote:
 > 
-> All patches against 2.6.25-rc1 and are just code movement without any
-> change in functionality.
+> 
+> On Mon, 11 Feb 2008, Linus Torvalds wrote:
+> > 
+> > So we should probably make pcibus_to_node() be an inline function for that 
+> > case
+> 
+> Or, we could just do the ugliest patch ever, namely
+> 
+> 	-#define pcibus_to_node(node)   (-1)
+> 	+#define pcibus_to_node(node)   ((int)(long)(node),-1)
+> 
+> Wow. It's so ugly it's almost wraps around and comes out the other sides 
+> and looks pretty.
 
-Hi,
+(void)arg, ... is better. Trick originally from Jan Beulich I think
+(his code is always a good source for useful new C tricks) 
 
-As Linus wrote on a recent sh pull request:
+-Andi
 
-"Please use "git diff -M --stat --summary" to generate the diffstat: the -M 
-enables rename detection, and the summary enables a summary of new/deleted 
-or renamed files."
-
----
-~Randy
