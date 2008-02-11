@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbYBKWOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbYBKWP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756592AbYBKWOx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 17:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYBKWOp
+	id S1758533AbYBKWP3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 17:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbYBKWPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 17:14:45 -0500
-Received: from ns2.suse.de ([195.135.220.15]:59897 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405AbYBKWOo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 17:14:44 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Abel Bernabeu <abelbg@m2grp.com>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch] Elf loader crash while zero-filling .bss
-References: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com>
-	<15577be70802111032l6ea6d2fagba2da4462c739d66@mail.gmail.com>
-	<Pine.LNX.4.64.0802111944220.7699@twin.jikos.cz>
-	<15577be70802111111x36f61433p321e5b8175a13d08@mail.gmail.com>
-	<Pine.LNX.4.64.0802112026470.30955@jikos.suse.cz>
-	<47B0B1AB.3020203@zytor.com>
-	<Pine.LNX.4.64.0802112137360.30955@jikos.suse.cz>
-X-Yow: TAPPING?  You POLITICIANS!  Don't you realize that the END of the
- ``Wash Cycle'' is a TREASURED MOMENT for most people?!
-Date: Mon, 11 Feb 2008 23:14:38 +0100
-In-Reply-To: <Pine.LNX.4.64.0802112137360.30955@jikos.suse.cz> (Jiri Kosina's
-	message of "Mon\, 11 Feb 2008 21\:40\:22 +0100 \(CET\)")
-Message-ID: <jeabm7nnsh.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Mon, 11 Feb 2008 17:15:19 -0500
+Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:10411 "EHLO
+	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753247AbYBKWPS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 17:15:18 -0500
+Date: Mon, 11 Feb 2008 23:15:14 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@suse.de>, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/5] Only do century BCD conversion when we know the RTC is BCD
+Message-ID: <20080211221514.GA12592@basil.nowhere.org>
+References: <20080209416.271135970@suse.de> <alpine.LFD.1.00.0802110924050.12988@apollo.tec.linutronix.de> <200802110956.16004.ak@suse.de> <alpine.LFD.1.00.0802112246590.12988@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802112246590.12988@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 11 Feb 2008 22:08:53.0815 (UTC) FILETIME=[B0752470:01C86CFA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina@suse.cz> writes:
+> So the warning comes a bit late :)
 
-> On Mon, 11 Feb 2008, H. Peter Anvin wrote:
->
->
->> > Now, the question is whether it is valid for ELF binary to not have the end
->> > of .bss section (if present at all) not page-aligned.
->> Why wouldn't it be?  It would, however, be valid to the kernel to round it up
->> to the next boundary.
->
-> I wasn't immediately sure if there is nothing in ELF specification that 
-> would forbid that.
+I suspect if this was wrong before it would not have been noticed
+because user space hwclock would work around it. The warning
+certainly won't hurt.
 
-The only requirement for a loadable segment is that its address is
-congruent modulo alignment with the file offset.
+Anyways if you feel strongly about this (I don't) then drop
+this patch, but apply the other ones in the series. The main
+one I consider important is the change to the 2000 offset for 32bit
+to extend the 32bit lifetime.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-Andi
