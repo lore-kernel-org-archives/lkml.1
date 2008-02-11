@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYBKXWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759746AbYBKXY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYBKXWZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 18:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbYBKXWP
+	id S1759746AbYBKXY2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:24:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbYBKXYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 18:22:15 -0500
-Received: from mga02.intel.com ([134.134.136.20]:18631 "EHLO mga02.intel.com"
+	Mon, 11 Feb 2008 18:24:19 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:56875 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471AbYBKXWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 18:22:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,335,1199692800"; 
-   d="scan'208";a="338348773"
-Date: Mon, 11 Feb 2008 15:22:13 -0800
-From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-To: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>
-Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, venkatesh.pallipadi@intel.com
-Subject: Re: 2.6.25-rc1 regression - suspend to ram
-Message-ID: <20080211232213.GB8206@linux-os.sc.intel.com>
-References: <20080211225811.GB4343@ics.muni.cz> <200802120010.55021.Rafal.Wysocki@fuw.edu.pl>
-Mime-Version: 1.0
+	id S1752092AbYBKXYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 18:24:18 -0500
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802120010.55021.Rafal.Wysocki@fuw.edu.pl>
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Priit Laes <plaes@plaes.org>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: REGRESSION: x86 vDSO: remove vdso-syms.o
+In-Reply-To: Ingo Molnar's message of  Tuesday, 12 February 2008 00:16:35 +0100 <20080211231635.GA27673@elte.hu>
+References: <1202769045.10829.12.camel@localhost>
+	<20080211225332.2AE2E270191@magilla.localdomain>
+	<20080211231635.GA27673@elte.hu>
+X-Shopping-List: (1) Obsolescent beagles
+   (2) Aberrant rubber
+   (3) Educated removal expectorants
+   (4) Poisonous awkward chowder
+   (5) Chivalrous ghost-melt bums
+Message-Id: <20080211232345.A472B270191@magilla.localdomain>
+Date: Mon, 11 Feb 2008 15:23:45 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 12:10:54AM +0100, R. J. Wysocki wrote:
-> On Monday, 11 of February 2008, Lukas Hejtmanek wrote:
-> > Hello,
-> 
-> Hi,
->  
-> > 2.6.25-rc1 takes really long time till it suspends (about 30-40secs, used to
-> > be about 5 secs at all) and it is resuming about few minutes.  While resuming,
-> > capslock toggles the capslock led but with few secs delay.
-> > 
-> > 2.6.24-git15 was OK. 2.6.24 is OK.
-> > 
-> > I have Lenovo ThinkPad T61.
-> 
-> If you have CONFIG_CPU_IDLE set, please try to boot with idle=poll and see if
-> that helps.
-> 
+> if that file is empty, it might be the effect of a Ctrl-C. I sometimes 
+> get that on .o files, if i Ctrl-C a highly parallel make -j at the wrong 
+> moment. (is this expected behavior? It's been like this for a long 
+> time.)
 
-Just sent this patch to fix a regression in acpi processor_idle.c on another
-thread. Can you try the patch below and check whether that helps.
+It is the known situation with the compiler since the dawn of time, yes.
+It just writes the file directly, so if it dies in the middle, there's a
+file with a fresh date.  For things like this done in makefile commands
+with >, it has forever been canonical for the anal to use:
+
+	... > $@.new
+	mv -f $@.new $@
+
+which avoids the problem.  The kernel makefiles are entirely haphazard
+about places that do this or don't.  It uglifies the commands, but avoids
+the problem of freshly-dated but wrong/empty files from botched make runs.
+I did not do this in cmd_vdsosym (though I did in cmd_vdso32sym, go figure).
+
 
 Thanks,
-Venki
-
-
-Earlier patch (bc71bec91f9875ef825d12104acf3bf4ca215fa4) broke
-suspend resume on many laptops. The problem was reported by
-Carlos R. Mafra and Calvin Walton, who bisected the issue to above patch.
-
-The problem was because, C2 and C3 code were calling acpi_idle_enter_c1
-directly, with C2 or C3 as state parameter, while suspend/resume was in
-progress. The patch bc71bec started making use of that state information,
-assuming that it would always be referring to C1 state. This caused the
-problem with suspend-resume as we ended up using C2/C3 state indirectly.
-
-Fix this by adding acpi_idle_suspend check in enter_c1.
-
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-
-Index: linux-2.6.25-rc1/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.25-rc1.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6.25-rc1/drivers/acpi/processor_idle.c
-@@ -1420,6 +1420,14 @@ static int acpi_idle_enter_c1(struct cpu
- 		return 0;
- 
- 	local_irq_disable();
-+
-+	/* Do not access any ACPI IO ports in suspend path */
-+	if (acpi_idle_suspend) {
-+		acpi_safe_halt();
-+		local_irq_enable();
-+		return 0;
-+	}
-+
- 	if (pr->flags.bm_check)
- 		acpi_idle_update_bm_rld(pr, cx);
- 
+Roland
