@@ -1,55 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751387AbYBKS1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759691AbYBKS2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751387AbYBKS1v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:27:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbYBKS1l
+	id S1759691AbYBKS2N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:28:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758047AbYBKS1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:27:41 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:17031 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756761AbYBKS1k (ORCPT
+	Mon, 11 Feb 2008 13:27:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36567 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759428AbYBKS1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:27:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=i1ICiOnu+QtC+gF6uB5zOemKAtduY+R5wHyJDHKDaPk9AITN098nt2rI/b0E6/nHm2PqhritB0RHwTs5vcfLMENjLRUMh+Hx+7IRwnwwEpPiLjHHlTS+WqCPXwjkWacaT0s/hbMpm0FIiU7IMQSmLvGtngMss+dXsfs3y6BscA8=
-Message-ID: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com>
-Date: Mon, 11 Feb 2008 19:27:35 +0100
-From: "Abel Bernabeu" <abelbg@m2grp.com>
-Reply-To: abelbg@m2grp.com
-To: linux-kernel@vger.kernel.org
-Subject: [Patch] Elf loader crash while zero-filling .bss
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 13:27:53 -0500
+Date: Mon, 11 Feb 2008 20:03:17 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Prevent IDE boot ops on NUMA system in mainline
+Message-ID: <20080211190317.GA21824@one.firstfloor.org>
+References: <20080211003520.GA32082@basil.nowhere.org> <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: 2d685cdddebcb3f6
+In-Reply-To: <alpine.LFD.1.00.0802110929230.2920@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've finally found a solution for the crash in load_binary_elf I
-reported last week:
+On Mon, Feb 11, 2008 at 09:33:14AM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Mon, 11 Feb 2008, Andi Kleen wrote:
+> > 
+> > Without this patch a Opteron test system here oopses at boot with currentg git. 
+> > 
+> > Calling to_pci_dev() on a NULL pointer gives a negative value so the following NULL 
+> > pointer check never triggers and then an illegal address is referenced. Check the 
+> > unadjusted original device pointer for NULL instead.
+> > 
+> > Signed-off-by: Andi Kleen <ak@suse.de>
+> > 
+> > Index: linux/include/linux/ide.h
+> > ===================================================================
+> > --- linux.orig/include/linux/ide.h
+> > +++ linux/include/linux/ide.h
+> > @@ -1294,7 +1294,7 @@ static inline void ide_dump_identify(u8 
+> >  static inline int hwif_to_node(ide_hwif_t *hwif)
+> >  {
+> >  	struct pci_dev *dev = to_pci_dev(hwif->dev);
+> > -	return dev ? pcibus_to_node(dev->bus) : -1;
+> > +	return hwif->dev ? pcibus_to_node(dev->bus) : -1;
+> >  }
+> 
+> Ok, I applied this, but it causes a *lot* of noise about "unused variable 
+> 'dev'" because pcibus_to_node() is defined to be -1 when you don't do any 
+> strange NUMA thing (so that "dev->bus" usage thing is never even seen by 
+> the compiler.
+> 
+> So we should probably make pcibus_to_node() be an inline function for that 
+> case, or just make that thing be
+> 
+> 	return hwif->dev ?
+> 		pcibus_to_node(to_pci_dev(hwif->dev)->bus)
+> 	       :
+> 		-1;
+> 
+> or something. Because now things are really noisy.
 
-http://lkml.org/lkml/2008/1/30/171
+Yes sorry; I only checked NUMA builds before sending it off. 
+The easiest way is probably just the traditional (void) cast
+I fixed most of the topology macros while I was at it.
 
-The attached patch solves my problem, but please test it yourself...
+-Andi
 
-set_brk(start, end) allocs just page aligned regions (by "colapsing"
-both extremes to the start of the page in which they lay)... That
-means than even if both pointers are not equal there are still some
-chances that set_brk has allocated no space at all because
-ELF_PAGEALIGN(elf_bss) != ELF_PAGEALIGN(elf_brk).
+---
 
-So the condition was not correct.
+Make topology fallback macros reference their arguments.
 
+This avoids warnings with unreferenced variables in the !NUMA case.
 
---- linux-2.6.22.10.orig/fs/binfmt_elf.c	2008-02-11 18:58:29.000000000 +0100
-+++ linux-2.6.22.10.hacked/fs/binfmt_elf.c	2008-02-11 16:09:41.000000000 +0100
-@@ -939,3 +939,3 @@ static int load_elf_binary(struct linux_
- 	}
--	if (likely(elf_bss != elf_brk) && unlikely(padzero(elf_bss))) {
-+	if (likely(ELF_PAGEALIGN(elf_bss) != ELF_PAGEALIGN(elf_brk)) &&
-unlikely(padzero(elf_bss))) {
- 		send_sig(SIGSEGV, current, 0);
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/include/asm-generic/topology.h
+===================================================================
+--- linux.orig/include/asm-generic/topology.h
++++ linux/include/asm-generic/topology.h
+@@ -30,19 +30,19 @@
+ /* Other architectures wishing to use this simple topology API should fill
+    in the below functions as appropriate in their own <asm/topology.h> file. */
+ #ifndef cpu_to_node
+-#define cpu_to_node(cpu)	(0)
++#define cpu_to_node(cpu)	((void)(cpu),0)
+ #endif
+ #ifndef parent_node
+-#define parent_node(node)	(0)
++#define parent_node(node)	((void)(node),0)
+ #endif
+ #ifndef node_to_cpumask
+-#define node_to_cpumask(node)	(cpu_online_map)
++#define node_to_cpumask(node)	((void)node, cpu_online_map)
+ #endif
+ #ifndef node_to_first_cpu
+-#define node_to_first_cpu(node)	(0)
++#define node_to_first_cpu(node)	((void)(node),0)
+ #endif
+ #ifndef pcibus_to_node
+-#define pcibus_to_node(node)	(-1)
++#define pcibus_to_node(bus)	((void)(bus), -1)
+ #endif
+ 
+ #ifndef pcibus_to_cpumask
