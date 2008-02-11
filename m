@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758416AbYBKVFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbYBKVKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758416AbYBKVFU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 16:05:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbYBKVFH
+	id S1757832AbYBKVKa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 16:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYBKVKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 16:05:07 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:49529 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751258AbYBKVFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 16:05:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=WCu/AHl0xNJzstDLEp9lZCO6nyJCeYIWRMRUoA/R+Aj0MepTTPsg7OKgpJCuLl1U7aJjU/yfh10oqlcl6MiGulLnCp20eU/WB9VvdaT6vFVggQPPYrkB5QYWwwwmk5uuPK0/2mtwJ388dWJ0ICb16NXq+hhpIALntTPtkOJ/388=
-Subject: Re: [PATCH] Remove CONFIG_FORCE_INLINING from defconfigs
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080211205311.GD2959@cs181133002.pp.htv.fi>
-References: <1202761747.10004.11.camel@brick>
-	 <20080211205311.GD2959@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Mon, 11 Feb 2008 13:05:02 -0800
-Message-Id: <1202763902.10004.13.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Mon, 11 Feb 2008 16:10:16 -0500
+Received: from vsmtp4.tin.it ([212.216.176.224]:51894 "EHLO vsmtp4.tin.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbYBKVKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 16:10:15 -0500
+From: Leonardo Potenza <lpotenza@inwind.it>
+To: kernel-janitors@vger.kernel.org
+Subject: [PATCH] block/genhd.c: compilation warning fix
+Date: Mon, 11 Feb 2008 22:10:17 +0100
+User-Agent: KMail/1.9.7
+Cc: axboe@kernel.dk, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802112210.17467.lpotenza@inwind.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 22:53 +0200, Adrian Bunk wrote:
-> On Mon, Feb 11, 2008 at 12:29:06PM -0800, Harvey Harrison wrote:
-> > Option has been removed as of:
-> > 185c045c245f46485ad8bbd8cc1100e986ff3f13 x86, core: remove CONFIG_FORCED_INLINING
-> >...
-> 
-> I'm not a fan of patching defconfig's this way - this will only bring 
-> tons of patch conflicts (consider what happens when anyone already has
-> a completely updated defconfig in his tree and your patch goes in first).
-> 
+From: Leonardo Potenza <lpotenza@inwind.it>
 
-OK, I just figured it was my patch that went in removing it, so I should
-submit a full-removal for completeness.  If it will just cause problems,
-no need for it to be applied.
+Added a check for the class_register() return value.
 
-Harvey
+Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
+---
 
+The aim of this patch is to remove the following warning message:
+block/genhd.c: In function 'genhd_device_init':
+block/genhd.c:361: warning: ignoring return value of 'class_register', declared with attribute warn_unused_result
+
+--- linux-2.6.orig/block/genhd.c
++++ linux-2.6/block/genhd.c
+@@ -358,7 +358,12 @@ static struct kobject *base_probe(dev_t 
+ 
+ static int __init genhd_device_init(void)
+ {
+-	class_register(&block_class);
++	int ret;
++
++	ret = class_register(&block_class);
++	if (ret != 0)
++		return ret;
++
+ 	bdev_map = kobj_map_init(base_probe, &block_class_lock);
+ 	blk_dev_init();
+ 
