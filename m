@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbYBKX36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759793AbYBKXb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbYBKX36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 18:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYBKX3u
+	id S1759793AbYBKXb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 18:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbYBKXbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 18:29:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47138 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbYBKX3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 18:29:50 -0500
+	Mon, 11 Feb 2008 18:31:18 -0500
+Received: from wr-out-0506.google.com ([64.233.184.236]:5993 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751125AbYBKXbR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 18:31:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=TENqf4QGE9slW+LKpzzGm+sVMLsJP3zo8Ky6uqpxWoitBaZKq81OUoqrKQN+SBUx9kyxAFRIgdabG5btX26+fkdHrcs6eQjFJsydr10gzdaZFVB8qlz58hqaKYRKhxGv3xchaxfk+uZn0Kv9MBAMpmV+yAVBPHjFFznKNVpWi+o=
+Message-ID: <47B0DABC.6080703@gmail.com>
+Date: Tue, 12 Feb 2008 08:31:08 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze	system
+References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de> <47B02E96.4050900@gmail.com> <20080211112802.GA4528@homac.suse.de> <47B04984.1020401@gmail.com> <20080211140603.GA4576@homac.suse.de>
+In-Reply-To: <20080211140603.GA4576@homac.suse.de>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Priit Laes <plaes@plaes.org>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: REGRESSION: x86 vDSO: remove vdso-syms.o
-In-Reply-To: Roland McGrath's message of  Monday, 11 February 2008 15:23:45 -0800 <20080211232345.A472B270191@magilla.localdomain>
-X-Fcc: ~/Mail/linus
-References: <1202769045.10829.12.camel@localhost>
-	<20080211225332.2AE2E270191@magilla.localdomain>
-	<20080211231635.GA27673@elte.hu>
-	<20080211232345.A472B270191@magilla.localdomain>
-X-Windows: a mistake carried out to perfection.
-Message-Id: <20080211232947.4DC10270191@magilla.localdomain>
-Date: Mon, 11 Feb 2008 15:29:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam might want to experiment with something like:
+Holger Macht wrote:
+> On a related note, shouldn't ata_acpi_handle_hotplug delete the device
+> like what is done when doing
+> 
+>   echo 1 > /sys/devices/.../block/sr0/device/delete
 
-	stdout_target = $(1) > $(@D)/.tmp_$(@F) && mv -f $(@D)/.tmp_$(@F) $@
+Yeap, when the ata_acpi_handle_hotplug() was added, the focus was
+supporting hotplug when the controller itself doesn't have hotplug
+notification.  Removing device for undocking would need explicitly
+killing it.
 
-	cmd_foo = $(call stdout_target,blah | sed s/foo/bar/)
-
-to clean up all the places that would benefit from robust treatment for
-output files vs interrupted/erring make runs.
-
-
-Thanks,
-Roland
+-- 
+tejun
