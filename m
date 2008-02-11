@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbYBKPtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbYBKPtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757147AbYBKPtG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:49:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbYBKPsy
+	id S1757902AbYBKPtb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757462AbYBKPtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:48:54 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:43962 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754593AbYBKPsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:48:53 -0500
-Date: Mon, 11 Feb 2008 21:19:19 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Hellwig <hch@infradead.org>, sam@ravnborg.org,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: Re: [PATCH 8/8] Move RODATA and NX tests to tests/
-Message-ID: <20080211154919.GA9076@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080211104452.GB7944@in.ibm.com> <20080211105229.GJ7944@in.ibm.com> <20080211144205.GA26943@elte.hu>
+	Mon, 11 Feb 2008 10:49:18 -0500
+Received: from homer.mvista.com ([63.81.120.155]:25009 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754780AbYBKPtQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 10:49:16 -0500
+Message-ID: <47B06EB3.0@ru.mvista.com>
+Date: Mon, 11 Feb 2008 18:50:11 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211144205.GA26943@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] ide: remove stale comment from ide-lib.c
+References: <200802110024.27229.bzolnier@gmail.com>
+In-Reply-To: <200802110024.27229.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 03:42:05PM +0100, Ingo Molnar wrote:
-> 
-> * Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
-> 
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > 
-> > Move RODATA and NX testcases to tests/
-> 
-> i'm not sure this is the proper place for it - it's highly x86 specific. 
-> arch/x86/tests sounds like the better place for it.
+Bartlomiej Zolnierkiewicz wrote:
 
-Right. I wasn't sure of it and so made these depend on CONFIG_X86. But
-yes, it makes more sense for them to live someplace arch specific.
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
-Ananth
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
