@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755445AbYBKF1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752931AbYBKFb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755445AbYBKF1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 00:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbYBKF1Z
+	id S1752931AbYBKFb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 00:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbYBKFbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 00:27:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60612
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751029AbYBKF1X (ORCPT
+	Mon, 11 Feb 2008 00:31:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:37252 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbYBKFbS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 00:27:23 -0500
-Date: Sun, 10 Feb 2008 21:27:54 -0800 (PST)
-Message-Id: <20080210.212754.55064006.davem@davemloft.net>
-To: jengelh@computergmbh.de
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, kaber@trash.net,
-       torvalds@linux-foundation.org
-Subject: Re: Netfilter fixes to 2.6.24-git
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0802102146590.7915@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0802102146590.7915@fbirervta.pbzchgretzou.qr>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 11 Feb 2008 00:31:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=QRIz7ydqHLaXw2K8ssQ7w+rgUYxdDod03fbVLW6S9XoZ9+UCD72m3J2JjljSNaq49qjMq4kRYMDjReg9LOVqPKY3amdhI7PwtraSwlXcN2EitnNooqo79Yjr7Q75OZuh63Boi1XNOOSEydEZrVskaK4cPb3V0HHFRNXhnyS1ryU=
+Date: Mon, 11 Feb 2008 08:31:13 +0300
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: Re: Oops report for the week upto Feb 10th 2008
+Message-ID: <20080211053113.GA1736@martell.zuzino.mipt.ru>
+References: <47AF9867.6050902@linux.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47AF9867.6050902@linux.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Engelhardt <jengelh@computergmbh.de>
-Date: Sun, 10 Feb 2008 22:02:35 +0100 (CET)
+On Sun, Feb 10, 2008 at 04:35:51PM -0800, Arjan van de Ven wrote:
+> Rank 3: remove_proc_entry
+> 	WARN_ON at fs/proc/generic.c:736
+> 	Reported 20 times (38 total reports)
+> 	This WARN_ON is there if code tries to remove a non-empty /proc 
+> 	directory.
+> 	Most reports are tainted, pointing at a bug in a binary module.
+> 	Without the WARN_ON improvements from 2.6.25-rc1 it'll be hard to 
+> 	figure out which module is guilty.
 
-> I have been unable to reach the netfilter and net maintainers the past 
-> week regarding inclusion of patches, but most importantly a group of 
-> fixes at [0]-[3]. I am kind of at a loss here but to turn up the volume 
-> and write to more people on how to proceed.
-
-You just need to be patient and wait for Patrick to get to your
-patches, it's as simple as that :-)
-
-Patrick is normally very responsive, so whatever it is it has to be a
-temporary issue.
-
-Because of LCA08 etc. I myself wasn't even able to get any networking
-bug fix submissions into 2.6.24.1
-
-Big deal, we'll just get it into the next 2.6.24.x release.
-
-Thanks for your patience.
+Easy, I'll submit patch RSN.
