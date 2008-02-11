@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYBLBOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYBLBOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbYBLBOc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYBLBOX
+	id S1760930AbYBLBOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbYBLBOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:14:23 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:62645 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbYBLBOW (ORCPT
+	Mon, 11 Feb 2008 20:14:38 -0500
+Received: from outbound-mail-04.bluehost.com ([69.89.21.14]:40779 "HELO
+	outbound-mail-04.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759894AbYBLBOh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:14:22 -0500
-Message-ID: <47B0F1EE.7040003@ak.jp.nec.com>
-Date: Tue, 12 Feb 2008 10:10:06 +0900
-From: Kohei KaiGai <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 11 Feb 2008 20:14:37 -0500
+X-Greylist: delayed 2411 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 20:14:37 EST
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: 2.6.25-rc1 regression - suspend to ram
+Date: Mon, 11 Feb 2008 15:32:47 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>,
+       Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080211225811.GB4343@ics.muni.cz> <200802120010.55021.Rafal.Wysocki@fuw.edu.pl> <20080211232213.GB8206@linux-os.sc.intel.com>
+In-Reply-To: <20080211232213.GB8206@linux-os.sc.intel.com>
 MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>,
-       "Andrew G. Morgan" <morgan@kernel.org>, akpm@osdl.org,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] exporting capability code/name pairs (try #4)
-References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com> <47AC23F1.5030300@ak.jp.nec.com> <20080208192343.GA15571@martell.zuzino.mipt.ru>
-In-Reply-To: <20080208192343.GA15571@martell.zuzino.mipt.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802111532.47711.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> On Fri, Feb 08, 2008 at 06:42:09PM +0900, Kohei KaiGai wrote:
->> [kaigai@saba ~]$ ls -R /sys/kernel/capability/
->> /sys/kernel/capability/:
->> codes  names  version
->>
->> /sys/kernel/capability/codes:
->> 0  10  12  14  16  18  2   21  23  25  27  29  30  32  4  6  8
->> 1  11  13  15  17  19  20  22  24  26  28  3   31  33  5  7  9
->>
->> /sys/kernel/capability/names:
->> cap_audit_control    cap_kill              cap_net_raw     cap_sys_nice
->> cap_audit_write      cap_lease             cap_setfcap     cap_sys_pacct
->> cap_chown            cap_linux_immutable   cap_setgid      cap_sys_ptrace
->> cap_dac_override     cap_mac_admin         cap_setpcap     cap_sys_rawio
->> cap_dac_read_search  cap_mac_override      cap_setuid      cap_sys_resource
->> cap_fowner           cap_mknod             cap_sys_admin   cap_sys_time
->> cap_fsetid           cap_net_admin         cap_sys_boot    cap_sys_tty_config
->> cap_ipc_lock         cap_net_bind_service  cap_sys_chroot
->> cap_ipc_owner        cap_net_broadcast     cap_sys_module
->> [kaigai@saba ~]$ cat /sys/kernel/capability/codes/20
->> cap_sys_pacct
->> [kaigai@saba ~]$ cat /sys/kernel/capability/names/cap_mknod
->> 27
->> [kaigai@saba ~]$
->> --------------------------------------------------------
->> Any comment please.
-> 
-> You don't like 1 (one) /proc/capabilities, why?
+On Monday, February 11, 2008 3:22 pm Venki Pallipadi wrote:
+> On Tue, Feb 12, 2008 at 12:10:54AM +0100, R. J. Wysocki wrote:
+> > On Monday, 11 of February 2008, Lukas Hejtmanek wrote:
+> > > Hello,
+> >
+> > Hi,
+> >
+> > > 2.6.25-rc1 takes really long time till it suspends (about 30-40secs,
+> > > used to be about 5 secs at all) and it is resuming about few minutes. 
+> > > While resuming, capslock toggles the capslock led but with few secs
+> > > delay.
+> > >
+> > > 2.6.24-git15 was OK. 2.6.24 is OK.
+> > >
+> > > I have Lenovo ThinkPad T61.
+> >
+> > If you have CONFIG_CPU_IDLE set, please try to boot with idle=poll and
+> > see if that helps.
+>
+> Just sent this patch to fix a regression in acpi processor_idle.c on
+> another thread. Can you try the patch below and check whether that helps.
 
-I have no preference whether a single /proc/capabilities, or the current approach.
-However, this idea requires a bit more cost to lookup a capability not sequencially.
+Excellent, that patch makes things work for me (including console restore).  
+Thanks a lot Venki.
 
-Thank,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+Jesse
