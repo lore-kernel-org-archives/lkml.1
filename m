@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757566AbYBKQCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYBKQDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757566AbYBKQCU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbYBKQCG
+	id S1758020AbYBKQDr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbYBKQDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:02:06 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:39590 "EHLO pasmtpA.tele.dk"
+	Mon, 11 Feb 2008 11:03:40 -0500
+Received: from rtr.ca ([76.10.145.34]:1109 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754697AbYBKQCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:02:04 -0500
-Date: Mon, 11 Feb 2008 17:02:11 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: Dave Hansen <haveblue@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
-       Thomas Klein <osstklei@de.ibm.com>,
-       "Themann, Jan-Bernd" <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
-       Christoph Raisch <RAISCH@de.ibm.com>
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-Message-ID: <20080211160211.GA22139@uranus.ravnborg.org>
-References: <200802111657.07534.ossthema@de.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802111657.07534.ossthema@de.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1755643AbYBKQDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:03:40 -0500
+Message-ID: <47B071DA.305@rtr.ca>
+Date: Mon, 11 Feb 2008 11:03:38 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: kgdb in git-x86#mm review
+References: <20080211015321.GA27376@one.firstfloor.org>
+In-Reply-To: <20080211015321.GA27376@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 04:57:06PM +0100, Jan-Bernd Themann wrote:
-> Drivers like eHEA need memory notifiers in order to 
-> update their internal DMA memory map when memory is added
-> to or removed from the system.
+Andi Kleen wrote:
+> ..
+> You should probably use simple_strtoul() instead of inventing an
+> own hex parser in kgdb.c. And sprintf instead of an own hex writer.
+> In general more use sprintf would probably shorten a lot of the parser
+> code.
+..
 
-Can you please add proper kernel-doc formatted comments
-when you export a symbol so others can get a clue
-what the exported function is supposed to do.
+Speaking of which.. the kernel implementation of snprintf() seems
+to have a bug somewhere, in that it returns an incorrect count in
+some situations -- mostly around where the buffer is too small to
+hold the data being written.  There's an off-by-one bug there somewhere,
+but I have not had time yet to track it down more precisely.
 
-	Sam
+Cheers
