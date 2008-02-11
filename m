@@ -1,68 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbYBKGm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbYBKHBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755673AbYBKGm2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 01:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbYBKGmT
+	id S1753901AbYBKHBG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 02:01:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbYBKHAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 01:42:19 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:59930 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbYBKGmS (ORCPT
+	Mon, 11 Feb 2008 02:00:53 -0500
+Received: from stinky.trash.net ([213.144.137.162]:55707 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751990AbYBKHAw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 01:42:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=VOcZa919SaFHD/yjFMuzlL/MhDNmCl/n3xbOTecD4ApNesyjYZivbOuznOKtGuutXfKD+r8hgYslmlOJpbtlpMGI7jLBM7sTief1jQOCm2QFL5REqJlZjTVgMZSiEDReJdynEiSRhuPMhqqFBmnYJ64iGOsPGLIw1kaNVf+dnfs=
-Message-ID: <86802c440802102242g2d871a1bwea088eda86be5c9@mail.gmail.com>
-Date: Sun, 10 Feb 2008 22:42:14 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Avi Kivity" <avi@qumranet.com>
-Subject: kvm: no hardware support
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+	Mon, 11 Feb 2008 02:00:52 -0500
+Message-ID: <47AFF28A.9090808@trash.net>
+Date: Mon, 11 Feb 2008 08:00:26 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: jengelh@computergmbh.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netfilter-devel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: Netfilter fixes to 2.6.24-git
+References: <Pine.LNX.4.64.0802102146590.7915@fbirervta.pbzchgretzou.qr> <20080210.212754.55064006.davem@davemloft.net>
+In-Reply-To: <20080210.212754.55064006.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I enable vmx and svm option for KVM in .config
-
-on amd SVM enable system
-
-vmx get tried at first
-
-and get
-kvm: no hardware support
-
-Calling initcall 0xffffffff80c2d465: vmx_init+0x0/0x119()
-kvm: no hardware support
-initcall 0xffffffff80c2d465: vmx_init+0x0/0x119() returned -95.
-initcall 0xffffffff80c2d465 ran for 2 msecs: vmx_init+0x0/0x119()
-initcall at 0xffffffff80c2d465: vmx_init+0x0/0x119(): returned with
-error code -95
-
-Calling initcall 0xffffffff80c2d57e: svm_init+0x0/0x13()
-initcall 0xffffffff80c2d57e: svm_init+0x0/0x13() returned 0.
-initcall 0xffffffff80c2d57e ran for 0 msecs: svm_init+0x0/0x13()
-
-suggest you add .name in ops like "vmx" or "svm"
-
-and that message can become
-kvm: no hardware support for vmx
-or
-kvm: no hardware support for svm
-
-or just remove that line.
-        }
-
-        if (!ops->cpu_has_kvm_support()) {
--                printk(KERN_ERR "kvm: no hardware support\n");
-                r = -EOPNOTSUPP;
-                goto out;
-        }
+David Miller wrote:
+> From: Jan Engelhardt <jengelh@computergmbh.de>
+> Date: Sun, 10 Feb 2008 22:02:35 +0100 (CET)
+> 
+>> I have been unable to reach the netfilter and net maintainers the past 
+>> week regarding inclusion of patches, but most importantly a group of 
+>> fixes at [0]-[3]. I am kind of at a loss here but to turn up the volume 
+>> and write to more people on how to proceed.
+> 
+> You just need to be patient and wait for Patrick to get to your
+> patches, it's as simple as that :-)
+> 
+> Patrick is normally very responsive, so whatever it is it has to be a
+> temporary issue.
 
 
-YH
+Indeed, I'm currently ill and not really up for much working,
+but this will hopefully get better soon.
