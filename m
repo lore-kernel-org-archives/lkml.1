@@ -1,42 +1,41 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760461AbYBKRiV (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 11 Feb 2008 12:38:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760112AbYBKRh6
+	id S1760312AbYBKTau (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 11 Feb 2008 14:30:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760726AbYBKTaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:37:58 -0500
-Received: from vrlnx01.urturn.com ([208.122.58.30]:56630 "EHLO
-	vrlnx01.urturn.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760101AbYBKRh5 (ORCPT
+	Mon, 11 Feb 2008 14:30:17 -0500
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:46266 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760065AbYBKTaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:37:57 -0500
-X-Greylist: delayed 1354 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 12:37:57 EST
-Date: Mon, 11 Feb 2008 12:10:42 -0500
-Message-Id: <200802111710.m1BHAgU6019677@vrlnx01.urturn.com>
+	Mon, 11 Feb 2008 14:30:14 -0500
+Message-ID: <00edd966$39489$00168125164815@ssss-0978955918>
+Reply-To: "james evans" <evans123@live.co.uk>
+From: "james evans" <evans123@live.co.uk>
 To: linux-kernel@vger.kernel.org
-Subject: Invitation to Join
-From: "Mike Wojcik at Urturn.com" <nobody@urturn.com>
+Subject: Hi
+Date: Mon, 11 Feb 2008 19:30:01 +0000
+MIME-Version: 1.0
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: My e-mail client v1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760461AbYBKRiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1760312AbYBKTau@vger.kernel.org>
 
-Hello,
+Hi
 
-You have been invited to join urturn.com -- a new online social
-network.  To sign up, please visit www.urturn.com/signup.php.
+sign up to  http://Gifts.real-incentives.com/3029  to recive a free PS3 or iphone!
 
-  Your email: linux-kernel@vger.kernel.org
-  Invited by: Mike Wojcik
-  Invitation Code: dzbvvb7
+This is 100% free and has been proven by the BBC
 
-We look forward to welcoming you as a new member!
+Sign up complete one offer and refer friends to do the same
 
-urturn.com
+for proof visit www.exceem.co.uk
 
-   *********************************************************
-   This message is sent from a send-only mailbox at 
-   urturn.com.  If you believe that you have received this
-   message in error, please contact webmaster@urturn.com.
-   *********************************************************
+Take a look at my free ebook for more information
 
 
