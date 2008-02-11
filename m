@@ -1,151 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756868AbYBKRwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbYBKRyG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756868AbYBKRwt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 12:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbYBKRwk
+	id S1757793AbYBKRyG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 12:54:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbYBKRxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 12:52:40 -0500
-Received: from mail.free-electrons.com ([88.191.46.45]:2601 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750896AbYBKRwi (ORCPT
+	Mon, 11 Feb 2008 12:53:55 -0500
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:50475 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751040AbYBKRxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 12:52:38 -0500
-X-Greylist: delayed 1999 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 12:52:37 EST
-Date: Mon, 11 Feb 2008 17:58:44 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Matt Mackall <mpm@selenic.com>
-Cc: Linux-tiny@selenic.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] Configure out DMI scanning code
-Message-ID: <20080211175844.3358a49b@crazy>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Mon, 11 Feb 2008 12:53:54 -0500
+Date: Mon, 11 Feb 2008 18:53:52 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: "Parag Warudkar" <parag.warudkar@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [PATCH] dmi: Prevent linked list corruption (resent)
+Message-ID: <20080211185352.3e22ac6b@hyperion.delvare>
+In-Reply-To: <82e4877d0802110935v11e4bdf8l783a9834ca0a950d@mail.gmail.com>
+References: <20080211182235.14a5a641@hyperion.delvare>
+	<20080211182440.071c47d9@hyperion.delvare>
+	<82e4877d0802110935v11e4bdf8l783a9834ca0a950d@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/3N4O+CNQKKLiZ/R+jVLiCRl";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/3N4O+CNQKKLiZ/R+jVLiCRl
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Parag,
 
-Hi,
+On Mon, 11 Feb 2008 12:35:39 -0500, Parag Warudkar wrote:
+> On Feb 11, 2008 12:24 PM, Jean Delvare <khali@linux-fr.org> wrote:
+> > [Once more without forgetting the last "quilt refresh", sorry.]
+> >
+> > Adding the same item to a given linked list more than once is guaranteed
+> > to break and corrupt the list. This is however what we do in dmi_scan
+> > since commit 79da4721117fcf188b4b007b775738a530f574da.
+> >
+> > Given that there is absolutely no interest in saving empty OEM
+> > strings anyway, I propose the simple and efficient fix below: we
+> > discard the empty OEM strings altogether.
+> >
+> > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > Cc: Parag Warudkar <parag.warudkar@gmail.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Thomas Gleixner <tglx@linutronix.de>
+> 
+> I suppose the list would be corrupted only if there are deletions from
+> the list? (Which there aren't.)
 
-The enclosed patch allows to remove the DMI scanning code when
-CONFIG_EMBEDDED is defined. It's basically the dma_blacklist patch of
-Linux-Tiny ported to 2.6.25-rc1, with the required modifications. It
-allows to remove ~10k from the kernel code/data size.
+As I understand the way doubly linked lists are implemented in Linux, I
+think that the corruption exists even if you are only adding items to
+the list. Each struct dmi_device contains a list_head which points to
+the previous and next items in the list. If you add a struct dmi_device
+that was already in the list, you are overwriting this list_head with
+new pointers and you lose the pointers that were originally there. This
+means that you have created a "shortcut" from one list item to another
+item that is further in the list, and the items in-between them are no
+longer reachable.
 
-On top of this patch, I've tested if removing the big dmi tables in the
-code (for example in arch/x86/kernel/reboot.c) would allow to make more
-space optimizations. However, it seems that simply defining
-dmi_check_system() to an empty static inlined function already allows
-gcc to optimize out the dmi tables, because there are not present in
-the code. Is that possible, or is my understanding incorrect ?
+> Anyway not adding the empty strings is way better and I don't see now
+> how they could've been useful.
+> (I added them out of the doubt of breaking something.)
+> 
+> Acked-By: Parag Warudkar <parag.warudkar@gmail.com>
 
-Of course, your comments on this patch are more than welcome.
-
-Thanks!
-
-Thomas
-
----
-
-Turn CONFIG_DMI into a selectable option if EMBEDDED is defined, in
-order to be able to remove the DMI table scanning code if it's not
-needed, and then reduce the kernel code size.
-
-With CONFIG_DMI (i.e before) :
-
-   text    data     bss     dec     hex filename
-1076076  128656   98304 1303036  13e1fc vmlinux
-
-Without CONFIG_DMI (i.e after) :
-
-   text    data     bss     dec     hex filename
-1068092  126308   98304 1292704  13b9a0 vmlinux
-
-Result:
-
-   text    data     bss     dec     hex filename
-  -7984   -2348       0  -10332   -285c vmlinux
-
-The new option appears in "Processor type and features", only when
-CONFIG_EMBEDDED is defined.
-
-Signed-Off-By: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
----
- arch/x86/Kconfig    |   12 +++++++++---
- include/linux/dmi.h |    1 +
- 2 files changed, 10 insertions(+), 3 deletions(-)
-
-Index: linux/arch/x86/Kconfig
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/arch/x86/Kconfig	2008-02-11 16:51:50.000000000 +0100
-+++ linux/arch/x86/Kconfig	2008-02-11 17:48:15.000000000 +0100
-@@ -88,9 +88,6 @@
- config ARCH_MAY_HAVE_PC_FDC
- 	def_bool y
-=20
--config DMI
--	def_bool y
--
- config RWSEM_GENERIC_SPINLOCK
- 	def_bool !X86_XADD
-=20
-@@ -433,6 +430,15 @@
-=20
- # Mark as embedded because too many people got it wrong.
- # The code disables itself when not needed.
-+config DMI
-+	default y
-+	bool "Enable DMI scanning" if EMBEDDED
-+	help
-+	  Enabled scanning of DMI to identify machine quirks. Say Y
-+	  here unless you have verified that your setup is not
-+	  affected by entries in the DMI blacklist. Required by PNP
-+	  BIOS code.
-+
- config GART_IOMMU
- 	bool "GART IOMMU support" if EMBEDDED
- 	default y
-Index: linux/include/linux/dmi.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/include/linux/dmi.h	2008-02-11 16:51:30.000000000 +0100
-+++ linux/include/linux/dmi.h	2008-02-11 17:40:31.000000000 +0100
-@@ -90,6 +90,7 @@
- static inline const char * dmi_get_system_info(int field) { return NULL; }
- static inline const struct dmi_device * dmi_find_device(int type, const ch=
-ar *name,
- 	const struct dmi_device *from) { return NULL; }
-+static inline void dmi_scan_machine(void) { return; }
- static inline int dmi_get_year(int year) { return 0; }
- static inline int dmi_name_in_vendors(const char *s) { return 0; }
- #define dmi_available 0
-
-
---=20
-Thomas Petazzoni, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
-
---Sig_/3N4O+CNQKKLiZ/R+jVLiCRl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsH7I9lPLMJjT96cRAiRDAJ49F3FI0nDOZZbS+UpsvsG6QC/qjwCaA6tN
-kldmwFMEHYv+sG94Ez6azjo=
-=i6sf
------END PGP SIGNATURE-----
-
---Sig_/3N4O+CNQKKLiZ/R+jVLiCRl--
+Thanks,
+-- 
+Jean Delvare
