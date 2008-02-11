@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757835AbYBKQyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbYBKQzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757835AbYBKQyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 11:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbYBKQyr
+	id S1756638AbYBKQzb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 11:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758898AbYBKQzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 11:54:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47363 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750853AbYBKQyq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 11:54:46 -0500
-Date: Mon, 11 Feb 2008 17:54:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Kiszka <jan.kiszka@siemens.com>
-Cc: "Frank Ch. Eigler" <fche@redhat.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v8,
-Message-ID: <20080211165401.GB3112@elte.hu>
-References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <47B07AAC.9080802@siemens.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B07AAC.9080802@siemens.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 11 Feb 2008 11:55:13 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:43949 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751544AbYBKQzL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 11:55:11 -0500
+Subject: Re: [PATCH?][arch/parisc/kernel/pci-dma.c]
+	pcxl_dma_ops.alloc_noncoherent = pa11_dma_alloc_consistent?
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Roel Kluin <12o3l@tiscali.nl>, kyle@parisc-linux.org,
+       grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080211164215.GM5299@parisc-linux.org>
+References: <47B07685.5000606@tiscali.nl>
+	 <20080211164215.GM5299@parisc-linux.org>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 10:55:04 -0600
+Message-Id: <1202748904.3122.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Kiszka <jan.kiszka@siemens.com> wrote:
-
-> Ingo Molnar wrote:
-> > In any case, if there are any open issues we are very much ready and 
-> > willing to address them now or after any potential upstream merge of 
-> > this codebase. This has meanwhile become one of the best-reviewed pieces 
-> > of kernel code in living memory ;-)
+On Mon, 2008-02-11 at 09:42 -0700, Matthew Wilcox wrote:
+> On Mon, Feb 11, 2008 at 05:23:33PM +0100, Roel Kluin wrote:
+> > duplicate pa11_dma_alloc_consistent; more appropriate appears
+> > pa11_dma_alloc_noncoherent here. 
 > > 
+> > Not tested, please confirm that this fix is correct
 > 
-> I spotted one... :)
+> I don't think it is.  The memories are fading, so I don't recall why it
+> is we do it this way, but I'm pretty sure it's correct the way it is.
 
-thanks, applied :-) Merged, uploaded the updated tree to the usual 
-place. New tip of head is 59b64c80d706ae3504ccc76a9c00cdfea4a10701.
+dma_alloc_noncoherent is a fallback for boxes with coherency problems
+which cannot allocate coherent memory.  The API asks for coherent memory
+but the driver promises to behave correctly even if an incoherent area
+is returned.  dma_alloc_coherent() requires only coherent memory.  The
+pcx boxes (PA7200 and below) can't do the uncached trick for coherent
+memory, so the API is designed for them.  The PCXL can, so we allocate
+coherent memory even for dma_alloc_noncoherent() in that case (and nop
+out the coherency handlers the driver uses).
 
-	Ingo
+James
+
+
