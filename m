@@ -1,48 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbYBKLWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbYBKLZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbYBKLWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 06:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbYBKLW0
+	id S1750897AbYBKLZf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 06:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbYBKLZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 06:22:26 -0500
-Received: from sacred.ru ([62.205.161.221]:52258 "EHLO sacred.ru"
+	Mon, 11 Feb 2008 06:25:27 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59514 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbYBKLWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 06:22:25 -0500
-Message-ID: <47B02FF3.80309@openvz.org>
-Date: Mon, 11 Feb 2008 14:22:27 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Duncan Sands <baldrick.bulk@free.fr>
-CC: linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][USBATM]: convert heavy init dances to kthread API
-References: <47A9DD30.5040604@openvz.org> <200802071057.41201.baldrick.bulk@free.fr> <47AAD886.2000606@openvz.org> <200802102130.45196.baldrick.bulk@free.fr>
-In-Reply-To: <200802102130.45196.baldrick.bulk@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Mon, 11 Feb 2008 14:22:15 +0300 (MSK)
+	id S1751868AbYBKLZ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 06:25:26 -0500
+Date: Mon, 11 Feb 2008 06:25:15 -0500
+From: Alan Cox <alan@redhat.com>
+To: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, alan@redhat.com, jeff@garzik.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze system
+Message-ID: <20080211112515.GB28762@devserv.devel.redhat.com>
+References: <20080210195556.GA5261@homac> <47AFB4DB.1000204@gmail.com> <20080211100446.GA4646@homac.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211100446.GA4646@homac.suse.de>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a Lloegr o'r rhif cofrestru 3798903
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Duncan Sands wrote:
-> Hi Pavel,
-> 
->> Oh, I see. You're right - this race is possible... I'll fix that up
->> if this patch works.
-> 
-> it seems to work fine.  Thanks again for doing this!
+On Mon, Feb 11, 2008 at 11:04:46AM +0100, Holger Macht wrote:
+> Wouldn't the proper fix be to call ata_acpi_handle_hotplug _somewhere_?
+> (which is currently called nowhere AFAICS)
 
-Oh, thanks for testing. What should I do next to get this into
-mainline? Send it to Andrew with you in Cc, or you have you own
-tree for merging?
+I think so. The T61 at least generated ACPI dock and undock messages for
+IDE master/slaves and we can use those.
 
-> Best wishes,
-> 
-> Duncan.
-> 
-
-Thanks,
-Pavel
