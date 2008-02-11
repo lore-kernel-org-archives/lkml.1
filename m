@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758279AbYBKUkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbYBKUo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758279AbYBKUkj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 15:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbYBKUk0
+	id S1756218AbYBKUo1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 15:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYBKUoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 15:40:26 -0500
-Received: from styx.suse.cz ([82.119.242.94]:41744 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755080AbYBKUkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 15:40:23 -0500
-Date: Mon, 11 Feb 2008 21:40:22 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Abel Bernabeu <abelbg@m2grp.com>, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Patch] Elf loader crash while zero-filling .bss
-In-Reply-To: <47B0B1AB.3020203@zytor.com>
-Message-ID: <Pine.LNX.4.64.0802112137360.30955@jikos.suse.cz>
-References: <15577be70802111027s59bc16f7q7c0be42cc44f9ad7@mail.gmail.com> 
- <15577be70802111032l6ea6d2fagba2da4462c739d66@mail.gmail.com> 
- <Pine.LNX.4.64.0802111944220.7699@twin.jikos.cz>
- <15577be70802111111x36f61433p321e5b8175a13d08@mail.gmail.com>
- <Pine.LNX.4.64.0802112026470.30955@jikos.suse.cz> <47B0B1AB.3020203@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 Feb 2008 15:44:19 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53720 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751168AbYBKUoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 15:44:18 -0500
+Date: Mon, 11 Feb 2008 12:27:48 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nadia.Derbey@bull.net
+Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
+       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
+       cmm@us.ibm.com, Nadia.Derbey@bull.net
+Subject: Re: [PATCH 8/8] Re-enable msgmni automatic recomputing msgmni if
+ set to negative
+Message-Id: <20080211122748.64e7bc36.akpm@linux-foundation.org>
+In-Reply-To: <20080211141816.520049000@bull.net>
+References: <20080211141646.948191000@bull.net>
+	<20080211141816.520049000@bull.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, H. Peter Anvin wrote:
+On Mon, 11 Feb 2008 15:16:54 +0100
+Nadia.Derbey@bull.net wrote:
+
+> [PATCH 08/08]
+> 
+> This patch is the enhancement as asked for by Yasunori: if msgmni is set to
+> a negative value, register it back into the ipcns notifier chain.
+> 
+> A new interface has been added to the notification mechanism:
+> notifier_chain_cond_register() registers a notifier block only if not already
+> registered. With that new interface we avoid taking care of the states changes
+> in procfs.
+> 
+> ...
+>
+>  static int proc_ipc_callback_dointvec(ctl_table *table, int write,
+>  	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+>  {
+> +	struct ctl_table ipc_table;
+>  	size_t lenp_bef = *lenp;
+>  	int rc;
+>  
+> -	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
+> +	memcpy(&ipc_table, table, sizeof(ipc_table));
+> +	ipc_table.data = get_ipc(table);
+> +
+> +	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+>  
+>  	if (write && !rc && lenp_bef == *lenp)
+> -		/*
+> -		 * Tunable has successfully been changed from userland:
+> -		 * disable its automatic recomputing.
+> -		 */
+> -		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+> +		tunable_set_callback(*((int *)(ipc_table.data)));
+>  
+>  	return rc;
+>  }
+> @@ -119,12 +142,14 @@ static int sysctl_ipc_registered_data(ct
+>  	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
+>  		newlen);
+>  
+> -	if (newval && newlen && rc > 0)
+> +	if (newval && newlen && rc > 0) {
+>  		/*
+> -		 * Tunable has successfully been changed from userland:
+> -		 * disable its automatic recomputing.
+> +		 * Tunable has successfully been changed from userland
+>  		 */
+> -		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+> +		int *data = get_ipc(table);
+> +
+> +		tunable_set_callback(*data);
+> +	}
+>  
+>  	return rc;
+>  }
+
+hm, what's happening here?  We take a local copy of the caller's ctl_table
+and then pass that into proc_dointvec().  Is that as hacky as it seems??
 
 
-> > Now, the question is whether it is valid for ELF binary to not have the end
-> > of .bss section (if present at all) not page-aligned.
-> Why wouldn't it be?  It would, however, be valid to the kernel to round it up
-> to the next boundary.
-
-I wasn't immediately sure if there is nothing in ELF specification that 
-would forbid that.
-
-Then I think that Abel's patch is correct.
-
--- 
-Jiri Kosina
-SUSE Labs
