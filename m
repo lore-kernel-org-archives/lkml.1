@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757642AbYBKSPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYBKSTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757642AbYBKSPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 13:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYBKSPj
+	id S1758041AbYBKSTr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 13:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbYBKSTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 13:15:39 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:46302 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754493AbYBKSPh (ORCPT
+	Mon, 11 Feb 2008 13:19:40 -0500
+Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:3339 "EHLO
+	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbYBKSTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 13:15:37 -0500
-Date: Mon, 11 Feb 2008 11:15:26 -0700
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: [sample] mem_notify v6: usage example
-In-reply-to: <2f11576a0802090846t7655e988pb1b712696cad1098@mail.gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Jon Masters <jonathan@jonmasters.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Marcelo Tosatti <marcelo@kvack.org>,
-       Daniel Spang <daniel.spang@gmail.com>, Rik van Riel <riel@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>, Al Boldi <a1426z@gawab.com>,
-       Zan Lynx <zlynx@acm.org>
-Message-id: <20080211181526.GC3029@webber.adilger.int>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <2f11576a0802090755n123c9b7dh26e0af6a2fef28af@mail.gmail.com>
- <CE520A17-98F2-4A08-82AB-C3D5061616A1@jonmasters.org>
- <2f11576a0802090846t7655e988pb1b712696cad1098@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Mon, 11 Feb 2008 13:19:39 -0500
+X-Greylist: delayed 1493 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 13:19:38 EST
+Message-Id: <200802111708.m1BH8q3p008073@hiauly1.hia.nrc.ca>
+Subject: Re: [PATCH?][arch/parisc/kernel/pci-dma.c]      pcxl_dma_ops.alloc_noncoherent
+To: 12o3l@tiscali.nl (Roel Kluin)
+Date: Mon, 11 Feb 2008 12:08:51 -0500 (EST)
+From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
+Cc: James.Bottomley@HansenPartnership.com, kyle@parisc-linux.org,
+       matthew@wil.cx, grundler@parisc-linux.org, linux-parisc@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47B07E76.9000100@tiscali.nl> from "Roel Kluin" at Feb 11, 2008 05:57:26 pm
+X-Mailer: ELM [version 2.4 PL25]
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 10, 2008  01:46 +0900, KOSAKI Motohiro wrote:
-> > This really needs to be triggered via a generic kernel event in the
-> > final version - I picture glibc having a reservation API and having
-> > generic support for freeing such reservations.
+> James Bottomley wrote:
+> > On Mon, 2008-02-11 at 17:23 +0100, Roel Kluin wrote:
+> >> duplicate pa11_dma_alloc_consistent; more appropriate appears
+> >> pa11_dma_alloc_noncoherent here. 
+> >>
+> >> Not tested, please confirm that this fix is correct
+> > 
+> > No, it looks completely incorrect to me.  What makes you think a pcxl
+> > box has a problem with coherency?
 > 
-> to be honest, I doubt idea of generic reservation framework.
-> 
-> end up, we hope drop the application cache, not also dataless memory.
-> but, automatically drop mechanism only able to drop dataless memory.
-> 
-> and, many application have own memory management subsystem.
-> I afraid to nobody use too complex framework.
+> Ok, please ignore the patch then. It just appeared suspicious to me
+> that the function did exist, but the names assigned were different.
 
-Having such notification handled by glibc to free up unused malloc (or
-any heap allocations) would be very useful, because even if a program
-does "free" there is no guarantee the memory is returned to the kernel.
+How about a comment?
 
-I think that having a generic reservation framework is too complex, but
-hiding the details of /dev/mem_notify from applications is desirable.
-A simple wrapper (possibly part of glibc) to return the poll fd, or set
-up the signal is enough.
-
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
-
+Dave
+-- 
+J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
+National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
