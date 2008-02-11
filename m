@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbYBKCgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYBKChf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754338AbYBKCgJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 Feb 2008 21:36:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751551AbYBKCfz
+	id S1755069AbYBKChf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 Feb 2008 21:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbYBKCh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 Feb 2008 21:35:55 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:30058 "EHLO
+	Sun, 10 Feb 2008 21:37:27 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:32025 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbYBKCfy (ORCPT
+	with ESMTP id S1751551AbYBKChZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 Feb 2008 21:35:54 -0500
+	Sun, 10 Feb 2008 21:37:25 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GZiHFwILIzs75xDFQZs4UBOBYHEVyjLLPO0n8P2g0B8CgOK0G/P5tSPVfnY5ShsKbU41hnG07d7cZbkgCpUxux2WYYv7QyLZGh9z9OTxNvWN/9YY+sFGv/2lJRszYDaJ9shjVFiPPI9swaVgjg2RSYZ3FiRZ/kjGeVEucAYjmjI=
-Message-ID: <86802c440802101835j58216bf5v50583bd69d6780b2@mail.gmail.com>
-Date: Sun, 10 Feb 2008 18:35:53 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [patch] kgdb light, v6
-Cc: "Jan Kiszka" <jan.kiszka@web.de>,
-       "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>,
-       "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@zip.com.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Jason Wessel" <jason.wessel@windriver.com>
-In-Reply-To: <20080210224047.GA21420@elte.hu>
+        h=message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=WEL2qZphYn3rqSPwggY4tqDQdTysUHfSKdNLko67LQR1E6FR5Bmla4dhDvTjy5krT7DnXwgrcgwm13Ed+El9xwH7sLevF3rV+cXCrfTWnxcayLy+E76oKr+CCXZse0WWPOVKxTbM5kGqUMiJflggZ6RUzDGoP+l2p34qtI9EuCE=
+Message-ID: <47AFB4DB.1000204@gmail.com>
+Date: Mon, 11 Feb 2008 11:37:15 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, htejun@gmail.com,
+       alan@redhat.com, jeff@garzik.org
+Subject: Re: [PATCH] libata: Forcing PIO0 mode on reset must not freeze system
+References: <20080210195556.GA5261@homac>
+In-Reply-To: <20080210195556.GA5261@homac>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080210071331.GC3851@elte.hu> <20080210210900.GA27162@elte.hu>
-	 <47AF707C.6050305@web.de> <200802102314.19500.bzolnier@gmail.com>
-	 <47AF7B6D.1000901@web.de> <20080210224047.GA21420@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 10, 2008 2:40 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Jan Kiszka <jan.kiszka@web.de> wrote:
->
-> > Ingo, please keep the original annotations, they where correct and
-> > should have been optimal (under the given constraints or runtime
-> > reconfiguration).
->
-> agreed. I've regenerated the -v7 tree with this trivial revert. Tip is
-> commit 04b94b1dd5197bf737073ebbd4189ffdfdcea534, updated shortlog,
-> diffstat and patch can be found below. Tree is at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
->
+Hello,
 
-something related or not.
+Holger Macht wrote:
+> Calling ap->ops->set_piomode(ap, dev) on a device/controller which got
+> already removed, locks the system hard. Reproducibly on an X60 attached to
+> a dock station containing a cdrom device with doing
+> 
+>   $ echo 1 > /sys/devices/platform/dock.0/undock && echo 123 > /dev/sr0
+> 
+> This calls ata_eh_reset(...) which in turn tries to force PIO mode 0. But
+> the device is already gone.
+> 
+> Bisecting revealed the following commit as culprit:
+> 
+>   commit cdeab1140799f09c5f728a5ff85e0bdfa5679cd2
+>   Author: Tejun Heo <htejun@gmail.com>
+>   Date:   Mon Oct 29 16:41:09 2007 +0900
+>   
+>       libata: relocate forcing PIO0 on reset
+>       
+>       Forcing PIO0 on reset was done inside ata_bus_softreset(), which is a
+>       bit out of place as it should be applied to all resets - hard, soft
+>       and implementation which don't use ata_bus_softreset().  Relocate it
+>       such that...
+>       
+>       * For new EH, it's done in ata_eh_reset() before calling prereset.
+>       
+>       * For old EH, it's done before calling ap->ops->phy_reset() in
+>         ata_bus_probe().
+>       
+>       This makes PIO0 forced after all resets.  Another difference is that
+>       reset itself is done after PIO0 is forced.
+>       
+>       Signed-off-by: Tejun Heo <htejun@gmail.com>
+>       Acked-by: Alan Cox <alan@redhat.com>
+>       Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> 
+> 
+> ATTENTION! The following patch solves the problem on my system, but please
+> be aware that I don't really know what I'm doing because I don't have the
+> big picture. There's surely a better way to check if the device/controller
+> is still functional than calling ata_link_{online,offline}.
 
-my server doesn't have serial connector. the SP has serial port to
-host's internal serial port.
-I need to ssh to SP ( service processor) and start console there.
+In the above example, even the reset sequence itself can cause hang if
+the hardware is implemented slightly differently.  The reason why
+set_piomode() locks up but reset sequence doesn't is simple dumb luck.
+I think the proper fix is to tell libata to detach the cdrom before
+undocking.
 
-wonder if there is program that is running on SP, and one program on
-develop workstation --- make it have one virtual serial port
+> Signed-off-by: Holger Macht <hmacht@suse.de>
 
-gdb or other legacy serial port program could use that virtual serial port.
+NACK.
 
-YH
+-- 
+tejun
