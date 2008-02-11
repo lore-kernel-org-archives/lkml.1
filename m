@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbYBKPl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757221AbYBKPqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbYBKPl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 10:41:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754399AbYBKPls
+	id S1757221AbYBKPqW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 10:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbYBKPqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 10:41:48 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:41937 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753581AbYBKPlr (ORCPT
+	Mon, 11 Feb 2008 10:46:11 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:1783 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754228AbYBKPqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 10:41:47 -0500
-Date: Mon, 11 Feb 2008 16:41:33 +0100
-From: Domenico Andreoli <cavokz@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] kgdb light, v7
-Message-ID: <20080211154133.GA3292@ska.dandreoli.com>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20080210222025.GA6646@elte.hu>
+	Mon, 11 Feb 2008 10:46:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EFM7eSE7Kh9hk69o6vmGEPbEwJxGt7oljPpsucgy7lsnzlgEP27xRwQeIlrLM6CrJw6o2LSVQoLOEu4Iwf5SwzFpghZfpfQd9yOCEIsn87+RhxGifITMb6/OU4G0kdZLYW5hQp2Xudc9g62D1S5egvVE+nIKDcZaRiDur1FCdaQ=
+Message-ID: <2f11576a0802110746o289eef04mf1a60c0afef7f86c@mail.gmail.com>
+Date: Tue, 12 Feb 2008 00:46:07 +0900
+From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+To: "Jonathan Corbet" <corbet@lwn.net>
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Cc: "Marcelo Tosatti" <marcelo@kvack.org>,
+       "Daniel Spang" <daniel.spang@gmail.com>,
+       "Rik van Riel" <riel@redhat.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>, linux-fsdevel@vger.kernel.org,
+       "Pavel Machek" <pavel@ucw.cz>, "Al Boldi" <a1426z@gawab.com>,
+       "Jon Masters" <jonathan@jonmasters.org>, "Zan Lynx" <zlynx@acm.org>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <32072.1202744162@vena.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080210222025.GA6646@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+	 <32072.1202744162@vena.lwn.net>
+X-Google-Sender-Auth: d1fb39d9dbc64520
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 10, 2008 at 11:20:26PM +0100, Ingo Molnar wrote:
-> 
-> this is -v7 of the KGDB-light tree, which can be pulled from:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
+> > the Linux Today article is very nice description. (great works by Jake Edge)
+> > http://www.linuxworld.com/news/2008/020508-kernel.html
+>
+> Just for future reference...the above-mentioned article is from LWN,
+> syndicated onto LinuxWorld.  It has, so far as I know, never been near
+> Linux Today.
+>
+> Glad you liked it, though :)
 
-my git hangs on this..
+Oops, sorry.
+I had serious misunderstand ;-)
 
------[ Domenico Andreoli, aka cavok
- --[ http://www.dandreoli.com/gpgkey.asc
-   ---[ 3A0F 2F80 F79C 678A 8936  4FEE 0677 9033 A20E BC50
+sorry, again.
+and thank you for your helpful message.
