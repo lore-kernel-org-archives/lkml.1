@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762204AbYBLPQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbYBLPV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762204AbYBLPQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYBLPQ1
+	id S1759290AbYBLPV4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYBLPVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:16:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38639 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756501AbYBLPQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:16:26 -0500
-Date: Tue, 12 Feb 2008 16:16:11 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212151611.GB3078@elte.hu>
-References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org>
+	Tue, 12 Feb 2008 10:21:48 -0500
+Received: from lazybastard.de ([212.112.238.170]:41856 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbYBLPVs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 10:21:48 -0500
+Date: Tue, 12 Feb 2008 16:21:24 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stephane Chazelas <stephane.chazelas@emerson.com>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
+Message-ID: <20080212152124.GA21878@lazybastard.org>
+References: <chaz20080212134751.GI30304@artesyncp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080212135027.GA1343@one.firstfloor.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <chaz20080212134751.GI30304@artesyncp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andi Kleen <andi@firstfloor.org> wrote:
-
-> On Tue, Feb 12, 2008 at 01:38:39PM +0100, Ingo Molnar wrote:
-> > So unless i forgot about something (please yell if so), it seems to 
-> > me kgdb is now pretty ready for an upstream merge.
+On Tue, 12 February 2008 13:47:51 +0000, Stephane Chazelas wrote:
 > 
-> I don't know -- I have not reread everything. Please don't consider my 
-> comments as approval of the code base. [...]
+> this patch addresses a number of small issues mainly regarding
+> the output made by this driver to dmesg:
+>   - Some of the "blkmtd"'s had not been changed to "block2mtd"
+>     which caused display problem
+>   - the parse_err() macro was displaying "block2mtd: " twice
 
-well, it does not take a mindreader to conclude that nothing we do could 
-possibly result in you "concluding" that kgdb would be ready for a merge 
-;-)
+Fairly obvious fixes.
 
-for me it suffices that you've run out of technical arguments and are 
-resorting to non-technical name-calling:
+> Also, one can add a block2mtd mtd device with things like:
+> 
+> echo /dev/loop3,$((256*1024)) |
+>   sudo tee /sys/module/block2mtd/parameters/block2mtd
+> 
+> but individual mtds cannot be removed. You can only do a
+> modprobe -r block2mtd to remove *all* the block2mtd mtds.
+> 
+> This patch proposes to add the cabability with:
+> 
+> echo /dev/loop3,remove |
+>   sudo tee /sys/module/block2mtd/parameters/block2mtd
 
-> [...] I still think it does quite a lot of dubious and ugly things 
-> overall [...]
+Sounds sane enough.  But I do have some reservations about the
+implementation.  It would be best if you split the patch in two.  One
+with the obvious stuff above and one for this.
 
-	Ingo
+The core of remove_device_by_name() is shared with block2mtd_exit(),
+so a common helper would be good.  Your error handling is better, so
+let's keep that version.
+
+And independently of your patch a mutex protecting the device list from
+simultaneous modifications would be good to have.
+
+Side note: I may not have internet access until 19th or so.
+
+Jörn
+
+-- 
+Rules of Optimization:
+Rule 1: Don't do it.
+Rule 2 (for experts only): Don't do it yet.
+-- M.A. Jackson
