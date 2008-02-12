@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbYBLXvV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbYBLXwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758973AbYBLXvV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:51:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbYBLXvD
+	id S1762743AbYBLXwZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbYBLXwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:51:03 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38602 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbYBLXvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:51:00 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI suspend: Execute _WAK with the right argument
-Date: Wed, 13 Feb 2008 00:49:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200802130032.17636.rjw@sisk.pl> <20080212234513.GA2564@elf.ucw.cz>
-In-Reply-To: <20080212234513.GA2564@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 12 Feb 2008 18:52:16 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43196 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751484AbYBLXwP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 18:52:15 -0500
+Date: Tue, 12 Feb 2008 15:51:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 4/4] KEYS: Add keyctl function to get a security label
+Message-Id: <20080212155137.d07f80b7.akpm@linux-foundation.org>
+In-Reply-To: <20080208160440.14436.60408.stgit@warthog.procyon.org.uk>
+References: <20080208160424.14436.6965.stgit@warthog.procyon.org.uk>
+	<20080208160440.14436.60408.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802130049.15132.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 of February 2008, Pavel Machek wrote:
-> On Wed 2008-02-13 00:32:16, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The _WAK global ACPI control method has to be called with the
-> > argument representing the sleep state being exited.  Make it happen.
-> > 
-> > Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
-> > problem and debugging.
-> > 
-> > Reported-by: Mirco Tischler <mt-ml@gmx.de>
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> ACK. AFAICT this is 2.6.25 material.
+On Fri, 08 Feb 2008 16:04:40 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-Sure, it certainly is.  The bug has been breaking suspend on people's boxes
-already.
+> +	key_ref = lookup_user_key(NULL, keyid, 0, 1, KEY_VIEW);
+> +	if (IS_ERR(key_ref)) {
+> +		if (PTR_ERR(key_ref) != -EACCES)
+> +			return PTR_ERR(key_ref);
+> +
+> +		/* viewing a key under construction is also permitted if we
+> +		 * have the authorisation token handy */
+> +		instkey = key_get_instantiation_authkey(keyid);
+> +		if (IS_ERR(instkey))
+> +			return PTR_ERR(key_ref);
+> +		key_put(instkey);
 
-Thanks,
-Rafael
-
-
-> > ---
-> >  drivers/acpi/hardware/hwsleep.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-> > +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > @@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
-> >  		return_ACPI_STATUS(status);
-> >  	}
-> >  
-> > +	arg.integer.value = sleep_state;
-> >  	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
-> >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> >  		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
-> 
+This check looks a wee bit racy?
