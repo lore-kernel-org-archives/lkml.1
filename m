@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYBLAPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYBLAYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYBLAPR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 19:15:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbYBLAO4
+	id S1759338AbYBLAYb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 19:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYBLAYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 19:14:56 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:32845 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756474AbYBLAOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 19:14:54 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mirco Tischler <mt-ml@gmx.de>
-Subject: Re: [REGRESSION]fan turns at highspeed after suspend2ram
-Date: Tue, 12 Feb 2008 01:13:06 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@suse.cz>, Ray Lee <ray-lk@madrabbit.org>
-References: <1202664109.8394.19.camel@mtlp> <200802120005.20601.rjw@sisk.pl> <1202773771.14135.1.camel@mtlp>
-In-Reply-To: <1202773771.14135.1.camel@mtlp>
+	Mon, 11 Feb 2008 19:24:21 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:10311 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754825AbYBLAYT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 19:24:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Z6zJEkRwKMAXfXhRLHGbxnqC3JrkQDhZ3PV58DE+zcTSKLM7j5fzGRb6wZA0zkUQZw9La5FYUwKOHrojcHbp97k5cGX/2AWlbj+lDuXdrQPIwlh5DcpPwR5pjuBW11cZ095VG7KLQRakdE2WZjA4ORxHRaAhCCLY2h4FnPS/tTM=
+Message-ID: <47B0E72C.3050305@gmail.com>
+Date: Tue, 12 Feb 2008 09:24:12 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH #upstream] libata: implement libata.force module parameter
+References: <47A3375F.80101@gmail.com> <47A356C3.3010904@garzik.org> <20080201183621.GC14759@uranus.ravnborg.org> <47ABD817.2020903@gmail.com>
+In-Reply-To: <47ABD817.2020903@gmail.com>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802120113.07063.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 of February 2008, Mirco Tischler wrote:
-> On Di, 2008-02-12 at 00:05 +0100, Rafael J. Wysocki wrote:
-> > Well, this is strange, because one function introduced by this commit
-> is
-> > referred to by the subsequent commits.  Can you send me the patch
-> reverting
-> > this commit that you apply on top of 2.6.25-rc1, please?
-> > 
-> > Thanks,
-> > Rafael
+Tejun Heo wrote:
+> Sam Ravnborg wrote:
+>> I have lost the actual patch.
+>> But what you see is what happens when you mix const and non-const data
+>> in the same section.
+>>
+>> Look for use of __initdata for const data and replace it with __initconst.
+>>
+>> And modpost cannot warn about it as gcc errors out before we look at the
+>> .o file with modpost.
 > 
-> Here is the diff after reverting the patch.
+> OIC, thanks.  Hmmm... in init.h, I see __{dev|cpu|mem}initconst but no
+> __initconst.  The data structure in question is used from module init
+> function tagged properly with __init.  What should be done here?
 
-OK, thanks.
+PING.
 
-Since _GTS and _BFS don't seem to be defined in your box's BIOS, please
-try to apply the appended patch on top of the revert and see if that breaks
-things again.
-
-Thanks,
-Rafael
-
----
- drivers/acpi/hardware/hwsleep.c |   11 -----------
- 1 file changed, 11 deletions(-)
-
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -199,11 +199,6 @@ acpi_status acpi_enter_sleep_state_prep(
- 		return_ACPI_STATUS(status);
- 	}
- 
--	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		return_ACPI_STATUS(status);
--	}
--
- 	/* Setup the argument to _SST */
- 
- 	switch (sleep_state) {
-@@ -554,12 +549,6 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
- 	}
- 
--	arg.integer.value = sleep_state;
--	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
--	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
--		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
--	}
--
- 	/*
- 	 * GPEs must be enabled before _WAK is called as GPEs
- 	 * might get fired there
+-- 
+tejun
