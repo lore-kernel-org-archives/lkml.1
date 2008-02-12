@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbYBLIuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbYBLIw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761970AbYBLIuU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 03:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757052AbYBLIuF
+	id S1761785AbYBLIw5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 03:52:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbYBLIwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 03:50:05 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:49290 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755344AbYBLIuC (ORCPT
+	Tue, 12 Feb 2008 03:52:49 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:4334 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753769AbYBLIwr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 03:50:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=RgACLzriMDV3lPXPfaWa8NdnphlEzhq21hpvQZJT0x307zLvsFx4vSRajNuzQiucnXVHMceAuPwzc54ZiqgPh9NLol7U+D02bn23NUs1Nex+sCkyw3jugu3X1cUHAg5bUo4atp9r1Vyj9OgowdISQcxhWGUqEPM/2Lb7aaieFj4=
-Date: Tue, 12 Feb 2008 08:57:14 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: shemminger@vyatta.com, paulmck@us.ibm.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
-Message-ID: <20080212085714.GB2582@ff.dom.local>
+	Tue, 12 Feb 2008 03:52:47 -0500
+X-Greylist: delayed 1576 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 03:52:47 EST
+X-Spam-Flag: NO
+X-Spam-Score: -4.389
+Message-ID: <47B15834.6010704@tudelft.nl>
+Date: Tue, 12 Feb 2008 09:26:28 +0100
+From: Eric Piel <E.A.B.Piel@tudelft.nl>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20080207 Mandriva/2.0.0.9-5mdv2008.1 (2008.1) Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211.171645.74019568.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: "Carlos R. Mafra" <crmafra@gmail.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [2.6.25-rc1] Strange regression with CONFIG_HZ_300=y
+References: <47B0509E.1040100@gmail.com>
+In-Reply-To: <47B0509E.1040100@gmail.com>
+Content-Type: multipart/mixed;
+ boundary="------------050106060803050604040801"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12-02-2008 02:16, David Miller wrote:
-> From: Stephen Hemminger <shemminger@vyatta.com>
-> Date: Mon, 11 Feb 2008 16:59:54 -0800
+This is a multi-part message in MIME format.
+--------------050106060803050604040801
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+
+Carlos R. Mafra wrote:
+> I apologize in advance if I am crazy about this, but I noticed
+> a strange regression wrt 2.6.24 in cpufreq (I think) in 2.6.25-rc1, which
+> goes away if I revert the following commit:
 > 
-> linux-kernel added to CC:, any change to generic kernel infrastructure
-> should be posted there
+> commit bdc807871d58285737d50dc6163d0feb72cb0dc2
+> Author: H. Peter Anvin <hpa@zytor.com>
+> Date:   Fri Feb 8 04:21:26 2008 -0800
 > 
->> Eliminate warnings when rcu_assign_pointer is used with unsigned long.
->> It is reasonable to use RCU with non-pointer values so allow it for general
->> use.  Add a comment to explain the if test.
->>
->> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->> ---
->>  include/linux/rcupdate.h |   13 +++++++------
->>  1 files changed, 7 insertions(+), 6 deletions(-)
->>
->> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
->> index 37a642c..c44ac87 100644
->> --- a/include/linux/rcupdate.h
->> +++ b/include/linux/rcupdate.h
->> @@ -172,14 +172,15 @@ struct rcu_head {
->>   * structure after the pointer assignment.  More importantly, this
->>   * call documents which pointers will be dereferenced by RCU read-side
->>   * code.
->> + *
->> + * If value is the NULL (constant 0), then no barrier is needed.
->>   */
->>  
->> -#define rcu_assign_pointer(p, v) \
->> -	({ \
->> -		if (!__builtin_constant_p(v) || \
->> -		    ((v) != NULL)) \
->> -			smp_wmb(); \
->> -		(p) = (v); \
->> +#define rcu_assign_pointer(p, v)			\
->> +	({						\
->> +		if (!(__builtin_constant_p(v) && v))	\
+>     avoid overflows in kernel/time.c
+> 
+>     When the conversion factor between jiffies and milli- or microseconds is
+>     not a single multiply or divide, as for the case of HZ == 300, we currently
+>     do a multiply followed by a divide.  The intervening result, however, is
+>     subject to overflows, especially since the fraction is not simplified (for
+>     HZ == 300, we multiply by 300 and divide by 1000).
+> 
+>     This is exposed to the user when passing a large timeout to poll(), for
+>     example.
+> 
+>     This patch replaces the multiply-divide with a reciprocal multiplication on
+>     32-bit platforms.  When the input is an unsigned long, there is no portable
+>     way to do this on 64-bit platforms there is no portable way to do this
+>     since it requires a 128-bit intermediate result (which gcc does support on
+>     64-bit platforms but may generate libgcc calls, e.g.  on 64-bit s390), but
+>     since the output is a 32-bit integer in the cases affected, just simplify
+>     the multiply-divide (*3/10 instead of *300/1000).
+> 
+>     The reciprocal multiply used can have off-by-one errors in the upper half
+>     of the valid output range.  This could be avoided at the expense of having
+>     to deal with a potential 65-bit intermediate result.  Since the intent is
+>     to avoid overflow problems and most of the other time conversions are only
+>     semiexact, the off-by-one errors were considered an acceptable tradeoff.
+> 
+> [...]
+> [more text follows]
+> 
+> The problem in vanilla 2.6.25-rc1 happens with CONFIG_HZ_300=y (and doesn't
+> with CONFIG_HZ_250=y or with the above commit reverted). The cpu frequency doesn't
+> change anymore regardless of the load, and it stays high (2.0 GHz or 1.2 GHz) even
+> when idle (I checked with 'top'), when the usual is to go to 800 Mhz when idle (I
+> always use the ondemand governor compiled in and as the default governor).
+> 
+> The laptop is a Vaio VGN-FZ240E, core 2 duo T7250 @ 2.0 GHz and the kernel is x86_64.
 
-...But, "If value is the NULL (constant 0)" we have:
+Hi, it's great you found out the culprit commit because I was really 
+wondering where this bug was coming from...
+As a data point, my machine has a core 2 duo @ 1.2GHz and x86_64 arch. 
+Do you also have the tickless option activated? (it could play a role)
 
-if (!(1 && NULL != 0)) ==> if (!(0)) and the barrier is used?!
+See you,
+Eric
 
->> +			smp_wmb();			\
->> +		(p) = (v);				\
->>  	})
->>  
->>  /**
+--------------050106060803050604040801
+Content-Type: text/x-vcard; charset=utf-8;
+ name="E_A_B_Piel.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="E_A_B_Piel.vcf"
+
+begin:vcard
+fn;quoted-printable:=C3=89ric Piel
+n;quoted-printable:Piel;=C3=89ric
+org:Technical University of Delft;Software Engineering Research Group
+adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
+email;internet:E.A.B.Piel@tudelft.nl
+tel;work:+31 15 278 6338
+x-mozilla-html:FALSE
+url:http://pieleric.free.fr
+version:2.1
+end:vcard
 
 
-Regards,
-Jarek P.
+--------------050106060803050604040801--
