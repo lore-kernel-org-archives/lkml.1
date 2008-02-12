@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbYBLVpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYBLVrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbYBLVpb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:45:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbYBLVpQ
+	id S1753843AbYBLVrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:47:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYBLVrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:45:16 -0500
-Received: from hpsmtp-eml12.KPNXCHANGE.COM ([213.75.38.112]:40780 "EHLO
-	hpsmtp-eml12.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750979AbYBLVpO (ORCPT
+	Tue, 12 Feb 2008 16:47:04 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:32791 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751254AbYBLVrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:45:14 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Date: Tue, 12 Feb 2008 22:45:09 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200802111623.38478.elendil@planet.nl> <200802122139.14840.elendil@planet.nl> <20080212205622.GA21986@suse.de>
-In-Reply-To: <20080212205622.GA21986@suse.de>
+	Tue, 12 Feb 2008 16:47:00 -0500
+Message-ID: <47B213AA.2090109@zytor.com>
+Date: Tue, 12 Feb 2008 13:46:18 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802122245.09444.elendil@planet.nl>
-X-OriginalArrivalTime: 12 Feb 2008 21:45:09.0837 (UTC) FILETIME=[8A1D17D0:01C86DC0]
+To: maximilian attems <max@stro.at>
+CC: 464962@bugs.debian.org, Joey Hess <joeyh@debian.org>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bug#464962: immediate crash on boot on TM5800
+References: <20080210031849.GA3370@dragon.kitenet.net> <20080210110659.GB8574@stro.at> <20080210192139.GA17647@kodama.kitenet.net> <20080212160522.GB5221@stro.at> <20080212195254.GA6252@kodama.kitenet.net> <20080212201048.GD22054@baikonur.stro.at> <47B2025B.1030103@zytor.com> <20080212210244.GF22054@baikonur.stro.at> <47B20C1C.5020208@zytor.com> <20080212212416.GH22054@baikonur.stro.at>
+In-Reply-To: <20080212212416.GH22054@baikonur.stro.at>
+Content-Type: multipart/mixed;
+ boundary="------------050603050103040108070403"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, Greg KH wrote:
-> On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
-> > On Monday 11 February 2008, Frans Pop wrote:
-> > > In general 2.6.25 if looking quite good on my desktop, but there's
-> > > one important issue: the system no longer powers off after shutdown.
-> > > This works fine with 2.6.24.
-> >
-> > Don't ask me why, but bisection shows this commit to be the cause of
-> > the failure to power off:
-> > commit c10997f6575f476ff38442fa18fd4a0d80345f9d
-> > Author: Greg Kroah-Hartman <gregkh@suse.de>
-> > Date:   Thu Dec 20 08:13:05 2007 -0800
-> >
-> >     Kobject: convert drivers/* from kobject_unregister() to
-> > kobject_put()
-> >
-> > Because it seemed somewhat unlikely, I have double checked this by
-> > doing an extra compilation for this commit and its predecessor.
->
-> What is the symptom of not powering off?
+This is a multi-part message in MIME format.
+--------------050603050103040108070403
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Symptom is that the system shuts down normally and completely, it just does 
-not power off. Here are the last messages on the console:
-Will now halt.
-sd 1:0:0:0: [sdb] Synchronizing SCSI cache
-sd 1:0:0:0: [sdb] Stopping disk
-sd 0:0:0:0: [sda] Synchronizing SCSI cache
-sd 0:0:0:0: [sda] Stopping disk
-ACPI: PCI interrupt for device 0000:01:00.0 disabled
-Disabling non-boot CPUs ...
+Thought some more about this, and since this probably means gcc will 
+generate this for userspace code as well nowadays, tm5800 should 
+probably be downgraded to a 586-class machine.  Hence the Linux policy 
+of promoting it to a 686-class machine for having CMOV is actually 
+incorrect, it doesn't have all the userspace-visible features of a 
+686-class machine, lacking long NOP.
 
-> Can you press SysRq-T and see a task list running and waiting when
-> things should be shut down?
-
-The system does not respond to that anymore.
-
-> Do you happen to have a USB storage stick plugged into the system?
-
-Nothing. Only USB kbd/mouse.
+	-hpa
 
 
-Note that I've had this issue before with this box:
-http://bugzilla.kernel.org/show_bug.cgi?id=6879
+--------------050603050103040108070403
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="diff"
 
-Somehow it disappeared when I pulled the extra video card that came with the 
-system (no decent driver for it, so no loss). Since then the system has 
-always powered off completely reliably.
-This time it is a clear and reproducible regression. If we can solve this 
-one we might get a better handle on #6879 too.
+diff --git a/arch/x86/kernel/cpu/transmeta.c b/arch/x86/kernel/cpu/transmeta.c
+index 200fb3f..e8b422c 100644
+--- a/arch/x86/kernel/cpu/transmeta.c
++++ b/arch/x86/kernel/cpu/transmeta.c
+@@ -76,13 +76,6 @@ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
+ 	/* All Transmeta CPUs have a constant TSC */
+ 	set_bit(X86_FEATURE_CONSTANT_TSC, c->x86_capability);
+ 	
+-	/* If we can run i686 user-space code, call us an i686 */
+-#define USER686 ((1 << X86_FEATURE_TSC)|\
+-		 (1 << X86_FEATURE_CX8)|\
+-		 (1 << X86_FEATURE_CMOV))
+-        if (c->x86 == 5 && (c->x86_capability[0] & USER686) == USER686)
+-		c->x86 = 6;
+-
+ #ifdef CONFIG_SYSCTL
+ 	/* randomize_va_space slows us down enormously;
+ 	   it probably triggers retranslation of x86->native bytecode */
 
-Cheers,
-FJP
+--------------050603050103040108070403--
