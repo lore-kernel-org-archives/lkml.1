@@ -1,224 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765323AbYBLVDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765120AbYBLVDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765323AbYBLVDP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:03:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764103AbYBLVCz
+	id S1765120AbYBLVDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:03:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763454AbYBLVDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:02:55 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47018 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765259AbYBLVCv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:02:51 -0500
-Date: Tue, 12 Feb 2008 19:02:35 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PATCHES] V4L/DVB fixes
-Message-ID: <20080212190235.4e86baf8@gaivota>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 12 Feb 2008 16:03:37 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47727 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756298AbYBLVDg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 16:03:36 -0500
+Date: Tue, 12 Feb 2008 12:56:22 -0800
+From: Greg KH <gregkh@suse.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
+Message-ID: <20080212205622.GA21986@suse.de>
+References: <200802111623.38478.elendil@planet.nl> <200802122139.14840.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802122139.14840.elendil@planet.nl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
+> (Resending full details as I can't find my previous mail in the archives.)
+> 
+> On Monday 11 February 2008, Frans Pop wrote:
+> > In general 2.6.25 if looking quite good on my desktop, but there's one
+> > important issue: the system no longer powers off after shutdown.
+> > This works fine with 2.6.24.
+> 
+> Don't ask me why, but bisection shows this commit to be the cause of the
+> failure to power off:
+> commit c10997f6575f476ff38442fa18fd4a0d80345f9d
+> Author: Greg Kroah-Hartman <gregkh@suse.de>
+> Date:   Thu Dec 20 08:13:05 2007 -0800
+> 
+>     Kobject: convert drivers/* from kobject_unregister() to kobject_put()
+> 
+> Because it seemed somewhat unlikely, I have double checked this by doing an
+> extra compilation for this commit and its predecessor.
 
-Please pull from:
-        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git
-master
+What is the symptom of not powering off?
 
-For the following fixes:
+Can you press SysRq-T and see a task list running and waiting when
+things should be shut down?
 
-   - bug #9699: radio-sf16fmr2: fix request_region() validation;
-   - bug #9833 when building V4L without I2C;
-   - bug #9887: tda10086: make the 22kHz tone for DISEQC a config option;
-   - Warning fix: Remove sound/driver.h;
-   - zr364xx: trivial board additions and fix at docs;
-   - saa7134: trivial board addition and detection, fix for md2819;
-   - tcm825x: - fix logical typo error;
-   - stkwebcam and radio-si470x (newer drivers for 2.6.25): some fixes and 
-     cleanups;
-   - radio-sf16fmi: fix request_region();
-   - saa7134-dvb: add missing dvb_attach call (for tda10046_attach);
-   - frontends/tda18271-common.c: fix off-by-one;
-   - tuner-core.c:make tuner_list static;
-   - budget-av: trival board additions;
-   - dvb-ttpci: Improved display of still pictures;
-   - videobuf: lock fixes;
-   - saa7134-empress: Remove wrong lock;
-   - em28xx: trivial board addition, audio fixes and other misc fixes;
-   - videobuf-vmalloc: fix typo on a function name;
-   - tveeprom: Add proper tuner mapping for hauppauge eeprom id 133
-   - cx88-mpeg: Allow concurrent access to cx88-mpeg devices;
+Do you happen to have a USB storage stick plugged into the system?
 
-Cheers,
-Mauro.
+thanks,
 
----
-
- Documentation/video4linux/CARDLIST.em28xx     |    2 +-
- Documentation/video4linux/CARDLIST.saa7134    |    6 +-
- Documentation/video4linux/zr364xx.txt         |    4 +-
- drivers/media/Kconfig                         |   16 +-
- drivers/media/common/Kconfig                  |    2 +-
- drivers/media/common/ir-keymaps.c             |   46 ++
- drivers/media/common/saa7146_vbi.c            |    1 -
- drivers/media/common/saa7146_video.c          |    2 -
- drivers/media/dvb/bt8xx/bt878.c               |   23 +-
- drivers/media/dvb/dvb-usb/ttusb2.c            |    1 +
- drivers/media/dvb/frontends/tda10086.c        |   28 +-
- drivers/media/dvb/frontends/tda10086.h        |    3 +
- drivers/media/dvb/frontends/tda18271-common.c |    2 +-
- drivers/media/dvb/ttpci/av7110_av.c           |   15 +-
- drivers/media/dvb/ttpci/budget-av.c           |    8 +
- drivers/media/dvb/ttpci/budget.c              |    1 +
- drivers/media/radio/Kconfig                   |    4 +-
- drivers/media/radio/radio-sf16fmi.c           |    1 +
- drivers/media/radio/radio-sf16fmr2.c          |    5 +-
- drivers/media/radio/radio-si470x.c            |  597 +++++++++++++++----------
- drivers/media/video/Kconfig                   |    4 +-
- drivers/media/video/Makefile                  |    5 +-
- drivers/media/video/bt8xx/bttv-driver.c       |   50 +--
- drivers/media/video/bt8xx/bttv-vbi.c          |    4 +-
- drivers/media/video/cx88/cx88-mpeg.c          |   16 +-
- drivers/media/video/cx88/cx88.h               |    1 +
- drivers/media/video/em28xx/em28xx-audio.c     |    6 +-
- drivers/media/video/em28xx/em28xx-cards.c     |    8 +-
- drivers/media/video/em28xx/em28xx-core.c      |  111 +++--
- drivers/media/video/em28xx/em28xx-video.c     |   79 +++-
- drivers/media/video/em28xx/em28xx.h           |    5 +-
- drivers/media/video/saa7134/saa7134-cards.c   |  123 +++++-
- drivers/media/video/saa7134/saa7134-dvb.c     |   28 +-
- drivers/media/video/saa7134/saa7134-empress.c |    6 +-
- drivers/media/video/saa7134/saa7134-input.c   |    6 +
- drivers/media/video/saa7134/saa7134-video.c   |   20 +-
- drivers/media/video/saa7134/saa7134.h         |    2 +
- drivers/media/video/stk-sensor.c              |   23 +-
- drivers/media/video/stk-webcam.c              |  104 ++++-
- drivers/media/video/stk-webcam.h              |    3 +-
- drivers/media/video/tcm825x.c                 |    2 +-
- drivers/media/video/tuner-core.c              |    2 +-
- drivers/media/video/tvaudio.c                 |   10 +-
- drivers/media/video/tveeprom.c                |    2 +-
- drivers/media/video/v4l2-common.c             |  393 ++---------------
- drivers/media/video/videobuf-core.c           |   78 ++--
- drivers/media/video/videobuf-dma-sg.c         |    4 +-
- drivers/media/video/videobuf-vmalloc.c        |   20 +-
- drivers/media/video/videodev.c                |  444 ++++++++++++++++---
- drivers/media/video/zr364xx.c                 |    2 +
- include/media/ir-common.h                     |    1 +
- include/media/v4l2-common.h                   |    2 -
- include/media/v4l2-dev.h                      |    2 +
- include/media/videobuf-core.h                 |    2 +-
- include/media/videobuf-vmalloc.h              |    2 +-
- 55 files changed, 1430 insertions(+), 907 deletions(-)
-
-Adrian Bunk (5):
-      V4L/DVB (7100): frontends/tda18271-common.c: fix off-by-one
-      V4L/DVB (7102): make tuner-core.c:tuner_list static
-      V4L/DVB (7103): make stk_camera_cleanup() static
-      V4L/DVB (7104): stk-sensor.c: make 2 functions static
-      V4L/DVB (7106): em28xx/: make 2 functions static
-
-Adrian Pardini (1):
-      V4L/DVB (7192): Adds support for Genius TVGo A11MCE
-
-Akinobu Mita (1):
-      V4L/DVB (7076): bt878: include KERN_ facility level
-
-Andrew Morton (1):
-      V4L/DVB (7156): em28xx/em28xx-core.c: fix use of potentially
-uninitialized variable
-
-Antoine Jacquet (3):
-      V4L/DVB (7079): zr364xx: fix typo in documentation
-      V4L/DVB (7080): zr364xx: add support for Pentax Optio 50
-      V4L/DVB (7081): zr364xx: add support for Creative DiVi CAM 516
-
-Brandon Philips (1):
-      V4L/DVB (7150): [v4l] convert videbuf_vmalloc_memory to
-videobuf_vmalloc_memory
-
-Cyrill Gorcunov (1):
-      V4L/DVB (7086): driver: tcm825x - fix logical typo error
-
-Douglas Schilling Landgraf (1):
-      V4L/DVB (7092): radio-sf16fmr2: fix request_region() validation [bugzilla
-9699]
-
-Hartmut Hackmann (1):
-      V4L/DVB (7186): tda10086: make the 22kHz tone for DISEQC a config option
-
-Hermann Pitton (4):
-      V4L/DVB (7082): support for Twinhan Hybrid DTV-DVB 3056 PCI
-      V4L/DVB (7083): saa7134: enable radio and external analog audio-in on the
-md2819 V4L/DVB (7084): saa7134: add support for the Medion / Creatix CTX948 card
-      V4L/DVB (7085): saa7134: detect the LifeView FlyDVB-T Hybrid Mini PCI
-
-Jaime Velasco Juan (3):
-      V4L/DVB (7088): V4L: stkwebcam: Add support for YUYV format
-      V4L/DVB (7089): V4L: stkwebcam: Power management support
-      V4L/DVB (7090): V4L: stkwebcam: use v4l_compat_ioctl32
-
-Kim Sandberg (1):
-      V4L/DVB (7117): budget-av: Add support for Satelco EasyWatch PCI DVB-T
-
-Luc Saillard (1):
-      V4L/DVB (7132): Add USB ID for a newer variant of Hauppauge WinTV-HVR 900
-
-Matthias Schwarzott (1):
-      V4L/DVB (7097): saa7134-dvb: add missing dvb_attach call (for
-tda10046_attach)
-
-Mauro Carvalho Chehab (16):
-      V4L/DVB (7115): Fix bug #9833: regression when compiling V4L without I2C
-      V4L/DVB (7119): Remove obsolete code from v4l2-common
-      V4L/DVB (7133): Fix Kconfig dependencies
-      V4L/DVB (7049): Remove sound/driver.h
-      V4L/DVB (7093): radio-sf16fmi: fix request_region()
-      V4L/DVB (7120): videobuf lock is already initialized at videobuf-core.c
-      V4L/DVB (7121): Renames videobuf lock to vb_lock
-      V4L/DVB (7122): saa7134-empress: Remove back lock
-      V4L/DVB (7158): Fix em28xx audio initialization
-      V4L/DVB (7160): em28xx: Allow register dump/setting for debug
-      V4L/DVB (7161): em28xx: Fix printing debug values higher than 127
-      V4L/DVB (7162): em28xx: Fix endian and returns the correct values
-      V4L/DVB (7163): em28xx: makes audio settings more stable
-      V4L/DVB (7164): em28xx-alsa: Add a missing mutex
-      V4L/DVB (7179): Allow more than one em28xx board
-      V4L/DVB (7180): em28xx: add URB_NO_TRANSFER_DMA_MAP, since
-urb->transfer_dma is set
-
-Michael Krufky (1):
-      V4L/DVB (7183): radio-si470x: fix build warning
-
-Oliver Endriss (2):
-      V4L/DVB (7116): budget-av: Add support for KNC TV Station Plus X4
-      V4L/DVB (7118): dvb-ttpci: Improved display of still pictures
-
-Ricardo Cerqueira (1):
-      V4L/DVB (7193): tveeprom: Add proper tuner mapping for hauppauge eeprom
-id 133
-
-Roel Kluin (1):
-      V4L/DVB (7139): add parentheses
-
-Roland Stoll (1):
-      V4L/DVB (7194): cx88-mpeg: Allow concurrent access to cx88-mpeg devices
-
-Tobias Lorenz (5):
-      V4L/DVB (7091): radio-si470x improvements and seldom problem fixed in
-tuning functions V4L/DVB (7108): radio-si470x.c: check-after-use
-      V4L/DVB (7110): Trivial printf warning fix (radio-si470)
-      V4L/DVB (7188): radio-si470x version 1.0.6
-      V4L/DVB (7189): autosuspend support
-
----------------------------------------------------
-V4L/DVB development is hosted at http://linuxtv.org
+greg k-h
