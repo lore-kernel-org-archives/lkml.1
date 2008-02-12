@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbYBLXel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbYBLXey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760000AbYBLXel (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:34:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYBLXeQ
+	id S1761306AbYBLXey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:34:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbYBLXeh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:34:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58995
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752536AbYBLXeN (ORCPT
+	Tue, 12 Feb 2008 18:34:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41055 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759301AbYBLXef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:34:13 -0500
-Date: Tue, 12 Feb 2008 15:34:45 -0800 (PST)
-Message-Id: <20080212.153445.118944467.davem@davemloft.net>
-To: jengelh@computergmbh.de
-Cc: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-Subject: Re: BTRFS partition usage...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0802121458420.21102@fbirervta.pbzchgretzou.qr>
-	<200802120908.59602.chris.mason@oracle.com>
-	<Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 12 Feb 2008 18:34:35 -0500
+Date: Tue, 12 Feb 2008 15:33:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Travis <travis@sgi.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, ak@suse.de, clameter@sgi.com,
+       steiner@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       len.brown@intel.com, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH 2/4] acpi: change cpufreq tables to per_cpu variables
+Message-Id: <20080212153356.d2be3248.akpm@linux-foundation.org>
+In-Reply-To: <20080208233738.427702000@polaris-admin.engr.sgi.com>
+References: <20080208233738.108449000@polaris-admin.engr.sgi.com>
+	<20080208233738.427702000@polaris-admin.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Engelhardt <jengelh@computergmbh.de>
-Date: Tue, 12 Feb 2008 15:21:52 +0100 (CET)
+On Fri, 08 Feb 2008 15:37:40 -0800
+Mike Travis <travis@sgi.com> wrote:
 
-> For sparc you could have something like
+> Change cpufreq tables from arrays to per_cpu variables in
+> drivers/acpi/processor_thermal.c
 > 
-> 			startlba	endlba	type
-> 	sda1		0		2	1 Boot
-> 	sda2		2		58	3 Whole disk
-> 	sda3		58		90000	83 Linux
-> 
-> and slap the bootloader into "MBR", just like on x86.
-> Or I am missing something..
+> Based on linux-2.6.git + x86.git
 
-You cannot specify partitions on LBA boundaries on sparc, the Sun disk
-label specifies the partition start points in cylinders.
+I fixed a bunch of rejects in "[PATCH 1/4] cpufreq: change cpu freq tables
+to per_cpu variables" and it compiles OK.  But this one was beyond my
+should-i-repair-it threshold, sorry.
+
