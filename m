@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763042AbYBLRfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763059AbYBLRge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763042AbYBLRfX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbYBLRfL
+	id S1763059AbYBLRge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:36:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbYBLRgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:35:11 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4301 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758888AbYBLRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:35:09 -0500
-Date: Tue, 12 Feb 2008 12:04:22 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080212170422.GE3051@tuxdriver.com>
-References: <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org>
+	Tue, 12 Feb 2008 12:36:25 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:52058 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756945AbYBLRgY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 12:36:24 -0500
+Message-ID: <47B1D8DA.6000109@panasas.com>
+Date: Tue, 12 Feb 2008 19:35:22 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B1C9F4.30402@garzik.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
+       linux-scsi <"linux-scsi"@vger.kernel.org>,
+       James Bottomley <"James.Bottomley"@HansenPartnership.com>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: [BUGFIX 1/2] gdth: scan for scsi devices
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com>
+In-Reply-To: <47B1D7A8.8010108@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 11:31:48AM -0500, Jeff Garzik wrote:
-> David Miller wrote:
->> I rebase my tree all the time, at least once or twice per
->> week.  Why?
 
-<snip>
+The patch: "gdth: switch to modern scsi host registration"
 
-> FWIW, that is annoying and painful for us downstream jobbers, since it 
-> isn't really how git was meant to be used.  You use it more like a patch 
-> queue, where commits are very fluid.
+missed one simple fact when moving a way from scsi_module.c.
+That is to call scsi_scan_host() on the probed host.
+With this the gdth driver from 2.6.24 is again able to
+see drives and boot.
 
-<snip>
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Tested-by: Joerg Dorchain: <joerg@dorchain.net>
+Tested-by: Stefan Priebe <s.priebe@allied-internet.ag>
+Tested-by: Jon Chelton <jchelton@ffpglobal.com>
+---
+ drivers/scsi/gdth.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
 
-> I understand the desire to want a nice and clean history, but the frequency 
-> here really has a negative impact on your downstreams.
-
-FWIW, I definitely have a (vocal minority) group of contributors
-who resent all the rebasing.  There may be a few cases of 'vanity'
-represented here, but there are definitely reasonable complaints about
-not being able to do simple pulls to stay up-to-date and/or having
-to rebase before they can send patches to me.  FWIW, I think it might
-save a bit of my time as well, although I have become pretty good and
-"riding the tide" of rebasing... :-(
-
-Unfortunately, I don't have any good suggestions to remedy the issue.
-One strategy might be a third layer of trees, e.g.:
-
-	net-2.6			fixes for the current release
-	net-2.6.26		updates certain to go to the next release
-	net-2.6.26-maybe	updates that might not make it to the next release
-
-Of course, managing what goes moves-up from -maybe is probably a big
-headache, and just sucks-up more of Dave's time.  And, of course,
-virtually no one will run the -maybe tree...
-
-Just my $0.02...
-
-John
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index b253b8c..8eb78be 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -4838,6 +4838,9 @@ static int __init gdth_isa_probe_one(ulong32 isa_bios)
+ 	if (error)
+ 		goto out_free_coal_stat;
+ 	list_add_tail(&ha->list, &gdth_instances);
++
++	scsi_scan_host(shp);
++
+ 	return 0;
+ 
+  out_free_coal_stat:
+@@ -4965,6 +4968,9 @@ static int __init gdth_eisa_probe_one(ushort eisa_slot)
+ 	if (error)
+ 		goto out_free_coal_stat;
+ 	list_add_tail(&ha->list, &gdth_instances);
++
++	scsi_scan_host(shp);
++
+ 	return 0;
+ 
+  out_free_ccb_phys:
+@@ -5102,6 +5108,9 @@ static int __init gdth_pci_probe_one(gdth_pci_str *pcistr, int ctr)
+ 	if (error)
+ 		goto out_free_coal_stat;
+ 	list_add_tail(&ha->list, &gdth_instances);
++
++	scsi_scan_host(shp);
++
+ 	return 0;
+ 
+  out_free_coal_stat:
 -- 
-John W. Linville
-linville@tuxdriver.com
+1.5.3.3
+
+
