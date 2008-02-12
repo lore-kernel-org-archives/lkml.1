@@ -1,110 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbYBLIw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762056AbYBLIxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761785AbYBLIw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 03:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbYBLIwt
+	id S1762056AbYBLIxW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 03:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761861AbYBLIxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 03:52:49 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:4334 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753769AbYBLIwr (ORCPT
+	Tue, 12 Feb 2008 03:53:05 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:17744 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761855AbYBLIxE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 03:52:47 -0500
-X-Greylist: delayed 1576 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 03:52:47 EST
-X-Spam-Flag: NO
-X-Spam-Score: -4.389
-Message-ID: <47B15834.6010704@tudelft.nl>
-Date: Tue, 12 Feb 2008 09:26:28 +0100
-From: Eric Piel <E.A.B.Piel@tudelft.nl>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20080207 Mandriva/2.0.0.9-5mdv2008.1 (2008.1) Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: "Carlos R. Mafra" <crmafra@gmail.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [2.6.25-rc1] Strange regression with CONFIG_HZ_300=y
-References: <47B0509E.1040100@gmail.com>
-In-Reply-To: <47B0509E.1040100@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------050106060803050604040801"
+	Tue, 12 Feb 2008 03:53:04 -0500
+Date: Tue, 12 Feb 2008 10:52:56 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: mark gross <mgross@linux.intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+Message-ID: <20080212085256.GF5750@rhun.haifa.ibm.com>
+References: <20080211224105.GB24412@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211224105.GB24412@linux.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050106060803050604040801
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Feb 11, 2008 at 02:41:05PM -0800, mark gross wrote:
 
-Carlos R. Mafra wrote:
-> I apologize in advance if I am crazy about this, but I noticed
-> a strange regression wrt 2.6.24 in cpufreq (I think) in 2.6.25-rc1, which
-> goes away if I revert the following commit:
+> The intel-iommu hardware requires a polling operation to flush IOTLB
+> PTE's after an unmap operation.  Through some TSC instrumentation of
+> a netperf UDP stream with small packets test case it was seen that
+> the flush operations where sucking up to 16% of the CPU time doing
+> iommu_flush_iotlb's
 > 
-> commit bdc807871d58285737d50dc6163d0feb72cb0dc2
-> Author: H. Peter Anvin <hpa@zytor.com>
-> Date:   Fri Feb 8 04:21:26 2008 -0800
+> The following patch batches the IOTLB flushes removing most of the
+> overhead in flushing the IOTLB's.  It works by building a list of to
+> be released IOVA's that is iterated over when a timer goes off or
+> when a high water mark is reached.
 > 
->     avoid overflows in kernel/time.c
+> The wrinkle this has is that the memory protection and page fault
+> warnings from errant DMA operations is somewhat reduced, hence a kernel
+> parameter is added to revert back to the "strict" page flush / unmap
+> behavior. 
 > 
->     When the conversion factor between jiffies and milli- or microseconds is
->     not a single multiply or divide, as for the case of HZ == 300, we currently
->     do a multiply followed by a divide.  The intervening result, however, is
->     subject to overflows, especially since the fraction is not simplified (for
->     HZ == 300, we multiply by 300 and divide by 1000).
+> The hole is the following scenarios: 
+> do many map_signal operations, do some unmap_signals, reuse a recently
+> unmapped page, <errant DMA hardware sneaks through and steps on reused
+> memory>
 > 
->     This is exposed to the user when passing a large timeout to poll(), for
->     example.
+> Or: you have rouge hardware using DMA's to look at pages: do many
+> map_signal's, do many unmap_singles, reuse some unmapped pages : 
+> <rouge hardware looks at reused page>
 > 
->     This patch replaces the multiply-divide with a reciprocal multiplication on
->     32-bit platforms.  When the input is an unsigned long, there is no portable
->     way to do this on 64-bit platforms there is no portable way to do this
->     since it requires a 128-bit intermediate result (which gcc does support on
->     64-bit platforms but may generate libgcc calls, e.g.  on 64-bit s390), but
->     since the output is a 32-bit integer in the cases affected, just simplify
->     the multiply-divide (*3/10 instead of *300/1000).
+> Note : these holes are very hard to get too, as the IOTLB is small
+> and only the PTE's still in the IOTLB can be accessed through this
+> mechanism.
 > 
->     The reciprocal multiply used can have off-by-one errors in the upper half
->     of the valid output range.  This could be avoided at the expense of having
->     to deal with a potential 65-bit intermediate result.  Since the intent is
->     to avoid overflow problems and most of the other time conversions are only
->     semiexact, the off-by-one errors were considered an acceptable tradeoff.
-> 
-> [...]
-> [more text follows]
-> 
-> The problem in vanilla 2.6.25-rc1 happens with CONFIG_HZ_300=y (and doesn't
-> with CONFIG_HZ_250=y or with the above commit reverted). The cpu frequency doesn't
-> change anymore regardless of the load, and it stays high (2.0 GHz or 1.2 GHz) even
-> when idle (I checked with 'top'), when the usual is to go to 800 Mhz when idle (I
-> always use the ondemand governor compiled in and as the default governor).
-> 
-> The laptop is a Vaio VGN-FZ240E, core 2 duo T7250 @ 2.0 GHz and the kernel is x86_64.
+> Its recommended that strict is used when developing drivers that do
+> DMA operations to catch bugs early.  For production code where
+> performance is desired running with the batched IOTLB flushing is a
+> good way to go.
 
-Hi, it's great you found out the culprit commit because I was really 
-wondering where this bug was coming from...
-As a data point, my machine has a core 2 duo @ 1.2GHz and x86_64 arch. 
-Do you also have the tickless option activated? (it could play a role)
+While I don't disagree with this patch in principle (Calgary does the
+same thing due to expensive IOTLB flushes) the right way to fix it
+IMHO is to fix the drivers to batch mapping and unmapping operations
+or map up-front and unmap when done. The streaming DMA-API was
+designed to conserve IOMMU mappings for machines where IOMMU mappings
+are a scarce resource, and is a poor fit for a modern IOMMU such as
+VT-d with a 64-bit IO address space (or even an IOMMU with a 32-bit
+address space such as Calgary) where there are plenty of IOMMU
+mappings available.
 
-See you,
-Eric
-
---------------050106060803050604040801
-Content-Type: text/x-vcard; charset=utf-8;
- name="E_A_B_Piel.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="E_A_B_Piel.vcf"
-
-begin:vcard
-fn;quoted-printable:=C3=89ric Piel
-n;quoted-printable:Piel;=C3=89ric
-org:Technical University of Delft;Software Engineering Research Group
-adr:HB 08.080;;Mekelweg 4;Delft;;2628 CD;The Netherlands
-email;internet:E.A.B.Piel@tudelft.nl
-tel;work:+31 15 278 6338
-x-mozilla-html:FALSE
-url:http://pieleric.free.fr
-version:2.1
-end:vcard
-
-
---------------050106060803050604040801--
+Cheers,
+Muli
