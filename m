@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbYBLXyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761825AbYBLX4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbYBLXyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:54:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbYBLXyO
+	id S1761825AbYBLX4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:56:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbYBLX4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:54:14 -0500
-Received: from zeus.pimb.org ([80.68.88.21]:1430 "EHLO zeus.pimb.org"
+	Tue, 12 Feb 2008 18:56:40 -0500
+Received: from zeus.pimb.org ([80.68.88.21]:1441 "EHLO zeus.pimb.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757593AbYBLXyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:54:13 -0500
-X-Greylist: delayed 980 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 18:54:13 EST
-Date: Tue, 12 Feb 2008 23:54:04 +0000
+	id S1752100AbYBLX4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 18:56:39 -0500
+Date: Tue, 12 Feb 2008 23:37:48 +0000
 From: Jody Belka <lists-lkml@pimb.org>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Ian Campbell <ijc@hellion.org.uk>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: 2.6.25-rc1 xen pvops regression
-Message-ID: <20080212235404.GY7980@pimb.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Miguel Boton <mboton@gmail.com>
+Subject: [PATCH] x86: fixup machine_ops reboot_{32|64}.c unification fallout
+Message-ID: <20080212233748.GX7980@pimb.org>
+Reply-To: Jody Belka <lists-lkml@pimb.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -29,52 +25,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Please cc on any replies, thanks.
+---
+When reboot_32.c and reboot_64.c were unified (commit 4d022e35fd...),
+the machine_ops code was broken, leading to xen pvops kernels failing
+to properly halt/poweroff/reboot etc. This fixes that up.
 
-I thought I'd try out 2.6.25-rc1 as a xen 32-bit pae domU the other day.
-Unfortunately, I didn't get very far very fast, as the domain just crashed
-immediately upon booting, without any direct feedback (I did have messages
-on the xen message buffer, which helped). This even with earlyprintk turned on.
+Signed-off-by: Jody Belka <knew-linux@pimb.org>
+---
+ arch/x86/kernel/reboot.c |   46 ++++++++++++++++++++++++++++++++++++----------
+ 1 files changed, 36 insertions(+), 10 deletions(-)
 
-After a long, arduous journey, I managed to track this down to the following:
-
-----------
-commit	551889a6e2a24a9c06fd453ea03b57b7746ffdc0
-
-x86: construct 32-bit boot time page tables in native format.
-
-Specifically the boot time page tables in a CONFIG_X86_PAE=y enabled
-kernel are in PAE format.
-
-early_ioremap is updated to use the standard page table accessors.
-
-Clear any mappings beyond max_low_pfn from the boot page tables in
-native_pagetable_setup_start because the initial mappings can extend
-beyond the range of physical memory and into the vmalloc area.
-
-Derived from patches by Eric Biederman and H. Peter Anvin.
-
-[ jeremy@goop.org: PAE swapper_pg_dir needs to be page-sized fix ]
-----------
-
-However, to make life more interesting, just reverting this isn't quite
-enough to get us to the promised land. If we try, we find that although
-we do now start booting, we crash again a short way into the process.
-
-In a different manner though. Specifically, in early_ioremap_clear.
-Reverting the above commit /except/ for the changes to arch/x86/mm/ioremap.c
-gets everything working again.
-
-Well, except that we can't shutdown/reboot properly, but I've sent a patch
-for that in another email.
-
-
-I'm afraid i've no idea what needs to be done to get the change to work
-with xen, but i'm willing to try out any patches people come up with.
-Please cc me on any replies, as i'm not subscribed, thanks.
-
-
-J
+diff --git a/arch/x86/kernel/reboot.c b/arch/x86/kernel/reboot.c
+index 5818dc2..7fd6ac4 100644
+--- a/arch/x86/kernel/reboot.c
++++ b/arch/x86/kernel/reboot.c
+@@ -326,7 +326,7 @@ static inline void kb_wait(void)
+ 	}
+ }
+ 
+-void machine_emergency_restart(void)
++static void native_machine_emergency_restart(void)
+ {
+ 	int i;
+ 
+@@ -376,7 +376,7 @@ void machine_emergency_restart(void)
+ 	}
+ }
+ 
+-void machine_shutdown(void)
++static void native_machine_shutdown(void)
+ {
+ 	/* Stop the cpus and apics */
+ #ifdef CONFIG_SMP
+@@ -420,7 +420,7 @@ void machine_shutdown(void)
+ #endif
+ }
+ 
+-void machine_restart(char *__unused)
++static void native_machine_restart(char *__unused)
+ {
+ 	printk("machine restart\n");
+ 
+@@ -429,11 +429,11 @@ void machine_restart(char *__unused)
+ 	machine_emergency_restart();
+ }
+ 
+-void machine_halt(void)
++static void native_machine_halt(void)
+ {
+ }
+ 
+-void machine_power_off(void)
++static void native_machine_power_off(void)
+ {
+ 	if (pm_power_off) {
+ 		if (!reboot_force)
+@@ -443,9 +443,35 @@ void machine_power_off(void)
+ }
+ 
+ struct machine_ops machine_ops = {
+-	.power_off = machine_power_off,
+-	.shutdown = machine_shutdown,
+-	.emergency_restart = machine_emergency_restart,
+-	.restart = machine_restart,
+-	.halt = machine_halt
++	.power_off = native_machine_power_off,
++	.shutdown = native_machine_shutdown,
++	.emergency_restart = native_machine_emergency_restart,
++	.restart = native_machine_restart,
++	.halt = native_machine_halt
+ };
++
++void machine_power_off(void)
++{
++	machine_ops.power_off();
++}
++
++void machine_shutdown(void)
++{
++	machine_ops.shutdown();
++}
++
++void machine_emergency_restart(void)
++{
++	machine_ops.emergency_restart();
++}
++
++void machine_restart(char *cmd)
++{
++	machine_ops.restart(cmd);
++}
++
++void machine_halt(void)
++{
++	machine_ops.halt();
++}
++
 -- 
-Jody Belka
-knew (at) pimb (dot) org
+1.5.2.5
+
+
