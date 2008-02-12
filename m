@@ -1,200 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbYBLJYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbYBLJ0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbYBLJYM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:24:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYBLJXx
+	id S1760151AbYBLJ0r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:26:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYBLJ0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:23:53 -0500
-Received: from mail.gmx.net ([213.165.64.20]:38891 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760866AbYBLJXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:23:30 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19WXa8Nr7ZWNcyiEJcIsjt9gxPBpYdKv7eIZJeGoh
-	bQOIA7bco8juOk
-Subject: Re: Scheduler(?) regression from 2.6.22 to 2.6.24 for short-lived
-	threads
-From: Mike Galbraith <efault@gmx.de>
-To: Olof Johansson <olof@lixom.net>
-Cc: Willy Tarreau <w@1wt.eu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20080211203159.GA11161@lixom.net>
-References: <1202554705.10287.12.camel@homer.simson.net>
-	 <20080209114009.GP8953@1wt.eu> <1202564259.4035.18.camel@homer.simson.net>
-	 <20080209161957.GA3364@1wt.eu> <20080210052941.GA4731@lixom.net>
-	 <20080210061558.GC22137@1wt.eu> <20080210070056.GA6401@lixom.net>
-	 <1202717755.21339.65.camel@homer.simson.net>
-	 <20080211172648.GA7962@lixom.net>
-	 <1202759926.4165.31.camel@homer.simson.net>
-	 <20080211203159.GA11161@lixom.net>
-Content-Type: multipart/mixed; boundary="=-Pp2RiqX1U0SVgP95n63v"
-Date: Tue, 12 Feb 2008 10:23:26 +0100
-Message-Id: <1202808206.7829.36.camel@homer.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-X-Y-GMX-Trusted: 0
+	Tue, 12 Feb 2008 04:26:30 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:61602 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751855AbYBLJ00 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 04:26:26 -0500
+From: Hans-Peter Jansen <hpj@urpla.net>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+Date: Tue, 12 Feb 2008 10:26:17 +0100
+User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802121026.17420.hpj@urpla.net>
+X-Provags-ID: V01U2FsdGVkX18cBolwgQMBVpgcg5p/4wKzKri9Bs7mVZMqVhB
+ /WX1DwEYvo9HTu4X4Lqh3t/WYSrv2xpDFH4nYq22WLwkepu4NZ
+ 7aOXl0Ztt2DOTvVU1JJuQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, 
 
---=-Pp2RiqX1U0SVgP95n63v
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I suffer from unreliable cdrom operations (failing DAE and burn sessions) 
+with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
 
+Additionally, the syslog is continuesly spammed with:
+ 
+Feb 12 00:03:22 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+ Trying to recover by ending request.
+Feb 12 00:57:52 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+ Trying to recover by ending request.
+Feb 12 01:36:21 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+ Trying to recover by ending request.
+Feb 12 01:38:49 kernel: hde: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+ Trying to recover by ending request.
+Feb 12 08:06:07 kernel: hde: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+ Trying to recover by ending request.
 
-On Mon, 2008-02-11 at 14:31 -0600, Olof Johansson wrote:
-> On Mon, Feb 11, 2008 at 08:58:46PM +0100, Mike Galbraith wrote:
+I drove that devices on a pdc20268 based Promise Ultra TX/2 100 card for 
+some time, which had some IDE/ATAPI issues documented. After exchanging 
+that PCI card with a "Silicon Image PCI0680 based one, the problem persists.
 
-> > It shouldn't matter if you yield or not really, that should reduce the
-> > number of non-work spin cycles wasted awaiting preemption as threads
-> > execute in series (the problem), and should improve your performance
-> > numbers, but not beyond single threaded.
-> > 
-> > If I plugged a yield into the busy wait, I would expect to see a large
-> > behavioral difference due to yield implementation changes, but that
-> > would only be a symptom in this case, no?  Yield should be a noop.
-> 
-> Exactly. It made a big impact on the first testcase from Friday, where
-> the spin-off thread spent the bulk of the time in the busy-wait loop,
-> with a very small initial workload loop. Thus the yield passed the cpu
-> over to the other thread who got a chance to run the small workload,
-> followed by a quick finish by both of them. The better model spends the
-> bulk of the time in the first workload loop, so yielding doesn't gain
-> at all the same amount.
+Is there any firmware/atapi protocol problem known with these drives?
 
-There is a strong dependency on execution order in this testcase.
+These are the offenders:
 
-Between cpu affinity and giving the child a little head start to reduce
-the chance (100% if child wakes on same CPU and doesn't preempt parent)
-of busy wait, modified testcase behaves.  I don't think I should need
-the CPU affinity, but I do.
+42: IDE 02.0: 10602 CD-ROM (DVD)
+  [Created at block.222]
+  UDI: /org/freedesktop/Hal/devices/storage_model_PLEXTOR_DVDR_PX_608AL
+  Unique ID: 90A1.yYhZwSaKZZ6
+  Parent ID: ejN_.zzJBQoyZsp8
+  SysFS ID: /block/hdc
+  SysFS BusID: 1.0
+  SysFS Device Link: /devices/pci0000:00/0000:00:0e.0/0000:02:06.0/ide1/1.0
+  Hardware Class: cdrom
+  Model: "PLEXTOR DVDR PX-608AL"
+  Vendor: "PLEXTOR"
+  Device: "DVDR PX-608AL"
+  Revision: "1.01"
+  Serial ID: "GDDL000676UE"
+  Driver: "SiI_IDE", "ide-cdrom"
+  Driver Modules: "siimage", "ide_cd"
+  Device File: /dev/hdc
+  Device Files: /dev/hdc, /dev/disk/by-path/pci-0000:02:06.0-ide-0:0
+  Device Number: block 22:0
+  Features: CD-R, CD-RW, DVD, DVD-R, DVD-RW, DVD+R, DVD+RW, DVD+DL, DVDRAM
+  Drive status: no medium
+  Config Status: cfg=no, avail=yes, need=no, active=unknown
+  Attached to: #34 (Unknown mass storage controller)
+  Drive Speed: 24
 
-If you plunk a usleep(1) in prior to calling thread_func() does your
-testcase performance change radically?  If so, I wonder if the real
-application has the same kind of dependency.
+43: IDE 04.0: 10602 CD-ROM (DVD)
+  [Created at block.222]
+  UDI: /org/freedesktop/Hal/devices/storage_model_PLEXTOR_DVDR_PX_608AL_0
+  Unique ID: 3Ng9.rKN6BMng3oC
+  Parent ID: ejN_.zzJBQoyZsp8
+  SysFS ID: /block/hde
+  SysFS BusID: 2.0
+  SysFS Device Link: /devices/pci0000:00/0000:00:0e.0/0000:02:06.0/ide2/2.0
+  Hardware Class: cdrom
+  Model: "PLEXTOR DVDR PX-608AL"
+  Vendor: "PLEXTOR"
+  Device: "DVDR PX-608AL"
+  Revision: "1.01"
+  Serial ID: "GGDL007101UE"
+  Driver: "SiI_IDE", "ide-cdrom"
+  Driver Modules: "siimage", "ide_cd"
+  Device File: /dev/hde
+  Device Files: /dev/hde, /dev/disk/by-path/pci-0000:02:06.0-ide-1:0
+  Device Number: block 33:0
+  Features: CD-R, CD-RW, DVD, DVD-R, DVD-RW, DVD+R, DVD+RW, DVD+DL, DVDRAM
+  Drive status: no medium
+  Config Status: cfg=no, avail=yes, need=no, active=unknown
+  Attached to: #34 (Unknown mass storage controller)
+  Drive Speed: 24
 
-	-Mike
+hanging on this controller (now):
 
---=-Pp2RiqX1U0SVgP95n63v
-Content-Disposition: attachment; filename=threadtest.c
-Content-Type: text/x-csrc; name=threadtest.c; charset=utf-8
-Content-Transfer-Encoding: 7bit
+44: PCI 206.0: 0180 Unknown mass storage controller
+  [Created at pci.286]
+  UDI: /org/freedesktop/Hal/devices/pci_1095_680
+  Unique ID: ejN_.zzJBQoyZsp8
+  Parent ID: vuMS.8LoPsVNGJbF
+  SysFS ID: /devices/pci0000:00/0000:00:0e.0/0000:02:06.0
+  SysFS BusID: 0000:02:06.0
+  Hardware Class: storage
+  Model: "Silicon Image PCI0680 Ultra ATA-133 Host Controller"
+  Vendor: pci 0x1095 "Silicon Image, Inc."
+  Device: pci 0x0680 "PCI0680 Ultra ATA-133 Host Controller"
+  SubVendor: pci 0x1095 "Silicon Image, Inc."
+  SubDevice: pci 0x0680 
+  Revision: 0x02
+  Driver: "SiI_IDE"
+  Driver Modules: "siimage"
+  I/O Ports: 0x9c00-0x9c07 (rw)
+  I/O Ports: 0x9800-0x9803 (rw)
+  I/O Ports: 0x9400-0x9407 (rw)
+  I/O Ports: 0x9000-0x9003 (rw)
+  I/O Ports: 0x8c00-0x8c0f (rw)
+  Memory Range: 0xfdfff000-0xfdfff0ff (rw,non-prefetchable)
+  Memory Range: 0xf4000000-0xf407ffff (ro,prefetchable,disabled)
+  IRQ: 169 (1767334 events)
+  Module Alias: "pci:v00001095d00000680sv00001095sd00000680bc01sc80i00"
+  Driver Info #0:
+    Driver Status: siimage is active
+    Driver Activation Cmd: "modprobe siimage"
+  Driver Info #1:
+    Driver Status: pata_sil680 is active
+    Driver Activation Cmd: "modprobe pata_sil680"
+  Config Status: cfg=no, avail=yes, need=no, active=unknown
+  Attached to: #30 (PCI bridge)
 
-#define _GNU_SOURCE
+Any hints are highly appreciated.
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <pthread.h>
-#include <sched.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/syscall.h>
-
-#ifdef __PPC__
-static void atomic_inc(volatile long *a)
-{
-	asm volatile ("1:\n\
-			lwarx  %0,0,%1\n\
-			addic  %0,%0,1\n\
-			stwcx. %0,0,%1\n\
-			bne-  1b" : "=&r" (result) : "r"(a));
-}
-#else
-static void atomic_inc(volatile long *a)
-{
-	asm volatile ("lock; incl %0" : "+m" (*a));
-}
-#endif
-
-long usecs(void)
-{
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	return tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
-void burn(long *burnt)
-{
-	long then, now, delta, tolerance = 10;
-
-	then = now = usecs();
-	while (now == then)
-		now = usecs();
-	delta = now - then;
-	if (delta < tolerance)
-		*burnt += delta;
-}
-
-volatile long stopped;
-long burn_usecs = 1000, tot_work, tot_wait;
-
-pid_t parent;
-#define gettid() syscall(SYS_gettid)
-
-void *thread_func(void *cpus)
-{
-	long work = 0, wait = 0;
-	cpu_set_t cpuset;
-	pid_t whoami = gettid();
-
-	if (whoami != parent) {
-		CPU_ZERO(&cpuset);
-		CPU_SET(1, &cpuset);
-		sched_setaffinity(whoami, sizeof(cpuset), &cpuset);
-		usleep(1);
-	}
-
-	while (work < burn_usecs)
-		burn(&work);
-	tot_work += work;
-
-	atomic_inc(&stopped);
-
-	/* Busy-wait */
-	while (stopped < *(int *)cpus)
-		burn(&wait);
-	tot_wait += wait;
-
-	return NULL;
-}
-
-int main(int argc, char **argv)
-{
-	pthread_t thread;
-	int iter = 500, cpus = 2;
-	long t1, t2;
-	cpu_set_t cpuset;
-
-	if (argc > 1)
-		iter = atoi(argv[1]);
-
-	if (argc > 2)
-		burn_usecs = atoi(argv[2]);
-
-	parent = gettid();
-	CPU_ZERO(&cpuset);
-	CPU_SET(0, &cpuset);
-	sched_setaffinity(parent, sizeof(cpuset), &cpuset);
-
-	t1 = usecs();
-	while(iter--) {
-		stopped = 0;
-
-		pthread_create(&thread, NULL, &thread_func, &cpus);
-		/* clild needs headstart guarantee to avoid busy wait */
-		usleep(1);
-		thread_func(&cpus);
-		pthread_join(thread, NULL);
-	}
-	t2 = usecs();
-
-	printf("time: %ld (us)  work: %ld  wait: %ld  idx: %2.2f\n",
-		t2-t1, tot_work, tot_wait, (double)tot_work/(t2-t1));
-
-	return 0;
-}
-
---=-Pp2RiqX1U0SVgP95n63v--
-
+Pete
