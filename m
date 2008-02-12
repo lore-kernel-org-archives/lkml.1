@@ -1,56 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764132AbYBLUf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763422AbYBLUhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764132AbYBLUf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYBLUfU
+	id S1763422AbYBLUhZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:37:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYBLUhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:35:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:2340 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753218AbYBLUfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:35:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tKU+jtdX3TCSykyPJBl9tU9fMkkdgsg26Zd55QXBZ8rnKcscbB3TTyHWlvpxhiX2UBqnEwXzPpiSw9ASqO5PL27jR40NrE452Zl/5ATe8FaSIrrxvWaf0No7i5mFxNlOk8n3UxNzwzwqNkzlMyesCupDO8vF0NnQj4u0lw0JW+c=
-Subject: [PATCH] x86: include prototype for no_broadcast in
-	mach-default/setup.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 12:35:17 -0800
-Message-Id: <1202848517.28953.11.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 15:37:10 -0500
+Received: from www.tglx.de ([62.245.132.106]:39188 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752238AbYBLUhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 15:37:09 -0500
+Date: Tue, 12 Feb 2008 21:36:49 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Andi Kleen <ak@suse.de>, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/5] Only do century BCD conversion when we know the
+ RTC is BCD
+In-Reply-To: <20080211221514.GA12592@basil.nowhere.org>
+Message-ID: <alpine.LFD.1.00.0802122130280.12988@apollo.tec.linutronix.de>
+References: <20080209416.271135970@suse.de> <alpine.LFD.1.00.0802110924050.12988@apollo.tec.linutronix.de> <200802110956.16004.ak@suse.de> <alpine.LFD.1.00.0802112246590.12988@apollo.tec.linutronix.de> <20080211221514.GA12592@basil.nowhere.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes sparse warning:
-arch/x86/mach-default/setup.c:19:5: warning: symbol 'no_broadcast' was not declared. Should it be static?
+On Mon, 11 Feb 2008, Andi Kleen wrote:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/mach-default/setup.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> > So the warning comes a bit late :)
+> 
+> I suspect if this was wrong before it would not have been noticed
+> because user space hwclock would work around it. 
 
-diff --git a/arch/x86/mach-default/setup.c b/arch/x86/mach-default/setup.c
-index 0c28a07..ba1e7bd 100644
---- a/arch/x86/mach-default/setup.c
-+++ b/arch/x86/mach-default/setup.c
-@@ -9,6 +9,7 @@
- #include <asm/arch_hooks.h>
- #include <asm/e820.h>
- #include <asm/setup.h>
-+#include <asm/mach-default/mach_ipi.h>
- 
- #ifdef CONFIG_HOTPLUG_CPU
- #define DEFAULT_SEND_IPI	(1)
--- 
-1.5.4.1.1278.gc75be
+And how exaclty does it work around ? By setting the binary cmos clock
+with BCD values ?
 
+> The warning certainly won't hurt.
 
+It won't.
 
+> Anyways if you feel strongly about this (I don't) then drop
+> this patch, but apply the other ones in the series. 
+
+I'm not opposing the patch, I merily asked for a removal of the never
+changing constant.
+
+> The main one I consider important is the change to the 2000 offset
+> for 32bit to extend the 32bit lifetime.
+
+Picked the whole lot up.
+
+Thanks,
+
+	tglx
