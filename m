@@ -1,60 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758701AbYBLIKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760122AbYBLIMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758701AbYBLIKo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 03:10:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750796AbYBLIKe
+	id S1760122AbYBLIMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 03:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbYBLIMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 03:10:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33528
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750702AbYBLIKd (ORCPT
+	Tue, 12 Feb 2008 03:12:22 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49417 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750990AbYBLIMV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 03:10:33 -0500
-Date: Tue, 12 Feb 2008 00:11:04 -0800 (PST)
-Message-Id: <20080212.001104.172517283.davem@davemloft.net>
-To: chris.mason@oracle.com
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       btrfs-devel@oss.oracle.com
-Subject: Re: BTRFS partition usage...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080211.232139.14959431.davem@davemloft.net>
-References: <200802061200.14690.chris.mason@oracle.com>
-	<20080211.232139.14959431.davem@davemloft.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 Feb 2008 03:12:21 -0500
+Date: Tue, 12 Feb 2008 17:06:30 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, greg@kroah.com,
+       haveblue@us.ibm.com, linux-mm <linux-mm@kvack.org>
+In-Reply-To: <1202765553.25604.12.camel@dyn9047017100.beaverton.ibm.com>
+References: <20080211114818.74c9dcc7.akpm@linux-foundation.org> <1202765553.25604.12.camel@dyn9047017100.beaverton.ibm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20080212154309.F9DA.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Mon, 11 Feb 2008 23:21:39 -0800 (PST)
-
-> Filesystems like ext2 put their superblock 1 block into the partition
-> in order to avoid overwriting disk labels and other uglies.  UFS does
-> this too, as do several others.  One of the few exceptions I've been
-> able to find is XFS.
+> On Mon, 2008-02-11 at 11:48 -0800, Andrew Morton wrote:
+> > On Mon, 11 Feb 2008 09:23:18 -0800
+> > Badari Pulavarty <pbadari@us.ibm.com> wrote:
+> > 
+> > > Hi Andrew,
+> > > 
+> > > While testing hotplug memory remove against -mm, I noticed
+> > > that unregister_memory() is not cleaning up /sysfs entries
+> > > correctly. It also de-references structures after destroying
+> > > them (luckily in the code which never gets used). So, I cleaned
+> > > up the code and fixed the extra reference issue.
+> > > 
+> > > Could you please include it in -mm ?
+> > > 
+> > > Thanks,
+> > > Badari
+> > > 
+> > > register_memory()/unregister_memory() never gets called with
+> > > "root". unregister_memory() is accessing kobject_name of
+> > > the object just freed up. Since no one uses the code,
+> > > lets take the code out. And also, make register_memory() static.  
+> > > 
+> > > Another bug fix - before calling unregister_memory()
+> > > remove_memory_block() gets a ref on kobject. unregister_memory()
+> > > need to drop that ref before calling sysdev_unregister().
+> > > 
+> > 
+> > I'd say this:
+> > 
+> > > Subject: [-mm PATCH] register_memory/unregister_memory clean ups
+> > 
+> > is rather tame.  These are more than cleanups!  These sound like
+> > machine-crashing bugs.  Do they crash machines?  How come nobody noticed
+> > it?
+> > 
 > 
-> This is a real issue on sparc where the default sun disk labels
-> created use an initial partition where block zero aliases the disk
-> label.  It took me a few iterations before I figured out why every
-> btrfs make would zero out my disk label :-/
+> No they don't crash machine - mainly because, they never get called
+> with "root" argument (where we have the bug). They were never tested
+> before, since we don't have memory remove work yet. All it does
+> is, it leave /sysfs directory laying around and causing next
+> memory add failure. 
 
-Actually it seems this is only a problem with mkfs.btrfs, it clears
-out the first 64 4K chunks of the disk for whatever reason.
+Badari-san.
 
-The following patch cures the disk label spamming problem for me:
+Which function does call unregister_memory() or unregister_memory_section()?
+I can't find its caller in current 2.6.24-mm1.
 
---- vanilla/btrfs-progs-0.12/mkfs.c	2008-02-06 08:37:45.000000000 -0800
-+++ btrfs-progs-0.12/mkfs.c	2008-02-12 00:07:43.000000000 -0800
-@@ -210,7 +210,8 @@ int main(int ac, char **av)
- 		exit(1);
- 	}
- 	memset(buf, 0, sectorsize);
--	for(i = 0; i < 64; i++) {
-+	lseek(fd, BTRFS_SUPER_INFO_OFFSET, SEEK_SET);
-+	for(i = BTRFS_SUPER_INFO_OFFSET / sectorsize; i < 64; i++) {
- 		ret = write(fd, buf, sectorsize);
- 		if (ret != sectorsize) {
- 			fprintf(stderr, "unable to zero fill device\n");
+
+???????()
+  |
+  |nothing calls?
+  |
+  +-->unregister_memory_section()
+       |
+       |call
+       |
+       +---> remove_memory_block()
+              |
+              |call
+              |
+              +----> unregister_memory()
+
+unregister_memory_section() is only externed in linux/memory.h.
+
+Do you have any another patch to call it?
+I think it is necessary for physical memory removing.
+
+If you have not posted it or it is not merged to -mm,
+I can understand why this bug remains.
+If you posted it, could you point it to me?
+
+Or do I misunderstand something?
+
+
+Thanks.
+
+-- 
+Yasunori Goto 
+
+
