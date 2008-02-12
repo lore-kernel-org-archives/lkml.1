@@ -1,281 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbYBLBdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbYBLBhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761380AbYBLBdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756182AbYBLBdB
+	id S1760106AbYBLBhT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751830AbYBLBhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:33:01 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:20471 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756090AbYBLBc7 (ORCPT
+	Mon, 11 Feb 2008 20:37:05 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:55438 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751437AbYBLBhD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:32:59 -0500
-Date: Mon, 11 Feb 2008 17:28:34 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: netdev <netdev@vger.kernel.org>, davem@davemloft.net,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH 4/4] docbook: make a networking book and fix a few errors
-Message-Id: <20080211172834.3e42b9e5.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 11 Feb 2008 20:37:03 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+In-Reply-To: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 19:36:49 -0600
+Message-Id: <1202780209.3122.96.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Move networking (core and drivers) docbook to its own networking book.
-Fix a few kernel-doc errors in header and source files.
+On Tue, 2008-02-12 at 12:02 +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Andrew was looking for someone to run a linux-next tree that just
+> contained the subsystem git and quilt trees for 2.6.x+1 and I (in a
+> moment of madness) volunteered.  So, this is to announce the creating of
+> such a tree (it doesn't exist yet) which will require some (hopefully)
+> small amount of work on the part of subsystem maintainers.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/DocBook/Makefile        |    2 
- Documentation/DocBook/kernel-api.tmpl |   65 --------------------
- Documentation/DocBook/networking.tmpl |  106 ++++++++++++++++++++++++++++++++++
- include/linux/etherdevice.h           |    3 
- net/core/dev.c                        |    3 
- net/core/skbuff.c                     |    4 -
- 6 files changed, 111 insertions(+), 72 deletions(-)
+Actually, it sort of does.  If you look here:
 
---- linux-2.6.25-rc1.orig/include/linux/etherdevice.h
-+++ linux-2.6.25-rc1/include/linux/etherdevice.h
-@@ -70,8 +70,7 @@ static inline int is_multicast_ether_add
- }
- 
- /**
-- * is_local_ether_addr - Determine if the Ethernet address is locally-assigned
-- * one (IEEE 802).
-+ * is_local_ether_addr - Determine if the Ethernet address is locally-assigned one (IEEE 802).
-  * @addr: Pointer to a six-byte array containing the Ethernet address
-  *
-  * Return true if the address is a local address.
---- linux-2.6.25-rc1.orig/net/core/dev.c
-+++ linux-2.6.25-rc1/net/core/dev.c
-@@ -3038,8 +3038,7 @@ int dev_unicast_sync(struct net_device *
- EXPORT_SYMBOL(dev_unicast_sync);
- 
- /**
-- *	dev_unicast_unsync - Remove synchronized addresses from the destination
-- *			     device
-+ *	dev_unicast_unsync - Remove synchronized addresses from the destination device
-  *	@to: destination device
-  *	@from: source device
-  *
---- linux-2.6.25-rc1.orig/net/core/skbuff.c
-+++ linux-2.6.25-rc1/net/core/skbuff.c
-@@ -1907,11 +1907,11 @@ void skb_prepare_seq_read(struct sk_buff
-  * of bytes already consumed and the next call to
-  * skb_seq_read() will return the remaining part of the block.
-  *
-- * Note: The size of each block of data returned can be arbitary,
-+ * Note 1: The size of each block of data returned can be arbitary,
-  *       this limitation is the cost for zerocopy seqeuental
-  *       reads of potentially non linear data.
-  *
-- * Note: Fragment lists within fragments are not implemented
-+ * Note 2: Fragment lists within fragments are not implemented
-  *       at the moment, state->root_skb could be replaced with
-  *       a stack for this purpose.
-  */
---- linux-2.6.25-rc1.orig/Documentation/DocBook/Makefile
-+++ linux-2.6.25-rc1/Documentation/DocBook/Makefile
-@@ -8,7 +8,7 @@
- 
- DOCBOOKS := wanbook.xml z8530book.xml mcabook.xml videobook.xml \
- 	    kernel-hacking.xml kernel-locking.xml deviceiobook.xml \
--	    procfs-guide.xml writing_usb_driver.xml \
-+	    procfs-guide.xml writing_usb_driver.xml networking.xml \
- 	    kernel-api.xml filesystems.xml lsm.xml usb.xml \
- 	    gadget.xml libata.xml mtdnand.xml librs.xml rapidio.xml \
- 	    genericirq.xml s390-drivers.xml uio-howto.xml scsi.xml
---- /dev/null
-+++ linux-2.6.25-rc1/Documentation/DocBook/networking.tmpl
-@@ -0,0 +1,106 @@
-+<?xml version="1.0" encoding="UTF-8"?>
-+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
-+	"http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" []>
-+
-+<book id="LinuxNetworking">
-+ <bookinfo>
-+  <title>Linux Networking and Network Devices APIs</title>
-+
-+  <legalnotice>
-+   <para>
-+     This documentation is free software; you can redistribute
-+     it and/or modify it under the terms of the GNU General Public
-+     License as published by the Free Software Foundation; either
-+     version 2 of the License, or (at your option) any later
-+     version.
-+   </para>
-+
-+   <para>
-+     This program is distributed in the hope that it will be
-+     useful, but WITHOUT ANY WARRANTY; without even the implied
-+     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-+     See the GNU General Public License for more details.
-+   </para>
-+
-+   <para>
-+     You should have received a copy of the GNU General Public
-+     License along with this program; if not, write to the Free
-+     Software Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+     MA 02111-1307 USA
-+   </para>
-+
-+   <para>
-+     For more details see the file COPYING in the source
-+     distribution of Linux.
-+   </para>
-+  </legalnotice>
-+ </bookinfo>
-+
-+<toc></toc>
-+
-+  <chapter id="netcore">
-+     <title>Linux Networking</title>
-+     <sect1><title>Networking Base Types</title>
-+!Iinclude/linux/net.h
-+     </sect1>
-+     <sect1><title>Socket Buffer Functions</title>
-+!Iinclude/linux/skbuff.h
-+!Iinclude/net/sock.h
-+!Enet/socket.c
-+!Enet/core/skbuff.c
-+!Enet/core/sock.c
-+!Enet/core/datagram.c
-+!Enet/core/stream.c
-+     </sect1>
-+     <sect1><title>Socket Filter</title>
-+!Enet/core/filter.c
-+     </sect1>
-+     <sect1><title>Generic Network Statistics</title>
-+!Iinclude/linux/gen_stats.h
-+!Enet/core/gen_stats.c
-+!Enet/core/gen_estimator.c
-+     </sect1>
-+     <sect1><title>SUN RPC subsystem</title>
-+<!-- The !D functionality is not perfect, garbage has to be protected by comments
-+!Dnet/sunrpc/sunrpc_syms.c
-+-->
-+!Enet/sunrpc/xdr.c
-+!Enet/sunrpc/svc_xprt.c
-+!Enet/sunrpc/xprt.c
-+!Enet/sunrpc/sched.c
-+!Enet/sunrpc/socklib.c
-+!Enet/sunrpc/stats.c
-+!Enet/sunrpc/rpc_pipe.c
-+!Enet/sunrpc/rpcb_clnt.c
-+!Enet/sunrpc/clnt.c
-+     </sect1>
-+  </chapter>
-+
-+  <chapter id="netdev">
-+     <title>Network device support</title>
-+     <sect1><title>Driver Support</title>
-+!Enet/core/dev.c
-+!Enet/ethernet/eth.c
-+!Enet/sched/sch_generic.c
-+!Iinclude/linux/etherdevice.h
-+!Iinclude/linux/netdevice.h
-+     </sect1>
-+     <sect1><title>PHY Support</title>
-+!Edrivers/net/phy/phy.c
-+!Idrivers/net/phy/phy.c
-+!Edrivers/net/phy/phy_device.c
-+!Idrivers/net/phy/phy_device.c
-+!Edrivers/net/phy/mdio_bus.c
-+!Idrivers/net/phy/mdio_bus.c
-+     </sect1>
-+<!-- FIXME: Removed for now since no structured comments in source
-+     <sect1><title>Wireless</title>
-+X!Enet/core/wireless.c
-+     </sect1>
-+-->
-+     <sect1><title>Synchronous PPP</title>
-+!Edrivers/net/wan/syncppp.c
-+     </sect1>
-+  </chapter>
-+
-+</book>
---- linux-2.6.25-rc1.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux-2.6.25-rc1/Documentation/DocBook/kernel-api.tmpl
-@@ -204,71 +204,6 @@ X!Ilib/string.c
-      </sect1>
-   </chapter>
- 
--  <chapter id="netcore">
--     <title>Linux Networking</title>
--     <sect1><title>Networking Base Types</title>
--!Iinclude/linux/net.h
--     </sect1>
--     <sect1><title>Socket Buffer Functions</title>
--!Iinclude/linux/skbuff.h
--!Iinclude/net/sock.h
--!Enet/socket.c
--!Enet/core/skbuff.c
--!Enet/core/sock.c
--!Enet/core/datagram.c
--!Enet/core/stream.c
--     </sect1>
--     <sect1><title>Socket Filter</title>
--!Enet/core/filter.c
--     </sect1>
--     <sect1><title>Generic Network Statistics</title>
--!Iinclude/linux/gen_stats.h
--!Enet/core/gen_stats.c
--!Enet/core/gen_estimator.c
--     </sect1>
--     <sect1><title>SUN RPC subsystem</title>
--<!-- The !D functionality is not perfect, garbage has to be protected by comments
--!Dnet/sunrpc/sunrpc_syms.c
---->
--!Enet/sunrpc/xdr.c
--!Enet/sunrpc/svc_xprt.c
--!Enet/sunrpc/xprt.c
--!Enet/sunrpc/sched.c
--!Enet/sunrpc/socklib.c
--!Enet/sunrpc/stats.c
--!Enet/sunrpc/rpc_pipe.c
--!Enet/sunrpc/rpcb_clnt.c
--!Enet/sunrpc/clnt.c
--     </sect1>
--  </chapter>
--
--  <chapter id="netdev">
--     <title>Network device support</title>
--     <sect1><title>Driver Support</title>
--!Enet/core/dev.c
--!Enet/ethernet/eth.c
--!Enet/sched/sch_generic.c
--!Iinclude/linux/etherdevice.h
--!Iinclude/linux/netdevice.h
--     </sect1>
--     <sect1><title>PHY Support</title>
--!Edrivers/net/phy/phy.c
--!Idrivers/net/phy/phy.c
--!Edrivers/net/phy/phy_device.c
--!Idrivers/net/phy/phy_device.c
--!Edrivers/net/phy/mdio_bus.c
--!Idrivers/net/phy/mdio_bus.c
--     </sect1>
--<!-- FIXME: Removed for now since no structured comments in source
--     <sect1><title>Wireless</title>
--X!Enet/core/wireless.c
--     </sect1>
---->
--     <sect1><title>Synchronous PPP</title>
--!Edrivers/net/wan/syncppp.c
--     </sect1>
--  </chapter>
--
-   <chapter id="modload">
-      <title>Module Support</title>
-      <sect1><title>Module Loading</title>
+http://www.kernel.org/pub/linux/kernel/people/jejb/merge-tree/
+
+You'll find a merge candidate tree that builds nightly from everyone's
+git and quilt trees.  I'm using it to track merge conflicts (so I only
+build the patch, I don't check it compiles).
+
+You're welcome to the scripts that do this:
+
+http://www.kernel.org/pub/linux/kernel/people/jejb/build.pl
+
+And the config file that runs it:
+
+http://www.kernel.org/pub/linux/kernel/people/jejb/merge-tree-build
+
+I don't plan to do much more than keep it building to check conflicts,
+so you're welcome to take it over.
+
+> Those interested in discussion about this are encouraged to join the
+> linux-next@vger.kernel.org mailing list.
+> 
+> The first things I need from the subsystem maintainers (you know who you
+> are) are a contact address (a list address is fine) and at least one git
+> branch or quilt series that contains all the things you want to see go
+> into 2.6.26.  I am happy for there to be multiple branches/series (in
+> fact there probably will need to be in some cases where there are
+> dependencies on others work).
+> 
+> The tree will be based on the current version of Linus' tree but you may
+> specify an earlier branch point if you need to (hopefully not - but more
+> likely for quilters, I guess).
+> 
+> I hope to recreate this tree every day automatically.  In order to do
+> this, any tree that has a conflict will be dropped from that days tree.
+> The maintainer will be notified.  I hope to provide some clue as to what
+> the conflict is with, but probably not initially.
+
+Actually the experiment with the -mc tree shows that most of the
+conflicts are trivial in nature (usually docbook stuff or
+feature-removal.txt stuff), so you can do a trivial triage by hand.  You
+can't automatically drop them (well, not unless you want to end up
+dropping half the trees).
+
+The other problem is that we actually maintain deliberate conflicts with
+a last person to merge fixes it type attitude.  Again, it's usually in
+minor areas, and the fixups are fairly trivial, but it illustrates why
+conflicts can't be a reason to drop a tree, you have to maintain some
+sort of automatic fixup (at least I had to with the -mc tree).  The
+reason we do this is that it would give the maintainers a nasty web of
+included trees (which is almost impossible for the quilt trees anyway)
+if we tried to resolve the conflicts and destroy our ability to rebase.
+
+> I will attempt to build the tree between each merge (and a failed build
+> will again cause the offending tree to be dropped).  These builds will be
+> necessarily restricted to probably one architecture/config.  I will build
+> the entire tree on as many architectures/configs as seem sensible and
+> the results of that will be available on a web page (to be announced).
+
+Yes, this is the bit I've never dared do ... principally because it's
+such a time sink.
+
+James
+
+
