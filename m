@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760809AbYBLTg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYBLTiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760809AbYBLTg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751383AbYBLTgt
+	id S1761435AbYBLTiP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751701AbYBLTiA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:36:49 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:56991 "EHLO pasmtpA.tele.dk"
+	Tue, 12 Feb 2008 14:38:00 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:33140 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752087AbYBLTgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:36:48 -0500
-Date: Tue, 12 Feb 2008 20:36:55 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Message-ID: <20080212193655.GA2771@uranus.ravnborg.org>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <20080212185012.GA2348@uranus.ravnborg.org> <20080212110818.62496cf4@laptopd505.fenrus.org>
-Mime-Version: 1.0
+	id S1750968AbYBLTh7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 14:37:59 -0500
+Date: Tue, 12 Feb 2008 14:37:54 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       John Linville <linville@tuxdriver.com>
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080212193754.GC18625@fieldses.org>
+References: <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080212110818.62496cf4@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <47B1C9F4.30402@garzik.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 11:08:18AM -0800, Arjan van de Ven wrote:
-> On Tue, 12 Feb 2008 19:50:12 +0100
-> Sam Ravnborg <sam@ravnborg.org> wrote:
-> > > 
-> > > Now I realize that certain distros have patched gcc to compensate
-> > > for their lack of distro wide CFLAGS, and it's great to work around
-> > > that... but would there be a way to NOT disable this for
-> > > CONFIG_CC_STACKPROTECTOR please? It would have made this exploit
-> > > not possible for those kernels that enable this feature (and that
-> > > includes distros like Fedora)
-> > 
-> > I guess the problem is that we in arch/x86/Makefile enable the
-> > stackprotector but then later in the main Makefile disables it.
-> > So the right way to approach this should be to always disable it and
-> > the reenable it in the arch Makefile.
-> > So something like this?
-> 
-> 
-> the patch works fine for me.
-> Linus, can we please get this merged into .25? it will at least
-> again limit the damage exploits like the vmsplice one can do..
-> 
-> (I think it's also worth it for -stable)
+On Tue, Feb 12, 2008 at 11:31:48AM -0500, Jeff Garzik wrote:
+> David Miller wrote:
+>> I rebase my tree all the time, at least once or twice per
+>> week.  Why?
+>>
+>> Firstly, to remove crap.  When you have "great idea A" then "oh shit A
+>> won't work, revert that" there is zero sense in keeping both
+>> changesets around.
+>>
+>> Secondly, I want to fix up the rejects caused by conflicts with
+>> upstream bug fixes and the like (and there are tons when the tree gets
+>> to 1500 or so patches like the networking did).  I don't want git to
+>> merge the thing by hand, I want to see what the conflict is and make
+>> sure the "obvious" resolution is OK and the most efficient way I know
+>> how to do that is to suck my tree apart as patches, then suck them
+>> back into a fresh tree.
+>
+> FWIW, that is annoying and painful for us downstream jobbers, since it  
+> isn't really how git was meant to be used.  You use it more like a patch  
+> queue, where commits are very fluid.
+>
+> Unfortunately, if there is any synchronization lag between me and you --  
+> not uncommon -- then I cannot commit changes on top of the changes just  
+> sent, in my own local tree.  Why?  Because you rebase so often, I cannot  
+> even locally commit dependent patches due to the end result merge  
+> getting so nasty.
+>
+> I understand the desire to want a nice and clean history, but the  
+> frequency here really has a negative impact on your downstreams.
+>
+> It also totally screws the commit statistics, wiping me and John and the  
+> committers we have preserved out, replacing everybody's committer with  
+> David Miller.
 
-I will prepare it for my next -fix round. Due in a few days.
+But the "author" is still preserved, right?  Why do you need the
+committer name to be preserved?  (I'm not denying that there could be
+reasons, I'm just curious what they are.)
 
-	Sam
-
+--b.
