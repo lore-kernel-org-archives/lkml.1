@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757082AbYBLXdP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYBLXe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757082AbYBLXdP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:33:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752247AbYBLXc6
+	id S1757548AbYBLXe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYBLXeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:32:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58992
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751168AbYBLXc5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:32:57 -0500
-Date: Tue, 12 Feb 2008 15:33:29 -0800 (PST)
-Message-Id: <20080212.153329.98384016.davem@davemloft.net>
-To: chris.mason@oracle.com
-Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-Subject: Re: BTRFS partition usage...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200802120908.59602.chris.mason@oracle.com>
-References: <200802120849.34477.chris.mason@oracle.com>
-	<Pine.LNX.4.64.0802121458420.21102@fbirervta.pbzchgretzou.qr>
-	<200802120908.59602.chris.mason@oracle.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 Feb 2008 18:34:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38511 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752408AbYBLXeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 18:34:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI suspend: Execute _WAK with the right argument
+Date: Wed, 13 Feb 2008 00:32:16 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802130032.17636.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Mason <chris.mason@oracle.com>
-Date: Tue, 12 Feb 2008 09:08:59 -0500
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> I've had requests to move the super down to 64k to make room for
-> bootloaders, which may not matter for sparc, but I don't really plan
-> on different locations for different arches.
+The _WAK global ACPI control method has to be called with the
+argument representing the sleep state being exited.  Make it happen.
 
-The Sun disk label sits in the first 512 bytes and the boot loader
-block sits in the second 512 bytes.
+Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
+problem and debugging.
 
-I think leaving even more space is a good idea for several reasons.
+Reported-by: Mirco Tischler <mt-ml@gmx.de>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/acpi/hardware/hwsleep.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
++++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+@@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
+ 		return_ACPI_STATUS(status);
+ 	}
+ 
++	arg.integer.value = sleep_state;
+ 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+ 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+ 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
