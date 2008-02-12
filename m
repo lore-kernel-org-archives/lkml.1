@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbYBLMaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761118AbYBLMbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbYBLMaX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 07:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYBLMaI
+	id S1761118AbYBLMbT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 07:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbYBLMbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 07:30:08 -0500
-Received: from gra-lx1.iram.es ([150.214.224.41]:36541 "EHLO gra-lx1.iram.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752278AbYBLMaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 07:30:07 -0500
-From: Gabriel Paubert <paubert@iram.es>
-Date: Tue, 12 Feb 2008 13:30:03 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other goodies
-Message-ID: <20080212123002.GA11000@iram.es>
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <1202460043.7079.157.camel@pasglop> <20080212114905.GA9940@iram.es>
+	Tue, 12 Feb 2008 07:31:09 -0500
+Received: from an-out-0708.google.com ([209.85.132.249]:46582 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbYBLMbH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 07:31:07 -0500
+Message-ID: <47B191CF.7050409@larces.uece.br>
+Date: Tue, 12 Feb 2008 09:32:15 -0300
+From: Sergio Luis <sergio@larces.uece.br>
+Reply-To: sergio@larces.uece.br
+Organization: Ceara State University (UECE)
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212114905.GA9940@iram.es>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: LKML <linux-kernel@vger.kernel.org>
+CC: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH] 2.6.25-rc1-git2: drivers/video/uvesafb.c: fix section mismatch
+ warning in param_set_scroll()
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 12:49:05PM +0100, Gabriel Paubert wrote:
-> On Fri, Feb 08, 2008 at 07:40:43PM +1100, Benjamin Herrenschmidt wrote:
-> > 
-> > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > - couple of fixes and preparatory patches
-> > > 
-> > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
-> > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
-> > 
-> > Interesting... I was thinking about doing a full remove of the device at
-> > a higher level instead but I suppose what you propose is easier.
-> 
-> Well, I have serious problem on a Pegasos which appeared some time
-> between 2.6.24 and 2.6.25-rc1: at boot I get an infinite string of 
-> 
-> hdb: empty DMA table?
-> 
-> I'm trying to bisect it right now.
+Fix following warnings:
+WARNING: drivers/video/built-in.o(.text+0x7c64a): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/video/built-in.o(.text+0x7c65d): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/video/built-in.o(.text+0x7c679): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/video/built-in.o(.text+0x7c699): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/video/built-in.o(.text+0x7c69f): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/built-in.o(.text+0xa3676): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/built-in.o(.text+0xa3689): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/built-in.o(.text+0xa36a5): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/built-in.o(.text+0xa36c5): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: drivers/built-in.o(.text+0xa36cb): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: vmlinux.o(.text+0x4a079a): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: vmlinux.o(.text+0x4a07ad): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: vmlinux.o(.text+0x4a07c9): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: vmlinux.o(.text+0x4a07e9): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
+WARNING: vmlinux.o(.text+0x4a07ef): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:ypan
 
-Argh, the first bisect point ended up with timeouts on hdb...
+Remove __devinitdata annotation from the variable ypan.
 
-Flagged as bad, to try to see when the problems started, but 
-I suspect that there are several.
+Signed-off-by: Sergio Luis <sergio@larces.uece.br>
 
-	Gabriel
+uvesafb.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -urN linux-2.6.25-rc1-git2.orig/drivers/video/uvesafb.c linux-2.6.25-rc1-git2/drivers/video/uvesafb.c
+--- linux-2.6.25-rc1-git2.orig/drivers/video/uvesafb.c	2008-02-12 09:26:15.000000000 -0300
++++ linux-2.6.25-rc1-git2/drivers/video/uvesafb.c	2008-02-12 08:52:20.000000000 -0300
+@@ -44,7 +44,7 @@
+ 
+ static int mtrr		__devinitdata = 3; /* enable mtrr by default */
+ static int blank	= 1;		   /* enable blanking by default */
+-static int ypan		__devinitdata = 1; /* 0: scroll, 1: ypan, 2: ywrap */
++static int ypan		= 1; 		 /* 0: scroll, 1: ypan, 2: ywrap */
+ static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
+ static int nocrtc	__devinitdata; /* ignore CRTC settings */
+ static int noedid	__devinitdata; /* don't try DDC transfers */
+
