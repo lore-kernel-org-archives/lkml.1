@@ -1,80 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbYBLQFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762335AbYBLQIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762855AbYBLQFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:05:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbYBLQF0
+	id S1762335AbYBLQIB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYBLQHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:05:26 -0500
-Received: from rn-out-0910.google.com ([64.233.170.188]:24098 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753293AbYBLQFX (ORCPT
+	Tue, 12 Feb 2008 11:07:53 -0500
+Received: from e36.co.us.ibm.com ([32.97.110.154]:48356 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753644AbYBLQHw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:05:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VssvNMXKFIIkicepriwEj8Wx1oL+4aro2zaffhg73OFrUvlxs6YSQU6oO9wMBzBTcv2yQQNgSjp+XPsvhO6nkb0a+W/0/a7Mo2ee6IEs7BG05Mh3t3DOcWhqblKm3m5+PeSPCzL2E2eR9LAtknqbdhoydN3CoZNvrs5h17KU5YA=
-Message-ID: <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
-Date: Tue, 12 Feb 2008 17:05:20 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
-       "Mike Christie" <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
+	Tue, 12 Feb 2008 11:07:52 -0500
+Date: Tue, 12 Feb 2008 08:07:29 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
+Message-ID: <20080212160729.GA9157@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080211.171645.74019568.davem@davemloft.net> <20080212085714.GB2582@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
-	 <47A8B757.10101@vlnb.net>
-	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <20080212085714.GB2582@ff.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 6, 2008 1:11 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> I have always observed the case with LIO SE/iSCSI target mode ...
+On Tue, Feb 12, 2008 at 08:57:14AM +0000, Jarek Poplawski wrote:
+> On 12-02-2008 02:16, David Miller wrote:
+> > From: Stephen Hemminger <shemminger@vyatta.com>
+> > Date: Mon, 11 Feb 2008 16:59:54 -0800
+> > 
+> > linux-kernel added to CC:, any change to generic kernel infrastructure
+> > should be posted there
+> > 
+> >> Eliminate warnings when rcu_assign_pointer is used with unsigned long.
+> >> It is reasonable to use RCU with non-pointer values so allow it for general
+> >> use.  Add a comment to explain the if test.
+> >>
+> >> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> >> ---
+> >>  include/linux/rcupdate.h |   13 +++++++------
+> >>  1 files changed, 7 insertions(+), 6 deletions(-)
+> >>
+> >> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+> >> index 37a642c..c44ac87 100644
+> >> --- a/include/linux/rcupdate.h
+> >> +++ b/include/linux/rcupdate.h
+> >> @@ -172,14 +172,15 @@ struct rcu_head {
+> >>   * structure after the pointer assignment.  More importantly, this
+> >>   * call documents which pointers will be dereferenced by RCU read-side
+> >>   * code.
+> >> + *
+> >> + * If value is the NULL (constant 0), then no barrier is needed.
+> >>   */
+> >>  
+> >> -#define rcu_assign_pointer(p, v) \
+> >> -	({ \
+> >> -		if (!__builtin_constant_p(v) || \
+> >> -		    ((v) != NULL)) \
+> >> -			smp_wmb(); \
+> >> -		(p) = (v); \
+> >> +#define rcu_assign_pointer(p, v)			\
+> >> +	({						\
+> >> +		if (!(__builtin_constant_p(v) && v))	\
+> 
+> ...But, "If value is the NULL (constant 0)" we have:
+> 
+> if (!(1 && NULL != 0)) ==> if (!(0)) and the barrier is used?!
 
-Hello Nicholas,
+"All programmers are blind, especially me."
 
-Are you sure that the LIO-SE kernel module source code is ready for
-inclusion in the mainstream Linux kernel ? As you know I tried to test
-the LIO-SE iSCSI target. Already while configuring the target I
-encountered a kernel crash that froze the whole system. I can
-reproduce this kernel crash easily, and I reported it 11 days ago on
-the LIO-SE mailing list (February 4, 2008). One of the call stacks I
-posted shows a crash in mempool_alloc() called from jbd. Or: the crash
-is most likely the result of memory corruption caused by LIO-SE.
+You are right, Jarek.  I ran this through gcc, and the following
+comes close:
 
-Because I was curious to know why it took so long to fix such a severe
-crash, I started browsing through the LIO-SE source code. Analysis of
-the LIO-SE kernel module source code learned me that this crash is not
-a coincidence. Dynamic memory allocation (kmalloc()/kfree()) in the
-LIO-SE kernel module is complex and hard to verify. There are 412
-memory allocation/deallocation calls in the current version of the
-LIO-SE kernel module source code, which is a lot. Additionally,
-because of the complexity of the memory handling in LIO-SE, it is not
-possible to verify the correctness of the memory handling by analyzing
-a single function at a time. In my opinion this makes the LIO-SE
-source code hard to maintain.
-Furthermore, the LIO-SE kernel module source code does not follow
-conventions that have proven their value in the past like grouping all
-error handling at the end of a function. As could be expected, the
-consequence is that error handling is not correct in several
-functions, resulting in memory leaks in case of an error. Some
-examples of functions in which error handling is clearly incorrect:
-* transport_allocate_passthrough().
-* iscsi_do_build_list().
+#define rcu_assign_pointer(p, v) \
+	({ \
+		if (!__builtin_constant_p(v) || (v)) \
+			smp_wmb(); \
+		(p) = (v); \
+	})
 
-Bart Van Assche.
+But I am concerned about the following case:
+
+	rcu_assign_pointer(global_index, 0);
+
+	. . .
+
+	x = global_array[rcu_dereference(global_index)];
+
+Since arrays have a zero-th element, we would really want a memory
+barrier in this case.
+
+So how about leaving the index-unfriendly version of rcu_assign_pointer()
+and adding an rcu_assign_index() as follows?
+
+							Thanx, Paul
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcupdate.h |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
+
+diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
+--- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
++++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-12 08:04:59.000000000 -0800
+@@ -278,6 +278,24 @@ extern struct lockdep_map rcu_lock_map;
+ 					})
+ 
+ /**
++ * rcu_assign_index - assign (publicize) a index of a newly
++ * initialized array elementg that will be dereferenced by RCU
++ * read-side critical sections.  Returns the value assigned.
++ *
++ * Inserts memory barriers on architectures that require them
++ * (pretty much all of them other than x86), and also prevents
++ * the compiler from reordering the code that initializes the
++ * structure after the index assignment.  More importantly, this
++ * call documents which indexes will be dereferenced by RCU read-side
++ * code.
++ */
++
++#define rcu_assign_index(p, v)	({ \
++					smp_wmb(); \
++					(p) = (v); \
++				})
++
++/**
+  * synchronize_sched - block until all CPUs have exited any non-preemptive
+  * kernel code sequences.
+  *
