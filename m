@@ -1,147 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbYBLI6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbYBLI7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbYBLI6Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 03:58:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755478AbYBLI6Q
+	id S1762124AbYBLI7n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 03:59:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755326AbYBLI7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 03:58:16 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53381 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752675AbYBLI6P (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 03:58:15 -0500
-Date: Tue, 12 Feb 2008 19:58:02 +1100
-From: David Chinner <dgc@sgi.com>
-To: Linda Walsh <xfs@tlinx.org>
-Cc: xfs@oss.sgi.com, Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: xfs [_fsr] probs in 2.6.24.0
-Message-ID: <20080212085802.GA155407@sgi.com>
-References: <47B0F00D.3060802@tlinx.org>
+	Tue, 12 Feb 2008 03:59:35 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46774
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754096AbYBLI7e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 03:59:34 -0500
+Date: Tue, 12 Feb 2008 01:00:06 -0800 (PST)
+Message-Id: <20080212.010006.255202479.davem@davemloft.net>
+To: muli@il.ibm.com
+Cc: mgross@linux.intel.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080212085256.GF5750@rhun.haifa.ibm.com>
+References: <20080211224105.GB24412@linux.intel.com>
+	<20080212085256.GF5750@rhun.haifa.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B0F00D.3060802@tlinx.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 05:02:05PM -0800, Linda Walsh wrote:
-> 
-> I'm getting similar errors on an x86-32 & x86-64 kernel.  The x86-64 system
-> (2nd log below w/date+times) was unusable this morning: one or more of the
-> xfs file systems had "gone off line" due to some unknown error (upon reboot,
-> no errors were indicated; all partitions on the same physical disk).
-> 
-> I keep ending up with random failures on two systems.  The 32-bit sys more
-> often than not just "locks-up" -- no messages, no keyboard response...etc.
-> Nothing to do except reset -- and of course, nothing in the logs....
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+Date: Tue, 12 Feb 2008 10:52:56 +0200
 
-Filesystem bugs rarely hang systems hard like that - more likely is
-a hardware or driver problem. And neither of the lockdep reports
-below are likely to be responsible for a system wide, no-response
-hang.
+> The streaming DMA-API was designed to conserve IOMMU mappings for
+> machines where IOMMU mappings are a scarce resource, and is a poor
+> fit for a modern IOMMU such as VT-d with a 64-bit IO address space
+> (or even an IOMMU with a 32-bit address space such as Calgary) where
+> there are plenty of IOMMU mappings available.
 
-[cut a bunch of speculation and stuff about hardware problems
-causing XFS problems]
+For the 64-bit case what you are suggesting eventually amounts
+to mapping all available RAM in the IOMMU.
 
-> Lemme know if I can provide any info in addressing these problems.  I don't
-> know if they are related to the other system crashes, but usage patterns
-> indicate it could be disk-activity related.  So eliminating known bugs &
-> problems in that area might help (?)...
+Although an extreme version of your suggestion, it would be the
+most efficient as it would require zero IOMMU flush operations.
 
-If your hardware or drivers are unstable, then XFS cannot be
-expected to reliably work. Given that xfs_fsr apparently triggers
-the hangs, I'd suggest putting lots of I/O load on your disk subsystem
-by copying files around with direct I/O (just like xfs_fsr does) to
-try to reproduce the problem.
-
-Perhaps by running xfs_fsr manually you could reproduce the
-problem while you are sitting in front of the machine...
-
-Looking at the lockdep reports:
-
-> The first set of errors the I have some diagnostics for, I could
-> only find in dmesg:
-> (ish-32bit machine)
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.24-ish #1
-> -------------------------------------------------------
-> xfs_fsr/2119 is trying to acquire lock:
-> (&mm->mmap_sem){----}, at: [<b01a3432>] dio_get_page+0x62/0x160
-> 
-> but task is already holding lock:
-> (&(&ip->i_iolock)->mr_lock){----}, at: [<b02651db>] xfs_ilock+0x5b/0xb0
-
-dio_get_page() takes the mmap_sem of the processes
-vma that has the pages we do I/O into. That's not new.
-We're holding the xfs inode iolock at this point to protect
-against truncate  and simultaneous buffered I/O races and
-this is also unchanged.  i.e. this is normal.
-
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-
-munmap() dropping the last reference to it's vm_file and
-calling ->release() which causes a truncate of speculatively
-allocated space to take place. IOWs, ->release() is called
-with the mmap_sem held. Hmmm....
-
-Looking at it in terms of i_mutex, other filesystems hold
-i_mutex over dio_get_page() (all those that use DIO_LOCKING)
-so question is whether we are allowed to take the i_mutex
-in ->release. I note that both reiserfs and hfsplus take 
-i_mutex in ->release as well as use DIO_LOCKING, so this
-problem is not isolated to XFS.
-
-However, it would appear that mmap_sem -> i_mutex is illegal
-according to the comment at the head of mm/filemap.c. While we are
-not using i_mutex in this case, the inversion would seem to be
-equivalent in nature.
-
-There's not going to be a quick fix for this.
-
-And the other one:
-
-> Feb  7 02:01:50 kern: 
-> -------------------------------------------------------
-> Feb  7 02:01:50 kern: xfs_fsr/6313 is trying to acquire lock:
-> Feb  7 02:01:50 kern:  (&(&ip->i_lock)->mr_lock/2){----}, at: 
-> [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-> Feb  7 02:01:50 kern:
-> Feb  7 02:01:50 kern: but task is already holding lock:
-> Feb  7 02:01:50 kern:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: 
-> [<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-> Feb  7 02:01:50 kern:
-> Feb  7 02:01:50 kern: which lock already depends on the new lock.
-
-Looks like yet another false positive. Basically we do this
-in xfs_swap_extents:
-
-	inode A: i_iolock class 2
-	inode A: i_ilock class 2
-	inode B: i_iolock class 3
-	inode B: i_ilock class 3
-	.....
-	inode A: unlock ilock
-	inode B: unlock ilock
-	.....
->>>>>	inode A: ilock class 2
-	inode B: ilock class 3
-
-And lockdep appears to be complaining about the relocking of inode A
-as class 2 because we've got a class 3 iolock still held, hence
-violating the order it saw initially.  There's no possible deadlock
-here so we'll just have to add more hacks to the annotation code to make
-lockdep happy.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+But we'd lose things like protection and other benefits.
