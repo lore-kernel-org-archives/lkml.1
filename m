@@ -1,58 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbYBLBwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbYBLBzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759804AbYBLBwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754650AbYBLBwB
+	id S1760418AbYBLBzS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbYBLBzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:52:01 -0500
-Received: from rex.snapgear.com ([203.143.235.140]:46445 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754384AbYBLBwA (ORCPT
+	Mon, 11 Feb 2008 20:55:05 -0500
+Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:39432 "EHLO
+	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754710AbYBLBzE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:52:00 -0500
-Message-ID: <47B0FBBD.9060009@snapgear.com>
-Date: Tue, 12 Feb 2008 11:51:57 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: David Woodhouse <dwmw2@infradead.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] arch/arm/Kconfig: Make UIO available on ARM architecture
-References: <20080207125824.GB7111@infradead.org>	<20080207130117.GA18750@uranus.ravnborg.org>	<200802071609.36960.openembedded@haerwu.biz>	<20080207160557.GB28435@flint.arm.linux.org.uk>	<20080207202329.GA21949@uranus.ravnborg.org>	<1202461453.5469.217.camel@pmac.infradead.org>	<20080208094538.GC21852@flint.arm.linux.org.uk>	<1202465911.5469.240.camel@pmac.infradead.org>	<20080208102347.GD21852@flint.arm.linux.org.uk>	<1202467422.5469.245.camel@pmac.infradead.org> <20080208104535.GF21852@flint.arm.linux.org.uk>
-In-Reply-To: <20080208104535.GF21852@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 Feb 2008 20:55:04 -0500
+To: zaitcev@redhat.com
+Cc: akpm@linux-foundation.org, oliver.pntr@gmail.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-fsdevel@vger.kernel.org, jmorris@namei.org,
+       linux-usb@vger.kernel.org
+Subject: Re: [2.6.24 REGRESSION] BUG: Soft lockup - with VFS
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20080208234619.385bcab9.zaitcev@redhat.com>
+References: <6101e8c40802051348w2250e593x54f777bb771bd903@mail.gmail.com>
+	<20080205140506.c6354490.akpm@linux-foundation.org>
+	<20080208234619.385bcab9.zaitcev@redhat.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20080212104612S.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 12 Feb 2008 10:46:12 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 8 Feb 2008 23:46:19 -0800
+Pete Zaitcev <zaitcev@redhat.com> wrote:
 
-Russell King - ARM Linux wrote:
-> On Fri, Feb 08, 2008 at 10:43:42AM +0000, David Woodhouse wrote:
->> On Fri, 2008-02-08 at 10:23 +0000, Russell King - ARM Linux wrote:
->>> That would be misleading though - !CPU_CP15_MMU does not mean we
->>> support unaligned accesses.  It means that we may have no way to
->>> support fixing up unaligned accesses.
->> Doesn't that mean you should disallow MTD (or at least 16-bit NOR flash)
->> if !CPU_CP15_MMU, then? But at the moment you allow it?
+> On Tue, 5 Feb 2008 14:05:06 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> Ask Hyok or Greg Ungerer.
+> > > > http://students.zipernowsky.hu/~oliverp/kernel/regression_2624/
+> 
+> > I think ub.c is basically abandoned in favour of usb-storage.
+> > If so, perhaps we should remove or disble ub.c?
+> 
+> Looks like it's just Tomo or Jens made a mistake when converting to
+> the new s/g API. Nothing to be too concerned about. I know I should've
+> reviewed their patch closer, but it seemed too simple...
 
-I would agree that it means disabling 16-bit NOR flash, but the 8-bit
-case should be fine right?
+I guess I can put the blame for this on Jens' commit (45711f1a) ;)
 
-A complete disable of MTD seems like overkill. A more fine grained
-approach would be better.
+On a serious note, it seems that two scatter lists per request leaded
+to this bug. Can the scatter list in struct ub_request be removed?
 
-Regards
-Greg
+Thanks,
 
-
-
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+> -- Pete
+> 
+> Fix up the conversion to sg_init_table().
+> 
+> Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+> 
+> --- a/drivers/block/ub.c
+> +++ b/drivers/block/ub.c
+> @@ -657,7 +657,6 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
+>  	if ((cmd = ub_get_cmd(lun)) == NULL)
+>  		return -1;
+>  	memset(cmd, 0, sizeof(struct ub_scsi_cmd));
+> -	sg_init_table(cmd->sgv, UB_MAX_REQ_SG);
+>  
+>  	blkdev_dequeue_request(rq);
+>  
+> @@ -668,6 +667,7 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
+>  	/*
+>  	 * get scatterlist from block layer
+>  	 */
+> +	sg_init_table(&urq->sgv[0], UB_MAX_REQ_SG);
+>  	n_elem = blk_rq_map_sg(lun->disk->queue, rq, &urq->sgv[0]);
+>  	if (n_elem < 0) {
+>  		/* Impossible, because blk_rq_map_sg should not hit ENOMEM. */
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
