@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761523AbYBLUY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbYBLU0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761523AbYBLUY3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:24:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753269AbYBLUYT
+	id S1763551AbYBLU0I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:26:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbYBLUZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:24:19 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46144 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753242AbYBLUYS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:24:18 -0500
-Date: Tue, 12 Feb 2008 12:23:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: torvalds@linux-foundation.org, jeff@garzik.org, davem@davemloft.net,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-Id: <20080212122301.376dbda8.akpm@linux-foundation.org>
-In-Reply-To: <20080212200354.GB16885@flint.arm.linux.org.uk>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
-	<20080212044314.GA4888@kroah.com>
-	<20080211211751.3e265754@laptopd505.fenrus.org>
-	<20080211.221126.230471463.davem@davemloft.net>
-	<47B1CB08.4020101@garzik.org>
-	<alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
-	<20080212200354.GB16885@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 15:25:55 -0500
+Received: from www.tglx.de ([62.245.132.106]:35387 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754736AbYBLUZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 15:25:55 -0500
+Date: Tue, 12 Feb 2008 21:25:39 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: ying.huang@intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [7/8] Implement true end_pfn_mapped for 32bit
+In-Reply-To: <200802122049.41477.ak@suse.de>
+Message-ID: <alpine.LFD.1.00.0802122121030.12988@apollo.tec.linutronix.de>
+References: <200802111034.764275766@suse.de> <20080211093435.E6FC21B41CE@basil.firstfloor.org> <alpine.LFD.1.00.0802122035270.12988@apollo.tec.linutronix.de> <200802122049.41477.ak@suse.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 20:03:54 +0000
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+On Tue, 12 Feb 2008, Andi Kleen wrote:
+> > > @@ -36,7 +36,7 @@
+> > >  #define max_pfn_mapped		end_pfn_map
+> > >  #else
+> > >  #include <asm/page_32.h>
+> > > -#define max_pfn_mapped		max_low_pfn
+> > > +#define max_pfn_mapped		end_pfn_map
+> > 
+> > We can nuke either max_pfn_mapped or end_pfn_map completely. I don't
+> > care about which one, but keeping both makes no sense at all.
+> 
+> I didn't want to bundle such a clean up into the bug fix
+> because my experience is that you usually reject that categorically.
 
-> (3) is effectively what akpm does with his tree - when a patch conflicts
-> with other changes, he throws the changes out and bangs peoples heads
-> together to get a new set of patches generated which work together.
+True, but I apply two separate patches.
 
-Actually I'll usually (much >90%) just queue another patch which fixes the
-fallout and will drop that once the upstreams sort things out.
+> I can send the removal of max_pfn_mapped as a follow up patch
+> if you apply this one.
 
-I'll only drop a subsystem tree in extremis.  One reason for this is
-that I'll have a pile of other patches which are dependent upon that
-subsystem tree and which would need reworking.  And un-reworking once the
-subsytem tree is undropped.
+Too late. It was so obvious that it screamed to be fixed. I applied
+the inital patch already and cleaned it up myself. :)
 
-And the trees which are most likely to cause conflicts tend to also be
-the trees upon which other patches are dependent.  Mainly because those
-trees are larger and more spread out.
+Thanks,
+
+	tglx
