@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbYBLAgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbYBLAh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbYBLAgp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 19:36:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYBLAgg
+	id S1757189AbYBLAh5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 19:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbYBLAht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 19:36:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57363 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751038AbYBLAgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 19:36:35 -0500
+	Mon, 11 Feb 2008 19:37:49 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:50047 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbYBLAhs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 19:37:48 -0500
+Date: Mon, 11 Feb 2008 19:36:38 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@zip.com.au>
+Subject: Re: [10/19] ftrace: add basic support for gcc profiler instrumentation
+In-Reply-To: <Pine.LNX.4.64.0802101315390.7176@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.58.0802111931420.6780@gandalf.stny.rr.com>
+References: <20080210072035.GK4100@elte.hu> <Pine.LNX.4.64.0802101315390.7176@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Priit Laes <plaes@plaes.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: REGRESSION: x86 vDSO: remove vdso-syms.o
-In-Reply-To: Priit Laes's message of  Tuesday, 12 February 2008 02:00:05 +0200 <1202774405.23992.9.camel@localhost>
-References: <1202769045.10829.12.camel@localhost>
-	<20080211225332.2AE2E270191@magilla.localdomain>
-	<1202774405.23992.9.camel@localhost>
-X-Zippy-Says: I'm young..  I'm HEALTHY..  I can HIKE THRU CAPT GROGAN'S LUMBAR REGIONS!
-Message-Id: <20080212003631.BF1D8270191@magilla.localdomain>
-Date: Mon, 11 Feb 2008 16:36:31 -0800 (PST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I did not see it with your .config either.
 
-> This fails with clean build. And vdso-syms.lds is not empty.
-> 
-> Contents of ?arch/x86/vdso/vdso-syms.lds:
-> VDSO64_PRELINK = 0xffffffffff700000;
-> VDSO64_jiffies = 0xffffffffff7004b8;
+On Sun, 10 Feb 2008, Jan Engelhardt wrote:
 
-Odd.  The missing symbols come from the same place that VDSO64_jiffies did.
-The end of the arch/x86/vdso/vdso.lds file in your build should have these:
+>
+> On Feb 10 2008 08:20, Ingo Molnar wrote:
+> >--- linux.orig/Makefile
+> >+++ linux/Makefile
+> >@@ -509,6 +509,9 @@ endif
+> >
+> > include $(srctree)/arch/$(SRCARCH)/Makefile
+> >
+> >+ifdef CONFIG_FTRACE
+> >+KBUILD_CFLAGS	+= -pg
+> >+endif
+> > ifdef CONFIG_FRAME_POINTER
+> > KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> > else
+>
+> You should use -fno-omit-frame-pointer when building with -pg; As far
+> as I can remember from using gprof in the past (in userspace, I might
+> add), the output does not make much sense without frame boundaries.
+>
 
-VDSO64_jiffies = vdso_jiffies;
-VDSO64_vgetcpu_mode = vdso_vgetcpu_mode;
-VDSO64_vsyscall_gtod_data = vdso_vsyscall_gtod_data;
+It is, but is hidden in the Kconfig. I moved it to Kconfig as it was
+recommended to me because it is cleaner to do it there.
 
-readelf -s arch/x86/vdso/vvar.o in your build should show (among others):
+Two patches later:
 
-     8: 0000000000000000     8 OBJECT  GLOBAL DEFAULT    4 vdso_jiffies
-     9: 0000000000000008     8 OBJECT  GLOBAL DEFAULT    4 vdso_vgetcpu_mode
-    10: 0000000000000010     8 OBJECT  GLOBAL DEFAULT    4 vdso_vsyscall_gtod_data
-
-If either of those is not all there, you'll have to look into what's
-happening in the generation of the respective files.
++config FTRACE
++       bool "Kernel Function Tracer"
++       depends on DEBUG_KERNEL && HAVE_FTRACE
++       select FRAME_POINTER
 
 
-Thanks,
-Roland
+-- Steve
+
