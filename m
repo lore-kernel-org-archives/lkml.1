@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbYBLXJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYBLXJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbYBLXJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:09:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759533AbYBLXIj
+	id S1760411AbYBLXJl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbYBLXJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:08:39 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:4852 "EHLO
+	Tue, 12 Feb 2008 18:09:07 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:8053 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757269AbYBLXIh (ORCPT
+	with ESMTP id S1760124AbYBLXJE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:08:37 -0500
+	Tue, 12 Feb 2008 18:09:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=voRGPli1Hb6OHIyofwJKkDJyfSxj1idhQbyQpjnh0lcTCYXhTP7GT/kEUklzMujAVMTV7+Rq+mySQ4i3r4n5EGPNwFNXCRNj6a4kpRE+h1qGyef3wIBSkCWIo2llrmx0cyfg9eQTOKMW1mKVaX0BrLT4pzUkzrcwu1aBRmq48VE=
+        b=cwmLJboP+weJvwr5sunkOvSu8p2DeP/xLZUNg3/mTUooANLbmZgzbTE/waWIwyHZkv6NSB+roGCgGgaexs06bUSlu18YTOn8JHrJvfS0IC4VdmPoMI5EV0TDsA93oLaEqcTzmigsl2d5SIePH/JeQWhmvhfU2vCwBYUIgyDF8YU=
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: [PATCH] hfs/hfsplus: be*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:11 +0100
-Message-Id: <1202857582-15450-7-git-send-email-marcin.slusarz@gmail.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, Zhu Yi <yi.zhu@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+Subject: [PATCH] ipw2200: le*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:12 +0100
+Message-Id: <1202857582-15450-8-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -31,45 +32,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Marcin Slusarz <marcin.slusarz@gmail.com>
 
 replace all:
-big_endian_variable = cpu_to_beX(beX_to_cpu(big_endian_variable) +
+little_endian_variable = cpu_to_leX(leX_to_cpu(little_endian_variable) +
 					expression_in_cpu_byteorder);
 with:
-	beX_add_cpu(&big_endian_variable, expression_in_cpu_byteorder);
+	leX_add_cpu(&little_endian_variable, expression_in_cpu_byteorder);
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: Zhu Yi <yi.zhu@intel.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+Cc: linux-wireless@vger.kernel.org
 ---
- fs/hfs/mdb.c       |    2 +-
- fs/hfsplus/super.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/wireless/ipw2200.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-diff --git a/fs/hfs/mdb.c b/fs/hfs/mdb.c
-index b4651e1..36ca2e1 100644
---- a/fs/hfs/mdb.c
-+++ b/fs/hfs/mdb.c
-@@ -215,7 +215,7 @@ int hfs_mdb_get(struct super_block *sb)
- 		attrib &= cpu_to_be16(~HFS_SB_ATTRIB_UNMNT);
- 		attrib |= cpu_to_be16(HFS_SB_ATTRIB_INCNSTNT);
- 		mdb->drAtrb = attrib;
--		mdb->drWrCnt = cpu_to_be32(be32_to_cpu(mdb->drWrCnt) + 1);
-+		be32_add_cpu(&mdb->drWrCnt, 1);
- 		mdb->drLsMod = hfs_mtime();
+diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
+index 3e6ad7b..5d9854e 100644
+--- a/drivers/net/wireless/ipw2200.c
++++ b/drivers/net/wireless/ipw2200.c
+@@ -10326,9 +10326,7 @@ static int ipw_tx_skb(struct ipw_priv *priv, struct ieee80211_txb *txb,
+ 					 remaining_bytes,
+ 					 PCI_DMA_TODEVICE));
  
- 		mark_buffer_dirty(HFS_SB(sb)->mdb_bh);
-diff --git a/fs/hfsplus/super.c b/fs/hfsplus/super.c
-index b0f9ad3..068523b 100644
---- a/fs/hfsplus/super.c
-+++ b/fs/hfsplus/super.c
-@@ -423,7 +423,7 @@ static int hfsplus_fill_super(struct super_block *sb, void *data, int silent)
- 	 */
- 	vhdr->last_mount_vers = cpu_to_be32(HFSP_MOUNT_VERSION);
- 	vhdr->modify_date = hfsp_now2mt();
--	vhdr->write_count = cpu_to_be32(be32_to_cpu(vhdr->write_count) + 1);
-+	be32_add_cpu(&vhdr->write_count, 1);
- 	vhdr->attributes &= cpu_to_be32(~HFSPLUS_VOL_UNMNT);
- 	vhdr->attributes |= cpu_to_be32(HFSPLUS_VOL_INCNSTNT);
- 	mark_buffer_dirty(HFSPLUS_SB(sb).s_vhbh);
+-			tfd->u.data.num_chunks =
+-			    cpu_to_le32(le32_to_cpu(tfd->u.data.num_chunks) +
+-					1);
++			le32_add_cpu(&tfd->u.data.num_chunks, 1);
+ 		}
+ 	}
+ 
 -- 
 1.5.3.7
 
