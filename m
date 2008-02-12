@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbYBLUJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbYBLUJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758571AbYBLUJO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:09:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752183AbYBLUI7
+	id S1753207AbYBLUJj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757231AbYBLUJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:08:59 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53267 "EHLO
+	Tue, 12 Feb 2008 15:09:28 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39005 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751783AbYBLUI6 (ORCPT
+	by vger.kernel.org with ESMTP id S1752183AbYBLUJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:08:58 -0500
-Date: Tue, 12 Feb 2008 12:07:07 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       John Linville <linville@tuxdriver.com>
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080212193754.GC18625@fieldses.org>
-Message-ID: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org>
-References: <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org> <20080212193754.GC18625@fieldses.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Feb 2008 15:09:27 -0500
+Date: Tue, 12 Feb 2008 12:08:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: thomas.petazzoni@free-electrons.com, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, Linux-tiny@selenic.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Configure out DMI scanning code v2 (Linux Tiny)
+Message-Id: <20080212120817.5d27d09d.akpm@linux-foundation.org>
+In-Reply-To: <1202842605.12383.100.camel@cinder.waste.org>
+References: <20080212100418.5de764da@crazy>
+	<1202842605.12383.100.camel@cinder.waste.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Feb 2008 12:56:45 -0600
+Matt Mackall <mpm@selenic.com> wrote:
 
-
-On Tue, 12 Feb 2008, J. Bruce Fields wrote:
 > 
-> But the "author" is still preserved, right?  Why do you need the
-> committer name to be preserved?  (I'm not denying that there could be
-> reasons, I'm just curious what they are.)
+> On Tue, 2008-02-12 at 10:04 +0100, Thomas Petazzoni wrote:
+> 
+> > Turn CONFIG_DMI into a selectable option if EMBEDDED is defined, in
+> > order to be able to remove the DMI table scanning code if it's not
+> > needed, and then reduce the kernel code size.
+> > 
+> > With CONFIG_DMI (i.e before) :
+> > 
+> >    text    data     bss     dec     hex filename
+> > 1076076  128656   98304 1303036  13e1fc vmlinux
+> > 
+> > Without CONFIG_DMI (i.e after) :
+> > 
+> >    text    data     bss     dec     hex filename
+> > 1068092  126308   98304 1292704  13b9a0 vmlinux
+> > 
+> > Result:
+> > 
+> >    text    data     bss     dec     hex filename
+> >   -7984   -2348       0  -10332   -285c vmlinux
+> > 
+> > The new option appears in "Processor type and features", only when
+> > CONFIG_EMBEDDED is defined.
 
-It's not that the committer should be preserved, but:
+Given this:
 
- - the chain from author -> committer should be visible in the 
-   Signed-off-by: lines.
+> > This patch is part of the Linux Tiny project, and is based on previous
+> > work done by Matt Mackall <mpm@selenic.com>.
 
-   If you rebase somebody elses tree, you screw that up. You need to add 
-   your sign-off, since now *you* are the new committer, and *you* took
-   somebody elses work!
 
- - you should respect the down-stream developer, and if that downstream 
-   developer continues to work with his branch or works with other people, 
-   you shouldn't screw that up!
+> Acked-by: Matt Mackall <mpm@selenic.com>
 
-Both of those basically say that you should never rebase somebody elses 
-work. You can use rebase to rebase your *own* work on top of somebody 
-elses thing (since that doesn't change the sign-off chain, and you still 
-respect the downstream developers development model)!
-
-But of course, if you rebase, you should respect the wishes of the 
-up-stream developer too. I don't do rebases. So if you asked me to pull, 
-the stuff I pulled can never be rebased, because it just *is* in my tree. 
-
-Put another way: think of the absolute *chaos* that would happen if I were 
-to rebase instead of just merging. Every time I pull from you I'd 
-invalidate your whole tree, and you'd have to re-generate. It gets 
-unmaintainable very quickly.
-
-And that's actually ignoring a real issue: stability of commits. The nice 
-thing about stable commit naming is that all bug-reports from other people 
-that told where the bug happened are basically 100% trust-worthy and the 
-code is 100% reproducible not just for you, but for everybody else. 
-
-In other words, you really shouldn't rebase stuff that has been exposed 
-anywhere outside of your own private tree. But *within* your own private 
-tree, and within the commits that have never seen the light of day, 
-rebasing is fine.
-
-(And yes, there are exceptions. If it's a clear "throw-away tree" all the 
-rules go out the window, of course, as long as everybody involved *knows* 
-it's a throw-away tree, and know that if they pull it they have to 
-synchronise 100% with you - so within a very tight-knit case or within a 
-very specific small detail that is actively being worked on, those rebases 
-with cleanups make tons of sense).
-
-			Linus
+That should have been "Signed-off-by:".  I'll speculatively make that
+change.
