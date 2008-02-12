@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbYBLU7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764840AbYBLVAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764212AbYBLU7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756577AbYBLU7j
+	id S1764840AbYBLVAk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760092AbYBLVAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:59:39 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:48836 "EHLO e4.ny.us.ibm.com"
+	Tue, 12 Feb 2008 16:00:30 -0500
+Received: from gate.crashing.org ([63.228.1.57]:49198 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754875AbYBLU7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:59:38 -0500
-Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, greg@kroah.com,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <1202836953.25604.42.camel@dyn9047017100.beaverton.ibm.com>
-References: <20080211114818.74c9dcc7.akpm@linux-foundation.org>
-	 <1202765553.25604.12.camel@dyn9047017100.beaverton.ibm.com>
-	 <20080212154309.F9DA.Y-GOTO@jp.fujitsu.com>
-	 <1202836953.25604.42.camel@dyn9047017100.beaverton.ibm.com>
+	id S1756606AbYBLVA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 16:00:29 -0500
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
+	goodies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Gabriel Paubert <paubert@iram.es>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <20080212114905.GA9940@iram.es>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	 <1202460043.7079.157.camel@pasglop>  <20080212114905.GA9940@iram.es>
 Content-Type: text/plain
-Date: Tue, 12 Feb 2008 12:59:32 -0800
-Message-Id: <1202849972.11188.71.camel@nimitz.home.sr71.net>
+Date: Wed, 13 Feb 2008 07:59:52 +1100
+Message-Id: <1202849992.7410.19.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -32,164 +29,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 09:22 -0800, Badari Pulavarty wrote:
-> +static void __remove_section(struct zone *zone, unsigned long phys_start_pfn)
-> +{
-> +	if (!pfn_valid(phys_start_pfn))
-> +		return;
 
-I think you need at least a WARN_ON() there.  
-
-I'd probably also not use pfn_valid(), personally.  
-
-> +	unregister_memory_section(__pfn_to_section(phys_start_pfn));
-> +	__remove_zone(zone, phys_start_pfn);
-> +	sparse_remove_one_section(zone, phys_start_pfn, PAGES_PER_SECTION);
-> +}
-
-Can none of this ever fail?
-
-I also think having a function called __remove_section() that takes a
-pfn is a bad idea.  How about passing an actual 'struct mem_section *'
-into it?  One of the reasons I even made that structure was so that you
-could hand it around to things and never be confused about pfn vs. paddr
-vs. vaddr vs. section_nr.  Please use it.
-
->  /*
->   * Reasonably generic function for adding memory.  It is
->   * expected that archs that support memory hotplug will
-> @@ -135,6 +153,21 @@ int __add_pages(struct zone *zone, unsig
->  }
->  EXPORT_SYMBOL_GPL(__add_pages);
+On Tue, 2008-02-12 at 12:49 +0100, Gabriel Paubert wrote:
+> On Fri, Feb 08, 2008 at 07:40:43PM +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > - couple of fixes and preparatory patches
+> > > 
+> > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
+> > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+> > 
+> > Interesting... I was thinking about doing a full remove of the device at
+> > a higher level instead but I suppose what you propose is easier.
 > 
-> +void __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-> +		 unsigned long nr_pages)
-> +{
-> +	unsigned long i;
-> +	int start_sec, end_sec;
-> +
-> +	start_sec = pfn_to_section_nr(phys_start_pfn);
-> +	end_sec = pfn_to_section_nr(phys_start_pfn + nr_pages - 1);
-> +
-> +	for (i = start_sec; i <= end_sec; i++)
-> +		__remove_section(zone, i << PFN_SECTION_SHIFT);
-> +
-> +}
-> +EXPORT_SYMBOL_GPL(__remove_pages);
+> Well, I have serious problem on a Pegasos which appeared some time
+> between 2.6.24 and 2.6.25-rc1: at boot I get an infinite string of 
+> 
+> hdb: empty DMA table?
+> 
+> I'm trying to bisect it right now.
 
-I'd like to see some warnings in there if nr_pages or phys_start_pfn are
-not section-aligned and some other sanity checks.  If someone is trying
-to remove non-section-aligned areas, we either have something wrong, or
-some other work to do, first keeping track of what section portions are
-"removed".
+Pegasos doesn't use the pmac ide which is what we were discussing. It
+uses a VIA IDE which uses a normal PRD table. So something else must
+have broken...
 
-I'd probably do:
+Ben.
 
-void __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-  		    unsigned long nr_pages)
-{
-	int i;
-	int sections_to_remove;
-
-	/*
-	 * We can only remove entire sections.
-	 */
-	if (phys_start_pfn & ~PAGE_SECTION_MASK)
-		return ...;
-	if (nr_pages % PAGES_PER_SECTION)
-		return ...;
-	sections_to_remove = nr_pages / PAGES_PER_SECTION;
-
-	for (i = 0; i < sections_to_remove; i++) {
-		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
-		__remove_section(zone, __pfn_to_section(pfn));
-	}
-}
-	
-
->  static void grow_zone_span(struct zone *zone,
->  		unsigned long start_pfn, unsigned long end_pfn)
->  {
-> Index: linux-2.6.24/mm/sparse.c
-> ===================================================================
-> --- linux-2.6.24.orig/mm/sparse.c	2008-02-07 17:16:52.000000000 -0800
-> +++ linux-2.6.24/mm/sparse.c	2008-02-11 14:12:28.000000000 -0800
-> @@ -415,4 +415,44 @@ out:
->  	}
->  	return ret;
->  }
-> +
-> +void sparse_remove_one_section(struct zone *zone, unsigned long start_pfn,
-> +			   int nr_pages)
-> +{
-> +	unsigned long section_nr = pfn_to_section_nr(start_pfn);
-> +	struct pglist_data *pgdat = zone->zone_pgdat;
-> +	struct mem_section *ms;
-> +	struct page *memmap = NULL;
-> +	unsigned long *usemap = NULL;
-> +	unsigned long flags;
-> +
-> +	pgdat_resize_lock(pgdat, &flags);
-> +	ms = __pfn_to_section(start_pfn);
-> +	if (ms->section_mem_map) {
-> +		memmap = ms->section_mem_map & SECTION_MAP_MASK;
-
-You're abusing this memmap variable.  Please make another variable
-that's unsigned long and has a nice name if you're actually going to
-store an 'unsigned long' in it.  That cast below should be a big red
-flag.
-
-> +		usemap = ms->pageblock_flags;
-> +		memmap = sparse_decode_mem_map((unsigned long)memmap,
-> +				section_nr);
-> +		ms->section_mem_map = 0;
-> +		ms->pageblock_flags = NULL;
-> +	}
-> +	pgdat_resize_unlock(pgdat, &flags);
-
-Ugh.  Please put this in its own helper.  Also, sparse_decode_mem_map()
-has absolutely no other users.  Please modify it so that you don't have
-to do this gunk, like put the '& SECTION_MAP_MASK' in there.  You
-probably just need:
-
-struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
-{
-	/*
-	 * mask off the extra low bits of information
-	 */
-	coded_mem_map &= SECTION_MAP_MASK;
-        return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
-}
-
-Then, you can just do this:
-
-	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
-
-No casting, no temp variables.  *PLEASE* look around at things and feel
-free to modify to modify them.  Otherwise, it'll just become a mess.
-(oh, and get rid of the unused attribute on it).
-
-> +
-> +	/*
-> +	 * Its ugly, but this is the best I can do - HELP !!
-> +	 * We don't know where the allocations for section memmap and usemap
-> +	 * came from. If they are allocated at the boot time, they would come
-> +	 * from bootmem. If they are added through hot-memory-add they could be
-> +	 * from sla or vmalloc. If they are allocated as part of hot-mem-add
-> +	 * free them up properly. If they are allocated at boot, no easy way
-> +	 * to correctly free them :(
-> +	 */
-> +	if (usemap) {
-> +		if (PageSlab(virt_to_page(usemap))) {
-> +			kfree(usemap);
-> +			if (memmap)
-> +				__kfree_section_memmap(memmap, nr_pages);
-> +		}
-> +	}
-> +}
-
-Do what we did with the memmap and store some of its origination
-information in the low bits.
-
--- Dave
 
