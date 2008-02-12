@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbYBLTSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbYBLTUL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762850AbYBLTSl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbYBLTSS
+	id S1757050AbYBLTUL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:20:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYBLTT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:18:18 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:21040 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752920AbYBLTSR (ORCPT
+	Tue, 12 Feb 2008 14:19:57 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:36105
+	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751030AbYBLTT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:18:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=dOP1VTUper7sQHeFMqIKRcYjHjcTkvReKrxdlwC0vJ92nkEVFfjQ3QZIJTo0WF9Oy
-	MvB7DA6Y9eecIgINPqsvg==
-Date: Tue, 12 Feb 2008 11:14:05 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/4] mempolicy: support optional mode flags
-In-Reply-To: <1202830267.4974.14.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0802121109570.9649@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>  <1202747811.5014.37.camel@localhost>  <alpine.DEB.1.00.0802111127080.1671@chino.kir.corp.google.com>
- <1202830267.4974.14.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 12 Feb 2008 14:19:57 -0500
+X-Greylist: delayed 1407 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 14:19:56 EST
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH 2/2] fix cpus_allowed settings
+To: rostedt@goodmis.org, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       ghaskins@novell.com
+Date: Tue, 12 Feb 2008 13:30:05 -0500
+Message-ID: <20080212183005.10902.94549.stgit@novell1.haskins.net>
+In-Reply-To: <20080212182512.10902.66459.stgit@novell1.haskins.net>
+References: <20080212182512.10902.66459.stgit@novell1.haskins.net>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Lee Schermerhorn wrote:
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-> Hmmm, so 'static' means "don't contexutalize"--i.e., don't mask off
-> disallowed or memoryless nodes?  That means we'll need to skip them in
-> the interleave node calculation in the allocation path.  Perhaps your
-> patch already addresses this, but I haven't had time to look.  
-> 
+ kernel/kthread.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-All MPOL_F_STATIC_NODES does (by mbind(), set_mempolicy(), or adding 
-'=static' to the mempolicy mode on tmpfs mount) is suppress the node remap 
-in mpol_rebind_policy().
+diff --git a/kernel/kthread.c b/kernel/kthread.c
+index dcfe724..b193b47 100644
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -170,6 +170,7 @@ void kthread_bind(struct task_struct *k, unsigned int cpu)
+ 	wait_task_inactive(k);
+ 	set_task_cpu(k, cpu);
+ 	k->cpus_allowed = cpumask_of_cpu(cpu);
++	k->nr_cpus_allowed = 1;
+ }
+ EXPORT_SYMBOL(kthread_bind);
+ 
 
-In mpol_new(), the intent of the user is stored in a new nodemask_t member 
-of struct mempolicy and in the static case the passed nodemask is 
-intersected with that member.  The policy is then effected over the 
-intersection.
-
-If that nodemask includes no accessible nodes, then the mempolicy is not 
-effected but rather lies dormant until access to those nodes is attained.  
-If and when that happens, the mempolicy will then be effected again 
-without any additional set_mempolicy() or mbind() from the user.
-
-		David
