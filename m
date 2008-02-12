@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbYBLKpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762590AbYBLKuw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762389AbYBLKpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 05:45:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbYBLKpU
+	id S1762590AbYBLKuw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 05:50:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbYBLKun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 05:45:20 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:37221 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbYBLKpS (ORCPT
+	Tue, 12 Feb 2008 05:50:43 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:19967 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752246AbYBLKum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 05:45:18 -0500
-Date: Tue, 12 Feb 2008 12:45:15 -0500
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext David Brownell <david-b@pacbell.net>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, me@felipebalbi.com
-Subject: Re: [PATCH] USB: OTG: Fix weirdnesses on enumerating partial otg
-	devices
-Message-ID: <20080212174515.GU4769@gandalf.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1202835603-10663-1-git-send-email-felipe.balbi@nokia.com> <200802120228.54123.david-b@pacbell.net>
+	Tue, 12 Feb 2008 05:50:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Qf5Yd5/4RchHvel04lK3/gWuhisGl26mifRZBPMBwUvLmJa/07PZmahQVadbuyCdC6ZHrLRlaefrcxcriLNou268Eehda56mhA5cSanJUOUye7hdOb15tdJYh4LtJIq/GSf5V2yt3v6ygwtU8ljlRfK6B2ofcF61XMfty7gMfXs=
+From: Matej Laitl <strohel@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [ALSA] HDA: no sound in headphone-out caused by commit f889fa91ad47e (2.6.25-rc1 regression)
+Date: Tue, 12 Feb 2008 11:50:36 +0100
+User-Agent: KMail/1.9.7
+Cc: Jaroslav Kysela <perex@perex.cz>, alsa-devel <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200802112158.41989.strohel@gmail.com> <s5hfxvyv5x4.wl%tiwai@suse.de>
+In-Reply-To: <s5hfxvyv5x4.wl%tiwai@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802120228.54123.david-b@pacbell.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 12 Feb 2008 10:44:42.0236 (UTC) FILETIME=[46390BC0:01C86D64]
-X-Nokia-AV: Clean
+Message-Id: <200802121150.36743.strohel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 02:28:53AM -0800, David Brownell wrote:
-> On Tuesday 12 February 2008, Felipe Balbi wrote:
-> > Some devices claim
-> > to be b_host even though they have an a_connector attached to it.
-> 
-> Why not just fix that bug?  Remember that's Linux code.
+Takashi Iwai wrote:
+> Matej Laitl wrote:
+> > after upgrading from 2.6.24 to 2.6.25-rc1, I lost headphone-out sound
+> > output of my Intel HDA card - it is quiet no matter what the mixer
+> > settings are.
+> >
+> > (...)
+> >
+> > The box is Fujitsu-Siemens Esprimo Mobile M9400 laptop.
+>
+> Could you give the output of alsa-info.sh for both working and
+> non-working kernels?
 
-The device claiming to be b_host is not linux based. In any case this
-is_b_host check won't do nothing here as we should check is
-SetFeature(b_hnp_enbable) has been succesfull.
+The locations of alsa-info.sh outputs:
+no sound in headphones: http://pastebin.ca/901022
+sound ok: http://pastebin.ca/901016
 
-A device in b_host state is not enough for allowing hnp to happen.
-Remember some devices doesn't support hnp in B roles, only a_hnp_support
-is mandatory.
+Both kernels are Linus' tree snapshots as of commit cc13e442952a347f7, the one 
+with working sound has just the f889fa91ad47e commit reverted.
 
--- 
-	- Balbi
+Matej Laitl
