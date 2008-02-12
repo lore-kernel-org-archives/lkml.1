@@ -1,172 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763007AbYBLUKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763903AbYBLUKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763007AbYBLUKf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:10:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbYBLUK0
+	id S1763903AbYBLUKr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYBLUK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:10:26 -0500
-Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:35606 "EHLO
-	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYBLUKZ (ORCPT
+	Tue, 12 Feb 2008 15:10:27 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:58195 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbYBLUK0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:10:25 -0500
+	Tue, 12 Feb 2008 15:10:26 -0500
 From: Andi Kleen <ak@suse.de>
-Message-Id: <20080212910.912621456@suse.de>
+References: <20080212910.912621456@suse.de>
+In-Reply-To: <20080212910.912621456@suse.de>
 To: tglx@linutronix.de, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH] [1/2] CPA: Add statistics about state of direct mapping v2
-Date: Tue, 12 Feb 2008 21:10:20 +0100 (CET)
-X-OriginalArrivalTime: 12 Feb 2008 20:03:59.0426 (UTC) FILETIME=[67DDE220:01C86DB2]
+Subject: [PATCH] [2/2] Remove max_pfn_mapped
+Message-Id: <20080212201021.E6FCF1B41B3@basil.firstfloor.org>
+Date: Tue, 12 Feb 2008 21:10:21 +0100 (CET)
+X-OriginalArrivalTime: 12 Feb 2008 20:04:00.0379 (UTC) FILETIME=[686F4CB0:01C86DB2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add information about the mapping state of the direct mapping to /proc/meminfo.
-
-This way we can see how many large pages are really used for it.
-
-[Note this version depends on the gbpages patch in git-x86#mm; but it can be 
-applied without it too by dropping the one hunk that rejects]
-
-v2: fix a compiler warning
+Now that 32bit and 64bit have end_pfn_map always use end_pfn_map
+directly instead of the max_pfn_mapped macro.
 
 Signed-off-by: Andi Kleen <ak@suse.de>
 
----
- arch/x86/mm/init_32.c     |    2 ++
- arch/x86/mm/init_64.c     |    2 ++
- arch/x86/mm/pageattr.c    |   23 +++++++++++++++++++++++
- fs/proc/proc_misc.c       |    7 +++++++
- include/asm-x86/pgtable.h |    3 +++
- 5 files changed, 37 insertions(+)
-
-Index: linux/arch/x86/mm/init_64.c
+Index: linux/arch/x86/kernel/efi.c
 ===================================================================
---- linux.orig/arch/x86/mm/init_64.c
-+++ linux/arch/x86/mm/init_64.c
-@@ -306,6 +306,7 @@ phys_pmd_init(pmd_t *pmd_page, unsigned 
- 		if (pmd_val(*pmd))
- 			continue;
+--- linux.orig/arch/x86/kernel/efi.c
++++ linux/arch/x86/kernel/efi.c
+@@ -424,7 +424,7 @@ void __init efi_enter_virtual_mode(void)
+ 		end = md->phys_addr + size;
  
-+		dpages_cnt[PG_LEVEL_2M]++;
- 		set_pte((pte_t *)pmd,
- 			pfn_pte(address >> PAGE_SHIFT, PAGE_KERNEL_LARGE));
- 	}
-@@ -351,6 +352,7 @@ phys_pud_init(pud_t *pud_page, unsigned 
- 		}
- 
- 		if (direct_gbpages) {
-+			dpages_cnt[PG_LEVEL_1G]++;
- 			set_pte((pte_t *)pud,
- 				pfn_pte(addr >> PAGE_SHIFT, PAGE_KERNEL_LARGE));
- 			true_end = (addr & PUD_MASK) + PUD_SIZE;
-Index: linux/arch/x86/mm/pageattr.c
+ 		/* RED-PEN does not handle overlapped areas */
+-		if ((end >> PAGE_SHIFT) <= max_pfn_mapped) {
++		if ((end >> PAGE_SHIFT) <= end_pfn_map) {
+ 			va = __va(md->phys_addr);
+ 			/* RED-PEN spec and ia64 have a lot more flags */
+ 			if (!(md->attribute & EFI_MEMORY_WB))
+Index: linux/arch/x86/mm/ioremap.c
 ===================================================================
---- linux.orig/arch/x86/mm/pageattr.c
-+++ linux/arch/x86/mm/pageattr.c
-@@ -18,6 +18,8 @@
- #include <asm/uaccess.h>
- #include <asm/pgalloc.h>
- 
-+unsigned long dpages_cnt[PG_LEVEL_NUM];
-+
- /*
-  * The current flushing context - we pass it instead of 5 arguments:
-  */
-@@ -525,6 +527,12 @@ static int split_large_page(pte_t *kpte,
- 	for (i = 0; i < PTRS_PER_PTE; i++, pfn += pfninc)
- 		set_pte(&pbase[i], pfn_pte(pfn, ref_prot));
- 
-+	if (address >= (unsigned long)__va(0) &&
-+		address < (unsigned long)__va(end_pfn_map)) {
-+		dpages_cnt[level]--;
-+		dpages_cnt[level - 1] += PTRS_PER_PTE;
-+	}
-+
+--- linux.orig/arch/x86/mm/ioremap.c
++++ linux/arch/x86/mm/ioremap.c
+@@ -119,7 +119,7 @@ static void __iomem *__ioremap(unsigned 
  	/*
- 	 * Install the new, split up pagetable. Important details here:
- 	 *
-@@ -970,6 +978,22 @@ __initcall(debug_pagealloc_proc_init);
- 
- #endif
- 
-+#ifdef CONFIG_PROC_FS
-+int arch_report_meminfo(char *page)
-+{
-+	int n;
-+	n = sprintf(page, "DirectMap4k:  %8lu\n"
-+			  "DirectMap2M:  %8lu\n",
-+			dpages_cnt[PG_LEVEL_4K],
-+			dpages_cnt[PG_LEVEL_2M]);
-+#ifdef CONFIG_X86_64
-+	n += sprintf(page + n, "DirectMap1G:  %8lu\n",
-+			dpages_cnt[PG_LEVEL_1G]);
-+#endif
-+	return n;
-+}
-+#endif
-+
- /*
-  * The testcases use internal knowledge of the implementation that shouldn't
-  * be exposed to the rest of the kernel. Include these directly here.
-Index: linux/include/asm-x86/pgtable.h
+ 	 * Don't allow anybody to remap normal RAM that we're using..
+ 	 */
+-	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
++	for (pfn = phys_addr >> PAGE_SHIFT; pfn < end_pfn_map &&
+ 	     (pfn << PAGE_SHIFT) < last_addr; pfn++) {
+ 		if (page_is_ram(pfn) && pfn_valid(pfn) &&
+ 		    !PageReserved(pfn_to_page(pfn)))
+Index: linux/arch/x86/mm/pageattr-test.c
 ===================================================================
---- linux.orig/include/asm-x86/pgtable.h
-+++ linux/include/asm-x86/pgtable.h
-@@ -247,8 +247,11 @@ enum {
- 	PG_LEVEL_4K,
- 	PG_LEVEL_2M,
- 	PG_LEVEL_1G,
-+	PG_LEVEL_NUM
- };
+--- linux.orig/arch/x86/mm/pageattr-test.c
++++ linux/arch/x86/mm/pageattr-test.c
+@@ -46,7 +46,7 @@ static int print_split(struct split_stat
+ 	s->lpg = s->gpg = s->spg = s->exec = 0;
+ 	s->min_exec = ~0UL;
+ 	s->max_exec = 0;
+-	for (i = 0; i < max_pfn_mapped; ) {
++	for (i = 0; i < end_pfn_map; ) {
+ 		unsigned long addr = (unsigned long)__va(i << PAGE_SHIFT);
+ 		unsigned int level;
+ 		pte_t *pte;
+@@ -98,8 +98,8 @@ static int print_split(struct split_stat
  
-+extern unsigned long dpages_cnt[PG_LEVEL_NUM];
-+
- /*
-  * Helper function that returns the kernel pagetable entry controlling
-  * the virtual address 'address'. NULL means no pagetable entry present.
-Index: linux/arch/x86/mm/init_32.c
+ 	expected = (s->gpg*GPS + s->lpg*LPS)/PAGE_SIZE + s->spg + missed;
+ 	if (expected != i) {
+-		printk(KERN_ERR "CPA max_pfn_mapped %lu but expected %lu\n",
+-			max_pfn_mapped, expected);
++		printk(KERN_ERR "CPA end_pfn_map %lu but expected %lu\n",
++			end_pfn_map, expected);
+ 		return 1;
+ 	}
+ 	return err;
+@@ -122,22 +122,22 @@ static int pageattr_test(void)
+ 	if (print)
+ 		printk(KERN_INFO "CPA self-test:\n");
+ 
+-	bm = vmalloc((max_pfn_mapped + 7) / 8);
++	bm = vmalloc((end_pfn_map + 7) / 8);
+ 	if (!bm) {
+ 		printk(KERN_ERR "CPA Cannot vmalloc bitmap\n");
+ 		return -ENOMEM;
+ 	}
+-	memset(bm, 0, (max_pfn_mapped + 7) / 8);
++	memset(bm, 0, (end_pfn_map + 7) / 8);
+ 
+ 	failed += print_split(&sa);
+ 	srandom32(100);
+ 
+ 	for (i = 0; i < NTEST; i++) {
+-		unsigned long pfn = random32() % max_pfn_mapped;
++		unsigned long pfn = random32() % end_pfn_map;
+ 
+ 		addr[i] = (unsigned long)__va(pfn << PAGE_SHIFT);
+ 		len[i] = random32() % 100;
+-		len[i] = min_t(unsigned long, len[i], max_pfn_mapped - pfn - 1);
++		len[i] = min_t(unsigned long, len[i], end_pfn_map - pfn - 1);
+ 
+ 		if (len[i] == 0)
+ 			len[i] = 1;
+Index: linux/include/asm-x86/page.h
 ===================================================================
---- linux.orig/arch/x86/mm/init_32.c
-+++ linux/arch/x86/mm/init_32.c
-@@ -196,6 +196,7 @@ static void __init kernel_physical_mappi
- 				if (is_kernel_text(addr, addr2))
- 					prot = PAGE_KERNEL_LARGE_EXEC;
+--- linux.orig/include/asm-x86/page.h
++++ linux/include/asm-x86/page.h
+@@ -33,10 +33,8 @@
  
-+				dpages_cnt[PG_LEVEL_2M]++;
- 				set_pmd(pmd, pfn_pmd(pfn, prot));
+ #ifdef CONFIG_X86_64
+ #include <asm/page_64.h>
+-#define max_pfn_mapped		end_pfn_map
+ #else
+ #include <asm/page_32.h>
+-#define max_pfn_mapped		end_pfn_map
+ #endif	/* CONFIG_X86_64 */
  
- 				pfn += PTRS_PER_PTE;
-@@ -212,6 +213,7 @@ static void __init kernel_physical_mappi
- 				if (is_kernel_text(addr, addr + PAGE_SIZE - 1))
- 					prot = PAGE_KERNEL_EXEC;
- 
-+				dpages_cnt[PG_LEVEL_4K]++;
- 				set_pte(pte, pfn_pte(pfn, prot));
- 			}
- 			end_pfn_map = pfn;
-Index: linux/fs/proc/proc_misc.c
-===================================================================
---- linux.orig/fs/proc/proc_misc.c
-+++ linux/fs/proc/proc_misc.c
-@@ -122,6 +122,11 @@ static int uptime_read_proc(char *page, 
- 	return proc_calc_metrics(page, start, off, count, eof, len);
- }
- 
-+int __attribute__((weak)) arch_report_meminfo(char *page)
-+{
-+	return 0;
-+}
-+
- static int meminfo_read_proc(char *page, char **start, off_t off,
- 				 int count, int *eof, void *data)
- {
-@@ -218,6 +223,8 @@ static int meminfo_read_proc(char *page,
- 
- 		len += hugetlb_report_meminfo(page + len);
- 
-+	len += arch_report_meminfo(page + len);
-+
- 	return proc_calc_metrics(page, start, off, count, eof, len);
- #undef K
- }
+ #define PAGE_OFFSET		((unsigned long)__PAGE_OFFSET)
