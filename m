@@ -1,111 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758294AbYBLT2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbYBLT3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758294AbYBLT2u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYBLT2i
+	id S1759206AbYBLT3O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:29:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbYBLT2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:28:38 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:55644 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753829AbYBLT2d (ORCPT
+	Tue, 12 Feb 2008 14:28:52 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:4298 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757760AbYBLT2u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:28:33 -0500
-Message-ID: <47B1F294.8000404@panasas.com>
-Date: Tue, 12 Feb 2008 21:25:08 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 12 Feb 2008 14:28:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QOodIS0AxGoIhu/uKbT5YG/IzvSzzjN0ikNSbzjFmepIvs93ZRPp69FI7Szrgo9Ny/LWCCZ6+gfZ5xAdF2mBA5+AmMQ55wZzBXgylULGv7T8+ecGYvg3+dA5DRL+1JgTIL8shg829KvaSb5jM7F1xlSFPka+ssZLkcGKeQnRMY0=
+Date: Tue, 12 Feb 2008 20:32:18 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
+Message-ID: <20080212193218.GA2803@ami.dom.local>
+References: <20080211.171645.74019568.davem@davemloft.net> <20080212085714.GB2582@ff.dom.local> <20080212160729.GA9157@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>  <20080212044314.GA4888@kroah.com>  <20080211211751.3e265754@laptopd505.fenrus.org>  <20080211.221126.230471463.davem@davemloft.net>  <47B1CB08.4020101@garzik.org>  <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <47B1DD17.2030204@panasas.com> <alpine.LFD.1.00.0802121031520.2920@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802121031520.2920@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212160729.GA9157@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb. 12, 2008, 20:36 +0200, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Tue, Feb 12, 2008 at 08:07:29AM -0800, Paul E. McKenney wrote:
+...
+> "All programmers are blind, especially me."
+
+Hmm... I got it my way: you - superheroes - sometimes seem to be just
+like us - common people... (Probably early in the morning, before
+dressing your funny costumes?) 
+
+> You are right, Jarek.  I ran this through gcc, and the following
+> comes close:
 > 
-> On Tue, 12 Feb 2008, Benny Halevy wrote:
->> IMHO, this base tree should typically be based off of linus' tree
->> and kept rebased on top of it.  This way you get the mainline fixes
->> through the integration base tree.
+> #define rcu_assign_pointer(p, v) \
+> 	({ \
+> 		if (!__builtin_constant_p(v) || (v)) \
+> 			smp_wmb(); \
+> 		(p) = (v); \
+> 	})
 > 
-> Hell no!
+> But I am concerned about the following case:
 > 
-> No rebasing! If people rebase, then it's useless as a base.
+> 	rcu_assign_pointer(global_index, 0);
+> 
+> 	. . .
+> 
+> 	x = global_array[rcu_dereference(global_index)];
+> 
+> Since arrays have a zero-th element, we would really want a memory
+> barrier in this case.
 
-Linus, what you're saying is pretty extreme.
-
-Our experience with pnfs development taught us that rebase was actually the only
-method that worked on the long run because it allows us to maintain a *clean* series of
-patchsets over an extended period of time (order of two years).
-
-In the past, when we merged your tree into ours rather than using git-remote update and
-rebase we ended up with a cluttered mess that buried all the resolved merge conflicts
-in merge commits and maintaining it became an increasingly harder nightmare.
-
-Nowadays, I rebase the linux-pnfs git tree almost on a daily basis, keeping tags
-on historical refs (to be cleaned up when a branch stabilizes) and the other
-contributors simply use git-remote update to refresh their tracking branches and
-rebase their stuff onto the new heads.  It took the team a couple weeks to get used
-to this methodology but it really works great for us now.
-
-It seems to me that merging works well one (your :) way when patches are merged
-upstream and become immutable at this point, while on the other way, keeping
-a patchset fresh and comprehensible is feasible only with rebase when there
-are occasional conflicts with stuff coming down from upstream.  The domino-
-effect caused by rebase is manageable and not worse than merge if people
-just keep track of the original bases of their development branch before
-updating their tracking branches.
-
-Maybe the missing link is a tool to help do rebasing more easily.
-I wrote my own tool for that: git-rebase-tree (available on
-git://git.bhalevy.com/git-tools.git) and using it makes the mechanics
-of rebasing our patchsets almost trivial.  I really encourage folks
-to try it out and give me feedback about it.
-
-Benny
+It seems the above version of this macro uses the barrier for 0, but
+if I miss something, or for these other: documenting reasons, then of
+course you are right.
 
 > 
-> That base tree needs to be something people can *depend* on. It contains 
-> the API changes, and not anything else. Otherwise I will never ever pull 
-> the resulting mess, and you all end up with tons of extra work.
+> So how about leaving the index-unfriendly version of rcu_assign_pointer()
+> and adding an rcu_assign_index() as follows?
 > 
-> Just say *no* to rebasing.
+> 							Thanx, Paul
 > 
-> Rebasing is fine for maintaining *your* own patch-set, ie  it is an 
-> alternative to using quilt. But it is absolutely not acceptable for 
-> *anythign* else. 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+> 
+>  rcupdate.h |   18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
+> --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
+> +++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-12 08:04:59.000000000 -0800
+> @@ -278,6 +278,24 @@ extern struct lockdep_map rcu_lock_map;
+>  					})
+>  
+>  /**
+> + * rcu_assign_index - assign (publicize) a index of a newly
+> + * initialized array elementg that will be dereferenced by RCU
 
-So what's the solution for maintaining a series of patchsets that depend
-on one another?
+---------------------------^
+ + * initialized array element that will be dereferenced by RCU
 
-> 
-> In particular, people who rebase other peoples trees should just be shot 
-> (*). It's simply not acceptable behaviour. It screws up the sign-off 
-> procedure, it screws up the people whose code was merged, and it's just 
-> WRONG.
-> 
-> 			Linus
-> 
-> (*) The exception being if there is something seriously wrong with the 
-> tree. I think I've had trees which I just refused to pull, and while most 
-> of the time I just say "I refuse to pull", early on in git development I 
-> actually ended up fixing some of those trees up because my refusal was due 
-> to people mis-using git in the first place. So I have actually effectively 
-> rebased a maintainer tree at least once. But I still think it is seriously 
-> screwed up.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+Regards,
+Jarek P.
