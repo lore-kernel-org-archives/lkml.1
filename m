@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYBLHqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbYBLHri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753158AbYBLHqg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 02:46:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbYBLHq2
+	id S1761637AbYBLHri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 02:47:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbYBLHr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 02:46:28 -0500
-Received: from hs-out-0708.google.com ([64.233.178.247]:47569 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757145AbYBLHq1 (ORCPT
+	Tue, 12 Feb 2008 02:47:29 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:33284 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbYBLHr2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 02:46:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iU+hBdVTlrXno9q6cOXfuY7b+BqHjt1IEy5zIYV//feaIMHKvOlf0/i+kmNva0zhdtyIYj7vAhKfyejEQl4Tz0Fx6sb6cC+i9+4oHIfATV06dNQAVs4z9CPWzJ+BC1hTimaII4IvtaIODDX+MM59fD1qfhhLOcNl3tpK23rJ4Gc=
-Message-ID: <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
-Date: Tue, 12 Feb 2008 15:46:23 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Scott Lovenberg" <scott.lovenberg@gmail.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
+	Tue, 12 Feb 2008 02:47:28 -0500
+From: Jack Morgenstein <jackm@dev.mellanox.co.il>
+Organization: Mellanox
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] mlx4: fix build break
+Date: Tue, 12 Feb 2008 09:43:33 +0200
+User-Agent: KMail/1.9.1
+Cc: Olof Johansson <olof@lixom.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org, tziporet@mellanox.co.il
+References: <adafxw36ntm.fsf@cisco.com> <20080211022257.GA26656@lixom.net> <adaodanxhlb.fsf@cisco.com>
+In-Reply-To: <adaodanxhlb.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
-	 <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
+Message-Id: <200802120943.34388.jackm@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 12, 2008 2:17 PM, Scott Lovenberg <scott.lovenberg@gmail.com> wrote:
->
-> On Feb 12, 2008 12:23 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
-> >
-> > I  was looking for documentation on the kstack_depth_to_print under
-> /proc/sys/kernel, and I found it in Documentation/sysctl.txt (written by
-> Rik).
-> >
-> > How about /proc/sys/net?   or all other directories under /sys or /proc
-> fs?
-> >
-> > Wouldn't it be useful to have a centralized store located in Documentation
-> - properly structured,  just a one-liner or two - on the reasons and
-> explanations for each of these /proc or /sys parameters?   And something to
-> look for further details?
-> >
-> > Something of the following:
-> >
-> > |-- netfilter
-> > |   |-- nf_conntrack_buckets:your explanation here
-> > |   |-- nf_conntrack_checksum:your explanation here...
-> > |   |-- nf_conntrack_count
-> > |   |-- nf_conntrack_expect_max
-> > |   |-- nf_conntrack_generic_timeout
-> > |   |-- nf_conntrack_icmp_timeout
-> > |   |-- nf_conntrack_log_invalid
-> > |   |-- nf_conntrack_max
-> > |   |-- nf_conntrack_tcp_be_liberal
-> > |   |-- nf_conntrack_tcp_loose
-> > |   |-- nf_conntrack_tcp_max_retrans
-> > |   |-- nf_conntrack_tcp_timeout_close
-> > |   |-- nf_conntrack_tcp_timeout_close_wait
-> > |   |-- nf_conntrack_tcp_timeout_established
-> > |   |-- nf_conntrack_tcp_timeout_fin_wait
-> > |   |-- nf_conntrack_tcp_timeout_last_ack
-> > |   |-- nf_conntrack_tcp_timeout_max_retrans
-> > |   |-- nf_conntrack_tcp_timeout_syn_recv
-> > |   |-- nf_conntrack_tcp_timeout_syn_sent
-> > |   |-- nf_conntrack_tcp_timeout_time_wait
-> > |   |-- nf_conntrack_udp_timeout
-> > |   `-- nf_conntrack_udp_timeout_stream
-> > |-- nf_conntrack_max
-> > |-- token-ring
-> > |   `-- rif_timeout
-> > `-- unix
-> >     `-- max_dgram_qlen
-> >
-> >
-> > Alternatively, we can write a script to extract out the partial
-> explanations/details from existing source code, based on some coding
-> convention/style structure, and further hand-modification from there.
-> (given the dynamic nature of the kernel code, this may be preferred?)
-> >
-> >
->
-> I was looking for exactly this about 2 weeks ago; I needed to look up the
-> knobs for net and disk elevators, and had to jump all over the place.  I
-> assumed that such a thing should exist, but I didn't find it.  I know I
-> would personally benefit from this, and I'm sure many others would, too.
+On Tuesday 12 February 2008 00:18, Roland Dreier wrote:
+> Thanks, applied.
+> 
+> Jack, I thought you guys tested the build on powerpc.  How did this
+> sneak through?
+> 
+It did not sneak through, because the problem does not exist in the OFED git.
 
-My suggestion is that since the parameters are:
+The following commit was performed to
+ git://git.openfabrics.org/ofed_1_3/linux-2.6.git
+on Sept 25, 2007:
+=======================================
+commit 4a5709b81dfd249c98271801ddc01decb7acd466
+Author: Eli Cohen <eli@mellanox.co.il>
+Date:   Tue Sep 25 12:41:30 2007 +0200
 
-a.   divide the symbols into two group:   well-documented vs
-undocumented (prefixed by "__" eg, __xxxx).   this supposedly for
-sysadmin vs kernel developer.
+    add missing include file. ia64 requires it.
 
-b.   for each of the official documented /sys control, provide a
-one-line description when passed via /sys/help (eg, echo
-kstack_depth_to_print > /sys/help) and the helpstring will go to the
-console.
+    Signed-off-by: Eli Cohen <eli@mellanox.co.il>
 
-On the other hand, this may potentially blow up the vmlinux image size.
+diff --git a/drivers/net/mlx4/alloc.c b/drivers/net/mlx4/alloc.c
+index f8d63d3..704a56b 100644
+--- a/drivers/net/mlx4/alloc.c
++++ b/drivers/net/mlx4/alloc.c
+@@ -34,6 +34,7 @@
+ #include <linux/slab.h>
+ #include <linux/bitmap.h>
+ #include <linux/dma-mapping.h>
++#include <linux/vmalloc.h>
+
+ #include "mlx4.h"
+========================================
+
+I guess this just fell through the cracks with regard to posting it to the list.
+Sorry about that.
+
+- Jack
