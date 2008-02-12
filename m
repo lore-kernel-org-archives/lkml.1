@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbYBLV4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752842AbYBLV4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbYBLV4W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbYBLV4G
+	id S1752842AbYBLV4z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:56:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYBLV4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:56:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48483 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751959AbYBLV4D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:56:03 -0500
-Date: Tue, 12 Feb 2008 13:55:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Execute tasklets in the same order they were queued
-Message-Id: <20080212135558.d22a843a.akpm@linux-foundation.org>
-In-Reply-To: <20080211222813.GA14316@lixom.net>
-References: <20080211222813.GA14316@lixom.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 16:56:46 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39625 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752140AbYBLV4p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 16:56:45 -0500
+Message-ID: <47B2158F.2080305@sandeen.net>
+Date: Tue, 12 Feb 2008 15:54:23 -0600
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Linda Walsh <xfs@tlinx.org>
+CC: David Chinner <dgc@sgi.com>, Linux-Xfs <linux-xfs@oss.sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: xfs [_fsr] probs in 2.6.24.0
+References: <47B0F00D.3060802@tlinx.org> <20080212085802.GA155407@sgi.com> <47B2094D.50406@tlinx.org> <47B20E84.6020707@sandeen.net> <47B21327.3080502@tlinx.org>
+In-Reply-To: <47B21327.3080502@tlinx.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 16:28:13 -0600
-Olof Johansson <olof@lixom.net> wrote:
-
-> I noticed this when looking at an openswan issue. Openswan (ab?)uses
-> the tasklet API to defer processing of packets in some situations,
-> with one packet per tasklet_action(). I started noticing sequences of
-> reverse-ordered sequence numbers coming over the wire, since new tasklets
-> are always queued at the head of the list but processed sequentially.
+Linda Walsh wrote:
 > 
-> Convert it to instead append new entries to the tail of the list. As an
-> extra bonus, the splicing code in takeover_tasklets() no longer has to
-> iterate over the list.
+> Eric Sandeen wrote:
+>> Linda Walsh wrote:
+>>> David Chinner wrote:
+>>>> Filesystem bugs rarely hang systems hard like that - more likely is
+>>>> a hardware or driver problem. And neither of the lockdep reports
+>>>> below are likely to be responsible for a system wide, no-response
+>>>> hang.
+>>> ---
+>>> 	"Ish", the 32-bitter, has been the only hard-hanger.
+>> 4k stacks?
+> ----
+> 	But but but...almost from the day they were introduced.  And
+> these are more recent probs. Has stack usage increased for some reason,
+> :-(.  I do have the option to detect stack-overflow turned on as well
+> -- guess it doesn't work so well?
 
-kernel/softirq.c: In function 'takeover_tasklets':
-kernel/softirq.c:597: error: 'struct tasklet_head' has no member named 'next'
-kernel/softirq.c:603: error: 'struct tasklet_head' has no member named 'next'
-kernel/softirq.c:588: warning: unused variable 'i'
+Resource requirements grow over time, film at 11? :)
+
+the checker is a random thing, it checks only on interrupts; it won't
+always hit.  you could try CONFIG_DEBUG_STACK_USAGE too, each thread
+prints max stack used when it exits, to see if you're getting close on
+normal usage.
+
+Or just use 8k.
+
+-Eric
