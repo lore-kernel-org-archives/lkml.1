@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbYBLX0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbYBLX2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbYBLX0b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbYBLX0V
+	id S1756348AbYBLX2J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:28:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbYBLX1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:26:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46402
+	Tue, 12 Feb 2008 18:27:55 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39664
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752084AbYBLX0U (ORCPT
+	by vger.kernel.org with ESMTP id S1751536AbYBLX1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:26:20 -0500
-Date: Tue, 12 Feb 2008 15:26:52 -0800 (PST)
-Message-Id: <20080212.152652.217936905.davem@davemloft.net>
+	Tue, 12 Feb 2008 18:27:54 -0500
+Date: Tue, 12 Feb 2008 15:28:26 -0800 (PST)
+Message-Id: <20080212.152826.243855481.davem@davemloft.net>
 To: jengelh@computergmbh.de
 Cc: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
        linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
@@ -32,16 +32,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Jan Engelhardt <jengelh@computergmbh.de>
 Date: Tue, 12 Feb 2008 15:00:20 +0100 (CET)
 
-> (Yes, I had xfs on sparc before, so it's not like you NEED the 
-> whitespace at the start of a partition.)
+> Something looks wrong here. Why would btrfs need to zero at all?
 
-You actully do unless you want to lose significant chunks of your disk
-space.
+So that existing superblocks on the partition won't
+be interpreted as correct by other filesystems.  It's
+a safety measure many mkfs programs use.
 
-The Sun disk label only allows you to specify the start of a partition
-in cylinders, so if you want to use a filesystem like XFS you have to
-start the partition on cylinder 1 which can be many blocks into the
-disk.  That entire first cylinder is completely wasted.
+> Superblock at 0, and done. Just like xfs.
 
-What XFS does by putting the superblock at zero is simply does not
-take these kinds of issues into consideration.
+No, we won't do stupid things like that and make an entire
+cylinder of our disks unusable.  See my other reply.
+
