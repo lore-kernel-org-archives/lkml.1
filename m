@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761964AbYBLLVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbYBLL24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761964AbYBLLVJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 06:21:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbYBLLU4
+	id S1762124AbYBLL24 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 06:28:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760190AbYBLL2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 06:20:56 -0500
-Received: from mx1.suse.de ([195.135.220.2]:60219 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754724AbYBLLUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 06:20:55 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Subject: Re: [PATCH] [5/8] Fix logic error in 64bit memory hotadd
-Date: Tue, 12 Feb 2008 12:20:51 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-References: <20080211124625.GB23733@elte.hu> <200802111405.04423.ak@suse.de> <20080212190310.F9E8.Y-GOTO@jp.fujitsu.com>
-In-Reply-To: <20080212190310.F9E8.Y-GOTO@jp.fujitsu.com>
+	Tue, 12 Feb 2008 06:28:43 -0500
+Received: from wx-out-0506.google.com ([66.249.82.234]:36410 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759356AbYBLL2m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 06:28:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=e6esQfzorY9SqmUt5t3YXUyPUjMixF54JRqB92g7vyejTQnU2rW1J+/G03q/tgbzIKu6UwOCNo6Wt9ubo2tOZbmGiZq/uO2LtIKHYJte6MTljQcfbYksezgrBPWSVzMgCiWEaEnksHDqeTIdm9wqLzritH1geokOFH8IDwXCgTs=
+Message-ID: <86802c440802120328i2e60ba3brbe7fdec87d4cce4a@mail.gmail.com>
+Date: Tue, 12 Feb 2008 03:28:40 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Christoph Lameter" <clameter@sgi.com>
+Subject: /initrd.img
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802121220.51755.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008 11:35:22 Yasunori Goto wrote:
-> Hi Ingo-san.
-> 
-> > > Does anyone even  
-> > > use memory hotplug currently? 
-> > 
-> > I don't know.
-> 
-> IBM's powerpc box can memory hot-add/remove by dynamic partitioning.
-> And our fujitsu server has memory hot-add feature (Ia-64).
-> So, they are concrete user of memory hotplug.
-> 
-> In x86, E8500 chipset has the feature of memory-hotplug.
-> (I searched a data-sheet from intel site.)
-> http://download.intel.com/design/chipsets/e8500/datashts/30674501.pdf
-> (6.3.8 IMI Hot-Plug)
-> 
-> So, it depends on how many server uses it, I think.
+any limitation about size of
+/initrd.img that saved by populate_rootfs ?
 
-With the logic pud error i found and that seems currently will stay
-for the forseeable future in the tree I don't think x86-64 64bit hotadds for more
-than 1GB have ever worked with the sparsemem method.
+i got
 
-Older trees (before 2.6.24) had also a different method that did
-preallocate everything based on the SRAT. That one should have worked 
-for this case.
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (-28 != 2048) 134217728
+crc error
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 388k freed
+init_special_inode: bogus i_mode (177777)
+Warning: unable to open an initial console.
+init_special_inode: bogus i_mode (177777)
+init_special_inode: bogus i_mode (177777)
+Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
 
--Andi
+before that
+checking if image is initramfs... it isn't (no cpio magic); looks like an initrd
+Freeing initrd memory: 25735k freed.
+
+that only happen one system (64G RAM) and SLUB.
+
+if using SLAB, it works well.
+
+somewhere the ramdisk or /initrd.img get corrupted..
+
+YH
