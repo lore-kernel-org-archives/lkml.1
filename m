@@ -1,61 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760296AbYBLBB4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYBLBCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760296AbYBLBB4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:01:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYBLBBr
+	id S1761147AbYBLBCY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:02:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYBLBCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:01:47 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58446 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbYBLBBq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:01:46 -0500
-Message-ID: <47B0EE46.6050208@zytor.com>
-Date: Mon, 11 Feb 2008 16:54:30 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 11 Feb 2008 20:02:11 -0500
+Received: from ishtar.tlinx.org ([64.81.245.74]:38935 "EHLO ishtar.tlinx.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbYBLBCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 20:02:08 -0500
+Message-ID: <47B0F00D.3060802@tlinx.org>
+Date: Mon, 11 Feb 2008 17:02:05 -0800
+From: Linda Walsh <xfs@tlinx.org>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Matt Mackall <mpm@selenic.com>
-CC: Michael Opdenacker <michael-lists@free-electrons.com>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Linux-tiny@selenic.com
-Subject: Re: [PATCH] x86 (Linux Tiny): configure out support for	some	processors
-References: <200802082347.25364.michael-lists@free-electrons.com>	 <20080208231130.GA10511@elte.hu>	 <200802112342.23493.michael-lists@free-electrons.com>	 <1202770566.12383.59.camel@cinder.waste.org>  <47B0D3B7.6070308@zytor.com> <1202772532.12383.67.camel@cinder.waste.org>
-In-Reply-To: <1202772532.12383.67.camel@cinder.waste.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux-Xfs <linux-xfs@oss.sgi.com>
+CC: Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: xfs [_fsr] probs in 2.6.24.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall wrote:
-> On Mon, 2008-02-11 at 15:01 -0800, H. Peter Anvin wrote:
->> Matt Mackall wrote:
->>> Best would be to have no ifdefs and do it all with linker magic, of
->>> course. But that's trickier.
->>>
->> I concur with this, definitely.
-> 
-> Ok, so let's come up with a plan. We can:
-> 
-> a) use weak symbols, ala cond_syscall
-> b) use a special section
-> c) use early_init code (is it early enough?)
-> c) have some sort of registration list
-> 
-> Having a generic cond_call of some sort might be nice for this sort of
-> thing.
-> 
 
-c) is out, because this has to be executed after the early generic code 
-and before the late generic code.
+I'm getting similar errors on an x86-32 & x86-64 kernel.  The x86-64 system
+(2nd log below w/date+times) was unusable this morning: one or more of the
+xfs file systems had "gone off line" due to some unknown error (upon reboot,
+no errors were indicated; all partitions on the same physical disk).
 
-b) would be my first choice, and yes, it would be a good thing to have a 
-generalized mechanism for this.  For the registrant, it's pretty easy: 
-just add a macro that adds a pointer to a named section.  We then need a 
-way to get the base address and length of each such section in order to 
-be able to execute each function in sequence.
+I keep ending up with random failures on two systems.  The 32-bit sys more
+often than not just "locks-up" -- no messages, no keyboard response...etc.
+Nothing to do except reset -- and of course, nothing in the logs....
 
-	-hpa
+I'm turning on all the stat and diagnostics that don't seem to have a noted
+performance penalty (or not much of one) to see if that helps.  Perhaps one
+issue is the "bug" (looks like multiple instances of the same bug) in xfs.
+
+The 32-bit machine does lots of disk activity in early morning hours...and
+coincidentally, it seemed to be crashing (not consistently) in the morning.
+With 2.6.24, the 32-bit machine "seems" a bit more stable -- up for over 3
+days now (average before was <48 hours).  But the 64-bit machine went
+bonkers (not sure of exact time) -- It *had* been stable (non crashing,
+anyway) before 2.6.24.
+
+I vaguely remember there being a similar xfs lock bug a few versions back
+and was told just "not to worry about and turn off the lock checking to
+"avoid the problem"....( :^| ).  So I did, but still trying to track down
+randomness.  So I turn back on what checks I could and ... ding -- still a
+problem in the xfs area -- which "coincidentally" (has happened on more than
+one occasion), an xfs partition developed a run-time error and shut itself
+down.  This also happened on the 32-bit machine with the SATA disk (thought
+it might be sata specific), so removed its controller and disk and threw in
+a same-size PATA.  No more file-system errors on 32bit.  But first time I've
+had a filesystem 'forced offline' on the 64bit (but just switched to 2.6.24
+recently for obvious reasons).
+
+Sadly -- it also seemed to be the case that the 32bit machine when it had
+the SATA controller+disk installed, was more likely to crash if xfs_fsr was
+running at the same-time remote backups were being written to the
+SATA-drive.  Couldn't repeat it reliably, though so not sure what's going on
+there.
+
+Both machines are SMP, so that's a potential factor along with the fact that
+both machines also use SCSI (64bit, SAS form).  Neither are running a
+graphical console but are being remotely accessed.
+
+Lemme know if I can provide any info in addressing these problems.  I don't
+know if they are related to the other system crashes, but usage patterns
+indicate it could be disk-activity related.  So eliminating known bugs &
+problems in that area might help (?)...
+
+Suspect log messages follow (1st, w/o Date/time were from dmesg on 32bit,
+latter was a previously unnoticed one on 64bit until I started looking
+through logs for clues on last night's failures.
+
+
+The first set of errors the I have some diagnostics for, I could
+only find in dmesg:
+(ish-32bit machine)
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.24-ish #1
+-------------------------------------------------------
+xfs_fsr/2119 is trying to acquire lock:
+ (&mm->mmap_sem){----}, at: [<b01a3432>] dio_get_page+0x62/0x160
+
+but task is already holding lock:
+ (&(&ip->i_iolock)->mr_lock){----}, at: [<b02651db>] xfs_ilock+0x5b/0xb0
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (&(&ip->i_iolock)->mr_lock){----}:
+       [<b014c026>] __lock_acquire+0xce6/0x1150
+       [<b0265217>] xfs_ilock+0x97/0xb0
+       [<b014ae3f>] trace_hardirqs_on+0xaf/0x160
+       [<b014c4fa>] lock_acquire+0x6a/0x80
+       [<b0265217>] xfs_ilock+0x97/0xb0
+       [<b0140d63>] down_write_nested+0x43/0x80
+       [<b0265217>] xfs_ilock+0x97/0xb0
+       [<b0265217>] xfs_ilock+0x97/0xb0
+       [<b0286c61>] xfs_free_eofblocks+0x231/0x2e0
+       [<b028b137>] xfs_release+0x1a7/0x230
+       [<b029154b>] xfs_file_release+0xb/0x10
+       [<b017dc4c>] __fput+0xac/0x180
+       [<b016dc25>] remove_vma+0x35/0x50
+       [<b016e790>] do_munmap+0x190/0x200
+       [<b016e82f>] sys_munmap+0x2f/0x50
+       [<b0104396>] sysenter_past_esp+0x5f/0xa5
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&mm->mmap_sem){----}:
+       [<b0148df1>] print_circular_bug_entry+0x41/0x50
+       [<b014be19>] __lock_acquire+0xad9/0x1150
+       [<b014aca3>] mark_held_locks+0x43/0x80
+       [<b014c4fa>] lock_acquire+0x6a/0x80
+       [<b01a3432>] dio_get_page+0x62/0x160
+       [<b04675a8>] down_read+0x38/0x80
+       [<b01a3432>] dio_get_page+0x62/0x160
+       [<b01a3432>] dio_get_page+0x62/0x160
+       [<b02bd4c2>] __spin_lock_init+0x32/0x60
+       [<b01a4053>] __blockdev_direct_IO+0x483/0xc70
+       [<b017945b>] kmem_cache_alloc+0x9b/0xc0
+       [<b04684d4>] _spin_unlock+0x14/0x20
+       [<b014863d>] lockdep_init_map+0x3d/0x4c0
+       [<b028cd70>] xfs_alloc_ioend+0x120/0x170
+       [<b028cf1f>] xfs_vm_direct_IO+0x15f/0x170
+       [<b028d410>] xfs_get_blocks_direct+0x0/0x30
+       [<b028c880>] xfs_end_io_direct+0x0/0x90
+       [<b015db82>] generic_file_direct_IO+0xd2/0x160
+       [<b015dc6a>] generic_file_direct_write+0x5a/0x170
+       [<b0140db4>] up_write+0x14/0x30
+       [<b0295418>] xfs_write+0x3e8/0x920
+       [<b015c810>] file_read_actor+0x0/0x120
+       [<b02916ce>] xfs_file_aio_write+0x5e/0x70
+       [<b017c807>] do_sync_write+0xc7/0x110
+       [<b013ce80>] autoremove_wake_function+0x0/0x40
+       [<b01484a7>] lock_release_holdtime+0x47/0x70
+       [<b017d240>] vfs_read+0xd0/0x160
+       [<b017c740>] do_sync_write+0x0/0x110
+       [<b017d0b0>] vfs_write+0xa0/0x160
+       [<b017d7d1>] sys_write+0x41/0x70
+       [<b0104396>] sysenter_past_esp+0x5f/0xa5
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+1 lock held by xfs_fsr/2119:
+ #0:  (&(&ip->i_iolock)->mr_lock){----}, at: [<b02651db>] 
+xfs_ilock+0x5b/0xb0
+
+stack backtrace:
+Pid: 2119, comm: xfs_fsr Not tainted 2.6.24-ish #1
+ [<b01499da>] print_circular_bug_tail+0x7a/0x90
+ [<b014be19>] __lock_acquire+0xad9/0x1150
+ [<b014aca3>] mark_held_locks+0x43/0x80
+ [<b014c4fa>] lock_acquire+0x6a/0x80
+ [<b01a3432>] dio_get_page+0x62/0x160
+ [<b04675a8>] down_read+0x38/0x80
+ [<b01a3432>] dio_get_page+0x62/0x160
+ [<b01a3432>] dio_get_page+0x62/0x160
+ [<b02bd4c2>] __spin_lock_init+0x32/0x60
+ [<b01a4053>] __blockdev_direct_IO+0x483/0xc70
+ [<b017945b>] kmem_cache_alloc+0x9b/0xc0
+ [<b04684d4>] _spin_unlock+0x14/0x20
+ [<b014863d>] lockdep_init_map+0x3d/0x4c0
+ [<b028cd70>] xfs_alloc_ioend+0x120/0x170
+ [<b028cf1f>] xfs_vm_direct_IO+0x15f/0x170
+ [<b028d410>] xfs_get_blocks_direct+0x0/0x30
+ [<b028c880>] xfs_end_io_direct+0x0/0x90
+ [<b015db82>] generic_file_direct_IO+0xd2/0x160
+ [<b015dc6a>] generic_file_direct_write+0x5a/0x170
+ [<b0140db4>] up_write+0x14/0x30
+ [<b0295418>] xfs_write+0x3e8/0x920
+ [<b015c810>] file_read_actor+0x0/0x120
+ [<b02916ce>] xfs_file_aio_write+0x5e/0x70
+ [<b017c807>] do_sync_write+0xc7/0x110
+ [<b013ce80>] autoremove_wake_function+0x0/0x40
+ [<b01484a7>] lock_release_holdtime+0x47/0x70
+ [<b017d240>] vfs_read+0xd0/0x160
+ [<b017c740>] do_sync_write+0x0/0x110
+ [<b017d0b0>] vfs_write+0xa0/0x160
+ [<b017d7d1>] sys_write+0x41/0x70
+ [<b0104396>] sysenter_past_esp+0x5f/0xa5
+ =======================
+
+--------------
+The other system shows a similar message: in its logs:
+Feb  7 02:01:50 kern: 
+=======================================================
+Feb  7 02:01:50 kern: [ INFO: possible circular locking dependency 
+detected ]
+Feb  7 02:01:50 kern: 2.6.24-asa64def #3
+Feb  7 02:01:50 kern: 
+-------------------------------------------------------
+Feb  7 02:01:50 kern: xfs_fsr/6313 is trying to acquire lock:
+Feb  7 02:01:50 kern:  (&(&ip->i_lock)->mr_lock/2){----}, at: 
+[<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
+Feb  7 02:01:50 kern:
+Feb  7 02:01:50 kern: but task is already holding lock:
+Feb  7 02:01:50 kern:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: 
+[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
+Feb  7 02:01:50 kern:
+Feb  7 02:01:50 kern: which lock already depends on the new lock.
+Feb  7 02:01:50 kern:
+Feb  7 02:01:50 kern:
+Feb  7 02:01:50 kern: the existing dependency chain (in reverse order) is:
+Feb  7 02:01:50 kern:
+Feb  7 02:01:50 kern: -> #1 (&(&ip->i_iolock)->mr_lock/3){--..}:
+Feb  7 02:01:50 kern:        [<ffffffff80261d39>] 
+__lock_acquire+0xc39/0x1090
+Feb  7 02:01:50 kern:        [<ffffffff802621f1>] lock_acquire+0x61/0x80
+Feb  7 02:01:50 kern:        [<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
+Feb  7 02:01:50 kern:        [<ffffffff802572ba>] 
+down_write_nested+0x3a/0x80
+Feb  7 02:01:50 kern:        [<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
+Feb  7 02:01:50 kern:        [<ffffffff803e0a33>] 
+xfs_lock_inodes+0x143/0x190
+Feb  7 02:01:50 kern:        [<ffffffff803cbc81>] 
+xfs_swap_extents+0xa1/0x630
+Feb  7 02:01:50 kern:        [<ffffffff8025df35>] 
+lock_release_holdtime+0x45/0x70
+Feb  7 02:01:50 kern:        [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
+Feb  7 02:01:50 kern:        [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
+Feb  7 02:01:50 kern:        [<ffffffff8025df35>] 
+lock_release_holdtime+0x45/0x70
+Feb  7 02:01:50 kern:        [<ffffffff80626eba>] 
+__mutex_unlock_slowpath+0xca/0x1a0
+Feb  7 02:01:50 kern:        [<ffffffff803eb9b6>] 
+xfs_file_ioctl_invis+0x36/0x80
+Feb  7 02:01:50 kern:        [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
+Feb  7 02:01:50 kern:        [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
+Feb  7 02:01:50 kern:        [<ffffffff80260bb1>] 
+trace_hardirqs_on+0xc1/0x160
+Feb  7 02:01:50 kern:        [<ffffffff802aa159>] sys_ioctl+0x49/0x80
+Feb  7 02:01:51 kern:        [<ffffffff8020c3ce>] system_call+0x7e/0x83
+Feb  7 02:01:51 kern:        [<ffffffffffffffff>] 0xffffffffffffffff
+Feb  7 02:01:51 kern:
+Feb  7 02:01:51 kern: -> #0 (&(&ip->i_lock)->mr_lock/2){----}:
+Feb  7 02:01:51 kern:        [<ffffffff80260018>] 
+print_circular_bug_header+0xe8/0xf0
+Feb  7 02:01:51 kern:        [<ffffffff80261ba8>] 
+__lock_acquire+0xaa8/0x1090
+Feb  7 02:01:51 kern:        [<ffffffff802621f1>] lock_acquire+0x61/0x80
+Feb  7 02:01:51 kern:        [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
+Feb  7 02:01:51 kern:        [<ffffffff80628597>] _spin_unlock+0x17/0x20
+Feb  7 02:01:51 kern:        [<ffffffff802572ba>] 
+down_write_nested+0x3a/0x80
+Feb  7 02:01:51 kern:        [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
+Feb  7 02:01:51 kern:        [<ffffffff803e0a33>] 
+xfs_lock_inodes+0x143/0x190
+Feb  7 02:01:51 kern:        [<ffffffff803cbefe>] 
+xfs_swap_extents+0x31e/0x630
+Feb  7 02:01:51 kern:        [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
+Feb  7 02:01:51 kern:        [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
+Feb  7 02:01:51 kern:        [<ffffffff8025df35>] 
+lock_release_holdtime+0x45/0x70
+Feb  7 02:01:51 kern:        [<ffffffff80626eba>] 
+__mutex_unlock_slowpath+0xca/0x1a0
+Feb  7 02:01:51 kern:        [<ffffffff803eb9b6>] 
+xfs_file_ioctl_invis+0x36/0x80
+Feb  7 02:01:51 kern:        [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
+Feb  7 02:01:51 kern:        [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
+Feb  7 02:01:51 kern:        [<ffffffff80260bb1>] 
+trace_hardirqs_on+0xc1/0x160
+Feb  7 02:01:51 kern:        [<ffffffff802aa159>] sys_ioctl+0x49/0x80
+Feb  7 02:01:51 kern:        [<ffffffff8020c3ce>] system_call+0x7e/0x83
+Feb  7 02:01:51 kern:        [<ffffffffffffffff>] 0xffffffffffffffff
+Feb  7 02:01:51 kern:
+Feb  7 02:01:51 kern: other info that might help us debug this:
+Feb  7 02:01:51 kern:
+Feb  7 02:01:51 kern: 2 locks held by xfs_fsr/6313:
+Feb  7 02:01:51 kern:  #0:  (&(&ip->i_iolock)->mr_lock/2){--..}, at: 
+[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
+Feb  7 02:01:51 kern:  #1:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: 
+[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
+Feb  7 02:01:51 kern:
+Feb  7 02:01:51 kern: stack backtrace:
+Feb  7 02:01:51 kern: Pid: 6313, comm: xfs_fsr Not tainted 
+2.6.24-asa64def #3
+Feb  7 02:01:51 kern:
+Feb  7 02:01:51 kern: Call Trace:
+Feb  7 02:01:51 kern:  [<ffffffff8025f413>] 
+print_circular_bug_tail+0x83/0x90
+Feb  7 02:01:51 kern:  [<ffffffff80260018>] 
+print_circular_bug_header+0xe8/0xf0
+Feb  7 02:01:51 kern:  [<ffffffff80261ba8>] __lock_acquire+0xaa8/0x1090
+Feb  7 02:01:51 kern:  [<ffffffff802621f1>] lock_acquire+0x61/0x80
+Feb  7 02:01:51 kern:  [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
+Feb  7 02:01:51 kern:  [<ffffffff80628597>] _spin_unlock+0x17/0x20
+Feb  7 02:01:51 kern:  [<ffffffff802572ba>] down_write_nested+0x3a/0x80
+Feb  7 02:01:51 kern:  [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
+Feb  7 02:01:51 kern:  [<ffffffff803e0a33>] xfs_lock_inodes+0x143/0x190
+Feb  7 02:01:51 kern:  [<ffffffff803cbefe>] xfs_swap_extents+0x31e/0x630
+Feb  7 02:01:51 kern:  [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
+Feb  7 02:01:51 kern:  [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
+Feb  7 02:01:51 kern:  [<ffffffff8025df35>] lock_release_holdtime+0x45/0x70
+Feb  7 02:01:51 kern:  [<ffffffff80626eba>] 
+__mutex_unlock_slowpath+0xca/0x1a0
+[<ffffffff803eb9b6>] xfs_file_ioctl_invis+0x36/0x80
+Feb  7 02:01:51 kern:  [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
+Feb  7 02:01:51 kern:  [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
+Feb  7 02:01:51 kern:  [<ffffffff80260bb1>] trace_hardirqs_on+0xc1/0x160
+Feb  7 02:01:51 kern:  [<ffffffff802aa159>] sys_ioctl+0x49/0x80
+Feb  7 02:01:51 kern:  [<ffffffff8020c3ce>] system_call+0x7e/0x83
+
+
 
