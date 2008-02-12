@@ -1,202 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763287AbYBLPah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762699AbYBLPbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763287AbYBLPah (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:30:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763118AbYBLPaB
+	id S1762699AbYBLPbl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756313AbYBLPbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:30:01 -0500
-Received: from mga10.intel.com ([192.55.52.92]:22278 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763090AbYBLP37 (ORCPT
+	Tue, 12 Feb 2008 10:31:32 -0500
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:7980 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbYBLPba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:29:59 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
-   d="scan'208";a="517242236"
-Date: Tue, 12 Feb 2008 07:33:54 -0800
-From: mark gross <mgross@linux.intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Greg KH <greg@kroah.com>
-Subject: Re: iova RB tree setup tweak.
-Message-ID: <20080212153354.GA27490@linux.intel.com>
-Reply-To: mgross@linux.intel.com
-References: <20080211215651.GA24412@linux.intel.com> <20080211142946.379455af.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211142946.379455af.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Tue, 12 Feb 2008 10:31:30 -0500
+Subject: Re: [patch 2/4] mempolicy: support optional mode flags
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
+       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.00.0802111127080.1671@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
+	 <1202747811.5014.37.camel@localhost>
+	 <alpine.DEB.1.00.0802111127080.1671@chino.kir.corp.google.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Tue, 12 Feb 2008 08:31:07 -0700
+Message-Id: <1202830267.4974.14.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 02:29:46PM -0800, Andrew Morton wrote:
-> On Mon, 11 Feb 2008 13:56:51 -0800
-> mark gross <mgross@linux.intel.com> wrote:
+On Mon, 2008-02-11 at 11:34 -0800, David Rientjes wrote:
+> On Mon, 11 Feb 2008, Lee Schermerhorn wrote:
 > 
-> > The following patch merges two functions into one allowing for a 3%
-> > reduction in overhead in locating, allocating and inserting pages for
-> > use in IOMMU operations.
-> > 
-> > Its a bit of a eye-crosser so I welcome any RB-tree / MM experts to take
-> > a look.  It works by re-using some of the information gathered in the
-> > search for the pages to use in setting up the IOTLB's in the insertion
-> > of the iova structure into the RB tree.
+> > These patches look good--well, interesting, anyway.  I'm "off on
+> > assignment" this week, so I won't get to review in detail, merge and
+> > test them until next...   
 > > 
 > 
-> I guess this is a PCI patch hence I'd be tagging is as
-> to-be-merged-via-greg's-pci-tree.
+> If, by "interesting", you mean that they give the most power to the user 
+> in setting up their mempolicies than they have ever had before, then I 
+> agree.
+
+Hi David:  to clarify:  I added the "interesting" because I didn't want
+the "look good" to be interpreted as an informed judgement.  I hadn't
+time to review in detail.  I do have some comments, which I'll send in
+response to the original patch messages [or any later posting thereof,
+should that occur before I have time].  
+
 > 
+> > This helper functions introduced by this patch are similar in nature
+> > [but go further] to one I introduced in the reference counting cleanup
+> > RFC [http://marc.info/?l=linux-mm&m=119697614520515&w=4] I posted a
+> > while back.  I've been holding these cleanup patches until Andrew starts
+> > accepting this sort of thing again.  I have my series based atop Mel
+> > Gorman's [added to cc] "two zonelist" series, as it depends on removing
+> > the custom zonelist from the mempolicy.
 > > 
-> > Singed-off-by: <mgross@linux.intel.com>
+> 
+> If my helper functions are similar to yours then basing either of our 
+> patchsets on top of the other should not be difficult.
+> 
+> > We need to sort out with Andrew, Mel, Paul, ... the order in which these
+> > interdependent changes go in.  Given such an order, I'm willing to merge
+> > them all up, test them, and post them [after running checkpatch, of
+> > course].
 > > 
 > 
-> ow, that musta hurt.
-
-Not at first but ever since I posted the patch its been a bit.  
-
+> Thanks for volunteering to test the changes.  I don't know how many 
+> patchsets are currently outstanding that touch mempolicies.  So far we 
+> have mine and the refcounting cleanup of yours that you mentioned.
 > 
+> I think the best way of dealing with it would be for the author of 
+> whatever patchset is merged second to rebase off the current -mm just like 
+> I based this entire patchset on your V3 contextualize_policy() patch from 
+> a couple days ago.
+> 
+> > One other thing:  In the recent mempolicy patch to "silently restrict
+> > nodemask], I mentioned the issue with regards to whether and when to
+> > "contextualize" tmpfs/hugetlbfs policies--if/when we fold
+> > mpol_check_policy() into mpol_new(), as you suggested.  Once we can
+> > agree on the desired semantics, I had been thinking that an additional
+> > mode flag could be added to policies obtained from the superblock, and
+> > passed via mpol_shared_policy_init() [which calls mpol_new()] could be
+> > used for this purpose.  Your change here seems to lay the foundation for
+> > implementing that.
 > > 
-> > Index: linux-2.6.24-mm1/drivers/pci/iova.c
-> > ===================================================================
-> > --- linux-2.6.24-mm1.orig/drivers/pci/iova.c	2008-02-07 11:05:44.000000000 -0800
-> > +++ linux-2.6.24-mm1/drivers/pci/iova.c	2008-02-07 13:05:03.000000000 -0800
-> > @@ -72,20 +72,25 @@
-> >  	return pad_size;
-> >  }
-> >  
-> > -static int __alloc_iova_range(struct iova_domain *iovad, unsigned long size,
-> > -		unsigned long limit_pfn, struct iova *new, bool size_aligned)
-> > +static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
-> > +		unsigned long size, unsigned long limit_pfn,
-> > +			struct iova *new, bool size_aligned)
-> >  {
-> > -	struct rb_node *curr = NULL;
-> > +	struct rb_node *prev, *curr = NULL;
-> >  	unsigned long flags;
-> >  	unsigned long saved_pfn;
-> >  	unsigned int pad_size = 0;
-> >  
-> >  	/* Walk the tree backwards */
-> >  	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
-> >  	saved_pfn = limit_pfn;
-> >  	curr = __get_cached_rbnode(iovad, &limit_pfn);
-> > +	prev = curr;
-> >  	while (curr) {
-> >  		struct iova *curr_iova = container_of(curr, struct iova, node);
-> > +
-> >  		if (limit_pfn < curr_iova->pfn_lo)
-> >  			goto move_left;
-> >  		else if (limit_pfn < curr_iova->pfn_hi)
-> > @@ -99,6 +104,7 @@
 > 
-> For some reason patch(1) claims that the patch is corrupted at this line.
-> 
+> My patchset already supports contextualized tmpfs mempolicies with a 
+> template for how to specify them (see patch 4 in this series for the 
+> documentation update).  For example, mpol=interleave:1-3 is the equivalent 
+> of MPOL_INTERLEAVE over nodes 1-3 while mpol=interleave=static:1-3 is the
+> equivalent of MPOL_INTERLEAVE | MPOL_F_STATIC_NODES.
 
-My bad.  Try the following:
+Hmmm, so 'static' means "don't contexutalize"--i.e., don't mask off
+disallowed or memoryless nodes?  That means we'll need to skip them in
+the interleave node calculation in the allocation path.  Perhaps your
+patch already addresses this, but I haven't had time to look.  
 
---mgross
+Later,
+Lee
 
-Signed-off-by : <mgross@linux.intel.com> fa-la-la
-
-
-Index: linux-2.6.24-mm1/drivers/pci/iova.c
-===================================================================
---- linux-2.6.24-mm1.orig/drivers/pci/iova.c	2008-02-07 11:05:44.000000000 -0800
-+++ linux-2.6.24-mm1/drivers/pci/iova.c	2008-02-12 07:12:47.000000000 -0800
-@@ -72,10 +72,11 @@
- 	return pad_size;
- }
- 
--static int __alloc_iova_range(struct iova_domain *iovad, unsigned long size,
--		unsigned long limit_pfn, struct iova *new, bool size_aligned)
-+static int __alloc_and_insert_iova_range(struct iova_domain *iovad,
-+		unsigned long size, unsigned long limit_pfn,
-+			struct iova *new, bool size_aligned)
- {
--	struct rb_node *curr = NULL;
-+	struct rb_node *prev, *curr = NULL;
- 	unsigned long flags;
- 	unsigned long saved_pfn;
- 	unsigned int pad_size = 0;
-@@ -84,8 +85,10 @@
- 	spin_lock_irqsave(&iovad->iova_rbtree_lock, flags);
- 	saved_pfn = limit_pfn;
- 	curr = __get_cached_rbnode(iovad, &limit_pfn);
-+	prev = curr;
- 	while (curr) {
- 		struct iova *curr_iova = container_of(curr, struct iova, node);
-+
- 		if (limit_pfn < curr_iova->pfn_lo)
- 			goto move_left;
- 		else if (limit_pfn < curr_iova->pfn_hi)
-@@ -99,6 +102,7 @@
- adjust_limit_pfn:
- 		limit_pfn = curr_iova->pfn_lo - 1;
- move_left:
-+		prev = curr;
- 		curr = rb_prev(curr);
- 	}
- 
-@@ -115,7 +119,33 @@
- 	new->pfn_lo = limit_pfn - (size + pad_size) + 1;
- 	new->pfn_hi = new->pfn_lo + size - 1;
- 
-+	/* Insert the new_iova into domain rbtree by holding writer lock */
-+	/* Add new node and rebalance tree. */
-+	{
-+		struct rb_node **entry = &((prev)), *parent = NULL;
-+		/* Figure out where to put new node */
-+		while (*entry) {
-+			struct iova *this = container_of(*entry,
-+							struct iova, node);
-+			parent = *entry;
-+
-+			if (new->pfn_lo < this->pfn_lo)
-+				entry = &((*entry)->rb_left);
-+			else if (new->pfn_lo > this->pfn_lo)
-+				entry = &((*entry)->rb_right);
-+			else
-+				BUG(); /* this should not happen */
-+		}
-+
-+		/* Add new node and rebalance tree. */
-+		rb_link_node(&new->node, parent, entry);
-+		rb_insert_color(&new->node, &iovad->rbroot);
-+	}
-+	__cached_rbnode_insert_update(iovad, saved_pfn, new);
-+
- 	spin_unlock_irqrestore(&iovad->iova_rbtree_lock, flags);
-+
-+
- 	return 0;
- }
- 
-@@ -171,23 +201,15 @@
- 		size = __roundup_pow_of_two(size);
- 
- 	spin_lock_irqsave(&iovad->iova_alloc_lock, flags);
--	ret = __alloc_iova_range(iovad, size, limit_pfn, new_iova,
--			size_aligned);
-+	ret = __alloc_and_insert_iova_range(iovad, size, limit_pfn,
-+			new_iova, size_aligned);
- 
-+	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
- 	if (ret) {
--		spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
- 		free_iova_mem(new_iova);
- 		return NULL;
- 	}
- 
--	/* Insert the new_iova into domain rbtree by holding writer lock */
--	spin_lock(&iovad->iova_rbtree_lock);
--	iova_insert_rbtree(&iovad->rbroot, new_iova);
--	__cached_rbnode_insert_update(iovad, limit_pfn, new_iova);
--	spin_unlock(&iovad->iova_rbtree_lock);
--
--	spin_unlock_irqrestore(&iovad->iova_alloc_lock, flags);
--
- 	return new_iova;
- }
- 
 
