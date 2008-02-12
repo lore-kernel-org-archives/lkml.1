@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753452AbYBLXIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbYBLXI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753452AbYBLXIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:08:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757887AbYBLXHq
+	id S1759219AbYBLXI1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:08:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbYBLXIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:07:46 -0500
+	Tue, 12 Feb 2008 18:08:05 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:4852 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757678AbYBLXHp (ORCPT
+	with ESMTP id S1758707AbYBLXIC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:07:45 -0500
+	Tue, 12 Feb 2008 18:08:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=MnZTxkZex+i9e3hCQurmLLhM+0MCrGjZmGFLZBDLyYKPr2EZccEv0F42J09z606iiVjExpZfATb+MzcqrPdY1IWQUHMeH/Vmz0bU34WHSY6s3KfisvUJoDTli0yukZxiND5NNBOBKTk1MncVx+Xfn4MysJHXsDyCj6o06kM6rpg=
+        b=YecAY7u2rYqBp59OuKbz4Ypq0teEJGkYwK4GdwAOAfFuZR2RR4sUd1LY2Yo1k3ey/zPY59MsyxJuxr2ipXEU9Y3Sd1/Pk60X/Oab7y/WpOefBFLmu0PsXCR/8aZp1A6gFgJARjDd9oaIoAqZ3yHB1AKCS6RMmfXt1LNOZMWRNTw=
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Roland Dreier <rolandd@cisco.com>, Sean Hefty <sean.hefty@intel.com>,
-       Hal Rosenstock <hal.rosenstock@gmail.com>
-Subject: [PATCH] infiniband: be*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:08 +0100
-Message-Id: <1202857582-15450-4-git-send-email-marcin.slusarz@gmail.com>
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] affs: be*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:09 +0100
+Message-Id: <1202857582-15450-5-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -39,26 +38,33 @@ with:
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Roland Dreier <rolandd@cisco.com>
-Cc: Sean Hefty <sean.hefty@intel.com>
-Cc: Hal Rosenstock <hal.rosenstock@gmail.com>
+Cc: Roman Zippel <zippel@linux-m68k.org>
 ---
- drivers/infiniband/hw/mthca/mthca_cq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ fs/affs/file.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_cq.c b/drivers/infiniband/hw/mthca/mthca_cq.c
-index 6bd9f13..1e1e336 100644
---- a/drivers/infiniband/hw/mthca/mthca_cq.c
-+++ b/drivers/infiniband/hw/mthca/mthca_cq.c
-@@ -473,7 +473,7 @@ static void handle_error_cqe(struct mthca_dev *dev, struct mthca_cq *cq,
- 	if (!(new_wqe & cpu_to_be32(0x3f)) || (!cqe->db_cnt && dbd))
- 		return;
- 
--	cqe->db_cnt   = cpu_to_be16(be16_to_cpu(cqe->db_cnt) - dbd);
-+	be16_add_cpu(&cqe->db_cnt, -dbd);
- 	cqe->wqe      = new_wqe;
- 	cqe->syndrome = SYNDROME_WR_FLUSH_ERR;
- 
+diff --git a/fs/affs/file.c b/fs/affs/file.c
+index 6e0c939..95b48af 100644
+--- a/fs/affs/file.c
++++ b/fs/affs/file.c
+@@ -543,7 +543,7 @@ affs_extent_file_ofs(struct inode *inode, u32 newsize)
+ 		if (boff + tmp > bsize || tmp > bsize)
+ 			BUG();
+ 		memset(AFFS_DATA(bh) + boff, 0, tmp);
+-		AFFS_DATA_HEAD(bh)->size = cpu_to_be32(be32_to_cpu(AFFS_DATA_HEAD(bh)->size) + tmp);
++		be32_add_cpu(&AFFS_DATA_HEAD(bh)->size, tmp);
+ 		affs_fix_checksum(sb, bh);
+ 		mark_buffer_dirty_inode(bh, inode);
+ 		size += tmp;
+@@ -686,7 +686,7 @@ static int affs_write_end_ofs(struct file *file, struct address_space *mapping,
+ 		if (boff + tmp > bsize || tmp > bsize)
+ 			BUG();
+ 		memcpy(AFFS_DATA(bh) + boff, data + from, tmp);
+-		AFFS_DATA_HEAD(bh)->size = cpu_to_be32(be32_to_cpu(AFFS_DATA_HEAD(bh)->size) + tmp);
++		be32_add_cpu(&AFFS_DATA_HEAD(bh)->size, tmp);
+ 		affs_fix_checksum(sb, bh);
+ 		mark_buffer_dirty_inode(bh, inode);
+ 		written += tmp;
 -- 
 1.5.3.7
 
