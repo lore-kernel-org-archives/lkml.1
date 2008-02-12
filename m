@@ -1,129 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbYBLC03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbYBLCwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759597AbYBLC03 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 21:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbYBLC0N
+	id S1758126AbYBLCwZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 21:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYBLCwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 21:26:13 -0500
-Received: from web36609.mail.mud.yahoo.com ([209.191.85.26]:45623 "HELO
-	web36609.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759117AbYBLC0L (ORCPT
+	Mon, 11 Feb 2008 21:52:09 -0500
+Received: from n7a.bullet.ukl.yahoo.com ([217.146.183.155]:35840 "HELO
+	n7a.bullet.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1756047AbYBLCvz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 21:26:11 -0500
-X-YMail-OSG: 36ARoAcVM1lw11WFT8p_uPr6lk0VoyJJJAGDVFLUI_PD7GvFKW0ao4drwN0Eok5y.t245lbxUkSbi24suCTLJ7RA7AIwoxDYrfwK.iRJznPTzA_BoK0-
-X-RocketYMMF: rancidfat
-Date: Mon, 11 Feb 2008 18:26:10 -0800 (PST)
+	Mon, 11 Feb 2008 21:51:55 -0500
+X-Yahoo-Newman-Id: 550206.63481.bm@omp209.mail.sp1.yahoo.com
+X-YMail-OSG: WhybjaoVM1l5RUdy4EKbeHptlfz_dcl.U1oHUce3Rs9fwZTo2L_S_9HxcjC1QSRI08Dg8fu.TQ--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <47B0E1A1.7090902@schaufler-ca.com>
+Date: Mon, 11 Feb 2008 16:00:33 -0800
 From: Casey Schaufler <casey@schaufler-ca.com>
 Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH - BUGFIX] Smack: Check for 'struct socket' with NULL sk
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>,
-       Joerg Platte <jplatte@naasa.net>
-Cc: linux-kernel@vger.kernel.org, casey@schaufler-ca.com
-In-Reply-To: <20080211232347.GA3635@ubuntu>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <655444.35935.qm@web36609.mail.mud.yahoo.com>
+To: paul.moore@hp.com
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] [RFC] Smack: unlabeled outgoing ambient packets - v2
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Casey Schaufler <casey@schaufler-ca.com>
 
---- "Ahmed S. Darwish" <darwish.07@gmail.com> wrote:
+Smack uses CIPSO labeling, but allows for unlabeled packets
+by specifying an "ambient" label that is applied to incoming
+unlabeled packets. Because the other end of the connection
+may dislike IP options, and ssh is one know application that
+behaves thus, it is prudent to respond in kind. This patch
+changes the network labeling behavior such that an outgoing
+packet that would be given a CIPSO label that matches the
+ambient label is left unlabeled. An "unlbl" domain is added
+and the netlabel defaulting mechanism invoked rather than
+assuming that everything is CIPSO. Locking has been added
+around changes to the ambient label as the mechanisms used
+to do so are more involved.
 
-> On Mon, Feb 11, 2008 at 07:26:02PM +0100, Joerg Platte wrote:
-> > Hi,
-> > 
-> > when booting linux 2.6.25-rc1 I get the following error:
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at 00000138
-> > IP: [<c01aa59e>] smack_netlabel+0x13/0xc8
-> > *pde = 00000000
-> > Oops: 0000 [#1] PREEMPT
-> > Modules linked in: nfsd 
-> [...]
-> > Call Trace:
-> >  [<c01aacf8>] ? new_inode_smack+0x39/0x3f
-> >  [<c01aad52>] ? smack_inode_alloc_security+0x16/0x27
-> >  [<c01a7510>] ? security_inode_alloc+0x19/0x1b
-> >  [<c01aa665>] ? smack_socket_post_create+0x12/0x18
-> >  [<c01a7a06>] ? security_socket_post_create+0x16/0x1b
-> >  [<c02116ce>] ? sock_create_lite+0x44/0x64
-> >  [<c0211712>] ? kernel_accept+0x24/0x5f
-> 
-> Hi Joerg,
-> 
-> There's a small problem with smack and NFS. A similar report was also
-> sent here: http://lkml.org/lkml/2007/10/27/85
-> 
-> Could you please check below patch ? I think it should fix your problem.
-> 
-> I've also added similar checks in inode_{get/set}security(). Cheating
-> from SELinux post_create_socket(), it does the same. Casey, Thoughts ?
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-If it's only NFS being uncooperative, as opposed to Smack not
-measuring up on socket handling in general, this might be the
-way to go about dealing with this problem until Smack NFS support
-proper goes in (no dates promised there!). I will have a better
-look once I get my posting-email working again.
+---
+
+This patch differs significantly from the previous version.
+I think that I am using the netlbl interfaces more appropriately,
+Paul, please let me know if there's a better approach.
+
+It's inconvenient that netlbl_sock_setattr frees the domain passed.
+I see that it makes sense for SELinux with the way SELinux treats
+secctx's, but Smack is more careful about memory usage and I have
+to do what I consider a gratuitous kalloc because of this behavior.
+Would you be open to a patch to change this if it included the SELinux
+changes?
+
+Thank you.
+
+ security/smack/smack_lsm.c |   20 ++++++------
+ security/smack/smackfs.c   |   54 +++++++++++++++++++++++++----------
+ 2 files changed, 49 insertions(+), 25 deletions(-)
+
+diff -uprN -X linux-2.6.25-g0210-base//Documentation/dontdiff linux-2.6.25-g0210-base/security/smack/smackfs.c linux-2.6.25-g0210/security/smack/smackfs.c
+--- linux-2.6.25-g0210-base/security/smack/smackfs.c	2008-02-10 19:30:47.000000000 -0800
++++ linux-2.6.25-g0210/security/smack/smackfs.c	2008-02-11 07:14:54.000000000 -0800
+@@ -45,6 +45,7 @@ enum smk_inos {
+  */
+ static DEFINE_MUTEX(smack_list_lock);
+ static DEFINE_MUTEX(smack_cipso_lock);
++static DEFINE_MUTEX(smack_ambient_lock);
+ 
+ /*
+  * This is the "ambient" label for network traffic.
+@@ -363,6 +364,27 @@ void smk_cipso_doi(void)
+ 		       __func__, __LINE__, rc);
+ }
+ 
++/**
++ * smk_unlbl_ambient - initialize the unlabeled domain
++ */
++void smk_unlbl_ambient(char *oldambient)
++{
++	int rc;
++	struct netlbl_audit audit_info;
++
++	if (oldambient != NULL) {
++		rc = netlbl_cfg_map_del(oldambient, &audit_info);
++		if (rc != 0)
++			printk(KERN_WARNING "%s:%d remove rc = %d\n",
++			       __func__, __LINE__, rc);
++	}
++
++	rc = netlbl_cfg_unlbl_add_map(smack_net_ambient, &audit_info);
++	if (rc != 0)
++		printk(KERN_WARNING "%s:%d add rc = %d\n",
++		       __func__, __LINE__, rc);
++}
++
+ /*
+  * Seq_file read operations for /smack/cipso
+  */
+@@ -709,7 +731,6 @@ static ssize_t smk_read_ambient(struct f
+ 				size_t cn, loff_t *ppos)
+ {
+ 	ssize_t rc;
+-	char out[SMK_LABELLEN];
+ 	int asize;
+ 
+ 	if (*ppos != 0)
+@@ -717,23 +738,18 @@ static ssize_t smk_read_ambient(struct f
+ 	/*
+ 	 * Being careful to avoid a problem in the case where
+ 	 * smack_net_ambient gets changed in midstream.
+-	 * Since smack_net_ambient is always set with a value
+-	 * from the label list, including initially, and those
+-	 * never get freed, the worst case is that the pointer
+-	 * gets changed just after this strncpy, in which case
+-	 * the value passed up is incorrect. Locking around
+-	 * smack_net_ambient wouldn't be any better than this
+-	 * copy scheme as by the time the caller got to look
+-	 * at the ambient value it would have cleared the lock
+-	 * and been changed.
+ 	 */
+-	strncpy(out, smack_net_ambient, SMK_LABELLEN);
+-	asize = strlen(out) + 1;
++	mutex_lock(&smack_ambient_lock);
+ 
+-	if (cn < asize)
+-		return -EINVAL;
++	asize = strlen(smack_net_ambient) + 1;
+ 
+-	rc = simple_read_from_buffer(buf, cn, ppos, out, asize);
++	if (cn >= asize)
++		rc = simple_read_from_buffer(buf, cn, ppos,
++					     smack_net_ambient, asize);
++	else
++		rc = -EINVAL;
++
++	mutex_unlock(&smack_ambient_lock);
+ 
+ 	return rc;
+ }
+@@ -751,6 +767,7 @@ static ssize_t smk_write_ambient(struct 
+ 				 size_t count, loff_t *ppos)
+ {
+ 	char in[SMK_LABELLEN];
++	char *oldambient;
+ 	char *smack;
+ 
+ 	if (!capable(CAP_MAC_ADMIN))
+@@ -766,7 +783,13 @@ static ssize_t smk_write_ambient(struct 
+ 	if (smack == NULL)
+ 		return -EINVAL;
+ 
++	mutex_lock(&smack_ambient_lock);
++
++	oldambient = smack_net_ambient;
+ 	smack_net_ambient = smack;
++	smk_unlbl_ambient(oldambient);
++
++	mutex_unlock(&smack_ambient_lock);
+ 
+ 	return count;
+ }
+@@ -974,6 +997,7 @@ static int __init init_smk_fs(void)
+ 
+ 	sema_init(&smack_write_sem, 1);
+ 	smk_cipso_doi();
++	smk_unlbl_ambient(NULL);
+ 
+ 	return err;
+ }
+diff -uprN -X linux-2.6.25-g0210-base//Documentation/dontdiff linux-2.6.25-g0210-base/security/smack/smack_lsm.c linux-2.6.25-g0210/security/smack/smack_lsm.c
+--- linux-2.6.25-g0210-base/security/smack/smack_lsm.c	2008-02-10 19:30:47.000000000 -0800
++++ linux-2.6.25-g0210/security/smack/smack_lsm.c	2008-02-10 20:10:47.000000000 -0800
+@@ -1251,7 +1251,7 @@ static void smack_to_secattr(char *smack
+ 
+ 	switch (smack_net_nltype) {
+ 	case NETLBL_NLTYPE_CIPSOV4:
+-		nlsp->domain = NULL;
++		nlsp->domain = kstrdup(smack, GFP_ATOMIC);
+ 		nlsp->flags = NETLBL_SECATTR_DOMAIN;
+ 		nlsp->flags |= NETLBL_SECATTR_MLS_LVL;
+ 
+@@ -1276,21 +1276,21 @@ static void smack_to_secattr(char *smack
+  * Convert the outbound smack value (smk_out) to a
+  * secattr and attach it to the socket.
+  *
+- * Returns 0 on success or an error code
++ * The return from netlbl_sock_setattr is ignored because
++ * the defaulting label behavior provided by netlbl takes
++ * care of the error cases.
+  */
+-static int smack_netlabel(struct sock *sk)
++static void smack_netlabel(struct sock *sk)
+ {
+ 	struct socket_smack *ssp = sk->sk_security;
+ 	struct netlbl_lsm_secattr secattr;
+-	int rc = 0;
++	int rc;
+ 
+ 	netlbl_secattr_init(&secattr);
+ 	smack_to_secattr(ssp->smk_out, &secattr);
+ 	if (secattr.flags != NETLBL_SECATTR_NONE)
+ 		rc = netlbl_sock_setattr(sk, &secattr);
+-
+ 	netlbl_secattr_destroy(&secattr);
+-	return rc;
+ }
+ 
+ /**
+@@ -1340,7 +1340,7 @@ static int smack_inode_setsecurity(struc
+ 		ssp->smk_in = sp;
+ 	else if (strcmp(name, XATTR_SMACK_IPOUT) == 0) {
+ 		ssp->smk_out = sp;
+-		return smack_netlabel(sock->sk);
++		smack_netlabel(sock->sk);
+ 	} else
+ 		return -EOPNOTSUPP;
+ 
+@@ -1367,7 +1367,8 @@ static int smack_socket_post_create(stru
+ 	/*
+ 	 * Set the outbound netlbl.
+ 	 */
+-	return smack_netlabel(sock->sk);
++	smack_netlabel(sock->sk);
++	return 0;
+ }
+ 
+ /**
+@@ -2199,7 +2200,6 @@ static int smack_socket_getpeersec_dgram
+ static void smack_sock_graft(struct sock *sk, struct socket *parent)
+ {
+ 	struct socket_smack *ssp;
+-	int rc;
+ 
+ 	if (sk == NULL)
+ 		return;
+@@ -2212,7 +2212,7 @@ static void smack_sock_graft(struct sock
+ 	ssp->smk_out = current->security;
+ 	ssp->smk_packet[0] = '\0';
+ 
+-	rc = smack_netlabel(sk);
++	smack_netlabel(sk);
+ }
+ 
+ /**
 
 
-> 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-> ---
-> diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-> index 1c11e42..eb04278 100644
-> --- a/security/smack/smack_lsm.c
-> +++ b/security/smack/smack_lsm.c
-> @@ -701,7 +701,7 @@ static int smack_inode_getsecurity(const struct inode
-> *inode,
->  		return -EOPNOTSUPP;
->  
->  	sock = SOCKET_I(ip);
-> -	if (sock == NULL)
-> +	if (sock == NULL || sock->sk == NULL)
->  		return -EOPNOTSUPP;
->  
->  	ssp = sock->sk->sk_security;
-> @@ -1280,10 +1280,12 @@ static void smack_to_secattr(char *smack, struct
-> netlbl_lsm_secattr *nlsp)
->   */
->  static int smack_netlabel(struct sock *sk)
->  {
-> -	struct socket_smack *ssp = sk->sk_security;
-> +	struct socket_smack *ssp;
->  	struct netlbl_lsm_secattr secattr;
->  	int rc = 0;
->  
-> +	BUG_ON(sk == NULL);
-> +	ssp = sk->sk_security;
->  	netlbl_secattr_init(&secattr);
->  	smack_to_secattr(ssp->smk_out, &secattr);
->  	if (secattr.flags != NETLBL_SECATTR_NONE)
-> @@ -1331,7 +1333,7 @@ static int smack_inode_setsecurity(struct inode *inode,
-> const char *name,
->  		return -EOPNOTSUPP;
->  
->  	sock = SOCKET_I(inode);
-> -	if (sock == NULL)
-> +	if (sock == NULL || sock->sk == NULL)
->  		return -EOPNOTSUPP;
->  
->  	ssp = sock->sk->sk_security;
-> @@ -1362,7 +1364,7 @@ static int smack_inode_setsecurity(struct inode *inode,
-> const char *name,
->  static int smack_socket_post_create(struct socket *sock, int family,
->  				    int type, int protocol, int kern)
->  {
-> -	if (family != PF_INET)
-> +	if (family != PF_INET || sock->sk == NULL)
->  		return 0;
->  	/*
->  	 * Set the outbound netlbl.
-> 
-> 
-> 
-
-
-Casey Schaufler
-casey@schaufler-ca.com
