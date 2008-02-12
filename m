@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbYBLSrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYBLStU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbYBLSrM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbYBLSq6
+	id S1763626AbYBLStU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758944AbYBLStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:46:58 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:33105 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758641AbYBLSq5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:46:57 -0500
-Date: Tue, 12 Feb 2008 20:22:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212192227.GB6458@one.firstfloor.org>
-References: <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu> <alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org> <20080212182024.GA4940@one.firstfloor.org> <alpine.LFD.1.00.0802121001180.2920@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802121001180.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 12 Feb 2008 13:49:09 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42963 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755951AbYBLStG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:49:06 -0500
+Message-ID: <47B1EA0E.7080602@garzik.org>
+Date: Tue, 12 Feb 2008 13:48:46 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <20080212174824.GA1919@kroah.com>
+In-Reply-To: <20080212174824.GA1919@kroah.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 10:11:13AM -0800, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 12 Feb 2008, Andi Kleen wrote:
-> >
-> > >  - the kgdb commands should always act on the *current* CPU only
-> > >  - add one command that says "switch over to CPU #n" which just releases 
-> > >    the current CPU and sends an IPI to that CPU #n (no timeouts, no 
-> > >    synchronous waiting, no nothing - it's like a "continue", but with a 
-> > >    "try to get the other CPU to stop"
-> > 
-> > The problem I see here is that the kernel tends to get badly confused
-> > if one CPU just stops responding. At some point someone does an global
-> > IPI and that then hangs.  You would need to hotunplug the CPU which
-> > is theoretically possible, but quite intrusive.
-> 
-> You're thinking about this totally *wrong*.
-> 
-> You definitely do not want to hot-unplug or isolate anything at all. 
+Greg KH wrote:
+> A lot of time that already happens today, between the different
+> subsystem maintainers.  We routinely pass PCI and driver core changes
+> through the network and scsi and ata trees in order to handle merge
+> issues properly.  This already happened in a few places in the
+> 2.6.25-rc1 merge cycle.
 
-I agree that it wouldn't be a good idea -- i was just pointing out
-consequences of your proposal.
 
-> Just let the other CPU's hang naturally if they need to wait for IPI's 
-> etc. What's the downside?
+Yep.  I do that with the powerpc tree sometimes, too:  I'll ACK a 
+drivers/net change that is obviously PPC-specific, and that drivers/net 
+change will go in via paulus.
 
-There tend to be timeouts (e.g. softlock/nmi watchdog at least). I think
-some of the IPIs eventually time out too.  In general losing a lot 
-of time can lead to weird side effects.
+Like you said, it's done on a per-patch not git tree basis at the moment.
 
--Andi
+That sort of cooperation has become common: in areas of shared 
+responsibility, request an ack, and then the "most obvious" person 
+(generally the one with most merge dependencies) merges that 
+shared-responsibility change along with some other changes specific to 
+their own tree.
+
+	Jeff
+
+
+
