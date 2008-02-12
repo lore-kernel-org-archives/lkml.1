@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbYBLXqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbYBLXsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbYBLXqO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbYBLXqA
+	id S1753408AbYBLXsm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbYBLXse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:46:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59192
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752688AbYBLXp7 (ORCPT
+	Tue, 12 Feb 2008 18:48:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53637 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750851AbYBLXsd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:45:59 -0500
-Date: Tue, 12 Feb 2008 15:46:30 -0800 (PST)
-Message-Id: <20080212.154630.241691261.davem@davemloft.net>
-To: mgross@linux.intel.com
-Cc: muli@il.ibm.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH]intel-iommu batched iotlb flushes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080212155448.GC27490@linux.intel.com>
-References: <20080212085256.GF5750@rhun.haifa.ibm.com>
-	<20080212.010006.255202479.davem@davemloft.net>
-	<20080212155448.GC27490@linux.intel.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 12 Feb 2008 18:48:33 -0500
+Date: Tue, 12 Feb 2008 15:47:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Howells <dhowells@redhat.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+Subject: Re: [PATCH 2/4] KEYS: Check starting keyring as part of search
+Message-Id: <20080212154749.de96c277.akpm@linux-foundation.org>
+In-Reply-To: <20080208160429.14436.88582.stgit@warthog.procyon.org.uk>
+References: <20080208160424.14436.6965.stgit@warthog.procyon.org.uk>
+	<20080208160429.14436.88582.stgit@warthog.procyon.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: mark gross <mgross@linux.intel.com>
-Date: Tue, 12 Feb 2008 07:54:48 -0800
+On Fri, 08 Feb 2008 16:04:29 +0000
+David Howells <dhowells@redhat.com> wrote:
 
-> Something could be done:
-> we could enable drivers to have DMA-pools they manage that get mapped
-> and are re-used.
+> Check the starting keyring as part of the search to (a) see if that is what
+> we're searching for, and (b) to check it is still valid for searching.
 > 
-> I would rather the DMA-pools be tied to PID's that way any bad behavior
-> would be limited to the address space of the process using the device.
-> I haven't thought about how hard this would be to do but it would be
-> nice.  I think this could be tricky.
+> The scenario:  User in process A does things that cause things to be
+> created in its process session keyring.  The user then does an su to
+> another user and starts a new process, B.  The two processes now
+> share the same process session keyring.
+> 
+> Process B does an NFS access which results in an upcall to gssd.
+> When gssd attempts to instantiate the context key (to be linked
+> into the process session keyring), it is denied access even though it
+> has an authorization key.
+> 
+> The order of calls is:
+> 
+>    keyctl_instantiate_key()
+>       lookup_user_key()				    (the default: case)
+>          search_process_keyrings(current)
+> 	    search_process_keyrings(rka->context)   (recursive call)
+> 	       keyring_search_aux()
+> 
+> keyring_search_aux() verifies the keys and keyrings underneath the
+> top-level keyring it is given, but that top-level keyring is neither
+> fully validated nor checked to see if it is the thing being searched for.
+> 
+> This patch changes keyring_search_aux() to:
+> 1) do more validation on the top keyring it is given and
+> 2) check whether that top-level keyring is the thing being searched for
+> 
+> ...
+>
+> +	    (keyring->expiry && now.tv_sec >= keyring->expiry))
 
-Yes, this is a good idea especially for networking.
-
-For transmit on 10GB links the IOMMU setup is near the top
-of the profiles.
-
-What a driver could do is determine the maximum number of
-IOMMU pages it could need to map one maximally sized packet.
-So then it allocates enough space for all such entries in
-it's TX ring.
-
-This eliminates the range allocation from the transmit path.
-All that's left is "remap DMA range X to scatterlist Y"
-
-And yes it would be nice to have dma_map_skb() type interfaces
-so that we don't walk into the IOMMU code N times per packet.
+time_after()?
