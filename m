@@ -1,83 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbYBLPgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYBLPhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbYBLPgf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:36:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbYBLPg1
+	id S1758131AbYBLPhp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYBLPhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:36:27 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37086 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750898AbYBLPg1 (ORCPT
+	Tue, 12 Feb 2008 10:37:38 -0500
+Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:60768 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751112AbYBLPhh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:36:27 -0500
-Date: Tue, 12 Feb 2008 17:11:52 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212161152.GA3281@one.firstfloor.org>
-References: <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu>
+	Tue, 12 Feb 2008 10:37:37 -0500
+Date: Tue, 12 Feb 2008 16:37:33 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Greg KH <greg@kroah.com>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
+  panic about sysfs with adm1026)
+Message-ID: <20080212163733.461a8684@hyperion.delvare>
+In-Reply-To: <20080212152715.GB19441@kroah.com>
+References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com>
+	<20080210171004.GB25353@kroah.com>
+	<20080210190115.2ebd4124@hyperion.delvare>
+	<86802c440802111539w7eeb84dcu97103733364f7a7b@mail.gmail.com>
+	<20080212092722.32c30eac@hyperion.delvare>
+	<20080212152715.GB19441@kroah.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212152846.GC3078@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 04:28:46PM +0100, Ingo Molnar wrote:
-> 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> 
-> > > do spinning for now: we dont _ever_ want to break a correctly 
-> > > working system with kgdb.
+On Tue, 12 Feb 2008 07:27:15 -0800, Greg KH wrote:
+> On Tue, Feb 12, 2008 at 09:27:22AM +0100, Jean Delvare wrote:
+> > Hi Yinghai,
 > > 
-> > Stopping all CPUs for indefinite time very much seems like "breaking a 
-> > correctly working system" to me. [...]
+> > On Mon, 11 Feb 2008 15:39:39 -0800, Yinghai Lu wrote:
+> > > On Feb 10, 2008 10:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> > > > Yeah, I am an idiot. In 5b34dbcd88251508d02e48ad9b0f9b8232a13ee0 I
+> > > > introduced two new sysfs file groups but forgot to NULL-terminate them.
+> > > > Sorry about that, here's the fix:
+> > > >
+> > > > * * * * *
+> > > >
+> > > > The missing NULL at the end of two sysfs file groups causes a kernel
+> > > > crash when calling sysfs_create_group().
+> > > >
+> > > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > > > ---
+> > > >  drivers/hwmon/adm1026.c |    2 ++
+> > > >  1 file changed, 2 insertions(+)
+> > > >
+> > > > --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c       2008-02-10 11:21:54.000000000 +0100
+> > > > +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c    2008-02-10 18:51:00.000000000 +0100
+> > > > @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
+> > > >         &dev_attr_temp3_crit_enable.attr,
+> > > >         &dev_attr_temp3_auto_point1_pwm.attr,
+> > > >         &dev_attr_temp3_auto_point2_pwm.attr,
+> > > > +       NULL
+> > > >  };
+> > > >
+> > > >  static const struct attribute_group adm1026_group_temp3 = {
+> > > > @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
+> > > >         &sensor_dev_attr_in9_max.dev_attr.attr,
+> > > >         &sensor_dev_attr_in9_min.dev_attr.attr,
+> > > >         &sensor_dev_attr_in9_alarm.dev_attr.attr,
+> > > > +       NULL
+> > > >  };
+> > > >
+> > > >  static const struct attribute_group adm1026_group_in8_9 = {
+> > > >
+> > > > * * * * *
+> > > 
+> > > it works. Thanks
+> > 
+> > Great, thanks. Mark, please include this patch in your next patch to
+> > Linus for 2.6.25.
 > 
-> well, this is a small detail, but still you are wrong, and on a 
-> correctly working system this will not occur. (if yes, tell me how)
-> 
-> KGDB does a very straightforward "all CPUs enter controlled state" 
-> transition when the session begins, and at the end an "all CPUs 
-> continue" transition.
+> Can someone send it to stable@kernel.org also when it goes into Linus's
+> tree, as it looks like a pretty bad thing :)
 
-Yes and the session has no fixed time limit.
+I certainly could, but then you would laugh at me because 2.6.24 isn't
+affected by the bug.
 
-> 
-> I'm not sure what you mean exactly under "stopping all CPUs for 
-> indefinite amount of time" (your statement is sufficiently vague to be 
-
-Stopping with interrupts off. Nothing scheduled anymore. 
-
-An easy definition for the condition is anything that requires 
-touch_{nmi,softlockup}_watchdog [which kgdb definitely does, 
-although in a quite convoluted way]
-
-> yes, we could "time out" and force a KGDB session even if some CPUs do 
-> not respond. But it's obviously not a completely safe system state, 
-> because other CPUs might be changing things under the feet of the 
-> debugger. So the safest first-level approach is to not enter the 
-
-While that is a slight risk that problem is already there anyways.
-Lots of agents in the system could do that. Do you plan to stop
-all DMA too for example if you're so worried about this? 
-Or how about SMM code changing something? 
-
-Anyways the slight risk of the other CPUs eventually recovering
-would seem a acceptable trade off versus not being able to use
-the debugger to debug the system with hanging CPUs. 
-
-A possible compromise between my and your position on this would 
-be also having an option for this, with default to off
-(although I would expect that would be a inconvenient default for
-many people)
-
--Andi (who retires from this thread now, I already spent too much on this)
-
+-- 
+Jean Delvare
