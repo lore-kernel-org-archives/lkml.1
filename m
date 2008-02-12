@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbYBLScN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764552AbYBLSce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764208AbYBLScN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:32:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762269AbYBLSbz
+	id S1764552AbYBLSce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762777AbYBLSb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:31:55 -0500
+	Tue, 12 Feb 2008 13:31:57 -0500
 Received: from srv5.dvmed.net ([207.36.208.214]:48660 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762006AbYBLSbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:31:53 -0500
-Message-ID: <47B1E616.8040603@garzik.org>
-Date: Tue, 12 Feb 2008 13:31:50 -0500
+	id S1762211AbYBLSby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:31:54 -0500
+Message-ID: <47B1DDD3.2000402@garzik.org>
+Date: Tue, 12 Feb 2008 12:56:35 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -21,8 +21,8 @@ CC: Stephen Rothwell <sfr@canb.auug.org.au>,
        Linus <torvalds@linux-foundation.org>
 Subject: Re: multiple drivers, single device (was Re: Announce: Linux-next
  (Or Andrew's dream  :-)))
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org> <20080212164232.GA326@kroah.com> <47B1DDD3.2000402@garzik.org> <20080212181037.GA2445@kroah.com>
-In-Reply-To: <20080212181037.GA2445@kroah.com>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org> <20080212164232.GA326@kroah.com>
+In-Reply-To: <20080212164232.GA326@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -33,44 +33,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Greg KH wrote:
-> Except that the individual drivers are a lot of the time written by
-> different people, live in different portions of the tree, and are
-> combined into different combinations depending on the chipset.
+> The work I'm doing here is for stupid PCI firmware engineers, who have
+> created devices that are different things, all bound up under the same
+> PCI device.  I'm thinking of watchdog timers and random number
+> generator and i2c controller on the same PCI device, or even the more
+> basic, frame buffer and DRM access to the same PCI video device.
 
-Yes -- the worst case is that people have to work together, and it 
-tweaks people who like to organize source files nicely into directories :)
+Yes, that has a known solution:  have your driver register i2c, rng, 
+watchdog, etc. functions.
 
-
-> For i2c devices, I see the scx200_acb, i2c-elektor, i2c-sis5595, and
-> i2c-sis630 drivers needing this.  The last one happens to share the pci
-> device with a video driver, that doesn't always need to be / want to be
-> loaded by users just so they can read the temperature of their
-> processors.
-
-Sure.  Reasonable request, and doable within today's APIs.
-
-
-> Oh, the EDAC code also needs this, and I know that no one wants to merge
-> that stuff into their individual drivers :)
-
-So people have to work together...  darn :)  most drivers these days are 
-organized nicely into nicely modular units anyway, making it easy to 
-write a "shell" driver that simply registers each sub-driver, and helps 
-arbitrate/provide resources to sub-units.
-
-Consider, for example, a PCI driver that loads, and then fills in 
-platform_data to provide a specific set of resources to a platform 
-driver (a common idiom).  You would need to create parented struct 
-devices (parent: pci_dev's device), but everything else should work within
-
-I could even forsee a future where most drivers are written in a generic 
-platform-driver style, and PCI|sbus|embedded-bus|blah are simply 
-bus-specific shells that fill in platform data.
-
-All of this should be nicely possible within the existing usage of 
-struct device, platform drivers, generic DMA API, iomap, etc.
+Works just fine inside today's infrastructure, no changes needed.
 
 	Jeff
-
 
 
