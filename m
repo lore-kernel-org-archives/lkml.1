@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbYBLXH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbYBLXHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbYBLXH2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755027AbYBLXHH
+	id S1757957AbYBLXHq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:07:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756518AbYBLXHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:07:07 -0500
+	Tue, 12 Feb 2008 18:07:25 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:4852 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754007AbYBLXHF (ORCPT
+	with ESMTP id S1756153AbYBLXHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:07:05 -0500
+	Tue, 12 Feb 2008 18:07:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=a86wNk2wNRAO7MJ6BWm429MNU8o2Y+mUUgv8cCRna3eq91HhwMwIkv685lobK8M3H74Jybod2XLFJG53n0MYIe1H/p1IzopHPgrtIh2LVgZtjgdWs4U/HRbZJQlR+I8FxNcoUvuC+m5kHwEC5o/JTwz2ctYs5x7ECIm9wHa5U3Y=
+        b=h9w3LnRxHYpZ9D1gMyrZ19bAvd54IYPoA/0sgjBvsL6ex0pCEJd7mWEbARvO7qsvO1ml/cnKMv0A27bYVKMy/nsLb4dBeJdjEeOmXi89mPtQB5iS9Vg+c8dP1ukj8Qk9S1m3IKKDpW7zcRfIltxfmKEHNINVnxTLRRJKZawcwow=
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] crypto: be*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:06 +0100
-Message-Id: <1202857582-15450-2-git-send-email-marcin.slusarz@gmail.com>
+       Ben Collins <ben.collins@ubuntu.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] ieee 1394: be*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:07 +0100
+Message-Id: <1202857582-15450-3-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -39,25 +39,36 @@ with:
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David S. Miller <davem@davemloft.net>
+Cc: Ben Collins <ben.collins@ubuntu.com>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- crypto/lrw.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/ieee1394/csr.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/crypto/lrw.c b/crypto/lrw.c
-index 9d52e58..4d93928 100644
---- a/crypto/lrw.c
-+++ b/crypto/lrw.c
-@@ -92,7 +92,7 @@ struct sinfo {
- static inline void inc(be128 *iv)
- {
- 	if (!(iv->b = cpu_to_be64(be64_to_cpu(iv->b) + 1)))
--		iv->a = cpu_to_be64(be64_to_cpu(iv->a) + 1);
-+		be64_add_cpu(&iv->a, 1);
- }
+diff --git a/drivers/ieee1394/csr.c b/drivers/ieee1394/csr.c
+index 52ac83e..c90be40 100644
+--- a/drivers/ieee1394/csr.c
++++ b/drivers/ieee1394/csr.c
+@@ -133,8 +133,7 @@ static void host_reset(struct hpsb_host *host)
+                 host->csr.state &= ~0x100;
+         }
  
- static inline void lrw_round(struct sinfo *s, void *dst, const void *src)
+-        host->csr.topology_map[1] =
+-                cpu_to_be32(be32_to_cpu(host->csr.topology_map[1]) + 1);
++	be32_add_cpu(&host->csr.topology_map[1], 1);
+         host->csr.topology_map[2] = cpu_to_be32(host->node_count << 16
+                                                 | host->selfid_count);
+         host->csr.topology_map[0] =
+@@ -142,8 +141,7 @@ static void host_reset(struct hpsb_host *host)
+                             | csr_crc16(host->csr.topology_map + 1,
+                                         host->selfid_count + 2));
+ 
+-        host->csr.speed_map[1] =
+-                cpu_to_be32(be32_to_cpu(host->csr.speed_map[1]) + 1);
++	be32_add_cpu(&host->csr.speed_map[1], 1);
+         host->csr.speed_map[0] = cpu_to_be32(0x3f1 << 16
+                                              | csr_crc16(host->csr.speed_map+1,
+                                                          0x3f1));
 -- 
 1.5.3.7
 
