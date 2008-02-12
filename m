@@ -1,73 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764089AbYBLQbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763603AbYBLQcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764089AbYBLQbv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759384AbYBLQbm
+	id S1763603AbYBLQcR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:32:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764090AbYBLQbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:31:42 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:44273 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762204AbYBLQbl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:31:41 -0500
-Date: Tue, 12 Feb 2008 18:07:11 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212170711.GB4191@one.firstfloor.org>
-References: <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu> <20080212161152.GA3281@one.firstfloor.org> <alpine.LFD.1.00.0802120811010.2920@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802120811010.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 12 Feb 2008 11:31:52 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36324 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764083AbYBLQbv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 11:31:51 -0500
+Message-ID: <47B1C9F4.30402@garzik.org>
+Date: Tue, 12 Feb 2008 11:31:48 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, John Linville <linville@tuxdriver.com>
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+References: <20080212044314.GA4888@kroah.com>	<20080211211751.3e265754@laptopd505.fenrus.org>	<20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net>
+In-Reply-To: <20080211.220726.157328337.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This includes things like having "breakpoint reservations" (discussed 
-> earlier) and just generally trying to add lots of infrastructure to make 
-> kgdb "fit in" to the kernel.
-
-I think that part is actually mostly ok now (old kgdb stubs were
-much worse in this regard) 
-
-I still think the ultimative proof for this would be working
-"modprobe kgdb" though.
-
+David Miller wrote:
+> I rebase my tree all the time, at least once or twice per
+> week.  Why?
 > 
-> The fact is, not having kgdb enabled should have _zero_ impact on the 
-> kernel, but the implication is also that when you *do* enable kgdb, that 
-> shouldn't change anything visible either: the rest of the kernel should 
+> Firstly, to remove crap.  When you have "great idea A" then "oh shit A
+> won't work, revert that" there is zero sense in keeping both
+> changesets around.
+> 
+> Secondly, I want to fix up the rejects caused by conflicts with
+> upstream bug fixes and the like (and there are tons when the tree gets
+> to 1500 or so patches like the networking did).  I don't want git to
+> merge the thing by hand, I want to see what the conflict is and make
+> sure the "obvious" resolution is OK and the most efficient way I know
+> how to do that is to suck my tree apart as patches, then suck them
+> back into a fresh tree.
 
-While agreed in theory there are some exceptions: any time an oops
-happens or a crash dump would happen automatically kgdb should definitely
-do something very visible. Unfortunately that's not always the case
-currently (see earlier comments on the notifier priority) 
+FWIW, that is annoying and painful for us downstream jobbers, since it 
+isn't really how git was meant to be used.  You use it more like a patch 
+queue, where commits are very fluid.
 
-> So kgdb in my opinion will *have* to step on some other kernel 
-> infrastructure. I also think that things like timeouts are not something 
-> the client should do - if a kgdb lock never gets through, then it should 
-> be the debugging end that should just react to ^C and tough titties: it's 
-> not like there's a whole lot to be done.
+Unfortunately, if there is any synchronization lag between me and you -- 
+not uncommon -- then I cannot commit changes on top of the changes just 
+sent, in my own local tree.  Why?  Because you rebase so often, I cannot 
+even locally commit dependent patches due to the end result merge 
+getting so nasty.
 
-The problem here is that the timeout we were talking about 
-is not integrated into the kgdb event loop, it is rather the loop
-that protects the event loop. If you hang there all input
-from the outside will be ignored.
+I understand the desire to want a nice and clean history, but the 
+frequency here really has a negative impact on your downstreams.
 
-> So keep the damn thing really simple, and don't try to handle every 
-> possible thing. We expect the debugger side to have a person with some 
-> flexibility on it.
+It also totally screws the commit statistics, wiping me and John and the 
+committers we have preserved out, replacing everybody's committer with 
+David Miller.
 
-If you want areally simple kgdb the best option would be re-porting
-the really simple (tm) 2.4 era x86-64 kgdb stub I did long ago.
-It had a small fraction of the code size of the current code, but
-was also missing a lot of features of course.
+	Jeff
 
--Andi
+
