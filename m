@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbYBLRxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763519AbYBLR5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763704AbYBLRxc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:53:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbYBLRxY
+	id S1763519AbYBLR5W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760800AbYBLR5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:53:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37558 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759351AbYBLRxW (ORCPT
+	Tue, 12 Feb 2008 12:57:10 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:52042 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760066AbYBLR5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:53:22 -0500
-Date: Tue, 12 Feb 2008 09:51:09 -0800
-From: Greg KH <greg@kroah.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: multiple drivers, single device
-Message-ID: <20080212175109.GA2114@kroah.com>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org> <20080212164232.GA326@kroah.com> <adak5lavzpf.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <adak5lavzpf.fsf@cisco.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 12 Feb 2008 12:57:08 -0500
+Subject: Re: Open bugs
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Natalie Protasevich <protasnb@gmail.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, alsa-devel@alsa-project.org,
+       linux-ide@vger.kernel.org, bugme-daemon@kernel-bugs.osdl.org,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <32209efe0802120018r17c38835ud931085e44aafefb@mail.gmail.com>
+References: <32209efe0802120018r17c38835ud931085e44aafefb@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 11:57:02 -0600
+Message-Id: <1202839022.3137.63.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 09:42:20AM -0800, Roland Dreier wrote:
->  > The work I'm doing here is for stupid PCI firmware engineers, who have
->  > created devices that are different things, all bound up under the same
->  > PCI device.  I'm thinking of watchdog timers and random number
->  > generator and i2c controller on the same PCI device, or even the more
->  > basic, frame buffer and DRM access to the same PCI video device.
->  > 
->  > The OLPC is a good example of hardware that needs this kind of
->  > functionality.
+Added linux-scsi for the SCSI ones
+
+On Tue, 2008-02-12 at 00:18 -0800, Natalie Protasevich wrote:
+> Hello,
 > 
-> Sounds interesting.  I've been meaning to work on this too for quite a
-> while, but I'm glad to see you beat me to it.
+> The bugs listed are over a month old, and haven't been addressed yet.
+> It would be appreciated if corresponding maintainers identify whether
+> the bugs have been fixed, or need to be worked on, and take
+> appropriate action.
 > 
-> An example of an in-tree use case for this would be the mlx4 drivers--
-> you can look at drivers/net/mlx4/intf.c to see the simple stupid
-> solution I came up with to allow an IB and a NIC (not yet upstream)
-> driver to share the same PCI device.  A good test for your stuff would
-> be if it simplifies the code from the ad hoc solution I came up with.
+> In most cases, reporters are standing by and ready to provide
+> information and necessary testing.
+> Thanks!
+> 
+> SCSI======================================================
+> 
+> Problems on booting
+> http://bugzilla.kernel.org/show_bug.cgi?id=9621
+> Date: 12/22/2007
+> Regression
+> Summary: The boot stops / hangs on hardware detection of SCSI.  I have
+> an InitioINI-9X00U/UW
+> When I have an usb key sticked in /dev/sba, and run lilo then, then it
+> dont boot but give L99 99 99 99 ... error
 
-Great, I'll look into that as I need a test case for this kind of stuff.
+I think this was fixed by commit
+e2d435ea4084022ab88efa74214accb45b1f9e92
 
-thanks,
+Apparently bugzilla email is on the fritz again because this bug report
+didn't come across linux-scsi.
 
-greg k-h
+> Resetting RAID attached to a FC Switch causes kernel panic and crash
+> http://bugzilla.kernel.org/show_bug.cgi?id=9598
+> 12/18/2007
+> Hardware Environment:SunFire X4200 - 2 x dual core AMD Opteron CPUs,
+> 8GB Ram, Qlogic FC adapter.
+> Summary: Resetting the RAID box causes the X4200 to crash.
+
+This one looks like the usual problem of remove re-add with the SCSI
+device model.
+
+> 3ware 9650SE -8LPML not recognized by 3w-9xxx driver
+> http://bugzilla.kernel.org/show_bug.cgi?id=8908
+> 08/19/2007
+> Problem Description: The 3w-9xxx kernel driver for 3ware 9xxx SATA
+> RAID Controller series did not recognize the 3ware 9650SE-8LPML SATA
+> RAID Controller.
+
+Since this one never apparently worked it's not a regression but an
+enhancement request, isn't it?
+
+However, adding this PCI ID to the driver should be fairly
+straightforward.  Does anyone know what the actual PCI IDs are?
+
+James
+
+
