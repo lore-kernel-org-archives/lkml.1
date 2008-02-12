@@ -1,111 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbYBLLj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762726AbYBLLkH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761922AbYBLLj2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 06:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761476AbYBLLjU
+	id S1762726AbYBLLkH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 06:40:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761600AbYBLLjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 06:39:20 -0500
-Received: from styx.suse.cz ([82.119.242.94]:40540 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761689AbYBLLjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 06:39:19 -0500
-Date: Tue, 12 Feb 2008 12:39:17 +0100
-From: Jan Kara <jack@suse.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: udf regression: broken directory handling
-Message-ID: <20080212113916.GA13425@duck.suse.cz>
-References: <20080210104754.GH6737@joi> <20080211110910.GB9622@duck.suse.cz> <20080211191313.GA12375@joi>
+	Tue, 12 Feb 2008 06:39:55 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47170 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760607AbYBLLjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 06:39:54 -0500
+Message-ID: <47B1853E.2070103@bull.net>
+Date: Tue, 12 Feb 2008 12:38:38 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211191313.GA12375@joi>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
+       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 8/8] Re-enable msgmni automatic recomputing msgmni if
+ set to negative
+References: <20080211141646.948191000@bull.net>	<20080211141816.520049000@bull.net> <20080211122748.64e7bc36.akpm@linux-foundation.org>
+In-Reply-To: <20080211122748.64e7bc36.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 11-02-08 20:13:20, Marcin Slusarz wrote:
-> On Mon, Feb 11, 2008 at 12:09:10PM +0100, Jan Kara wrote:
-> >   Hi,
-> > 
-> > On Sun 10-02-08 11:48:17, Marcin Slusarz wrote:
-> > > Current mainline has a problem with reading file list.
-> > > Simple ls prints only 2 out of 8 files on my testing DVD.
-> > > Reverting your patch "udf: cleanup directory offset handling"
-> > > (af793295bf9ee92660f5e77d337b0493cea3f9b9) fixes the problem.
-> >   Thanks for testing! Do you have a way to create such UDF filesystem? For
-> > the filesystems I've created it seems to work just fine...
+Andrew Morton wrote:
+> On Mon, 11 Feb 2008 15:16:54 +0100
+> Nadia.Derbey@bull.net wrote:
 > 
-> with patch applied:
-  <snip testing>
+> 
+>>[PATCH 08/08]
+>>
+>>This patch is the enhancement as asked for by Yasunori: if msgmni is set to
+>>a negative value, register it back into the ipcns notifier chain.
+>>
+>>A new interface has been added to the notification mechanism:
+>>notifier_chain_cond_register() registers a notifier block only if not already
+>>registered. With that new interface we avoid taking care of the states changes
+>>in procfs.
+>>
+>>...
+>>
+>> static int proc_ipc_callback_dointvec(ctl_table *table, int write,
+>> 	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
+>> {
+>>+	struct ctl_table ipc_table;
+>> 	size_t lenp_bef = *lenp;
+>> 	int rc;
+>> 
+>>-	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
+>>+	memcpy(&ipc_table, table, sizeof(ipc_table));
+>>+	ipc_table.data = get_ipc(table);
+>>+
+>>+	rc = proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
+>> 
+>> 	if (write && !rc && lenp_bef == *lenp)
+>>-		/*
+>>-		 * Tunable has successfully been changed from userland:
+>>-		 * disable its automatic recomputing.
+>>-		 */
+>>-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+>>+		tunable_set_callback(*((int *)(ipc_table.data)));
+>> 
+>> 	return rc;
+>> }
+>>@@ -119,12 +142,14 @@ static int sysctl_ipc_registered_data(ct
+>> 	rc = sysctl_ipc_data(table, name, nlen, oldval, oldlenp, newval,
+>> 		newlen);
+>> 
+>>-	if (newval && newlen && rc > 0)
+>>+	if (newval && newlen && rc > 0) {
+>> 		/*
+>>-		 * Tunable has successfully been changed from userland:
+>>-		 * disable its automatic recomputing.
+>>+		 * Tunable has successfully been changed from userland
+>> 		 */
+>>-		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
+>>+		int *data = get_ipc(table);
+>>+
+>>+		tunable_set_callback(*data);
+>>+	}
+>> 
+>> 	return rc;
+>> }
+> 
+> 
+> hm, what's happening here?  We take a local copy of the caller's ctl_table
+> and then pass that into proc_dointvec().  Is that as hacky as it seems??
+> 
+> 
 
-  Argh, I've submitted an old version of the patch missing changes in
-dir.c. Below is the missing hunk. Does UDF work for you with it?
+Well, the caller's ctl_table contains the tunables addresses for the 
+init namspeace in its .data fields. While what needs to be passed in to 
+proc_dointvec() is the tunable address in the caller's namespace.
+Since all the fields in ipc_kern_table[] are ok but the .data one, imho 
+it's correct to store it in a local copy and change the data field to 
+the appropirate one, before passing it to proc_dointvec().
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
----
-
-Patch cleaning up UDF directory offset handling missed modifications in dir.c
-(because I've submitted an old version :(). Fix it.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff --git a/fs/udf/dir.c b/fs/udf/dir.c
-index 4b44e23..8d8643a 100644
---- a/fs/udf/dir.c
-+++ b/fs/udf/dir.c
-@@ -43,13 +43,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 	struct fileIdentDesc *fi = NULL;
- 	struct fileIdentDesc cfi;
- 	int block, iblock;
--	loff_t nf_pos = filp->f_pos - 1;
-+	loff_t nf_pos = (filp->f_pos - 1) << 2;
- 	int flen;
- 	char fname[UDF_NAME_LEN];
- 	char *nameptr;
- 	uint16_t liu;
- 	uint8_t lfi;
--	loff_t size = (udf_ext0_offset(dir) + dir->i_size) >> 2;
-+	loff_t size = udf_ext0_offset(dir) + dir->i_size;
- 	struct buffer_head *tmp, *bha[16];
- 	kernel_lb_addr eloc;
- 	uint32_t elen;
-@@ -63,13 +63,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		return 0;
- 
- 	if (nf_pos == 0)
--		nf_pos = (udf_ext0_offset(dir) >> 2);
-+		nf_pos = udf_ext0_offset(dir);
- 
--	fibh.soffset = fibh.eoffset = (nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
-+	fibh.soffset = fibh.eoffset = nf_pos & (dir->i_sb->s_blocksize - 1);
- 	iinfo = UDF_I(dir);
- 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
- 		fibh.sbh = fibh.ebh = NULL;
--	} else if (inode_bmap(dir, nf_pos >> (dir->i_sb->s_blocksize_bits - 2),
-+	} else if (inode_bmap(dir, nf_pos >> dir->i_sb->s_blocksize_bits,
- 			      &epos, &eloc, &elen, &offset) == (EXT_RECORDED_ALLOCATED >> 30)) {
- 		block = udf_get_lb_pblock(dir->i_sb, eloc, offset);
- 		if ((++offset << dir->i_sb->s_blocksize_bits) < elen) {
-@@ -111,7 +111,7 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 	}
- 
- 	while (nf_pos < size) {
--		filp->f_pos = nf_pos + 1;
-+		filp->f_pos = (nf_pos >> 2) + 1;
- 
- 		fi = udf_fileident_read(dir, &nf_pos, &fibh, &cfi, &epos, &eloc,
- 					&elen, &offset);
-@@ -178,7 +178,7 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		}
- 	} /* end while */
- 
--	filp->f_pos = nf_pos + 1;
-+	filp->f_pos = (nf_pos >> 2) + 1;
- 
- 	if (fibh.sbh != fibh.ebh)
- 		brelse(fibh.ebh);
+Regards,
+Nadia
