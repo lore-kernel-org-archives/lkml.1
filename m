@@ -1,130 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762868AbYBLRb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763042AbYBLRfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762868AbYBLRb5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:31:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbYBLRbr
+	id S1763042AbYBLRfX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbYBLRfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:31:47 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:38230 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758623AbYBLRbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:31:45 -0500
-Message-ID: <47B1D7A8.8010108@panasas.com>
-Date: Tue, 12 Feb 2008 19:30:16 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 12 Feb 2008 12:35:11 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4301 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758888AbYBLRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 12:35:09 -0500
+Date: Tue, 12 Feb 2008 12:04:22 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080212170422.GE3051@tuxdriver.com>
+References: <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org>
 MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: [BUGFIXES 0/2] gdth: fix 2.6.24 driver breakage 
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
-In-Reply-To: <47A19E26.30107@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B1C9F4.30402@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 31 2008 at 12:08 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
-> On Wed, Jan 30 2008 at 21:47 +0200, Sven Köhler <skoehler@upb.de> wrote:
->> Hi,
->>
->> so i have upgraded a system to kernel 2.6.24. After that, it failed to 
->> boot with the usual message telling, that the rootfs on device /dev/sda1 
->>   cannot be mounted (a raid1 run by the controller below).
->>
->> With 2.6.23.12, everything is working fine.
->>
->> # lspci -v:
->>
->> 03:01.0 RAID bus controller: Intel Corporation RAID Controller
->>          Subsystem: Intel Corporation Unknown device 01db
->>          Flags: bus master, 66MHz, slow devsel, latency 64, IRQ 17
->>          Memory at ddffc000 (32-bit, prefetchable) [size=16K]
->>          [virtual] Expansion ROM at deef0000 [disabled] [size=32K]
->>          Capabilities: [80] Power Management version 2
->>
->> # GDT-related dmesg output (2.6.23.12):
->>
->> GDT-HA: Storage RAID Controller Driver. Version: 3.05
->> ACPI: PCI Interrupt 0000:03:01.0[A] -> GSI 24 (level, low) -> IRQ 17
->> GDT-HA: Found 1 PCI Storage RAID Controllers
->> Configuring GDT-PCI HA at 3/1 IRQ 17
->> GDT-HA 0: Name: SRCU42L
->> scsi0 : SRCU42L
->> scsi 0:0:0:0: Direct-Access     Intel    Host Drive  #00       PQ: 0 ANSI: 2
->> scsi 0:2:6:0: Processor         ESG-SHV  SCA HSBP M29     1.06 PQ: 0 ANSI: 2
->> sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
->> sd 0:0:0:0: [sda] Assuming Write Enabled
->> sd 0:0:0:0: [sda] Assuming drive cache: write through
->> sd 0:0:0:0: [sda] 143299800 512-byte hardware sectors (73369 MB)
->> sd 0:0:0:0: [sda] Assuming Write Enabled
->> sd 0:0:0:0: [sda] Assuming drive cache: write through
->>   sda: sda1 sda2 < sda5 >
->> sd 0:0:0:0: [sda] Attached SCSI disk
->>
->> # cat /boot/config-2.6.24 |grep GDT
->>
->> CONFIG_SCSI_GDTH=y
->>
->>
->>
->>
->> Any ideas?
->>
->> http://www.kernel.org/diff/diffview.cgi?file=%2Fpub%2Flinux%2Fkernel%2Fv2.6%2Fpatch-2.6.24.bz2 
->> show huge drivers/scsi/gdth* related changes.
->>
->> Can't test at the moment. System went production.
->>
->>
->> Regards,
->>    Sven
->>
-> 
-> Hi Sven!
+On Tue, Feb 12, 2008 at 11:31:48AM -0500, Jeff Garzik wrote:
+> David Miller wrote:
+>> I rebase my tree all the time, at least once or twice per
+>> week.  Why?
+
 <snip>
 
-With the kind help of:
-    Joerg Dorchain: <joerg@dorchain.net>
-    Jon Chelton <jchelton@ffpglobal.com>
-    Stefan Priebe <s.priebe@allied-internet.ag>
+> FWIW, that is annoying and painful for us downstream jobbers, since it 
+> isn't really how git was meant to be used.  You use it more like a patch 
+> queue, where commits are very fluid.
 
-Which let me take up their machines their effort and their time
-I hope I'm able to fix the gdth driver for the 2.6.24 kernel and forward.
-Actually it was a simple miss by Christoph, but with my inexperience
-it took me a bisection and a while to get it.
+<snip>
 
-Both Joerg, and Stefan where able to boot with these patches and work
-on their machine. Jon Chelton's disks array should also work, we're testing.
+> I understand the desire to want a nice and clean history, but the frequency 
+> here really has a negative impact on your downstreams.
 
-Submitted 2 patches. They should also be included after some testing
-into the 2.6.24.x stable releases. (Will be posted after some more testing)
+FWIW, I definitely have a (vocal minority) group of contributors
+who resent all the rebasing.  There may be a few cases of 'vanity'
+represented here, but there are definitely reasonable complaints about
+not being able to do simple pulls to stay up-to-date and/or having
+to rebase before they can send patches to me.  FWIW, I think it might
+save a bit of my time as well, although I have become pretty good and
+"riding the tide" of rebasing... :-(
 
-[PATCH 1/2] gdth: scan for scsi devices
- simple but must fatal.
+Unfortunately, I don't have any good suggestions to remedy the issue.
+One strategy might be a third layer of trees, e.g.:
 
-[PATCH 2/2] gdth: bugfix for the Timer at exit crash
-  James please inspect and comment on this patch. It was not yet tested
-  by the original bug submitter.
+	net-2.6			fixes for the current release
+	net-2.6.26		updates certain to go to the next release
+	net-2.6.26-maybe	updates that might not make it to the next release
 
-In the original gdth series Christoph has forgotten to add the call to
-scsi_scan_host(). Jeff alternative patches did do the scan. After everything
-was probed, the code would loop on all found cards and scan. However I like
-to individually scan at each probe, because I think this way it is more ready
-for the hot-plug API where the discovery is done outside of the driver, and the
-probe is called on single host at a time. Is that right? please comment.
+Of course, managing what goes moves-up from -maybe is probably a big
+headache, and just sucks-up more of Dave's time.  And, of course,
+virtually no one will run the -maybe tree...
 
-Test away.
+Just my $0.02...
 
-Meany thanks to Joerg, Jon && Stefan, Cheers.
-
-Boaz
-
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
