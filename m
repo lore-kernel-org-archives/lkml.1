@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbYBLVrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbYBLVtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753843AbYBLVrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:47:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbYBLVrE
+	id S1753321AbYBLVtV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYBLVtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:47:04 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:32791 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751254AbYBLVrA (ORCPT
+	Tue, 12 Feb 2008 16:49:12 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44842 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751142AbYBLVtK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:47:00 -0500
-Message-ID: <47B213AA.2090109@zytor.com>
-Date: Tue, 12 Feb 2008 13:46:18 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: maximilian attems <max@stro.at>
-CC: 464962@bugs.debian.org, Joey Hess <joeyh@debian.org>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bug#464962: immediate crash on boot on TM5800
-References: <20080210031849.GA3370@dragon.kitenet.net> <20080210110659.GB8574@stro.at> <20080210192139.GA17647@kodama.kitenet.net> <20080212160522.GB5221@stro.at> <20080212195254.GA6252@kodama.kitenet.net> <20080212201048.GD22054@baikonur.stro.at> <47B2025B.1030103@zytor.com> <20080212210244.GF22054@baikonur.stro.at> <47B20C1C.5020208@zytor.com> <20080212212416.GH22054@baikonur.stro.at>
-In-Reply-To: <20080212212416.GH22054@baikonur.stro.at>
-Content-Type: multipart/mixed;
- boundary="------------050603050103040108070403"
+	Tue, 12 Feb 2008 16:49:10 -0500
+Date: Tue, 12 Feb 2008 21:41:37 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: benh@kernel.crashing.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other
+ goodies
+Message-ID: <20080212214137.47478e5e@core>
+In-Reply-To: <1202850247.7410.24.camel@pasglop>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	<1202460043.7079.157.camel@pasglop>
+	<1202850247.7410.24.camel@pasglop>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050603050103040108070403
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 13 Feb 2008 08:04:07 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Thought some more about this, and since this probably means gcc will 
-generate this for userspace code as well nowadays, tm5800 should 
-probably be downgraded to a 586-class machine.  Hence the Linux policy 
-of promoting it to a 686-class machine for having CMOV is actually 
-incorrect, it doesn't have all the userspace-visible features of a 
-686-class machine, lacking long NOP.
+> 
+> On Fri, 2008-02-08 at 19:40 +1100, Benjamin Herrenschmidt wrote:
+> > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > - couple of fixes and preparatory patches
+> > > 
+> > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
+> > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+> > 
+> > Interesting... I was thinking about doing a full remove of the device at
+> > a higher level instead but I suppose what you propose is easier.
+> > 
+> > I'll have a look & test next week hopefully.
+> 
+> Also, the above would have the advantage of not relying on drivers/ide
+> infrastructure, and thus working with libata (once somebody has ported
+> pmac ide to libata).
 
-	-hpa
+Unfortunately you need a degree in dentistry to open a Macintosh up and
+fix it otherwise we would have support by now.
 
-
---------------050603050103040108070403
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
-
-diff --git a/arch/x86/kernel/cpu/transmeta.c b/arch/x86/kernel/cpu/transmeta.c
-index 200fb3f..e8b422c 100644
---- a/arch/x86/kernel/cpu/transmeta.c
-+++ b/arch/x86/kernel/cpu/transmeta.c
-@@ -76,13 +76,6 @@ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
- 	/* All Transmeta CPUs have a constant TSC */
- 	set_bit(X86_FEATURE_CONSTANT_TSC, c->x86_capability);
- 	
--	/* If we can run i686 user-space code, call us an i686 */
--#define USER686 ((1 << X86_FEATURE_TSC)|\
--		 (1 << X86_FEATURE_CX8)|\
--		 (1 << X86_FEATURE_CMOV))
--        if (c->x86 == 5 && (c->x86_capability[0] & USER686) == USER686)
--		c->x86 = 6;
--
- #ifdef CONFIG_SYSCTL
- 	/* randomize_va_space slows us down enormously;
- 	   it probably triggers retranslation of x86->native bytecode */
-
---------------050603050103040108070403--
+Alan
