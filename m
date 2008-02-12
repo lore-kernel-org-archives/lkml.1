@@ -1,95 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763249AbYBLRmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763603AbYBLRmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763249AbYBLRmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759153AbYBLRmN
+	id S1763603AbYBLRmj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763349AbYBLRm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:42:13 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:36417 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756832AbYBLRmL (ORCPT
+	Tue, 12 Feb 2008 12:42:27 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:43580 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759153AbYBLRm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:42:11 -0500
-Message-ID: <47B1DA2A.1060904@panasas.com>
-Date: Tue, 12 Feb 2008 19:40:58 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 12 Feb 2008 12:42:26 -0500
+To: Greg KH <greg@kroah.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: multiple drivers, single device
+X-Message-Flag: Warning: May contain useful information
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+	<20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org>
+	<20080212164232.GA326@kroah.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 12 Feb 2008 09:42:20 -0800
+In-Reply-To: <20080212164232.GA326@kroah.com> (Greg KH's message of "Tue, 12 Feb 2008 08:42:32 -0800")
+Message-ID: <adak5lavzpf.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com>
-In-Reply-To: <47B1D7A8.8010108@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Feb 2008 17:42:23.0297 (UTC) FILETIME=[9FC77B10:01C86D9E]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > The work I'm doing here is for stupid PCI firmware engineers, who have
+ > created devices that are different things, all bound up under the same
+ > PCI device.  I'm thinking of watchdog timers and random number
+ > generator and i2c controller on the same PCI device, or even the more
+ > basic, frame buffer and DRM access to the same PCI video device.
+ > 
+ > The OLPC is a good example of hardware that needs this kind of
+ > functionality.
 
-gdth _exit would first remove all cards then stop the timer
-and would not sync with the timer function. This caused a crash
-in gdth_timer() when module was unloaded.
+Sounds interesting.  I've been meaning to work on this too for quite a
+while, but I'm glad to see you beat me to it.
 
-del_timer_sync the timer before we delete the cards.
+An example of an in-tree use case for this would be the mlx4 drivers--
+you can look at drivers/net/mlx4/intf.c to see the simple stupid
+solution I came up with to allow an IB and a NIC (not yet upstream)
+driver to share the same PCI device.  A good test for your stuff would
+be if it simplifies the code from the ad hoc solution I came up with.
 
-NOT YET TESTED
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/gdth.c |   15 ++++++++-------
- 1 files changed, 8 insertions(+), 7 deletions(-)
-
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index 8eb78be..103280e 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -3793,6 +3793,8 @@ static void gdth_timeout(ulong data)
-     gdth_ha_str *ha;
-     ulong flags;
- 
-+    BUG_ON(list_empty(&gdth_instances));
-+
-     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
-     spin_lock_irqsave(&ha->smp_lock, flags);
- 
-@@ -5146,8 +5148,6 @@ static void gdth_remove_one(gdth_ha_str *ha)
- 		ha->sdev = NULL;
- 	}
- 
--	gdth_flush(ha);
--
- 	if (shp->irq)
- 		free_irq(shp->irq,ha);
- 
-@@ -5245,14 +5245,15 @@ static void __exit gdth_exit(void)
- {
- 	gdth_ha_str *ha;
- 
--	list_for_each_entry(ha, &gdth_instances, list)
--		gdth_remove_one(ha);
-+	unregister_chrdev(major,"gdth");
-+	unregister_reboot_notifier(&gdth_notifier);
- 
- #ifdef GDTH_STATISTICS
--	del_timer(&gdth_timer);
-+	del_timer_sync(&gdth_timer);
- #endif
--	unregister_chrdev(major,"gdth");
--	unregister_reboot_notifier(&gdth_notifier);
-+
-+	list_for_each_entry(ha, &gdth_instances, list)
-+		gdth_remove_one(ha);
- }
- 
- module_init(gdth_init);
--- 
-1.5.3.3
-
-
+ - R.
