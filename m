@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbYBLAYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbYBLAgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbYBLAYb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 19:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755333AbYBLAYV
+	id S1754710AbYBLAgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 19:36:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751054AbYBLAgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 19:24:21 -0500
-Received: from el-out-1112.google.com ([209.85.162.177]:10311 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754825AbYBLAYT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 19:24:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Z6zJEkRwKMAXfXhRLHGbxnqC3JrkQDhZ3PV58DE+zcTSKLM7j5fzGRb6wZA0zkUQZw9La5FYUwKOHrojcHbp97k5cGX/2AWlbj+lDuXdrQPIwlh5DcpPwR5pjuBW11cZ095VG7KLQRakdE2WZjA4ORxHRaAhCCLY2h4FnPS/tTM=
-Message-ID: <47B0E72C.3050305@gmail.com>
-Date: Tue, 12 Feb 2008 09:24:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Mon, 11 Feb 2008 19:36:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57363 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751038AbYBLAgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 19:36:35 -0500
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH #upstream] libata: implement libata.force module parameter
-References: <47A3375F.80101@gmail.com> <47A356C3.3010904@garzik.org> <20080201183621.GC14759@uranus.ravnborg.org> <47ABD817.2020903@gmail.com>
-In-Reply-To: <47ABD817.2020903@gmail.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=unknown
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Priit Laes <plaes@plaes.org>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: REGRESSION: x86 vDSO: remove vdso-syms.o
+In-Reply-To: Priit Laes's message of  Tuesday, 12 February 2008 02:00:05 +0200 <1202774405.23992.9.camel@localhost>
+References: <1202769045.10829.12.camel@localhost>
+	<20080211225332.2AE2E270191@magilla.localdomain>
+	<1202774405.23992.9.camel@localhost>
+X-Zippy-Says: I'm young..  I'm HEALTHY..  I can HIKE THRU CAPT GROGAN'S LUMBAR REGIONS!
+Message-Id: <20080212003631.BF1D8270191@magilla.localdomain>
+Date: Mon, 11 Feb 2008 16:36:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Sam Ravnborg wrote:
->> I have lost the actual patch.
->> But what you see is what happens when you mix const and non-const data
->> in the same section.
->>
->> Look for use of __initdata for const data and replace it with __initconst.
->>
->> And modpost cannot warn about it as gcc errors out before we look at the
->> .o file with modpost.
+I did not see it with your .config either.
+
+> This fails with clean build. And vdso-syms.lds is not empty.
 > 
-> OIC, thanks.  Hmmm... in init.h, I see __{dev|cpu|mem}initconst but no
-> __initconst.  The data structure in question is used from module init
-> function tagged properly with __init.  What should be done here?
+> Contents of ?arch/x86/vdso/vdso-syms.lds:
+> VDSO64_PRELINK = 0xffffffffff700000;
+> VDSO64_jiffies = 0xffffffffff7004b8;
 
-PING.
+Odd.  The missing symbols come from the same place that VDSO64_jiffies did.
+The end of the arch/x86/vdso/vdso.lds file in your build should have these:
 
--- 
-tejun
+VDSO64_jiffies = vdso_jiffies;
+VDSO64_vgetcpu_mode = vdso_vgetcpu_mode;
+VDSO64_vsyscall_gtod_data = vdso_vsyscall_gtod_data;
+
+readelf -s arch/x86/vdso/vvar.o in your build should show (among others):
+
+     8: 0000000000000000     8 OBJECT  GLOBAL DEFAULT    4 vdso_jiffies
+     9: 0000000000000008     8 OBJECT  GLOBAL DEFAULT    4 vdso_vgetcpu_mode
+    10: 0000000000000010     8 OBJECT  GLOBAL DEFAULT    4 vdso_vsyscall_gtod_data
+
+If either of those is not all there, you'll have to look into what's
+happening in the generation of the respective files.
+
+
+Thanks,
+Roland
