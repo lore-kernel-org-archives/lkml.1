@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbYBLOgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbYBLOgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762863AbYBLOgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 09:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761344AbYBLOgI
+	id S1763219AbYBLOgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 09:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762820AbYBLOg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 09:36:08 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:47108 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761402AbYBLOgG convert rfc822-to-8bit (ORCPT
+	Tue, 12 Feb 2008 09:36:27 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:29269 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761344AbYBLOg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 09:36:06 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: BTRFS partition usage...
-Date: Tue, 12 Feb 2008 09:35:20 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-References: <200802061200.14690.chris.mason@oracle.com> <200802120908.59602.chris.mason@oracle.com> <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
+	Tue, 12 Feb 2008 09:36:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NIRKdsxvGibUD+jngba6/Y4P/IcmlEB0IGLNn2pMdiOB4Wjpbti4vr/SDB8Dg+MepHDk32UeMkLIl+dzzZUG3Yl6M7WD5eRET/WDvNQGRh+honj9v1pX+J6jUT2qzho6s0Uo6H0DdRBMrGvTCfn5mfCK2NaRyV2B1KTSlforLqM=
+Message-ID: <5a4c581d0802120635k3aab6222y6066e4e344620088@mail.gmail.com>
+Date: Tue, 12 Feb 2008 15:35:52 +0100
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.24-git2: Oracle 11g VKTM process enters R state on startup and is unkillable [still broken in 2.6.25-rc1]
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1202823858.6247.26.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802120935.20437.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+References: <5a4c581d0802110820l1fcbb1ffib874f268b4ab7eae@mail.gmail.com>
+	 <20080211204921.GA24806@elte.hu> <20080211221034.GA2587@elte.hu>
+	 <200802120012.35314.rjw@sisk.pl> <1202823858.6247.26.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, Jan Engelhardt wrote:
-> On Feb 12 2008 09:08, Chris Mason wrote:
-> >> >So, if Btrfs starts zeroing at 1k, will that be acceptable for you?
-> >>
-> >> Something looks wrong here. Why would btrfs need to zero at all?
-> >> Superblock at 0, and done. Just like xfs.
-> >> (Yes, I had xfs on sparc before, so it's not like you NEED the
-> >> whitespace at the start of a partition.)
+On Feb 12, 2008 2:44 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+> On Tue, 2008-02-12 at 00:12 +0100, Rafael J. Wysocki wrote:
+> > On Monday, 11 of February 2008, Ingo Molnar wrote:
+> > >
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > >
+> > > > no, they were not lost, they just didnt pass QA here (they crashed on
+> > > > a particularly hard to debug 8-way box i have) and Peter worked on
+> > > > that queue of fixes up until today to get it really correct. Could you
+> > > > check:
+> > > >
+> > > >    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+> > > >
+> > > > combo patch below as well - whichever you prefer. The shortlog can be
+> > > > found below as well - but i dont yet consider this pullable, i'd like
+> > > > it to see pass a full night of randconfig tests on my test-systems.
+> > >
+> > > ok, we just found the reason for the 8-way crash, the delta fix from
+> > > Peter is below if any of you have tried the previous combo patch.
+> > > Updated sched.git as well, new HEAD is
+> > > fec13e45305d69fd0bd23b30bd05a0a42cf341f8.
 > >
-> >I've had requests to move the super down to 64k to make room for
-> > bootloaders, which may not matter for sparc, but I don't really plan on
-> > different locations for different arches.
+> > With the previous patch and this patch applied, the issue is not reproducible
+> > here.
 >
-> In x86, there is even more space for a bootloader (some 28k or so)
-> even if your partition table is as closely packed as possible,
-> from 0 to 7e00 IIRC.
+> Did you enable CONFIG_RT_GROUP_SCHED (it defaults to n)?
 >
-> For sparc you could have something like
->
-> 			startlba	endlba	type
-> 	sda1		0		2	1 Boot
-> 	sda2		2		58	3 Whole disk
-> 	sda3		58		90000	83 Linux
->
-> and slap the bootloader into "MBR", just like on x86.
-> Or I am missing something..
+> If you didn't, could you try with it set to y?
 
-It was a request from hpa, and he clearly had something in mind.  He kindly 
-offered to review the disk format for bootloaders and other lower level 
-issues but I asked him to wait until I firm it up a bit.
+I just rebuilt 2.6.25-rc1-git2 with Ingo's patch and your patch on top,
+ and the Oracle VKTM issue is still gone even with
 
->From my point of view, 0 is a bad idea because it is very likely to conflict 
-with other things.  There are lots of things in the FS that need deep 
-thought,and the perfect system to fully use the first 64k of a 1TB filesystem 
-isn't quite at the top of my list right now ;)
+[asuardi@sandman ~]$ grep GROUP_SCHED
+/share/src/linux-2.6.25-rc1-git2-orafix/.config
+CONFIG_GROUP_SCHED=y
+CONFIG_FAIR_GROUP_SCHED=y
+CONFIG_RT_GROUP_SCHED=y
+# CONFIG_CGROUP_SCHED is not set
 
-Regardless of offset, it is a good idea to mop up previous filesystems where 
-possible, and a very good idea to align things on some sector boundary.  Even 
-going 1MB in wouldn't be a horrible idea to align with erasure blocks on SSD.
+ so it's good for me.
 
--chris
+Or is it necessary to also enable CONFIG_CGROUP_SCHED and retest ?
+
+--alessandro
+
+ "We act as though comfort and luxury were the chief requirements
+   of life, when all that we need to make us really happy is
+   something to be enthusiastic about."
+
+   (Charles Kingsley)
