@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763946AbYBLR5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763320AbYBLSBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763946AbYBLR5l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761960AbYBLR5O
+	id S1763320AbYBLSBJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:01:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758618AbYBLSA5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:57:14 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:53289 "EHLO
-	bh-buildlin1.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760262AbYBLR5L (ORCPT
+	Tue, 12 Feb 2008 13:00:57 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:48772 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758601AbYBLSA4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:57:11 -0500
-Message-ID: <47B1DD17.2030204@panasas.com>
-Date: Tue, 12 Feb 2008 19:53:27 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-Organization: Panasas, Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 12 Feb 2008 13:00:56 -0500
+Message-ID: <47B1DD36.6090401@zytor.com>
+Date: Tue, 12 Feb 2008 09:53:58 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>	 <20080212044314.GA4888@kroah.com>	 <20080211211751.3e265754@laptopd505.fenrus.org>	 <20080211.221126.230471463.davem@davemloft.net>	 <47B1CB08.4020101@garzik.org>	 <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain>
-In-Reply-To: <1202838082.3137.54.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Christoph Lameter <clameter@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: /initrd.img
+References: <86802c440802120328i2e60ba3brbe7fdec87d4cce4a@mail.gmail.com>
+In-Reply-To: <86802c440802120328i2e60ba3brbe7fdec87d4cce4a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb. 12, 2008, 19:41 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> On Tue, 2008-02-12 at 09:09 -0800, Linus Torvalds wrote:
->>  (a) create a base tree with _just_ that fundamental infrastructure change,
->>      and make sure that base branch is so obviously good that there is no 
->>      question about merging it.
+Yinghai Lu wrote:
+> any limitation about size of
+> /initrd.img that saved by populate_rootfs ?
 > 
-> The problem is how do we use a?  Usually we need to track your -rc tree
-> as our fixes go in ... some of which affect our development trees.
+> i got
 > 
-> If we stick with (a) as the base, we don't get to pull in the fixes in
-> your tree.  If we use your tree we have to pull in (a) creating n
-> different merge points for the n different upstream trees..
+> RAMDISK: Compressed image found at block 0
+> RAMDISK: incomplete write (-28 != 2048) 134217728
+> crc error
+> VFS: Mounted root (ext2 filesystem).
+> Freeing unused kernel memory: 388k freed
+> init_special_inode: bogus i_mode (177777)
+> Warning: unable to open an initial console.
+> init_special_inode: bogus i_mode (177777)
+> init_special_inode: bogus i_mode (177777)
+> Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
+> 
+> before that
+> checking if image is initramfs... it isn't (no cpio magic); looks like an initrd
+> Freeing initrd memory: 25735k freed.
+> 
+> that only happen one system (64G RAM) and SLUB.
+> 
+> if using SLAB, it works well.
+> 
+> somewhere the ramdisk or /initrd.img get corrupted..
+> 
 
-IMHO, this base tree should typically be based off of linus' tree
-and kept rebased on top of it.  This way you get the mainline fixes
-through the integration base tree.
+Assuming a 64-bit system, that's *supposed* to work.  Doesn't mean 
+anything that weird has been tested.
 
-Benny
+It could be a SLUB bug, or it could be memory not being properly defended.
 
+	-hpa
