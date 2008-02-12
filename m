@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbYBLW1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757022AbYBLW3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbYBLW1o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbYBLW1d
+	id S1757022AbYBLW3r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbYBLW3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:27:33 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:48986 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757494AbYBLW1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:27:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DxyHtknIJAJdJwdeYUBiVA07L73RHstuyImYv9d2jG4A8+tAEmG9ek3lZkCShfn1zuU5iom2fPYSOVK1RVizf2OT4YJT/9NTvd6NWgRlnEBVTZXoL+UJXDA8rafUgIkt2ZBV2AFFI5XRyMc70evWIlT0IlJ8xkRDnK5D3ToN+/4=
-Message-ID: <e9c3a7c20802121427v2f3aed68h68bfc12bbce19d19@mail.gmail.com>
-Date: Tue, 12 Feb 2008 15:27:29 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [RFC v3 5/7] dmaengine: Make DMA Engine menu visible for AVR32 users
-Cc: "Olof Johansson" <olof@lixom.net>, linux-kernel@vger.kernel.org,
-       "Shannon Nelson" <shannon.nelson@intel.com>,
-       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>
-In-Reply-To: <20080212231330.79738c3a@siona>
+	Tue, 12 Feb 2008 17:29:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38224 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751647AbYBLW3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 17:29:37 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug 9944] suspend to ram doesn't work anymore on Thinkpad T61 with Intel X3100
+Date: Tue, 12 Feb 2008 23:27:59 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: bugme-daemon@bugzilla.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <20080212221423.7F88B108017@picon.linux-foundation.org>
+In-Reply-To: <20080212221423.7F88B108017@picon.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com>
-	 <1202834638-9009-2-git-send-email-hskinnemoen@atmel.com>
-	 <1202834638-9009-3-git-send-email-hskinnemoen@atmel.com>
-	 <1202834638-9009-4-git-send-email-hskinnemoen@atmel.com>
-	 <1202834638-9009-5-git-send-email-hskinnemoen@atmel.com>
-	 <20080212204330.GA3184@lixom.net> <20080212231330.79738c3a@siona>
-X-Google-Sender-Auth: ea952d59f760bfbf
+Message-Id: <200802122327.59656.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 12, 2008 3:13 PM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> On Tue, 12 Feb 2008 14:43:30 -0600
-> Olof Johansson <olof@lixom.net> wrote:
+On Tuesday, 12 of February 2008, bugme-daemon@bugzilla.kernel.org wrote:
+> http://bugzilla.kernel.org/show_bug.cgi?id=9944
+> 
 >
-> > > -   depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
-> > > +   depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || AVR32
-> >
-> > This is a slippery slope. Things should be the other way around instead,
-> > create a HAVE_DMA_DEVICE, select it in the relevant platform code and
-> > make DMADEVICES depend on that.
->
-> Agree. I'll cook up a patch tomorrow to make it use the new HAVE_*
-> scheme.
->
+> > Distribution: Debian Sid
+> > Hardware Environment: Thinkpad T61
+> > Software Environment: 
+> > Problem Description:
+> > 
+> > Suspend to ram doesn't work anymore on my thinkpad t61 with 2.6.25-rc1. On
+> > 2.6.24 I had to pass acpi_sleep=s3bios at boot time and suspend with s2ram -f
+> > -a 3.
+> > 
+> > On 2.6.25-rc1 doing (on console, with X not running) that leads to a blank
+> > screen and the ___sleep___ led (the moon) on the thinkpad blinks (like when it
+> > is currently suspending), but nothing happens then.
+> > 
+> > If I can make some more tests, or if you need more info, please ask. I hope
+> > this is no duplicate.
+> > 
+> 
+> I have a t61p and suspend/hibernate is bad and deteriorating.  So
+> many things go wrong that I'm afraid to test it any more.
 
-I suggested something similar here:
-http://marc.info/?l=linux-kernel&m=118670671806100&w=2
+There are at least two known suspend regressions, one of which affects the T61
+for sure.  There's a fix for it, available at:
+http://lkml.org/lkml/2008/2/11/472
 
-> > Or just let the subsystem always be available.
->
-> It used to be always available, but then it was changed. Assuming there
-> was a reason for this change, I guess we don't want to change it back.
->
-
-Adrian had concerns about users enabling NET_DMA when the hardware
-capability is relatively rare.  So, +1 for HAVE_DMA_DEVICE
-
-> Haavard
-
---
-Dan
+The fix for the second issue is in the works.
