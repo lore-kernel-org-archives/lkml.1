@@ -1,62 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbYBLRlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763249AbYBLRmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbYBLRlk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756832AbYBLRlb
+	id S1763249AbYBLRmW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759153AbYBLRmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:41:31 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:53857 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754042AbYBLRla (ORCPT
+	Tue, 12 Feb 2008 12:42:13 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:36417 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756832AbYBLRmL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:41:30 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
-	 <20080212044314.GA4888@kroah.com>
-	 <20080211211751.3e265754@laptopd505.fenrus.org>
-	 <20080211.221126.230471463.davem@davemloft.net>
-	 <47B1CB08.4020101@garzik.org>
-	 <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 11:41:22 -0600
-Message-Id: <1202838082.3137.54.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Tue, 12 Feb 2008 12:42:11 -0500
+Message-ID: <47B1DA2A.1060904@panasas.com>
+Date: Tue, 12 Feb 2008 19:40:58 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>
+CC: linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com>
+In-Reply-To: <47B1D7A8.8010108@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 09:09 -0800, Linus Torvalds wrote:
->  (a) create a base tree with _just_ that fundamental infrastructure change,
->      and make sure that base branch is so obviously good that there is no 
->      question about merging it.
 
-The problem is how do we use a?  Usually we need to track your -rc tree
-as our fixes go in ... some of which affect our development trees.
+gdth _exit would first remove all cards then stop the timer
+and would not sync with the timer function. This caused a crash
+in gdth_timer() when module was unloaded.
 
-If we stick with (a) as the base, we don't get to pull in the fixes in
-your tree.  If we use your tree we have to pull in (a) creating n
-different merge points for the n different upstream trees..
+del_timer_sync the timer before we delete the cards.
 
-> (b) tell other people about the reason for the infrastructure change, and 
->      simply allow others to merge it. You don't have to wait for *me* to 
->      open the merge window, you need to make sure that the people that get 
->      impacted most can continue development!
+NOT YET TESTED
 
-Yes, this is effectively what I did with the post merge SCSI tree.
-However, if you do this rebasing becomes a fact of life because you need
-to rebase out all the dependencies you have before you merge (in fact,
-it's a good way of checking whether your dependencies have been merged
-yet or not, seeing what survives a rebase).
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/gdth.c |   15 ++++++++-------
+ 1 files changed, 8 insertions(+), 7 deletions(-)
 
-James
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index 8eb78be..103280e 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -3793,6 +3793,8 @@ static void gdth_timeout(ulong data)
+     gdth_ha_str *ha;
+     ulong flags;
+ 
++    BUG_ON(list_empty(&gdth_instances));
++
+     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+     spin_lock_irqsave(&ha->smp_lock, flags);
+ 
+@@ -5146,8 +5148,6 @@ static void gdth_remove_one(gdth_ha_str *ha)
+ 		ha->sdev = NULL;
+ 	}
+ 
+-	gdth_flush(ha);
+-
+ 	if (shp->irq)
+ 		free_irq(shp->irq,ha);
+ 
+@@ -5245,14 +5245,15 @@ static void __exit gdth_exit(void)
+ {
+ 	gdth_ha_str *ha;
+ 
+-	list_for_each_entry(ha, &gdth_instances, list)
+-		gdth_remove_one(ha);
++	unregister_chrdev(major,"gdth");
++	unregister_reboot_notifier(&gdth_notifier);
+ 
+ #ifdef GDTH_STATISTICS
+-	del_timer(&gdth_timer);
++	del_timer_sync(&gdth_timer);
+ #endif
+-	unregister_chrdev(major,"gdth");
+-	unregister_reboot_notifier(&gdth_notifier);
++
++	list_for_each_entry(ha, &gdth_instances, list)
++		gdth_remove_one(ha);
+ }
+ 
+ module_init(gdth_init);
+-- 
+1.5.3.3
 
 
