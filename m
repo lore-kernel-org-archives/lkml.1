@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbYBLJru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762110AbYBLJvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762150AbYBLJru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:47:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762347AbYBLJrL
+	id S1762110AbYBLJvw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:51:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbYBLJvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:47:11 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57669 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762324AbYBLJrJ (ORCPT
+	Tue, 12 Feb 2008 04:51:44 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:28293 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751950AbYBLJvo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:47:09 -0500
-Message-ID: <47B16B16.60402@linux.vnet.ibm.com>
-Date: Tue, 12 Feb 2008 15:17:02 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
-MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
-       anton@samba.org, paulus@samba.org, rusty@rustcorp.com.au
-Subject: Re: [BUID_FAILURE] regression from 2.6.24-git18 to 2.6.25-rc1-git1
- on section type conflict psmouse-base
-References: <47B14D52.6050404@linux.vnet.ibm.com> <20080211235929.791f7afb.akpm@linux-foundation.org> <20080212093614.GF2959@cs181133002.pp.htv.fi>
-In-Reply-To: <20080212093614.GF2959@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 04:51:44 -0500
+Subject: [GIT-PULL] UBI updates
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 12 Feb 2008 11:41:29 +0200
+Message-Id: <1202809289.3127.9.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 12 Feb 2008 09:44:34.0458 (UTC) FILETIME=[DFD1CFA0:01C86D5B]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> On Mon, Feb 11, 2008 at 11:59:29PM -0800, Andrew Morton wrote:
->> On Tue, 12 Feb 2008 13:10:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
->>
->>> This build failure is seen on the powerpc from the 2.6.24-git18 kernel and is still visible
->>> in the 2.6.25-rc1-git1.
->>>
->>> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
->>> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
->>> make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
->>> make[2]: *** [drivers/input/mouse] Error 2
->>> make[1]: *** [drivers/input] Error 2
->>>
->>> The patch http://lkml.org/lkml/2008/2/8/514 seems to have not taken into 2.6.25-rc1 and 
->>> 2.6.25-rc1-git(s). Is there any new patch i am missing out.
->> I have it queued up, along with quite a few other things, but for the next
->> couple of days I have logistical problems which are preventing me from
->> doing runtime testing.
-> 
-> And this really isn't a regression.
-> 
-> It seems Kamalesh has upgraded his gcc to 4.2 between trying 
-> 2.6.24-git18 and trying 2.6.25-rc1-git1?
-> 
-> cu
-> Adrian
-> 
-Hi Adrian,
+Linus, please pull from
 
-I am using the gcc version
+git://git.infradead.org/~dedekind/ubi-2.6.git master
 
-gcc (GCC) 4.2.3 20071014 (prerelease) (Debian 4.2.2-3)
+to receive few UBI updates and fixes.
 
-It has been the same gcc version from 2.6.24-git18 to 2.6.25-rc1-git{1,2).
-This build failure is seen from 2.6.24-git18 and is still seen in 2.6.25-rc1-git{1,2}.
+Artem Bityutskiy (2):
+      Documentation: add UBI sysfs ABI docs
+      UBI: be verbose when debuggin is enabled
+
+S.Çağlar Onur (1):
+      UBI: silence warning
+
+ Documentation/ABI/stable/sysfs-class-ubi |  212 ++++++++++++++++++++++++++++++
+ drivers/mtd/ubi/debug.h                  |    2 +
+ drivers/mtd/ubi/io.c                     |    4 +
+ drivers/mtd/ubi/vmt.c                    |    4 +-
+ 4 files changed, 221 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ABI/stable/sysfs-class-ubi
 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
