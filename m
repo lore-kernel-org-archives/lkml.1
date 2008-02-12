@@ -1,69 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763832AbYBLS3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764242AbYBLSaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763832AbYBLS3V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:29:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbYBLS3L
+	id S1764242AbYBLSaS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:30:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762155AbYBLSaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:29:11 -0500
-Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:47483 "HELO
-	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759316AbYBLS3K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:29:10 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=WeOcIU8IfZPdJkTAuGCwIpK9LDKjhGsTkuq0ykvhhQ41AkyrWsVfntqEJ2CrAlS4cCikUTxlwFFY4pnM+r3ayfknsdmkqT4glIwpNfjH9xcod9iNrOF3478ZguMGkTzKd3PX143NxPSzpGoYjXFQcC579DiKs42nDlvtGKAMRt4=  ;
-X-YMail-OSG: FLE3r9AVM1mtbPmVOmkXEb8xo9E5Cte1u56dqhxMpQQEsxOACa5I3ePstCiZh.B9RwZp.EXPrMF.A8qWq8ETYZm0P0xrWullgeMypWWjKxAD14S3Tg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: WARN_ON(): proc_dir_entry 'rtc' already registered
-Date: Tue, 12 Feb 2008 10:29:07 -0800
-User-Agent: KMail/1.9.6
-Cc: kernel list <linux-kernel@vger.kernel.org>
-References: <20080212132626.GA1534@elf.ucw.cz>
-In-Reply-To: <20080212132626.GA1534@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 12 Feb 2008 13:30:00 -0500
+Received: from mga02.intel.com ([134.134.136.20]:50954 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760594AbYBLS37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:29:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
+   d="scan'208";a="257611430"
+Date: Tue, 12 Feb 2008 10:22:44 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: ltuikov@yahoo.com
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+Message-ID: <20080212102244.32869382@appleyard>
+In-Reply-To: <922945.25870.qm@web31811.mail.mud.yahoo.com>
+References: <1202172065.3096.154.camel@localhost.localdomain>
+	<922945.25870.qm@web31811.mail.mud.yahoo.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802121029.08007.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, Pavel Machek wrote:
-> I'm getting this during bootup:
+On Mon, 4 Feb 2008 18:01:36 -0800 (PST)
+Luben Tuikov <ltuikov@yahoo.com> wrote:
+
+> --- On Mon, 2/4/08, James Bottomley
+> <James.Bottomley@HansenPartnership.com> wrote:
+> > > > The enclosure misc device is really just a
+> > library providing
+> > > > sysfs
+> > > > support for physical enclosure devices and their
+> > > > components.
+> > > 
+> > > Who is the target audience/user of those facilities?
+> > > a) The kernel itself needing to read/write SES pages?
+> > 
+> > That depends on the enclosure integration, but right at the
+> > moment, it
+> > doesn't
 > 
-> PM: Adding info for No Bus:event6
-> PM: Adding info for No Bus:uinput
-> PM: Adding info for No Bus:rtc0
-> proc_dir_entry 'rtc' already registered
-> Pid: 1, comm: swapper Not tainted 2.6.25-rc1 #125
->  ... deletia
->  =======================
-> rtc_cmos 00:07: rtc core: registered rtc_cmos as rtc0
-> rtc0: alarms up to one month, y3k
-> PM: Adding info for platform:coretemp.0
-> PM: Adding info for No Bus:hwmon1
+> Yes, I didn't suspect so.
 > 
-> ... .config attached.
+> > 
+> > > b) A user space application using sysfs to read/write
+> > >    SES pages?
+> > 
+> > Not an application so much as a user.  The idea of sysfs is
+> > to allow
+> > users to get and set the information in addition to
+> > applications.
+> 
+> Exactly the same argument stands for a user-space
+> application with a user-space library.
+> 
+> This is the classical case of where it is better to
+> do this in user-space as opposed to the kernel.
+> 
+> The kernel provides capability to access the SES
+> device.  The user space application and library
+> provide interpretation and control.  Thus if the
+> enclosure were upgraded, one doesn't need to
+> upgrade their kernel in order to utilize the new
+> capabilities of the SES device.  Plus upgrading
+> a user-space application is a lot easier than
+> the kernel (and no reboot necessary).
+> 
+> Consider another thing: vendors would really like
+> unprecedented access to the SES device in the enclosure
+> so as your ses/enclosure code keeps state it would
+> get out of sync when vendor user-space enclosure
+> applications access (and modify) the SES device's
+> pages.
+> 
+> You can test this yourself: submit a patch
+> that removes SES /dev/sgX support; advertise your
+> ses/class solution and watch the fun.
+> 
+> > > At the moment SES device management is done via
+> > > an application (user-space) and a user-space library
+> > > used by the application and /dev/sgX to send SCSI
+> > > commands to the SES device.
+> > 
+> > I must have missed that when I was looking for
+> > implementations; what's
+> > the URL?
+> 
+> I'm not aware of any GPLed ones.  That doesn't
+> necessarily mean that the best course of action is
+> to bloat the kernel.  You can move your ses/enclosure
+> stuff to a user space application library
+> and thus start a GPLed one.
+> 
+> > But, if we have non-scsi enclosures to integrate, that
+> > makes it harder
+> > for a user application because it has to know all the
+> > implementations.
+> 
+> So does the kernel.  And as I pointed out above, it
+> is a lot easier to upgrade a user-space application and
+> library than it is to upgrade a new kernel and having
+> to reboot the computer to run the new kernel.
+> 
+> > A sysfs framework on the other hand is a universal known
+> > thing for the
+> > user applications.
+> 
+> So would a user-space ses library, a la libses.so.
+> 
+> > > One could have a very good argument to not bloat
+> > > the kernel with this but leave it to a user-space
+> > > application and a library to do all this and
+> > > communicate with the SES device via the kernel's
+> > /dev/sgX.
+> > 
+> > The same thing goes for other esoteric SCSI infrastructure
+> > pieces like
+> > cd changers.  On the whole, given that ATA is asking for
+> > enclosure
+> > management in kernel, it makes sense to consolidate the
+> > infrastructure
+> > and a ses ULD is a very good test bed.
+> 
+> What is wrong with exporting the SES device as /dev/sgX
+> and having a user-space application and library to
+> do all this?
+> 
+>     Luben
+> 
 
-Which shows:
+Hi,
+I apologize for taking so long to review this patch.  I obviously agree
+wholeheartedly with Luben.  The problem I ran into while trying to
+design an enclosure management interface for the SATA devices is that
+there is all this vendor defined stuff.  For example, for the AHCI LED
+protocol, the only "defined" LED is 'activity'.  For LED2 and LED3 it
+is up to hardware vendors to define these.  For SGPIO there's all kinds
+of ways for hw vendors to customize.  I felt that it was going to be a
+maintainance nightmare to have to keep track of various vendors
+enclosure implementations in the ahci driver, and that it'd be better
+to just have user space libraries take care of that.  Plus, that way a
+vendor doesn't have to get a patch into the kernel to get their new
+spiffy wizzy bang blinky lights working (think of how long it takes
+something to even get into a vendor kernel, which is what these guys
+care about...).  So I'm still not sold on having an enclosure
+abstraction in the kernel - at least for the SATA controllers.
 
- CONFIG_GEN_RTC=y
- CONFIG_GEN_RTC_X=y
-
-Disable that, then those warnings will vanish.  (I'm told that
-having proc_register() return a fault code is off the table,
-much like impeachment.)
-
-How to fix ... how about:  instead of just warning folk
-off such legacy RTC drivers [1] we just wrap them with
-an "if RTC_LIB != n" so this mistake won't be possible.
-
-- Dave
-
-[1] http://marc.info/?l=linux-kernel&m=120267619306747&w=2
+Kristen
