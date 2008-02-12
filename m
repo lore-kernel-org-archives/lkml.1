@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762675AbYBLP3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYBLP3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762675AbYBLP3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:29:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757965AbYBLP3X
+	id S1762910AbYBLP3t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762388AbYBLP31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:29:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52181 "EHLO
+	Tue, 12 Feb 2008 10:29:27 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52188 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758098AbYBLP3W (ORCPT
+	with ESMTP id S1762204AbYBLP30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:29:22 -0500
-Date: Tue, 12 Feb 2008 07:26:42 -0800
+	Tue, 12 Feb 2008 10:29:26 -0500
+Date: Tue, 12 Feb 2008 07:27:15 -0800
 From: Greg KH <greg@kroah.com>
 To: Jean Delvare <khali@linux-fr.org>
-Cc: Greg KH <gregkh@suse.de>, Jason Gaston <jason.d.gaston@intel.com>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       i2c@lm-sensors.nu
-Subject: Re: [PATCH 2.6.24] pci_ids: patch for Intel ICH10 DeviceID's
-Message-ID: <20080212152642.GA19441@kroah.com>
-References: <200801281720.37350.jason.d.gaston@intel.com> <20080212100338.21c0adf5@hyperion.delvare>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lm-sensors@lm-sensors.org
+Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
+	panic about sysfs with adm1026)
+Message-ID: <20080212152715.GB19441@kroah.com>
+References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com> <20080210171004.GB25353@kroah.com> <20080210190115.2ebd4124@hyperion.delvare> <86802c440802111539w7eeb84dcu97103733364f7a7b@mail.gmail.com> <20080212092722.32c30eac@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080212100338.21c0adf5@hyperion.delvare>
+In-Reply-To: <20080212092722.32c30eac@hyperion.delvare>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 10:03:38AM +0100, Jean Delvare wrote:
-> On Mon, 28 Jan 2008 17:20:36 -0800, Jason Gaston wrote:
-> > This patch adds the Intel ICH10 LPC and SMBus Controller DeviceID's.
-> > 
-> > Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
-> > 
-> > --- linux-2.6.24/include/linux/pci_ids.h.orig	2008-01-24 14:58:37.000000000 -0800
-> > +++ linux-2.6.24/include/linux/pci_ids.h	2008-01-28 15:05:41.000000000 -0800
-> > @@ -2339,6 +2339,12 @@
-> >  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
-> >  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
-> >  #define PCI_DEVICE_ID_INTEL_IOAT_CNB	0x360b
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_0	0x3a14
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_1	0x3a16
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_2	0x3a18
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
-> > +#define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
-> >  #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
-> >  #define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
-> >  #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
+On Tue, Feb 12, 2008 at 09:27:22AM +0100, Jean Delvare wrote:
+> Hi Yinghai,
 > 
-> Greg, please pick this patch quickly so that it makes it to -mm and the
-> other patches that depend on it can be pushed there as well.
+> On Mon, 11 Feb 2008 15:39:39 -0800, Yinghai Lu wrote:
+> > On Feb 10, 2008 10:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
+> > > Yeah, I am an idiot. In 5b34dbcd88251508d02e48ad9b0f9b8232a13ee0 I
+> > > introduced two new sysfs file groups but forgot to NULL-terminate them.
+> > > Sorry about that, here's the fix:
+> > >
+> > > * * * * *
+> > >
+> > > The missing NULL at the end of two sysfs file groups causes a kernel
+> > > crash when calling sysfs_create_group().
+> > >
+> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> > > ---
+> > >  drivers/hwmon/adm1026.c |    2 ++
+> > >  1 file changed, 2 insertions(+)
+> > >
+> > > --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c       2008-02-10 11:21:54.000000000 +0100
+> > > +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c    2008-02-10 18:51:00.000000000 +0100
+> > > @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
+> > >         &dev_attr_temp3_crit_enable.attr,
+> > >         &dev_attr_temp3_auto_point1_pwm.attr,
+> > >         &dev_attr_temp3_auto_point2_pwm.attr,
+> > > +       NULL
+> > >  };
+> > >
+> > >  static const struct attribute_group adm1026_group_temp3 = {
+> > > @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
+> > >         &sensor_dev_attr_in9_max.dev_attr.attr,
+> > >         &sensor_dev_attr_in9_min.dev_attr.attr,
+> > >         &sensor_dev_attr_in9_alarm.dev_attr.attr,
+> > > +       NULL
+> > >  };
+> > >
+> > >  static const struct attribute_group adm1026_group_in8_9 = {
+> > >
+> > > * * * * *
+> > 
+> > it works. Thanks
+> 
+> Great, thanks. Mark, please include this patch in your next patch to
+> Linus for 2.6.25.
 
-Will do, give me a few hours...
+Can someone send it to stable@kernel.org also when it goes into Linus's
+tree, as it looks like a pretty bad thing :)
 
 thanks,
 
