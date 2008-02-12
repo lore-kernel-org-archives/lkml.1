@@ -1,111 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbYBLFH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbYBLFH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756285AbYBLFH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 00:07:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbYBLFHS
+	id S1759349AbYBLFH6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 00:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbYBLFHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 00:07:18 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:59058 "EHLO smtps.tip.net.au"
+	Tue, 12 Feb 2008 00:07:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41131 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752913AbYBLFHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 00:07:15 -0500
-Date: Tue, 12 Feb 2008 16:07:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-Id: <20080212160704.77354af9.sfr@canb.auug.org.au>
-In-Reply-To: <20080212042133.GA4625@kroah.com>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	<20080212042133.GA4625@kroah.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Feb_2008_16_07_04_+1100_OBufez3.w283ghO7"
+	id S1757052AbYBLFHs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 00:07:48 -0500
+Message-ID: <47B1298D.2000600@redhat.com>
+Date: Tue, 12 Feb 2008 00:07:25 -0500
+From: Jarod Wilson <jwilson@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+MIME-Version: 1.0
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] firewire: fw-sbp2: fix I/O errors during reconnect
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <tkrat.8110272bacc3f714@s5r6.in-berlin.de> <47B08F6B.2020502@redhat.com> <47B0AE54.8090602@s5r6.in-berlin.de>
+In-Reply-To: <47B0AE54.8090602@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Feb_2008_16_07_04_+1100_OBufez3.w283ghO7
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Stefan Richter wrote:
+> Jarod Wilson wrote:
+>> Stefan Richter wrote:
+>>> +static void sbp2_conditionally_block(struct sbp2_logical_unit *lu)
+>>> +{
+>>> +    struct fw_card *card =
+>>> fw_device(lu->tgt->unit->device.parent)->card;
+>>> +
+>>> +    if (!atomic_read(&lu->tgt->dont_block) &&
+>>> +        lu->generation != card->generation &&
+>>> +        atomic_cmpxchg(&lu->blocked, 0, 1) == 0) {
+>> Just to be absolutely sure, we don't need any barriers here to ensure we
+>> get the right generations, do we?
+> 
+> I didn't think so.  But I will carefully look at it again later this
+> week.  The function definitely must not block the device when the
+> generation is current.  We look at two data fields here which makes this
+> even more problematic.  Could be that we need locks after all.
 
-On Mon, 11 Feb 2008 20:21:33 -0800 Greg KH <greg@kroah.com> wrote:
->
-> Note that a lot of these are already in the MAINTAINERS file.
->=20
-> But for the record, here's mine, in the order they need to be pulled
-> from.
->   Driver core:
-> 	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/
->   PCI:
-> 	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-02-pci/
->   USB:
-> 	kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-usb/
->=20
-> These are all quilt trees, with the series file in the directory for the
-> order of the patches, and a README saying what kernel version they have
-> been rebased against.
+I didn't see anything else earlier on that guaranteed we got the current 
+generation in both cases, but I didn't look exhaustively, and you know 
+this code a lot better than I do, so I definitely defer to your better 
+judgment, just wanted to make sure it had been considered.
 
-Thank you.  Over time we might think about some sort of standard for
-these.
 
-> Oh oh oh, I get merged first!  me me me!
+>> Also, this isn't expected to let I/O survive a disk being unplugged
+>> briefly, then plugged back in, is it?
+> 
+> No, this only tells the SCSI core to not bother fw-sbp2's
+> .queuecommand() with new commands before reconnect.  This will
+> mysteriously convince the SCSI core to not put the device offline too
+> quickly and will stabilize application client behavior thanks to
+> considerably fewer command retries.
 
-What's it worth to you?  :-)
+Okay, that's what I thought and what I observed in operation.
 
-> This is going to get really interesting, especially when (not if) we do
-> more global api changes.  Look at the last round of kobject changes.
-> That touched a lot of different places, and other trees ended up not
-> building because of it, because I changed apis and they had added new
-> code based on the old apis.
+> To survive real or perceived temporary unplugs ("perceived" unplugs can
+> happen if a third node is slowly plugged in or out), we need to do
+> something in fw-device.c.  We have to keep the fw_device around after
+> node removal event until a timeout, to check newly added devices whether
+> they are in fact one of the undead devices, and to revive that one
+> rather than creating a new one.
 
-This is one of the things that linux-next will hopefully let us discover
-more easily/faster.
+Gotcha. So basically, a temporary table of devices recently "removed", 
+which will expire to full/actual removal after some relatively short 
+interval, but which we'll also check for matches of "newly" connected 
+devices to see if we should cancel removing the device and just pretend 
+like it never actually went away. Right? I wonder if there's any sort of 
+guidance on this sort of thing in the firewire specs... I'll make an 
+effort to search for relevant info, unless you've already got it.
 
-> I think the only way to fix this is not going to just "drop the tree"
-> like you are suggesting, but to let both people know (the person who
-> caused the change, and the person who's tree broke after the merge), and
-> then either add a "fixup patch" for the build like Andrew has been
-> doing, or disabling something from the build section.
+>> (I recall that being discussed, but I think it was as a 'would be
+>> nice to do in the future' thing).
+> 
+> I realized now that it is a 'need it sooner than later' thing because of
+> these "perceived" unplugs.  We need this feature at least with a minimal
+> timeout, otherwise people will sometimes lose connection to their
+> devices (the scsi_device will be destroyed and a new one created) when
+> they plug a 3rd or 4th or nth node.  As mentioned in another post, this
+> is an actual regression for those who migrated from ieee1394 to fw-core.
+> But fear not, it looks like I will have a prolonged weekend.  :-)
 
-Right. Except that "drop the tree" will probably only mean for a day or
-so i.e. it will be taken out of the current round but will reappear
-automatically when the conflict/dependency is sorted out.
+Heh, sounds good. I missed out on my entire past weekend (and half a 
+week of work) due to family illnesses. Hoping to throw a bunch of time 
+at further firewire work this week though.
 
-> As I know I'm going to be changing more driver core apis[1] this week,
-> I'm sure we will get a very good set of examples of this for you to see
-> in action :)
-
-Excellent!
-
-However, I am hoping that these global api changes may be introduced in a
-more orderly fashion (some of which is happening already) by creating new
-api's and then switching to them (and them maybe changing the names back
-if necessary).  And, yes, I realise that this is sometimes not possible
-(or at least not worth the extra effort).
-
-> Good luck,
-
-Thanks, I will probably need it :-(
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Tue__12_Feb_2008_16_07_04_+1100_OBufez3.w283ghO7
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsSl9TgG2atn1QN8RAgy5AJ9PsdRUcJ5xUenwHarbowB56ALM7ACgl2eD
-qW2aHOkH8VkNsVHXFr93Bm4=
-=7IOM
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Feb_2008_16_07_04_+1100_OBufez3.w283ghO7--
+-- 
+Jarod Wilson
+jwilson@redhat.com
