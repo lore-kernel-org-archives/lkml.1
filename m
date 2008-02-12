@@ -1,49 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755093AbYBLTkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763492AbYBLTkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755093AbYBLTkV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:40:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbYBLTkG
+	id S1763492AbYBLTkk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762076AbYBLTkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:40:06 -0500
-Received: from www.tglx.de ([62.245.132.106]:45232 "EHLO www.tglx.de"
+	Tue, 12 Feb 2008 14:40:12 -0500
+Received: from main.gmane.org ([80.91.229.2]:34249 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751307AbYBLTkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:40:05 -0500
-Date: Tue, 12 Feb 2008 20:39:48 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: ying.huang@intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [7/8] Implement true end_pfn_mapped for 32bit
-In-Reply-To: <20080211093435.E6FC21B41CE@basil.firstfloor.org>
-Message-ID: <alpine.LFD.1.00.0802122035270.12988@apollo.tec.linutronix.de>
-References: <200802111034.764275766@suse.de> <20080211093435.E6FC21B41CE@basil.firstfloor.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752979AbYBLTkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 14:40:10 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Chris Nolan <chrisonthelists@cenolan.com>
+Subject: [PATCH] hid, 2.6.23 - add support for new macbook and apple aluminum
+ keyboard "fn" key
+Date: Tue, 12 Feb 2008 19:36:54 +0000
+Message-ID: <fosskb$klp$1@ger.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: cnolan.demon.co.uk
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008, Andi Kleen wrote:
-> Even on 32bit 2MB pages can map more memory than is in the true
-> max_low_pfn if end_pfn is not highmem and not aligned to 2MB. 
-> Add a end_pfn_map similar to x86-64 that accounts for this 
-> fact. This is important for code that really needs to know about
-> all mapping aliases. Needed for followup patches (in this case EFI)
+Hello list.
 
-It's not only necessary for followup patches, it is a question of
-general correctness.
+Seeking feedback for this patch which adds support for the "fn" key on 
+the new macbook (3,1) and apple aluminum keyboard.
 
-> @@ -36,7 +36,7 @@
->  #define max_pfn_mapped		end_pfn_map
->  #else
->  #include <asm/page_32.h>
-> -#define max_pfn_mapped		max_low_pfn
-> +#define max_pfn_mapped		end_pfn_map
+I have tested this with kernel 2.6.23 (both 2.6.23.9 and 2.6.23.15) 
+under Fedora 8 and it seems to work for me.
 
-We can nuke either max_pfn_mapped or end_pfn_map completely. I don't
-care about which one, but keeping both makes no sense at all.
+The original patch was created by Martin Szulecki (of mactel-linux) and 
+  Chris Irwin. I can't take any credit - I've just found that it works 
+and would like to see it tested and committed upstream if possible.
 
-Thanks,
+I am linking to the patch because a) its quite long, and b) I am not 
+sure how to prevent thunderbird from wrapping the lines and I'd hate to 
+annoy the list with some malformed garbage.
 
-	tglx
+Patch is here:
+
+https://bugzilla.redhat.com/attachment.cgi?id=294650
+
+Regards
+Chris
+
