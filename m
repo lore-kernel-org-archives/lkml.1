@@ -1,68 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751617AbYBLVVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbYBLVWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751617AbYBLVVi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:21:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbYBLVVb
+	id S1751958AbYBLVWa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:22:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750899AbYBLVWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:21:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:41881 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750855AbYBLVVa (ORCPT
+	Tue, 12 Feb 2008 16:22:20 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37125 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbYBLVWT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:21:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xRxZ2zgfO/AYcto61ZmJJtIktpSoS8f5I+CB7W+Oi7v/M7tx/Vh9wU/MQagJAv4JBozd6s6pzl8BR+C7Ox+DgTopxlpHBKobzBhf/TnnmKguuJekIkr9dTe2NODmB+dg4N6iv9t4+PtglHXkeMw7UcW+XlDAoRE9ihWcd698ek0=
-Message-ID: <6101e8c40802121321h2e6b297akadc8cf1fe318d231@mail.gmail.com>
-Date: Tue, 12 Feb 2008 22:21:28 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Ferenc Wagner" <wferi@niif.hu>
-Subject: Re: currently active Linux kernel versions
-Cc: "Xavier Bestel" <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org
-In-Reply-To: <87wsp9q3ev.fsf@szonett.ki.iif.hu>
+	Tue, 12 Feb 2008 16:22:19 -0500
+Date: Tue, 12 Feb 2008 13:20:05 -0800
+From: Greg KH <greg@kroah.com>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080212212005.GA22309@kroah.com>
+References: <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <20080212174824.GA1919@kroah.com> <alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org> <20080212191552.GA20883@kroah.com> <20080212194651.GI27894@ZenIV.linux.org.uk> <20080212205051.GB21650@kroah.com> <20080212210808.GJ27894@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <87skzx53a9.fsf@szonett.ki.iif.hu>
-	 <1202850783.6697.0.camel@bip.parateam.prv>
-	 <87wsp9q3ev.fsf@szonett.ki.iif.hu>
+In-Reply-To: <20080212210808.GJ27894@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-and 2.6.22.y too
+On Tue, Feb 12, 2008 at 09:08:08PM +0000, Al Viro wrote:
+> On Tue, Feb 12, 2008 at 12:50:51PM -0800, Greg KH wrote:
+> 
+> > I can run the numbers, but almost every one of those changes has at
+> > least 2 signed-off-by: on them, so they should all be being reviewed
+> > properly.
+> > 
+> > > AFAICS, we are in situation when review bandwidth is where the bottleneck
+> > > is.  Not the merge one...
+> > 
+> > Are there still large numbers of posted patches, not reviewed or picked
+> > up by anyone laying around somewhere?  I thought Andrew-the-patch-vacuum
+> > had been doing a great job of keeping that from happening lately.
+> 
+> Er...  Surely you can think of examples of patches that went through
+> -mm without serious review?  Not to mention that 2 S-o-B normally
+> means only one thing: "went to Linus through some tree".  Which does
+> not guarantee any real review, as you damn well know.
 
-On 2/12/08, Ferenc Wagner <wferi@niif.hu> wrote:
-> Xavier Bestel <xavier.bestel@free.fr> writes:
->
-> > On mar, 2008-02-12 at 21:27 +0100, Wagner Ferenc wrote:
-> >
-> >> which are the "currently active Linux kernel versions" at any point in
-> >> time?  The quote is taken from http://lkml.org/lkml/2008/2/11/29.
-> >> Or more precisely: which are the "stable" versions I can depend on for
-> >> a more or less critical server, those that have active security
-> >> support or receive at least critical bugfixes?  I know about the
-> >> 2.6.2[34].y stable git trees, but I wonder how long will those receive
-> >> attention (that is, security fixes).  Can I find a written policy
-> >> somewhere?
-> >
-> > The answer is at http://kernel.org/
->
-> Not quite, at least I can't find 2.6.23.y there, even though that
-> branch seems to be maintained...
-> --
-> Thanks,
-> Feri.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Yes, I agree, there are lots of examples of this, but the overall
+majority are reviewed by 2 people at least (or sure as hell should be,
+maybe we need to bring into existance the "reviewed-by" marking to
+ensure this.)
 
+Do you know of a way to help this get better?
 
--- 
-Thanks,
-Oliver
+thanks,
+
+greg k-h
