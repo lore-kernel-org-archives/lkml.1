@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbYBLXey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbYBLXfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761306AbYBLXey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:34:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759512AbYBLXeh
+	id S1762102AbYBLXfi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYBLXf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:34:37 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41055 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759301AbYBLXef (ORCPT
+	Tue, 12 Feb 2008 18:35:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59001
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752900AbYBLXfZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:34:35 -0500
-Date: Tue, 12 Feb 2008 15:33:56 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Travis <travis@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, ak@suse.de, clameter@sgi.com,
-       steiner@sgi.com, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 2/4] acpi: change cpufreq tables to per_cpu variables
-Message-Id: <20080212153356.d2be3248.akpm@linux-foundation.org>
-In-Reply-To: <20080208233738.427702000@polaris-admin.engr.sgi.com>
-References: <20080208233738.108449000@polaris-admin.engr.sgi.com>
-	<20080208233738.427702000@polaris-admin.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 12 Feb 2008 18:35:25 -0500
+Date: Tue, 12 Feb 2008 15:35:57 -0800 (PST)
+Message-Id: <20080212.153557.159395336.davem@davemloft.net>
+To: chris.mason@oracle.com
+Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+Subject: Re: BTRFS partition usage...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200802120935.20437.chris.mason@oracle.com>
+References: <200802120908.59602.chris.mason@oracle.com>
+	<Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
+	<200802120935.20437.chris.mason@oracle.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 08 Feb 2008 15:37:40 -0800
-Mike Travis <travis@sgi.com> wrote:
+From: Chris Mason <chris.mason@oracle.com>
+Date: Tue, 12 Feb 2008 09:35:20 -0500
 
-> Change cpufreq tables from arrays to per_cpu variables in
-> drivers/acpi/processor_thermal.c
-> 
-> Based on linux-2.6.git + x86.git
+> From my point of view, 0 is a bad idea because it is very likely to
+> conflict with other things.
 
-I fixed a bunch of rejects in "[PATCH 1/4] cpufreq: change cpu freq tables
-to per_cpu variables" and it compiles OK.  But this one was beyond my
-should-i-repair-it threshold, sorry.
+Starting at 0 is a bad idea because otherwise you'll waste
+significant chunks of your disk on Sparc because of reasons
+I've outlined in other replies.
 
+What XFS does is really unfortunate, let's learn from it's
+mistake.
