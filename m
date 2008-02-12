@@ -1,86 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbYBLFSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbYBLFbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbYBLFSV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 00:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbYBLFSH
+	id S1755326AbYBLFbG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 00:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbYBLFax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 00:18:07 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:34666 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752378AbYBLFSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 00:18:05 -0500
-Date: Mon, 11 Feb 2008 21:17:51 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-ID: <20080211211751.3e265754@laptopd505.fenrus.org>
-In-Reply-To: <20080212044314.GA4888@kroah.com>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	<20080212042133.GA4625@kroah.com>
-	<20080211203146.3d28d1a0@laptopd505.fenrus.org>
-	<20080212044314.GA4888@kroah.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 12 Feb 2008 00:30:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48930 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752169AbYBLFaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 00:30:52 -0500
+Date: Tue, 12 Feb 2008 13:28:40 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: linux-kernel@vger.kernel.org
+Cc: Jonathan Corbet <corbet@lwn.net>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: [PATCH] mm: tidy up follow_hugetlb_page() and get_user_pages()
+Message-ID: <20080212052840.GA3942@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 20:43:14 -0800
-Greg KH <greg@kroah.com> wrote:
+This patch extends Jonathan Corbet's patch to avoid buffer overflows in
+get_user_pages(). It cleans up follow_hugetlb_page(), and get_user_pages() so
+that it is easier to read. It also makes sure that len and vma are validated.
 
-> On Mon, Feb 11, 2008 at 08:31:46PM -0800, Arjan van de Ven wrote:
-> > On Mon, 11 Feb 2008 20:21:33 -0800
-> > Greg KH <greg@kroah.com> wrote:
-> > 
-> > 
-> > > > The maintainer will be notified.  I hope to provide some clue
-> > > > as to what the conflict is with, but probably not initially.
-> > > > 
-> > > > I will attempt to build the tree between each merge (and a
-> > > > failed build will again cause the offending tree to be dropped).
-> > > 
-> > > This is going to get really interesting, especially when (not if)
-> > > we do more global api changes.  Look at the last round of kobject
-> > > changes. That touched a lot of different places, and other trees
-> > > ended up not building because of it, because I changed apis and
-> > > they had added new code based on the old apis.
-> > > 
-> > > I think the only way to fix this is not going to just "drop the
-> > > tree" like you are suggesting, but to let both people know (the
-> > > person who caused the change, and the person who's tree broke
-> > > after the merge), and then either add a "fixup patch" for the
-> > > build like Andrew has been doing, or disabling something from the
-> > > build section.
-> > > 
-> > 
-> > in my experience, the only chance you have is doing API changes as
-> > first in the set of changes, and then hoping (making) all other
-> > trees use the new APIs. Any other order just turns into an
-> > impossible mismash.
-> 
-> I agree, and that's what I do.
-> 
-> The problem is, the API change is still in my tree.  So, if for
-> example, the IB tree goes and adds some new functionality before my
-> API changes have landed, they need to use the "old" API in order for
-> them to be able to test and build things on their own.  Then, when
-> the -next tree merges everything together, the IB tree breaks the
-> build, not my driver tree.
-> 
-> It's those "who goes first" type things that end up being the cause
-> of a lot of Andrew's headaches I think :)
-> 
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ include/linux/hugetlb.h |    2 +-
+ mm/hugetlb.c            |   13 +++----------
+ mm/memory.c             |   39 +++++++++++++++++++++++----------------
+ 3 files changed, 27 insertions(+), 27 deletions(-)
 
-this is why you need specific trees for just the API change, and these
-need to EXPLICITLY go first before EVERYTHING ELSE. Yes this needs a bit of coordination,
-but it's the only way.
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 30d606a..cf6c33e 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -19,7 +19,7 @@ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+ int hugetlb_sysctl_handler(struct ctl_table *, int, struct file *, void __user *, size_t *, loff_t *);
+ int hugetlb_treat_movable_handler(struct ctl_table *, int, struct file *, void __user *, size_t *, loff_t *);
+ int copy_hugetlb_page_range(struct mm_struct *, struct mm_struct *, struct vm_area_struct *);
+-int follow_hugetlb_page(struct mm_struct *, struct vm_area_struct *, struct page **, struct vm_area_struct **, unsigned long *, int *, int, int);
++int follow_hugetlb_page(struct mm_struct *, struct vm_area_struct *, struct page **, struct vm_area_struct **, unsigned long *, int, int, int);
+ void unmap_hugepage_range(struct vm_area_struct *, unsigned long, unsigned long);
+ void __unmap_hugepage_range(struct vm_area_struct *, unsigned long, unsigned long);
+ int hugetlb_prefault(struct address_space *, struct vm_area_struct *);
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 1a56420..f34076f 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -950,15 +950,14 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+ 
+ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			struct page **pages, struct vm_area_struct **vmas,
+-			unsigned long *position, int *length, int i,
++			unsigned long *position, int length, int i,
+ 			int write)
+ {
+ 	unsigned long pfn_offset;
+ 	unsigned long vaddr = *position;
+-	int remainder = *length;
+ 
+ 	spin_lock(&mm->page_table_lock);
+-	while (vaddr < vma->vm_end && remainder) {
++	for (; i < length && vaddr < vma->vm_end; ) {
+ 		pte_t *pte;
+ 		struct page *page;
+ 
+@@ -977,10 +976,6 @@ int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 			spin_lock(&mm->page_table_lock);
+ 			if (!(ret & VM_FAULT_ERROR))
+ 				continue;
+-
+-			remainder = 0;
+-			if (!i)
+-				i = -EFAULT;
+ 			break;
+ 		}
+ 
+@@ -997,9 +992,8 @@ same_page:
+ 
+ 		vaddr += PAGE_SIZE;
+ 		++pfn_offset;
+-		--remainder;
+ 		++i;
+-		if (vaddr < vma->vm_end && remainder &&
++		if (i < length && vaddr < vma->vm_end &&
+ 				pfn_offset < HPAGE_SIZE/PAGE_SIZE) {
+ 			/*
+ 			 * We use pfn_offset to avoid touching the pageframes
+@@ -1009,7 +1003,6 @@ same_page:
+ 		}
+ 	}
+ 	spin_unlock(&mm->page_table_lock);
+-	*length = remainder;
+ 	*position = vaddr;
+ 
+ 	return i;
+diff --git a/mm/memory.c b/mm/memory.c
+index 153a54b..6221b03 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -991,20 +991,23 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 	int i;
+ 	unsigned int vm_flags;
+ 
++	BUG_ON(len <= 0);
++
+ 	/* 
+ 	 * Require read or write permissions.
+ 	 * If 'force' is set, we only require the "MAY" flags.
+ 	 */
+ 	vm_flags  = write ? (VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
+ 	vm_flags &= force ? (VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
+-	i = 0;
+ 
+-	do {
++	for (i = 0; i < len; ) {
+ 		struct vm_area_struct *vma;
+ 		unsigned int foll_flags;
+ 
+ 		vma = find_extend_vma(mm, start);
+-		if (!vma && in_gate_area(tsk, start)) {
++		if (!vma)
++			goto finish_or_fault;
++		if (in_gate_area(tsk, start)) {
+ 			unsigned long pg = start & PAGE_MASK;
+ 			struct vm_area_struct *gate_vma = get_gate_vma(tsk);
+ 			pgd_t *pgd;
+@@ -1012,7 +1015,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			pmd_t *pmd;
+ 			pte_t *pte;
+ 			if (write) /* user gate pages are read-only */
+-				return i ? : -EFAULT;
++				goto finish_or_fault;
+ 			if (pg > TASK_SIZE)
+ 				pgd = pgd_offset_k(pg);
+ 			else
+@@ -1022,11 +1025,11 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 			BUG_ON(pud_none(*pud));
+ 			pmd = pmd_offset(pud, pg);
+ 			if (pmd_none(*pmd))
+-				return i ? : -EFAULT;
++				goto finish_or_fault;
+ 			pte = pte_offset_map(pmd, pg);
+ 			if (pte_none(*pte)) {
+ 				pte_unmap(pte);
+-				return i ? : -EFAULT;
++				goto finish_or_fault;
+ 			}
+ 			if (pages) {
+ 				struct page *page = vm_normal_page(gate_vma, start, *pte);
+@@ -1039,17 +1042,16 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 				vmas[i] = gate_vma;
+ 			i++;
+ 			start += PAGE_SIZE;
+-			len--;
+ 			continue;
+ 		}
+ 
+-		if (!vma || (vma->vm_flags & (VM_IO | VM_PFNMAP))
++		if ((vma->vm_flags & (VM_IO | VM_PFNMAP))
+ 				|| !(vm_flags & vma->vm_flags))
+-			return i ? : -EFAULT;
++			goto finish_or_fault;
+ 
+ 		if (is_vm_hugetlb_page(vma)) {
+ 			i = follow_hugetlb_page(mm, vma, pages, vmas,
+-						&start, &len, i, write);
++						&start, len, i, write);
+ 			continue;
+ 		}
+ 
+@@ -1061,7 +1063,7 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 					!vma->vm_ops->fault)))
+ 			foll_flags |= FOLL_ANON;
+ 
+-		do {
++		for (; i < len && start < vma->vm_end; ) {
+ 			struct page *page;
+ 
+ 			/*
+@@ -1082,9 +1084,9 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 						foll_flags & FOLL_WRITE);
+ 				if (ret & VM_FAULT_ERROR) {
+ 					if (ret & VM_FAULT_OOM)
+-						return i ? i : -ENOMEM;
++						goto finish_or_oom;
+ 					else if (ret & VM_FAULT_SIGBUS)
+-						return i ? i : -EFAULT;
++						goto finish_or_fault;
+ 					BUG();
+ 				}
+ 				if (ret & VM_FAULT_MAJOR)
+@@ -1114,10 +1116,15 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+ 				vmas[i] = vma;
+ 			i++;
+ 			start += PAGE_SIZE;
+-			len--;
+-		} while (len && start < vma->vm_end);
+-	} while (len);
++		}
++	}
+ 	return i;
++
++finish_or_oom:
++	return i ? : -ENOMEM;
++
++finish_or_fault:
++	return i ? : -EFAULT;
+ }
+ EXPORT_SYMBOL(get_user_pages);
+ 
