@@ -1,58 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763628AbYBLUok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764412AbYBLUqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763628AbYBLUok (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:44:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbYBLUoc
+	id S1764412AbYBLUqA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755601AbYBLUpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:44:32 -0500
-Received: from wren.kitenet.net ([80.68.85.49]:44568 "EHLO kitenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753863AbYBLUob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:44:31 -0500
-X-Greylist: delayed 535 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 15:44:31 EST
-Date: Tue, 12 Feb 2008 15:35:31 -0500
-From: Joey Hess <joeyh@debian.org>
-To: maximilian attems <max@stro.at>, 464962@bugs.debian.org
-Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: Bug#464962: immediate crash on boot on TM5800
-Message-ID: <20080212203531.GA7074@kodama.kitenet.net>
-References: <20080210031849.GA3370@dragon.kitenet.net> <20080210110659.GB8574@stro.at> <20080210192139.GA17647@kodama.kitenet.net> <20080212160522.GB5221@stro.at> <20080212195254.GA6252@kodama.kitenet.net> <20080212201048.GD22054@baikonur.stro.at>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
-Content-Disposition: inline
-In-Reply-To: <20080212201048.GD22054@baikonur.stro.at>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 12 Feb 2008 15:45:52 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:15606 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbYBLUpv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 15:45:51 -0500
+Date: Tue, 12 Feb 2008 12:45:22 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Fabio Coatti <cova@ferrara.linux.it>
+Cc: linux-kernel@vger.kernel.org, len.brown@intel.com, rjw@sisk.pl
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Message-Id: <20080212124522.1033c514.randy.dunlap@oracle.com>
+In-Reply-To: <200802121847.19991.cova@ferrara.linux.it>
+References: <200802121503.41328.cova@ferrara.linux.it>
+	<20080212091855.d43d7926.randy.dunlap@oracle.com>
+	<200802121847.19991.cova@ferrara.linux.it>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Feb 2008 18:47:19 +0100 Fabio Coatti wrote:
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Alle martedì 12 febbraio 2008, Randy Dunlap ha scritto:
+> > On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
+> > > Hi all,
+> > > I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so to
+> > > fix the splice bug I've had to apply by hand the patch. (x86_64)
+> > >
+> > > Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine won't
+> > > boot due to a problem with cciss driver, that prevents to find the /
+> > > partition. (bug described here: Kernel Bug Tracker Bug 9859
+> > > http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
+> > >
+> > > With kernels 2.6.23, the lastest that I can compile is 2.6.23.14;
+> > > starting from .15 (and .16) I get this message:
+> > >
+> > > ======================
+> > >   UPD     include/linux/compile.h
+> > >   CC      init/version.o
+> > >   LD      init/built-in.o
+> > >   LD      .tmp_vmlinux1
+> > > drivers/built-in.o: In function `acpi_init':
+> > > bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
+> > > bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
+> > > ======================
+> > >
+> > > All .config are the same, (make oldconfig) beside the obvious differences
+> > > between .23 and .24
+> > >
+> > > Hardware: x86_64 AMD 2216HE
+> > > SCSI controller: HP Smart Array E200i Controller
+> > > Compiler: gcc (GCC) 4.1.1
+> > > binutils: 2.16.1
+> > >
+> > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
+> > > with a cciss0: HP Smart Array 6i Controller,
+> > > the 2.6.24.2 compiles just fine and works, so the cciss problems seems
+> > > related only to E200i controller.
+> > >
+> > > Right now, on AMD64 machines, I'm forced to patch by hand the kernel,
+> > > that's quite uncomfortable :)
+> > >
+> > > Can someone point me in the right direction to get out of this situation?
+> > > Of course I can provide any further information. (.config not inlcuded
+> > > now to avoid cluttering  )
+> > >
+> > > Thanks for any answer.
+> >
+> > a/ send .config file for the build problem above
+> > b/ How do you download and/or apply 2.6.23.{15,16} ?
+> > 	Full tarball or base tarball + patches?
+> > 	If patches, what base tree are they applied to?
+> >
+> 
+> full tarball from kernel.org (.16), tried also applying patches to 2.6.23 
+> vanilla.(.15,.16) Same process leads to successful compilation for .14
 
-maximilian attems wrote:
-> on shiny fujitsu p700 lifebook, with a Crusoe processor.
+OK, quite easy to reproduce when CONFIG_PM=n.
+For a temp quick fix, you could enable CONFIG_PM.
 
-FWIW, I misremembered the model number. It's a not-so-shiny P2110.
+Len, Rafael:  were there any recent patches for the split of ACPI & PM
+that need to be backported to -stable?
 
---=20
-see shy jo
-
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsgMTd8HHehbQuO8RAg/oAKCGfp9scrQG3DL8GsfKzAiQ0JR55ACg4uYj
-yp0CjIOqEOPo+M79bgk7qPI=
-=w/3R
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
+Thanks.
+---
+~Randy
