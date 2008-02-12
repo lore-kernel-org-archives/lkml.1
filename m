@@ -1,43 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762102AbYBLXfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760343AbYBLXgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762102AbYBLXfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbYBLXf1
+	id S1760343AbYBLXgy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbYBLXgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:35:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59001
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752900AbYBLXfZ (ORCPT
+	Tue, 12 Feb 2008 18:36:45 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:30435 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752198AbYBLXgo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:35:25 -0500
-Date: Tue, 12 Feb 2008 15:35:57 -0800 (PST)
-Message-Id: <20080212.153557.159395336.davem@davemloft.net>
-To: chris.mason@oracle.com
-Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-Subject: Re: BTRFS partition usage...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200802120935.20437.chris.mason@oracle.com>
-References: <200802120908.59602.chris.mason@oracle.com>
-	<Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
-	<200802120935.20437.chris.mason@oracle.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 18:36:44 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH resend] qla3xxx: convert byte order of constant instead ofvariable
+Date: Tue, 12 Feb 2008 15:36:43 -0800
+Message-ID: <0BB3E5E7462EEA4295BC02D49691DC070127727B@AVEXCH1.qlogic.org>
+In-Reply-To: <20080210100546.GA6737@joi>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH resend] qla3xxx: convert byte order of constant instead ofvariable
+Thread-Index: AchrzKURqL32OmxESVmo+Lt9L4dhYgCA0RXQ
+From: "Ron Mercer" <ron.mercer@qlogic.com>
+To: "Marcin Slusarz" <marcin.slusarz@gmail.com>, <netdev@vger.kernel.org>,
+       "Linux Driver" <Linux-Driver@qlogic.com>
+Cc: "LKML" <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Mason <chris.mason@oracle.com>
-Date: Tue, 12 Feb 2008 09:35:20 -0500
+ 
 
-> From my point of view, 0 is a bad idea because it is very likely to
-> conflict with other things.
+> -----Original Message-----
+> From: Marcin Slusarz [mailto:marcin.slusarz@gmail.com] 
+> Sent: Sunday, February 10, 2008 2:06 AM
+> To: netdev@vger.kernel.org; Linux Driver
+> Cc: LKML
+> Subject: [PATCH resend] qla3xxx: convert byte order of 
+> constant instead ofvariable
+> 
+> convert byte order of constant instead of variable
+> which can be done at compile time (vs run time)
+> 
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> ---
+>  drivers/net/qla3xxx.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/net/qla3xxx.c b/drivers/net/qla3xxx.c
+> index a6aeb9d..b7f7b22 100644
+> --- a/drivers/net/qla3xxx.c
+> +++ b/drivers/net/qla3xxx.c
+> @@ -2472,8 +2472,7 @@ static int ql_send_map(struct ql3_adapter *qdev,
+>  
+>  	if (seg_cnt == 1) {
+>  		/* Terminate the last segment. */
+> -		oal_entry->len =
+> -		    cpu_to_le32(le32_to_cpu(oal_entry->len) | 
+> OAL_LAST_ENTRY);
+> +		oal_entry->len |= cpu_to_le32(OAL_LAST_ENTRY);
+>  	} else {
+>  		oal = tx_cb->oal;
+>  		for (completed_segs=0; completed_segs<frag_cnt; 
+> completed_segs++,seg++) {
+> @@ -2530,8 +2529,7 @@ static int ql_send_map(struct ql3_adapter *qdev,
+>  					  frag->size);
+>  		}
+>  		/* Terminate the last segment. */
+> -		oal_entry->len =
+> -		    cpu_to_le32(le32_to_cpu(oal_entry->len) | 
+> OAL_LAST_ENTRY);
+> +		oal_entry->len |= cpu_to_le32(OAL_LAST_ENTRY);
+>  	}
+>  
+>  	return NETDEV_TX_OK;
+> -- 
+> 1.5.3.7
+> 
+> 
 
-Starting at 0 is a bad idea because otherwise you'll waste
-significant chunks of your disk on Sparc because of reasons
-I've outlined in other replies.
+Thanks
 
-What XFS does is really unfortunate, let's learn from it's
-mistake.
+Acked-by: Ron Mercer <ron.mercer@qlogic.com> 
