@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758917AbYBLBbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761229AbYBLBcP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758917AbYBLBbv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754593AbYBLBbl
+	id S1761229AbYBLBcP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:32:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbYBLBbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:31:41 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:62597 "EHLO
+	Mon, 11 Feb 2008 20:31:43 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:62598 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754043AbYBLBbh (ORCPT
+	with ESMTP id S1754197AbYBLBbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 Feb 2008 20:31:37 -0500
-Date: Mon, 11 Feb 2008 17:28:07 -0800
+Date: Mon, 11 Feb 2008 17:27:53 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: lkml <linux-kernel@vger.kernel.org>
-Cc: netdev@vger.kernel.org, davem@davemloft.net,
-       akpm <akpm@linux-foundation.org>
-Subject: [PATCH 2/4] docbook: sunrpc filenames and notation fixes
-Message-Id: <20080211172807.d234ee97.randy.dunlap@oracle.com>
+Cc: akpm <akpm@linux-foundation.org>, viro@zeniv.linux.org.uk
+Subject: [PATCH 1/4] kernel-doc: fix fs/pipe.c notation
+Message-Id: <20080211172753.3990e7bb.randy.dunlap@oracle.com>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -32,99 +31,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Use updated file list for docbook files and
-fix kernel-doc warnings in sunrpc:
-Warning(linux-2.6.24-git12//net/sunrpc/rpc_pipe.c:689): No description found for parameter 'rpc_client'
-Warning(linux-2.6.24-git12//net/sunrpc/rpc_pipe.c:765): No description found for parameter 'flags'
-Warning(linux-2.6.24-git12//net/sunrpc/clnt.c:584): No description found for parameter 'tk_ops'
-Warning(linux-2.6.24-git12//net/sunrpc/clnt.c:618): No description found for parameter 'bufsize'
+Fix several kernel-doc notation errors in fs/pipe.c.
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- Documentation/DocBook/kernel-api.tmpl |    8 +++++++-
- net/sunrpc/clnt.c                     |   10 +++++-----
- net/sunrpc/rpc_pipe.c                 |    3 ++-
- net/sunrpc/xprt.c                     |    2 +-
- 4 files changed, 15 insertions(+), 8 deletions(-)
+ fs/pipe.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
---- linux-2.6.25-rc1.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux-2.6.25-rc1/Documentation/DocBook/kernel-api.tmpl
-@@ -231,8 +231,14 @@ X!Ilib/string.c
- !Dnet/sunrpc/sunrpc_syms.c
- -->
- !Enet/sunrpc/xdr.c
--!Enet/sunrpc/svcsock.c
-+!Enet/sunrpc/svc_xprt.c
-+!Enet/sunrpc/xprt.c
- !Enet/sunrpc/sched.c
-+!Enet/sunrpc/socklib.c
-+!Enet/sunrpc/stats.c
-+!Enet/sunrpc/rpc_pipe.c
-+!Enet/sunrpc/rpcb_clnt.c
-+!Enet/sunrpc/clnt.c
-      </sect1>
-   </chapter>
- 
---- linux-2.6.25-rc1.orig/net/sunrpc/clnt.c
-+++ linux-2.6.25-rc1/net/sunrpc/clnt.c
-@@ -464,9 +464,9 @@ rpc_release_client(struct rpc_clnt *clnt
+--- linux-2.6.25-rc1.orig/fs/pipe.c
++++ linux-2.6.25-rc1/fs/pipe.c
+@@ -171,7 +171,7 @@ static void anon_pipe_buf_release(struct
+  *
+  * Description:
+  *	This function returns a kernel virtual address mapping for the
+- *	passed in @pipe_buffer. If @atomic is set, an atomic map is provided
++ *	pipe_buffer passed in @buf. If @atomic is set, an atomic map is provided
+  *	and the caller has to be careful not to fault before calling
+  *	the unmap function.
+  *
+@@ -208,15 +208,15 @@ void generic_pipe_buf_unmap(struct pipe_
+ }
  
  /**
-  * rpc_bind_new_program - bind a new RPC program to an existing client
-- * @old - old rpc_client
-- * @program - rpc program to set
-- * @vers - rpc program version
-+ * @old: old rpc_client
-+ * @program: rpc program to set
-+ * @vers: rpc program version
+- * generic_pipe_buf_steal - attempt to take ownership of a @pipe_buffer
++ * generic_pipe_buf_steal - attempt to take ownership of a &pipe_buffer
+  * @pipe:	the pipe that the buffer belongs to
+  * @buf:	the buffer to attempt to steal
   *
-  * Clones the rpc client and sets up a new RPC program. This is mainly
-  * of use for enabling different RPC programs to share the same transport.
-@@ -575,7 +575,7 @@ EXPORT_SYMBOL_GPL(rpc_call_sync);
-  * @clnt: pointer to RPC client
-  * @msg: RPC call parameters
-  * @flags: RPC call flags
-- * @ops: RPC call ops
-+ * @tk_ops: RPC call ops
-  * @data: user call data
+  * Description:
+- *	This function attempts to steal the @struct page attached to
++ *	This function attempts to steal the &struct page attached to
+  *	@buf. If successful, this function returns 0 and returns with
+  *	the page locked. The caller may then reuse the page for whatever
+- *	he wishes, the typical use is insertion into a different file
++ *	he wishes; the typical use is insertion into a different file
+  *	page cache.
   */
- int
-@@ -610,7 +610,7 @@ EXPORT_SYMBOL_GPL(rpc_call_start);
-  * rpc_peeraddr - extract remote peer address from clnt's xprt
-  * @clnt: RPC client structure
-  * @buf: target buffer
-- * @size: length of target buffer
-+ * @bufsize: length of target buffer
-  *
-  * Returns the number of bytes that are actually in the stored address.
-  */
---- linux-2.6.25-rc1.orig/net/sunrpc/xprt.c
-+++ linux-2.6.25-rc1/net/sunrpc/xprt.c
-@@ -124,7 +124,7 @@ EXPORT_SYMBOL_GPL(xprt_register_transpor
+ int generic_pipe_buf_steal(struct pipe_inode_info *pipe,
+@@ -238,7 +238,7 @@ int generic_pipe_buf_steal(struct pipe_i
+ }
  
  /**
-  * xprt_unregister_transport - unregister a transport implementation
-- * transport: transport to unregister
-+ * @transport: transport to unregister
+- * generic_pipe_buf_get - get a reference to a @struct pipe_buffer
++ * generic_pipe_buf_get - get a reference to a &struct pipe_buffer
+  * @pipe:	the pipe that the buffer belongs to
+  * @buf:	the buffer to get a reference to
   *
-  * Returns:
-  * 0:		transport successfully unregistered
---- linux-2.6.25-rc1.orig/net/sunrpc/rpc_pipe.c
-+++ linux-2.6.25-rc1/net/sunrpc/rpc_pipe.c
-@@ -677,7 +677,7 @@ rpc_lookup_negative(char *path, struct n
- /**
-  * rpc_mkdir - Create a new directory in rpc_pipefs
-  * @path: path from the rpc_pipefs root to the new directory
-- * @rpc_clnt: rpc client to associate with this directory
-+ * @rpc_client: rpc client to associate with this directory
-  *
-  * This creates a directory at the given @path associated with
-  * @rpc_clnt, which will contain a file named "info" with some basic
-@@ -748,6 +748,7 @@ rpc_rmdir(struct dentry *dentry)
-  * @private: private data to associate with the pipe, for the caller's use
-  * @ops: operations defining the behavior of the pipe: upcall, downcall,
-  *	release_pipe, and destroy_msg.
-+ * @flags: rpc_inode flags
-  *
-  * Data is made available for userspace to read by calls to
-  * rpc_queue_upcall().  The actual reads will result in calls to
