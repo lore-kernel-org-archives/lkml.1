@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbYBLPhp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbYBLPjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbYBLPhp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:37:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYBLPhi
+	id S1759307AbYBLPjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbYBLPjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:37:38 -0500
-Received: from smtp-102-tuesday.nerim.net ([62.4.16.102]:60768 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751112AbYBLPhh (ORCPT
+	Tue, 12 Feb 2008 10:39:33 -0500
+Received: from mga07.intel.com ([143.182.124.22]:58051 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751258AbYBLPjc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:37:37 -0500
-Date: Tue, 12 Feb 2008 16:37:33 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Greg KH <greg@kroah.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
-  panic about sysfs with adm1026)
-Message-ID: <20080212163733.461a8684@hyperion.delvare>
-In-Reply-To: <20080212152715.GB19441@kroah.com>
-References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com>
-	<20080210171004.GB25353@kroah.com>
-	<20080210190115.2ebd4124@hyperion.delvare>
-	<86802c440802111539w7eeb84dcu97103733364f7a7b@mail.gmail.com>
-	<20080212092722.32c30eac@hyperion.delvare>
-	<20080212152715.GB19441@kroah.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 10:39:32 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
+   d="scan'208";a="378099320"
+Date: Tue, 12 Feb 2008 07:37:00 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+Message-ID: <20080212153700.GB27490@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20080211224105.GB24412@linux.intel.com> <20080212085256.GF5750@rhun.haifa.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212085256.GF5750@rhun.haifa.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 07:27:15 -0800, Greg KH wrote:
-> On Tue, Feb 12, 2008 at 09:27:22AM +0100, Jean Delvare wrote:
-> > Hi Yinghai,
-> > 
-> > On Mon, 11 Feb 2008 15:39:39 -0800, Yinghai Lu wrote:
-> > > On Feb 10, 2008 10:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > Yeah, I am an idiot. In 5b34dbcd88251508d02e48ad9b0f9b8232a13ee0 I
-> > > > introduced two new sysfs file groups but forgot to NULL-terminate them.
-> > > > Sorry about that, here's the fix:
-> > > >
-> > > > * * * * *
-> > > >
-> > > > The missing NULL at the end of two sysfs file groups causes a kernel
-> > > > crash when calling sysfs_create_group().
-> > > >
-> > > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > > > ---
-> > > >  drivers/hwmon/adm1026.c |    2 ++
-> > > >  1 file changed, 2 insertions(+)
-> > > >
-> > > > --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c       2008-02-10 11:21:54.000000000 +0100
-> > > > +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c    2008-02-10 18:51:00.000000000 +0100
-> > > > @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
-> > > >         &dev_attr_temp3_crit_enable.attr,
-> > > >         &dev_attr_temp3_auto_point1_pwm.attr,
-> > > >         &dev_attr_temp3_auto_point2_pwm.attr,
-> > > > +       NULL
-> > > >  };
-> > > >
-> > > >  static const struct attribute_group adm1026_group_temp3 = {
-> > > > @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
-> > > >         &sensor_dev_attr_in9_max.dev_attr.attr,
-> > > >         &sensor_dev_attr_in9_min.dev_attr.attr,
-> > > >         &sensor_dev_attr_in9_alarm.dev_attr.attr,
-> > > > +       NULL
-> > > >  };
-> > > >
-> > > >  static const struct attribute_group adm1026_group_in8_9 = {
-> > > >
-> > > > * * * * *
-> > > 
-> > > it works. Thanks
-> > 
-> > Great, thanks. Mark, please include this patch in your next patch to
-> > Linus for 2.6.25.
+On Tue, Feb 12, 2008 at 10:52:56AM +0200, Muli Ben-Yehuda wrote:
+> On Mon, Feb 11, 2008 at 02:41:05PM -0800, mark gross wrote:
 > 
-> Can someone send it to stable@kernel.org also when it goes into Linus's
-> tree, as it looks like a pretty bad thing :)
+> > The intel-iommu hardware requires a polling operation to flush IOTLB
+> > PTE's after an unmap operation.  Through some TSC instrumentation of
+> > a netperf UDP stream with small packets test case it was seen that
+> > the flush operations where sucking up to 16% of the CPU time doing
+> > iommu_flush_iotlb's
+> > 
+> > The following patch batches the IOTLB flushes removing most of the
+> > overhead in flushing the IOTLB's.  It works by building a list of to
+> > be released IOVA's that is iterated over when a timer goes off or
+> > when a high water mark is reached.
+> > 
+> > The wrinkle this has is that the memory protection and page fault
+> > warnings from errant DMA operations is somewhat reduced, hence a kernel
+> > parameter is added to revert back to the "strict" page flush / unmap
+> > behavior. 
+> > 
+> > The hole is the following scenarios: 
+> > do many map_signal operations, do some unmap_signals, reuse a recently
+> > unmapped page, <errant DMA hardware sneaks through and steps on reused
+> > memory>
+> > 
+> > Or: you have rouge hardware using DMA's to look at pages: do many
+> > map_signal's, do many unmap_singles, reuse some unmapped pages : 
+> > <rouge hardware looks at reused page>
+> > 
+> > Note : these holes are very hard to get too, as the IOTLB is small
+> > and only the PTE's still in the IOTLB can be accessed through this
+> > mechanism.
+> > 
+> > Its recommended that strict is used when developing drivers that do
+> > DMA operations to catch bugs early.  For production code where
+> > performance is desired running with the batched IOTLB flushing is a
+> > good way to go.
+> 
+> While I don't disagree with this patch in principle (Calgary does the
+> same thing due to expensive IOTLB flushes) the right way to fix it
+> IMHO is to fix the drivers to batch mapping and unmapping operations
+> or map up-front and unmap when done. The streaming DMA-API was
+> designed to conserve IOMMU mappings for machines where IOMMU mappings
+> are a scarce resource, and is a poor fit for a modern IOMMU such as
+> VT-d with a 64-bit IO address space (or even an IOMMU with a 32-bit
+> address space such as Calgary) where there are plenty of IOMMU
+> mappings available.
 
-I certainly could, but then you would laugh at me because 2.6.24 isn't
-affected by the bug.
+Yes, have a DMA pool of DMA addresses to use and re-use in the stack
+instead of setting up and tearing down the PTE's is something we need to
+look at closely for network and other high DMA traffic stacks. 
 
--- 
-Jean Delvare
+--mgross
+
+
