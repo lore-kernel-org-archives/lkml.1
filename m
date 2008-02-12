@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbYBLPta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbYBLPwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbYBLPta (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:49:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYBLPtV
+	id S1760597AbYBLPwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYBLPwI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:49:21 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:55662 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbYBLPtU (ORCPT
+	Tue, 12 Feb 2008 10:52:08 -0500
+Received: from mga06.intel.com ([134.134.136.21]:20940 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753568AbYBLPwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:49:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QdqQIScUTjfh7yhwYCeZActby+FDGM/+oVMmSiZ7hk6iwMQaETJnYmDnlIX7LPYgwPNwaIfbge6XGQg6TUv4madHjCHHDyxeWr0locCSAO08WJkk1PX2NOaHRY93zBLrYFQ9PCGyT0uG+08EVpRq5tzQR1KtnJJ2IhiPANZpkrA=
-Message-ID: <8499950a0802120749r33323a15k7cde80862ae26c3d@mail.gmail.com>
-Date: Tue, 12 Feb 2008 16:49:16 +0100
-From: "Oleg Verych" <olecom@gmail.com>
-To: "Mike Frysinger" <vapier@gentoo.org>
-Subject: Re: [PATCH] kbuild: fix make V=1
-Cc: "Oleg Verych" <olecom@flower.upol.cz>, "Sam Ravnborg" <sam@ravnborg.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <200802121007.50638.vapier@gentoo.org>
+	Tue, 12 Feb 2008 10:52:07 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
+   d="scan'208";a="257590320"
+Date: Tue, 12 Feb 2008 07:54:48 -0800
+From: mark gross <mgross@linux.intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: muli@il.ibm.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+Message-ID: <20080212155448.GC27490@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <20080211224105.GB24412@linux.intel.com> <20080212085256.GF5750@rhun.haifa.ibm.com> <20080212.010006.255202479.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
-	 <20080212085605.GB26865@uranus.ravnborg.org>
-	 <20080212092504.GI24008@flower.upol.cz>
-	 <200802121007.50638.vapier@gentoo.org>
+In-Reply-To: <20080212.010006.255202479.davem@davemloft.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 12, 2008 4:07 PM, Mike Frysinger <vapier@gentoo.org> wrote:
-[]
-> > - quiet_chk_filechk = echo '  CHK     $@'
-> > -silent_chk_filechk = :
-> > - quiet_upd_filechk = echo '  UPD     $@'
-> > -silent_upd_filechk = :
-> > +quiet_chk_filechk = '  CHK     $@'
-> > +quiet_upd_filechk = '  UPD     $@'
-> > +
-> >  define filechk
-> >       $(Q)set -e;                             \
-> > -     $($(quiet)chk_filechk);                 \
-> > +     echo $($(quiet)chk_filechk);            \
-> >       mkdir -p $(dir $@);                     \
-> >       $(filechk_$(1)) < $< > $@.tmp;          \
-> >       if [ -r $@ ] && cmp -s $@ $@.tmp; then  \
-> >               rm -f $@.tmp;                   \
-> >       else                                    \
-> > -             $($(quiet)upd_filechk);         \
-> > +             echo $($(quiet)upd_filechk);    \
-> >               mv -f $@.tmp $@;                \
-> >       fi
-> >  endef
+On Tue, Feb 12, 2008 at 01:00:06AM -0800, David Miller wrote:
+> From: Muli Ben-Yehuda <muli@il.ibm.com>
+> Date: Tue, 12 Feb 2008 10:52:56 +0200
 > 
-> i dont see how yours is more efficient when it always runs echo.
-
-Oh, this? It's like doing syscall for every write to "/dev/null".
-
-> nor does it give the same behavior ... your propposed change will echo
-> blank lines in the silent mode which is incorrect.
-
-At least this will not crash, if you don't have some variable set.
-
-Efficiency there is lesser number of variables(-2 vs +2), that are copied
-for every make job, and are textually parsed and searched.
-
-> it also does not seem to follow the standard convention of other
-> kconfig commands that have quiet/silent prefixes ... such commands do
-> not define arguments to an unknown program/function, nor do they add
-> arbitrary redirection which gets leads to confusion as to final
-> expansion, they define the entire command.
-
-Right. Seems like you are talking about "[quite_]cmd_*", which are
-commands. Here you've invented such rules for ordinary utility in
-`filechk`. And by try they've failed due to mixing functionality
-dependency on having arbitrary variable being set.
-
-Shell syntax tried to avoid this, but `make` syntax and ``convention''
-did a boom. Boom, where hacker's V=1 mode failed itself and failed to
-give a clue about problem (at least, when i saw Sam's message in
-linux-kbuild). Yea, `make` is not needed.
-
-> what Sam posted (and what was merged) makes sense to me.
-> -mike
+> > The streaming DMA-API was designed to conserve IOMMU mappings for
+> > machines where IOMMU mappings are a scarce resource, and is a poor
+> > fit for a modern IOMMU such as VT-d with a 64-bit IO address space
+> > (or even an IOMMU with a 32-bit address space such as Calgary) where
+> > there are plenty of IOMMU mappings available.
 > 
--- 
--o--=O`C
- #oo'L O
-<___=E M
+> For the 64-bit case what you are suggesting eventually amounts
+> to mapping all available RAM in the IOMMU.
+
+Something could be done:
+we could enable drivers to have DMA-pools they manage that get mapped
+and are re-used.
+
+I would rather the DMA-pools be tied to PID's that way any bad behavior
+would be limited to the address space of the process using the device.
+I haven't thought about how hard this would be to do but it would be
+nice.  I think this could be tricky.
+
+Application sets up ring buffer of device DMA memory, passes this to
+driver/stack.  Need to handle hitting high water marks and application
+exit clean up sanely... 
+
+--mgross
+
+> 
+> Although an extreme version of your suggestion, it would be the
+> most efficient as it would require zero IOMMU flush operations.
+> 
+> But we'd lose things like protection and other benefits.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
