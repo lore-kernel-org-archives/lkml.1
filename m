@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbYBLQEr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762855AbYBLQFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762661AbYBLQEr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:04:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757504AbYBLQEi
+	id S1762855AbYBLQFg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:05:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbYBLQF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:04:38 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45736 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757616AbYBLQEh (ORCPT
+	Tue, 12 Feb 2008 11:05:26 -0500
+Received: from rn-out-0910.google.com ([64.233.170.188]:24098 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753293AbYBLQFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:04:37 -0500
-Date: Tue, 12 Feb 2008 08:02:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
-	panic about sysfs with adm1026)
-Message-ID: <20080212160229.GA21749@kroah.com>
-References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com> <20080210171004.GB25353@kroah.com> <20080210190115.2ebd4124@hyperion.delvare> <86802c440802111539w7eeb84dcu97103733364f7a7b@mail.gmail.com> <20080212092722.32c30eac@hyperion.delvare> <20080212152715.GB19441@kroah.com> <20080212163733.461a8684@hyperion.delvare>
+	Tue, 12 Feb 2008 11:05:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VssvNMXKFIIkicepriwEj8Wx1oL+4aro2zaffhg73OFrUvlxs6YSQU6oO9wMBzBTcv2yQQNgSjp+XPsvhO6nkb0a+W/0/a7Mo2ee6IEs7BG05Mh3t3DOcWhqblKm3m5+PeSPCzL2E2eR9LAtknqbdhoydN3CoZNvrs5h17KU5YA=
+Message-ID: <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
+Date: Tue, 12 Feb 2008 17:05:20 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
+Cc: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       "Mike Christie" <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       scst-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080212163733.461a8684@hyperion.delvare>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
+	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
+	 <47A8B757.10101@vlnb.net>
+	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 04:37:33PM +0100, Jean Delvare wrote:
-> On Tue, 12 Feb 2008 07:27:15 -0800, Greg KH wrote:
-> > On Tue, Feb 12, 2008 at 09:27:22AM +0100, Jean Delvare wrote:
-> > > Hi Yinghai,
-> > > 
-> > > On Mon, 11 Feb 2008 15:39:39 -0800, Yinghai Lu wrote:
-> > > > On Feb 10, 2008 10:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > > > > Yeah, I am an idiot. In 5b34dbcd88251508d02e48ad9b0f9b8232a13ee0 I
-> > > > > introduced two new sysfs file groups but forgot to NULL-terminate them.
-> > > > > Sorry about that, here's the fix:
-> > > > >
-> > > > > * * * * *
-> > > > >
-> > > > > The missing NULL at the end of two sysfs file groups causes a kernel
-> > > > > crash when calling sysfs_create_group().
-> > > > >
-> > > > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > > > > ---
-> > > > >  drivers/hwmon/adm1026.c |    2 ++
-> > > > >  1 file changed, 2 insertions(+)
-> > > > >
-> > > > > --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c       2008-02-10 11:21:54.000000000 +0100
-> > > > > +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c    2008-02-10 18:51:00.000000000 +0100
-> > > > > @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
-> > > > >         &dev_attr_temp3_crit_enable.attr,
-> > > > >         &dev_attr_temp3_auto_point1_pwm.attr,
-> > > > >         &dev_attr_temp3_auto_point2_pwm.attr,
-> > > > > +       NULL
-> > > > >  };
-> > > > >
-> > > > >  static const struct attribute_group adm1026_group_temp3 = {
-> > > > > @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
-> > > > >         &sensor_dev_attr_in9_max.dev_attr.attr,
-> > > > >         &sensor_dev_attr_in9_min.dev_attr.attr,
-> > > > >         &sensor_dev_attr_in9_alarm.dev_attr.attr,
-> > > > > +       NULL
-> > > > >  };
-> > > > >
-> > > > >  static const struct attribute_group adm1026_group_in8_9 = {
-> > > > >
-> > > > > * * * * *
-> > > > 
-> > > > it works. Thanks
-> > > 
-> > > Great, thanks. Mark, please include this patch in your next patch to
-> > > Linus for 2.6.25.
-> > 
-> > Can someone send it to stable@kernel.org also when it goes into Linus's
-> > tree, as it looks like a pretty bad thing :)
-> 
-> I certainly could, but then you would laugh at me because 2.6.24 isn't
-> affected by the bug.
+On Feb 6, 2008 1:11 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> I have always observed the case with LIO SE/iSCSI target mode ...
 
-Heh, my fault, for some reason I thought this was a 2.6.24 bug, sorry :)
+Hello Nicholas,
 
-greg k-h
+Are you sure that the LIO-SE kernel module source code is ready for
+inclusion in the mainstream Linux kernel ? As you know I tried to test
+the LIO-SE iSCSI target. Already while configuring the target I
+encountered a kernel crash that froze the whole system. I can
+reproduce this kernel crash easily, and I reported it 11 days ago on
+the LIO-SE mailing list (February 4, 2008). One of the call stacks I
+posted shows a crash in mempool_alloc() called from jbd. Or: the crash
+is most likely the result of memory corruption caused by LIO-SE.
+
+Because I was curious to know why it took so long to fix such a severe
+crash, I started browsing through the LIO-SE source code. Analysis of
+the LIO-SE kernel module source code learned me that this crash is not
+a coincidence. Dynamic memory allocation (kmalloc()/kfree()) in the
+LIO-SE kernel module is complex and hard to verify. There are 412
+memory allocation/deallocation calls in the current version of the
+LIO-SE kernel module source code, which is a lot. Additionally,
+because of the complexity of the memory handling in LIO-SE, it is not
+possible to verify the correctness of the memory handling by analyzing
+a single function at a time. In my opinion this makes the LIO-SE
+source code hard to maintain.
+Furthermore, the LIO-SE kernel module source code does not follow
+conventions that have proven their value in the past like grouping all
+error handling at the end of a function. As could be expected, the
+consequence is that error handling is not correct in several
+functions, resulting in memory leaks in case of an error. Some
+examples of functions in which error handling is clearly incorrect:
+* transport_allocate_passthrough().
+* iscsi_do_build_list().
+
+Bart Van Assche.
