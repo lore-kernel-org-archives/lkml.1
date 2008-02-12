@@ -1,159 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764242AbYBLSaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764391AbYBLSao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764242AbYBLSaS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762155AbYBLSaA
+	id S1764391AbYBLSao (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:30:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763043AbYBLSaV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:30:00 -0500
-Received: from mga02.intel.com ([134.134.136.20]:50954 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760594AbYBLS37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:29:59 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
-   d="scan'208";a="257611430"
-Date: Tue, 12 Feb 2008 10:22:44 -0800
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: ltuikov@yahoo.com
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-Message-ID: <20080212102244.32869382@appleyard>
-In-Reply-To: <922945.25870.qm@web31811.mail.mud.yahoo.com>
-References: <1202172065.3096.154.camel@localhost.localdomain>
-	<922945.25870.qm@web31811.mail.mud.yahoo.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 13:30:21 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58356 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763457AbYBLSaS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:30:18 -0500
+Date: Tue, 12 Feb 2008 10:30:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: multiple drivers, single device (was Re: Announce: Linux-next
+ (Or Andrew's dream  :-)))
+In-Reply-To: <47B1DDD3.2000402@garzik.org>
+Message-ID: <alpine.LFD.1.00.0802121027190.2920@woody.linux-foundation.org>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org> <20080212164232.GA326@kroah.com> <47B1DDD3.2000402@garzik.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008 18:01:36 -0800 (PST)
-Luben Tuikov <ltuikov@yahoo.com> wrote:
 
-> --- On Mon, 2/4/08, James Bottomley
-> <James.Bottomley@HansenPartnership.com> wrote:
-> > > > The enclosure misc device is really just a
-> > library providing
-> > > > sysfs
-> > > > support for physical enclosure devices and their
-> > > > components.
-> > > 
-> > > Who is the target audience/user of those facilities?
-> > > a) The kernel itself needing to read/write SES pages?
-> > 
-> > That depends on the enclosure integration, but right at the
-> > moment, it
-> > doesn't
-> 
-> Yes, I didn't suspect so.
-> 
-> > 
-> > > b) A user space application using sysfs to read/write
-> > >    SES pages?
-> > 
-> > Not an application so much as a user.  The idea of sysfs is
-> > to allow
-> > users to get and set the information in addition to
-> > applications.
-> 
-> Exactly the same argument stands for a user-space
-> application with a user-space library.
-> 
-> This is the classical case of where it is better to
-> do this in user-space as opposed to the kernel.
-> 
-> The kernel provides capability to access the SES
-> device.  The user space application and library
-> provide interpretation and control.  Thus if the
-> enclosure were upgraded, one doesn't need to
-> upgrade their kernel in order to utilize the new
-> capabilities of the SES device.  Plus upgrading
-> a user-space application is a lot easier than
-> the kernel (and no reboot necessary).
-> 
-> Consider another thing: vendors would really like
-> unprecedented access to the SES device in the enclosure
-> so as your ses/enclosure code keeps state it would
-> get out of sync when vendor user-space enclosure
-> applications access (and modify) the SES device's
-> pages.
-> 
-> You can test this yourself: submit a patch
-> that removes SES /dev/sgX support; advertise your
-> ses/class solution and watch the fun.
-> 
-> > > At the moment SES device management is done via
-> > > an application (user-space) and a user-space library
-> > > used by the application and /dev/sgX to send SCSI
-> > > commands to the SES device.
-> > 
-> > I must have missed that when I was looking for
-> > implementations; what's
-> > the URL?
-> 
-> I'm not aware of any GPLed ones.  That doesn't
-> necessarily mean that the best course of action is
-> to bloat the kernel.  You can move your ses/enclosure
-> stuff to a user space application library
-> and thus start a GPLed one.
-> 
-> > But, if we have non-scsi enclosures to integrate, that
-> > makes it harder
-> > for a user application because it has to know all the
-> > implementations.
-> 
-> So does the kernel.  And as I pointed out above, it
-> is a lot easier to upgrade a user-space application and
-> library than it is to upgrade a new kernel and having
-> to reboot the computer to run the new kernel.
-> 
-> > A sysfs framework on the other hand is a universal known
-> > thing for the
-> > user applications.
-> 
-> So would a user-space ses library, a la libses.so.
-> 
-> > > One could have a very good argument to not bloat
-> > > the kernel with this but leave it to a user-space
-> > > application and a library to do all this and
-> > > communicate with the SES device via the kernel's
-> > /dev/sgX.
-> > 
-> > The same thing goes for other esoteric SCSI infrastructure
-> > pieces like
-> > cd changers.  On the whole, given that ATA is asking for
-> > enclosure
-> > management in kernel, it makes sense to consolidate the
-> > infrastructure
-> > and a ses ULD is a very good test bed.
-> 
-> What is wrong with exporting the SES device as /dev/sgX
-> and having a user-space application and library to
-> do all this?
-> 
->     Luben
-> 
 
-Hi,
-I apologize for taking so long to review this patch.  I obviously agree
-wholeheartedly with Luben.  The problem I ran into while trying to
-design an enclosure management interface for the SATA devices is that
-there is all this vendor defined stuff.  For example, for the AHCI LED
-protocol, the only "defined" LED is 'activity'.  For LED2 and LED3 it
-is up to hardware vendors to define these.  For SGPIO there's all kinds
-of ways for hw vendors to customize.  I felt that it was going to be a
-maintainance nightmare to have to keep track of various vendors
-enclosure implementations in the ahci driver, and that it'd be better
-to just have user space libraries take care of that.  Plus, that way a
-vendor doesn't have to get a patch into the kernel to get their new
-spiffy wizzy bang blinky lights working (think of how long it takes
-something to even get into a vendor kernel, which is what these guys
-care about...).  So I'm still not sold on having an enclosure
-abstraction in the kernel - at least for the SATA controllers.
+On Tue, 12 Feb 2008, Jeff Garzik wrote:
 
-Kristen
+> Greg KH wrote:
+> > The work I'm doing here is for stupid PCI firmware engineers, who have
+> > created devices that are different things, all bound up under the same
+> > PCI device.  I'm thinking of watchdog timers and random number
+> > generator and i2c controller on the same PCI device, or even the more
+> > basic, frame buffer and DRM access to the same PCI video device.
+> 
+> Yes, that has a known solution:  have your driver register i2c, rng, watchdog,
+> etc. functions.
+> 
+> Works just fine inside today's infrastructure, no changes needed.
+
+Indeed. If you have a multi-function device that shows up as a single PCI 
+function, just make it have its own "private bus", and make it show up as 
+a "devices within a device".
+
+Create the fake PCI subdevices that have no "real" counterpart, except as 
+parts of the stupid device that couldn't be bothered to be seen as 
+multiple _real_ functions.
+
+That not only solves the infrastructure issues, it's actually The Truth 
+with capital letters. It is, after all, how the device actually works 
+internally.
+
+			Linus
