@@ -1,162 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbYBLWmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYBLWmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbYBLWmA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755215AbYBLWlp
+	id S1758859AbYBLWmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758251AbYBLWl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:41:45 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:45839 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbYBLWlo (ORCPT
+	Tue, 12 Feb 2008 17:41:59 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:62473 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758170AbYBLWl4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:41:44 -0500
-Message-ID: <47B220A6.5090707@ct.jp.nec.com>
-Date: Tue, 12 Feb 2008 14:41:42 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 12 Feb 2008 17:41:56 -0500
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Steve Wise <swise@opengridcomputing.com>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+X-Message-Flag: Warning: May contain useful information
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
+	<20080208234302.GH26564@sgi.com>
+	<20080208155641.2258ad2c.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
+	<adaprv70yyt.fsf@cisco.com>
+	<Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
+	<adalk5v0yi6.fsf@cisco.com>
+	<Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
+	<20080209012446.GB7051@v2.random>
+	<Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
+	<20080209015659.GC7051@v2.random>
+	<Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
+	<20080209075556.63062452@bree.surriel.com>
+	<Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+	<ada3arzxgkz.fsf_-_@cisco.com>
+	<47B2174E.5000708@opengridcomputing.com>
+	<Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 12 Feb 2008 14:41:48 -0800
+In-Reply-To: <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> (Christoph Lameter's message of "Tue, 12 Feb 2008 14:10:50 -0800 (PST)")
+Message-ID: <adazlu5vlub.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: [RFC v2 PATCH] RTTIME watchdog timer proc interface
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Feb 2008 22:41:48.0658 (UTC) FILETIME=[73F80520:01C86DC8]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+ > > Chelsio's T3 HW doesn't support this.
 
-Introduce new proc interface for RTTIME watchdog.
-It makes administrator able to set RTTIME watchdog to existing
-real-time applications without impact.
+ > Not so far I guess but it could be equipped with these features right? 
 
-$ echo 10000000 > /proc/<pid>/rttime
-set RTTIME current value to 10000000, it means 10sec.
+I don't know anything about the T3 internals, but it's not clear that
+you could do this without a new chip design in general.  Lot's of RDMA
+devices were designed expecting that when a packet arrives, the HW can
+look up the bus address for a given memory region/offset and place the
+packet immediately.  It seems like a major change to be able to
+generate a "page fault" interrupt when a page isn't present, or even
+just wait to scatter some data until the host finishes updating page
+tables when the HW needs the translation.
 
-$ echo "10000000 20000000" > /proc/<pid>/rttime
-set RTTIME current value to 10000000 and max value to 20000000.
-
-And /proc/<pid>/task/<tid>/rttime is also accessible.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- fs/proc/base.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 89 insertions(+), 0 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 7c6b4ec..3212b44 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -381,6 +381,93 @@ static const struct file_operations proc_lstats_operations = {
- 
- #endif
- 
-+static int rttime_show_proc(struct seq_file *m, void *v)
-+{
-+	struct task_struct *task = m->private;
-+	struct signal_struct *signal = task->signal;
-+	struct rlimit *rt = &signal->rlim[RLIMIT_RTTIME];
-+
-+	if (rt->rlim_cur == RLIM_INFINITY)
-+		seq_printf(m, "unlimited ");
-+	else
-+		seq_printf(m, "%lu ", rt->rlim_cur);
-+
-+	if (rt->rlim_max == RLIM_INFINITY)
-+		seq_printf(m, "unlimited\n");
-+	else
-+		seq_printf(m, "%lu\n", rt->rlim_max);
-+
-+	return 0;
-+}
-+
-+static int rttime_open(struct inode *inode, struct file *file)
-+{
-+	int ret;
-+	struct seq_file *m;
-+	struct task_struct *task = get_proc_task(inode);
-+
-+	ret = single_open(file, rttime_show_proc, NULL);
-+	if (!ret) {
-+		m = file->private_data;
-+		m->private = task;
-+	}
-+	return ret;
-+}
-+
-+static ssize_t rttime_write(struct file *file,
-+			    const char __user *buf,
-+			    size_t count,
-+			    loff_t *ppos)
-+{
-+	struct seq_file *m = file->private_data;
-+	struct task_struct *task = m->private;
-+	char buffer[PROC_NUMBUF], *end;
-+	struct rlimit new_rlim, *old_rlim;
-+	int n, ret;
-+
-+	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
-+	new_rlim = *old_rlim;
-+	memset(buffer, 0, sizeof(buffer));
-+	n = count;
-+	if (n > sizeof(buffer) - 1)
-+		n = sizeof(buffer) - 1;
-+	if (copy_from_user(buffer, buf, n))
-+		return -EFAULT;
-+	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
-+	if (*end == ' ') {
-+		++end;
-+		buf += end - buffer;
-+		memset(buffer, 0, sizeof(buffer));
-+		n = count - (end - buffer);
-+		if (n > sizeof(buffer) - 1)
-+			n = sizeof(buffer) - 1;
-+		if (copy_from_user(buffer, buf, n))
-+			return -EFAULT;
-+		new_rlim.rlim_max = simple_strtoul(buffer, &end, 0);
-+	}
-+	if (new_rlim.rlim_cur > new_rlim.rlim_max)
-+		return -EINVAL;
-+	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
-+	    !capable(CAP_SYS_RESOURCE))
-+		return -EPERM;
-+	ret = security_task_setrlimit(RLIMIT_RTTIME, &new_rlim);
-+	if (ret)
-+		return ret;
-+	task_lock(task->group_leader);
-+	*old_rlim = new_rlim;
-+	task_unlock(task->group_leader);
-+
-+	return count;
-+}
-+
-+static const struct file_operations proc_rttime_operations = {
-+	.open		= rttime_open,
-+	.read		= seq_read,
-+	.write		= rttime_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- /* The badness from the OOM killer */
- unsigned long badness(struct task_struct *p, unsigned long uptime);
- static int proc_oom_score(struct task_struct *task, char *buffer)
-@@ -2300,6 +2387,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	LNK("exe",        exe),
- 	REG("mounts",     S_IRUGO, mounts),
- 	REG("mountstats", S_IRUSR, mountstats),
-+	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
- #ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",      S_IRUGO, smaps),
-@@ -2630,6 +2718,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	LNK("root",      root),
- 	LNK("exe",       exe),
- 	REG("mounts",    S_IRUGO, mounts),
-+	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
- #ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",     S_IRUGO, smaps),
--- 
-1.5.3.8
+ - R.
 
