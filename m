@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbYBLJge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYBLJmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762054AbYBLJge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757709AbYBLJg0
+	id S1761618AbYBLJmX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:42:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbYBLJmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:36:26 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:53880 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757700AbYBLJgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:36:25 -0500
-Date: Tue, 12 Feb 2008 11:36:14 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
-       anton@samba.org, paulus@samba.org, rusty@rustcorp.com.au
-Subject: Re: [BUID_FAILURE] regression from 2.6.24-git18 to 2.6.25-rc1-git1
-	on section type conflict psmouse-base
-Message-ID: <20080212093614.GF2959@cs181133002.pp.htv.fi>
-References: <47B14D52.6050404@linux.vnet.ibm.com> <20080211235929.791f7afb.akpm@linux-foundation.org>
+	Tue, 12 Feb 2008 04:42:11 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:45298 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757245AbYBLJmJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 04:42:09 -0500
+Date: Tue, 12 Feb 2008 15:12:07 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] 2.6.25-rc1 ml4x network driver build failure
+Message-ID: <20080212094207.GA19427@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080211235929.791f7afb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 11:59:29PM -0800, Andrew Morton wrote:
-> On Tue, 12 Feb 2008 13:10:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
-> 
-> > This build failure is seen on the powerpc from the 2.6.24-git18 kernel and is still visible
-> > in the 2.6.25-rc1-git1.
-> > 
-> > drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
-> > drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
-> > make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
-> > make[2]: *** [drivers/input/mouse] Error 2
-> > make[1]: *** [drivers/input] Error 2
-> > 
-> > The patch http://lkml.org/lkml/2008/2/8/514 seems to have not taken into 2.6.25-rc1 and 
-> > 2.6.25-rc1-git(s). Is there any new patch i am missing out.
-> 
-> I have it queued up, along with quite a few other things, but for the next
-> couple of days I have logistical problems which are preventing me from
-> doing runtime testing.
+The 2.6.25-rc1 kernel build fails on the powerpc with the error
 
-And this really isn't a regression.
+drivers/net/mlx4/alloc.c: In function ‘mlx4_buf_alloc’:
+drivers/net/mlx4/alloc.c:162: error: implicit declaration of function ‘vmap’
+drivers/net/mlx4/alloc.c:162: error: ‘VM_MAP’ undeclared (first use in this function)
+drivers/net/mlx4/alloc.c:162: error: (Each undeclared identifier is reported only once
+drivers/net/mlx4/alloc.c:162: error: for each function it appears in.)
+drivers/net/mlx4/alloc.c:162: warning: assignment makes pointer from integer without a cast
+drivers/net/mlx4/alloc.c: In function ‘mlx4_buf_free’:
+drivers/net/mlx4/alloc.c:187: error: implicit declaration of function ‘vunmap’
+make[3]: *** [drivers/net/mlx4/alloc.o] Error 1
+make[2]: *** [drivers/net/mlx4] Error 2
+make[1]: *** [drivers/net] Error 2
+make: *** [drivers] Error 2
 
-It seems Kamalesh has upgraded his gcc to 4.2 between trying 
-2.6.24-git18 and trying 2.6.25-rc1-git1?
+I have tested the patch for the build failure.
 
-cu
-Adrian
-
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.25-rc1/drivers/net/mlx4/alloc.c	2008-02-11 03:48:14.000000000 +0530
++++ linux-2.6.25-rc1/drivers/net/mlx4/~alloc.c	2008-02-12 14:43:46.000000000 +0530
+@@ -34,6 +34,7 @@
+ #include <linux/slab.h>
+ #include <linux/bitmap.h>
+ #include <linux/dma-mapping.h>
++#include <linux/vmalloc.h>
+ 
+ #include "mlx4.h"
+ 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
