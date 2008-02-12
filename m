@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756955AbYBLWUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYBLWVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756955AbYBLWUn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754007AbYBLWUZ
+	id S1756242AbYBLWVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751788AbYBLWVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:20:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38183 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753591AbYBLWUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:20:23 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mirco Tischler <mt-ml@gmx.de>
-Subject: Re: [REGRESSION]fan turns at highspeed after suspend2ram
-Date: Tue, 12 Feb 2008 23:18:45 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@suse.cz>, Ray Lee <ray-lk@madrabbit.org>
-References: <1202664109.8394.19.camel@mtlp> <200802120113.07063.rjw@sisk.pl> <1202853943.6790.3.camel@mtlp>
-In-Reply-To: <1202853943.6790.3.camel@mtlp>
+	Tue, 12 Feb 2008 17:21:41 -0500
+Received: from el-out-1112.google.com ([209.85.162.176]:30860 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751438AbYBLWVk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 17:21:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=VaWxLczz6KOV6Z9aD6jUtaoBIUybRiFH4woLPJHlxEBAdfWy+qFQ0e1mtnu3AWQ6qbxkJAweKd3if5mxDlIMROPqaYKBlu4UXOTzZzNu3IBlw8SiQTsp9bAKgoJ5Rhd+uszKXSHGzUDDscpga8Zo/s1BmbKRak3K2KF7sd1mKT4=
+Message-ID: <47B21CC1.80901@gmail.com>
+Date: Tue, 12 Feb 2008 20:25:05 -0200
+From: "Carlos R. Mafra" <crmafra@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070914)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Piel <E.A.B.Piel@tudelft.nl>
+Subject: Re: [PATCH] timeconst.pl: correct reversal of USEC_TO_HZ and HZ_TO_USEC
+References: <200802122156.m1CLufgn013359@tazenda.hos.anvin.org>
+In-Reply-To: <200802122156.m1CLufgn013359@tazenda.hos.anvin.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802122318.46271.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 of February 2008, Mirco Tischler wrote:
+H. Peter Anvin wrote:
+> The USEC_TO_HZ and HZ_TO_USEC constant sets were mislabelled, with
+> seriously incorrect results.  This among other things manifested
+> itself as cpufreq not working when a tickless kernel was configured.
 > 
-> Am Dienstag, den 12.02.2008, 01:13 +0100 schrieb Rafael J. Wysocki:
-> > Since _GTS and _BFS don't seem to be defined in your box's BIOS, please
-> > try to apply the appended patch on top of the revert and see if that breaks
-> > things again.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/acpi/hardware/hwsleep.c |   11 -----------
-> >  1 file changed, 11 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-> > +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > @@ -199,11 +199,6 @@ acpi_status acpi_enter_sleep_state_prep(
-> >  		return_ACPI_STATUS(status);
-> >  	}
-> >  
-> > -	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-> > -	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> > -		return_ACPI_STATUS(status);
-> > -	}
-> > -
-> >  	/* Setup the argument to _SST */
-> >  
-> >  	switch (sleep_state) {
-> > @@ -554,12 +549,6 @@ acpi_status acpi_leave_sleep_state(u8 sl
-> >  		ACPI_EXCEPTION((AE_INFO, status, "During Method _SST"));
-> >  	}
-> >  
-> > -	arg.integer.value = sleep_state;
-> > -	status = acpi_evaluate_object(NULL, METHOD_NAME__BFS, &arg_list, NULL);
-> > -	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> > -		ACPI_EXCEPTION((AE_INFO, status, "During Method _BFS"));
-> > -	}
-> > -
-> >  	/*
-> >  	 * GPEs must be enabled before _WAK is called as GPEs
-> >  	 * might get fired there
-> Yes, that's it. This patch breaks things again.
+> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
-Ouch.  I think I know what the problem is.
 
-On top of this patch, please apply the appended one and retest.
+Tested-by: Carlos R. Mafra <crmafra@ift.unesp.br>
 
-Thanks,
-Rafael
 
----
- drivers/acpi/hardware/hwsleep.c |    1 +
- 1 file changed, 1 insertion(+)
+> ---
+>  kernel/timeconst.pl |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/timeconst.pl b/kernel/timeconst.pl
+> index 62b1287..4146803 100644
+> --- a/kernel/timeconst.pl
+> +++ b/kernel/timeconst.pl
+> @@ -339,7 +339,7 @@ sub output($@)
+>  	print "\n";
+>  
+>  	foreach $pfx ('HZ_TO_MSEC','MSEC_TO_HZ',
+> -		      'USEC_TO_HZ','HZ_TO_USEC') {
+> +		      'HZ_TO_USEC','USEC_TO_HZ') {
+>  		foreach $bit (32, 64) {
+>  			foreach $suf ('MUL', 'ADJ', 'SHR') {
+>  				printf "#define %-23s %s\n",
 
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -566,6 +566,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		return_ACPI_STATUS(status);
- 	}
- 
-+	arg.integer.value = sleep_state;
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
