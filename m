@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbYBLSDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763138AbYBLSE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764091AbYBLSDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:03:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761509AbYBLSD2
+	id S1763138AbYBLSE2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759414AbYBLSES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:03:28 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44307 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758641AbYBLSD0 (ORCPT
+	Tue, 12 Feb 2008 13:04:18 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:59896 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758807AbYBLSEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:03:26 -0500
-Date: Tue, 12 Feb 2008 10:00:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <1202838082.3137.54.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>  <20080212044314.GA4888@kroah.com>  <20080211211751.3e265754@laptopd505.fenrus.org>  <20080211.221126.230471463.davem@davemloft.net>  <47B1CB08.4020101@garzik.org> 
- <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Feb 2008 13:04:16 -0500
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, linux-ppc <linuxppc-dev@ozlabs.org>,
+       Thomas Klein <osstklei@de.ibm.com>,
+       "Themann, Jan-Bernd" <themann@de.ibm.com>, Greg KH <greg@kroah.com>,
+       Christoph Raisch <RAISCH@de.ibm.com>
+In-Reply-To: <200802111724.12416.ossthema@de.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 10:04:09 -0800
+Message-Id: <1202839449.11188.35.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 Feb 2008, James Bottomley wrote:
->
-> On Tue, 2008-02-12 at 09:09 -0800, Linus Torvalds wrote:
-> >  (a) create a base tree with _just_ that fundamental infrastructure change,
-> >      and make sure that base branch is so obviously good that there is no 
-> >      question about merging it.
+On Mon, 2008-02-11 at 17:24 +0100, Jan-Bernd Themann wrote:
+> Drivers like eHEA need memory notifiers in order to 
+> update their internal DMA memory map when memory is added
+> to or removed from the system.
 > 
-> The problem is how do we use a?  Usually we need to track your -rc tree
-> as our fixes go in ... some of which affect our development trees.
+> Patch for eHEA memory hotplug support that uses these functions:
+> http://www.spinics.net/lists/netdev/msg54484.html
 
-So?
+This driver is broken pretty horribly.  It won't even compile for a
+plain ppc64 kernel:
 
-> If we stick with (a) as the base, we don't get to pull in the fixes in
-> your tree.  If we use your tree we have to pull in (a) creating n
-> different merge points for the n different upstream trees..
+http://sr71.net/~dave/linux/ehea-is-broken.config
 
-I don't understand what you mean. This is true whether you pulled (a) or 
-not. If you have any changes what-so-ever in your tree, if you pull in 
-fixes from my tree, you'll get a merge.
+I know it's used for very specific hardware, but this is the symptom of
+it not using the proper abstracted interfaces to the VM.
 
-But if you mean that you cannot rebase (a), then yes. That was what I 
-said. Rebases *do*not*work* (and fundamentally cannot work) in a 
-distributed environment.
+In file included from /home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_main.c:42:
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:44:14: warning: "SECTION_SIZE_BITS" is not defined
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:45:2: error: #error eHEA module cannot work if kernel sectionsize < ehea sectionsize
+  CC      drivers/net/mii.o
+make[4]: *** [drivers/net/ehea/ehea_main.o] Error 1
+make[4]: *** Waiting for unfinished jobs....
+  CC      drivers/net/ixgb/ixgb_param.o
+In file included from /home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:32:
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:44:14: warning: "SECTION_SIZE_BITS" is not defined
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.h:45:2: error: #error eHEA module cannot work if kernel sectionsize < ehea sectionsize
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_create_busmap':
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: 'NR_MEM_SECTIONS' undeclared (first use in this function)
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: (Each undeclared identifier is reported only once
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:574: error: for each function it appears in.)
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:575: error: implicit declaration of function 'valid_section_nr'
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_map_vaddr':
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:606: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c: In function 'ehea_reg_kernel_mr':
+/home/dave/work/linux/2.6/23/linux-2.6.git/drivers/net/ehea/ehea_qmr.c:655: error: 'SECTION_SIZE_BITS' undeclared (first use in this function)
 
-But why would you merge with my tree in the first place? My tree won't 
-normally have any conflicts or anything like that anyway.
+-- Dave
 
-With a "Linux-next" tree, you'll see the conflicts if they occur (since 
-*that* tree would merge!), and in that case you would say  "now I need to 
-merge Linus' tree just to resolve the conflicts!"
-
-But before that, merging my tree (or rebasing on top of it) is simply 
-*wrong*. It has nothing to do with your SCSI development.
-
-> Yes, this is effectively what I did with the post merge SCSI tree.
-> However, if you do this rebasing becomes a fact of life because you need
-> to rebase out all the dependencies you have before you merge (in fact,
-> it's a good way of checking whether your dependencies have been merged
-> yet or not, seeing what survives a rebase).
-
-I don't see the logic. You shouldn't need to rebase at all. I don't see 
-why you claim that this makes rebasing more of a fact. It doesn't. It has 
-no impact at all, except making rebasing _less_ possible!
-
-		Linus
