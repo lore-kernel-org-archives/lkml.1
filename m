@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbYBLJna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761970AbYBLJqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759168AbYBLJna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:43:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbYBLJnW
+	id S1761970AbYBLJqn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbYBLJqe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:43:22 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:45430 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757088AbYBLJnV (ORCPT
+	Tue, 12 Feb 2008 04:46:34 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:64661 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755363AbYBLJqd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:43:21 -0500
-Message-ID: <47B167EA.1070402@yandex.ru>
-Date: Tue, 12 Feb 2008 11:33:30 +0200
+	Tue, 12 Feb 2008 04:46:33 -0500
+Message-ID: <47B16A40.6080605@yandex.ru>
+Date: Tue, 12 Feb 2008 11:43:28 +0200
 From: Artem Bityutskiy <dedekind@yandex.ru>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: caglar@pardus.org.tr
-CC: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH] Silent compiler warning introduced by commit 801c135ce73d5df1caf3eca35b66a10824ae0707
- (UBI: Unsorted Block Images)
-References: <200802100537.47634.caglar@pardus.org.tr> <47AEB829.8060104@gmail.com> <200802110144.07549.caglar@pardus.org.tr>
-In-Reply-To: <200802110144.07549.caglar@pardus.org.tr>
+To: Greg KH <greg@kroah.com>
+CC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: UBI: add mtd_num sysfs attribute
+References: <200802071907.m17J7eYA022058@hera.kernel.org> <20080208054743.GA13097@kroah.com> <47AC1205.5070907@nokia.com> <20080208163108.GE16477@kroah.com>
+In-Reply-To: <20080208163108.GE16477@kroah.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 12 Feb 2008 09:36:09.0217 (UTC) FILETIME=[B2AC2710:01C86D5A]
+X-OriginalArrivalTime: 12 Feb 2008 09:46:06.0827 (UTC) FILETIME=[16E033B0:01C86D5C]
 X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-S.Çağlar Onur wrote:
-> Hi;
+Greg KH wrote:
+>> I assume you'll put it into your tree and take the further care of it, 
+>> right?
 > 
-> 10 Şub 2008 Paz tarihinde, Jiri Slaby şunları yazmıştı: 
->> I think this is not correct. You change the err which caused the failure. You 
->> change it even to 0 if it doesn't fail and the whole function will seem like 
->> non-failing.
-> 
-> My bad, sorry for not looking carefully. Assuming a refactoring is not desired for just a compiler warning, is following acceptable (this kind of plain messages seems heavily used in vmt.c, so i'm again assuming its OK to use such style)?
-> 
-> commit 801c135ce73d5df1caf3eca35b66a10824ae0707 (UBI: Unsorted Block Images) introduced the warning
-> 
-> drivers/mtd/ubi/vmt.c: In function `ubi_create_volume':
-> drivers/mtd/ubi/vmt.c:379: warning: statement with no effect
-> 
-> 
->  drivers/mtd/ubi/vmt.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
+> No, it needs to go through the same path that your other UBI patches
+> went through.  Can you do that?
 
-Thanks, applied to UBI git with Minor changes, will send git-pull request
-shortly.
-
-Please, note that my e-mail address is not dedekind@linutronix.de,
-see MAINTAINERS.
+Ok, added your ack and sent a git-pull request to Linus
+(Subject: [GIT-PULL] UBI updates)
 
 -- 
 Best Regards,
