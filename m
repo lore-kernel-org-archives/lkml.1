@@ -1,89 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763661AbYBLS1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbYBLS1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763661AbYBLS1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:27:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761705AbYBLS11
+	id S1764182AbYBLS1x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762129AbYBLS12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:27:27 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:32987 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760708AbYBLS1Z (ORCPT
+	Tue, 12 Feb 2008 13:27:28 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:33774 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761569AbYBLS10 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:27:25 -0500
-Date: Tue, 12 Feb 2008 10:26:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080212174824.GA1919@kroah.com>
-Message-ID: <alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
- <20080212174824.GA1919@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 13:27:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=MqkAAt0DmbL5et5zSCG7ui+yAZKWl3SieZXv5DV+QFAFS4kz3h/f+hT7C2G5dH4gpoXfuma/Ozg0Zm/pu6QL6+kqDNmPynXGR4KCp/WYHFc9i7/SxsJynR5qh89h7ZSaJvypN+RHFGZKjGc+R2YX1bGwZQYVg9K8kS46OLLeM0E=
+Date: Tue, 12 Feb 2008 19:26:43 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: udf regression: broken directory handling
+Message-ID: <20080212182638.GA8334@joi>
+References: <20080210104754.GH6737@joi> <20080211110910.GB9622@duck.suse.cz> <20080211191313.GA12375@joi> <20080212113916.GA13425@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212113916.GA13425@duck.suse.cz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 Feb 2008, Greg KH wrote:
+On Tue, Feb 12, 2008 at 12:39:17PM +0100, Jan Kara wrote:
+> On Mon 11-02-08 20:13:20, Marcin Slusarz wrote:
+> > On Mon, Feb 11, 2008 at 12:09:10PM +0100, Jan Kara wrote:
+> > >   Hi,
+> > > 
+> > > On Sun 10-02-08 11:48:17, Marcin Slusarz wrote:
+> > > > Current mainline has a problem with reading file list.
+> > > > Simple ls prints only 2 out of 8 files on my testing DVD.
+> > > > Reverting your patch "udf: cleanup directory offset handling"
+> > > > (af793295bf9ee92660f5e77d337b0493cea3f9b9) fixes the problem.
+> > >   Thanks for testing! Do you have a way to create such UDF filesystem? For
+> > > the filesystems I've created it seems to work just fine...
+> > 
+> > with patch applied:
+>   <snip testing>
 > 
-> I may be a bit defensive here, but I hope that all of the recent
-> kobject/kset/driver core changes have been done with the thought of
-> "what are we doing wrong".
+>   Argh, I've submitted an old version of the patch missing changes in
+> dir.c. Below is the missing hunk. Does UDF work for you with it?
+Yes.
 
-.. but are we expecting it to be finished?
-
-That's the point.
-
-This whole "Linux-next" discussion so far has almost been predicated on 
-the whole assumption that this is an on-going concern. And it really 
-should NOT be.
-
-If it's an on-going concern, we need to tackle *that* issue, not the issue 
-that cross-subsystem merges are hard. They simply seem to happen too much.
-
-In other words, I'm not AT ALL interested in the merges we've already 
-done. That's over and done with, and we'll never ever do those merges 
-again. Who cares? I don't.
-
-I'm purely and _only_ interested in the merges of the future. You don't 
-need to be defensive about the things that led up to this discussion, I'm 
-more hoping that we can aim at fixing the problem at the source, rather 
-than trying to work around it.
-
-We simply shouldn't have all that many conflicts. We've had *way* too many 
-of them lately, and I think it's because people have felt it wasn't too
-painful. 
-
-Put another way: back when we worked with just patches, we avoided renames 
-like hell, and we also tried to simply even re-architect the whole tree so 
-that you didn't have so many patch conflicts. One main reason as far as I 
-was concerned for things like per-directory Kconfig files and the whole 
-initcall() stuff was the fact that the old single Kconfig file and the old 
-crazy init/main.c file were total *nightmares* when it came to conflict 
-resolution.
-
-So we split things up more, and we didn't do renames (or were very careful 
-about it). We avoided the things that caused pain.
-
-I think we need to remember that: yes, we'll always have to have ways to 
-fix the pain that does happen, but even more importantly, we should strive 
-for models where it doesn't happen in the first place!
-
-And simply avoiding cross-subsystem API changes unless there is a major 
-*MAJOR* reason for them is the obvious thing to do. Simply face the fact 
-that even in open source there are major reasons to stay with an old 
-interface even if it's not optimal.
-
-We absolutely MUST NOT have the mindset that "cross-subsystem conflicts 
-happen all the time". 
-
-That was my point.
-
-			Linus
+Marcin
