@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763822AbYBLSFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbYBLSJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763822AbYBLSFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:05:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbYBLSFe
+	id S1762921AbYBLSJA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:09:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYBLSIv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:05:34 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:52454 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758772AbYBLSFc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:05:32 -0500
-Date: Tue, 12 Feb 2008 13:05:25 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Sven K?hler <skoehler@upb.de>, linux-scsi <"linux-scsi"@vger.kernel.org>,
-       James Bottomley <"James.Bottomley"@HansenPartnership.com>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: Re: [BUGFIX 1/2] gdth: scan for scsi devices
-Message-ID: <20080212180525.GA14745@infradead.org>
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com> <47B1D8DA.6000109@panasas.com>
+	Tue, 12 Feb 2008 13:08:51 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58889 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756203AbYBLSIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:08:49 -0500
+Message-ID: <47B1E0AE.6060806@garzik.org>
+Date: Tue, 12 Feb 2008 13:08:46 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B1D8DA.6000109@panasas.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Roland Dreier <rdreier@cisco.com>
+CC: Greg KH <greg@kroah.com>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: multiple drivers, single device
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>	<20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org>	<20080212164232.GA326@kroah.com> <adak5lavzpf.fsf@cisco.com>
+In-Reply-To: <adak5lavzpf.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 07:35:22PM +0200, Boaz Harrosh wrote:
+Roland Dreier wrote:
+>  > The work I'm doing here is for stupid PCI firmware engineers, who have
+>  > created devices that are different things, all bound up under the same
+>  > PCI device.  I'm thinking of watchdog timers and random number
+>  > generator and i2c controller on the same PCI device, or even the more
+>  > basic, frame buffer and DRM access to the same PCI video device.
+>  > 
+>  > The OLPC is a good example of hardware that needs this kind of
+>  > functionality.
 > 
-> The patch: "gdth: switch to modern scsi host registration"
+> Sounds interesting.  I've been meaning to work on this too for quite a
+> while, but I'm glad to see you beat me to it.
 > 
-> missed one simple fact when moving a way from scsi_module.c.
-> That is to call scsi_scan_host() on the probed host.
-> With this the gdth driver from 2.6.24 is again able to
-> see drives and boot.
+> An example of an in-tree use case for this would be the mlx4 drivers--
+> you can look at drivers/net/mlx4/intf.c to see the simple stupid
+> solution I came up with to allow an IB and a NIC (not yet upstream)
+> driver to share the same PCI device.  A good test for your stuff would
+> be if it simplifies the code from the ad hoc solution I came up with.
 
-Doh, someone please hand me a brown paper bag.  My first series
-of patches had this but it got dropped when I rebased it over various
-janitor cleanups.
+Our APIs are written such that the PCI device probe function is the 
+starting point for registering IB and NIC.  No need for anything new.
 
-The patch looks obviously correct, thanks.
+	Jeff
+
+
 
