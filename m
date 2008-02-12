@@ -1,164 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbYBLJdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761979AbYBLJfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761195AbYBLJdy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbYBLJdq
+	id S1761979AbYBLJfa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbYBLJfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:33:46 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54166 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751979AbYBLJdp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:33:45 -0500
-Message-ID: <47B167AF.6010008@bull.net>
-Date: Tue, 12 Feb 2008 10:32:31 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 7/8] Do not recompute msgmni anymore if explicitely set
- by user
-References: <20080211141646.948191000@bull.net>	<20080211141816.094061000@bull.net> <20080211122408.5008902f.akpm@linux-foundation.org>
-In-Reply-To: <20080211122408.5008902f.akpm@linux-foundation.org>
-Content-Type: multipart/mixed;
- boundary="------------050706030605010501050008"
+	Tue, 12 Feb 2008 04:35:23 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51378 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755799AbYBLJfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 04:35:22 -0500
+Date: Tue, 12 Feb 2008 10:35:27 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "Frank Ch. Eigler" <fche@redhat.com>,
+       linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] kgdb-light -v9
+Message-ID: <20080212093527.GA31331@uranus.ravnborg.org>
+References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212100327.GA30873@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050706030605010501050008
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+> 
+> > +/**
+> > + *	kgdb_arch_handle_exception - Handle architecture specific GDB packets.
+> 
+> All the kerneldoc comments are useless if you don't add the file
+> to Documentation/DocBook/*.tmpl
+1) The content is valid no matter the formatting
+2) It is a well known format
+3) And it is widely used
 
-Andrew Morton wrote:
-> On Mon, 11 Feb 2008 15:16:53 +0100
-> Nadia.Derbey@bull.net wrote:
-> 
-> 
->>[PATCH 07/08]
->>
->>This patch makes msgmni not recomputed anymore upon ipc namespace creation /
->>removal or memory add/remove, as soon as it has been set from userland.
->>
->>As soon as msgmni is explicitely set via procfs or sysctl(), the associated
->>callback routine is unregistered from the ipc namespace notifier chain.
->>
-> 
-> 
-> The patch series looks pretty good.
-> 
-> 
->>===================================================================
->>--- linux-2.6.24-mm1.orig/ipc/ipc_sysctl.c	2008-02-08 16:07:15.000000000 +0100
->>+++ linux-2.6.24-mm1/ipc/ipc_sysctl.c	2008-02-08 16:08:32.000000000 +0100
->>@@ -35,6 +35,24 @@ static int proc_ipc_dointvec(ctl_table *
->> 	return proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
->> }
->> 
->>+static int proc_ipc_callback_dointvec(ctl_table *table, int write,
->>+	struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
->>+{
->>+	size_t lenp_bef = *lenp;
->>+	int rc;
->>+
->>+	rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
->>+
->>+	if (write && !rc && lenp_bef == *lenp)
->>+		/*
->>+		 * Tunable has successfully been changed from userland:
->>+		 * disable its automatic recomputing.
->>+		 */
->>+		unregister_ipcns_notifier(current->nsproxy->ipc_ns);
->>+
->>+	return rc;
->>+}
-> 
-> 
-> If you haven't done so, could you please check that it all builds cleanly
-> with CONFIG_PROCFS=n, and that all code which isn't needed if procfs is
-> disabled is not present in the final binary?
-> 
-> 
-> 
-> 
+Using a wellknown format does not require it to be postprocessed.
+It is by far better than "one-format-for-each-developer".
 
-Andrew,
-
-it builds fine, modulo some changes in ipv4 and ipv6 (see attached patch 
-- didn't find it in the hot fixes).
-
-Regards,
-Nadia
-
-
---------------050706030605010501050008
-Content-Type: text/x-patch;
- name="ip_v4_v6_procfs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ip_v4_v6_procfs.patch"
-
-Fix header files to let IPV4 and IPV6 build if CONFIG_PROC_FS=n
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- include/net/ip_fib.h |   13 ++++++++++++-
- include/net/ipv6.h   |    6 +++---
- 2 files changed, 15 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.24-mm1/include/net/ip_fib.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/net/ip_fib.h	2008-02-12 11:03:40.000000000 +0100
-+++ linux-2.6.24-mm1/include/net/ip_fib.h	2008-02-12 11:09:40.000000000 +0100
-@@ -266,6 +266,17 @@ static inline void fib_res_put(struct fi
- #ifdef CONFIG_PROC_FS
- extern int __net_init  fib_proc_init(struct net *net);
- extern void __net_exit fib_proc_exit(struct net *net);
--#endif
-+#else /* CONFIG_PROC_FS */
-+static inline int fib_proc_init(struct net *net)
-+{
-+	return 0;
-+}
-+
-+static inline int fib_proc_exit(struct net *net)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_PROC_FS */
- 
- #endif  /* _NET_FIB_H */
-Index: linux-2.6.24-mm1/include/net/ipv6.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/net/ipv6.h	2008-02-07 13:40:38.000000000 +0100
-+++ linux-2.6.24-mm1/include/net/ipv6.h	2008-02-12 11:16:27.000000000 +0100
-@@ -586,9 +586,6 @@ extern int ip6_mc_msfget(struct sock *sk
- 			 int __user *optlen);
- 
- #ifdef CONFIG_PROC_FS
--extern struct ctl_table *ipv6_icmp_sysctl_init(struct net *net);
--extern struct ctl_table *ipv6_route_sysctl_init(struct net *net);
--
- extern int  ac6_proc_init(void);
- extern void ac6_proc_exit(void);
- extern int  raw6_proc_init(void);
-@@ -621,6 +618,9 @@ static inline int snmp6_unregister_dev(s
- extern ctl_table ipv6_route_table_template[];
- extern ctl_table ipv6_icmp_table_template[];
- 
-+extern struct ctl_table *ipv6_icmp_sysctl_init(struct net *net);
-+extern struct ctl_table *ipv6_route_sysctl_init(struct net *net);
-+
- extern int ipv6_sysctl_register(void);
- extern void ipv6_sysctl_unregister(void);
- #endif
-
---------------050706030605010501050008--
+	Sam
