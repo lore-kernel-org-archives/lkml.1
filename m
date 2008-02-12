@@ -1,39 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759575AbYBLVJN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764859AbYBLVLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759575AbYBLVJN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:09:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763718AbYBLVIw
+	id S1764859AbYBLVLU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:11:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762033AbYBLVLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:08:52 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:44041 "EHLO tac.ki.iif.hu"
+	Tue, 12 Feb 2008 16:11:06 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:3972 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764220AbYBLVIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:08:50 -0500
-From: Wagner Ferenc <wferi@niif.hu>
-To: linux-kernel@vger.kernel.org
-Cc: wferi@niif.hu
-Subject: currently active Linux kernel versions
-Date: Tue, 12 Feb 2008 21:27:10 +0100
-Message-ID: <87skzx53a9.fsf@szonett.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1753242AbYBLVLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 16:11:04 -0500
+Date: Tue, 12 Feb 2008 16:08:16 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in
+	die_nmi path
+Message-ID: <20080212210816.GA1862@hmsreliant.think-freely.org>
+References: <20080206192555.GA24910@hmsendeavour.rdu.redhat.com> <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com> <20080207121719.GA29279@hmsreliant.think-freely.org> <20080207122404.GA8195@elte.hu> <20080208161422.GA32204@hmsreliant.think-freely.org> <20080208164544.GA23772@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080208164544.GA23772@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> 
+> Neil, is it possible to do some serial console debugging to find out
+> where exactly we are hanging? Beats me, what's that operation which can
+> not be executed while being in NMI handler and makes system to hang. I am
+> also curious to know if it is nested NMI case.
+> 
+> Thanks
+> Vivek
+> 
 
-which are the "currently active Linux kernel versions" at any point in
-time?  The quote is taken from http://lkml.org/lkml/2008/2/11/29.
-Or more precisely: which are the "stable" versions I can depend on for
-a more or less critical server, those that have active security
-support or receive at least critical bugfixes?  I know about the
-2.6.2[34].y stable git trees, but I wonder how long will those receive
-attention (that is, security fixes).  Can I find a written policy
-somewhere?
+
+Hey-
+	Some intermediate results:
+
+I've instrumented head.S in the kernel with the following code:
+#define SEROUT(z) \     
+mov $0x3F8,%dx;\
+movb z,%al;\
+outb %dx
+
+
+And peppered different ascii characters throughout the startup code from
+startup_32 to right before the jump to start_kernel.  When I panic the system
+via an:
+echo c > /proc/sysrq_trigger
+I see an appropriate sequence of characters on the serial console
+
+When I panic the box by forcing an NMI watchdog timeout however, I see nothing.
+ The machine will either hang, or reset into the bios.  I think this is
+reasonably conclusive in its indication that we're not getting into the second
+kernel when this problem occurs.  Next I'll instrument the purgatory code in a
+simmilar way.
+
+Regards
+Neil
+
+> _______________________________________________
+> kexec mailing list
+> kexec@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/kexec
+
 -- 
-(Please Cc: me, I'm not on the list.)
-
-Thanks,
-Feri.
+/****************************************************
+ * Neil Horman <nhorman@tuxdriver.com>
+ * Software Engineer, Red Hat
+ ****************************************************/
