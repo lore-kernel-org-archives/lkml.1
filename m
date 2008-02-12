@@ -1,112 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbYBLW7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbYBLW7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbYBLW7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbYBLW7K
+	id S1755530AbYBLW7i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbYBLW7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 12 Feb 2008 17:59:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49521 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751597AbYBLW7K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Feb 2008 17:59:10 -0500
-Received: from main.gmane.org ([80.91.229.2]:38782 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751114AbYBLW7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:59:08 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-Date: Tue, 12 Feb 2008 22:58:50 +0000 (UTC)
-Message-ID: <fot8b9$b6c$1@ger.gmane.org>
-References: <20080212101738.GB21039@rakim.wolfsonmicro.main>
-	<1202811705-2303-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Date: Tue, 12 Feb 2008 14:56:51 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, marcelo@kvack.org,
+       daniel.spang@gmail.com, riel@redhat.com, alan@lxorguk.ukuu.org.uk,
+       linux-fsdevel@vger.kernel.org, pavel@ucw.cz, a1426z@gawab.com,
+       jonathan@jonmasters.org, zlynx@acm.org
+Subject: Re: [PATCH 4/8][for -mm] mem_notify v6: memory_pressure_notify()
+ caller
+Message-Id: <20080212145651.69cc34a5.akpm@linux-foundation.org>
+In-Reply-To: <2f11576a0802090724s679258c4g7414e0a6983f4706@mail.gmail.com>
+References: <2f11576a0802090724s679258c4g7414e0a6983f4706@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: ppp78-37-17-241.pppoe.avangarddsl.ru
-User-Agent: Pan/0.132 (Waxed in Black)
-Cc: linux-input@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, 10 Feb 2008 00:24:28 +0900
+"KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-Mark Brown wrote:
+> the notification point to happen whenever the VM moves an
+> anonymous page to the inactive list - this is a pretty good indication
+> that there are unused anonymous pages present which will be very likely
+> swapped out soon.
+> 
+> and, It is judged out of trouble at the fllowing situations.
+>  o memory pressure decrease and stop moves an anonymous page to the
+> inactive list.
+>  o free pages increase than (pages_high+lowmem_reserve)*2.
 
-> This patch series adds support for the touchscreen controllers provided
-> by Wolfson Microelectronics WM97xx series chips in both polled and
-> streaming modes.
+This seems rather arbitrary.  Why choose this stage in the page
+reclaimation process rather than some other stage?
 
-You used platform_device_register, but should be using platform_device_add,
-otherwise you get barfs with 2.6.25-rc1 (device is initialized twice). Also
-as <sound/driver.h> got deprecated there is no point including it.
+If this feature is useful then I'd expect that some applications would want
+notification at different times, or at different levels of VM distress.  So
+this semi-randomly-chosen notification point just won't be strong enough in
+real-world use.
 
-Patch below
+Does this change work correctly and appropriately for processes which are
+running in a cgroup memory controller?
 
--- 
-With best wishes
-Dmitry
+Given the amount of code which these patches add, and the subsequent
+maintenance burden, and the unlikelihood of getting many applications to
+actually _use_ the interface, it is not obvious to me that inclusion in the
+kernel is justifiable, sorry.
 
->From 81b96191eb50837bdf1f437a6f4f05786cc0b49e Mon Sep 17 00:00:00 2001
-From: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Date: Wed, 13 Feb 2008 01:55:10 +0300
-Subject: [PATCH] wm97xx-core fixes
 
-Signed-off-by: Dmitry Baryshkov <dbaryshkov@gmail.com>
----
- drivers/input/touchscreen/wm97xx-core.c |    8 ++++----
- include/linux/wm97xx.h                  |    1 -
- 2 files changed, 4 insertions(+), 5 deletions(-)
+memory_pressure_notify() is far too large to be inlined.
 
-diff --git a/drivers/input/touchscreen/wm97xx-core.c b/drivers/input/touchscreen/wm97xx-core.c
-index 840d9ff..4cbb9e5 100644
---- a/drivers/input/touchscreen/wm97xx-core.c
-+++ b/drivers/input/touchscreen/wm97xx-core.c
-@@ -596,7 +596,7 @@ static int wm97xx_probe(struct device *dev)
- 	}
- 	platform_set_drvdata(wm->battery_dev, wm);
- 	wm->battery_dev->dev.parent = dev;
--	ret = platform_device_register(wm->battery_dev);
-+	ret = platform_device_add(wm->battery_dev);
- 	if (ret < 0)
- 		goto batt_reg_err;
- 
-@@ -609,7 +609,7 @@ static int wm97xx_probe(struct device *dev)
- 	}
- 	platform_set_drvdata(wm->touch_dev, wm);
- 	wm->touch_dev->dev.parent = dev;
--	ret = platform_device_register(wm->touch_dev);
-+	ret = platform_device_add(wm->touch_dev);
- 	if (ret < 0)
- 		goto touch_reg_err;
- 
-@@ -619,12 +619,12 @@ static int wm97xx_probe(struct device *dev)
- 	platform_device_put(wm->touch_dev);
-  touch_err:
- 	platform_device_unregister(wm->battery_dev);
--	wm->battery_dev = 0;
-+	wm->battery_dev = NULL;
-  batt_reg_err:
- 	platform_device_put(wm->battery_dev);
-  batt_err:
- 	input_unregister_device(wm->input_dev);
--	wm->input_dev = 0;
-+	wm->input_dev = NULL;
-  dev_alloc_err:
- 	input_free_device(wm->input_dev);
-  alloc_err:
-diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
-index fc6e0b3..f0d9fc0 100644
---- a/include/linux/wm97xx.h
-+++ b/include/linux/wm97xx.h
-@@ -6,7 +6,6 @@
- #ifndef _LINUX_WM97XX_H
- #define _LINUX_WM97XX_H
- 
--#include <sound/driver.h>
- #include <sound/core.h>
- #include <sound/pcm.h>
- #include <sound/ac97_codec.h>
--- 
-1.5.3.8
+Some of the patches were wordwrapped.
 
 
