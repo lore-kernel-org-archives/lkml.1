@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbYBLTa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbYBLTcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbYBLTa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbYBLTaN
+	id S1756331AbYBLTcI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:32:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYBLTby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:30:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37417 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750775AbYBLTaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:30:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.24-git2: Oracle 11g VKTM process enters R state on startup and is unkillable [still broken in 2.6.25-rc1]
-Date: Tue, 12 Feb 2008 20:28:18 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alessandro Suardi <alessandro.suardi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <5a4c581d0802110820l1fcbb1ffib874f268b4ab7eae@mail.gmail.com> <200802120012.35314.rjw@sisk.pl> <1202823858.6247.26.camel@lappy>
-In-Reply-To: <1202823858.6247.26.camel@lappy>
+	Tue, 12 Feb 2008 14:31:54 -0500
+Received: from phoenix.slamd64.com ([217.10.145.2]:60949 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbYBLTbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 14:31:52 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/2] acer-wmi - Fail gracefully if ACPI is disabled
+Date: Tue, 12 Feb 2008 19:28:05 +0000
+User-Agent: KMail/1.9.7
+Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+References: <200802080145.16774.lenb@kernel.org> <200802111955.04562.carlos@strangeworlds.co.uk> <alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802122028.19177.rjw@sisk.pl>
+Message-Id: <200802121928.06420.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Tue, 12 Feb 2008 19:28:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 12 of February 2008, Peter Zijlstra wrote:
+On Tuesday 12 February 2008 04:41:42 Linus Torvalds wrote:
 > 
-> On Tue, 2008-02-12 at 00:12 +0100, Rafael J. Wysocki wrote:
-> > On Monday, 11 of February 2008, Ingo Molnar wrote:
-> > > 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > no, they were not lost, they just didnt pass QA here (they crashed on 
-> > > > a particularly hard to debug 8-way box i have) and Peter worked on 
-> > > > that queue of fixes up until today to get it really correct. Could you 
-> > > > check:
-> > > > 
-> > > >    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
-> > > > 
-> > > > combo patch below as well - whichever you prefer. The shortlog can be 
-> > > > found below as well - but i dont yet consider this pullable, i'd like 
-> > > > it to see pass a full night of randconfig tests on my test-systems.
-> > > 
-> > > ok, we just found the reason for the 8-way crash, the delta fix from 
-> > > Peter is below if any of you have tried the previous combo patch. 
-> > > Updated sched.git as well, new HEAD is 
-> > > fec13e45305d69fd0bd23b30bd05a0a42cf341f8.
+> On Mon, 11 Feb 2008, Carlos Corbacho wrote:
 > > 
-> > With the previous patch and this patch applied, the issue is not reproducible
-> > here.
+> > WMI drivers, like their ACPI counterparts, should also check if ACPI is
+> > disabled or not, and bail out if so, otherwise we cause a crash.
 > 
-> Did you enable CONFIG_RT_GROUP_SCHED (it defaults to n)?
-> 
-> If you didn't, could you try with it set to y?
+> Shouldn't "wmi_has_guid()" just return false if ACPI isn't enabled, and 
+> the drivers should just then always give up?
 
-Tested with CONFIG_RT_GROUP_SCHED set and it also works as expected.
+Yes - that's a better fix.
 
-Thanks,
-Rafael
+-Carlos
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
