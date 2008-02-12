@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbYBLVhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752287AbYBLViO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbYBLVhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:37:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752723AbYBLVgy
+	id S1752287AbYBLViO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbYBLVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:36:54 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43009 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752338AbYBLVgw (ORCPT
+	Tue, 12 Feb 2008 16:37:58 -0500
+Received: from rn-out-0910.google.com ([64.233.170.186]:50169 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYBLVh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:36:52 -0500
-Date: Tue, 12 Feb 2008 13:36:20 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       David Miller <davem@davemloft.net>, arjan@infradead.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080212212005.GA22309@kroah.com>
-Message-ID: <alpine.LFD.1.00.0802121328270.2920@woody.linux-foundation.org>
-References: <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <20080212174824.GA1919@kroah.com>
- <alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org> <20080212191552.GA20883@kroah.com> <20080212194651.GI27894@ZenIV.linux.org.uk> <20080212205051.GB21650@kroah.com> <20080212210808.GJ27894@ZenIV.linux.org.uk>
- <20080212212005.GA22309@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 16:37:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=thNSgRWP8CVT15q8C+PTmhXBTilV8Oj8ScDsUtt63gTSp6vBgUkrRdpwotMny0SaQz0ZRBhHx56sRhkNrQINPYfjwixxed1tX1BESVD7S3ozLVX9/AaEA0o+DId1uUJ1ouw/nvT8EzuzOzQB/r/RkWdmBNsgMmfjEUnhvJ4RGDg=
+Message-ID: <170fa0d20802121337t35787cbby52286f5a08ea2e15@mail.gmail.com>
+Date: Tue, 12 Feb 2008 16:37:54 -0500
+From: "Mike Snitzer" <snitzer@gmail.com>
+To: "Ferenc Wagner" <wferi@niif.hu>
+Subject: Re: currently active Linux kernel versions
+Cc: "Xavier Bestel" <xavier.bestel@free.fr>, linux-kernel@vger.kernel.org,
+       "Willy Tarreau" <w@1wt.eu>
+In-Reply-To: <87wsp9q3ev.fsf@szonett.ki.iif.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <87skzx53a9.fsf@szonett.ki.iif.hu>
+	 <1202850783.6697.0.camel@bip.parateam.prv>
+	 <87wsp9q3ev.fsf@szonett.ki.iif.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Feb 12, 2008 4:18 PM, Ferenc Wagner <wferi@niif.hu> wrote:
+> Xavier Bestel <xavier.bestel@free.fr> writes:
+>
+> > On mar, 2008-02-12 at 21:27 +0100, Wagner Ferenc wrote:
+> >
+> >> which are the "currently active Linux kernel versions" at any point in
+> >> time?  The quote is taken from http://lkml.org/lkml/2008/2/11/29.
+> >> Or more precisely: which are the "stable" versions I can depend on for
+> >> a more or less critical server, those that have active security
+> >> support or receive at least critical bugfixes?  I know about the
+> >> 2.6.2[34].y stable git trees, but I wonder how long will those receive
+> >> attention (that is, security fixes).  Can I find a written policy
+> >> somewhere?
+> >
+> > The answer is at http://kernel.org/
+>
+> Not quite, at least I can't find 2.6.23.y there, even though that
+> branch seems to be maintained...
 
+2.6.16.x is still maintained (2.6.16.60 was recently released).
 
-On Tue, 12 Feb 2008, Greg KH wrote:
-> 
-> Yes, I agree, there are lots of examples of this, but the overall
-> majority are reviewed by 2 people at least (or sure as hell should be,
-> maybe we need to bring into existance the "reviewed-by" marking to
-> ensure this.)
+2.6.22.x is still maintained but Greg KH is apparently going to be
+ending his duties on it after the next release or so.  There is some
+confusion as to whether Willy Tarreau will be taking on the 2.6.22.x
+tree once Greg is done, Willy?:
+http://lwn.net/Articles/268003/
+http://kerneltrap.org/Linux/Stable_2.6_Branches
 
-Well, I don't really "review" any patches that come through Andrew. What I 
-do is:
-
- - global search-and-replace Andrew's "acked-by:" with one that is both 
-   him and me (that way I make sure that I _only_ sign off on patches that 
-   he has signed off on!)
-
- - look through all the commit *messages* (but not patches). This 
-   sometimes involves also editing up grammar etc - some of those messages 
-   just make me wince - but it also tends to include things like adding 
-   commit one-liner information if only a git commit ID is mentioned etc.
-
- - and only for areas that I feel competent in, I look at the patches too.
-
-So, to take an example, when Andrew passes on uml patches that only touch 
-arch/um and include/asm-um, my sign-off does not mean *any* kind of review 
-at all. It's purely a sign that it's passed the sign-off requirements 
-properly.
-
-When it comes to VM issues or other things, things are different, and I 
-actually review the patch (and occasionally send it back with "nope, I'm 
-not applying this"). But for stuff that comes through Andrew, that's 
-probably less than a quarter of the patches. And I don't mark the ones 
-I've reviewed specially in any way.
-
-And I suspect I'm not at all alone in this. People simply have maintainers 
-they trust (and _need_ to trust in order to not become a bottleneck).
-
-			Linus
+2.6.23.x and 2.6.24.x are obviously quite active for stable@kernel.org
