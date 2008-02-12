@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbYBLBzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758940AbYBLCBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760418AbYBLBzS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:55:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbYBLBzF
+	id S1758940AbYBLCBb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 21:01:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbYBLCBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:55:05 -0500
-Received: from tama555.ecl.ntt.co.jp ([129.60.39.106]:39432 "EHLO
-	tama555.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754710AbYBLBzE (ORCPT
+	Mon, 11 Feb 2008 21:01:22 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:37106 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYBLCBV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:55:04 -0500
-To: zaitcev@redhat.com
-Cc: akpm@linux-foundation.org, oliver.pntr@gmail.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-fsdevel@vger.kernel.org, jmorris@namei.org,
-       linux-usb@vger.kernel.org
-Subject: Re: [2.6.24 REGRESSION] BUG: Soft lockup - with VFS
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20080208234619.385bcab9.zaitcev@redhat.com>
-References: <6101e8c40802051348w2250e593x54f777bb771bd903@mail.gmail.com>
-	<20080205140506.c6354490.akpm@linux-foundation.org>
-	<20080208234619.385bcab9.zaitcev@redhat.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20080212104612S.fujita.tomonori@lab.ntt.co.jp>
-Date: Tue, 12 Feb 2008 10:46:12 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Mon, 11 Feb 2008 21:01:21 -0500
+Date: Mon, 11 Feb 2008 18:20:46 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 4/4] x86_64: check msr to get mmconfig for amd family 10h
+ opteron v3
+In-reply-to: <20080211170944.8b567a89.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: greg@kroah.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Message-id: <200802111820.47244.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200802111643.17265.yinghai.lu@sun.com>
+ <200802111648.35299.yinghai.lu@sun.com>
+ <20080211170944.8b567a89.akpm@linux-foundation.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 Feb 2008 23:46:19 -0800
-Pete Zaitcev <zaitcev@redhat.com> wrote:
+On Monday 11 February 2008 05:09:44 pm Andrew Morton wrote:
+> On Mon, 11 Feb 2008 16:48:35 -0800
+> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> 
+> > From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+> > 
+> > so even booting kernel with acpi=off or even MCFG is not there, we still can
+> > use MMCONFIG.
+> > 
+> 
+> This patch threw a big reject.  I didn't check why.
+> 
+> 
+> > +		pci_direct_conf1.read(0, bus, devfn, 0, 4, &l);
+> 
+> When I fixed the reject, compilation failed here.
+> 
+> arch/x86/pci/mmconfig-shared.c: In function 'pci_mmcfg_check_hostbridge':
+> arch/x86/pci/mmconfig-shared.c:214: error: 'pci_direct_conf1' undeclared (first use in this function)
+> 
+> 
+> What kernel are you patching?
+> 
 
-> On Tue, 5 Feb 2008 14:05:06 -0800, Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > > http://students.zipernowsky.hu/~oliverp/kernel/regression_2624/
-> 
-> > I think ub.c is basically abandoned in favour of usb-storage.
-> > If so, perhaps we should remove or disble ub.c?
-> 
-> Looks like it's just Tomo or Jens made a mistake when converting to
-> the new s/g API. Nothing to be too concerned about. I know I should've
-> reviewed their patch closer, but it seemed too simple...
+linus tree. 
 
-I guess I can put the blame for this on Jens' commit (45711f1a) ;)
+other three are ok?
 
-On a serious note, it seems that two scatter lists per request leaded
-to this bug. Can the scatter list in struct ub_request be removed?
-
-Thanks,
-
-> -- Pete
-> 
-> Fix up the conversion to sg_init_table().
-> 
-> Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
-> 
-> --- a/drivers/block/ub.c
-> +++ b/drivers/block/ub.c
-> @@ -657,7 +657,6 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
->  	if ((cmd = ub_get_cmd(lun)) == NULL)
->  		return -1;
->  	memset(cmd, 0, sizeof(struct ub_scsi_cmd));
-> -	sg_init_table(cmd->sgv, UB_MAX_REQ_SG);
->  
->  	blkdev_dequeue_request(rq);
->  
-> @@ -668,6 +667,7 @@ static int ub_request_fn_1(struct ub_lun *lun, struct request *rq)
->  	/*
->  	 * get scatterlist from block layer
->  	 */
-> +	sg_init_table(&urq->sgv[0], UB_MAX_REQ_SG);
->  	n_elem = blk_rq_map_sg(lun->disk->queue, rq, &urq->sgv[0]);
->  	if (n_elem < 0) {
->  		/* Impossible, because blk_rq_map_sg should not hit ENOMEM. */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+YH
