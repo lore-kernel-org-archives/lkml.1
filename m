@@ -1,135 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762335AbYBLQIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbYBLQKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762335AbYBLQIB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:08:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYBLQHx
+	id S1762596AbYBLQKR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:10:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756936AbYBLQKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:07:53 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:48356 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbYBLQHw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:07:52 -0500
-Date: Tue, 12 Feb 2008 08:07:29 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
-Message-ID: <20080212160729.GA9157@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080211.171645.74019568.davem@davemloft.net> <20080212085714.GB2582@ff.dom.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212085714.GB2582@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 12 Feb 2008 11:10:06 -0500
+Received: from waste.org ([66.93.16.53]:35224 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754403AbYBLQKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 11:10:04 -0500
+Subject: Re: [PATCH] Configure out doublefault exception handler (Linux
+	Tiny)
+From: Matt Mackall <mpm@selenic.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Linux-tiny@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "H. Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20080212150013.57cb954e@crazy>
+References: <20080212110825.35db27cb@crazy>
+	 <20080212130428.GA32757@uranus.ravnborg.org>
+	 <20080212150013.57cb954e@crazy>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 12 Feb 2008 10:02:12 -0600
+Message-Id: <1202832132.12383.93.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 08:57:14AM +0000, Jarek Poplawski wrote:
-> On 12-02-2008 02:16, David Miller wrote:
-> > From: Stephen Hemminger <shemminger@vyatta.com>
-> > Date: Mon, 11 Feb 2008 16:59:54 -0800
-> > 
-> > linux-kernel added to CC:, any change to generic kernel infrastructure
-> > should be posted there
-> > 
-> >> Eliminate warnings when rcu_assign_pointer is used with unsigned long.
-> >> It is reasonable to use RCU with non-pointer values so allow it for general
-> >> use.  Add a comment to explain the if test.
-> >>
-> >> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-> >> ---
-> >>  include/linux/rcupdate.h |   13 +++++++------
-> >>  1 files changed, 7 insertions(+), 6 deletions(-)
-> >>
-> >> diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-> >> index 37a642c..c44ac87 100644
-> >> --- a/include/linux/rcupdate.h
-> >> +++ b/include/linux/rcupdate.h
-> >> @@ -172,14 +172,15 @@ struct rcu_head {
-> >>   * structure after the pointer assignment.  More importantly, this
-> >>   * call documents which pointers will be dereferenced by RCU read-side
-> >>   * code.
-> >> + *
-> >> + * If value is the NULL (constant 0), then no barrier is needed.
-> >>   */
-> >>  
-> >> -#define rcu_assign_pointer(p, v) \
-> >> -	({ \
-> >> -		if (!__builtin_constant_p(v) || \
-> >> -		    ((v) != NULL)) \
-> >> -			smp_wmb(); \
-> >> -		(p) = (v); \
-> >> +#define rcu_assign_pointer(p, v)			\
-> >> +	({						\
-> >> +		if (!(__builtin_constant_p(v) && v))	\
+
+On Tue, 2008-02-12 at 15:00 +0100, Thomas Petazzoni wrote:
+> Hi Sam,
 > 
-> ...But, "If value is the NULL (constant 0)" we have:
+> Le Tue, 12 Feb 2008 14:04:28 +0100,
+> Sam Ravnborg <sam@ravnborg.org> a écrit :
 > 
-> if (!(1 && NULL != 0)) ==> if (!(0)) and the barrier is used?!
+> > We already have this in arch/x86/Kconfig.debug:
+> 
+> Oops, my usual "find . -name Kconfig" missed it. Thanks for pointing it
+> out!
 
-"All programmers are blind, especially me."
+The fact that you didn't have to add any makefile bits should have been
+a hint.
 
-You are right, Jarek.  I ran this through gcc, and the following
-comes close:
+> > It may need a small update if this is valid for both 32 and 64 bit.
+> 
+> Doesn't seem so: there's only a doublefault_32.c, no doublefault_64.c.
+> However, I don't know the details of x86_64.
 
-#define rcu_assign_pointer(p, v) \
-	({ \
-		if (!__builtin_constant_p(v) || (v)) \
-			smp_wmb(); \
-		(p) = (v); \
-	})
+I bet there's some doublefault-handling code hiding somewhere. It's not
+the sort of thing it'd make sense to take out of the architecture.
 
-But I am concerned about the following case:
+-- 
+Mathematics is the supreme nostalgia of our time.
 
-	rcu_assign_pointer(global_index, 0);
-
-	. . .
-
-	x = global_array[rcu_dereference(global_index)];
-
-Since arrays have a zero-th element, we would really want a memory
-barrier in this case.
-
-So how about leaving the index-unfriendly version of rcu_assign_pointer()
-and adding an rcu_assign_index() as follows?
-
-							Thanx, Paul
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
- rcupdate.h |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
-
-diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
---- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
-+++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-12 08:04:59.000000000 -0800
-@@ -278,6 +278,24 @@ extern struct lockdep_map rcu_lock_map;
- 					})
- 
- /**
-+ * rcu_assign_index - assign (publicize) a index of a newly
-+ * initialized array elementg that will be dereferenced by RCU
-+ * read-side critical sections.  Returns the value assigned.
-+ *
-+ * Inserts memory barriers on architectures that require them
-+ * (pretty much all of them other than x86), and also prevents
-+ * the compiler from reordering the code that initializes the
-+ * structure after the index assignment.  More importantly, this
-+ * call documents which indexes will be dereferenced by RCU read-side
-+ * code.
-+ */
-+
-+#define rcu_assign_index(p, v)	({ \
-+					smp_wmb(); \
-+					(p) = (v); \
-+				})
-+
-+/**
-  * synchronize_sched - block until all CPUs have exited any non-preemptive
-  * kernel code sequences.
-  *
