@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbYBLXJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYBLXKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbYBLXJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYBLXJ1
+	id S1761102AbYBLXKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYBLXJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:09:27 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:8053 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760253AbYBLXJY (ORCPT
+	Tue, 12 Feb 2008 18:09:47 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35799 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760519AbYBLXJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:09:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=aPsmdF6SLz608qaGZoYsUMwCl1mn7z5jPbL4CReCuuXMhZI2OEGcyravqoHV4MttotU6p2RJ+o4YN37y2QcSnpQsjB6quB0+TPl8vf6lLkYzT3tTVVw9zWahO/lY8yJvaEGKC2TVteeT5cNdU0UwevKWWQr2HtQd4euAmN+cWr8=
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-scsi@vger.kernel.org,
-       aacraid@adaptec.com, James.Bottomley@HansenPartnership.com
-Subject: [PATCH] scsi: le*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:13 +0100
-Message-Id: <1202857582-15450-9-git-send-email-marcin.slusarz@gmail.com>
-X-Mailer: git-send-email 1.5.3.7
-In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
-References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
-From: marcin.slusarz@gmail.com
+	Tue, 12 Feb 2008 18:09:44 -0500
+Date: Tue, 12 Feb 2008 22:59:00 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
+       torvalds@linux-foundation.org, James.Bottomley@HansenPartnership.com,
+       jeff@garzik.org, davem@davemloft.net, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080212225900.3cbe4938@core>
+In-Reply-To: <20080212225531.GA7216@kroah.com>
+References: <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
+	<1202838082.3137.54.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org>
+	<1202840682.3137.83.camel@localhost.localdomain>
+	<alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org>
+	<alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org>
+	<20080212194100.GH27894@ZenIV.linux.org.uk>
+	<20080212215152.1470fe7f@core>
+	<20080212141726.1e214729.akpm@linux-foundation.org>
+	<20080212222044.214ad821@core>
+	<20080212225531.GA7216@kroah.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
+On Tue, 12 Feb 2008 14:55:31 -0800
+Greg KH <greg@kroah.com> wrote:
 
-replace all:
-little_endian_variable = cpu_to_leX(leX_to_cpu(little_endian_variable) +
-					expression_in_cpu_byteorder);
-with:
-	leX_add_cpu(&little_endian_variable, expression_in_cpu_byteorder);
-generated with semantic patch
+> On Tue, Feb 12, 2008 at 10:20:44PM +0000, Alan Cox wrote:
+> > > I think the best way to get the serial drivers maintained would be to cat
+> > > them all onto the end of synclink.c and hope that Paul thinks he did it.
+> > 
+> > Well I've already broken the buffering so he'd fix it ;)
+> > 
+> > We have a pile of old ISA drivers that are going to break soon with the
+> > locking changes and a pile of USB drivers that when I looked at the
+> > locking were so terminally broken I couldn't be bothered to fix them.
+> 
+> Let me know which USB ones are broken, I'll work to fix them.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-scsi@vger.kernel.org
-Cc: aacraid@adaptec.com
-Cc: James.Bottomley@HansenPartnership.com
----
- drivers/scsi/aacraid/commsup.c |    2 +-
- drivers/scsi/ips.c             |    8 ++------
- 2 files changed, 3 insertions(+), 7 deletions(-)
+That I noticed doing an audit for unlocking the mctrl functions:
 
-diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
-index 81b3692..3ac8c82 100644
---- a/drivers/scsi/aacraid/commsup.c
-+++ b/drivers/scsi/aacraid/commsup.c
-@@ -594,7 +594,7 @@ void aac_consumer_free(struct aac_dev * dev, struct aac_queue *q, u32 qid)
- 	if (le32_to_cpu(*q->headers.consumer) >= q->entries)
- 		*q->headers.consumer = cpu_to_le32(1);
- 	else
--		*q->headers.consumer = cpu_to_le32(le32_to_cpu(*q->headers.consumer)+1);
-+		le32_add_cpu(q->headers.consumer, 1);
- 
- 	if (wasfull) {
- 		switch (qid) {
-diff --git a/drivers/scsi/ips.c b/drivers/scsi/ips.c
-index bb152fb..f45770a 100644
---- a/drivers/scsi/ips.c
-+++ b/drivers/scsi/ips.c
-@@ -3696,9 +3696,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
- 			scb->cmd.basic_io.sg_count = scb->sg_len;
- 
- 			if (scb->cmd.basic_io.lba)
--				scb->cmd.basic_io.lba =
--				    cpu_to_le32(le32_to_cpu
--						(scb->cmd.basic_io.lba) +
-+				le32_add_cpu(&scb->cmd.basic_io.lba,
- 						le16_to_cpu(scb->cmd.basic_io.
- 							    sector_count));
- 			else
-@@ -3744,9 +3742,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
- 			scb->cmd.basic_io.sg_count = scb->sg_len;
- 
- 			if (scb->cmd.basic_io.lba)
--				scb->cmd.basic_io.lba =
--				    cpu_to_le32(le32_to_cpu
--						(scb->cmd.basic_io.lba) +
-+				le32_add_cpu(&scb->cmd.basic_io.lba,
- 						le16_to_cpu(scb->cmd.basic_io.
- 							    sector_count));
- 			else
--- 
-1.5.3.7
+ir-usb: global variables without locking used in per port operations
+iuu_phoenix: no locking on internal data structures
+mos7840: ditto
+option: ditto
+kobil_sct: ditto
 
+These drivers do interesting things (where interesting is probably not too
+evil on a PC - except ir-usb) involving playing with data structures
+without locks. It seems there was some kind of evolution along the way as
+some drivers do have a carefully used port private data structure lock
+(or two) but many do not.
