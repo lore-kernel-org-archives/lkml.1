@@ -1,66 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYBLRBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbYBLREI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762562AbYBLRBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:01:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758691AbYBLRBc
+	id S1762709AbYBLREI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:04:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbYBLRDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:01:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43718 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760082AbYBLRBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:01:31 -0500
-Date: Tue, 12 Feb 2008 18:01:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212170110.GA31428@elte.hu>
-References: <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu> <alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 12 Feb 2008 12:03:55 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:58937 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754036AbYBLRDx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 12:03:53 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: David Miller <davem@davemloft.net>, arjan@infradead.org, greg@kroah.com,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-Reply-To: <47B1CB08.4020101@garzik.org>
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
+	 <20080212044314.GA4888@kroah.com>
+	 <20080211211751.3e265754@laptopd505.fenrus.org>
+	 <20080211.221126.230471463.davem@davemloft.net>
+	 <47B1CB08.4020101@garzik.org>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 11:03:39 -0600
+Message-Id: <1202835819.3137.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2008-02-12 at 11:36 -0500, Jeff Garzik wrote:
+> David Miller wrote:
+> > This is why, with the networking, we've just tossed all of the network
+> > driver stuff in there too.  I can rebase freely, remove changesets,
+> > rework them, etc. and this causes a very low amount of pain for Jeff
+> > Garzik and John Linville.
+> 
+> 
+> s/very low/not low/
+> 
+> Rebasing is always a pain, and John and I both agreed the other day that 
+> you do it too often.
+> 
+> I've complained about this before, too...  but figured this was just 
+> another thing I was getting ignored on, and so life moved on.  But don't 
+> try to sell rebasing as "low pain".
+> 
+> Rebasing makes the history all nice and pretty, but by totalling 
+> flattening the history, trashing all the commit ids (and rewriting 
+> associated metadata), you create obvious downstream problems.
+> 
+> Rebasing is  low impact only if you don't have git downstream people. 
+> Otherwise, you're just treating it as a useful quilt clone, really.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+I used to be in this camp too: seeing rebasing as the ultimate evil.
+However, what I found was that as I tried to preserve my merge tree's
+history, I was picking up merge points with non trivial fixups.  You can
+argue that this is how git is supposed to operate, but the problem is
+that these merge points become immovable objects in the tree history ...
+I can't rebase the tree at all any more and I can't simply remove a
+commit (which gets messy for commits duplicated by other trees)  They
+also effectively separate the fix up from the patch causing it.   Plus,
+it became difficult for people to go to gitweb to see the tree history,
+because everything before the merge point got buried.
 
-> In other words, is it perhaps possible to just *get*rid*of* that 
-> "kgdb_active" and "nmicallback" and the whole multi-CPU roundup? Just 
-> use a kgdb spinlock around the stuff that actually sends and receives 
-> individual packets, and expect the debugger side to sort them out 
-> (yeah, I suspect this involves having to add the CPU ID to each 
-> packet).
+I finally concluded that I needed to rebase my trees to resolve
+conflicts rather than merging them.  The advantages are I know the exact
+patch with the problem and I can keep the history annotated with what
+had to be done to get it to apply.  Plus with git (and this is a huge
+advantage over quilt) knowing the base of the patch, I can still use the
+merge algorithms to help me do the fixup.
 
-i actually think that the notion of "stopping all system state" is 
-rather intuitive from a debugging POV: when you have a bug trigger 
-somewhere then getting an NMI to all CPUs and stopping them dead in 
-their tracks preserves us the system in its most useful state.
+I'm not saying rebase constantly ... I'm still mindful of the disruption
+it causes, so I only do it if I pick up an actual conflict.  However, I
+do think it does becomes necessary at times.
 
-also, when using kgdb to "look at system state" it's best to have as 
-little "unrelated" activity as possible.
+The problem rebasing causes is that git is pretty horrible at rebasing a
+tree which is based on your now rebased tree (try saying that after a
+few martinis).  Git really needs to acquire better rebasing tools for
+this one case, but if that were solved, I think a lot of the objections
+to rebasing could be answered.
 
-the timeout argument brought up by Andi was IMO really just pulled here 
-by its hair, it never happened to me in practice and i was surprised it 
-even came up. (i never before saw "KGDB roundup" fail - and i tried it 
-on an 8-way system too) I think the memory-access routine cleanups were 
-far more interesting from a failure scenario POV. Maybe Andrew could 
-shed some light on his experience and preference here - he's been using 
-KGDB for many years.
+James
 
-	Ingo
+
