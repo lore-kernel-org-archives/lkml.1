@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYBLVmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbYBLVnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbYBLVmF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbYBLVlv
+	id S1753577AbYBLVnv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:43:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYBLVnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:41:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:10861 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752986AbYBLVlr (ORCPT
+	Tue, 12 Feb 2008 16:43:43 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:60928 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbYBLVnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:41:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=wNGhvmHO9XiKqDWZv5uvc6PKUeqBfCeYCBWtu6grR7dogQDG0MhCxgJDtIFBubVHLvbw++307IT2CReMpOpPt57HefeGuTiYPUBbctWHtFZ3WzdVYC7qin5sMaTFkWo4m62wDn63YMc9CEAkMAnJ7PouwDic3h1sXmd7eOpc9l0=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other goodies
-Date: Tue, 12 Feb 2008 22:54:39 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <1202460043.7079.157.camel@pasglop> <1202850247.7410.24.camel@pasglop>
-In-Reply-To: <1202850247.7410.24.camel@pasglop>
+	Tue, 12 Feb 2008 16:43:42 -0500
+Message-ID: <47B212DA.3010503@zytor.com>
+Date: Tue, 12 Feb 2008 13:42:50 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802122254.39663.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="utf-8"
+To: maximilian attems <max@stro.at>
+CC: 464962@bugs.debian.org, Joey Hess <joeyh@debian.org>,
+       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bug#464962: immediate crash on boot on TM5800
+References: <20080210031849.GA3370@dragon.kitenet.net> <20080210110659.GB8574@stro.at> <20080210192139.GA17647@kodama.kitenet.net> <20080212160522.GB5221@stro.at> <20080212195254.GA6252@kodama.kitenet.net> <20080212201048.GD22054@baikonur.stro.at> <47B2025B.1030103@zytor.com> <20080212210244.GF22054@baikonur.stro.at> <47B20C1C.5020208@zytor.com> <20080212212416.GH22054@baikonur.stro.at>
+In-Reply-To: <20080212212416.GH22054@baikonur.stro.at>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, Benjamin Herrenschmidt wrote:
+maximilian attems wrote:
+> On Tue, Feb 12, 2008 at 01:14:04PM -0800, H. Peter Anvin wrote:
+>> Are you sure that build matches the bug report?
 > 
-> On Fri, 2008-02-08 at 19:40 +1100, Benjamin Herrenschmidt wrote:
-> > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > - couple of fixes and preparatory patches
-> > > 
-> > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
-> > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
-> > 
-> > Interesting... I was thinking about doing a full remove of the device at
-> > a higher level instead but I suppose what you propose is easier.
-> > 
-> > I'll have a look & test next week hopefully.
+> urrgs right sorry, the posted vmlinux is a newer 
+> 2.6.24-git22 and not  Version: 2.6.24-3
+>  
+>> The EIP given falls inside the .data segment of that kernel, 
+>> specifically inside the symbol init_task.
+>>
+>> 	-hpa
 > 
-> Also, the above would have the advantage of not relying on drivers/ide
-> infrastructure, and thus working with libata (once somebody has ported
-> pmac ide to libata).
+> will rebuild aboves.
 
-Neither of these things exist at the moment so lets stick to the existing
-code which is scheduled for 2.6.26 and which finally allows removal of ppc
-specific ide hacks from arch/{powerpc,ppc} (500 LOC gone, patches to be
-posted this week), not to mention other nice changes in the future...
+Okay, the faulting instruction is the following:
 
-Thanks,
-Bart
+c0383360:       0f 1f 40 00             nopl   0x0(%eax)
+
+The Crusoe code morphing software apparently doesn't recognize these 
+"long noops", and (presumably) the rest of the hinting NOOP group.  gcc 
+didn't use to generate them, and Crusoe/Efficeon generally do not 
+benefit from code alignment anyway.  I suspect the best thing to do is 
+to use either a 586 kernel or build a dedicated Crusoe kernel without 
+code alignment.
+
+	-hpa
+
