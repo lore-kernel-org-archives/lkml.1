@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbYBLWLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755389AbYBLWNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbYBLWLA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYBLWKw
+	id S1755389AbYBLWNm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751522AbYBLWNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:10:52 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:54227 "EHLO relay.sgi.com"
+	Tue, 12 Feb 2008 17:13:34 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:54429 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752964AbYBLWKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:10:51 -0500
-Date: Tue, 12 Feb 2008 14:10:50 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Steve Wise <swise@opengridcomputing.com>
-cc: Roland Dreier <rdreier@cisco.com>, general@lists.openfabrics.org,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: Demand paging for memory regions (was Re: MMU Notifiers V6)
-In-Reply-To: <47B2174E.5000708@opengridcomputing.com>
-Message-ID: <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
- <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
- <adaprv70yyt.fsf@cisco.com> <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
- <adalk5v0yi6.fsf@cisco.com> <Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
- <20080209012446.GB7051@v2.random> <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
- <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
- <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
- <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751302AbYBLWNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 17:13:33 -0500
+Date: Tue, 12 Feb 2008 23:13:30 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Olof Johansson <olof@lixom.net>
+Cc: linux-kernel@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       David Brownell <david-b@pacbell.net>, kernel@avr32linux.org,
+       Francis Moreau <francis.moro@gmail.com>,
+       Paul Mundt <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: Re: [RFC v3 5/7] dmaengine: Make DMA Engine menu visible for AVR32
+ users
+Message-ID: <20080212231330.79738c3a@siona>
+In-Reply-To: <20080212204330.GA3184@lixom.net>
+References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-2-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-3-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-4-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-5-git-send-email-hskinnemoen@atmel.com>
+	<20080212204330.GA3184@lixom.net>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Steve Wise wrote:
+On Tue, 12 Feb 2008 14:43:30 -0600
+Olof Johansson <olof@lixom.net> wrote:
 
-> Chelsio's T3 HW doesn't support this.
+> > -	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
+> > +	depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX || AVR32  
+> 
+> This is a slippery slope. Things should be the other way around instead,
+> create a HAVE_DMA_DEVICE, select it in the relevant platform code and
+> make DMADEVICES depend on that.
 
-Not so far I guess but it could be equipped with these features right? 
+Agree. I'll cook up a patch tomorrow to make it use the new HAVE_*
+scheme.
 
-Having the VM manage the memory area for Infiniband allows more reliable 
-system operations and enables the sharing of large memory areas via 
-Infiniband without the risk of livelocks or OOMs.
+> Or just let the subsystem always be available.
 
+It used to be always available, but then it was changed. Assuming there
+was a reason for this change, I guess we don't want to change it back.
+
+Haavard
