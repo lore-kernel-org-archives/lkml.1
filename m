@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763579AbYBLRUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763808AbYBLRVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763579AbYBLRUr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758838AbYBLRUk
+	id S1763808AbYBLRVh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:21:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761509AbYBLRV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:20:40 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:25222 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754824AbYBLRUj (ORCPT
+	Tue, 12 Feb 2008 12:21:29 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:39982 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760451AbYBLRV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:20:39 -0500
-Date: Tue, 12 Feb 2008 09:18:55 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Fabio Coatti <cova@ferrara.linux.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: stuck with 2.6.23.14 on x86_64
-Message-Id: <20080212091855.d43d7926.randy.dunlap@oracle.com>
-In-Reply-To: <200802121503.41328.cova@ferrara.linux.it>
-References: <200802121503.41328.cova@ferrara.linux.it>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 12 Feb 2008 12:21:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=P7gcttfycSznTgEsIlCcg5RWqU3nCzUYTJGRAG0L+sPFlaa4/iIyda3sCrFR7EqzaFK0q8WUtojdLNC1CB0vuh3ZhdFSscGqIFwvfrG8oXAdPIzeNpJ7N4PT/mC2CsOXGexsDRbVAbBWnAHf6xH4b4fn/rg8AO36ShiMlJOgDxQ=
+Date: Tue, 12 Feb 2008 18:20:58 +0100
+To: Hans-Peter Jansen <hpj@urpla.net>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+Message-ID: <20080212172057.GA12480@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Hans-Peter Jansen <hpj@urpla.net>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <200802121026.17420.hpj@urpla.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802121026.17420.hpj@urpla.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
+On Tue, Feb 12, 2008 at 10:26:17AM +0100, Hans-Peter Jansen wrote:
+> Hi, 
+> 
+> I suffer from unreliable cdrom operations (failing DAE and burn sessions) 
+> with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
+			^^^^
+Hi,
 
-> Hi all,
-> I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so to fix 
-> the splice bug I've had to apply by hand the patch. (x86_64)
-> 
-> Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine won't boot 
-> due to a problem with cciss driver, that prevents to find the / partition.
-> (bug described here: Kernel Bug Tracker Bug 9859 
-> http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
-> 
-> With kernels 2.6.23, the lastest that I can compile is 2.6.23.14; starting 
-> from .15 (and .16) I get this message:
-> 
-> ======================
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `acpi_init':
-> bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
-> bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
-> ======================
-> 
-> All .config are the same, (make oldconfig) beside the obvious differences 
-> between .23 and .24
-> 
-> Hardware: x86_64 AMD 2216HE
-> SCSI controller: HP Smart Array E200i Controller
-> Compiler: gcc (GCC) 4.1.1 
-> binutils: 2.16.1
-> 
-> On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
-> with a cciss0: HP Smart Array 6i Controller, 
-> the 2.6.24.2 compiles just fine and works, so the cciss problems seems related 
-> only to E200i controller.
-> 
-> Right now, on AMD64 machines, I'm forced to patch by hand the kernel, that's 
-> quite uncomfortable :)
-> 
-> Can someone point me in the right direction to get out of this situation? Of 
-> course I can provide any further information. (.config not inlcuded now to 
-> avoid cluttering  )
-> 
-> Thanks for any answer.
+can please you test this with a more recent kernel. Yours is almost ancient -
+from Sep. 2006.
 
-a/ send .config file for the build problem above
-b/ How do you download and/or apply 2.6.23.{15,16} ?
-	Full tarball or base tarball + patches?
-	If patches, what base tree are they applied to?
+Thanks.
 
-
----
-~Randy
+-- 
+Regards/Gruﬂ,
+    Boris.
