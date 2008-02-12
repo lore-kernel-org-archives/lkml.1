@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760721AbYBLBTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbYBLBUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760721AbYBLBTu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbYBLBTn
+	id S1761410AbYBLBUX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbYBLBUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:19:43 -0500
-Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:11881
-	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753880AbYBLBTm convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:19:42 -0500
-X-Greylist: delayed 629 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 20:19:41 EST
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAHqAsEd8qkDJ/2dsb2JhbACrDQ
-X-IronPort-AV: E=Sophos;i="4.25,336,1199631600"; 
-   d="scan'208";a="277133152"
-X-Spam-Check-By: mail.local.tull.net
-Date: Tue, 12 Feb 2008 12:08:43 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: linux-kernel@vger.kernel.org
-Subject: Trivial patch to Documentation/i386/IO-APIC.txt
-Message-ID: <20080212010843.GA13571@tull.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 11 Feb 2008 20:20:08 -0500
+Received: from waste.org ([66.93.16.53]:59994 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754006AbYBLBUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 20:20:06 -0500
+Subject: Re: [PATCH] x86 (Linux Tiny): configure out support
+	for	some	processors
+From: Matt Mackall <mpm@selenic.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Michael Opdenacker <michael-lists@free-electrons.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
+       Linux-tiny@selenic.com
+In-Reply-To: <47B0EE46.6050208@zytor.com>
+References: <200802082347.25364.michael-lists@free-electrons.com>
+	 <20080208231130.GA10511@elte.hu>
+	 <200802112342.23493.michael-lists@free-electrons.com>
+	 <1202770566.12383.59.camel@cinder.waste.org>  <47B0D3B7.6070308@zytor.com>
+	 <1202772532.12383.67.camel@cinder.waste.org>  <47B0EE46.6050208@zytor.com>
+Content-Type: text/plain
+Date: Mon, 11 Feb 2008 19:15:20 -0600
+Message-Id: <1202778920.12383.74.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The description of the interrupt routing doesn't match the (nice) diagram.
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+On Mon, 2008-02-11 at 16:54 -0800, H. Peter Anvin wrote:
+> Matt Mackall wrote:
+> > On Mon, 2008-02-11 at 15:01 -0800, H. Peter Anvin wrote:
+> >> Matt Mackall wrote:
+> >>> Best would be to have no ifdefs and do it all with linker magic, of
+> >>> course. But that's trickier.
+> >>>
+> >> I concur with this, definitely.
+> > 
+> > Ok, so let's come up with a plan. We can:
+> > 
+> > a) use weak symbols, ala cond_syscall
+> > b) use a special section
+> > c) use early_init code (is it early enough?)
+> > c) have some sort of registration list
+> > 
+> > Having a generic cond_call of some sort might be nice for this sort of
+> > thing.
+> > 
+> 
+> c) is out, because this has to be executed after the early generic code 
+> and before the late generic code.
+> 
+> b) would be my first choice, and yes, it would be a good thing to have a 
+> generalized mechanism for this.  For the registrant, it's pretty easy: 
+> just add a macro that adds a pointer to a named section.  We then need a 
+> way to get the base address and length of each such section in order to 
+> be able to execute each function in sequence.
 
-Nick.
+I like the idea of making a generalized hook section. But this is a bit
+burdensome for Michael's little patch (unless you have time to whip
+something up) so I think we should probably explore it separately.
 
---- a/Documentation/i386/IO-APIC.txt	2007-10-10 06:31:38.000000000 +1000
-+++ b/Documentation/i386/IO-APIC.txt	2008-02-12 11:57:08.000000000 +1100
-@@ -68,7 +68,7 @@
- 
- These INTA-D PCI IRQs are always 'local to the card', their real meaning
- depends on which slot they are in. If you look at the daisy chaining diagram,
--a card in slot4, issuing INTA IRQ, it will end up as a signal on PIRQ2 of
-+a card in slot4, issuing INTA IRQ, it will end up as a signal on PIRQ4 of
- the PCI chipset. Most cards issue INTA, this creates optimal distribution
- between the PIRQ lines. (distributing IRQ sources properly is not a
- necessity, PCI IRQs can be shared at will, but it's a good for performance
+-- 
+Mathematics is the supreme nostalgia of our time.
+
