@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763059AbYBLRge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762432AbYBLRjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763059AbYBLRge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 12:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759307AbYBLRgZ
+	id S1762432AbYBLRjG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 12:39:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759200AbYBLRiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 12:36:25 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:52058 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756945AbYBLRgY (ORCPT
+	Tue, 12 Feb 2008 12:38:55 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:31004 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753929AbYBLRiw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 12:36:24 -0500
-Message-ID: <47B1D8DA.6000109@panasas.com>
-Date: Tue, 12 Feb 2008 19:35:22 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 12 Feb 2008 12:38:52 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+X-Message-Flag: Warning: May contain useful information
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
+	<20080212044314.GA4888@kroah.com>
+	<20080211211751.3e265754@laptopd505.fenrus.org>
+	<20080211.221126.230471463.davem@davemloft.net>
+	<47B1CB08.4020101@garzik.org>
+	<alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 12 Feb 2008 09:38:40 -0800
+In-Reply-To: <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> (Linus Torvalds's message of "Tue, 12 Feb 2008 09:09:34 -0800 (PST)")
+Message-ID: <adar6fivzvj.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       linux-scsi <"linux-scsi"@vger.kernel.org>,
-       James Bottomley <"James.Bottomley"@HansenPartnership.com>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>
-CC: linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: [BUGFIX 1/2] gdth: scan for scsi devices
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com>
-In-Reply-To: <47B1D7A8.8010108@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 12 Feb 2008 17:38:42.0828 (UTC) FILETIME=[1C5E94C0:01C86D9E]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > The other is that once somebody says "ok, I *really* need to cause this 
+ > breakage, because there's a major bug or we need it for fundamental reason 
+ > XYZ", then that person should
+ > 
+ >  (a) create a base tree with _just_ that fundamental infrastructure change,
+ >      and make sure that base branch is so obviously good that there is no 
+ >      question about merging it.
 
-The patch: "gdth: switch to modern scsi host registration"
+I don't disagree with this, but I think I should point out that making
+something "obviously good" may be pretty hard.  It's clearly a common
+case that the infrastructure change goes through several rounds of
+change -- perhaps prompted by exposure in -mm that shows a subtle
+issue.  So then if all other maintainers based their trees on this
+tree, we're left with two not-so-great alternatives:
 
-missed one simple fact when moving a way from scsi_module.c.
-That is to call scsi_scan_host() on the probed host.
-With this the gdth driver from 2.6.24 is again able to
-see drives and boot.
+ 1) merge the original, broken infrastructure change into your
+    (Linus's) tree, leaving a known problem for bisecters to trip
+    over.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-Tested-by: Joerg Dorchain: <joerg@dorchain.net>
-Tested-by: Stefan Priebe <s.priebe@allied-internet.ag>
-Tested-by: Jon Chelton <jchelton@ffpglobal.com>
----
- drivers/scsi/gdth.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ 2) rebase the world.
 
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index b253b8c..8eb78be 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -4838,6 +4838,9 @@ static int __init gdth_isa_probe_one(ulong32 isa_bios)
- 	if (error)
- 		goto out_free_coal_stat;
- 	list_add_tail(&ha->list, &gdth_instances);
-+
-+	scsi_scan_host(shp);
-+
- 	return 0;
- 
-  out_free_coal_stat:
-@@ -4965,6 +4968,9 @@ static int __init gdth_eisa_probe_one(ushort eisa_slot)
- 	if (error)
- 		goto out_free_coal_stat;
- 	list_add_tail(&ha->list, &gdth_instances);
-+
-+	scsi_scan_host(shp);
-+
- 	return 0;
- 
-  out_free_ccb_phys:
-@@ -5102,6 +5108,9 @@ static int __init gdth_pci_probe_one(gdth_pci_str *pcistr, int ctr)
- 	if (error)
- 		goto out_free_coal_stat;
- 	list_add_tail(&ha->list, &gdth_instances);
-+
-+	scsi_scan_host(shp);
-+
- 	return 0;
- 
-  out_free_coal_stat:
--- 
-1.5.3.3
+I don't know if there's really a perfect answer here.  I hope that
+tree-wide infrastructure breakage is uncommon enough that we can just
+handle these issues "by hand" as they come up.
 
-
+ - R.
