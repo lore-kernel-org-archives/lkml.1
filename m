@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764028AbYBLSLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764161AbYBLSMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764028AbYBLSLm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762862AbYBLSLb
+	id S1764161AbYBLSMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761634AbYBLSMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:11:31 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:58944 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760646AbYBLSLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:11:30 -0500
-Message-ID: <47B1E14E.2010207@garzik.org>
-Date: Tue, 12 Feb 2008 13:11:26 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-References: <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org> <20080212170422.GE3051@tuxdriver.com>
-In-Reply-To: <20080212170422.GE3051@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Feb 2008 13:12:20 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55430 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760699AbYBLSMT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:12:19 -0500
+Date: Tue, 12 Feb 2008 18:04:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Valdis.Kletnieks@vt.edu
+Cc: Marcel Holtmann <marcel@holtmann.org>, davids@webmaster.com,
+       David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       Christer Weinigel <christer@weinigel.se>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] USB: mark USB drivers as being GPL only
+Message-ID: <20080212180450.1c309c7d@core>
+In-Reply-To: <29562.1202839330@turing-police.cc.vt.edu>
+References: <MDEHLPKNGKAHNMBLJOLKGEJHKDAC.davids@webmaster.com>
+	<1202619017.7664.53.camel@violet>
+	<29562.1202839330@turing-police.cc.vt.edu>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
-> FWIW, I definitely have a (vocal minority) group of contributors
-> who resent all the rebasing.  There may be a few cases of 'vanity'
-> represented here, but there are definitely reasonable complaints about
-> not being able to do simple pulls to stay up-to-date and/or having
-> to rebase before they can send patches to me.  FWIW, I think it might
-> save a bit of my time as well, although I have become pretty good and
-> "riding the tide" of rebasing... :-(
+> What happens if I ship a binary-only program that uses *either* a GPL library
+> or a custom library with the same API?  "If you don't have the Frobozz-Foo
+> library, you'll have to supply your own work-alike"....
 
+It depends whether it is a derived work. It doesn't matter if you paint
+it green, hang from trees while writing it or recompile it backwards
+while chanting - the legal boundary is the one from copyright law and
+that is where you must look for precedent and answers whether from prior
+computing cases or from equivalents in other areas.
 
-Definitely...  that is the sort of stuff that upstream folks never see 
-when they rebase -- it causes an explosion of downstream rebasing, where 
-each rebase must wait for the one-step-up upstream to rebase, before 
-patches can be sent.  It's easy for the rebasing to get exponential 
-quickly, the more downstream levels you have.
-
-	Jeff
-
-
-
+Alan
