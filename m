@@ -1,97 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757970AbYBLDhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758604AbYBLDkr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757970AbYBLDhi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 22:37:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYBLDha
+	id S1758604AbYBLDkr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 22:40:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754907AbYBLDkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 22:37:30 -0500
-Received: from ns3.system-techniques.com ([204.91.156.41]:37235 "EHLO
-	ns3.baby-dragons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751615AbYBLDha (ORCPT
+	Mon, 11 Feb 2008 22:40:39 -0500
+Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:43717 "HELO
+	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754110AbYBLDki (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 22:37:30 -0500
-Date: Mon, 11 Feb 2008 18:37:24 -0900 (AKST)
-From: "Mr. James W. Laferriere" <babydr@baby-dragons.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc1 ,  syntax error near unexpected token `;'
-In-Reply-To: <20080211132603.GA20959@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0802111836040.21698@filesrv1.baby-dragons.com>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org>
- <Pine.LNX.4.64.0802101645230.4708@filesrv1.baby-dragons.com>
- <20080211132603.GA20959@uranus.ravnborg.org>
+	Mon, 11 Feb 2008 22:40:38 -0500
+X-YMail-OSG: 6WXaMgEVM1lEqE6mBYT5VC3i.nNjC8E_LLhhm2_ynXISiRPRBDQfDjhldW2a3jsitWDt1RoETfFJI7hCOgTkm__.Fdo7pTSpYfAPzMSIpPAJ24dFegw-
+X-Yahoo-Newman-Property: ymail-3
+Date: Mon, 11 Feb 2008 21:38:15 -0600
+From: serge@hallyn.com
+To: "Nick 'Zaf' Clifford" <zaf@nrc.co.nz>
+Cc: linux-kernel@vger.kernel.org, SELinux <selinux@tycho.nsa.gov>,
+       linux-security-module@vger.kernel.org
+Subject: Re: if (2.6.24.1 && capset && bind9) bug()
+Message-ID: <20080212033815.GA28437@vino.hallyn.com>
+References: <47B03592.20505@nrc.co.nz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B03592.20505@nrc.co.nz>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 	Hello Sam ,
+Quoting Nick 'Zaf' Clifford (zaf@nrc.co.nz):
+> Please CC me on any/all replies
+> 
+> After trying to upgrade to deal with the most recent security issue, I
 
-On Mon, 11 Feb 2008, Sam Ravnborg wrote:
-> On Sun, Feb 10, 2008 at 04:47:43PM -0900, Mr. James W. Laferriere wrote:
->> 	Hello All ,  grabbed using git just moments ago .
->>
->> make V=1 KBUILD_VERBOSE=1 INSTALL_PATH=/boot clean all install
->> modules_install
->>
->> ...snip...
->> make -f scripts/Makefile.clean obj=sound/usb/usx2y
->> make -f scripts/Makefile.clean obj=usr
->>   rm -rf .tmp_versions
->>   rm -f arch/x86/boot/fdimage arch/x86/boot/image.iso
->>   arch/x86/boot/mtools.conf vmlinux System.map .tmp_kallsyms* .tmp_version
->> .tmp_vmlinux* .tmp_System.map
->> rm -f include/config/kernel.release
->> echo 2.6.25-rc1 > include/config/kernel.release
->> set -e; ; mkdir -p include/linux/;      (echo \#define LINUX_VERSION_CODE
->> 132633; echo '#define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) +
->> (c))';) < /usr/src/linux-2.6.25-rc1-git/Makefile >
->> include/linux/version.h.tmp; if [ -r include/linux/version.h ] && cmp -s
->> include/linux/version.h include/linux/version.h.tmp; then rm -f
->> include/linux/version.h.tmp; else ; mv -f include/linux/version.h.tmp
->> include/linux/version.h; fi
->> /bin/sh: -c: line 0: syntax error near unexpected token `;'
->> /bin/sh: -c: line 0: `set -e; ; mkdir -p include/linux/;        (echo
->> \#define LINUX_VERSION_CODE 132633; echo '#define KERNEL_VERSION(a,b,c)
->> (((a) << 16) + ((b) << 8) + (c))';) <
->> /usr/src/linux-2.6.25-rc1-git/Makefile > include/linux/version.h.tmp; if [
->> -r include/linux/version.h ] && cmp -s include/linux/version.h
->> include/linux/version.h.tmp; then rm -f include/linux/version.h.tmp; else ;
->> mv -f include/linux/version.h.tmp include/linux/version.h; fi'
->> make: *** [include/linux/version.h] Error 2
->
-> Please use following fix.
->
-> 	Sam
->
-> diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-> index da3559e..d64e6ba 100644
-> --- a/scripts/Kbuild.include
-> +++ b/scripts/Kbuild.include
-> @@ -39,10 +39,13 @@ escsq = $(subst $(squote),'\$(squote)',$1)
-> # - If they are equal no change, and no timestamp update
-> # - stdin is piped in from the first prerequisite ($<) so one has
-> #   to specify a valid file as first prerequisite (often the kbuild file)
-> +       chk_filechk = :
->  quiet_chk_filechk = echo '  CHK     $@'
-> silent_chk_filechk = :
-> +       upd_filechk = :
->  quiet_upd_filechk = echo '  UPD     $@'
-> silent_upd_filechk = :
-> +
-> define filechk
-> 	$(Q)set -e;				\
-> 	$($(quiet)chk_filechk);			\
->
+Judging by the 2.6.24.2 changelog I don't think the 2.6.24.1 kernel you
+grabbed has the fix you're looking for...
 
- 	Thank You .  that got me past that error .  2.6.25-rc1 is 
-compiling as I write this .
+> have encountered what has to either be me being very tired, or a kernel
+> bug. After assuming that it was the former for 3 hours, I now conclude
+> I'm more tired, and it has to be the latter.
+> 
+> Relevant versions:
+> Bind: 9.3.4
+> Kernel: Linux version 2.6.24.1.cerberus.1 (zaf@cerberus) (gcc version
+> 4.1.2 (Ubuntu 4.1.2-0ubuntu4)) #1 SMP Mon Feb 11 20:05:58 NZDT 2008
+> Distro: Ubuntu Feisty
+> Processor: AMD Athlon
+> 
+> # cat /proc/cmdline
+> root=UUID=0996d997-a1f5-4601-964e-f3e71a477b81 ro quiet splash
+> 
+> Relevant .config settings (please let me know if more are needed):
+> CONFIG_SECURITY=y
+> CONFIG_SECURITY_NETWORK=y
+> # CONFIG_SECURITY_NETWORK_XFRM is not set
+> CONFIG_SECURITY_CAPABILITIES=y
+> # CONFIG_SECURITY_FILE_CAPABILITIES is not set
+> CONFIG_SECURITY_SELINUX=y
+> CONFIG_SECURITY_SELINUX_BOOTPARAM=y
+> CONFIG_SECURITY_SELINUX_BOOTPARAM_VALUE=0
+> CONFIG_SECURITY_SELINUX_DISABLE=y
+> CONFIG_SECURITY_SELINUX_DEVELOP=y
+> CONFIG_SECURITY_SELINUX_AVC_STATS=y
+> CONFIG_SECURITY_SELINUX_CHECKREQPROT_VALUE=1
+> # CONFIG_SECURITY_SELINUX_ENABLE_SECMARK_DEFAULT is not set
+> # CONFIG_SECURITY_SELINUX_POLICYDB_VERSION_MAX is not set
+> 
+> (Note: tried with CONFIG_SECURITY_CAPABILITIES=n and same result)
 
- 		Tnx Agn ,  JimL
--- 
-+------------------------------------------------------------------+
-| James   W.   Laferriere | System    Techniques | Give me VMS     |
-| Network&System Engineer | 2133    McCullam Ave |  Give me Linux  |
-| babydr@baby-dragons.com | Fairbanks, AK. 99701 |   only  on  AXP |
-+------------------------------------------------------------------+
+Yeah my first thought was enough has been happening on the capabilities
+front that it could be an unfortunate patch merge, but 2.6.24.1 looks
+ok.  So my next guess would be an selinux change.  Though again i don't
+see anything obvious.  Could you tell us what policy you use, and what
+context bind is starting in?
+
+> relevant line from strace starting bind:
+> # strace -ff named -u bind 2> /tmp/bind.log
+> 
+> ...
+> capset(0x19980330, 0,
+> {CAP_DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
+> CAP
+> _DAC_READ_SEARCH|CAP_SETGID|CAP_SETUID|CAP_NET_BIND_SERVICE|CAP_SYS_CHROOT|CAP_SYS_RESOURCE,
+> 0}) = -1 EPERM (Operation not
+>  permitted)
+> ...
+> 
+> What have I tried?
+> 
+> Tried it on two different systems, with the SEC CAP on and off.
+> 
+> Why do I think this is a kernel bug?
+> 
+> 1) I revert to older kernel (2.6.22.1), no problems. Upgrade to
+> 2.6.24.1. Problems.
+
+Unfortunately that's quite a range...
+
+> 2) Googling for "2.6.24 capset named" produces a lot of comments on the
+> mm tree about a breakage. It looked like it was fixed, but I'm obviously
+> not sure now.
+> 
+> 
+> So, someone please tell me either that I'm very very tired, and it must
+> be my config, or that it IS a kernel bug, and hopefully provide a nice
+> little patch to apply.
+> 
+> Once again, please CC me on replies,
+> 
+> Thanks,
+> Nick
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
