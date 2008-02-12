@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764552AbYBLSce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYBLSiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764552AbYBLSce (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:32:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762777AbYBLSb5
+	id S1763397AbYBLSiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYBLSiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:31:57 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48660 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762211AbYBLSby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:31:54 -0500
-Message-ID: <47B1DDD3.2000402@garzik.org>
-Date: Tue, 12 Feb 2008 12:56:35 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 12 Feb 2008 13:38:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40414 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754550AbYBLSiD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 13:38:03 -0500
+Date: Tue, 12 Feb 2008 10:36:25 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Benny Halevy <bhalevy@panasas.com>
+cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: <47B1DD17.2030204@panasas.com>
+Message-ID: <alpine.LFD.1.00.0802121031520.2920@woody.linux-foundation.org>
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>  <20080212044314.GA4888@kroah.com>  <20080211211751.3e265754@laptopd505.fenrus.org>  <20080211.221126.230471463.davem@davemloft.net>  <47B1CB08.4020101@garzik.org> 
+ <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <47B1DD17.2030204@panasas.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: multiple drivers, single device (was Re: Announce: Linux-next
- (Or Andrew's dream  :-)))
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <47B1C829.8020800@garzik.org> <20080212164232.GA326@kroah.com>
-In-Reply-To: <20080212164232.GA326@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> The work I'm doing here is for stupid PCI firmware engineers, who have
-> created devices that are different things, all bound up under the same
-> PCI device.  I'm thinking of watchdog timers and random number
-> generator and i2c controller on the same PCI device, or even the more
-> basic, frame buffer and DRM access to the same PCI video device.
-
-Yes, that has a known solution:  have your driver register i2c, rng, 
-watchdog, etc. functions.
-
-Works just fine inside today's infrastructure, no changes needed.
-
-	Jeff
 
 
+On Tue, 12 Feb 2008, Benny Halevy wrote:
+> 
+> IMHO, this base tree should typically be based off of linus' tree
+> and kept rebased on top of it.  This way you get the mainline fixes
+> through the integration base tree.
+
+Hell no!
+
+No rebasing! If people rebase, then it's useless as a base.
+
+That base tree needs to be something people can *depend* on. It contains 
+the API changes, and not anything else. Otherwise I will never ever pull 
+the resulting mess, and you all end up with tons of extra work.
+
+Just say *no* to rebasing.
+
+Rebasing is fine for maintaining *your* own patch-set, ie  it is an 
+alternative to using quilt. But it is absolutely not acceptable for 
+*anythign* else. 
+
+In particular, people who rebase other peoples trees should just be shot 
+(*). It's simply not acceptable behaviour. It screws up the sign-off 
+procedure, it screws up the people whose code was merged, and it's just 
+WRONG.
+
+			Linus
+
+(*) The exception being if there is something seriously wrong with the 
+tree. I think I've had trees which I just refused to pull, and while most 
+of the time I just say "I refuse to pull", early on in git development I 
+actually ended up fixing some of those trees up because my refusal was due 
+to people mis-using git in the first place. So I have actually effectively 
+rebased a maintainer tree at least once. But I still think it is seriously 
+screwed up.
