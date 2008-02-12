@@ -1,40 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbYBLD5v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758434AbYBLEDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758163AbYBLD5v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 22:57:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbYBLD5l
+	id S1758434AbYBLEDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 23:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbYBLEDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 22:57:41 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:28930 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754907AbYBLD5k (ORCPT
+	Mon, 11 Feb 2008 23:03:42 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35403 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755237AbYBLEDl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 22:57:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Hk0a16sUKdxzVDpjdt9ZpgAtX33DRzJbZ76ytLp6AntgmRNkJlD3v3BzYC1XHRUkqeN8VYpeNuC1zzRS7whj1CWgtTEqQbjqDBJq1VcCNinmSpqrqaUJW9o6GRu9w/jbGlRBTfEG6bdMX3MK9jW6c9IP+p4p6r30VcgKu0kseb0=
-Message-ID: <a44ae5cd0802111957mf196288m1fe5fd4219911336@mail.gmail.com>
-Date: Mon, 11 Feb 2008 22:57:39 -0500
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Nishanth Aravamudan" <nacc@us.ibm.com>
-Subject: Re: 2.6.24-git20 -- BUG: sleeping function called from invalid context at include/asm/uaccess_32.h:449
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Adam Litke" <agl@us.ibm.com>,
-       "David Gibson" <david@gibson.dropbear.id.au>
-In-Reply-To: <20080211222855.GA9138@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 Feb 2008 23:03:41 -0500
+Date: Mon, 11 Feb 2008 20:03:29 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       davej@redhat.com
+Subject: Re: [PATCH] make /dev/kmem a config option
+Message-ID: <20080211200329.2b272759@laptopd505.fenrus.org>
+In-Reply-To: <20080211143804.76f9743f.akpm@linux-foundation.org>
+References: <20080210155534.17fc6e5e@laptopd505.fenrus.org>
+	<Pine.LNX.4.64.0802110111160.7915@fbirervta.pbzchgretzou.qr>
+	<20080210170509.36999240@laptopd505.fenrus.org>
+	<20080211143804.76f9743f.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a44ae5cd0802091103s4c24c70fyc747d9c4ab9a9897@mail.gmail.com>
-	 <20080209162643.fd3822f1.akpm@linux-foundation.org>
-	 <20080210212528.GA17442@us.ibm.com> <20080211222855.GA9138@us.ibm.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Excellent.  Your patch fixed it for me.
+On Mon, 11 Feb 2008 14:38:04 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Thanks,
-        Miles
+> On Sun, 10 Feb 2008 17:05:09 -0800
+> Arjan van de Ven <arjan@infradead.org> wrote:
+> 
+> > Subject: [PATCH] make /dev/kmem a config option
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > This patch makes /dev/kmem a config option; /dev/kmem is VERY rarely
+> > used, and when used, it's generally for no good (rootkits tend to be
+> > the most common users). With this config option, users have the
+> > choice to disable /dev/kmem, saving some size as well.
+> > 
+> > A patch to disable /dev/kmem has been in the Fedora and RHEL
+> > kernels for 4+ years now without any known problems or legit users
+> > of /dev/kmem.
+> > 
+> 
+> I question the testedness of this.
+> 
+> > +config DEV_KMEM
+> > ...
+> > +#ifdef CONFIG_DEVKMEM
+
+it works great in hiding /dev/kmem ;)
+And since nothing uses that I didn't notice the other case.
+
+Updated patch below
+
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: [PATCH] make /dev/kmem a config option
+
+This patch makes /dev/kmem a config option; /dev/kmem is VERY rarely
+used, and when used, it's generally for no good (rootkits tend to be
+the most common users). With this config option, users have the
+choice to disable /dev/kmem, saving some size as well.
+
+A patch to disable /dev/kmem has been in the Fedora and RHEL kernels for
+4+ years now without any known problems or legit users of /dev/kmem.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+---
+ drivers/char/Kconfig |    8 ++++++++
+ drivers/char/mem.c   |   10 ++++++++++
+ 2 files changed, 18 insertions(+)
+
+Index: linux.trees.git/drivers/char/Kconfig
+===================================================================
+--- linux.trees.git.orig/drivers/char/Kconfig
++++ linux.trees.git/drivers/char/Kconfig
+@@ -80,6 +80,14 @@ config VT_HW_CONSOLE_BINDING
+ 	 information. For framebuffer console users, please refer to
+ 	 <file:Documentation/fb/fbcon.txt>.
+ 
++config DEVKMEM
++	bool "/dev/kmem virtual device support"
++	help
++	  Say Y here if you want to support the /dev/kmem device. The
++	  /dev/kmem device is rarely used, but can be used for certain
++	  kind of kernel debugging operations.
++	  When in doubt, say "N".
++
+ config SERIAL_NONSTANDARD
+ 	bool "Non-standard serial port support"
+ 	depends on HAS_IOMEM
+Index: linux.trees.git/drivers/char/mem.c
+===================================================================
+--- linux.trees.git.orig/drivers/char/mem.c
++++ linux.trees.git/drivers/char/mem.c
+@@ -295,6 +295,7 @@ static int mmap_mem(struct file * file, 
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_DEVKMEM
+ static int mmap_kmem(struct file * file, struct vm_area_struct * vma)
+ {
+ 	unsigned long pfn;
+@@ -315,6 +316,7 @@ static int mmap_kmem(struct file * file,
+ 	vma->vm_pgoff = pfn;
+ 	return mmap_mem(file, vma);
+ }
++#endif
+ 
+ #ifdef CONFIG_CRASH_DUMP
+ /*
+@@ -353,6 +355,7 @@ static ssize_t read_oldmem(struct file *
+ extern long vread(char *buf, char *addr, unsigned long count);
+ extern long vwrite(char *buf, char *addr, unsigned long count);
+ 
++#ifdef CONFIG_DEVKMEM
+ /*
+  * This function reads the *virtual* memory as seen by the kernel.
+  */
+@@ -557,6 +560,7 @@ static ssize_t write_kmem(struct file * 
+  	*ppos = p;
+  	return virtr + wrote;
+ }
++#endif
+ 
+ #ifdef CONFIG_DEVPORT
+ static ssize_t read_port(struct file * file, char __user * buf,
+@@ -734,6 +738,7 @@ static const struct file_operations mem_
+ 	.get_unmapped_area = get_unmapped_area_mem,
+ };
+ 
++#ifdef CONFIG_DEVKMEM
+ static const struct file_operations kmem_fops = {
+ 	.llseek		= memory_lseek,
+ 	.read		= read_kmem,
+@@ -742,6 +747,7 @@ static const struct file_operations kmem
+ 	.open		= open_kmem,
+ 	.get_unmapped_area = get_unmapped_area_mem,
+ };
++#endif
+ 
+ static const struct file_operations null_fops = {
+ 	.llseek		= null_lseek,
+@@ -820,11 +826,13 @@ static int memory_open(struct inode * in
+ 			filp->f_mapping->backing_dev_info =
+ 				&directly_mappable_cdev_bdi;
+ 			break;
++#ifdef CONFIG_DEVKMEM
+ 		case 2:
+ 			filp->f_op = &kmem_fops;
+ 			filp->f_mapping->backing_dev_info =
+ 				&directly_mappable_cdev_bdi;
+ 			break;
++#endif
+ 		case 3:
+ 			filp->f_op = &null_fops;
+ 			break;
+@@ -873,7 +881,9 @@ static const struct {
+ 	const struct file_operations	*fops;
+ } devlist[] = { /* list of minor devices */
+ 	{1, "mem",     S_IRUSR | S_IWUSR | S_IRGRP, &mem_fops},
++#ifdef CONFIG_DEVKMEM
+ 	{2, "kmem",    S_IRUSR | S_IWUSR | S_IRGRP, &kmem_fops},
++#endif
+ 	{3, "null",    S_IRUGO | S_IWUGO,           &null_fops},
+ #ifdef CONFIG_DEVPORT
+ 	{4, "port",    S_IRUSR | S_IWUSR | S_IRGRP, &port_fops},
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
