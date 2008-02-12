@@ -1,83 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYBLP3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763149AbYBLPaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762910AbYBLP3t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:29:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762388AbYBLP31
+	id S1763149AbYBLPaH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762721AbYBLP3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:29:27 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:52188 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762204AbYBLP30 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:29:26 -0500
-Date: Tue, 12 Feb 2008 07:27:15 -0800
-From: Greg KH <greg@kroah.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
-	panic about sysfs with adm1026)
-Message-ID: <20080212152715.GB19441@kroah.com>
-References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com> <20080210171004.GB25353@kroah.com> <20080210190115.2ebd4124@hyperion.delvare> <86802c440802111539w7eeb84dcu97103733364f7a7b@mail.gmail.com> <20080212092722.32c30eac@hyperion.delvare>
+	Tue, 12 Feb 2008 10:29:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52928 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762691AbYBLP3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 10:29:35 -0500
+Date: Tue, 12 Feb 2008 16:28:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] kgdb-light -v10
+Message-ID: <20080212152846.GC3078@elte.hu>
+References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080212092722.32c30eac@hyperion.delvare>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080212135027.GA1343@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 09:27:22AM +0100, Jean Delvare wrote:
-> Hi Yinghai,
+
+* Andi Kleen <andi@firstfloor.org> wrote:
+
+> > do spinning for now: we dont _ever_ want to break a correctly 
+> > working system with kgdb.
 > 
-> On Mon, 11 Feb 2008 15:39:39 -0800, Yinghai Lu wrote:
-> > On Feb 10, 2008 10:01 AM, Jean Delvare <khali@linux-fr.org> wrote:
-> > > Yeah, I am an idiot. In 5b34dbcd88251508d02e48ad9b0f9b8232a13ee0 I
-> > > introduced two new sysfs file groups but forgot to NULL-terminate them.
-> > > Sorry about that, here's the fix:
-> > >
-> > > * * * * *
-> > >
-> > > The missing NULL at the end of two sysfs file groups causes a kernel
-> > > crash when calling sysfs_create_group().
-> > >
-> > > Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> > > ---
-> > >  drivers/hwmon/adm1026.c |    2 ++
-> > >  1 file changed, 2 insertions(+)
-> > >
-> > > --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c       2008-02-10 11:21:54.000000000 +0100
-> > > +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c    2008-02-10 18:51:00.000000000 +0100
-> > > @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
-> > >         &dev_attr_temp3_crit_enable.attr,
-> > >         &dev_attr_temp3_auto_point1_pwm.attr,
-> > >         &dev_attr_temp3_auto_point2_pwm.attr,
-> > > +       NULL
-> > >  };
-> > >
-> > >  static const struct attribute_group adm1026_group_temp3 = {
-> > > @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
-> > >         &sensor_dev_attr_in9_max.dev_attr.attr,
-> > >         &sensor_dev_attr_in9_min.dev_attr.attr,
-> > >         &sensor_dev_attr_in9_alarm.dev_attr.attr,
-> > > +       NULL
-> > >  };
-> > >
-> > >  static const struct attribute_group adm1026_group_in8_9 = {
-> > >
-> > > * * * * *
-> > 
-> > it works. Thanks
-> 
-> Great, thanks. Mark, please include this patch in your next patch to
-> Linus for 2.6.25.
+> Stopping all CPUs for indefinite time very much seems like "breaking a 
+> correctly working system" to me. [...]
 
-Can someone send it to stable@kernel.org also when it goes into Linus's
-tree, as it looks like a pretty bad thing :)
+well, this is a small detail, but still you are wrong, and on a 
+correctly working system this will not occur. (if yes, tell me how)
 
-thanks,
+KGDB does a very straightforward "all CPUs enter controlled state" 
+transition when the session begins, and at the end an "all CPUs 
+continue" transition.
 
-greg k-h
+I'm not sure what you mean exactly under "stopping all CPUs for 
+indefinite amount of time" (your statement is sufficiently vague to be 
+hard to counter via specifics) - that does not happen, unless the system 
+is so buggy that a CPU is not able to process an NMI anymore [which is 
+rather rare] - in that case the whole system is likely locked up anyway. 
+In that case the simplest and safest behavior is what kgdb-light does 
+currently: it will only proceed if all CPUs have responded. Note that 
+you are wrong to suggest that "KGDB locks up", the system _has already 
+locked up_.
+
+yes, we could "time out" and force a KGDB session even if some CPUs do 
+not respond. But it's obviously not a completely safe system state, 
+because other CPUs might be changing things under the feet of the 
+debugger. So the safest first-level approach is to not enter the 
+debugger in this case.
+
+	Ingo
