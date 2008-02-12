@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761730AbYBLXXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYBLXY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761730AbYBLXXp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:23:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbYBLXXT
+	id S1758984AbYBLXY7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYBLXYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:23:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40523 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752617AbYBLXXR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:23:17 -0500
-Date: Tue, 12 Feb 2008 15:27:08 -0800
-From: Greg KH <greg@kroah.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, James.Bottomley@HansenPartnership.com,
-       jeff@garzik.org, davem@davemloft.net, arjan@infradead.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080212232708.GC8295@kroah.com>
-References: <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain> <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org> <20080212194100.GH27894@ZenIV.linux.org.uk> <20080212215152.1470fe7f@core> <20080212141726.1e214729.akpm@linux-foundation.org> <20080212222044.214ad821@core> <20080212224103.GK27894@ZenIV.linux.org.uk> <20080212230132.2ea5befd@core>
+	Tue, 12 Feb 2008 18:24:50 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:38469 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751063AbYBLXYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 18:24:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mirco Tischler <mt-ml@gmx.de>
+Subject: Re: [REGRESSION]fan turns at highspeed after suspend2ram
+Date: Wed, 13 Feb 2008 00:23:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: lkml <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Pavel Machek <pavel@suse.cz>, Ray Lee <ray-lk@madrabbit.org>
+References: <1202664109.8394.19.camel@mtlp> <200802122318.46271.rjw@sisk.pl> <1202858441.7392.1.camel@mtlp>
+In-Reply-To: <1202858441.7392.1.camel@mtlp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080212230132.2ea5befd@core>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802130023.06167.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 11:01:32PM +0000, Alan Cox wrote:
-> > Hrm...  How badly is pl2303 broken?  I actually use that sucker, so if
-> > it needs help - count me in.
+On Wednesday, 13 of February 2008, Mirco Tischler wrote:
 > 
-> 2303 is pretty good (in fact by usb serial standards outstanding). It has
-> all the internal locking needed for now and right down to killing
-> lock_kernel entirely outside of open/close (which is going to hit
-> everything).
-> 
-> Only fixme I have tagged for it is
-> 
-> - if you set an unsupported baud rate it reports it set rather than the
-> one you got
-> 
-> Which is a trivial mend for someone who has suitable docs (its marked
-> FIXME: at the right spot)
+> Am Dienstag, den 12.02.2008, 23:18 +0100 schrieb Rafael J. Wysocki:
+> > Ouch.  I think I know what the problem is.
+> > 
+> > On top of this patch, please apply the appended one and retest.
+> > 
+> > Thanks,
+> > Rafael
+> > 
+> > ---
+> >  drivers/acpi/hardware/hwsleep.c |    1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
+> > +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+> > @@ -566,6 +566,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
+> >  		return_ACPI_STATUS(status);
+> >  	}
+> >  
+> > +	arg.integer.value = sleep_state;
+> >  	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+> >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+> >  		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
+> Good news. That works perfectly.
 
-I'll see what I can do about fixing this.
+Ah, ok.  Thanks for testing. :-)
 
-thanks,
+Can you please check if the current mainline with the following patch applied
+works on your box?
 
-greg k-h
+Thanks,
+Rafael
+
+---
+ drivers/acpi/hardware/hwsleep.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+===================================================================
+--- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
++++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+@@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
+ 		return_ACPI_STATUS(status);
+ 	}
+ 
++	arg.integer.value = sleep_state;
+ 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+ 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+ 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
