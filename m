@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbYBLXRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761303AbYBLXRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbYBLXRD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:17:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYBLXQv
+	id S1761303AbYBLXRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759058AbYBLXRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:16:51 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44307 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750874AbYBLXQt (ORCPT
+	Tue, 12 Feb 2008 18:17:08 -0500
+Received: from h1137427.serverkompetenz.net ([85.214.91.45]:54306 "EHLO
+	h1137427.serverkompetenz.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758612AbYBLXRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:16:49 -0500
-Date: Tue, 12 Feb 2008 15:16:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Clements <paul.clements@steeleye.com>
-Cc: jens.axboe@oracle.com, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
-Message-Id: <20080212151602.f1803ef0.akpm@linux-foundation.org>
-In-Reply-To: <47ADAB00.90306@steeleye.com>
-References: <47AC87AE.9040408@steeleye.com>
-	<20080208093341.b4d02e22.randy.dunlap@oracle.com>
-	<20080208101151.935b575c.akpm@linux-foundation.org>
-	<47ACA250.1010404@steeleye.com>
-	<20080208204510.GD23197@kernel.dk>
-	<20080208204713.GF23197@kernel.dk>
-	<47ACC835.4070102@steeleye.com>
-	<20080208140244.c850a5d3.akpm@linux-foundation.org>
-	<47ADAB00.90306@steeleye.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 12 Feb 2008 18:17:06 -0500
+Subject: Re: [PATCH] pata_cs5536 Fix secondary port configuration
+From: Gregor Radtke <mail@g-radtke.name>
+To: "Martin K. Petersen" <martin.petersen@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Tim Kunschke <beatmeistah@web.de>
+In-Reply-To: <yq1myq6p7fe.fsf_-_@sermon.lab.mkp.net>
+References: <1202158828.6229.22.camel@desktop.ein-elch.local>
+	 <yq163x47wsy.fsf@sermon.lab.mkp.net>
+	 <1202662829.6418.8.camel@desktop.ein-elch.local>
+	 <yq1myq6p7fe.fsf_-_@sermon.lab.mkp.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-YWB8oNT83OzhXamIlkKI"
+Date: Wed, 13 Feb 2008 00:17:01 +0100
+Message-Id: <1202858221.6419.33.camel@desktop.ein-elch.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 Feb 2008 08:30:40 -0500
-Paul Clements <paul.clements@steeleye.com> wrote:
 
-> +		old_e = disk->queue->elevator;
-> +		if (elevator_init(disk->queue, "deadline") == 0 ||
-> +			elevator_init(disk->queue, "noop") == 0) {
-> +				elevator_exit(old_e);
-> +		}
->  	}
+--=-YWB8oNT83OzhXamIlkKI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-afacit elevator_init() will not trigger a request_module().  And you really
-do want to trigger the request_module() here.  Perhaps the block layer
-should provide a means of doing so?
+Am Dienstag, den 12.02.2008, 09:37 -0500 schrieb Martin K. Petersen:
+> Brown paper bag time.  My devel board has a 16MB 1st generation
+> compact flash on the secondary so I never noticed this was hosed.
+> Please try the following patch...
+
+boots! For some reason, i had to apply it by hand (to 2.6.24.2), and i
+was too stupid to examine how to produce a new patch. Looks like i have
+to read the documentation at kernelnewbies.org...
+
+Anyway, the patch fits perfectly and now UDMA/33 (due to 40wire-cable,
+vendor says UDMA/100 should work either) on a HDD using pata_cs5536 just
+works =3D)
+
+--=20
+Jabber: elch@ein-elch.de        PGP: 0x63FC728D
+Tel: 0170/238 30 53    http://www.g-radtke.name
+
+
+--=-YWB8oNT83OzhXamIlkKI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Dies ist ein digital signierter Nachrichtenteil
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHsijti3HX/2P8co0RAs7kAJ0bB8nxNE7yGeuZtQ647dm4TaK59gCgsrMv
+IV0Je03Mcii2Rj3bfU9aIQY=
+=SAVf
+-----END PGP SIGNATURE-----
+
+--=-YWB8oNT83OzhXamIlkKI--
 
