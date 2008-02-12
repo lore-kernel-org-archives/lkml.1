@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbYBLXMB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbYBLXMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbYBLXMB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:12:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbYBLXK7
+	id S1753421AbYBLXMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:12:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761912AbYBLXLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:10:59 -0500
+	Tue, 12 Feb 2008 18:11:18 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:8053 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761506AbYBLXK5 (ORCPT
+	with ESMTP id S1761813AbYBLXLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:10:57 -0500
+	Tue, 12 Feb 2008 18:11:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=DXHZMOQqLQ8Of0jUv6vDvxUMJpT7ZA26pZX5LBUb+oZiU5RX8XBgmCo7r0ZLsRInmKVFOsI22OahyMAdOmChTNYQLF5FwiwoZHXulM/hH0Oieeyiu41NSC5hSf4cSMxybEYRtbmV2JRe4BZiroBJ75w+Yq5as1bdSoVzkEEXNsc=
+        b=X4QsIJ/6cwH7h5xtRwDeQccofxg8tp05TgPMuw9GhMOYG6suMoz2yg10Nt7i4u/NwoDhoiAUFMkNMKzYWfjbXe3Jojuh7Yy243igiBAwebe2ogwFkAWeKqms6bTGNgC6chRYeTy7Yf+ByFORpHTTW/AGWxtFNipJY4DvpTqp+co=
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       Anton Altaparmakov <aia21@cantab.net>,
-       linux-ntfs-dev@lists.sourceforge.net
-Subject: [PATCH] ntfs: le*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:17 +0100
-Message-Id: <1202857582-15450-13-git-send-email-marcin.slusarz@gmail.com>
+       Mark Fasheh <mark.fasheh@oracle.com>,
+       Kurt Hackel <kurt.hackel@oracle.com>, ocfs2-devel@oss.oracle.com
+Subject: [PATCH] ocfs2: le*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:18 +0100
+Message-Id: <1202857582-15450-14-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -39,30 +39,44 @@ with:
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Anton Altaparmakov <aia21@cantab.net>
-Cc: linux-ntfs-dev@lists.sourceforge.net
+Cc: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Kurt Hackel <kurt.hackel@oracle.com>
+Cc: ocfs2-devel@oss.oracle.com
 ---
- fs/ntfs/upcase.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+ fs/ocfs2/dir.c        |    5 ++---
+ fs/ocfs2/localalloc.c |    3 +--
+ 2 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/fs/ntfs/upcase.c b/fs/ntfs/upcase.c
-index 9101807..e2f72ca 100644
---- a/fs/ntfs/upcase.c
-+++ b/fs/ntfs/upcase.c
-@@ -77,11 +77,10 @@ ntfschar *generate_default_upcase(void)
- 		uc[i] = cpu_to_le16(i);
- 	for (r = 0; uc_run_table[r][0]; r++)
- 		for (i = uc_run_table[r][0]; i < uc_run_table[r][1]; i++)
--			uc[i] = cpu_to_le16(le16_to_cpu(uc[i]) +
--					uc_run_table[r][2]);
-+			le16_add_cpu(&uc[i], uc_run_table[r][2]);
- 	for (r = 0; uc_dup_table[r][0]; r++)
- 		for (i = uc_dup_table[r][0]; i < uc_dup_table[r][1]; i += 2)
--			uc[i + 1] = cpu_to_le16(le16_to_cpu(uc[i + 1]) - 1);
-+			le16_add_cpu(&uc[i + 1], -1);
- 	for (r = 0; uc_word_table[r][0]; r++)
- 		uc[uc_word_table[r][0]] = cpu_to_le16(uc_word_table[r][1]);
- 	return uc;
+diff --git a/fs/ocfs2/dir.c b/fs/ocfs2/dir.c
+index e280833..8a18758 100644
+--- a/fs/ocfs2/dir.c
++++ b/fs/ocfs2/dir.c
+@@ -390,9 +390,8 @@ static int __ocfs2_delete_entry(handle_t *handle, struct inode *dir,
+ 				goto bail;
+ 			}
+ 			if (pde)
+-				pde->rec_len =
+-					cpu_to_le16(le16_to_cpu(pde->rec_len) +
+-						    le16_to_cpu(de->rec_len));
++				le16_add_cpu(&pde->rec_len,
++						le16_to_cpu(de->rec_len));
+ 			else
+ 				de->inode = 0;
+ 			dir->i_version++;
+diff --git a/fs/ocfs2/localalloc.c b/fs/ocfs2/localalloc.c
+index add1ffd..d0e217e 100644
+--- a/fs/ocfs2/localalloc.c
++++ b/fs/ocfs2/localalloc.c
+@@ -588,8 +588,7 @@ int ocfs2_claim_local_alloc_bits(struct ocfs2_super *osb,
+ 	while(bits_wanted--)
+ 		ocfs2_set_bit(start++, bitmap);
+ 
+-	alloc->id1.bitmap1.i_used = cpu_to_le32(*num_bits +
+-				le32_to_cpu(alloc->id1.bitmap1.i_used));
++	le32_add_cpu(&alloc->id1.bitmap1.i_used, *num_bits);
+ 
+ 	status = ocfs2_journal_dirty(handle, osb->local_alloc_bh);
+ 	if (status < 0) {
 -- 
 1.5.3.7
 
