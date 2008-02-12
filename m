@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761688AbYBLKNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762073AbYBLKRD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761688AbYBLKNf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 05:13:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759171AbYBLKNa
+	id S1762073AbYBLKRD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 05:17:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759793AbYBLKQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 05:13:30 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:33782 "EHLO mx2.suse.de"
+	Tue, 12 Feb 2008 05:16:54 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45140 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756291AbYBLKN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 05:13:28 -0500
-Date: Tue, 12 Feb 2008 11:13:27 +0100
-Message-ID: <s5hfxvyv5x4.wl%tiwai@suse.de>
+	id S1759870AbYBLKQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 05:16:53 -0500
+Date: Tue, 12 Feb 2008 11:16:52 +0100
+Message-ID: <s5hejbiv5rf.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Matej Laitl <strohel@gmail.com>
-Cc: Jaroslav Kysela <perex@perex.cz>, alsa-devel <alsa-devel@alsa-project.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [ALSA] HDA: no sound in headphone-out caused by commit f889fa91ad47e (2.6.25-rc1 regression)
-In-Reply-To: <200802112158.41989.strohel@gmail.com>
-References: <200802112158.41989.strohel@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Jaroslav Kysela <perex@perex.cz>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sound: opl3: Fix up opl3_synth build.
+In-Reply-To: <20080212070616.GA18373@linux-sh.org>
+References: <20080212070616.GA18373@linux-sh.org>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -27,41 +27,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Mon, 11 Feb 2008 21:58:41 +0100,
-Matej Laitl wrote:
+At Tue, 12 Feb 2008 16:06:16 +0900,
+Paul Mundt wrote:
 > 
-> Hi,
-> after upgrading from 2.6.24 to 2.6.25-rc1, I lost headphone-out sound output 
-> of my Intel HDA card - it is quiet no matter what the mixer settings are.
-> 
-> After playing wit git bisect a bit, I narrowed it down to commit 
-> f889fa91ad47e "[ALSA] hda-codec - Improve the auto-configuration". [1]
-> It works okay with tree as of previous commit 69b1f1e8337fc9. 
-> 
-> First lines from /proc/asound/Intel/codec#0:
-> Codec: Realtek ALC262
-> Address: 0
-> Vendor Id: 0x10ec0262
-> Subsystem Id: 0x17340000
-> Revision Id: 0x100202
-> No Modem Function Group found
-> Default PCM:
->     rates [0x560]: 44100 48000 96000 192000
->     bits [0xe]: 16 20 24
->     formats [0x1]: PCM
-> Default Amp-In caps: N/A
-> Default Amp-Out caps: N/A
-> GPIO: io=4, o=0, i=0, unsolicited=1, wake=0
->   IO[0]: enable=0, dir=0, wake=0, sticky=0, data=0
->   IO[1]: enable=0, dir=0, wake=0, sticky=0, data=0
->   IO[2]: enable=0, dir=0, wake=0, sticky=0, data=0
->   IO[3]: enable=0, dir=0, wake=0, sticky=0, data=0
-> 
-> The box is Fujitsu-Siemens Esprimo Mobile M9400 laptop.
+> opl3 breaks allmodconfig in current git:
 
-Could you give the output of alsa-info.sh for both working and
-non-working kernels?
-	http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh
+The patch already presents on ALSA tree.
+	http://lkml.org/lkml/2008/2/11/298
 
 
 thanks,
