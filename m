@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764834AbYBLS7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764910AbYBLS7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764834AbYBLS7S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:59:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763422AbYBLS5q
+	id S1764910AbYBLS7q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764441AbYBLS7b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:57:46 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:33025 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1762647AbYBLS5o (ORCPT
+	Tue, 12 Feb 2008 13:59:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46510 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763422AbYBLS72 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:57:44 -0500
-Date: Tue, 12 Feb 2008 13:55:28 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
-       Johann Felix Soden <johfel@users.sourceforge.net>
-Subject: [PATCH 3/4] UML - Fix helper_wait calls in watchdog
-Message-ID: <20080212185528.GA2074@c2.user-mode-linux.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+	Tue, 12 Feb 2008 13:59:28 -0500
+Date: Tue, 12 Feb 2008 10:59:00 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org>
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>  <20080212044314.GA4888@kroah.com>  <20080211211751.3e265754@laptopd505.fenrus.org>  <20080211.221126.230471463.davem@davemloft.net>  <47B1CB08.4020101@garzik.org> 
+ <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>  <1202838082.3137.54.camel@localhost.localdomain>  <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain>
+ <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johann Felix Soden <johfel@users.sourceforge.net>
 
-In 1aa351a308d2c3ddb92b6cc45083fc54271d0010 the arguments of helper_wait() were
-changed. The adaptation of harddog_user.c was forgotten, so this errors occur:
 
-/arch/um/drivers/harddog_user.c: In function 'start_watchdog':
-/arch/um/drivers/harddog_user.c:82: error: too many arguments to function 'helper_wait'
-/arch/um/drivers/harddog_user.c:89: error: too many arguments to function 'helper_wait'
+On Tue, 12 Feb 2008, Linus Torvalds wrote:
+> 
+> In other words, I'm perfectly happy to be an a*hole and tell people that I 
+> simply won't merge things that cause undue API churn at all, and that were 
+> not thought out sufficiently.
 
-Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
----
- arch/um/drivers/harddog_user.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+.. btw: I'd need to know this in advance. I usually don't see the problem 
+until it's too late.
 
-Index: linux-2.6.22/arch/um/drivers/harddog_user.c
-===================================================================
---- linux-2.6.22.orig/arch/um/drivers/harddog_user.c	2008-01-17 12:50:20.000000000 -0500
-+++ linux-2.6.22/arch/um/drivers/harddog_user.c	2008-02-11 18:46:05.000000000 -0500
-@@ -79,14 +79,14 @@ int start_watchdog(int *in_fd_ret, int *
- 	n = read(in_fds[0], &c, sizeof(c));
- 	if (n == 0) {
- 		printk("harddog_open - EOF on watchdog pipe\n");
--		helper_wait(pid, 1, NULL);
-+		helper_wait(pid);
- 		err = -EIO;
- 		goto out_close_out;
- 	}
- 	else if (n < 0) {
- 		printk("harddog_open - read of watchdog pipe failed, "
- 		       "err = %d\n", errno);
--		helper_wait(pid, 1, NULL);
-+		helper_wait(pid);
- 		err = n;
- 		goto out_close_out;
- 	}
+And this is very much an area where "Linux-next" can help: if some 
+subsystem causes problems in Linux-next for other maintainers, I really 
+think it shouldn't just be a matter of "drop the git tree that didn't 
+merge cleanly", but it should literally be a question of "maybe we should 
+drop the _earlier_ git tree that caused the later one not to merge 
+cleanly".
+
+In other words, maybe things like core block layer changes or device model 
+changes should be *last* in the merge-list (or if first, also be first to 
+be dropped if they cause merge errors downstream!).
+
+That way, infrastructure changes that screw up others can only happen if 
+the maintainer actively works with the others to make sure it works even 
+before it would ever merge into Linux-next successfully.
+
+That may sound odd, but it actually matches what I personally believe in: 
+we have more driver code and other "outlying" things than we have core 
+things, and most of our problems come from that - so we should prioritize 
+*those* things, not the "fundmantal core changes".
+
+So how about making that the default situation: drivers and other outliers 
+merge first. If fundamental API changes happen, they merge last, and if 
+their maintainers can't make it in time in the merge window, they just get 
+dropped.
+
+That sure as hell would put the pain on API changes solidly where it 
+belongs.
+
+			Linus
