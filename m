@@ -1,70 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756497AbYBLUBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbYBLUEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756497AbYBLUBn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYBLUBf
+	id S1759736AbYBLUEf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYBLUE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:01:35 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:46332 "EHLO pasmtpB.tele.dk"
+	Tue, 12 Feb 2008 15:04:28 -0500
+Received: from www.tglx.de ([62.245.132.106]:56388 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbYBLUBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:01:34 -0500
-Date: Tue, 12 Feb 2008 21:01:41 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Oleg Verych <olecom@flower.upol.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Frysinger <vapier@gentoo.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] kbuild: fix make V=1
-Message-ID: <20080212200141.GB2348@uranus.ravnborg.org>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080211133137.GB20959@uranus.ravnborg.org> <20080211164709.GA22359@uranus.ravnborg.org> <E1JOiEG-0000do-0W@flower> <20080212085605.GB26865@uranus.ravnborg.org> <20080212092504.GI24008@flower.upol.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212092504.GI24008@flower.upol.cz>
-User-Agent: Mutt/1.4.2.1i
+	id S1751357AbYBLUE1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 15:04:27 -0500
+Date: Tue, 12 Feb 2008 21:04:06 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+cc: ying.huang@intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [8/8] RFC: Fix some EFI problems
+In-Reply-To: <20080211093436.EAFB11B41CE@basil.firstfloor.org>
+Message-ID: <alpine.LFD.1.00.0802122043460.12988@apollo.tec.linutronix.de>
+References: <200802111034.764275766@suse.de> <20080211093436.EAFB11B41CE@basil.firstfloor.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 10:25:04AM +0100, Oleg Verych wrote:
-> On Tue, Feb 12, 2008 at 09:56:05AM +0100, Sam Ravnborg wrote:
-> > On Tue, Feb 12, 2008 at 12:38:24AM +0100, Oleg Verych wrote:
-> > > * Date: Mon, 11 Feb 2008 17:47:09 +0100
-> > > []
-> > > > Mike spotted another missing thing from his initial
-> > > > patch so I folded it into the fix and pushed out
-> > > > a new kbuild.git tree.
-> > > >
-> > > > See updated patch below.
-> > > >
-> > > > 	Sam
-> > > 
-> > > Sam, do you agree my fix was more reliable (yea, not only efficient:)?
-> > You more or less just reverted the original patch - so it was obviously
-> > more reliable than introducing new stuff as the fix did.
-> > But we are at -r1 so I prefer to get the inteded behaviour
-> > and not the minmal fix.
-> 
-> Processing below changes arguments, not semantics of generated shell
-> code. And IMHO this is more reliable way of doing things. If one really
-> wants silence without commonly accepted ">/dev/null 2>&1" practice, then
-> choose portable "-n" argument for `echo`.
-> 
-> - quiet_chk_filechk = echo '  CHK     $@'
-> -silent_chk_filechk = :
-> - quiet_upd_filechk = echo '  UPD     $@'
-> -silent_upd_filechk = :
-> +quiet_chk_filechk = '  CHK     $@'
-> +quiet_upd_filechk = '  UPD     $@'
-> +
->  define filechk
->  	$(Q)set -e;				\
-> -	$($(quiet)chk_filechk);			\
-> +	echo $($(quiet)chk_filechk);		\
-The way we do this in other places in kbuild is a simple:
-$(if $($(quiet)chk_filechk),echo '  $($(quiet)chk_filechk)'
+On Mon, 11 Feb 2008, Andi Kleen wrote:
 
-And I think we should have done so originally here.
+> >From code review the EFI memory map handling has a couple of problems:
+> 
+> - The test for _WB memory was reversed so it would set cache able memory
+> to uncached
+> - It would always set a wrong uninitialized zero address to uncached
+> (so I suspect it always set the first few pages in phys memory to uncached,
+> that is why it may have gone unnoticed) 
+> - It would call set_memory_x() on a fixmap address that it doesn't
+> handle correct.
+> - Some other problems I commented in the code (but was unable to solve
+> for now) 
+> 
+> I changed the ioremaps to set the correct caching attributes
+> and also corrected the ordering so it looks roughly correct now.
 
-	Sam
+The only effective change is:
+
+-               if (md->attribute & EFI_MEMORY_WB)
++               if (!(md->attribute & EFI_MEMORY_WB))
+
+I appreciate that you noticed the reverse logic, which I messed up
+when I fixed up rejects.
+
+I pulled this out as it is a real fix. The rest of this patch is just
+turning code in circles for nothing, simply because it is functionally
+completely irrelevant whether does simply:
+
+        if ((end >> PAGE_SHIFT) <= max_pfn_mapped)
+                va = __va(md->phys_addr);
+        else
+                va = efi_ioremap(md->phys_addr, size);
+
+       if (!(md->attribute & EFI_MEMORY_WB))
+                set_memory_uc(md->virt_addr, size);
+or
+
+       if ((end >> PAGE_SHIFT) <= max_pfn_mapped) {
+                va = __va(md->phys_addr);
+
+                if (!(md->attribute & EFI_MEMORY_WB))
+                        set_memory_uc(md->virt_addr, size);
+       } else
+                va = efi_ioremap(md->phys_addr, size,
+                                 !!(md->attribute & EFI_MEMORY_WB));
+
+And you just copied the real bug in that logic as well:
+
+          set_memory_uc(md->virt_addr, size);
+------------------------^^^^^^^^
+
+which is initialized a couple of lines down.
+
+	md->virt_addr = (u64) (unsigned long) va;
+
+The reordering/optimizing needs to be a separate patch.
+
+Please keep bugfixes and other changes separate.
+ 
+> +		/* RED-PEN does not handle overlapped areas */
+
+Can you please use CHECKME/FIXME which is used everywhere else. No need to
+invent an extra marker.
+
+Thanks,
+
+	tglx
