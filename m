@@ -1,90 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762907AbYBLSWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbYBLSYz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762907AbYBLSWs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758422AbYBLSWj
+	id S1763526AbYBLSYz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:24:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758422AbYBLSYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:22:39 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57468 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757991AbYBLSWi (ORCPT
+	Tue, 12 Feb 2008 13:24:44 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:54925 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757991AbYBLSYn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:22:38 -0500
-Date: Tue, 12 Feb 2008 10:20:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] kgdb-light -v10
-Message-Id: <20080212102010.d88886f3.akpm@linux-foundation.org>
-In-Reply-To: <20080212182024.GA4940@one.firstfloor.org>
-References: <20080211162141.GA31434@elte.hu>
-	<20080211171039.GA20446@one.firstfloor.org>
-	<20080211230335.GA16102@elte.hu>
-	<20080212100327.GA30873@one.firstfloor.org>
-	<20080212112747.GA1569@elte.hu>
-	<20080212121903.GA419@one.firstfloor.org>
-	<20080212123839.GA15360@elte.hu>
-	<20080212135027.GA1343@one.firstfloor.org>
-	<20080212152846.GC3078@elte.hu>
-	<alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org>
-	<20080212182024.GA4940@one.firstfloor.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 13:24:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=HGaPABLLUNphY+1sSTeDS4QjmCzmRPc76f+proiDScZRKKHabyu7mLSBNBn6lnWh+2gIDAzt3wI6FXZRevPdl+ewFnJSifvjnk64y6h7qnncnRqoe1fbHvH9dKyHJEO+lf8rUDXaGxKz+edQ2CfbWui0ttml7yC5wBQYFrQ/oM0=
+From: Matej Laitl <strohel@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [ALSA] HDA: no sound in headphone-out caused by commit f889fa91ad47e (2.6.25-rc1 regression)
+Date: Tue, 12 Feb 2008 19:24:35 +0100
+User-Agent: KMail/1.9.7
+Cc: alsa-devel <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200802112158.41989.strohel@gmail.com> <200802121627.44422.strohel@gmail.com> <s5hmyq6t7u5.wl%tiwai@suse.de>
+In-Reply-To: <s5hmyq6t7u5.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802121924.35232.strohel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 19:20:24 +0100 Andi Kleen <andi@firstfloor.org> wrote:
+Takashi Iwai wrote:
+> Matej Laitl wrote:
+> > Yes, this "slightly better" patch applied on top of your first patch
+> > against hda_codec.c did the trick, but with some side-effects:
+> > * the "Speaker" switch now mutes/unmutes speakers
+> > * muting/unmuting "Front" channel now has zero effect (in 2.6.24 it had
+> > the same effect as the "Speaker" switch now has)
+> > * changing volume on "Front" channel now affects volume in headphones
+> > (was not so in 2.6.24)
+>
+> This is what your BIOS sets up.  The main output is connected to the
+> docking station.  That's why "Front" (a silly name for ALC262; it
+> should read "Line Out", maybe will be renamed in later versions)
+> switch doesn't work.
+> OTOH, all outputs (speaker, headphone and line-outs) use the same DAC,
+> and this is controlled via line-out volume, i.e. "Front" volume.
 
-> >  - the kgdb commands should always act on the *current* CPU only
-> >  - add one command that says "switch over to CPU #n" which just releases 
-> >    the current CPU and sends an IPI to that CPU #n (no timeouts, no 
-> >    synchronous waiting, no nothing - it's like a "continue", but with a 
-> >    "try to get the other CPU to stop"
-> 
-> The problem I see here is that the kernel tends to get badly confused
-> if one CPU just stops responding. At some point someone does an global
-> IPI and that then hangs.
+I was actually wrong when saying the "Front" channel did not influence HP-out 
+in 2.6.24 - it did, so no regressions here.
 
-Yes.  A stopped CPU is very visible and hence can change the behaviour of
-the system which is being tested.
+> > So there are now 3 vol controls that affect both speakers and headphones:
+> > * Master (which appeared somewhere between 2.6.24 and .25-rc1), when set
+> > to zero, the sound is still audible in speakers and headphones
+>
+> This must be the behavior of the codec chip...  Did "Front" volume 0
+> mute in the earlier version?  If not, it actually doesn't mute with
+> the lowest volume.  Use the master switch to mute.
+>
+> Anyway, attach the alsa-info.sh output at the moment Master volume is
+> zero.
 
->  You would need to hotunplug the CPU which
-> is theoretically possible, but quite intrusive. Or maybe the "isolate CPUs 
-> in cpusets" frame work someone posted recently on l-k could be used.  Still 
-> would probably have all kinds of tricky issues and races.
+No, setting Master and/or Front channel to 0% did not mute audio in any 
+version I used.
 
-I don't think you'd want to be poking around in kernel internals while some
-of the CPUs are continuing to run.  It sounds rather creepy.  You want
-everything to stop.  Including time-related things.
+I'm now listening to music with Master=0% and Front=0%, the sound is at well 
+audible volume. Pastebin for this configuraion is here:
+http://pastebin.ca/901459
 
-Bear in mind that one of the things you do with kgdb is to modify kernel
-memory - I'd do things like
+However I don't consider it a problem, it's mutable by PCM and HP/Speaker 
+switches. Funny thing is that resulting volume of those 3 setting is equal:
+* Master=0, Front=0
+* Master=100%, Front=0
+* Master=0, Front=100%
+But when both set to let's say 50, changing one of these audibly affects 
+resulting volume.
 
-int foo;
+> > * PCM, working as expected (0 volume = no sound)
+> > * Front (0 volume = still audible sound)
+> >
+> > So it is usable now (and those Speaker and Headphones on/off switches
+> > make sense), but kinda suboptimal. (is it my BIOS who is to blame?)
+>
+> Yep.  For the perfect solution, you'd need to create a static "patch"
+> for this particular model instead of auto-configuration.  Then you can
+> adjust everything as you like.
 
-	...
-	if (foo == 1)
-		special_stuff();
-	...
+Would it be easy to do this in a robust way? If not, it's not worth it.
 
-to trigger a particular behaviour at a particular time.  If you're making
-multiple changes, you want them "atomic" wrt all CPUs.  (Of course, if you
-happeed to breakpoint one CPU while it was partway through reading multiple
-locations, you lose.  But that's a teeny window).
+On a side note, I experience increased noise when not playing anything during 
+2.6.24 -> .25-rc1 upgrade, but this is probably completly unrelated to 
+today's problem.
 
+Anyways, thanks for your effort and patches, Takashi.
 
-
-OT: another thing you can do with kgdb is error-path testing:
-
-	foo = kmalloc(...)
-BP->	if (!foo)
-		recover();
-
-put a breakpoint on the !foo test and set foo to zero by hand.
+Matej Laitl
