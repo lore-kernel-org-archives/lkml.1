@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761047AbYBLIBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761237AbYBLICS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761047AbYBLIBY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 03:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754197AbYBLIBQ
+	id S1761237AbYBLICS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 03:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYBLICE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 03:01:16 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45674 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753357AbYBLIBQ (ORCPT
+	Tue, 12 Feb 2008 03:02:04 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43047 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbYBLICD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 03:01:16 -0500
-Date: Mon, 11 Feb 2008 23:59:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@kernel.org>,
-       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
-       anton@samba.org, paulus@samba.org, rusty@rustcorp.com.au
-Subject: Re: [BUID_FAILURE] regression from 2.6.24-git18 to 2.6.25-rc1-git1
- on section type conflict psmouse-base
-Message-Id: <20080211235929.791f7afb.akpm@linux-foundation.org>
-In-Reply-To: <47B14D52.6050404@linux.vnet.ibm.com>
-References: <47B14D52.6050404@linux.vnet.ibm.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 03:02:03 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47B15257.80200@s5r6.in-berlin.de>
+Date: Tue, 12 Feb 2008 09:01:27 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: Jarod Wilson <jwilson@redhat.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 9/9] firewire: fw-sbp2: fix I/O errors during reconnect
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <tkrat.8110272bacc3f714@s5r6.in-berlin.de> <47B08F6B.2020502@redhat.com> <47B0AE54.8090602@s5r6.in-berlin.de> <47B1298D.2000600@redhat.com>
+In-Reply-To: <47B1298D.2000600@redhat.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 13:10:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
+Jarod Wilson wrote:
+> Stefan Richter wrote:
+>> "perceived" unplugs can happen if a third node is slowly plugged in or out
+[...]
+> I wonder if there's any sort of
+> guidance on this sort of thing in the firewire specs...
 
-> This build failure is seen on the powerpc from the 2.6.24-git18 kernel and is still visible
-> in the 2.6.25-rc1-git1.
-> 
-> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
-> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
-> make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
-> make[2]: *** [drivers/input/mouse] Error 2
-> make[1]: *** [drivers/input] Error 2
-> 
-> The patch http://lkml.org/lkml/2008/2/8/514 seems to have not taken into 2.6.25-rc1 and 
-> 2.6.25-rc1-git(s). Is there any new patch i am missing out.
+I am not aware of any.
 
-I have it queued up, along with quite a few other things, but for the next
-couple of days I have logistical problems which are preventing me from
-doing runtime testing.
+The hardware related parts of the 1394a PHY layer spec have AFAIR
+enhancements over 1394-1995 to avoid bursts of bus reset events when
+connectors scrape into or out of the ports.  But what I saw on a few
+occasions now were proper self ID complete events, not merely bus reset
+events.  (The firewire stack only cares for self ID complete, therefore
+multiple bus reset events before one self ID complete event aren't a
+problem in the first place.  I don't know though whether these bursts of
+bus resets which 1394a addressed had self ID complete events in them or
+not.)
+-- 
+Stefan Richter
+-=====-==--- --=- -==--
+http://arcgraph.de/sr/
