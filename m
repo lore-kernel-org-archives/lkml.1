@@ -1,56 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764798AbYBLUxq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764668AbYBLUyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764798AbYBLUxq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:53:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759498AbYBLUxV
+	id S1764668AbYBLUyw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758382AbYBLUym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:53:21 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43347 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756131AbYBLUxR (ORCPT
+	Tue, 12 Feb 2008 15:54:42 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:37754 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757766AbYBLUyl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:53:17 -0500
-Date: Tue, 12 Feb 2008 12:50:51 -0800
-From: Greg KH <greg@kroah.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080212205051.GB21650@kroah.com>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <20080212174824.GA1919@kroah.com> <alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org> <20080212191552.GA20883@kroah.com> <20080212194651.GI27894@ZenIV.linux.org.uk>
+	Tue, 12 Feb 2008 15:54:41 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Date: Tue, 12 Feb 2008 21:52:46 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Fabio Coatti <cova@ferrara.linux.it>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+References: <200802121503.41328.cova@ferrara.linux.it> <200802121847.19991.cova@ferrara.linux.it> <20080212124522.1033c514.randy.dunlap@oracle.com>
+In-Reply-To: <20080212124522.1033c514.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080212194651.GI27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802122152.47117.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 07:46:51PM +0000, Al Viro wrote:
-> On Tue, Feb 12, 2008 at 11:15:53AM -0800, Greg KH wrote:
+On Tuesday, 12 of February 2008, Randy Dunlap wrote:
+> On Tue, 12 Feb 2008 18:47:19 +0100 Fabio Coatti wrote:
 > 
-> > Remember, we are currently clocking along at the steady rate of:
-> > 	4000 lines added every day
-> > 	1900 lines removed every day
-> > 	1300 lines modified every day
+> > Alle martedì 12 febbraio 2008, Randy Dunlap ha scritto:
+> > > On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
+> > > > Hi all,
+> > > > I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so to
+> > > > fix the splice bug I've had to apply by hand the patch. (x86_64)
+> > > >
+> > > > Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine won't
+> > > > boot due to a problem with cciss driver, that prevents to find the /
+> > > > partition. (bug described here: Kernel Bug Tracker Bug 9859
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
+> > > >
+> > > > With kernels 2.6.23, the lastest that I can compile is 2.6.23.14;
+> > > > starting from .15 (and .16) I get this message:
+> > > >
+> > > > ======================
+> > > >   UPD     include/linux/compile.h
+> > > >   CC      init/version.o
+> > > >   LD      init/built-in.o
+> > > >   LD      .tmp_vmlinux1
+> > > > drivers/built-in.o: In function `acpi_init':
+> > > > bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
+> > > > bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
+> > > > ======================
+> > > >
+> > > > All .config are the same, (make oldconfig) beside the obvious differences
+> > > > between .23 and .24
+> > > >
+> > > > Hardware: x86_64 AMD 2216HE
+> > > > SCSI controller: HP Smart Array E200i Controller
+> > > > Compiler: gcc (GCC) 4.1.1
+> > > > binutils: 2.16.1
+> > > >
+> > > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
+> > > > with a cciss0: HP Smart Array 6i Controller,
+> > > > the 2.6.24.2 compiles just fine and works, so the cciss problems seems
+> > > > related only to E200i controller.
+> > > >
+> > > > Right now, on AMD64 machines, I'm forced to patch by hand the kernel,
+> > > > that's quite uncomfortable :)
+> > > >
+> > > > Can someone point me in the right direction to get out of this situation?
+> > > > Of course I can provide any further information. (.config not inlcuded
+> > > > now to avoid cluttering  )
+> > > >
+> > > > Thanks for any answer.
+> > >
+> > > a/ send .config file for the build problem above
+> > > b/ How do you download and/or apply 2.6.23.{15,16} ?
+> > > 	Full tarball or base tarball + patches?
+> > > 	If patches, what base tree are they applied to?
+> > >
+> > 
+> > full tarball from kernel.org (.16), tried also applying patches to 2.6.23 
+> > vanilla.(.15,.16) Same process leads to successful compilation for .14
 > 
-> 	???? lines reviewed every day.
+> OK, quite easy to reproduce when CONFIG_PM=n.
+> For a temp quick fix, you could enable CONFIG_PM.
+> 
+> Len, Rafael:  were there any recent patches for the split of ACPI & PM
+> that need to be backported to -stable?
 
-I can run the numbers, but almost every one of those changes has at
-least 2 signed-off-by: on them, so they should all be being reviewed
-properly.
+Not that I know of.
 
-> AFAICS, we are in situation when review bandwidth is where the bottleneck
-> is.  Not the merge one...
+Actually, ACPI still depends on PM (in the current mainline as well as in
+.23.x).
 
-Are there still large numbers of posted patches, not reviewed or picked
-up by anyone laying around somewhere?  I thought Andrew-the-patch-vacuum
-had been doing a great job of keeping that from happening lately.
-
-thanks,
-
-greg k-h
+Thanks,
+Rafael
