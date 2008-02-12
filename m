@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757548AbYBLXe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760000AbYBLXel@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757548AbYBLXe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752529AbYBLXeN
+	id S1760000AbYBLXel (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:34:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYBLXeQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 12 Feb 2008 18:34:16 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58995
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752536AbYBLXeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 Feb 2008 18:34:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38511 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752408AbYBLXeK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:34:10 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: [PATCH] ACPI suspend: Execute _WAK with the right argument
-Date: Wed, 13 Feb 2008 00:32:16 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Date: Tue, 12 Feb 2008 15:34:45 -0800 (PST)
+Message-Id: <20080212.153445.118944467.davem@davemloft.net>
+To: jengelh@computergmbh.de
+Cc: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+Subject: Re: BTRFS partition usage...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0802121458420.21102@fbirervta.pbzchgretzou.qr>
+	<200802120908.59602.chris.mason@oracle.com>
+	<Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802130032.17636.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+From: Jan Engelhardt <jengelh@computergmbh.de>
+Date: Tue, 12 Feb 2008 15:21:52 +0100 (CET)
 
-The _WAK global ACPI control method has to be called with the
-argument representing the sleep state being exited.  Make it happen.
+> For sparc you could have something like
+> 
+> 			startlba	endlba	type
+> 	sda1		0		2	1 Boot
+> 	sda2		2		58	3 Whole disk
+> 	sda3		58		90000	83 Linux
+> 
+> and slap the bootloader into "MBR", just like on x86.
+> Or I am missing something..
 
-Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
-problem and debugging.
-
-Reported-by: Mirco Tischler <mt-ml@gmx.de>
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/acpi/hardware/hwsleep.c |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-+++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-@@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
- 		return_ACPI_STATUS(status);
- 	}
- 
-+	arg.integer.value = sleep_state;
- 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
- 	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
- 		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
+You cannot specify partitions on LBA boundaries on sparc, the Sun disk
+label specifies the partition start points in cylinders.
