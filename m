@@ -1,266 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbYBLEb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759529AbYBLEcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757156AbYBLEb6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 23:31:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYBLEbt
+	id S1759529AbYBLEcT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 23:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbYBLEb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 23:31:49 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58412 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbYBLEbr (ORCPT
+	Mon, 11 Feb 2008 23:31:57 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56794 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757156AbYBLEbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 23:31:47 -0500
-Date: Tue, 12 Feb 2008 13:30:22 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH for 2.6.24][regression fix] Mempolicy: silently restrict nodemask to allowed nodes V3
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
-       David Rientjes <rientjes@google.com>, Mel Gorman <mel@csn.ul.ie>,
-       linux-mm <linux-mm@kvack.org>, Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <1202748459.5014.50.camel@localhost>
-References: <alpine.LFD.1.00.0802092340400.2896@woody.linux-foundation.org> <1202748459.5014.50.camel@localhost>
-Message-Id: <20080212122637.29B7.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 11 Feb 2008 23:31:55 -0500
+Date: Mon, 11 Feb 2008 20:31:46 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-ID: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
+In-Reply-To: <20080212042133.GA4625@kroah.com>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+	<20080212042133.GA4625@kroah.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew
-
-# this is second post of the same patch.
-
-this is backport from -mm to mainline.
-original patch is http://marc.info/?l=linux-kernel&m=120250000001182&w=2
-
-my change is only line number change and remove extra space.
-please ack.
+On Mon, 11 Feb 2008 20:21:33 -0800
+Greg KH <greg@kroah.com> wrote:
 
 
-============================
-[PATCH] 2.6.24 - mempolicy:  silently restrict nodemask to allowed nodes
+> > The maintainer will be notified.  I hope to provide some clue as to
+> > what the conflict is with, but probably not initially.
+> > 
+> > I will attempt to build the tree between each merge (and a failed
+> > build will again cause the offending tree to be dropped).
+> 
+> This is going to get really interesting, especially when (not if) we
+> do more global api changes.  Look at the last round of kobject
+> changes. That touched a lot of different places, and other trees
+> ended up not building because of it, because I changed apis and they
+> had added new code based on the old apis.
+> 
+> I think the only way to fix this is not going to just "drop the tree"
+> like you are suggesting, but to let both people know (the person who
+> caused the change, and the person who's tree broke after the merge),
+> and then either add a "fixup patch" for the build like Andrew has been
+> doing, or disabling something from the build section.
+> 
 
-V2 -> V3:
-+ As suggested by Kosaki Motohito, fold the "contextualization"
-  of policy nodemask into mpol_check_policy().  Looks a little
-  cleaner. 
+in my experience, the only chance you have is doing API changes as first in the set of changes,
+and then hoping (making) all other trees use the new APIs. Any other order just turns into
+an impossible mismash.
 
-V1 -> V2:
-+ Communicate whether or not incoming node mask was empty to
-  mpol_check_policy() for better error checking.
-+ As suggested by David Rientjes, remove the now unused
-   cpuset_nodes_subset_current_mems_allowed() from cpuset.h
+I can see the point of doing an LKML annouce of the new API after the series is done, so that 
+all other maintainers have a chance to fix their trees (this of course is only for new occurances
+of the old api showing up; the api change series should convert all existing users)
 
-Kosaki Motohito noted that "numactl --interleave=all ..." failed in the
-presence of memoryless nodes.  This patch attempts to fix that problem.
-
-Some background:  
-
-numactl --interleave=all calls set_mempolicy(2) with a fully
-populated [out to MAXNUMNODES] nodemask.  set_mempolicy()
-[in do_set_mempolicy()] calls contextualize_policy() which
-requires that the nodemask be a subset of the current task's
-mems_allowed; else EINVAL will be returned.  A task's
-mems_allowed will always be a subset of node_states[N_HIGH_MEMORY]--
-i.e., nodes with memory.  So, a fully populated nodemask will
-be declared invalid if it includes memoryless nodes.
-
-  NOTE:  the same thing will occur when running in a cpuset
-         with restricted mem_allowed--for the same reason:
-         node mask contains dis-allowed nodes.
-
-mbind(2), on the other hand, just masks off any nodes in the 
-nodemask that are not included in the caller's mems_allowed.
-
-In each case [mbind() and set_mempolicy()], mpol_check_policy()
-will complain [again, resulting in EINVAL] if the nodemask contains 
-any memoryless nodes.  This is somewhat redundant as mpol_new() 
-will remove memoryless nodes for interleave policy, as will 
-bind_zonelist()--called by mpol_new() for BIND policy.
-
-Proposed fix:
-
-1) modify contextualize_policy logic to:
-   a) remember whether the incoming node mask is empty.
-   b) if not, restrict the nodemask to allowed nodes, as is
-      currently done in-line for mbind().  This guarantees
-      that the resulting mask includes only nodes with memory.
-
-      NOTE:  this is a [benign, IMO] change in behavior for
-             set_mempolicy().  Dis-allowed nodes will be
-             silently ignored, rather than returning an error.
-
-   c) fold this code into mpol_check_policy(), replace 2 calls to
-      contextualize_policy() to call mpol_check_policy() directly
-      and remove contextualize_policy().
-
-2) In existing mpol_check_policy() logic, after "contextualization":
-   a) MPOL_DEFAULT:  require that in coming mask "was_empty"
-   b) MPOL_{BIND|INTERLEAVE}:  require that contextualized nodemask
-      contains at least one node.
-   c) add a case for MPOL_PREFERRED:  if in coming was not empty
-      and resulting mask IS empty, user specified invalid nodes.
-      Return EINVAL.
-   c) remove the now redundant check for memoryless nodes
-
-3) remove the now redundant masking of policy nodes for interleave
-   policy from mpol_new().
-
-4) Now that mpol_check_policy() contextualizes the nodemask, remove
-   the in-line nodes_and() from sys_mbind().  I believe that this
-   restores mbind() to the behavior before the memoryless-nodes
-   patch series.  E.g., we'll no longer treat an invalid nodemask
-   with MPOL_PREFERRED as local allocation.
-
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by:  KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Tested-by:      KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by:       David Rientjes <rientjes@google.com>
-
- include/linux/cpuset.h |    3 --
- mm/mempolicy.c         |   61 ++++++++++++++++++++++++++++---------------------
- 2 files changed, 36 insertions(+), 28 deletions(-)
-
-Index: b/mm/mempolicy.c
-===================================================================
---- a/mm/mempolicy.c	2008-02-10 14:27:58.000000000 +0900
-+++ b/mm/mempolicy.c	2008-02-12 09:37:35.000000000 +0900
-@@ -116,22 +116,51 @@ static void mpol_rebind_policy(struct me
- /* Do sanity checking on a policy */
- static int mpol_check_policy(int mode, nodemask_t *nodes)
- {
--	int empty = nodes_empty(*nodes);
-+	int was_empty, is_empty;
-+
-+	if (!nodes)
-+		return 0;
-+
-+	/*
-+	 * "Contextualize" the in-coming nodemast for cpusets:
-+	 * Remember whether in-coming nodemask was empty,  If not,
-+	 * restrict the nodes to the allowed nodes in the cpuset.
-+	 * This is guaranteed to be a subset of nodes with memory.
-+	 */
-+	cpuset_update_task_memory_state();
-+	is_empty = was_empty = nodes_empty(*nodes);
-+	if (!was_empty) {
-+		nodes_and(*nodes, *nodes, cpuset_current_mems_allowed);
-+		is_empty = nodes_empty(*nodes);	/* after "contextualization" */
-+	}
- 
- 	switch (mode) {
- 	case MPOL_DEFAULT:
--		if (!empty)
-+		/*
-+		 * require caller to specify an empty nodemask
-+		 * before "contextualization"
-+		 */
-+		if (!was_empty)
- 			return -EINVAL;
- 		break;
- 	case MPOL_BIND:
- 	case MPOL_INTERLEAVE:
--		/* Preferred will only use the first bit, but allow
--		   more for now. */
--		if (empty)
-+		/*
-+		 * require at least 1 valid node after "contextualization"
-+		 */
-+		if (is_empty)
-+			return -EINVAL;
-+		break;
-+	case MPOL_PREFERRED:
-+		/*
-+		 * Did caller specify invalid nodes?
-+		 * Don't silently accept this as "local allocation".
-+		 */
-+		if (!was_empty && is_empty)
- 			return -EINVAL;
- 		break;
- 	}
-- 	return nodes_subset(*nodes, node_states[N_HIGH_MEMORY]) ? 0 : -EINVAL;
-+	return 0;
- }
- 
- /* Generate a custom zonelist for the BIND policy. */
-@@ -188,8 +217,6 @@ static struct mempolicy *mpol_new(int mo
- 	switch (mode) {
- 	case MPOL_INTERLEAVE:
- 		policy->v.nodes = *nodes;
--		nodes_and(policy->v.nodes, policy->v.nodes,
--					node_states[N_HIGH_MEMORY]);
- 		if (nodes_weight(policy->v.nodes) == 0) {
- 			kmem_cache_free(policy_cache, policy);
- 			return ERR_PTR(-EINVAL);
-@@ -421,18 +448,6 @@ static int mbind_range(struct vm_area_st
- 	return err;
- }
- 
--static int contextualize_policy(int mode, nodemask_t *nodes)
--{
--	if (!nodes)
--		return 0;
--
--	cpuset_update_task_memory_state();
--	if (!cpuset_nodes_subset_current_mems_allowed(*nodes))
--		return -EINVAL;
--	return mpol_check_policy(mode, nodes);
--}
--
--
- /*
-  * Update task->flags PF_MEMPOLICY bit: set iff non-default
-  * mempolicy.  Allows more rapid checking of this (combined perhaps
-@@ -468,7 +483,7 @@ static long do_set_mempolicy(int mode, n
- {
- 	struct mempolicy *new;
- 
--	if (contextualize_policy(mode, nodes))
-+	if (mpol_check_policy(mode, nodes))
- 		return -EINVAL;
- 	new = mpol_new(mode, nodes);
- 	if (IS_ERR(new))
-@@ -915,10 +930,6 @@ asmlinkage long sys_mbind(unsigned long 
- 	err = get_nodes(&nodes, nmask, maxnode);
- 	if (err)
- 		return err;
--#ifdef CONFIG_CPUSETS
--	/* Restrict the nodes to the allowed nodes in the cpuset */
--	nodes_and(nodes, nodes, current->mems_allowed);
--#endif
- 	return do_mbind(start, len, mode, &nodes, flags);
- }
- 
-Index: b/include/linux/cpuset.h
-===================================================================
---- a/include/linux/cpuset.h	2008-02-10 14:27:58.000000000 +0900
-+++ b/include/linux/cpuset.h	2008-02-10 14:33:40.000000000 +0900
-@@ -26,8 +26,6 @@ extern nodemask_t cpuset_mems_allowed(st
- #define cpuset_current_mems_allowed (current->mems_allowed)
- void cpuset_init_current_mems_allowed(void);
- void cpuset_update_task_memory_state(void);
--#define cpuset_nodes_subset_current_mems_allowed(nodes) \
--		nodes_subset((nodes), current->mems_allowed)
- int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl);
- 
- extern int __cpuset_zone_allowed_softwall(struct zone *z, gfp_t gfp_mask);
-@@ -101,7 +99,6 @@ static inline nodemask_t cpuset_mems_all
- #define cpuset_current_mems_allowed (node_states[N_HIGH_MEMORY])
- static inline void cpuset_init_current_mems_allowed(void) {}
- static inline void cpuset_update_task_memory_state(void) {}
--#define cpuset_nodes_subset_current_mems_allowed(nodes) (1)
- 
- static inline int cpuset_zonelist_valid_mems_allowed(struct zonelist *zl)
- {
-
-
-
-
-
-
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
