@@ -1,312 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761147AbYBLBCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbYBLBCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761147AbYBLBCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:02:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752955AbYBLBCL
+	id S1761356AbYBLBCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:02:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760987AbYBLBCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:02:11 -0500
-Received: from ishtar.tlinx.org ([64.81.245.74]:38935 "EHLO ishtar.tlinx.org"
+	Mon, 11 Feb 2008 20:02:20 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:49123 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752111AbYBLBCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:02:08 -0500
-Message-ID: <47B0F00D.3060802@tlinx.org>
-Date: Mon, 11 Feb 2008 17:02:05 -0800
-From: Linda Walsh <xfs@tlinx.org>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Linux-Xfs <linux-xfs@oss.sgi.com>
-CC: Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: xfs [_fsr] probs in 2.6.24.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1760740AbYBLBCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 Feb 2008 20:02:16 -0500
+Date: Tue, 12 Feb 2008 12:02:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: Announce: Linux-next (Or Andrew's dream  :-))
+Message-Id: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__12_Feb_2008_12_02_08_+1100_V9FK6sIE2SsyyY+v"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__12_Feb_2008_12_02_08_+1100_V9FK6sIE2SsyyY+v
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I'm getting similar errors on an x86-32 & x86-64 kernel.  The x86-64 system
-(2nd log below w/date+times) was unusable this morning: one or more of the
-xfs file systems had "gone off line" due to some unknown error (upon reboot,
-no errors were indicated; all partitions on the same physical disk).
+Hi all,
 
-I keep ending up with random failures on two systems.  The 32-bit sys more
-often than not just "locks-up" -- no messages, no keyboard response...etc.
-Nothing to do except reset -- and of course, nothing in the logs....
+Andrew was looking for someone to run a linux-next tree that just
+contained the subsystem git and quilt trees for 2.6.x+1 and I (in a
+moment of madness) volunteered.  So, this is to announce the creating of
+such a tree (it doesn't exist yet) which will require some (hopefully)
+small amount of work on the part of subsystem maintainers.
 
-I'm turning on all the stat and diagnostics that don't seem to have a noted
-performance penalty (or not much of one) to see if that helps.  Perhaps one
-issue is the "bug" (looks like multiple instances of the same bug) in xfs.
+Those interested in discussion about this are encouraged to join the
+linux-next@vger.kernel.org mailing list.
 
-The 32-bit machine does lots of disk activity in early morning hours...and
-coincidentally, it seemed to be crashing (not consistently) in the morning.
-With 2.6.24, the 32-bit machine "seems" a bit more stable -- up for over 3
-days now (average before was <48 hours).  But the 64-bit machine went
-bonkers (not sure of exact time) -- It *had* been stable (non crashing,
-anyway) before 2.6.24.
+The first things I need from the subsystem maintainers (you know who you
+are) are a contact address (a list address is fine) and at least one git
+branch or quilt series that contains all the things you want to see go
+into 2.6.26.  I am happy for there to be multiple branches/series (in
+fact there probably will need to be in some cases where there are
+dependencies on others work).
 
-I vaguely remember there being a similar xfs lock bug a few versions back
-and was told just "not to worry about and turn off the lock checking to
-"avoid the problem"....( :^| ).  So I did, but still trying to track down
-randomness.  So I turn back on what checks I could and ... ding -- still a
-problem in the xfs area -- which "coincidentally" (has happened on more than
-one occasion), an xfs partition developed a run-time error and shut itself
-down.  This also happened on the 32-bit machine with the SATA disk (thought
-it might be sata specific), so removed its controller and disk and threw in
-a same-size PATA.  No more file-system errors on 32bit.  But first time I've
-had a filesystem 'forced offline' on the 64bit (but just switched to 2.6.24
-recently for obvious reasons).
+The tree will be based on the current version of Linus' tree but you may
+specify an earlier branch point if you need to (hopefully not - but more
+likely for quilters, I guess).
 
-Sadly -- it also seemed to be the case that the 32bit machine when it had
-the SATA controller+disk installed, was more likely to crash if xfs_fsr was
-running at the same-time remote backups were being written to the
-SATA-drive.  Couldn't repeat it reliably, though so not sure what's going on
-there.
+I hope to recreate this tree every day automatically.  In order to do
+this, any tree that has a conflict will be dropped from that days tree.
+The maintainer will be notified.  I hope to provide some clue as to what
+the conflict is with, but probably not initially.
 
-Both machines are SMP, so that's a potential factor along with the fact that
-both machines also use SCSI (64bit, SAS form).  Neither are running a
-graphical console but are being remotely accessed.
+I will attempt to build the tree between each merge (and a failed build
+will again cause the offending tree to be dropped).  These builds will be
+necessarily restricted to probably one architecture/config.  I will build
+the entire tree on as many architectures/configs as seem sensible and
+the results of that will be available on a web page (to be announced).
 
-Lemme know if I can provide any info in addressing these problems.  I don't
-know if they are related to the other system crashes, but usage patterns
-indicate it could be disk-activity related.  So eliminating known bugs &
-problems in that area might help (?)...
+This is just a start ...
 
-Suspect log messages follow (1st, w/o Date/time were from dmesg on 32bit,
-latter was a previously unnoticed one on 64bit until I started looking
-through logs for clues on last night's failures.
+Comments?
 
+[I suspect that Andrew's dream includes actual time to dream :-)]
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-The first set of errors the I have some diagnostics for, I could
-only find in dmesg:
-(ish-32bit machine)
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.24-ish #1
--------------------------------------------------------
-xfs_fsr/2119 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<b01a3432>] dio_get_page+0x62/0x160
+For reference - Andrew's original musings:
 
-but task is already holding lock:
- (&(&ip->i_iolock)->mr_lock){----}, at: [<b02651db>] xfs_ilock+0x5b/0xb0
+I perceive the following problems with kernel development:
 
-which lock already depends on the new lock.
+- The 80-odd subsystem trees are developed in isolation, leading to
 
+  - large numbers of patch-time conflicts when I merge them all
 
-the existing dependency chain (in reverse order) is:
+  - large numbers of compile-time problems
 
--> #1 (&(&ip->i_iolock)->mr_lock){----}:
-       [<b014c026>] __lock_acquire+0xce6/0x1150
-       [<b0265217>] xfs_ilock+0x97/0xb0
-       [<b014ae3f>] trace_hardirqs_on+0xaf/0x160
-       [<b014c4fa>] lock_acquire+0x6a/0x80
-       [<b0265217>] xfs_ilock+0x97/0xb0
-       [<b0140d63>] down_write_nested+0x43/0x80
-       [<b0265217>] xfs_ilock+0x97/0xb0
-       [<b0265217>] xfs_ilock+0x97/0xb0
-       [<b0286c61>] xfs_free_eofblocks+0x231/0x2e0
-       [<b028b137>] xfs_release+0x1a7/0x230
-       [<b029154b>] xfs_file_release+0xb/0x10
-       [<b017dc4c>] __fput+0xac/0x180
-       [<b016dc25>] remove_vma+0x35/0x50
-       [<b016e790>] do_munmap+0x190/0x200
-       [<b016e82f>] sys_munmap+0x2f/0x50
-       [<b0104396>] sysenter_past_esp+0x5f/0xa5
-       [<ffffffff>] 0xffffffff
+  - occasional runtime problems as a result of the merging
 
--> #0 (&mm->mmap_sem){----}:
-       [<b0148df1>] print_circular_bug_entry+0x41/0x50
-       [<b014be19>] __lock_acquire+0xad9/0x1150
-       [<b014aca3>] mark_held_locks+0x43/0x80
-       [<b014c4fa>] lock_acquire+0x6a/0x80
-       [<b01a3432>] dio_get_page+0x62/0x160
-       [<b04675a8>] down_read+0x38/0x80
-       [<b01a3432>] dio_get_page+0x62/0x160
-       [<b01a3432>] dio_get_page+0x62/0x160
-       [<b02bd4c2>] __spin_lock_init+0x32/0x60
-       [<b01a4053>] __blockdev_direct_IO+0x483/0xc70
-       [<b017945b>] kmem_cache_alloc+0x9b/0xc0
-       [<b04684d4>] _spin_unlock+0x14/0x20
-       [<b014863d>] lockdep_init_map+0x3d/0x4c0
-       [<b028cd70>] xfs_alloc_ioend+0x120/0x170
-       [<b028cf1f>] xfs_vm_direct_IO+0x15f/0x170
-       [<b028d410>] xfs_get_blocks_direct+0x0/0x30
-       [<b028c880>] xfs_end_io_direct+0x0/0x90
-       [<b015db82>] generic_file_direct_IO+0xd2/0x160
-       [<b015dc6a>] generic_file_direct_write+0x5a/0x170
-       [<b0140db4>] up_write+0x14/0x30
-       [<b0295418>] xfs_write+0x3e8/0x920
-       [<b015c810>] file_read_actor+0x0/0x120
-       [<b02916ce>] xfs_file_aio_write+0x5e/0x70
-       [<b017c807>] do_sync_write+0xc7/0x110
-       [<b013ce80>] autoremove_wake_function+0x0/0x40
-       [<b01484a7>] lock_release_holdtime+0x47/0x70
-       [<b017d240>] vfs_read+0xd0/0x160
-       [<b017c740>] do_sync_write+0x0/0x110
-       [<b017d0b0>] vfs_write+0xa0/0x160
-       [<b017d7d1>] sys_write+0x41/0x70
-       [<b0104396>] sysenter_past_esp+0x5f/0xa5
-       [<ffffffff>] 0xffffffff
+  This is largely because the subsystem tree owners aren't being
+  particularly disciplined in keeping their changes contained to their area=
+ of
+  responsibility.
 
-other info that might help us debug this:
+- It's a large amount of work to merge all the trees and it is very dull.=20
+  This is the main reason why -mm releases are down to one every few weeks
+  rather than the old two or more per week.
 
-1 lock held by xfs_fsr/2119:
- #0:  (&(&ip->i_iolock)->mr_lock){----}, at: [<b02651db>] 
-xfs_ilock+0x5b/0xb0
+- Those few -mm releases have a large number of regressions
 
-stack backtrace:
-Pid: 2119, comm: xfs_fsr Not tainted 2.6.24-ish #1
- [<b01499da>] print_circular_bug_tail+0x7a/0x90
- [<b014be19>] __lock_acquire+0xad9/0x1150
- [<b014aca3>] mark_held_locks+0x43/0x80
- [<b014c4fa>] lock_acquire+0x6a/0x80
- [<b01a3432>] dio_get_page+0x62/0x160
- [<b04675a8>] down_read+0x38/0x80
- [<b01a3432>] dio_get_page+0x62/0x160
- [<b01a3432>] dio_get_page+0x62/0x160
- [<b02bd4c2>] __spin_lock_init+0x32/0x60
- [<b01a4053>] __blockdev_direct_IO+0x483/0xc70
- [<b017945b>] kmem_cache_alloc+0x9b/0xc0
- [<b04684d4>] _spin_unlock+0x14/0x20
- [<b014863d>] lockdep_init_map+0x3d/0x4c0
- [<b028cd70>] xfs_alloc_ioend+0x120/0x170
- [<b028cf1f>] xfs_vm_direct_IO+0x15f/0x170
- [<b028d410>] xfs_get_blocks_direct+0x0/0x30
- [<b028c880>] xfs_end_io_direct+0x0/0x90
- [<b015db82>] generic_file_direct_IO+0xd2/0x160
- [<b015dc6a>] generic_file_direct_write+0x5a/0x170
- [<b0140db4>] up_write+0x14/0x30
- [<b0295418>] xfs_write+0x3e8/0x920
- [<b015c810>] file_read_actor+0x0/0x120
- [<b02916ce>] xfs_file_aio_write+0x5e/0x70
- [<b017c807>] do_sync_write+0xc7/0x110
- [<b013ce80>] autoremove_wake_function+0x0/0x40
- [<b01484a7>] lock_release_holdtime+0x47/0x70
- [<b017d240>] vfs_read+0xd0/0x160
- [<b017c740>] do_sync_write+0x0/0x110
- [<b017d0b0>] vfs_write+0xa0/0x160
- [<b017d7d1>] sys_write+0x41/0x70
- [<b0104396>] sysenter_past_esp+0x5f/0xa5
- =======================
+- Developers aren't particularly responsive in handling those regression
+  reports.
 
---------------
-The other system shows a similar message: in its logs:
-Feb  7 02:01:50 kern: 
-=======================================================
-Feb  7 02:01:50 kern: [ INFO: possible circular locking dependency 
-detected ]
-Feb  7 02:01:50 kern: 2.6.24-asa64def #3
-Feb  7 02:01:50 kern: 
--------------------------------------------------------
-Feb  7 02:01:50 kern: xfs_fsr/6313 is trying to acquire lock:
-Feb  7 02:01:50 kern:  (&(&ip->i_lock)->mr_lock/2){----}, at: 
-[<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-Feb  7 02:01:50 kern:
-Feb  7 02:01:50 kern: but task is already holding lock:
-Feb  7 02:01:50 kern:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: 
-[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-Feb  7 02:01:50 kern:
-Feb  7 02:01:50 kern: which lock already depends on the new lock.
-Feb  7 02:01:50 kern:
-Feb  7 02:01:50 kern:
-Feb  7 02:01:50 kern: the existing dependency chain (in reverse order) is:
-Feb  7 02:01:50 kern:
-Feb  7 02:01:50 kern: -> #1 (&(&ip->i_iolock)->mr_lock/3){--..}:
-Feb  7 02:01:50 kern:        [<ffffffff80261d39>] 
-__lock_acquire+0xc39/0x1090
-Feb  7 02:01:50 kern:        [<ffffffff802621f1>] lock_acquire+0x61/0x80
-Feb  7 02:01:50 kern:        [<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-Feb  7 02:01:50 kern:        [<ffffffff802572ba>] 
-down_write_nested+0x3a/0x80
-Feb  7 02:01:50 kern:        [<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-Feb  7 02:01:50 kern:        [<ffffffff803e0a33>] 
-xfs_lock_inodes+0x143/0x190
-Feb  7 02:01:50 kern:        [<ffffffff803cbc81>] 
-xfs_swap_extents+0xa1/0x630
-Feb  7 02:01:50 kern:        [<ffffffff8025df35>] 
-lock_release_holdtime+0x45/0x70
-Feb  7 02:01:50 kern:        [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
-Feb  7 02:01:50 kern:        [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
-Feb  7 02:01:50 kern:        [<ffffffff8025df35>] 
-lock_release_holdtime+0x45/0x70
-Feb  7 02:01:50 kern:        [<ffffffff80626eba>] 
-__mutex_unlock_slowpath+0xca/0x1a0
-Feb  7 02:01:50 kern:        [<ffffffff803eb9b6>] 
-xfs_file_ioctl_invis+0x36/0x80
-Feb  7 02:01:50 kern:        [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
-Feb  7 02:01:50 kern:        [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
-Feb  7 02:01:50 kern:        [<ffffffff80260bb1>] 
-trace_hardirqs_on+0xc1/0x160
-Feb  7 02:01:50 kern:        [<ffffffff802aa159>] sys_ioctl+0x49/0x80
-Feb  7 02:01:51 kern:        [<ffffffff8020c3ce>] system_call+0x7e/0x83
-Feb  7 02:01:51 kern:        [<ffffffffffffffff>] 0xffffffffffffffff
-Feb  7 02:01:51 kern:
-Feb  7 02:01:51 kern: -> #0 (&(&ip->i_lock)->mr_lock/2){----}:
-Feb  7 02:01:51 kern:        [<ffffffff80260018>] 
-print_circular_bug_header+0xe8/0xf0
-Feb  7 02:01:51 kern:        [<ffffffff80261ba8>] 
-__lock_acquire+0xaa8/0x1090
-Feb  7 02:01:51 kern:        [<ffffffff802621f1>] lock_acquire+0x61/0x80
-Feb  7 02:01:51 kern:        [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-Feb  7 02:01:51 kern:        [<ffffffff80628597>] _spin_unlock+0x17/0x20
-Feb  7 02:01:51 kern:        [<ffffffff802572ba>] 
-down_write_nested+0x3a/0x80
-Feb  7 02:01:51 kern:        [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-Feb  7 02:01:51 kern:        [<ffffffff803e0a33>] 
-xfs_lock_inodes+0x143/0x190
-Feb  7 02:01:51 kern:        [<ffffffff803cbefe>] 
-xfs_swap_extents+0x31e/0x630
-Feb  7 02:01:51 kern:        [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
-Feb  7 02:01:51 kern:        [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
-Feb  7 02:01:51 kern:        [<ffffffff8025df35>] 
-lock_release_holdtime+0x45/0x70
-Feb  7 02:01:51 kern:        [<ffffffff80626eba>] 
-__mutex_unlock_slowpath+0xca/0x1a0
-Feb  7 02:01:51 kern:        [<ffffffff803eb9b6>] 
-xfs_file_ioctl_invis+0x36/0x80
-Feb  7 02:01:51 kern:        [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
-Feb  7 02:01:51 kern:        [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
-Feb  7 02:01:51 kern:        [<ffffffff80260bb1>] 
-trace_hardirqs_on+0xc1/0x160
-Feb  7 02:01:51 kern:        [<ffffffff802aa159>] sys_ioctl+0x49/0x80
-Feb  7 02:01:51 kern:        [<ffffffff8020c3ce>] system_call+0x7e/0x83
-Feb  7 02:01:51 kern:        [<ffffffffffffffff>] 0xffffffffffffffff
-Feb  7 02:01:51 kern:
-Feb  7 02:01:51 kern: other info that might help us debug this:
-Feb  7 02:01:51 kern:
-Feb  7 02:01:51 kern: 2 locks held by xfs_fsr/6313:
-Feb  7 02:01:51 kern:  #0:  (&(&ip->i_iolock)->mr_lock/2){--..}, at: 
-[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-Feb  7 02:01:51 kern:  #1:  (&(&ip->i_iolock)->mr_lock/3){--..}, at: 
-[<ffffffff803c1b45>] xfs_ilock+0xa5/0xc0
-Feb  7 02:01:51 kern:
-Feb  7 02:01:51 kern: stack backtrace:
-Feb  7 02:01:51 kern: Pid: 6313, comm: xfs_fsr Not tainted 
-2.6.24-asa64def #3
-Feb  7 02:01:51 kern:
-Feb  7 02:01:51 kern: Call Trace:
-Feb  7 02:01:51 kern:  [<ffffffff8025f413>] 
-print_circular_bug_tail+0x83/0x90
-Feb  7 02:01:51 kern:  [<ffffffff80260018>] 
-print_circular_bug_header+0xe8/0xf0
-Feb  7 02:01:51 kern:  [<ffffffff80261ba8>] __lock_acquire+0xaa8/0x1090
-Feb  7 02:01:51 kern:  [<ffffffff802621f1>] lock_acquire+0x61/0x80
-Feb  7 02:01:51 kern:  [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-Feb  7 02:01:51 kern:  [<ffffffff80628597>] _spin_unlock+0x17/0x20
-Feb  7 02:01:51 kern:  [<ffffffff802572ba>] down_write_nested+0x3a/0x80
-Feb  7 02:01:51 kern:  [<ffffffff803c1b22>] xfs_ilock+0x82/0xc0
-Feb  7 02:01:51 kern:  [<ffffffff803e0a33>] xfs_lock_inodes+0x143/0x190
-Feb  7 02:01:51 kern:  [<ffffffff803cbefe>] xfs_swap_extents+0x31e/0x630
-Feb  7 02:01:51 kern:  [<ffffffff803cbbb1>] xfs_swapext+0x131/0x160
-Feb  7 02:01:51 kern:  [<ffffffff803edace>] xfs_ioctl+0x5ce/0x740
-Feb  7 02:01:51 kern:  [<ffffffff8025df35>] lock_release_holdtime+0x45/0x70
-Feb  7 02:01:51 kern:  [<ffffffff80626eba>] 
-__mutex_unlock_slowpath+0xca/0x1a0
-[<ffffffff803eb9b6>] xfs_file_ioctl_invis+0x36/0x80
-Feb  7 02:01:51 kern:  [<ffffffff802a9dcf>] do_ioctl+0x2f/0xa0
-Feb  7 02:01:51 kern:  [<ffffffff802aa070>] vfs_ioctl+0x230/0x2d0
-Feb  7 02:01:51 kern:  [<ffffffff80260bb1>] trace_hardirqs_on+0xc1/0x160
-Feb  7 02:01:51 kern:  [<ffffffff802aa159>] sys_ioctl+0x49/0x80
-Feb  7 02:01:51 kern:  [<ffffffff8020c3ce>] system_call+0x7e/0x83
+- Mainline kernel releases also have a large number of regressions: ones
+  which are leaking through the -mm process.
+
+- Very few kernel developers actually bother testing the -mm tree.=20
+
+  - Consequently most code hits mainline without its submitter having done
+    much testing of the resulting code combination.
+
+  - Few kernel developers are testing other kernel developers' development
+    code.
+
+- Practically the only public testing which the various trees obtain is via
+  the -mm process, and that process is collapsing for the above reasons.
+
+- People who develop against a particular tree are not spending sufficient
+  time reviewing and testing changes which other developers are committing =
+to
+  other trees.
+
+- People who raise patches are preparing them against Linus's tree.  But by
+  the time we get into the late -rc timeframe, Linus's tree is very differe=
+nt
+  from the accumulated pending trees.  So many patches fail to apply, or do=
+n't
+  work correctly and the originator runtime tested them against Linus's tre=
+e,
+  not against the tree into which they are to be merged.
+
+- Developers are sneaking patches into the mainline merge window at the last
+  minute, before they have had a decent period of review and testing.
 
 
 
+So what I propose is that we start a formal unified development tree (called
+the "linux-next" tree).  It will probably have the following characteristic=
+s:
+
+- Once per day it merges all the subsystem trees: 75 git trees, 5-10 quilt
+  trees.
+
+- It will need to run compilation tests after applying each tree
+
+  It's unreasonable to do randconfig on arch/kooky-arch/ during linux-next's
+  integration, but a basic x86_64 allmodconfig would be good: something whi=
+ch
+  is well-known by the subsystem maintainers so they can check that it will
+  work.
+
+- It will send status messages to a new mailing list and also to individual
+  developers when something goes wrong.
+
+- There are several trees which are overtly cross-subsystem and which might
+  not fit into this model: mainly the driver tree, the -mm tree and perhaps
+  the PCI tree.
+
+  otoh, a lot of the -mm queue is _not_ cross-subsystem: fbdev, uml, various
+  new drivers and features, etc.  So I'll need to split -mm into multiple
+  queues and feed many of them into linux-next.
+
+- Advanced topic: mechanisms will be put in place to detect a patch which
+  hasn't been in linux-next for "long enough".  These patches will be flagg=
+ed
+  for extra consideration when offered for a mainline merge.
+
+- Note that James is already running a cut-down version of this.  See
+  http://lkml.org/lkml/2008/1/17/481
+
+
+
+Once the linux-next tree is up and running and is reliable and useful, I wo=
+uld
+like to see the following policies implemented around it:
+
+- If a tree doesn't automerge it is dropped and a notification is sent
+
+- If a tree breaks the build it is dropped and a notification is sent
+
+- If a tree's server cannot be contacted (a fairly regular event) it is
+  dropped and a notification is sent
+
+- If a tree is causing runtime problems (ie: regressions) which impact
+  testing of the whole and those problems are not getting appropriately
+  resolved, the tree is dropped.  (This will require manual intervention and
+  visible decision-making).
+
+- If a tree was dropped for N% of the M days before 2.6.x is released, that
+  tree is ineligible for a 2.6.x+1 merge.  This is for good software
+  engineering reasons, and to provide an incentive for developers to pay mo=
+re
+  attention to integration and testing issues.
+
+
+
+Other:
+
+- The -mm tree will become a much smaller patchset, based on linux-next.
+
+- People can set up linux-next cross-compilation farms on external servers.=
+=20
+  Compilation errors can be fed back as regular bug reports.
+
+
+
+Advantages:
+
+- Will lead to kernel developers testing (and hopefully reviewing) each
+  others code more
+
+- Will lead to kernel developers paying more attention to integration issues
+
+- I expect that tree-owners will be a bit more careful about what they check
+  into their trees, knowing that it'll go straight into linux-next.
+
+- Less bugs will hit Linus's tree:
+
+  - I expect we will get a lot of public testing of the linux-next tree
+
+  - Most kernel developers will also need to test linux-next, as that is
+    the tree they're integrating into.  And kernel developers are the best
+    testers, bug-reporters and bug-fixers.
+
+- It will give me far more time to do useful things like testing, bugfixing
+  and reviewing.  Particularly because I don't intend to be the person who
+  operates linux-next.
+
+- Patch submitters can now prepare and test against the linux-next tree
+  rather than against the relatively out-of-date mainline tree.
+
+
+
+Disadvantages
+
+- More work for subsystem maintainers.
+
+  But I don't think it's wasted time - it's largely work which would have
+  needed to be done later anyway.
+
+  If the subsystem maintainer is merging non-buggy patches and is staying
+  strictly within area-of-responsibility then there should be close to zero
+  extra work.
+
+- Subsystem maintainers will need new strategies for those patches which
+  touch other subsystems.
+
+  - Ask submitters to split things up better (not a bad thing)
+
+  - Arrange for interface changes to be implemented in a
+    temporarily-back-compatible manner if poss (also not a bad thing).
+
+  - Send some patches over to other subsystem maintainers rather than
+    merging them locally (also not a bad thing).
+
+- Subsystem maintainers will discover that getting other subsystem
+  maintainers to look at and merge their patches can be a right royal pita.=
+=20
+  Trust me.
+
+  It is inefficient to have 80 subsystem maintainers re-re-re-sending
+  patches at each other.
+
+  - People can copy me on them and I can do the re-re-re-send for them,
+    while including the patches in the linux-next lineup.
+
+  - Or the subsystem maintainer can set up a standalone "patches from Tom
+    to Dick" tree, and include that in the linux-next lineup (staged after
+    Dick's tree) until Dick wakes up and merges it.
+
+
+
+Open issues:
+
+  I don't want to over-design this at this stage.  This hasn't been done
+  before and I'd expect the linux-next owner would be the person who
+  encounters and solves most of the problems which crop up.  But I do
+  anticipate a few issues:
+
+- Tree prioritisation.  Often, two trees will collide.  Say, git-net and
+  git-nfs.  If this happens, which tree will be autodropped?
+
+  I'd suggest that we'll just need to make decisions about which tree is
+  most important, and stage that tree ahead of less important ones.
+
+- I'd expect subsystem tree maintainers to decide to start running multiple
+  trees (like Jeff's "topic branches").  This way, if there are collisions =
+or
+  other failures, then not all of their work is dropped.
+
+- Also, a subsystem tree maintainer may have some changes which are
+  considered likely to collide with other people's work.  These can be plac=
+ed
+  in a best-effort standalone branch which is staged late in the linux-next
+  merging order and if it breaks, well, no great loss.
+
+- A consequence of all the above is that it should be easy for subsystem
+  tree maintainers to add new trees to linux-next, and for them to decide
+  where in the merging order those trees are staged.
+
+  They won't want to have to send an email to another developer for this -
+  each tree-owner will need the ability to add trees with no turnaround del=
+ay.
+
+  - This could be implemented with a world-writeable control file on
+    kernel.org
+
+  - Or a world-writeable directory on kernel.org with control files which
+    start with a six-digit number
+
+  - Or some fancy web interface or command-line tool on kernel.org
+
+  - Or whatever.
+
+- The need to perform compilation testing at merge-time might cause overload
+  at kernel.org, so an upgraded or alternative server might be needed.
+
+  And experience tells me that we _will_ need to perform compilation
+  testing.
+
+  I'm assuming that compilation testing will be a linear search: once per
+  tree.  One could do bisection searching, but a) that gets tricky when more
+  than one tree has a failure and b) it probably means that the whole tree
+  needs to be re-merged once the offending tree has been weeded out.
+
+- Ideally, all the subsystem trees are standalone and can be merged by Linus
+  in any order.  There will be _some_ trees which are dependent upon other
+  subsystem trees, but these are special cases and can be handled by staging
+  them late in the linux-next merging order, and by not merging them in
+  mainline until the prerequisites are merged.
+
+  Obviously, the safest approach would be to merge trees into mainline in
+  the same order as they are merged into linux-next, but this is probably
+  impractical.
+
+--Signature=_Tue__12_Feb_2008_12_02_08_+1100_V9FK6sIE2SsyyY+v
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHsPAVTgG2atn1QN8RAvQ1AKCZQIXxZt/oHKhBSuGw5aS0gSG0VwCfcrDW
+eQ5l2QYsa++iA/a/V29O3/I=
+=5t5k
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__12_Feb_2008_12_02_08_+1100_V9FK6sIE2SsyyY+v--
