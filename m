@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764182AbYBLS1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763832AbYBLS3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764182AbYBLS1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762129AbYBLS12
+	id S1763832AbYBLS3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760594AbYBLS3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:27:28 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:33774 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761569AbYBLS10 (ORCPT
+	Tue, 12 Feb 2008 13:29:11 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:47483 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759316AbYBLS3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:27:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=MqkAAt0DmbL5et5zSCG7ui+yAZKWl3SieZXv5DV+QFAFS4kz3h/f+hT7C2G5dH4gpoXfuma/Ozg0Zm/pu6QL6+kqDNmPynXGR4KCp/WYHFc9i7/SxsJynR5qh89h7ZSaJvypN+RHFGZKjGc+R2YX1bGwZQYVg9K8kS46OLLeM0E=
-Date: Tue, 12 Feb 2008 19:26:43 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Jan Kara <jack@suse.cz>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: udf regression: broken directory handling
-Message-ID: <20080212182638.GA8334@joi>
-References: <20080210104754.GH6737@joi> <20080211110910.GB9622@duck.suse.cz> <20080211191313.GA12375@joi> <20080212113916.GA13425@duck.suse.cz>
+	Tue, 12 Feb 2008 13:29:10 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=WeOcIU8IfZPdJkTAuGCwIpK9LDKjhGsTkuq0ykvhhQ41AkyrWsVfntqEJ2CrAlS4cCikUTxlwFFY4pnM+r3ayfknsdmkqT4glIwpNfjH9xcod9iNrOF3478ZguMGkTzKd3PX143NxPSzpGoYjXFQcC579DiKs42nDlvtGKAMRt4=  ;
+X-YMail-OSG: FLE3r9AVM1mtbPmVOmkXEb8xo9E5Cte1u56dqhxMpQQEsxOACa5I3ePstCiZh.B9RwZp.EXPrMF.A8qWq8ETYZm0P0xrWullgeMypWWjKxAD14S3Tg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: WARN_ON(): proc_dir_entry 'rtc' already registered
+Date: Tue, 12 Feb 2008 10:29:07 -0800
+User-Agent: KMail/1.9.6
+Cc: kernel list <linux-kernel@vger.kernel.org>
+References: <20080212132626.GA1534@elf.ucw.cz>
+In-Reply-To: <20080212132626.GA1534@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080212113916.GA13425@duck.suse.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802121029.08007.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 12:39:17PM +0100, Jan Kara wrote:
-> On Mon 11-02-08 20:13:20, Marcin Slusarz wrote:
-> > On Mon, Feb 11, 2008 at 12:09:10PM +0100, Jan Kara wrote:
-> > >   Hi,
-> > > 
-> > > On Sun 10-02-08 11:48:17, Marcin Slusarz wrote:
-> > > > Current mainline has a problem with reading file list.
-> > > > Simple ls prints only 2 out of 8 files on my testing DVD.
-> > > > Reverting your patch "udf: cleanup directory offset handling"
-> > > > (af793295bf9ee92660f5e77d337b0493cea3f9b9) fixes the problem.
-> > >   Thanks for testing! Do you have a way to create such UDF filesystem? For
-> > > the filesystems I've created it seems to work just fine...
-> > 
-> > with patch applied:
->   <snip testing>
+On Tuesday 12 February 2008, Pavel Machek wrote:
+> I'm getting this during bootup:
 > 
->   Argh, I've submitted an old version of the patch missing changes in
-> dir.c. Below is the missing hunk. Does UDF work for you with it?
-Yes.
+> PM: Adding info for No Bus:event6
+> PM: Adding info for No Bus:uinput
+> PM: Adding info for No Bus:rtc0
+> proc_dir_entry 'rtc' already registered
+> Pid: 1, comm: swapper Not tainted 2.6.25-rc1 #125
+>  ... deletia
+>  =======================
+> rtc_cmos 00:07: rtc core: registered rtc_cmos as rtc0
+> rtc0: alarms up to one month, y3k
+> PM: Adding info for platform:coretemp.0
+> PM: Adding info for No Bus:hwmon1
+> 
+> ... .config attached.
 
-Marcin
+Which shows:
+
+ CONFIG_GEN_RTC=y
+ CONFIG_GEN_RTC_X=y
+
+Disable that, then those warnings will vanish.  (I'm told that
+having proc_register() return a fault code is off the table,
+much like impeachment.)
+
+How to fix ... how about:  instead of just warning folk
+off such legacy RTC drivers [1] we just wrap them with
+an "if RTC_LIB != n" so this mistake won't be possible.
+
+- Dave
+
+[1] http://marc.info/?l=linux-kernel&m=120267619306747&w=2
