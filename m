@@ -1,73 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761102AbYBLXKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbYBLXKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761102AbYBLXKb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:10:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758568AbYBLXJr
+	id S1759443AbYBLXKx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760651AbYBLXJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:09:47 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35799 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760519AbYBLXJo (ORCPT
+	Tue, 12 Feb 2008 18:09:50 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:4852 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760627AbYBLXJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:09:44 -0500
-Date: Tue, 12 Feb 2008 22:59:00 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       torvalds@linux-foundation.org, James.Bottomley@HansenPartnership.com,
-       jeff@garzik.org, davem@davemloft.net, arjan@infradead.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080212225900.3cbe4938@core>
-In-Reply-To: <20080212225531.GA7216@kroah.com>
-References: <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
-	<1202838082.3137.54.camel@localhost.localdomain>
-	<alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org>
-	<1202840682.3137.83.camel@localhost.localdomain>
-	<alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org>
-	<alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org>
-	<20080212194100.GH27894@ZenIV.linux.org.uk>
-	<20080212215152.1470fe7f@core>
-	<20080212141726.1e214729.akpm@linux-foundation.org>
-	<20080212222044.214ad821@core>
-	<20080212225531.GA7216@kroah.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 18:09:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
+        b=PiBGcs/EIXyzYJu+FaovCBndRgA2jdcwnWMSttJ/uY87fLRmM0UiF++rWmuqk9Ra7gHt4fVhyaGRqKp+GUE7muOBsLoAakvzak4m+0mlz1Kx2aMXIdhCG1dWWLYJkwypC1XsuV3+UuxwdxE6eO8KiOgrwb4lfN9RpAzvdG5K/Fg=
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-ext4@vger.kernel.org
+Subject: [PATCH] ext2: le*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:14 +0100
+Message-Id: <1202857582-15450-10-git-send-email-marcin.slusarz@gmail.com>
+X-Mailer: git-send-email 1.5.3.7
+In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
+References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
+From: marcin.slusarz@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 14:55:31 -0800
-Greg KH <greg@kroah.com> wrote:
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
 
-> On Tue, Feb 12, 2008 at 10:20:44PM +0000, Alan Cox wrote:
-> > > I think the best way to get the serial drivers maintained would be to cat
-> > > them all onto the end of synclink.c and hope that Paul thinks he did it.
-> > 
-> > Well I've already broken the buffering so he'd fix it ;)
-> > 
-> > We have a pile of old ISA drivers that are going to break soon with the
-> > locking changes and a pile of USB drivers that when I looked at the
-> > locking were so terminally broken I couldn't be bothered to fix them.
-> 
-> Let me know which USB ones are broken, I'll work to fix them.
+replace all:
+little_endian_variable = cpu_to_leX(leX_to_cpu(little_endian_variable) +
+					expression_in_cpu_byteorder);
+with:
+	leX_add_cpu(&little_endian_variable, expression_in_cpu_byteorder);
+generated with semantic patch
 
-That I noticed doing an audit for unlocking the mctrl functions:
+Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: linux-ext4@vger.kernel.org
+---
+ fs/ext2/ialloc.c |   12 ++++--------
+ fs/ext2/super.c  |    2 +-
+ fs/ext2/xattr.c  |    9 +++------
+ 3 files changed, 8 insertions(+), 15 deletions(-)
 
-ir-usb: global variables without locking used in per port operations
-iuu_phoenix: no locking on internal data structures
-mos7840: ditto
-option: ditto
-kobil_sct: ditto
+diff --git a/fs/ext2/ialloc.c b/fs/ext2/ialloc.c
+index 5deb8b7..0f3e3f3 100644
+--- a/fs/ext2/ialloc.c
++++ b/fs/ext2/ialloc.c
+@@ -75,11 +75,9 @@ static void ext2_release_inode(struct super_block *sb, int group, int dir)
+ 	}
+ 
+ 	spin_lock(sb_bgl_lock(EXT2_SB(sb), group));
+-	desc->bg_free_inodes_count =
+-		cpu_to_le16(le16_to_cpu(desc->bg_free_inodes_count) + 1);
++	le16_add_cpu(&desc->bg_free_inodes_count, 1);
+ 	if (dir)
+-		desc->bg_used_dirs_count =
+-			cpu_to_le16(le16_to_cpu(desc->bg_used_dirs_count) - 1);
++		le16_add_cpu(&desc->bg_used_dirs_count, -1);
+ 	spin_unlock(sb_bgl_lock(EXT2_SB(sb), group));
+ 	if (dir)
+ 		percpu_counter_dec(&EXT2_SB(sb)->s_dirs_counter);
+@@ -539,13 +537,11 @@ got:
+ 		percpu_counter_inc(&sbi->s_dirs_counter);
+ 
+ 	spin_lock(sb_bgl_lock(sbi, group));
+-	gdp->bg_free_inodes_count =
+-                cpu_to_le16(le16_to_cpu(gdp->bg_free_inodes_count) - 1);
++	le16_add_cpu(&gdp->bg_free_inodes_count, -1);
+ 	if (S_ISDIR(mode)) {
+ 		if (sbi->s_debts[group] < 255)
+ 			sbi->s_debts[group]++;
+-		gdp->bg_used_dirs_count =
+-			cpu_to_le16(le16_to_cpu(gdp->bg_used_dirs_count) + 1);
++		le16_add_cpu(&gdp->bg_used_dirs_count, 1);
+ 	} else {
+ 		if (sbi->s_debts[group])
+ 			sbi->s_debts[group]--;
+diff --git a/fs/ext2/super.c b/fs/ext2/super.c
+index 108f739..7e68673 100644
+--- a/fs/ext2/super.c
++++ b/fs/ext2/super.c
+@@ -603,7 +603,7 @@ static int ext2_setup_super (struct super_block * sb,
+ 			"running e2fsck is recommended\n");
+ 	if (!le16_to_cpu(es->s_max_mnt_count))
+ 		es->s_max_mnt_count = cpu_to_le16(EXT2_DFL_MAX_MNT_COUNT);
+-	es->s_mnt_count=cpu_to_le16(le16_to_cpu(es->s_mnt_count) + 1);
++	le16_add_cpu(&es->s_mnt_count, 1);
+ 	ext2_write_super(sb);
+ 	if (test_opt (sb, DEBUG))
+ 		printk ("[EXT II FS %s, %s, bs=%lu, fs=%lu, gc=%lu, "
+diff --git a/fs/ext2/xattr.c b/fs/ext2/xattr.c
+index 3e8683d..495ec0d 100644
+--- a/fs/ext2/xattr.c
++++ b/fs/ext2/xattr.c
+@@ -646,8 +646,7 @@ ext2_xattr_set2(struct inode *inode, struct buffer_head *old_bh,
+ 					unlock_buffer(new_bh);
+ 					goto cleanup;
+ 				}
+-				HDR(new_bh)->h_refcount = cpu_to_le32(1 +
+-					le32_to_cpu(HDR(new_bh)->h_refcount));
++				le32_add_cpu(&HDR(new_bh)->h_refcount, 1);
+ 				ea_bdebug(new_bh, "refcount now=%d",
+ 					le32_to_cpu(HDR(new_bh)->h_refcount));
+ 			}
+@@ -731,8 +730,7 @@ ext2_xattr_set2(struct inode *inode, struct buffer_head *old_bh,
+ 			bforget(old_bh);
+ 		} else {
+ 			/* Decrement the refcount only. */
+-			HDR(old_bh)->h_refcount = cpu_to_le32(
+-				le32_to_cpu(HDR(old_bh)->h_refcount) - 1);
++			le32_add_cpu(&HDR(old_bh)->h_refcount, -1);
+ 			if (ce)
+ 				mb_cache_entry_release(ce);
+ 			DQUOT_FREE_BLOCK(inode, 1);
+@@ -789,8 +787,7 @@ ext2_xattr_delete_inode(struct inode *inode)
+ 		bforget(bh);
+ 		unlock_buffer(bh);
+ 	} else {
+-		HDR(bh)->h_refcount = cpu_to_le32(
+-			le32_to_cpu(HDR(bh)->h_refcount) - 1);
++		le32_add_cpu(&HDR(bh)->h_refcount, -1);
+ 		if (ce)
+ 			mb_cache_entry_release(ce);
+ 		ea_bdebug(bh, "refcount now=%d",
+-- 
+1.5.3.7
 
-These drivers do interesting things (where interesting is probably not too
-evil on a PC - except ir-usb) involving playing with data structures
-without locks. It seems there was some kind of evolution along the way as
-some drivers do have a carefully used port private data structure lock
-(or two) but many do not.
