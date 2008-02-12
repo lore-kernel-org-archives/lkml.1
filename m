@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764936AbYBLVPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751348AbYBLVTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764936AbYBLVPd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758875AbYBLVPV
+	id S1751348AbYBLVTK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:19:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750799AbYBLVS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:15:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:50457 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756414AbYBLVPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:15:19 -0500
-Message-ID: <47B20C1C.5020208@zytor.com>
-Date: Tue, 12 Feb 2008 13:14:04 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 12 Feb 2008 16:18:56 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:39138 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbYBLVSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 16:18:55 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: Xavier Bestel <xavier.bestel@free.fr>
+Cc: linux-kernel@vger.kernel.org, wferi@niif.hu
+Subject: Re: currently active Linux kernel versions
+References: <87skzx53a9.fsf@szonett.ki.iif.hu>
+	<1202850783.6697.0.camel@bip.parateam.prv>
+Date: Tue, 12 Feb 2008 22:18:48 +0100
+In-Reply-To: <1202850783.6697.0.camel@bip.parateam.prv> (Xavier Bestel's
+	message of "Tue, 12 Feb 2008 22:13:03 +0100")
+Message-ID: <87wsp9q3ev.fsf@szonett.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: maximilian attems <max@stro.at>
-CC: 464962@bugs.debian.org, Joey Hess <joeyh@debian.org>,
-       Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bug#464962: immediate crash on boot on TM5800
-References: <20080210031849.GA3370@dragon.kitenet.net> <20080210110659.GB8574@stro.at> <20080210192139.GA17647@kodama.kitenet.net> <20080212160522.GB5221@stro.at> <20080212195254.GA6252@kodama.kitenet.net> <20080212201048.GD22054@baikonur.stro.at> <47B2025B.1030103@zytor.com> <20080212210244.GF22054@baikonur.stro.at>
-In-Reply-To: <20080212210244.GF22054@baikonur.stro.at>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-maximilian attems wrote:
-> On Tue, Feb 12, 2008 at 12:32:27PM -0800, H. Peter Anvin wrote:
->> INT 6 is #UD, undefined instruction.
->>
->> If you could send me a copy of your vmlinux file (not bzImage), it would 
->> speed things up.
+Xavier Bestel <xavier.bestel@free.fr> writes:
+
+> On mar, 2008-02-12 at 21:27 +0100, Wagner Ferenc wrote:
 > 
-> cp -l src/linux-2.6-2.6.24/debian/build/build_i386_none_686/vmlinux ~/public_html/
-> 
-> http://charm.itp.tuwien.ac.at/~mattems/
->  
+>> which are the "currently active Linux kernel versions" at any point in
+>> time?  The quote is taken from http://lkml.org/lkml/2008/2/11/29.
+>> Or more precisely: which are the "stable" versions I can depend on for
+>> a more or less critical server, those that have active security
+>> support or receive at least critical bugfixes?  I know about the
+>> 2.6.2[34].y stable git trees, but I wonder how long will those receive
+>> attention (that is, security fixes).  Can I find a written policy
+>> somewhere?
+>
+> The answer is at http://kernel.org/
 
-Are you sure that build matches the bug report?
-
-The EIP given falls inside the .data segment of that kernel, 
-specifically inside the symbol init_task.
-
-	-hpa
+Not quite, at least I can't find 2.6.23.y there, even though that
+branch seems to be maintained...
+-- 
+Thanks,
+Feri.
