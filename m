@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYBLGLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761561AbYBLGLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761435AbYBLGLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 01:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761061AbYBLGK6
+	id S1761561AbYBLGLp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 01:11:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761098AbYBLGK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 01:10:58 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37197
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761015AbYBLGKz (ORCPT
+	Tue, 12 Feb 2008 01:10:59 -0500
+Received: from cerberus.nrc.co.nz ([60.234.156.227]:55535 "EHLO
+	cerberus.nrc.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761038AbYBLGK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 01:10:55 -0500
-Date: Mon, 11 Feb 2008 22:11:26 -0800 (PST)
-Message-Id: <20080211.221126.230471463.davem@davemloft.net>
-To: arjan@infradead.org
-Cc: greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080211211751.3e265754@laptopd505.fenrus.org>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
-	<20080212044314.GA4888@kroah.com>
-	<20080211211751.3e265754@laptopd505.fenrus.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 Feb 2008 01:10:56 -0500
+Message-ID: <47B1385B.1020908@nrc.co.nz>
+Date: Tue, 12 Feb 2008 19:10:35 +1300
+From: "Nick 'Zaf' Clifford" <zaf@nrc.co.nz>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: serge@hallyn.com
+CC: linux-kernel@vger.kernel.org, SELinux <selinux@tycho.nsa.gov>,
+       linux-security-module@vger.kernel.org
+Subject: Re: if (2.6.24.1 && capset && bind9) bug() --RESOVLED
+References: <47B03592.20505@nrc.co.nz> <20080212033815.GA28437@vino.hallyn.com>
+In-Reply-To: <20080212033815.GA28437@vino.hallyn.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
-Date: Mon, 11 Feb 2008 21:17:51 -0800
+serge@hallyn.com wrote:
+> Quoting Nick 'Zaf' Clifford (zaf@nrc.co.nz):
+>   
+>> Please CC me on any/all replies
+>>
+>> After trying to upgrade to deal with the most recent security issue, I
+>>     
+>
+> Judging by the 2.6.24.2 changelog I don't think the 2.6.24.1 kernel you
+> grabbed has the fix you're looking for...
+>   
+Yes, that I realize now (I'll refer back to the lack of sleep thing
+caused by a long, long, long day), and speaking of which....... see below
+>> have encountered what has to either be me being very tired, or a kernel
+>> bug. After assuming that it was the former for 3 hours, I now conclude
+>> I'm more tired, and it has to be the latter.
+>>
+>>     
+> Yeah my first thought was enough has been happening on the capabilities
+> front that it could be an unfortunate patch merge, but 2.6.24.1 looks
+> ok.  So my next guess would be an selinux change.  Though again i don't
+> see anything obvious.  Could you tell us what policy you use, and what
+> context bind is starting in?
+>   
+>
 
-> this is why you need specific trees for just the API change
+2.6.24.2 seems to fix the issue, so thanks to whoever noticed and fixed
+that (and if no one fixed anything, then I'm just a raving loon, and you
+can move on with your day, content that the nice man raving about
+fictitious bugs is happy again).
 
-API trees don't work, just like other changes they will have
-interdependencies on things like fixups, cleanups, etc.
+But FYI and for what its worth, although SELinux was compiled, it isn't
+being used. Its disabled on boot.
 
-This is why, with the networking, we've just tossed all of the network
-driver stuff in there too.  I can rebase freely, remove changesets,
-rework them, etc. and this causes a very low amount of pain for Jeff
-Garzik and John Linville.
+Thanks for the reply and help anyways,
 
-This may or not be a legitimate thing to do with other heavily
-dependant subsystems.
+Nick
+
+
