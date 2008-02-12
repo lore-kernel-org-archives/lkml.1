@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763904AbYBLTIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756502AbYBLTP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763904AbYBLTIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761026AbYBLTIl
+	id S1756502AbYBLTP0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYBLTPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:08:41 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39327 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761143AbYBLTIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:08:41 -0500
-Date: Tue, 12 Feb 2008 11:08:18 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, torvalds@linux-foundation.org
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Message-ID: <20080212110818.62496cf4@laptopd505.fenrus.org>
-In-Reply-To: <20080212185012.GA2348@uranus.ravnborg.org>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org>
-	<20080212185012.GA2348@uranus.ravnborg.org>
-Organization: Intel
+	Tue, 12 Feb 2008 14:15:06 -0500
+Received: from mga11.intel.com ([192.55.52.93]:51442 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751130AbYBLTPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 14:15:04 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,341,1199692800"; 
+   d="scan'208";a="297939184"
+Date: Tue, 12 Feb 2008 11:07:52 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: ltuikov@yahoo.com, linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+Message-ID: <20080212110752.21840627@appleyard>
+In-Reply-To: <1202841935.3137.94.camel@localhost.localdomain>
+References: <1202172065.3096.154.camel@localhost.localdomain>
+	<922945.25870.qm@web31811.mail.mud.yahoo.com>
+	<20080212102244.32869382@appleyard>
+	<1202841935.3137.94.camel@localhost.localdomain>
+Reply-To: kristen.c.accardi@intel.com
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 19:50:12 +0100
-Sam Ravnborg <sam@ravnborg.org> wrote:
-> > 
-> > Now I realize that certain distros have patched gcc to compensate
-> > for their lack of distro wide CFLAGS, and it's great to work around
-> > that... but would there be a way to NOT disable this for
-> > CONFIG_CC_STACKPROTECTOR please? It would have made this exploit
-> > not possible for those kernels that enable this feature (and that
-> > includes distros like Fedora)
+On Tue, 12 Feb 2008 12:45:35 -0600
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Tue, 2008-02-12 at 10:22 -0800, Kristen Carlson Accardi wrote:
+> > I apologize for taking so long to review this patch.  I obviously
+> > agree wholeheartedly with Luben.  The problem I ran into while
+> > trying to design an enclosure management interface for the SATA
+> > devices is that there is all this vendor defined stuff.  For
+> > example, for the AHCI LED protocol, the only "defined" LED is
+> > 'activity'.  For LED2 and LED3 it is up to hardware vendors to
+> > define these.  For SGPIO there's all kinds of ways for hw vendors
+> > to customize.  I felt that it was going to be a maintainance
+> > nightmare to have to keep track of various vendors enclosure
+> > implementations in the ahci driver, and that it'd be better to just
+> > have user space libraries take care of that.  Plus, that way a
+> > vendor doesn't have to get a patch into the kernel to get their new
+> > spiffy wizzy bang blinky lights working (think of how long it takes
+> > something to even get into a vendor kernel, which is what these
+> > guys care about...).  So I'm still not sold on having an enclosure
+> > abstraction in the kernel - at least for the SATA controllers.
 > 
-> I guess the problem is that we in arch/x86/Makefile enable the
-> stackprotector but then later in the main Makefile disables it.
-> So the right way to approach this should be to always disable it and
-> the reenable it in the arch Makefile.
-> So something like this?
+> Correct me if I'm wrong, but didn't the original AHCI enclosure patch
+> expose activity LEDs via sysfs?
 
+You are sort of wrong.  we exposed a sysfs entry to enable sofware
+controlled activity LED, then the driver was responsible for turning it
+on and off. (blech, I know, but some vendors want this feature).
 
-the patch works fine for me.
-Linus, can we please get this merged into .25? it will at least
-again limit the damage exploits like the vmsplice one can do..
+> 
+> I'm not saying there aren't a lot of non standard pieces that need to
+> be activated by direct commands or other user activated protocol.  I
+> am saying there are a lot of standard pieces that we could do with
+> showing in a uniform manner.
+> 
+> The pieces I think are absolutely standard are
+> 
+> 1. Actual enclosure presence (is this device in an enclosure)
+> 2. Activity LED, this seems to be a feature of every enclosure.
+> 
+> I also think the following are reasonably standard (based on the fact
+> that most enclosure standards recommend but don't require this):
+> 
+> 3. Locate LED (for locating the device).  Even if you only have an
+> activity LED, this is usually done by flashing the activity LED in a
+> well defined pattern.
+> 4. Fault.  this is the least standardised of the lot, but does seem to
+> be present in about every enclosure implementation.
+> 
+> All I've done is standardise these four pieces ... the services
+> actually take into account that it might not be possible to do
+> certain of these (like fault).
+> 
+> James
+> 
+> 
 
-(I think it's also worth it for -stable)
+I understand what you are trying to do - I guess I just doubt the value
+you've added by doing this.  I think that there's going to be so much
+customization that system vendors will want to add, that they are going
+to wind up adding a custom library regardless, so standardising those
+few things won't buy us anything.
+
