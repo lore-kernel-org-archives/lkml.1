@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762596AbYBLQTJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761227AbYBLQWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762596AbYBLQTJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:19:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756136AbYBLQSy
+	id S1761227AbYBLQWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755785AbYBLQWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:18:54 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:49894 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753658AbYBLQSx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:18:53 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Subject: Re: BTRFS partition usage...
-Date: Tue, 12 Feb 2008 11:17:58 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-References: <200802061200.14690.chris.mason@oracle.com> <200802120935.20437.chris.mason@oracle.com> <Pine.LNX.4.64.0802121543240.21102@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802121543240.21102@fbirervta.pbzchgretzou.qr>
+	Tue, 12 Feb 2008 11:22:11 -0500
+Received: from mail.windriver.com ([147.11.1.11]:42113 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754843AbYBLQWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 11:22:10 -0500
+Message-ID: <47B1C76F.6070908@windriver.com>
+Date: Tue, 12 Feb 2008 10:21:03 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [git pull] kgdb-light -v10
+References: <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <47B19F67.5050105@windriver.com> <20080212143949.GA2258@one.firstfloor.org> <47B1AEC3.2080402@windriver.com> <20080212153612.GA2944@one.firstfloor.org>
+In-Reply-To: <20080212153612.GA2944@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802121117.58519.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 12 Feb 2008 16:20:40.0822 (UTC) FILETIME=[35AD2960:01C86D93]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, Jan Engelhardt wrote:
-> On Feb 12 2008 09:35, Chris Mason wrote:
-> >> and slap the bootloader into "MBR", just like on x86.
-> >> Or I am missing something..
-> >
-> >It was a request from hpa, and he clearly had something in mind.  He
-> > kindly offered to review the disk format for bootloaders and other lower
-> > level issues but I asked him to wait until I firm it up a bit.
-> >
-> >From my point of view, 0 is a bad idea because it is very likely to
-> > conflict with other things.  There are lots of things in the FS that need
-> > deep thought,and the perfect system to fully use the first 64k of a 1TB
-> > filesystem isn't quite at the top of my list right now ;)
-> >
-> >Regardless of offset, it is a good idea to mop up previous filesystems
-> > where possible, and a very good idea to align things on some sector
-> > boundary.  Even going 1MB in wouldn't be a horrible idea to align with
-> > erasure blocks on SSD.
+Andi Kleen wrote:
+>> Basically when you reach this chunk of code it is before the hand off
+>> to the source debugger.  We cannot continue because there was a
+>> breakpoint in a part of the system kgdb was using while doing its
+>> normal work.  The reality is that KGDB is not self contained.  It
+>> relies on some external I/O methods, atomic page fault handling and
+>> some other pieces.  If you take an exception there, the kgdb integrity
+>> check absolutely needs to fail.
+>>     
 >
-> I still don't like the idea of btrfs trying to be smarter than a user
-> who can partition up his system according to
-> 	(a) his likes
-> 	(b) system or hardware requirements or recommendations
-> to align the superblock to a specific location.
-
-Will all the users in the world who think about super block location when they 
-partition their disks please raise their hands?
-
-The location of the super block needs to be very simple in order for mount and 
-friends to find and detect it.  It needs a simple algorithm to try multiple 
-locations in case a given copy of the super is corrupt.
-
-Design in this case is a bunch of compromises around other users of the 
-hardware, ease of programming, and the benefits in performance or usability 
-from doing something complex.
-
+> Don't you just need a simple recursion counter for this? 
 >
-> 1MB alignment does not always mean 1MB alignment.
-> Sector 1 begins at 0x7e00 on x86.
-> And with the maximum CHS geometry (255/63), partitions begin
-> at 0x7e00+n*8225280 bytes, so the SB is unlikely to ever be on
-> a 1048576 boundary.
+> I cannot think of a reliable simple way to check for this using the instruction
+> pointer. The only way would be to use explicit annotations for all
+> possible code similar to what kprobes does (__kprobes), but that would be 
+> hugely intrusive all over the tree.
+>
+> With the recursion counter the only problem would be someone 
+> setting a break point on the early notifier code itself that contains
+> a recursion check, but that would be only a few lines of code
+> so the risk of someone setting a break point exactly there would
+> be low.
+>   
 
-IO is already aligned on sectors, sometimes we'll have a perfect erasure block 
-alignment and sometimes not.  When the location of the super is my biggest 
-bottleneck, I'll be a very happy boy.
+It is more than a simple recursion check (which is already in the code)
+because there are some conditions we can recover from.  I'd rather not
+crash the system out if it can be recovered.
 
--chris
+kgdb_reenter_check() has the "simple" recursion check with the
+exception_level variable.
+
+It also has several special checks against the breakpoint situation I
+described before as well as trying to remove all the breakpoints.  
+Ultimately if all those checks fails, it results in panic, because at
+the end of the day that is all you can do if you re-enter the debugger
+from the debugger (IE: you are toast).
+
+I don't see any reason to change the code there unless it can be further
+improved some way.  We want to fail loudly and verbosely when this kind
+of thing happens so we can determine if it was the end user that caused
+the problem or if there is a real defect.
+
+Jason.
