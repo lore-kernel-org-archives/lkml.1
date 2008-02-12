@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbYBLWqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756833AbYBLWs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbYBLWqJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbYBLWpz
+	id S1756833AbYBLWs0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 17:48:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbYBLWsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:45:55 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:44974 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752128AbYBLWpx (ORCPT
+	Tue, 12 Feb 2008 17:48:18 -0500
+Received: from mga07.intel.com ([143.182.124.22]:30933 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751980AbYBLWsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:45:53 -0500
-Date: Tue, 12 Feb 2008 17:44:33 -0500
-From: Theodore Tso <tytso@MIT.EDU>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: David Miller <davem@davemloft.net>, trond.myklebust@fys.uio.no,
-       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080212224433.GA9063@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	David Miller <davem@davemloft.net>, trond.myklebust@fys.uio.no,
-	greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-	linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-	akpm@linux-foundation.org, torvalds@linux-foundation.org
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <1202791555.20739.6.camel@heimdal.trondhjem.org> <20080212051136.GA12802@mit.edu> <20080211.220222.118805417.davem@davemloft.net> <20080211230617.04806002@laptopd505.fenrus.org>
+	Tue, 12 Feb 2008 17:48:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,342,1199692800"; 
+   d="scan'208";a="378258714"
+Message-ID: <47B22202.4070702@linux.intel.com>
+Date: Tue, 12 Feb 2008 14:47:30 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080211230617.04806002@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, ananth@in.ibm.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de
+Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel tests
+References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org>
+In-Reply-To: <20080212223918.GA3927@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 11, 2008 at 11:06:17PM -0800, Arjan van de Ven wrote:
-> There is maybe a middle ground in this -next idea; as very first
-> part of the series, the new api gets added, current users converted
-> and api marked __deprecated.
+Sam Ravnborg wrote:
+> Hi Linus.
 > 
-> Then there's a second part to the patch, which is a separate tree,
-> which gets added at the very end, which removed the old api.
+> Will you consider such a primary code-movement for -rc1
+> or shall we wait until next merge window?
 > 
-> Both will go in at the same merge window, and the next-meister needs
-> to track that no new users show up... but the final tree allows this
-> to be done somewhat more gentle.
+> Had we hit -rc2 I would not have sent this pull req and
+> feel free to flame me anyway.
 > 
-> Doesn't work for API changes that just change the API rather than
-> extending it, and doesn't solve the dependency issues. So I still
-> think a cleansweep works best in general, but I suspect Andrew just
-> disagrees with that.
+> The rationale to get it merged is obviously to avoid
+> merge conflicts and the only reason I ask is that I consider
+> it a low risk patch.
+> 
+> I have not included 8/8 since it was questioned and it
+> will wait until next merge window. But the first 7 was
+> straightforward.
+> 
+> You can pull from:
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+> 
+> diffstat and shortlog below.
+> I also included mail last with a few of the merge related comments.
+> 
+> 	Sam
+> 
+>  Makefile                                        |    1 +
+>  drivers/misc/Makefile                           |    1 -
+>  kernel/Makefile                                 |    4 -
+>  lib/Kconfig.debug                               |   71 +--------------------
+>  lib/Makefile                                    |    1 -
+>  tests/Kconfig                                   |   79 +++++++++++++++++++++++
 
-Yes, that's exactly what I was suggesting.  The __deprecate only lasts
-for the merge window, and we remove the old API at the end of the
-merge window.  So it's only there for a very short time, and it's only
-there to make the cleen sweep a little less painful --- not one where
-"shit hangs around in the tree forever".
-
-					- Ted
 
 
+we could make it even lower risk and not move the Kconfig now.
+Moving the Kconfig is fine for .26; it doesn't really impact anything else
