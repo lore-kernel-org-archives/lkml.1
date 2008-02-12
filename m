@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYBLP3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762675AbYBLP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761968AbYBLP3S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:29:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757965AbYBLP3F
+	id S1762675AbYBLP3e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:29:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757965AbYBLP3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:29:05 -0500
-Received: from ns.suse.de ([195.135.220.2]:60152 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757956AbYBLP3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:29:04 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080211015321.GA27376@one.firstfloor.org>
-	<y0mhcgf4ig1.fsf@ton.toronto.redhat.com>
-	<20080211162141.GA31434@elte.hu>
-	<20080211171039.GA20446@one.firstfloor.org>
-	<20080211230335.GA16102@elte.hu>
-	<20080212100327.GA30873@one.firstfloor.org>
-	<20080212112747.GA1569@elte.hu>
-	<20080212121903.GA419@one.firstfloor.org>
-	<20080212123839.GA15360@elte.hu>
-	<20080212135027.GA1343@one.firstfloor.org>
-	<20080212151611.GB3078@elte.hu>
-Date: Tue, 12 Feb 2008 16:28:58 +0100
-In-Reply-To: <20080212151611.GB3078@elte.hu> (Ingo Molnar's message of "Tue\, 12 Feb 2008 16\:16\:11 +0100")
-Message-ID: <p733ary2nyd.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 12 Feb 2008 10:29:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:52181 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758098AbYBLP3W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 10:29:22 -0500
+Date: Tue, 12 Feb 2008 07:26:42 -0800
+From: Greg KH <greg@kroah.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Greg KH <gregkh@suse.de>, Jason Gaston <jason.d.gaston@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       i2c@lm-sensors.nu
+Subject: Re: [PATCH 2.6.24] pci_ids: patch for Intel ICH10 DeviceID's
+Message-ID: <20080212152642.GA19441@kroah.com>
+References: <200801281720.37350.jason.d.gaston@intel.com> <20080212100338.21c0adf5@hyperion.delvare>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212100338.21c0adf5@hyperion.delvare>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Tue, Feb 12, 2008 at 10:03:38AM +0100, Jean Delvare wrote:
+> On Mon, 28 Jan 2008 17:20:36 -0800, Jason Gaston wrote:
+> > This patch adds the Intel ICH10 LPC and SMBus Controller DeviceID's.
+> > 
+> > Signed-off-by:  Jason Gaston <jason.d.gaston@intel.com>
+> > 
+> > --- linux-2.6.24/include/linux/pci_ids.h.orig	2008-01-24 14:58:37.000000000 -0800
+> > +++ linux-2.6.24/include/linux/pci_ids.h	2008-01-28 15:05:41.000000000 -0800
+> > @@ -2339,6 +2339,12 @@
+> >  #define PCI_DEVICE_ID_INTEL_MCH_PC1	0x359a
+> >  #define PCI_DEVICE_ID_INTEL_E7525_MCH	0x359e
+> >  #define PCI_DEVICE_ID_INTEL_IOAT_CNB	0x360b
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_0	0x3a14
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_1	0x3a16
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_2	0x3a18
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_3	0x3a1a
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_4	0x3a30
+> > +#define PCI_DEVICE_ID_INTEL_ICH10_5	0x3a60
+> >  #define PCI_DEVICE_ID_INTEL_IOAT_SNB	0x402f
+> >  #define PCI_DEVICE_ID_INTEL_IOAT_SCNB	0x65ff
+> >  #define PCI_DEVICE_ID_INTEL_TOLAPAI_0	0x5031
+> 
+> Greg, please pick this patch quickly so that it makes it to -mm and the
+> other patches that depend on it can be pushed there as well.
 
-> * Andi Kleen <andi@firstfloor.org> wrote:
->
->> On Tue, Feb 12, 2008 at 01:38:39PM +0100, Ingo Molnar wrote:
->> > So unless i forgot about something (please yell if so), it seems to 
->> > me kgdb is now pretty ready for an upstream merge.
->> 
->> I don't know -- I have not reread everything. Please don't consider my 
->> comments as approval of the code base. [...]
->
-> well, it does not take a mindreader to conclude that nothing we do could 
-> possibly result in you "concluding" that kgdb would be ready for a merge 
-> ;-)
->
-> for me it suffices that you've run out of technical arguments and are 
-> resorting to non-technical name-calling:
->
->> [...] I still think it does quite a lot of dubious and ugly things 
->> overall [...]
+Will do, give me a few hours...
 
-Let's put it like this: the amount of problems I found by reading
-only about 20% of the kgdb patch justifies the statement above. Also
-contrary to your repeated claims many of those are not fixed yet
-as far as I can see.
+thanks,
 
-Also every time I dig into something new problems raise their
-head -- e.g. see earlier exchange with Jason about the likely
-bogus recursion check.
-
-Overall that's not a sign of a clean merge ready code base.
-
--Andi
+greg k-h
