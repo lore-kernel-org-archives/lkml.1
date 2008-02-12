@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYBLNud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbYBLN7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbYBLNud (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 08:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbYBLNuY
+	id S1762236AbYBLN7B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 08:59:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759019AbYBLN6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 08:50:24 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:10409 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757800AbYBLNuX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 08:50:23 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: BTRFS partition usage...
-Date: Tue, 12 Feb 2008 08:49:34 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       btrfs-devel@oss.oracle.com
-References: <200802061200.14690.chris.mason@oracle.com> <20080211.232139.14959431.davem@davemloft.net> <20080212.001104.172517283.davem@davemloft.net>
-In-Reply-To: <20080212.001104.172517283.davem@davemloft.net>
+	Tue, 12 Feb 2008 08:58:52 -0500
+Received: from mail.windriver.com ([147.11.1.11]:40065 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758790AbYBLN6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 08:58:51 -0500
+Message-ID: <47B1A626.8000605@windriver.com>
+Date: Tue, 12 Feb 2008 07:59:02 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [git pull] kgdb-light -v10
+References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212131813.GA614@ska.dandreoli.com>
+In-Reply-To: <20080212131813.GA614@ska.dandreoli.com>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802120849.34477.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-OriginalArrivalTime: 12 Feb 2008 13:58:38.0463 (UTC) FILETIME=[5DF460F0:01C86D7F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Mon, 11 Feb 2008 23:21:39 -0800 (PST)
+Domenico Andreoli wrote:
+> Hi,
 >
-> > Filesystems like ext2 put their superblock 1 block into the partition
-> > in order to avoid overwriting disk labels and other uglies.  UFS does
-> > this too, as do several others.  One of the few exceptions I've been
-> > able to find is XFS.
-> >
-> > This is a real issue on sparc where the default sun disk labels
-> > created use an initial partition where block zero aliases the disk
-> > label.  It took me a few iterations before I figured out why every
-> > btrfs make would zero out my disk label :-/
+> On Tue, Feb 12, 2008 at 12:27:47PM +0100, Ingo Molnar wrote:
+>   
+>> this is kgdb-light, version -v10 (against Linus-latest), and can be 
+>> pulled from:
+>>
+>>    git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-kgdb.git
+>>
+>> shortlog, diffstat and full patch can be found further below.
+>>     
 >
-> Actually it seems this is only a problem with mkfs.btrfs, it clears
-> out the first 64 4K chunks of the disk for whatever reason.
+>   I am just trying to play with this, I am not able to make it work.
+> Assume I am able with git, I use it every day on my software, then I
+> am correctly tracking and building your branch on git.kernel.org.
+>
+> My config has both KGDB and KGDB_SERIAL_CONSOLE. kernel command line
+> has kgdbwait kgdboc=ttyS0,115200. linux console is not on serial but if
+> do not enable KGDB_SERIAL_CONSOLE I am then unable to hit SysRq+g. If
+> instead I use linux serial console, gdb messes with getty and things
+> quickly get worse.
+>
+> 1. at boot, kernel waits for a gdb connection
+> 2. gdb connection is established from another box
+> 3. gdb breaks in
+> 4. hit continue at gdb prompt
+> 5. target box returns to life. everything looks ok (it is 2.6.25-rc1!)
+> 6. SysRq+h on the target correctly shows the help on the console
+> 7. SysRq+g on the target, it prints "SysRq : GDB" and hangs forever
+> 8. gdb on the host does not break in
+>
+> is really that simple, am i overlooking anything? thank you.
+>
+> regards,
+> Domenico
+>
+>   
+I doubt the .config you posted was the one you used, because there were
+no KGDB options specified at all.
 
-It is a good idea to remove supers from other filesystems.  I also need to add 
-zeroing at the end of the device as well.
+If you want to be using your vga device as the console that is ok. You
+can still activate the sysrq with running the command: echo g >
+/proc/sysrq-trigger
 
-Looks like I misread the e2fs zeroing code.  It zeros the whole external log 
-device, and I assumed it also zero'd out the start of the main FS.
+You might consider doing "set debug remote 1" in the gdb session if you
+want to see what is going on. After the continue, the next time you
+break in with the debugger it should send $T.........etc which is a stop
+packet.
 
-So, if Btrfs starts zeroing at 1k, will that be acceptable for you?
-
--chris
+Jason.
