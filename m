@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbYBLGLO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbYBLGLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbYBLGLO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 01:11:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbYBLGKx
+	id S1761435AbYBLGLb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 01:11:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761061AbYBLGK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 01:10:53 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:55445 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754074AbYBLGKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 01:10:51 -0500
-Date: Tue, 12 Feb 2008 17:10:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-Id: <20080212171041.cdd477a2.sfr@canb.auug.org.au>
-In-Reply-To: <20080212055648.GB5631@kroah.com>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	<20080212042133.GA4625@kroah.com>
-	<20080212160704.77354af9.sfr@canb.auug.org.au>
-	<20080212055648.GB5631@kroah.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+	Tue, 12 Feb 2008 01:10:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37197
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761015AbYBLGKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 01:10:55 -0500
+Date: Mon, 11 Feb 2008 22:11:26 -0800 (PST)
+Message-Id: <20080211.221126.230471463.davem@davemloft.net>
+To: arjan@infradead.org
+Cc: greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080211211751.3e265754@laptopd505.fenrus.org>
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
+	<20080212044314.GA4888@kroah.com>
+	<20080211211751.3e265754@laptopd505.fenrus.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_Feb_2008_17_10_41_+1100_9Cf/IGc5cv6s9t=a"
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_Feb_2008_17_10_41_+1100_9Cf/IGc5cv6s9t=a
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Arjan van de Ven <arjan@infradead.org>
+Date: Mon, 11 Feb 2008 21:17:51 -0800
 
-On Mon, 11 Feb 2008 21:56:48 -0800 Greg KH <greg@kroah.com> wrote:
->
-> It's possible to do in a series of patches, yes, but again, development
-> happens in parallel, with no one stopping for anyone else, and that's
-> fine, we work it out when we send stuff to Linus at merge time.
->=20
-> So with that parallel development effort, there are problems like this,
-> I just want you to be aware of it and plan properly for it, as it is
-> going to happen...
+> this is why you need specific trees for just the API change
 
-Understood.
+API trees don't work, just like other changes they will have
+interdependencies on things like fixups, cleanups, etc.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This is why, with the networking, we've just tossed all of the network
+driver stuff in there too.  I can rebase freely, remove changesets,
+rework them, etc. and this causes a very low amount of pain for Jeff
+Garzik and John Linville.
 
---Signature=_Tue__12_Feb_2008_17_10_41_+1100_9Cf/IGc5cv6s9t=a
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHsThlTgG2atn1QN8RAqVCAJ0Vhz0tP8Ofu5cNnIbG21p5AwwnRQCcDcKH
-xCnL++W4PLWH2MYHPwF/m70=
-=RLng
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_Feb_2008_17_10_41_+1100_9Cf/IGc5cv6s9t=a--
+This may or not be a legitimate thing to do with other heavily
+dependant subsystems.
