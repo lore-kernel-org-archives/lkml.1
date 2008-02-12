@@ -1,38 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761604AbYBLHoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753158AbYBLHqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761604AbYBLHoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 02:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759890AbYBLHoN
+	id S1753158AbYBLHqg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 02:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757403AbYBLHq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 02:44:13 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60938 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759884AbYBLHoM (ORCPT
+	Tue, 12 Feb 2008 02:46:28 -0500
+Received: from hs-out-0708.google.com ([64.233.178.247]:47569 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757145AbYBLHq1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 02:44:12 -0500
-Date: Mon, 11 Feb 2008 23:42:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Linux-tiny@selenic.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Configure out DMI scanning code
-Message-Id: <20080211234225.a8b73925.akpm@linux-foundation.org>
-In-Reply-To: <20080212083323.6d579dc3@crazy>
-References: <20080211175844.3358a49b@crazy>
-	<1202756478.28085.35.camel@cinder.waste.org>
-	<20080212083323.6d579dc3@crazy>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 02:46:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iU+hBdVTlrXno9q6cOXfuY7b+BqHjt1IEy5zIYV//feaIMHKvOlf0/i+kmNva0zhdtyIYj7vAhKfyejEQl4Tz0Fx6sb6cC+i9+4oHIfATV06dNQAVs4z9CPWzJ+BC1hTimaII4IvtaIODDX+MM59fD1qfhhLOcNl3tpK23rJ4Gc=
+Message-ID: <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
+Date: Tue, 12 Feb 2008 15:46:23 +0800
+From: "Peter Teoh" <htmldeveloper@gmail.com>
+To: "Scott Lovenberg" <scott.lovenberg@gmail.com>
+Subject: Re: Documentation about sysfs/procfs entries
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       kernelnewbies <kernelnewbies@nl.linux.org>,
+       "Rik van Riel" <riel@redhat.com>
+In-Reply-To: <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
+	 <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 08:33:23 +0100 Thomas Petazzoni <thomas.petazzoni@free-electrons.com> wrote:
+On Feb 12, 2008 2:17 PM, Scott Lovenberg <scott.lovenberg@gmail.com> wrote:
+>
+> On Feb 12, 2008 12:23 AM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> >
+> > I  was looking for documentation on the kstack_depth_to_print under
+> /proc/sys/kernel, and I found it in Documentation/sysctl.txt (written by
+> Rik).
+> >
+> > How about /proc/sys/net?   or all other directories under /sys or /proc
+> fs?
+> >
+> > Wouldn't it be useful to have a centralized store located in Documentation
+> - properly structured,  just a one-liner or two - on the reasons and
+> explanations for each of these /proc or /sys parameters?   And something to
+> look for further details?
+> >
+> > Something of the following:
+> >
+> > |-- netfilter
+> > |   |-- nf_conntrack_buckets:your explanation here
+> > |   |-- nf_conntrack_checksum:your explanation here...
+> > |   |-- nf_conntrack_count
+> > |   |-- nf_conntrack_expect_max
+> > |   |-- nf_conntrack_generic_timeout
+> > |   |-- nf_conntrack_icmp_timeout
+> > |   |-- nf_conntrack_log_invalid
+> > |   |-- nf_conntrack_max
+> > |   |-- nf_conntrack_tcp_be_liberal
+> > |   |-- nf_conntrack_tcp_loose
+> > |   |-- nf_conntrack_tcp_max_retrans
+> > |   |-- nf_conntrack_tcp_timeout_close
+> > |   |-- nf_conntrack_tcp_timeout_close_wait
+> > |   |-- nf_conntrack_tcp_timeout_established
+> > |   |-- nf_conntrack_tcp_timeout_fin_wait
+> > |   |-- nf_conntrack_tcp_timeout_last_ack
+> > |   |-- nf_conntrack_tcp_timeout_max_retrans
+> > |   |-- nf_conntrack_tcp_timeout_syn_recv
+> > |   |-- nf_conntrack_tcp_timeout_syn_sent
+> > |   |-- nf_conntrack_tcp_timeout_time_wait
+> > |   |-- nf_conntrack_udp_timeout
+> > |   `-- nf_conntrack_udp_timeout_stream
+> > |-- nf_conntrack_max
+> > |-- token-ring
+> > |   `-- rif_timeout
+> > `-- unix
+> >     `-- max_dgram_qlen
+> >
+> >
+> > Alternatively, we can write a script to extract out the partial
+> explanations/details from existing source code, based on some coding
+> convention/style structure, and further hand-modification from there.
+> (given the dynamic nature of the kernel code, this may be preferred?)
+> >
+> >
+>
+> I was looking for exactly this about 2 weeks ago; I needed to look up the
+> knobs for net and disk elevators, and had to jump all over the place.  I
+> assumed that such a thing should exist, but I didn't find it.  I know I
+> would personally benefit from this, and I'm sure many others would, too.
 
-> If I resend a new one with proper credits, will Andrew pick it up and
-> replace the old version by the new version ?
+My suggestion is that since the parameters are:
 
-yup.
+a.   divide the symbols into two group:   well-documented vs
+undocumented (prefixed by "__" eg, __xxxx).   this supposedly for
+sysadmin vs kernel developer.
+
+b.   for each of the official documented /sys control, provide a
+one-line description when passed via /sys/help (eg, echo
+kstack_depth_to_print > /sys/help) and the helpstring will go to the
+console.
+
+On the other hand, this may potentially blow up the vmlinux image size.
