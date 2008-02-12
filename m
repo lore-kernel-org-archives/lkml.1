@@ -1,94 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752440AbYBLW7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755923AbYBLXA5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752440AbYBLW7y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 17:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbYBLW7f
+	id S1755923AbYBLXA5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:00:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYBLXAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 17:59:35 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:64093 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbYBLW7c (ORCPT
+	Tue, 12 Feb 2008 18:00:49 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:34322 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbYBLXAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 17:59:32 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAA20sUdMQWYv/2dsb2JhbACBWY8qnCk
-Date: Tue, 12 Feb 2008 17:59:29 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, penberg@cs.helsinki.fi,
-       tglx@linutronix.de, vegard.nossum@gmail.com
-Subject: Cast cmpxchg64 and cmpxchg64_local result for 386 and 486 - Fix
-	missing parenthesis
-Message-ID: <20080212225929.GA20933@Krystal>
-References: <200802122200.m1CM0YZY024502@imap1.linux-foundation.org> <Pine.LNX.4.64.0802121404470.9183@schroedinger.engr.sgi.com>
+	Tue, 12 Feb 2008 18:00:47 -0500
+Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, greg@kroah.com,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <1202854520.11188.90.camel@nimitz.home.sr71.net>
+References: <20080211114818.74c9dcc7.akpm@linux-foundation.org>
+	 <1202765553.25604.12.camel@dyn9047017100.beaverton.ibm.com>
+	 <20080212154309.F9DA.Y-GOTO@jp.fujitsu.com>
+	 <1202836953.25604.42.camel@dyn9047017100.beaverton.ibm.com>
+	 <1202849972.11188.71.camel@nimitz.home.sr71.net>
+	 <1202853415.25604.59.camel@dyn9047017100.beaverton.ibm.com>
+	 <1202853434.11188.76.camel@nimitz.home.sr71.net>
+	 <1202854031.25604.62.camel@dyn9047017100.beaverton.ibm.com>
+	 <1202854520.11188.90.camel@nimitz.home.sr71.net>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 15:03:35 -0800
+Message-Id: <1202857416.25604.71.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802121404470.9183@schroedinger.engr.sgi.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:58:01 up 1 day, 18:58,  3 users,  load average: 0.06, 0.61,
-	0.63
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Two pairs of parenthesis were missing around the result cast of cmpxchg64 and
-cmpxchg64_local. This is a rather stupid mistake in
-"Cast cmpxchg and cmpxchg_local result for 386 and 486". My bad. This fix
-should be folded with the previous.
+On Tue, 2008-02-12 at 14:15 -0800, Dave Hansen wrote:
+> On Tue, 2008-02-12 at 14:07 -0800, Badari Pulavarty wrote:
+> > On Tue, 2008-02-12 at 13:57 -0800, Dave Hansen wrote:
+> > > On Tue, 2008-02-12 at 13:56 -0800, Badari Pulavarty wrote:
+> > > > 
+> > > > +static void __remove_section(struct zone *zone, unsigned long
+> > > > section_nr)
+> > > > +{
+> > > > +       if (!valid_section_nr(section_nr))
+> > > > +               return;
+> > > > +
+> > > > +       unregister_memory_section(__nr_to_section(section_nr));
+> > > > +       sparse_remove_one_section(zone, section_nr);
+> > > > +}
+> > > 
+> > > I do think passing in a mem_section* here is highly superior.  It makes
+> > > it impossible to pass a pfn in and not get a warning.
+> > > 
+> > 
+> > Only problem is, I need to hold pgdat_resize_lock() if pass *ms. 
+> > If I don't hold the resize_lock, I have to re-evaluate.
+> 
+> What's wrong with holding the resize lock?  What races, precisely, are
+> you trying to avoid?
+> 
+> > And also,
+> > I need to pass section_nr for decoding the mem_map anyway :(
+> 
+> See sparse.c::__section_nr().  It takes a mem_section* and returns a
+> section_nr.
 
-Sorry for this trivial bug which should have never appeared in the first place.
-The aim was to fix cmpxchg and cmpxchg_local, which were used in slub. cmpxchg64
-and cmpxchg64_local happen to be only used in LTTng currently.
+Here is the version with your suggestion. Do you like this better ?
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-CC: akpm@linux-foundation.org
+Thanks,
+Badari
+
+Generic helper function to remove section mappings and sysfs entries
+for the section of the memory we are removing.  offline_pages() correctly 
+adjusted zone and marked the pages reserved.
+
+Issue: If mem_map, usemap allocation could come from different places -
+kmalloc, vmalloc, alloc_pages or bootmem. There is no easy way
+to find and free up properly. Especially for bootmem, we need to
+know which node the allocation came from.
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+
 ---
- include/asm-x86/cmpxchg_32.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/memory_hotplug.h |    4 ++++
+ mm/memory_hotplug.c            |   34 ++++++++++++++++++++++++++++++++++
+ mm/sparse.c                    |   39 ++++++++++++++++++++++++++++++++++++---
+ 3 files changed, 74 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-x86/cmpxchg_32.h
+Index: linux-2.6.24/mm/memory_hotplug.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-x86/cmpxchg_32.h	2008-02-12 17:49:32.000000000 -0500
-+++ linux-2.6-lttng/include/asm-x86/cmpxchg_32.h	2008-02-12 17:50:18.000000000 -0500
-@@ -305,11 +305,11 @@ extern unsigned long long cmpxchg_486_u6
- ({									\
- 	__typeof__(*(ptr)) __ret;					\
- 	if (likely(boot_cpu_data.x86 > 4))				\
--		__ret = __typeof__(*(ptr))__cmpxchg64((ptr),		\
-+		__ret = (__typeof__(*(ptr)))__cmpxchg64((ptr),		\
- 				(unsigned long long)(o),		\
- 				(unsigned long long)(n));		\
- 	else								\
--		__ret = __typeof__(*(ptr))cmpxchg_486_u64((ptr),	\
-+		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
- 				(unsigned long long)(o),		\
- 				(unsigned long long)(n));		\
- 	__ret;								\
-@@ -318,11 +318,11 @@ extern unsigned long long cmpxchg_486_u6
- ({									\
- 	__typeof__(*(ptr)) __ret;					\
- 	if (likely(boot_cpu_data.x86 > 4))				\
--		__ret = __typeof__(*(ptr))__cmpxchg64_local((ptr),	\
-+		__ret = (__typeof__(*(ptr)))__cmpxchg64_local((ptr),	\
- 				(unsigned long long)(o),		\
- 				(unsigned long long)(n));		\
- 	else								\
--		__ret = __typeof__(*(ptr))cmpxchg_486_u64((ptr),	\
-+		__ret = (__typeof__(*(ptr)))cmpxchg_486_u64((ptr),	\
- 				(unsigned long long)(o),		\
- 				(unsigned long long)(n));		\
- 	__ret;								\
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--- linux-2.6.24.orig/mm/memory_hotplug.c	2008-02-07 17:16:52.000000000 -0800
++++ linux-2.6.24/mm/memory_hotplug.c	2008-02-12 14:49:07.000000000 -0800
+@@ -102,6 +102,15 @@ static int __add_section(struct zone *zo
+ 	return register_new_memory(__pfn_to_section(phys_start_pfn));
+ }
+ 
++static void __remove_section(struct zone *zone, struct mem_section *ms)
++{
++	if (!valid_section(ms))
++		return;
++
++	unregister_memory_section(ms);
++	sparse_remove_one_section(zone, ms);
++}
++
+ /*
+  * Reasonably generic function for adding memory.  It is
+  * expected that archs that support memory hotplug will
+@@ -135,6 +144,31 @@ int __add_pages(struct zone *zone, unsig
+ }
+ EXPORT_SYMBOL_GPL(__add_pages);
+ 
++void __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
++		 unsigned long nr_pages)
++{
++	unsigned long i;
++	int sections_to_remove;
++	unsigned long flags;
++	struct pglist_data *pgdat = zone->zone_pgdat;
++
++	/*
++	 * We can only remove entire sections
++	 */
++	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
++	BUG_ON(nr_pages % PAGES_PER_SECTION);
++
++	sections_to_remove = nr_pages / PAGES_PER_SECTION;
++
++	for (i = 0; i < sections_to_remove; i++) {
++		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
++		pgdat_resize_lock(pgdat, &flags);
++		__remove_section(zone, pfn_to_section(pfn));
++		pgdat_resize_unlock(pgdat, &flags);
++	}
++}
++EXPORT_SYMBOL_GPL(__remove_pages);
++
+ static void grow_zone_span(struct zone *zone,
+ 		unsigned long start_pfn, unsigned long end_pfn)
+ {
+Index: linux-2.6.24/mm/sparse.c
+===================================================================
+--- linux-2.6.24.orig/mm/sparse.c	2008-02-07 17:16:52.000000000 -0800
++++ linux-2.6.24/mm/sparse.c	2008-02-12 14:51:07.000000000 -0800
+@@ -198,12 +198,13 @@ static unsigned long sparse_encode_mem_m
+ }
+ 
+ /*
+- * We need this if we ever free the mem_maps.  While not implemented yet,
+- * this function is included for parity with its sibling.
++ * Decode mem_map from the coded memmap
+  */
+-static __attribute((unused))
++static
+ struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
+ {
++	/* mask off the extra low bits of information */
++	coded_mem_map &= SECTION_MAP_MASK;
+ 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
+ }
+ 
+@@ -415,4 +416,36 @@ out:
+ 	}
+ 	return ret;
+ }
++
++void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
++{
++	struct page *memmap = NULL;
++	unsigned long *usemap = NULL;
++	unsigned long flags;
++
++	if (ms->section_mem_map) {
++		usemap = ms->pageblock_flags;
++		memmap = sparse_decode_mem_map(ms->section_mem_map,
++						__section_nr(ms));
++		ms->section_mem_map = 0;
++		ms->pageblock_flags = NULL;
++	}
++
++	/*
++	 * Its ugly, but this is the best I can do - HELP !!
++	 * We don't know where the allocations for section memmap and usemap
++	 * came from. If they are allocated at the boot time, they would come
++	 * from bootmem. If they are added through hot-memory-add they could be
++	 * from slab, vmalloc. If they are allocated as part of hot-mem-add
++	 * free them up properly. If they are allocated at boot, no easy way
++	 * to correctly free them :(
++	 */
++	if (usemap) {
++		if (PageSlab(virt_to_page(usemap))) {
++			kfree(usemap);
++			if (memmap)
++				__kfree_section_memmap(memmap, PAGES_PER_SECTION);
++		}
++	}
++}
+ #endif
+Index: linux-2.6.24/include/linux/memory_hotplug.h
+===================================================================
+--- linux-2.6.24.orig/include/linux/memory_hotplug.h	2008-02-07 17:16:52.000000000 -0800
++++ linux-2.6.24/include/linux/memory_hotplug.h	2008-02-12 14:54:40.000000000 -0800
+@@ -8,6 +8,7 @@
+ struct page;
+ struct zone;
+ struct pglist_data;
++struct mem_section;
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+@@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
+ /* reasonably generic interface to expand the physical pages in a zone  */
+ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
++extern void __remove_pages(struct zone *zone, unsigned long start_pfn,
++	unsigned long nr_pages);
+ 
+ /*
+  * Walk thorugh all memory which is registered as resource.
+@@ -188,5 +191,6 @@ extern int arch_add_memory(int nid, u64 
+ extern int remove_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
++extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+ 
+ #endif /* __LINUX_MEMORY_HOTPLUG_H */
+
+
