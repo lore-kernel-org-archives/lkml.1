@@ -1,61 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760930AbYBLBOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbYBLBPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760930AbYBLBOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 20:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759933AbYBLBOi
+	id S1761240AbYBLBPj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 20:15:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbYBLBPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 20:14:38 -0500
-Received: from outbound-mail-04.bluehost.com ([69.89.21.14]:40779 "HELO
-	outbound-mail-04.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1759894AbYBLBOh (ORCPT
+	Mon, 11 Feb 2008 20:15:31 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:34020 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753627AbYBLBPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 20:14:37 -0500
-X-Greylist: delayed 2411 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 Feb 2008 20:14:37 EST
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: 2.6.25-rc1 regression - suspend to ram
-Date: Mon, 11 Feb 2008 15:32:47 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "R. J. Wysocki" <Rafal.Wysocki@fuw.edu.pl>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-References: <20080211225811.GB4343@ics.muni.cz> <200802120010.55021.Rafal.Wysocki@fuw.edu.pl> <20080211232213.GB8206@linux-os.sc.intel.com>
-In-Reply-To: <20080211232213.GB8206@linux-os.sc.intel.com>
+	Mon, 11 Feb 2008 20:15:30 -0500
+Message-ID: <47B0EEAB.60904@zytor.com>
+Date: Mon, 11 Feb 2008 16:56:11 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>
+CC: Konrad Rzeszutek <konrad@darnok.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       michaelc@cs.wisc.edu, dwm@enoyolf.org, darnok@68k.org,
+       pjones@redhat.com, konradr@redhat.com, konradr@linux.vnet.ibm.com,
+       randy.dunlap@oracle.com, lenb@kernel.org, mike.anderson@us.ibm.com,
+       dwm@austin.ibm.com, arjan@infradead.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: REPOST: [PATCH] Add iSCSI iBFT support (v0.4.7)
+References: <20080208194717.GA10712@andromeda.dapyr.net> <20080209031026.GA14878@andromeda.dapyr.net> <1202535132.3102.107.camel@localhost.localdomain> <200802111835.18172.konrad@darnok.org> <20080212004512.GA23636@kroah.com>
+In-Reply-To: <20080212004512.GA23636@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802111532.47711.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, February 11, 2008 3:22 pm Venki Pallipadi wrote:
-> On Tue, Feb 12, 2008 at 12:10:54AM +0100, R. J. Wysocki wrote:
-> > On Monday, 11 of February 2008, Lukas Hejtmanek wrote:
-> > > Hello,
-> >
-> > Hi,
-> >
-> > > 2.6.25-rc1 takes really long time till it suspends (about 30-40secs,
-> > > used to be about 5 secs at all) and it is resuming about few minutes. 
-> > > While resuming, capslock toggles the capslock led but with few secs
-> > > delay.
-> > >
-> > > 2.6.24-git15 was OK. 2.6.24 is OK.
-> > >
-> > > I have Lenovo ThinkPad T61.
-> >
-> > If you have CONFIG_CPU_IDLE set, please try to boot with idle=poll and
-> > see if that helps.
->
-> Just sent this patch to fix a regression in acpi processor_idle.c on
-> another thread. Can you try the patch below and check whether that helps.
+Greg KH wrote:
+> On Mon, Feb 11, 2008 at 06:35:16PM -0500, Konrad Rzeszutek wrote:
+>>>> +       if (hdr->id == id_nic) {
+>>>> +               pci_dev = pci_get_bus_and_slot((nic->pci_bdf & 0xff00) >>
+>>>> 8, +                                              (nic->pci_bdf & 0xff));
+>>> pci_get_bus_and_slot fails in the presence of PCI domains, which are
+>>> getting to be fairly common even in medium sized servers ... what
+>>> happens in that case?
+>> The specification did not take that in to account. The Bus/Dev/Func 
+>> information is only present there - no domain information.
+> 
+> That's really broken then.  Common i386 boxes these days have multiple
+> PCI domains, it's not all that uncommon at all.
+> 
+> And almost all big 64 bit boxes have them.
 
-Excellent, that patch makes things work for me (including console restore).  
-Thanks a lot Venki.
+Yes, but common x86 boxes can't *boot* from anything but domain 0 (in 
+particular, the domain which the cf8/cfc registers on the boot processor 
+activate.)
 
-Jesse
+	-hpa
