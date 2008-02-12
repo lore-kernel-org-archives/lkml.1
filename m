@@ -1,50 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756331AbYBLTcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756910AbYBLTfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756331AbYBLTcI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 14:32:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbYBLTby
+	id S1756910AbYBLTfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 14:35:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbYBLTfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 14:31:54 -0500
-Received: from phoenix.slamd64.com ([217.10.145.2]:60949 "EHLO
-	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbYBLTbw (ORCPT
+	Tue, 12 Feb 2008 14:35:06 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:6504 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751153AbYBLTfE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 14:31:52 -0500
-From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/2] acer-wmi - Fail gracefully if ACPI is disabled
-Date: Tue, 12 Feb 2008 19:28:05 +0000
-User-Agent: KMail/1.9.7
-Cc: Ingo Molnar <mingo@elte.hu>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200802080145.16774.lenb@kernel.org> <200802111955.04562.carlos@strangeworlds.co.uk> <alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802112038360.2920@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 14:35:04 -0500
+Message-Id: <47B1AD0B.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Tue, 12 Feb 2008 12:28:27 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-rt-users" <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 1/2] add task migration_disable critical section
+References: <20080212182512.10902.66459.stgit@novell1.haskins.net>
+ <20080212183000.10902.97544.stgit@novell1.haskins.net>
+ <Pine.LNX.4.58.0802121420470.21926@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0802121420470.21926@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200802121928.06420.carlos@strangeworlds.co.uk>
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Tue, 12 Feb 2008 19:28:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008 04:41:42 Linus Torvalds wrote:
-> 
-> On Mon, 11 Feb 2008, Carlos Corbacho wrote:
-> > 
-> > WMI drivers, like their ACPI counterparts, should also check if ACPI is
-> > disabled or not, and bail out if so, otherwise we cause a crash.
-> 
-> Shouldn't "wmi_has_guid()" just return false if ACPI isn't enabled, and 
-> the drivers should just then always give up?
+>>> On Tue, Feb 12, 2008 at  2:22 PM, in message
+<Pine.LNX.4.58.0802121420470.21926@gandalf.stny.rr.com>, Steven Rostedt
+<rostedt@goodmis.org> wrote: 
 
-Yes - that's a better fix.
+> On Tue, 12 Feb 2008, Gregory Haskins wrote:
+> 
+>> This patch adds a new critical-section primitive pair:
+>>
+>> "migration_disable()" and "migration_enable()"
+> 
+> This is similar to what Mathieu once posted:
+> 
+> http://lkml.org/lkml/2007/7/11/13
+> 
+> Not sure the arguments against (no time to read the thread again). But I'd
+> recommend that you read it.
+> 
+> -- Steve
 
--Carlos
--- 
-E-Mail: carlos@strangeworlds.co.uk
-Web: strangeworlds.co.uk
-GPG Key ID: 0x23EE722D
+Indeed, thanks for the link!  At quick glance, the concept looks identical, though the implementations are radically different.
+
+-Greg
+
