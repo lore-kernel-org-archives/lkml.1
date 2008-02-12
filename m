@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbYBLPA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYBLPFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760388AbYBLPA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbYBLPAo
+	id S1758910AbYBLPFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:05:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbYBLPEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:00:44 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:36482 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759234AbYBLPAm (ORCPT
+	Tue, 12 Feb 2008 10:04:54 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:36529 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756057AbYBLPEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:00:42 -0500
-Date: Tue, 12 Feb 2008 16:36:12 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [git pull] kgdb-light -v10
-Message-ID: <20080212153612.GA2944@one.firstfloor.org>
-References: <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <47B19F67.5050105@windriver.com> <20080212143949.GA2258@one.firstfloor.org> <47B1AEC3.2080402@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B1AEC3.2080402@windriver.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 12 Feb 2008 10:04:53 -0500
+Date: Tue, 12 Feb 2008 16:04:52 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Chris Mason <chris.mason@oracle.com>
+cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+Subject: Re: BTRFS partition usage...
+In-Reply-To: <200802120935.20437.chris.mason@oracle.com>
+Message-ID: <Pine.LNX.4.64.0802121543240.21102@fbirervta.pbzchgretzou.qr>
+References: <200802061200.14690.chris.mason@oracle.com>
+ <200802120908.59602.chris.mason@oracle.com>
+ <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
+ <200802120935.20437.chris.mason@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Basically when you reach this chunk of code it is before the hand off
-> to the source debugger.  We cannot continue because there was a
-> breakpoint in a part of the system kgdb was using while doing its
-> normal work.  The reality is that KGDB is not self contained.  It
-> relies on some external I/O methods, atomic page fault handling and
-> some other pieces.  If you take an exception there, the kgdb integrity
-> check absolutely needs to fail.
+>
+On Feb 12 2008 09:35, Chris Mason wrote:
+>>
+>> and slap the bootloader into "MBR", just like on x86.
+>> Or I am missing something..
+>
+>It was a request from hpa, and he clearly had something in mind.  He kindly 
+>offered to review the disk format for bootloaders and other lower level 
+>issues but I asked him to wait until I firm it up a bit.
+>
+>From my point of view, 0 is a bad idea because it is very likely to conflict 
+>with other things.  There are lots of things in the FS that need deep 
+>thought,and the perfect system to fully use the first 64k of a 1TB filesystem 
+>isn't quite at the top of my list right now ;)
+>
+>Regardless of offset, it is a good idea to mop up previous filesystems where 
+>possible, and a very good idea to align things on some sector boundary.  Even 
+>going 1MB in wouldn't be a horrible idea to align with erasure blocks on SSD.
 
-Don't you just need a simple recursion counter for this? 
+I still don't like the idea of btrfs trying to be smarter than a user
+who can partition up his system according to
+	(a) his likes
+	(b) system or hardware requirements or recommendations
+to align the superblock to a specific location.
 
-I cannot think of a reliable simple way to check for this using the instruction
-pointer. The only way would be to use explicit annotations for all
-possible code similar to what kprobes does (__kprobes), but that would be 
-hugely intrusive all over the tree.
-
-With the recursion counter the only problem would be someone 
-setting a break point on the early notifier code itself that contains
-a recursion check, but that would be only a few lines of code
-so the risk of someone setting a break point exactly there would
-be low.
-
-> This check is absolutely required to help prevent silent death via
-> dumb breakpoints or stepping around in random places (which is ill
-> advised anyway).
-
-I believe you, but I don't believe that your implementation
-of this handles all cases.
-
--Andi
+1MB alignment does not always mean 1MB alignment.
+Sector 1 begins at 0x7e00 on x86.
+And with the maximum CHS geometry (255/63), partitions begin
+at 0x7e00+n*8225280 bytes, so the SB is unlikely to ever be on
+a 1048576 boundary.
