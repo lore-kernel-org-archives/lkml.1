@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbYBLJmX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbYBLJna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbYBLJmX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:42:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbYBLJmL
+	id S1759168AbYBLJna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:43:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758572AbYBLJnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:42:11 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:45298 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757245AbYBLJmJ (ORCPT
+	Tue, 12 Feb 2008 04:43:22 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:45430 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757088AbYBLJnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:42:09 -0500
-Date: Tue, 12 Feb 2008 15:12:07 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH] 2.6.25-rc1 ml4x network driver build failure
-Message-ID: <20080212094207.GA19427@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+	Tue, 12 Feb 2008 04:43:21 -0500
+Message-ID: <47B167EA.1070402@yandex.ru>
+Date: Tue, 12 Feb 2008 11:33:30 +0200
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+To: caglar@pardus.org.tr
+CC: Jiri Slaby <jirislaby@gmail.com>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH] Silent compiler warning introduced by commit 801c135ce73d5df1caf3eca35b66a10824ae0707
+ (UBI: Unsorted Block Images)
+References: <200802100537.47634.caglar@pardus.org.tr> <47AEB829.8060104@gmail.com> <200802110144.07549.caglar@pardus.org.tr>
+In-Reply-To: <200802110144.07549.caglar@pardus.org.tr>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 12 Feb 2008 09:36:09.0217 (UTC) FILETIME=[B2AC2710:01C86D5A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 2.6.25-rc1 kernel build fails on the powerpc with the error
+S.Çağlar Onur wrote:
+> Hi;
+> 
+> 10 Şub 2008 Paz tarihinde, Jiri Slaby şunları yazmıştı: 
+>> I think this is not correct. You change the err which caused the failure. You 
+>> change it even to 0 if it doesn't fail and the whole function will seem like 
+>> non-failing.
+> 
+> My bad, sorry for not looking carefully. Assuming a refactoring is not desired for just a compiler warning, is following acceptable (this kind of plain messages seems heavily used in vmt.c, so i'm again assuming its OK to use such style)?
+> 
+> commit 801c135ce73d5df1caf3eca35b66a10824ae0707 (UBI: Unsorted Block Images) introduced the warning
+> 
+> drivers/mtd/ubi/vmt.c: In function `ubi_create_volume':
+> drivers/mtd/ubi/vmt.c:379: warning: statement with no effect
+> 
+> 
+>  drivers/mtd/ubi/vmt.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
 
-drivers/net/mlx4/alloc.c: In function ‘mlx4_buf_alloc’:
-drivers/net/mlx4/alloc.c:162: error: implicit declaration of function ‘vmap’
-drivers/net/mlx4/alloc.c:162: error: ‘VM_MAP’ undeclared (first use in this function)
-drivers/net/mlx4/alloc.c:162: error: (Each undeclared identifier is reported only once
-drivers/net/mlx4/alloc.c:162: error: for each function it appears in.)
-drivers/net/mlx4/alloc.c:162: warning: assignment makes pointer from integer without a cast
-drivers/net/mlx4/alloc.c: In function ‘mlx4_buf_free’:
-drivers/net/mlx4/alloc.c:187: error: implicit declaration of function ‘vunmap’
-make[3]: *** [drivers/net/mlx4/alloc.o] Error 1
-make[2]: *** [drivers/net/mlx4] Error 2
-make[1]: *** [drivers/net] Error 2
-make: *** [drivers] Error 2
+Thanks, applied to UBI git with Minor changes, will send git-pull request
+shortly.
 
-I have tested the patch for the build failure.
+Please, note that my e-mail address is not dedekind@linutronix.de,
+see MAINTAINERS.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
---
---- linux-2.6.25-rc1/drivers/net/mlx4/alloc.c	2008-02-11 03:48:14.000000000 +0530
-+++ linux-2.6.25-rc1/drivers/net/mlx4/~alloc.c	2008-02-12 14:43:46.000000000 +0530
-@@ -34,6 +34,7 @@
- #include <linux/slab.h>
- #include <linux/bitmap.h>
- #include <linux/dma-mapping.h>
-+#include <linux/vmalloc.h>
- 
- #include "mlx4.h"
- 
 -- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
