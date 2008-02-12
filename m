@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbYBLXnP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbYBLXpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbYBLXnP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:43:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYBLXm6
+	id S1753955AbYBLXpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYBLXpD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:42:58 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:60503 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbYBLXm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:42:57 -0500
-Date: Wed, 13 Feb 2008 00:42:56 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: David Miller <davem@davemloft.net>
-cc: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
-Subject: Re: BTRFS partition usage...
-In-Reply-To: <20080212.153836.166202106.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.64.0802130040350.14275@fbirervta.pbzchgretzou.qr>
-References: <Pine.LNX.4.64.0802121518500.21102@fbirervta.pbzchgretzou.qr>
- <200802120935.20437.chris.mason@oracle.com>
- <Pine.LNX.4.64.0802121543240.21102@fbirervta.pbzchgretzou.qr>
- <20080212.153836.166202106.davem@davemloft.net>
+	Tue, 12 Feb 2008 18:45:03 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56077 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753158AbYBLXpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 18:45:01 -0500
+Date: Wed, 13 Feb 2008 00:45:13 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Mirco Tischler <mt-ml@gmx.de>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] ACPI suspend: Execute _WAK with the right argument
+Message-ID: <20080212234513.GA2564@elf.ucw.cz>
+References: <200802130032.17636.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802130032.17636.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed 2008-02-13 00:32:16, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The _WAK global ACPI control method has to be called with the
+> argument representing the sleep state being exited.  Make it happen.
+> 
+> Special thanks to Mirco Tischler <mt-ml@gmx.de> for reporting the
+> problem and debugging.
+> 
+> Reported-by: Mirco Tischler <mt-ml@gmx.de>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Feb 12 2008 15:38, David Miller wrote:
->
->> I still don't like the idea of btrfs trying to be smarter than a user
->> who can partition up his system according to
->> 	(a) his likes
->> 	(b) system or hardware requirements or recommendations
->> to align the superblock to a specific location.
->
->All of your beliefs are unfortunately without the understanding
->of restrictions that exist in several partition layouts such
->as the Sun disk label one.
+ACK. AFAICT this is 2.6.25 material.
+								Pavel
 
-(Time for Sun to switch!)
+> ---
+>  drivers/acpi/hardware/hwsleep.c |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
+> +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
+> @@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
+>  		return_ACPI_STATUS(status);
+>  	}
+>  
+> +	arg.integer.value = sleep_state;
+>  	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+>  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+>  		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
 
->You have to start the superblock somewhere other than zero or
->else you lose a huge chunk of your disk, and furthermore a
->zero based partition is what all of the Sun disk label
->creating programs make by default.
->
->"I make a default disk label, I put btrfs or XFS on there, my disk
-> label is gone."
->
->Real intuitive.
->
-
-x86 MSDOS partition table layout starts counting with sector 1, which
-is (not so intuitively) starting at 0x7e00 (and there's no sector 0,
-probably for safety). Well, each ptable format with its own quirks.
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
