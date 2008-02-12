@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbYBLVfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYBLVfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753081AbYBLVfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 16:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbYBLVex
+	id S1753535AbYBLVfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 16:35:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbYBLVfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 16:34:53 -0500
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:51425 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751089AbYBLVew (ORCPT
+	Tue, 12 Feb 2008 16:35:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45808 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752052AbYBLVfP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 16:34:52 -0500
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: E1000 (PCI-E) doesn't work on nforce430, MSI issue.
-Date: Tue, 12 Feb 2008 22:34:42 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <m37ih9ooim.fsf@maximus.localdomain>
-In-Reply-To: <m37ih9ooim.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart18226953.dDsoI1WA4D";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Tue, 12 Feb 2008 16:35:15 -0500
+Date: Tue, 12 Feb 2008 13:34:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Thomas, Sujith" <sujith.thomas@intel.com>
+Cc: lenb@kernel.org, mingo@elte.hu, torvalds@linux-foundation.org,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org, rui.zhang@intel.com
+Subject: Re: [Bug-fix]:2.6.25-rc0 Generic thermal management [Patch 1/2]:
+ validating input parameters
+Message-Id: <20080212133446.a521a8bb.akpm@linux-foundation.org>
+In-Reply-To: <05B550FD4BD2014E841D83547B62600802A6B2A7@bgsmsx411.gar.corp.intel.com>
+References: <05B550FD4BD2014E841D83547B62600802A3A1B0@bgsmsx411.gar.corp.intel.com>
+	<20080211133827.16140ba0.akpm@linux-foundation.org>
+	<05B550FD4BD2014E841D83547B62600802A6B2A7@bgsmsx411.gar.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802122234.47164.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart18226953.dDsoI1WA4D
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 12 Feb 2008 21:27:44 +0530
+"Thomas, Sujith" <sujith.thomas@intel.com> wrote:
 
-On the day of Tuesday 12 February 2008 Krzysztof Halasa hast written:
-> Hi,
->
-> Is it a known problem?
-> Linux 2.6.24.2, ASUS M2NPV-MX mobo, nforce 430 based, two PCI-E x1
-> E1000 cards, 32-bit kernel, default e1000 driver (PCI IDs disabled in
-> e1000e).
->
-> Don't work by default. "pci=3Dnomsi" fixes the problem.
+> > The patch is fairly seriously wordwrapped.
+> Should be fixed now.
 
-Probably the patch to enable msi bit on the host bridge(?) is still missing=
- in=20
-mainline. I needed that patch to make msi work on my MCP51 system.
+No, even after I fixed all the wordwrapping I saw a large amount
+of fuzz and several rejects when trying to apply the patch.
 
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
-
---nextPart18226953.dDsoI1WA4D
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHshD3xU2n/+9+t5gRAmRZAKD529mjcVX0vsE4FJqtbK6AFYBIrACfee4C
-P4rW89oQjEQ6tibXqco6UB8=
-=cJ8I
------END PGP SIGNATURE-----
-
---nextPart18226953.dDsoI1WA4D--
+There's a reason why Len uses his kernel.org account to get real work done ;)
