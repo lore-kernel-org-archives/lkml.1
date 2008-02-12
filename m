@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbYBLSiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763334AbYBLSlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763397AbYBLSiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 13:38:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754843AbYBLSiG
+	id S1763334AbYBLSlh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 13:41:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758314AbYBLSla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 13:38:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40414 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754550AbYBLSiD (ORCPT
+	Tue, 12 Feb 2008 13:41:30 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36101 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754843AbYBLSl3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 13:38:03 -0500
-Date: Tue, 12 Feb 2008 10:36:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benny Halevy <bhalevy@panasas.com>
-cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <47B1DD17.2030204@panasas.com>
-Message-ID: <alpine.LFD.1.00.0802121031520.2920@woody.linux-foundation.org>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>  <20080212044314.GA4888@kroah.com>  <20080211211751.3e265754@laptopd505.fenrus.org>  <20080211.221126.230471463.davem@davemloft.net>  <47B1CB08.4020101@garzik.org> 
- <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <47B1DD17.2030204@panasas.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Feb 2008 13:41:29 -0500
+Date: Tue, 12 Feb 2008 20:16:59 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] kgdb-light -v10
+Message-ID: <20080212191659.GA6458@one.firstfloor.org>
+References: <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu> <alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org> <20080212182024.GA4940@one.firstfloor.org> <20080212102010.d88886f3.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212102010.d88886f3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 Feb 2008, Benny Halevy wrote:
+On Tue, Feb 12, 2008 at 10:20:10AM -0800, Andrew Morton wrote:
+> On Tue, 12 Feb 2008 19:20:24 +0100 Andi Kleen <andi@firstfloor.org> wrote:
 > 
-> IMHO, this base tree should typically be based off of linus' tree
-> and kept rebased on top of it.  This way you get the mainline fixes
-> through the integration base tree.
+> > >  - the kgdb commands should always act on the *current* CPU only
+> > >  - add one command that says "switch over to CPU #n" which just releases 
+> > >    the current CPU and sends an IPI to that CPU #n (no timeouts, no 
+> > >    synchronous waiting, no nothing - it's like a "continue", but with a 
+> > >    "try to get the other CPU to stop"
+> > 
+> > The problem I see here is that the kernel tends to get badly confused
+> > if one CPU just stops responding. At some point someone does an global
+> > IPI and that then hangs.
+> 
+> Yes.  A stopped CPU is very visible and hence can change the behaviour of
+> the system which is being tested.
+> 
+> >  You would need to hotunplug the CPU which
+> > is theoretically possible, but quite intrusive. Or maybe the "isolate CPUs 
+> > in cpusets" frame work someone posted recently on l-k could be used.  Still 
+> > would probably have all kinds of tricky issues and races.
+> 
+> I don't think you'd want to be poking around in kernel internals while some
+> of the CPUs are continuing to run.  It sounds rather creepy.  You want
+> everything to stop.  Including time-related things.
 
-Hell no!
+Note I wrote the one above only as a reply to Linus' proposal, not
+because I was advocating "live debugging" (or rather I think if you want
+that just use gdb vmlinux /proc/kcore) 
 
-No rebasing! If people rebase, then it's useless as a base.
+I agree with you in principle, but what do you do if one of the CPUs doesn't 
+answer? 
 
-That base tree needs to be something people can *depend* on. It contains 
-the API changes, and not anything else. Otherwise I will never ever pull 
-the resulting mess, and you all end up with tons of extra work.
+Ingo seems to think it's ok for the debugger then to just hang too,
+I think it should eventually time out and debug anyways.
 
-Just say *no* to rebasing.
+Also there are some limits on how much the system should be frozen
+down. For example if you're strict about this requirement you
+would need to require full DMA quiescence (like kexec does). But that's
+obvious not a good idea for the debugger. So it's always shades
+of gray, not black/white.
 
-Rebasing is fine for maintaining *your* own patch-set, ie  it is an 
-alternative to using quilt. But it is absolutely not acceptable for 
-*anythign* else. 
+What I find strange with the current patch is that it goes to extreme
+measures to stop the CPUs (will hang forever), but not do the whole
+thing (DMA quiescence too) 
 
-In particular, people who rebase other peoples trees should just be shot 
-(*). It's simply not acceptable behaviour. It screws up the sign-off 
-procedure, it screws up the people whose code was merged, and it's just 
-WRONG.
+-Andi
 
-			Linus
-
-(*) The exception being if there is something seriously wrong with the 
-tree. I think I've had trees which I just refused to pull, and while most 
-of the time I just say "I refuse to pull", early on in git development I 
-actually ended up fixing some of those trees up because my refusal was due 
-to people mis-using git in the first place. So I have actually effectively 
-rebased a maintainer tree at least once. But I still think it is seriously 
-screwed up.
