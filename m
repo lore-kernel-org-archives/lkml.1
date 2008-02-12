@@ -1,156 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764371AbYBLX5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763702AbYBLX6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764371AbYBLX5H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:57:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761978AbYBLX4y
+	id S1763702AbYBLX6c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYBLX6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:56:54 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:49585 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763472AbYBLX4w (ORCPT
+	Tue, 12 Feb 2008 18:58:23 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54837
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751650AbYBLX6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:56:52 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAJLBsUdMQWYv/2dsb2JhbACBWat5gXA
-Date: Tue, 12 Feb 2008 18:56:50 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] spufs support multiple probes markers
-Message-ID: <20080212235650.GA23693@Krystal>
-References: <20080212152245.2d816143.akpm@linux-foundation.org> <20080212233914.GA22966@Krystal>
+	Tue, 12 Feb 2008 18:58:22 -0500
+Date: Tue, 12 Feb 2008 15:58:53 -0800 (PST)
+Message-Id: <20080212.155853.193190548.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47B1CB08.4020101@garzik.org>
+References: <20080211211751.3e265754@laptopd505.fenrus.org>
+	<20080211.221126.230471463.davem@davemloft.net>
+	<47B1CB08.4020101@garzik.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20080212233914.GA22966@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:52:42 up 1 day, 19:53,  3 users,  load average: 2.51, 0.66,
-	0.47
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
-> * Andrew Morton (akpm@linux-foundation.org) wrote:
-> > 
-> > fyi, I have this on hold because I spotted spufs build breakage,
-> > but I haven't had time to investigate.  powerpc allmodconfig, iirc.
-> 
-> Christoph told me he would update his sputrace accordingly. Christoph,
-> should I do the changes or let you do it ?
-> 
-> It's mostly the probe function prototype which changes from 
-> 
-> -typedef void marker_probe_func(const struct marker *mdata,
-> -       void *private_data, const char *fmt, ...);
-> 
-> to
-> 
-> +typedef void marker_probe_func(void *probe_private, void *call_private,
-> +               const char *fmt, va_list *args);
-> 
-> Where you receive an already ready va_list instead of having to call
-> va_start/va_end in the probe.
-> 
-> Also, there is no more marker_arm/marker_disarm. It is now automatically
-> done upon register/unregister.
-> 
-> Mathieu
-> 
+From: Jeff Garzik <jeff@garzik.org>
+Date: Tue, 12 Feb 2008 11:36:24 -0500
 
-Update spufs to the new linux kernel markers API, which supports connecting
-more than one probe to a single marker.
+> Rebasing is low impact only if you don't have git downstream people.
+> Otherwise, you're just treating it as a useful quilt clone, really.
 
-(compile-tested only)
+Understood.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Christoph Hellwig <hch@infradead.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: Steven Rostedt <rostedt@goodmis.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
----
- arch/powerpc/platforms/cell/spufs/sputrace.c |   31 +++++++++------------------
- 1 file changed, 11 insertions(+), 20 deletions(-)
+One of the key operations that I'm interested in is removing things
+from the history.  If I could do that using GIT without any side
+effects and in a way that really would remove it from the tree, I
+would do that in a heartbeat.
 
-Index: linux-2.6-lttng/arch/powerpc/platforms/cell/spufs/sputrace.c
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/platforms/cell/spufs/sputrace.c	2008-02-12 15:07:25.000000000 -0500
-+++ linux-2.6-lttng/arch/powerpc/platforms/cell/spufs/sputrace.c	2008-02-12 15:11:39.000000000 -0500
-@@ -146,34 +146,28 @@
- 	wake_up(&sputrace_wait);
- }
- 
--static void spu_context_event(const struct marker *mdata,
--		void *private, const char *format, ...)
-+static void spu_context_event(void *probe_private, void *call_data,
-+		const char *format, va_list *args)
- {
--	struct spu_probe *p = mdata->private;
--	va_list ap;
-+	struct spu_probe *p = probe_private;
- 	struct spu_context *ctx;
- 	struct spu *spu;
- 
--	va_start(ap, format);
--	ctx = va_arg(ap, struct spu_context *);
--	spu = va_arg(ap, struct spu *);
-+	ctx = va_arg(*args, struct spu_context *);
-+	spu = va_arg(*args, struct spu *);
- 
- 	sputrace_log_item(p->name, ctx, spu);
--	va_end(ap);
- }
- 
--static void spu_context_nospu_event(const struct marker *mdata,
--		void *private, const char *format, ...)
-+static void spu_context_nospu_event(void *probe_private, void *call_data,
-+		const char *format, va_list *args)
- {
--	struct spu_probe *p = mdata->private;
--	va_list ap;
-+	struct spu_probe *p = probe_private;
- 	struct spu_context *ctx;
- 
--	va_start(ap, format);
--	ctx = va_arg(ap, struct spu_context *);
-+	ctx = va_arg(*args, struct spu_context *);
- 
- 	sputrace_log_item(p->name, ctx, NULL);
--	va_end(ap);
- }
- 
- struct spu_probe spu_probes[] = {
-@@ -219,10 +213,6 @@
- 		if (error)
- 			printk(KERN_INFO "Unable to register probe %s\n",
- 					p->name);
--
--		error = marker_arm(p->name);
--		if (error)
--			printk(KERN_INFO "Unable to arm probe %s\n", p->name);
- 	}
- 
- 	return 0;
-@@ -238,7 +228,8 @@
- 	int i;
- 
- 	for (i = 0; i < ARRAY_SIZE(spu_probes); i++)
--		marker_probe_unregister(spu_probes[i].name);
-+		marker_probe_unregister(spu_probes[i].name,
-+			spu_probes[i].probe_func, &spu_probes[i]);
- 
- 	remove_proc_entry("sputrace", NULL);
- 	kfree(sputrace_log);
+At 1500 changesets, a merge conflict shows up about once
+every day or two as 2.6.N nears it's release into final
+as bug fixes trickle in.
 
+I find using GIT to fixup merge errors on a tree of that
+scale to be really painful.  And it only fixes up the final
+result in a merge changeset.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Just like we expect submitters to refresh their patches
+as things change upstream, we as developers should be able
+to refresh trees of changes we are maintaining for similar
+effect.
+
+This is all made difficult because GIT's commit IDs are tied
+to where they are in the tree, and thus are dependant upon
+the wholeness of parents and subsequently their parents.
+
+That's why it's hard to "just remove" something completely
+without rebasing the tree.
+
+Let me give you a good example, just yesterday I had to rebase
+my net-2.6 tree a few times.  It's because I put a patch in there
+that the person said was OK but it broke the build.  There is
+zero reason for me to push that tree to Linus with the bad
+commit and the revert, it's just noise and makes the tree harder
+for people to review.
+
+Now, to preserver your tree's history I simply reapplied the
+stuff I wanted then repulled your tree.
+
+But right now I have to redo the include/linux/rcupdate.h that's in
+there because it has a bug.  I now want to rebase again to just kick
+out the existing rcupdate.h changeset, because I know of no
+alternative that really lets me get rid of the original bogus
+changeset.
