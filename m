@@ -1,70 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761637AbYBLHri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761869AbYBLHrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761637AbYBLHri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 02:47:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbYBLHr3
+	id S1761869AbYBLHrx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 02:47:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761721AbYBLHrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 02:47:29 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:33284 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755323AbYBLHr2 (ORCPT
+	Tue, 12 Feb 2008 02:47:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38406 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761681AbYBLHrk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 02:47:28 -0500
-From: Jack Morgenstein <jackm@dev.mellanox.co.il>
-Organization: Mellanox
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] mlx4: fix build break
-Date: Tue, 12 Feb 2008 09:43:33 +0200
-User-Agent: KMail/1.9.1
-Cc: Olof Johansson <olof@lixom.net>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org, tziporet@mellanox.co.il
-References: <adafxw36ntm.fsf@cisco.com> <20080211022257.GA26656@lixom.net> <adaodanxhlb.fsf@cisco.com>
-In-Reply-To: <adaodanxhlb.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 12 Feb 2008 02:47:40 -0500
+Date: Mon, 11 Feb 2008 23:46:28 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH] Avoid buffer overflows in get_user_pages()
+Message-Id: <20080211234628.b5533b87.akpm@linux-foundation.org>
+In-Reply-To: <5758.1202771853@vena.lwn.net>
+References: <5758.1202771853@vena.lwn.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802120943.34388.jackm@dev.mellanox.co.il>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 February 2008 00:18, Roland Dreier wrote:
-> Thanks, applied.
+On Mon, 11 Feb 2008 16:17:33 -0700 Jonathan Corbet <corbet@lwn.net> wrote:
+
+> Avoid buffer overflows in get_user_pages()
 > 
-> Jack, I thought you guys tested the build on powerpc.  How did this
-> sneak through?
+> So I spent a while pounding my head against my monitor trying to figure
+> out the vmsplice() vulnerability - how could a failure to check for
+> *read* access turn into a root exploit?  It turns out that it's a buffer
+> overflow problem which is made easy by the way get_user_pages() is
+> coded.
 > 
-It did not sneak through, because the problem does not exist in the OFED git.
+> In particular, "len" is a signed int, and it is only checked at the
+> *end* of a do {} while() loop.  So, if it is passed in as zero, the loop
+> will execute once and decrement len to -1.  At that point, the loop will
+> proceed until the next invalid address is found; in the process, it will
+> likely overflow the pages array passed in to get_user_pages().
 
-The following commit was performed to
- git://git.openfabrics.org/ofed_1_3/linux-2.6.git
-on Sept 25, 2007:
-=======================================
-commit 4a5709b81dfd249c98271801ddc01decb7acd466
-Author: Eli Cohen <eli@mellanox.co.il>
-Date:   Tue Sep 25 12:41:30 2007 +0200
+Sounds convincing.
 
-    add missing include file. ia64 requires it.
+> I think that, if get_user_pages() has been asked to grab zero pages,
+> that's what it should do.  Thus this patch; it is, among other things,
+> enough to block the (already fixed) root exploit and any others which
+> might be lurking in similar code.  I also think that the number of pages
+> should be unsigned, but changing the prototype of this function probably
+> requires some more careful review.
+> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e5628a5..7f50fd8 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -989,6 +989,8 @@ int get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
+>  	int i;
+>  	unsigned int vm_flags;
+>  
+> +	if (len <= 0)
+> +		return 0;
+>  	/* 
+>  	 * Require read or write permissions.
+>  	 * If 'force' is set, we only require the "MAY" flags.
 
-    Signed-off-by: Eli Cohen <eli@mellanox.co.il>
+Can we just convert
 
-diff --git a/drivers/net/mlx4/alloc.c b/drivers/net/mlx4/alloc.c
-index f8d63d3..704a56b 100644
---- a/drivers/net/mlx4/alloc.c
-+++ b/drivers/net/mlx4/alloc.c
-@@ -34,6 +34,7 @@
- #include <linux/slab.h>
- #include <linux/bitmap.h>
- #include <linux/dma-mapping.h>
-+#include <linux/vmalloc.h>
+	do {
+		...
+	} while (len);
 
- #include "mlx4.h"
-========================================
+into
 
-I guess this just fell through the cracks with regard to posting it to the list.
-Sorry about that.
+	while (len) {
+		...
+	}
 
-- Jack
+?
