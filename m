@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760411AbYBLXJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbYBLXJ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760411AbYBLXJl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbYBLXJH
+	id S1760920AbYBLXJ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:09:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYBLXJ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:09:07 -0500
+	Tue, 12 Feb 2008 18:09:27 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:8053 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760124AbYBLXJE (ORCPT
+	with ESMTP id S1760253AbYBLXJY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:09:04 -0500
+	Tue, 12 Feb 2008 18:09:24 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=cwmLJboP+weJvwr5sunkOvSu8p2DeP/xLZUNg3/mTUooANLbmZgzbTE/waWIwyHZkv6NSB+roGCgGgaexs06bUSlu18YTOn8JHrJvfS0IC4VdmPoMI5EV0TDsA93oLaEqcTzmigsl2d5SIePH/JeQWhmvhfU2vCwBYUIgyDF8YU=
+        b=aPsmdF6SLz608qaGZoYsUMwCl1mn7z5jPbL4CReCuuXMhZI2OEGcyravqoHV4MttotU6p2RJ+o4YN37y2QcSnpQsjB6quB0+TPl8vf6lLkYzT3tTVVw9zWahO/lY8yJvaEGKC2TVteeT5cNdU0UwevKWWQr2HtQd4euAmN+cWr8=
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, Zhu Yi <yi.zhu@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org
-Subject: [PATCH] ipw2200: le*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:12 +0100
-Message-Id: <1202857582-15450-8-git-send-email-marcin.slusarz@gmail.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-scsi@vger.kernel.org,
+       aacraid@adaptec.com, James.Bottomley@HansenPartnership.com
+Subject: [PATCH] scsi: le*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:13 +0100
+Message-Id: <1202857582-15450-9-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -39,28 +38,53 @@ with:
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Zhu Yi <yi.zhu@intel.com>
-Cc: John W. Linville <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org
+Cc: linux-scsi@vger.kernel.org
+Cc: aacraid@adaptec.com
+Cc: James.Bottomley@HansenPartnership.com
 ---
- drivers/net/wireless/ipw2200.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+ drivers/scsi/aacraid/commsup.c |    2 +-
+ drivers/scsi/ips.c             |    8 ++------
+ 2 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/net/wireless/ipw2200.c b/drivers/net/wireless/ipw2200.c
-index 3e6ad7b..5d9854e 100644
---- a/drivers/net/wireless/ipw2200.c
-+++ b/drivers/net/wireless/ipw2200.c
-@@ -10326,9 +10326,7 @@ static int ipw_tx_skb(struct ipw_priv *priv, struct ieee80211_txb *txb,
- 					 remaining_bytes,
- 					 PCI_DMA_TODEVICE));
+diff --git a/drivers/scsi/aacraid/commsup.c b/drivers/scsi/aacraid/commsup.c
+index 81b3692..3ac8c82 100644
+--- a/drivers/scsi/aacraid/commsup.c
++++ b/drivers/scsi/aacraid/commsup.c
+@@ -594,7 +594,7 @@ void aac_consumer_free(struct aac_dev * dev, struct aac_queue *q, u32 qid)
+ 	if (le32_to_cpu(*q->headers.consumer) >= q->entries)
+ 		*q->headers.consumer = cpu_to_le32(1);
+ 	else
+-		*q->headers.consumer = cpu_to_le32(le32_to_cpu(*q->headers.consumer)+1);
++		le32_add_cpu(q->headers.consumer, 1);
  
--			tfd->u.data.num_chunks =
--			    cpu_to_le32(le32_to_cpu(tfd->u.data.num_chunks) +
--					1);
-+			le32_add_cpu(&tfd->u.data.num_chunks, 1);
- 		}
- 	}
+ 	if (wasfull) {
+ 		switch (qid) {
+diff --git a/drivers/scsi/ips.c b/drivers/scsi/ips.c
+index bb152fb..f45770a 100644
+--- a/drivers/scsi/ips.c
++++ b/drivers/scsi/ips.c
+@@ -3696,9 +3696,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
+ 			scb->cmd.basic_io.sg_count = scb->sg_len;
  
+ 			if (scb->cmd.basic_io.lba)
+-				scb->cmd.basic_io.lba =
+-				    cpu_to_le32(le32_to_cpu
+-						(scb->cmd.basic_io.lba) +
++				le32_add_cpu(&scb->cmd.basic_io.lba,
+ 						le16_to_cpu(scb->cmd.basic_io.
+ 							    sector_count));
+ 			else
+@@ -3744,9 +3742,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
+ 			scb->cmd.basic_io.sg_count = scb->sg_len;
+ 
+ 			if (scb->cmd.basic_io.lba)
+-				scb->cmd.basic_io.lba =
+-				    cpu_to_le32(le32_to_cpu
+-						(scb->cmd.basic_io.lba) +
++				le32_add_cpu(&scb->cmd.basic_io.lba,
+ 						le16_to_cpu(scb->cmd.basic_io.
+ 							    sector_count));
+ 			else
 -- 
 1.5.3.7
 
