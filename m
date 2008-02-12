@@ -1,100 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbYBLPYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbYBLP0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760171AbYBLPYf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 10:24:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755157AbYBLPY1
+	id S1760995AbYBLP0b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 10:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbYBLP0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 10:24:27 -0500
-Received: from smtp-107-backup.noc.nerim.net ([62.4.17.107]:3409 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752727AbYBLPY0 (ORCPT
+	Tue, 12 Feb 2008 10:26:21 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:11885 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755157AbYBLP0U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 10:24:26 -0500
-Date: Tue, 12 Feb 2008 16:24:22 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Subject: [PATCH] dmi: Clean-up dmi helper declarations
-Message-ID: <20080212162422.3780e44c@hyperion.delvare>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 10:26:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=rtpgtJX7fhV3YvfBKfclSA4vrC/JpQQUSEIGpeTPAoB9ub8s4qMbAhmuwB76Chj0yP2F/8d05cufhdo6WGRjPJJTFsaRotAyg22M5W7vSyAz7gIWYt5PVfxYRAoXTILkWo8Ar9d5rEDsIH7S27CCr+FeE1XD+HRKv8qW6HILJzU=
+Date: Tue, 12 Feb 2008 16:25:50 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH] ide-scsi: do non-atomic pc->flags testing
+Message-ID: <20080212152550.GE4530@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1202718880-1793-1-git-send-email-petkovbb@gmail.com> <200802120109.24152.bzolnier@gmail.com> <20080212055919.GD2879@gollum.tnic> <200802121328.48515.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802121328.48515.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The declaration of dmi helper functions is a bit messy and inconsistent
-at the moment:
-* On ia64 they are declared in <asm/io.h>.
-* On x86-64 they are declared in <asm/dmi.h>.
-* On i386 they are declared both in <asm/io.h> and <asm/dmi.h>.
+commit 272976f0f5754707f9e41da315717a6eb8d9d536
+Author: Borislav Petkov <petkovbb@gmail.com>
+Date:   Tue Feb 12 16:22:44 2008 +0100
 
-Fix the header files so that the dmi helper functions are consistently
-defined in <asm/dmi.h>.
+    ide-scsi: do non-atomic pc->flags testing
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Cc: Matt Domsch <Matt_Domsch@dell.com>
----
-Only tested on i386 and x86-64, maybe Matt can test on ia64?
+    Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
- include/asm-ia64/dmi.h  |    5 +++++
- include/asm-ia64/io.h   |    5 -----
- include/asm-x86/dmi.h   |    1 +
- include/asm-x86/io_32.h |    5 -----
- 4 files changed, 6 insertions(+), 10 deletions(-)
-
---- linux-2.6.25-rc1.orig/include/asm-ia64/dmi.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.25-rc1/include/asm-ia64/dmi.h	2008-02-12 14:44:31.000000000 +0100
-@@ -3,4 +3,9 @@
- 
- #include <asm/io.h>
- 
-+/* Use normal IO mappings for DMI */
-+#define dmi_ioremap ioremap
-+#define dmi_iounmap(x,l) iounmap(x)
-+#define dmi_alloc(l) kmalloc(l, GFP_ATOMIC)
-+
+diff --git a/drivers/scsi/ide-scsi.c b/drivers/scsi/ide-scsi.c
+index 5ec421c..eb84cdc 100644
+--- a/drivers/scsi/ide-scsi.c
++++ b/drivers/scsi/ide-scsi.c
+@@ -319,8 +319,10 @@ static int idescsi_end_request (ide_drive_t *drive, int uptodate, int nrsecs)
+ 		pc = opc;
+ 		rq = pc->rq;
+ 		pc->scsi_cmd->result = (CHECK_CONDITION << 1) |
+-					((test_bit(PC_TIMEDOUT, &pc->flags)?DID_TIME_OUT:DID_OK) << 16);
+-	} else if (test_bit(PC_TIMEDOUT, &pc->flags)) {
++					(((pc->flags & PC_TIMEDOUT) ?
++							  DID_TIME_OUT :
++							  DID_OK) << 16);
++	} else if (pc->flags & PC_TIMEDOUT) {
+ 		if (log)
+ 			printk (KERN_WARNING "ide-scsi: %s: timed out for %lu\n",
+ 					drive->name, pc->scsi_cmd->serial_number);
+@@ -362,7 +364,7 @@ static int idescsi_expiry(ide_drive_t *drive)
+ #if IDESCSI_DEBUG_LOG
+ 	printk(KERN_WARNING "idescsi_expiry called for %lu at %lu\n", pc->scsi_cmd->serial_number, jiffies);
  #endif
---- linux-2.6.25-rc1.orig/include/asm-ia64/io.h	2008-01-25 10:27:06.000000000 +0100
-+++ linux-2.6.25-rc1/include/asm-ia64/io.h	2008-02-12 14:44:35.000000000 +0100
-@@ -423,11 +423,6 @@ extern void __iomem * ioremap(unsigned l
- extern void __iomem * ioremap_nocache (unsigned long offset, unsigned long size);
- extern void iounmap (volatile void __iomem *addr);
+-	set_bit(PC_TIMEDOUT, &pc->flags);
++	pc->flags |= PC_TIMEDOUT;
  
--/* Use normal IO mappings for DMI */
--#define dmi_ioremap ioremap
--#define dmi_iounmap(x,l) iounmap(x)
--#define dmi_alloc(l) kmalloc(l, GFP_ATOMIC)
--
- /*
-  * String version of IO memory access ops:
-  */
---- linux-2.6.25-rc1.orig/include/asm-x86/dmi.h	2008-02-11 09:49:09.000000000 +0100
-+++ linux-2.6.25-rc1/include/asm-x86/dmi.h	2008-02-12 14:45:47.000000000 +0100
-@@ -27,6 +27,7 @@ static inline void *dmi_alloc(unsigned l
+ 	return 0;					/* we do not want the ide subsystem to retry */
+ }
+@@ -384,7 +386,7 @@ static ide_startstop_t idescsi_pc_intr (ide_drive_t *drive)
+ 	printk (KERN_INFO "ide-scsi: Reached idescsi_pc_intr interrupt handler\n");
+ #endif /* IDESCSI_DEBUG_LOG */
  
- #endif
+-	if (test_bit(PC_TIMEDOUT, &pc->flags)){
++	if (pc->flags & PC_TIMEDOUT) {
+ #if IDESCSI_DEBUG_LOG
+ 		printk(KERN_WARNING "idescsi_pc_intr: got timed out packet  %lu at %lu\n",
+ 				pc->scsi_cmd->serial_number, jiffies);
+@@ -393,7 +395,8 @@ static ide_startstop_t idescsi_pc_intr (ide_drive_t *drive)
+ 		idescsi_end_request (drive, 1, 0);
+ 		return ide_stopped;
+ 	}
+-	if (test_and_clear_bit (PC_DMA_IN_PROGRESS, &pc->flags)) {
++	if (pc->flags & PC_DMA_IN_PROGRESS) {
++		pc->flags &= ~PC_DMA_IN_PROGRESS;
+ #if IDESCSI_DEBUG_LOG
+ 		printk ("ide-scsi: %s: DMA complete\n", drive->name);
+ #endif /* IDESCSI_DEBUG_LOG */
+@@ -432,7 +435,7 @@ static ide_startstop_t idescsi_pc_intr (ide_drive_t *drive)
+ 					"- discarding data\n");
+ 				temp = pc->buf_size - pc->xferred;
+ 				if (temp) {
+-					clear_bit(PC_WRITING, &pc->flags);
++					pc->flags &= ~PC_WRITING;
+ 					if (pc->sg)
+ 						idescsi_input_buffers(drive, pc,
+ 									temp);
+@@ -454,14 +457,14 @@ static ide_startstop_t idescsi_pc_intr (ide_drive_t *drive)
+ 		}
+ 	}
+ 	if (ireason & IO) {
+-		clear_bit(PC_WRITING, &pc->flags);
++		pc->flags &= ~PC_WRITING;
+ 		if (pc->sg)
+ 			idescsi_input_buffers(drive, pc, bcount);
+ 		else
+ 			hwif->atapi_input_bytes(drive, pc->cur_pos,
+ 						bcount);
+ 	} else {
+-		set_bit(PC_WRITING, &pc->flags);
++		pc->flags |= PC_WRITING;
+ 		if (pc->sg)
+ 			idescsi_output_buffers(drive, pc, bcount);
+ 		else
+@@ -501,8 +504,8 @@ static ide_startstop_t idescsi_transfer_pc(ide_drive_t *drive)
+ 	ide_set_handler(drive, &idescsi_pc_intr, get_timeout(pc), idescsi_expiry);
+ 	/* Send the actual packet */
+ 	drive->hwif->atapi_output_bytes(drive, scsi->pc->c, 12);
+-	if (test_bit (PC_DMA_OK, &pc->flags)) {
+-		set_bit (PC_DMA_IN_PROGRESS, &pc->flags);
++	if (pc->flags & PC_DMA_OK) {
++		pc->flags |= PC_DMA_IN_PROGRESS;
+ 		hwif->dma_start(drive);
+ 	}
+ 	return ide_started;
+@@ -512,10 +515,10 @@ static inline int idescsi_set_direction(struct ide_atapi_pc *pc)
+ {
+ 	switch (pc->c[0]) {
+ 		case READ_6: case READ_10: case READ_12:
+-			clear_bit(PC_WRITING, &pc->flags);
++			pc->flags &= ~PC_WRITING;
+ 			return 0;
+ 		case WRITE_6: case WRITE_10: case WRITE_12:
+-			set_bit(PC_WRITING, &pc->flags);
++			pc->flags |= PC_WRITING;
+ 			return 0;
+ 		default:
+ 			return 1;
+@@ -572,7 +575,7 @@ static ide_startstop_t idescsi_issue_pc(ide_drive_t *drive,
+ 	ide_pktcmd_tf_load(drive, IDE_TFLAG_NO_SELECT_MASK, bcount, dma);
  
-+/* Use early IO mappings for DMI because it's initialized early */
- #define dmi_ioremap early_ioremap
- #define dmi_iounmap early_iounmap
+ 	if (dma)
+-		set_bit(PC_DMA_OK, &pc->flags);
++		pc->flags |= PC_DMA_OK;
  
---- linux-2.6.25-rc1.orig/include/asm-x86/io_32.h	2008-02-11 09:49:09.000000000 +0100
-+++ linux-2.6.25-rc1/include/asm-x86/io_32.h	2008-02-12 14:45:54.000000000 +0100
-@@ -139,11 +139,6 @@ extern void *early_ioremap(unsigned long
- extern void early_iounmap(void *addr, unsigned long size);
- extern void __iomem *fix_ioremap(unsigned idx, unsigned long phys);
- 
--/* Use early IO mappings for DMI because it's initialized early */
--#define dmi_ioremap early_ioremap
--#define dmi_iounmap early_iounmap
--#define dmi_alloc alloc_bootmem
--
- /*
-  * ISA I/O bus memory addresses are 1:1 with the physical address.
-  */
-
-
+ 	if (test_bit(IDESCSI_DRQ_INTERRUPT, &scsi->flags)) {
+ 		ide_execute_command(drive, WIN_PACKETCMD, &idescsi_transfer_pc,
 -- 
-Jean Delvare
+Regards/Gruﬂ,
+    Boris.
