@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbYBLDUW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757261AbYBLD0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbYBLDUW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 Feb 2008 22:20:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754862AbYBLDUL
+	id S1757261AbYBLD0T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 Feb 2008 22:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbYBLD0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 Feb 2008 22:20:11 -0500
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:34425 "EHLO
-	pd3mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbYBLDUJ (ORCPT
+	Mon, 11 Feb 2008 22:26:03 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:61679 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753172AbYBLD0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 Feb 2008 22:20:09 -0500
-Date: Mon, 11 Feb 2008 21:16:52 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] Avoid buffer overflows in get_user_pages()
-In-reply-to: <fa.NNs+hqAlLlf93+yNZ/YJzSyGQbs@ifi.uio.no>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Message-id: <47B10FA4.2000808@shaw.ca>
+	Mon, 11 Feb 2008 22:26:01 -0500
+Date: Mon, 11 Feb 2008 19:45:38 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH 4/4] x86_64: check msr to get mmconfig for amd family 10h
+ opteron v3
+In-reply-to: <20080211185115.87e878d3.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: greg@kroah.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Message-id: <200802111945.38920.yinghai.lu@sun.com>
+Organization: SUN
 MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.5jOFf0zR7ZoK3hLDItf3Omow4lE@ifi.uio.no>
- <fa.NNs+hqAlLlf93+yNZ/YJzSyGQbs@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200802111643.17265.yinghai.lu@sun.com>
+ <200802111820.47244.yinghai.lu@sun.com>
+ <20080211185115.87e878d3.akpm@linux-foundation.org>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Tuesday 12 February 2008 10:17, Jonathan Corbet wrote:
->> Avoid buffer overflows in get_user_pages()
->>
->> So I spent a while pounding my head against my monitor trying to figure
->> out the vmsplice() vulnerability - how could a failure to check for
->> *read* access turn into a root exploit?  It turns out that it's a buffer
->> overflow problem which is made easy by the way get_user_pages() is
->> coded.
->>
->> In particular, "len" is a signed int, and it is only checked at the
->> *end* of a do {} while() loop.  So, if it is passed in as zero, the loop
->> will execute once and decrement len to -1.  At that point, the loop will
->> proceed until the next invalid address is found; in the process, it will
->> likely overflow the pages array passed in to get_user_pages().
->>
->> I think that, if get_user_pages() has been asked to grab zero pages,
->> that's what it should do.  Thus this patch; it is, among other things,
->> enough to block the (already fixed) root exploit and any others which
->> might be lurking in similar code.  I also think that the number of pages
->> should be unsigned, but changing the prototype of this function probably
->> requires some more careful review.
->>
->> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
->>
->> diff --git a/mm/memory.c b/mm/memory.c
->> index e5628a5..7f50fd8 100644
->> --- a/mm/memory.c
->> +++ b/mm/memory.c
->> @@ -989,6 +989,8 @@ int get_user_pages(struct task_struct *tsk, struct
->> mm_struct *mm, int i;
->>  	unsigned int vm_flags;
->>
->> +	if (len <= 0)
->> +		return 0;
+On Monday 11 February 2008 06:51:15 pm Andrew Morton wrote:
+> On Mon, 11 Feb 2008 18:20:46 -0800 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> BUG_ON()?
+> > On Monday 11 February 2008 05:09:44 pm Andrew Morton wrote:
+> > > On Mon, 11 Feb 2008 16:48:35 -0800
+> > > Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> > > 
+> > > > From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+> > > > 
+> > > > so even booting kernel with acpi=off or even MCFG is not there, we still can
+> > > > use MMCONFIG.
+> > > > 
+> > > 
+> > > This patch threw a big reject.  I didn't check why.
+> > > 
+> > > 
+> > > > +		pci_direct_conf1.read(0, bus, devfn, 0, 4, &l);
+> > > 
+> > > When I fixed the reject, compilation failed here.
+> > > 
+> > > arch/x86/pci/mmconfig-shared.c: In function 'pci_mmcfg_check_hostbridge':
+> > > arch/x86/pci/mmconfig-shared.c:214: error: 'pci_direct_conf1' undeclared (first use in this function)
+> > > 
+> > > 
+> > > What kernel are you patching?
+> > > 
+> > 
+> > linus tree. 
+> 
+> hm.  So why didn't it compile?  pci_direct_conf1 is defined over in
+> arch/x86/pci/direct.c and is not mentioned in any header file.
 
-Well, not if the code involved in the exploit can pass a zero value, 
-otherwise it's just turning it into a DoS..
+it is in arch/x86/pci/pci.h
+
+and arch/x86/pci/mmconf_shared.c has one 
+#include "pci.h"
+
+did you compile that for 32 bit? 
+
+YH
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b6ce068a1285a24185b01be8a49021827516b3e1
+
+diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
+index 36cb44c..3431518 100644 (file)
+--- a/arch/x86/pci/pci.h
++++ b/arch/x86/pci/pci.h
+@@ -85,10 +85,17 @@ extern spinlock_t pci_config_lock;
+ extern int (*pcibios_enable_irq)(struct pci_dev *dev);
+ extern void (*pcibios_disable_irq)(struct pci_dev *dev);
+ 
+-extern int pci_conf1_write(unsigned int seg, unsigned int bus,
+-                          unsigned int devfn, int reg, int len, u32 value);
+-extern int pci_conf1_read(unsigned int seg, unsigned int bus,
+-                         unsigned int devfn, int reg, int len, u32 *value);
++struct pci_raw_ops {
++       int (*read)(unsigned int domain, unsigned int bus, unsigned int devfn,
++                                               int reg, int len, u32 *val);
++       int (*write)(unsigned int domain, unsigned int bus, unsigned int devfn,
++                                               int reg, int len, u32 val);
++};
++
++extern struct pci_raw_ops *raw_pci_ops;
++extern struct pci_raw_ops *raw_pci_ext_ops;
++
++extern struct pci_raw_ops pci_direct_conf1;
+ 
+ extern int pci_direct_probe(void);
+ extern void pci_direct_init(int type);
