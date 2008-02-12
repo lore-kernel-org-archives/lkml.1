@@ -1,177 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762524AbYBLJrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762150AbYBLJru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762524AbYBLJrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761952AbYBLJqm
+	id S1762150AbYBLJru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762347AbYBLJrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:46:42 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60000 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761574AbYBLJql (ORCPT
+	Tue, 12 Feb 2008 04:47:11 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:57669 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762324AbYBLJrJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:46:41 -0500
-Message-ID: <47B16AB7.1050100@bull.net>
-Date: Tue, 12 Feb 2008 10:45:27 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Tue, 12 Feb 2008 04:47:09 -0500
+Message-ID: <47B16B16.60402@linux.vnet.ibm.com>
+Date: Tue, 12 Feb 2008 15:17:02 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cmm@us.ibm.com, matthltc@us.ibm.com
-Subject: Re: [PATCH 7/8] Do not recompute msgmni anymore if explicitely set
- by user
-References: <20080211141646.948191000@bull.net>	<20080211141816.094061000@bull.net>	<20080211122408.5008902f.akpm@linux-foundation.org> <47B167AF.6010008@bull.net>
-In-Reply-To: <47B167AF.6010008@bull.net>
-Content-Type: multipart/mixed;
- boundary="------------030102020103080703060209"
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>, tony.luck@intel.com,
+       anton@samba.org, paulus@samba.org, rusty@rustcorp.com.au
+Subject: Re: [BUID_FAILURE] regression from 2.6.24-git18 to 2.6.25-rc1-git1
+ on section type conflict psmouse-base
+References: <47B14D52.6050404@linux.vnet.ibm.com> <20080211235929.791f7afb.akpm@linux-foundation.org> <20080212093614.GF2959@cs181133002.pp.htv.fi>
+In-Reply-To: <20080212093614.GF2959@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030102020103080703060209
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Nadia Derbey wrote:
-> Andrew Morton wrote:
-> 
->> On Mon, 11 Feb 2008 15:16:53 +0100
->> Nadia.Derbey@bull.net wrote:
+Adrian Bunk wrote:
+> On Mon, Feb 11, 2008 at 11:59:29PM -0800, Andrew Morton wrote:
+>> On Tue, 12 Feb 2008 13:10:02 +0530 Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> wrote:
 >>
->>
->>> [PATCH 07/08]
+>>> This build failure is seen on the powerpc from the 2.6.24-git18 kernel and is still visible
+>>> in the 2.6.25-rc1-git1.
 >>>
->>> This patch makes msgmni not recomputed anymore upon ipc namespace 
->>> creation /
->>> removal or memory add/remove, as soon as it has been set from userland.
+>>> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+>>> drivers/input/mouse/psmouse-base.c:44: error: __param_proto causes a section type conflict
+>>> make[3]: *** [drivers/input/mouse/psmouse-base.o] Error 1
+>>> make[2]: *** [drivers/input/mouse] Error 2
+>>> make[1]: *** [drivers/input] Error 2
 >>>
->>> As soon as msgmni is explicitely set via procfs or sysctl(), the 
->>> associated
->>> callback routine is unregistered from the ipc namespace notifier chain.
->>>
->>
->>
->> The patch series looks pretty good.
->>
->>
->>> ===================================================================
->>> --- linux-2.6.24-mm1.orig/ipc/ipc_sysctl.c    2008-02-08 
->>> 16:07:15.000000000 +0100
->>> +++ linux-2.6.24-mm1/ipc/ipc_sysctl.c    2008-02-08 
->>> 16:08:32.000000000 +0100
->>> @@ -35,6 +35,24 @@ static int proc_ipc_dointvec(ctl_table *
->>>     return proc_dointvec(&ipc_table, write, filp, buffer, lenp, ppos);
->>> }
->>>
->>> +static int proc_ipc_callback_dointvec(ctl_table *table, int write,
->>> +    struct file *filp, void __user *buffer, size_t *lenp, loff_t *ppos)
->>> +{
->>> +    size_t lenp_bef = *lenp;
->>> +    int rc;
->>> +
->>> +    rc = proc_ipc_dointvec(table, write, filp, buffer, lenp, ppos);
->>> +
->>> +    if (write && !rc && lenp_bef == *lenp)
->>> +        /*
->>> +         * Tunable has successfully been changed from userland:
->>> +         * disable its automatic recomputing.
->>> +         */
->>> +        unregister_ipcns_notifier(current->nsproxy->ipc_ns);
->>> +
->>> +    return rc;
->>> +}
->>
->>
->>
->> If you haven't done so, could you please check that it all builds cleanly
->> with CONFIG_PROCFS=n, and that all code which isn't needed if procfs is
->> disabled is not present in the final binary?
->>
->>
->>
->>
+>>> The patch http://lkml.org/lkml/2008/2/8/514 seems to have not taken into 2.6.25-rc1 and 
+>>> 2.6.25-rc1-git(s). Is there any new patch i am missing out.
+>> I have it queued up, along with quite a few other things, but for the next
+>> couple of days I have logistical problems which are preventing me from
+>> doing runtime testing.
 > 
-> Andrew,
+> And this really isn't a regression.
 > 
-> it builds fine, modulo some changes in ipv4 and ipv6 (see attached patch 
-> - didn't find it in the hot fixes).
+> It seems Kamalesh has upgraded his gcc to 4.2 between trying 
+> 2.6.24-git18 and trying 2.6.25-rc1-git1?
 > 
-> Regards,
-> Nadia
+> cu
+> Adrian
 > 
-> 
+Hi Adrian,
 
-Oops, forgot the patch. Thx Benjamin!
+I am using the gcc version
 
+gcc (GCC) 4.2.3 20071014 (prerelease) (Debian 4.2.2-3)
 
+It has been the same gcc version from 2.6.24-git18 to 2.6.25-rc1-git{1,2).
+This build failure is seen from 2.6.24-git18 and is still seen in 2.6.25-rc1-git{1,2}.
 
-
---------------030102020103080703060209
-Content-Type: text/x-patch;
- name="ip_v4_v6_procfs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ip_v4_v6_procfs.patch"
-
-Fix header files to let IPV4 and IPV6 build if CONFIG_PROC_FS=n
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- include/net/ip_fib.h |   13 ++++++++++++-
- include/net/ipv6.h   |    6 +++---
- 2 files changed, 15 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.24-mm1/include/net/ip_fib.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/net/ip_fib.h	2008-02-12 11:03:40.000000000 +0100
-+++ linux-2.6.24-mm1/include/net/ip_fib.h	2008-02-12 11:09:40.000000000 +0100
-@@ -266,6 +266,17 @@ static inline void fib_res_put(struct fi
- #ifdef CONFIG_PROC_FS
- extern int __net_init  fib_proc_init(struct net *net);
- extern void __net_exit fib_proc_exit(struct net *net);
--#endif
-+#else /* CONFIG_PROC_FS */
-+static inline int fib_proc_init(struct net *net)
-+{
-+	return 0;
-+}
-+
-+static inline int fib_proc_exit(struct net *net)
-+{
-+	return 0;
-+}
-+
-+#endif /* CONFIG_PROC_FS */
- 
- #endif  /* _NET_FIB_H */
-Index: linux-2.6.24-mm1/include/net/ipv6.h
-===================================================================
---- linux-2.6.24-mm1.orig/include/net/ipv6.h	2008-02-07 13:40:38.000000000 +0100
-+++ linux-2.6.24-mm1/include/net/ipv6.h	2008-02-12 11:16:27.000000000 +0100
-@@ -586,9 +586,6 @@ extern int ip6_mc_msfget(struct sock *sk
- 			 int __user *optlen);
- 
- #ifdef CONFIG_PROC_FS
--extern struct ctl_table *ipv6_icmp_sysctl_init(struct net *net);
--extern struct ctl_table *ipv6_route_sysctl_init(struct net *net);
--
- extern int  ac6_proc_init(void);
- extern void ac6_proc_exit(void);
- extern int  raw6_proc_init(void);
-@@ -621,6 +618,9 @@ static inline int snmp6_unregister_dev(s
- extern ctl_table ipv6_route_table_template[];
- extern ctl_table ipv6_icmp_table_template[];
- 
-+extern struct ctl_table *ipv6_icmp_sysctl_init(struct net *net);
-+extern struct ctl_table *ipv6_route_sysctl_init(struct net *net);
-+
- extern int ipv6_sysctl_register(void);
- extern void ipv6_sysctl_unregister(void);
- #endif
-
---------------030102020103080703060209--
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
