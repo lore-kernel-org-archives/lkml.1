@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763551AbYBLU0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbYBLU03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763551AbYBLU0I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 15:26:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbYBLUZz
+	id S1754925AbYBLU03 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 15:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbYBLU0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 15:25:55 -0500
-Received: from www.tglx.de ([62.245.132.106]:35387 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754736AbYBLUZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 15:25:55 -0500
-Date: Tue, 12 Feb 2008 21:25:39 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@suse.de>
-cc: ying.huang@intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [7/8] Implement true end_pfn_mapped for 32bit
-In-Reply-To: <200802122049.41477.ak@suse.de>
-Message-ID: <alpine.LFD.1.00.0802122121030.12988@apollo.tec.linutronix.de>
-References: <200802111034.764275766@suse.de> <20080211093435.E6FC21B41CE@basil.firstfloor.org> <alpine.LFD.1.00.0802122035270.12988@apollo.tec.linutronix.de> <200802122049.41477.ak@suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 15:26:13 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:62486 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763588AbYBLU0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 15:26:11 -0500
+Message-ID: <47B1FFB4.7010904@oracle.com>
+Date: Tue, 12 Feb 2008 12:21:08 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mgross@linux.intel.com
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH]intel-iommu batched iotlb flushes
+References: <20080211224105.GB24412@linux.intel.com> <20080211152716.65f5a753.randy.dunlap@oracle.com> <20080212160553.GD27490@linux.intel.com> <47B1CA9F.80004@oracle.com> <20080212195532.GA29132@linux.intel.com>
+In-Reply-To: <20080212195532.GA29132@linux.intel.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Andi Kleen wrote:
-> > > @@ -36,7 +36,7 @@
-> > >  #define max_pfn_mapped		end_pfn_map
-> > >  #else
-> > >  #include <asm/page_32.h>
-> > > -#define max_pfn_mapped		max_low_pfn
-> > > +#define max_pfn_mapped		end_pfn_map
-> > 
-> > We can nuke either max_pfn_mapped or end_pfn_map completely. I don't
-> > care about which one, but keeping both makes no sense at all.
-> 
-> I didn't want to bundle such a clean up into the bug fix
-> because my experience is that you usually reject that categorically.
+> Index: linux-2.6.24-mm1/Documentation/kernel-parameters.txt
+> ===================================================================
+> --- linux-2.6.24-mm1.orig/Documentation/kernel-parameters.txt	2008-02-12 07:12:06.000000000 -0800
+> +++ linux-2.6.24-mm1/Documentation/kernel-parameters.txt	2008-02-12 11:36:07.000000000 -0800
+> @@ -822,6 +822,10 @@
+>  			than 32 bit addressing. The default is to look
+>  			for translation below 32 bit and if not available
+>  			then look in the higher range.
+> +		strict [Default Off]
+> +			With this option on every umap_signle operation will
 
-True, but I apply two separate patches.
+	umap_signle ???  (again)
 
-> I can send the removal of max_pfn_mapped as a follow up patch
-> if you apply this one.
+> +			result in a hardware IOTLB flush operation as opposed
+> +			to batching them for performance.
+>  
+>  	io_delay=	[X86-32,X86-64] I/O delay method
+>  		0x80
 
-Too late. It was so obvious that it screamed to be fixed. I applied
-the inital patch already and cleaned it up myself. :)
 
-Thanks,
-
-	tglx
+-- 
+~Randy
