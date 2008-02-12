@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764102AbYBLQs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764198AbYBLQuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764102AbYBLQs3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 11:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760708AbYBLQsU
+	id S1764198AbYBLQuJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 11:50:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbYBLQtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 11:48:20 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57570 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758749AbYBLQsT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 11:48:19 -0500
-Date: Tue, 12 Feb 2008 08:46:51 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+	Tue, 12 Feb 2008 11:49:55 -0500
+Received: from mail.windriver.com ([147.11.1.11]:50840 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751198AbYBLQty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 11:49:54 -0500
+Message-ID: <47B1CDDC.3090708@windriver.com>
+Date: Tue, 12 Feb 2008 10:48:28 -0600
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        "Frank Ch. Eigler" <fche@redhat.com>,
        Roland McGrath <roland@redhat.com>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: [git pull] kgdb-light -v10
-In-Reply-To: <20080212152846.GC3078@elte.hu>
-Message-ID: <alpine.LFD.1.00.0802120829410.2920@woody.linux-foundation.org>
-References: <20080211015321.GA27376@one.firstfloor.org> <y0mhcgf4ig1.fsf@ton.toronto.redhat.com> <20080211162141.GA31434@elte.hu> <20080211171039.GA20446@one.firstfloor.org> <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org>
- <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <20080211230335.GA16102@elte.hu> <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <47B19F67.5050105@windriver.com> <20080212143949.GA2258@one.firstfloor.org> <47B1AEC3.2080402@windriver.com> <20080212153612.GA2944@one.firstfloor.org> <47B1C76F.6070908@windriver.com> <20080212171028.GC4191@one.firstfloor.org>
+In-Reply-To: <20080212171028.GC4191@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 Feb 2008 16:48:05.0489 (UTC) FILETIME=[09F96E10:01C86D97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+>> It is more than a simple recursion check (which is already in the code)
+>> because there are some conditions we can recover from.  I'd rather not
+>> crash the system out if it can be recovered.
+>>     
+>
+> Ok I'm trying to understand the code as you describe it. As far 
+> as I can see (in kgdb-light-v10) it is:
+>
+> +       addr = kgdb_arch_pc(ks->ex_vector, ks->linux_regs);
+> +       kgdb_deactivate_sw_breakpoints();
+> +
+> +       /*
+> +        * If the break point removed ok at the place exception
+> +        * occurred, try to recover and print a warning to the end
+> +        * user because the user planted a breakpoint in a place that
+> +        * KGDB needs in order to function.
+> +        */
+> +       if (kgdb_remove_sw_break(addr) == 0) {
+>
+> and
+>
+> +static int kgdb_remove_sw_break(unsigned long addr)
+> +{
+> +       int i;
+> +
+> +       for (i = 0; i < KGDB_MAX_BREAKPOINTS; i++) {
+> +               if ((kgdb_break[i].state == BP_SET) &&
+> +                               (kgdb_break[i].bpt_addr == addr)) {
+> +                       kgdb_break[i].state = BP_REMOVED;
+> +                       return 0;
+> +               }
+> +       }
+> +       return -ENOENT;
+>
+> correct? 
+>
+> I don't think that code does what you describe at all. Are you
+> sure we're talking about the same thing? 
+>
+> There is certainly no real protection against break points in
+> debugger code in there as far as I can see (except for the reentry
+> counter)
+>
+>   
 
+Perhaps we are talking about different things.  I will agree that there
+is no protection against putting a breakpoint in some code that is part
+of the debugger.  That was certainly not what I was talking about.
 
-On Tue, 12 Feb 2008, Ingo Molnar wrote:
-> 
-> * Andi Kleen <andi@firstfloor.org> wrote:
-> > 
-> > Stopping all CPUs for indefinite time very much seems like "breaking a 
-> > correctly working system" to me. [...]
-> 
-> well, this is a small detail, but still you are wrong, and on a 
-> correctly working system this will not occur. (if yes, tell me how)
+You might be able to perform some protections at the breakpoint set time
+or request to single step, but that is much more complex than is worth
+it for the time being.  The recursion check guards against basic
+stupidity or accidental stepping out of a frame you didn't mean to. 
+Also there are a lot of non-obvious code paths that can get executed via
+kgdb such as the fault handlers.  The simple recursion check covers
+enough cases that you don't want to live without it.
 
-Quite frankly, I don't see why the kernel kgdb layer should have *any* 
-code like this at all.
+If you want to improve it please provide some patches or further
+elaborate on what needs to be fixed.
 
-The one who is actually debugging is the one who should decide which CPU's 
-get stopped, and which don't.
-
-I realize that the gdb remote protocol is probably a piece of crap and 
-cannot handle that, but hey, that's not my problem, and more importantly, 
-I don't think it's even a *remotely* valid reason for making bad decisions 
-in the kernel. gdb was still open source last time I saw, and I think it's 
-reasonable to just say:
-
- - the kgdb commands should always act on the *current* CPU only
- - add one command that says "switch over to CPU #n" which just releases 
-   the current CPU and sends an IPI to that CPU #n (no timeouts, no 
-   synchronous waiting, no nothing - it's like a "continue", but with a 
-   "try to get the other CPU to stop"
-
-Yes, other CPU's will obviously often end up stopping due to waiting for 
-some spinlock or other if we stop one, but that's a separate issue, and 
-quite often it might be sufficient - and what we want.
-
-And yes, you'd likely have to add some support to gdb to make this 
-_usable_, but now all that usability crap, all those timeouts for "stop 
-all CPU's" are now in user space on the _debugger_ side. That can be as 
-fancy as it wants to be.
-
-And maybe this isn't realistic. I'm not saying "we _must_ do it this way", 
-I just want to say that the kernel kgdb layer should be as thin ass 
-humanly possible, and maybe the right thing to do is to simply totally 
-punt on the whole "stop other cpu's" issue and make it a debugger-side 
-question.
-
-In other words, is it perhaps possible to just *get*rid*of* that 
-"kgdb_active" and "nmicallback" and the whole multi-CPU roundup? Just use 
-a kgdb spinlock around the stuff that actually sends and receives 
-individual packets, and expect the debugger side to sort them out (yeah, I 
-suspect this involves having to add the CPU ID to each packet).
-
-			Linus
+Jason
