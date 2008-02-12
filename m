@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761957AbYBLJHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762193AbYBLJHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761957AbYBLJHJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 04:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbYBLJGt
+	id S1762193AbYBLJHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 04:07:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757619AbYBLJH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 04:06:49 -0500
-Received: from barikada.upol.cz ([158.194.242.200]:40479 "EHLO
-	barikada.upol.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754417AbYBLJGr (ORCPT
+	Tue, 12 Feb 2008 04:07:29 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:44010 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756291AbYBLJHZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 04:06:47 -0500
-Date: Tue, 12 Feb 2008 10:25:04 +0100
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mike Frysinger <vapier@gentoo.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] kbuild: fix make V=1
-Message-ID: <20080212092504.GI24008@flower.upol.cz>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080211133137.GB20959@uranus.ravnborg.org> <20080211164709.GA22359@uranus.ravnborg.org> <E1JOiEG-0000do-0W@flower> <20080212085605.GB26865@uranus.ravnborg.org>
+	Tue, 12 Feb 2008 04:07:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PKcvrD1TLG+Hrd4NKiZ05Oe8kP6/LXf3gHDmFNoQEkRUqlsfFF6i8vqeiudmJpaFlOoq6qz95kZq5vGZNcoYk6ctM+DbSx3tOixBQWa23tuOr1MUoaHP1lyu1vtw1YakNw5eArmZGPYn87E6253IIMBz0V9VqaFDZJV+iZavp7M=
+Message-ID: <47B161C3.7040200@gmail.com>
+Date: Tue, 12 Feb 2008 18:07:15 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212085605.GB26865@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Oleg Verych <olecom@flower.upol.cz>
-Organization: Palacky University in Olomouc, experimental physics department
-X-OS: x86_64-pc-linux-glibc-debian
+To: Jeff Garzik <jeff@garzik.org>
+CC: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Mark Lord <liml@rtr.ca>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH #upstream] libata: implement libata.force module parameter
+References: <47A3375F.80101@gmail.com> <47A356C3.3010904@garzik.org>
+In-Reply-To: <47A356C3.3010904@garzik.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 09:56:05AM +0100, Sam Ravnborg wrote:
-> On Tue, Feb 12, 2008 at 12:38:24AM +0100, Oleg Verych wrote:
-> > * Date: Mon, 11 Feb 2008 17:47:09 +0100
-> > []
-> > > Mike spotted another missing thing from his initial
-> > > patch so I folded it into the fix and pushed out
-> > > a new kbuild.git tree.
-> > >
-> > > See updated patch below.
-> > >
-> > > 	Sam
-> > 
-> > Sam, do you agree my fix was more reliable (yea, not only efficient:)?
-> You more or less just reverted the original patch - so it was obviously
-> more reliable than introducing new stuff as the fix did.
-> But we are at -r1 so I prefer to get the inteded behaviour
-> and not the minmal fix.
+Jeff Garzik wrote:
+> Tejun Heo wrote:
+>> This patch implements libata.force module parameter which can
+>> selectively override ATA port, link and device configurations
+>> including cable type, SATA PHY SPD limit, transfer mode and NCQ.
+>>
+>> For example, you can say "use 1.5Gbps for all fan-out ports attached
+>> to the second port but allow 3.0Gbps for the PMP device itself, oh,
+>> the device attached to the third fan-out port chokes on NCQ and
+>> shouldn't go over UDMA4" by the following.
+>>
+>>  libata.force=2:1.5g,2.15:3.0g,2.03:noncq,udma4
+>>
+>> Signed-off-by: Tejun Heo <htejun@gmail.com>
+>> ---
+>> I guess it's about time we add something like this.  More than
+>> anything else this should help debugging and can serve as a last
+>> resort to work around problems.
+>>
+>> Thanks.
+>>
+>>  Documentation/kernel-parameters.txt |   35 +++
+>>  drivers/ata/libata-core.c           |  375
+>> +++++++++++++++++++++++++++++++++++-
+>>  drivers/ata/libata-eh.c             |    8
+>>  drivers/ata/libata.h                |    1  4 files changed, 415
+>> insertions(+), 4 deletions(-)
+> 
+> ACK, but it breaks the build due to section type conflicts:
+> 
+> drivers/ata/libata-core.c:108: error: ata_force_param_buf causes a
+> section type conflict
+> 
+> Given that the data is marked __initdata and the code is marked __init,
+> I cannot see the problem.
 
-Processing below changes arguments, not semantics of generated shell
-code. And IMHO this is more reliable way of doing things. If one really
-wants silence without commonly accepted ">/dev/null 2>&1" practice, then
-choose portable "-n" argument for `echo`.
+Jeff, this no longer causes build failure whether libata is configured
+built-in or as a module.  I have no idea what's going on but there
+doesn't seem to be a proper solution on the horizon yet.  I think we can
+go ahead and commit this one and convert it to __initdataconst when it
+becomes available.
 
-- quiet_chk_filechk = echo '  CHK     $@'
--silent_chk_filechk = :
-- quiet_upd_filechk = echo '  UPD     $@'
--silent_upd_filechk = :
-+quiet_chk_filechk = '  CHK     $@'
-+quiet_upd_filechk = '  UPD     $@'
-+
- define filechk
- 	$(Q)set -e;				\
--	$($(quiet)chk_filechk);			\
-+	echo $($(quiet)chk_filechk);		\
- 	mkdir -p $(dir $@);			\
- 	$(filechk_$(1)) < $< > $@.tmp;		\
- 	if [ -r $@ ] && cmp -s $@ $@.tmp; then	\
- 		rm -f $@.tmp;			\
- 	else					\
--		$($(quiet)upd_filechk);		\
-+		echo $($(quiet)upd_filechk);	\
- 		mv -f $@.tmp $@;		\
- 	fi
- endef
-______
+Thanks.
+
+-- 
+tejun
