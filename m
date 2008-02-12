@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761888AbYBLXLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762262AbYBLXLh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761888AbYBLXLR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 18:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbYBLXKT
+	id S1762262AbYBLXLh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 18:11:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759051AbYBLXKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 18:10:19 -0500
+	Tue, 12 Feb 2008 18:10:40 -0500
 Received: from fg-out-1718.google.com ([72.14.220.155]:8053 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757403AbYBLXKN (ORCPT
+	with ESMTP id S1761155AbYBLXKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 18:10:13 -0500
+	Tue, 12 Feb 2008 18:10:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:cc:subject:date:message-id:x-mailer:in-reply-to:references:from;
-        b=cJTdoYiESuEqbkdCkibIAM50MSqAD38YjYmIJ51e8sucUU4L0MPeqZWxX8V/pNwvbUgyw4ZLfhrdN5SsWS8QLl0dEgF2oiktK6mXb5eOT90On1nW11otjp6ZAkHQt9nnXjwwAOziPJUmAr4a4/B8tbf3V1/t3hYppXQsUbVEBc8=
+        b=P4xKGENunh7/bVpb3CDqgz/GBobErxrl4o3xEe5KZ5BPsBerwtBZJjaXamna4JZ5vBmT7eXM/J4CWUS3lm9M+amAqDYNFhQFeoDv7e+dSAYezFH+r7kCbn8pddEKJftUTW4/VJHvZ7bBcTwuLgUzHS3doCkiNcl08pN9DuER0J0=
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-ext4@vger.kernel.org,
-       sct@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       adilger@clusterfs.com, "Theodore Ts'o" <tytso@mit.edu>,
-       Mingming Cao <cmm@us.ibm.com>
-Subject: [PATCH] ext4: le*_add_cpu conversion
-Date: Wed, 13 Feb 2008 00:06:15 +0100
-Message-Id: <1202857582-15450-11-git-send-email-marcin.slusarz@gmail.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, shaggy@austin.ibm.com,
+       jfs-discussion@lists.sourceforge.net
+Subject: [PATCH] jfs: le*_add_cpu conversion
+Date: Wed, 13 Feb 2008 00:06:16 +0100
+Message-Id: <1202857582-15450-12-git-send-email-marcin.slusarz@gmail.com>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
 References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
@@ -40,252 +38,190 @@ with:
 generated with semantic patch
 
 Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: linux-ext4@vger.kernel.org
-Cc: sct@redhat.com
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: adilger@clusterfs.com
-Cc: "Theodore Ts'o" <tytso@mit.edu>
-Cc: Mingming Cao <cmm@us.ibm.com>
+Cc: shaggy@austin.ibm.com
+Cc: jfs-discussion@lists.sourceforge.net
 ---
- fs/ext4/balloc.c  |    7 ++-----
- fs/ext4/extents.c |   20 +++++++++-----------
- fs/ext4/ialloc.c  |   12 ++++--------
- fs/ext4/mballoc.c |    7 ++-----
- fs/ext4/resize.c  |    6 ++----
- fs/ext4/super.c   |    2 +-
- fs/ext4/xattr.c   |    6 ++----
- 7 files changed, 22 insertions(+), 38 deletions(-)
+ fs/jfs/jfs_dmap.c  |   11 +++++------
+ fs/jfs/jfs_imap.c  |   15 ++++++---------
+ fs/jfs/jfs_xtree.c |   26 ++++++++------------------
+ 3 files changed, 19 insertions(+), 33 deletions(-)
 
-diff --git a/fs/ext4/balloc.c b/fs/ext4/balloc.c
-index 0737e05..5d34899 100644
---- a/fs/ext4/balloc.c
-+++ b/fs/ext4/balloc.c
-@@ -752,9 +752,7 @@ do_more:
- 	jbd_unlock_bh_state(bitmap_bh);
- 
- 	spin_lock(sb_bgl_lock(sbi, block_group));
--	desc->bg_free_blocks_count =
--		cpu_to_le16(le16_to_cpu(desc->bg_free_blocks_count) +
--			group_freed);
-+	le16_add_cpu(&desc->bg_free_blocks_count, group_freed);
- 	desc->bg_checksum = ext4_group_desc_csum(sbi, block_group, desc);
- 	spin_unlock(sb_bgl_lock(sbi, block_group));
- 	percpu_counter_add(&sbi->s_freeblocks_counter, count);
-@@ -1823,8 +1821,7 @@ allocated:
- 	spin_lock(sb_bgl_lock(sbi, group_no));
- 	if (gdp->bg_flags & cpu_to_le16(EXT4_BG_BLOCK_UNINIT))
- 		gdp->bg_flags &= cpu_to_le16(~EXT4_BG_BLOCK_UNINIT);
--	gdp->bg_free_blocks_count =
--			cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count)-num);
-+	le16_add_cpu(&gdp->bg_free_blocks_count, -num);
- 	gdp->bg_checksum = ext4_group_desc_csum(sbi, group_no, gdp);
- 	spin_unlock(sb_bgl_lock(sbi, group_no));
- 	percpu_counter_sub(&sbi->s_freeblocks_counter, num);
-diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-index bc7081f..ad628ff 100644
---- a/fs/ext4/extents.c
-+++ b/fs/ext4/extents.c
-@@ -608,7 +608,7 @@ static int ext4_ext_insert_index(handle_t *handle, struct inode *inode,
- 
- 	ix->ei_block = cpu_to_le32(logical);
- 	ext4_idx_store_pblock(ix, ptr);
--	curp->p_hdr->eh_entries = cpu_to_le16(le16_to_cpu(curp->p_hdr->eh_entries)+1);
-+	le16_add_cpu(&curp->p_hdr->eh_entries, 1);
- 
- 	BUG_ON(le16_to_cpu(curp->p_hdr->eh_entries)
- 			     > le16_to_cpu(curp->p_hdr->eh_max));
-@@ -730,7 +730,7 @@ static int ext4_ext_split(handle_t *handle, struct inode *inode,
- 	}
- 	if (m) {
- 		memmove(ex, path[depth].p_ext-m, sizeof(struct ext4_extent)*m);
--		neh->eh_entries = cpu_to_le16(le16_to_cpu(neh->eh_entries)+m);
-+		le16_add_cpu(&neh->eh_entries, m);
+diff --git a/fs/jfs/jfs_dmap.c b/fs/jfs/jfs_dmap.c
+index e198506..2bc7d8a 100644
+--- a/fs/jfs/jfs_dmap.c
++++ b/fs/jfs/jfs_dmap.c
+@@ -2172,7 +2172,7 @@ static void dbAllocBits(struct bmap * bmp, struct dmap * dp, s64 blkno,
  	}
  
- 	set_buffer_uptodate(bh);
-@@ -747,8 +747,7 @@ static int ext4_ext_split(handle_t *handle, struct inode *inode,
- 		err = ext4_ext_get_access(handle, inode, path + depth);
- 		if (err)
- 			goto cleanup;
--		path[depth].p_hdr->eh_entries =
--		     cpu_to_le16(le16_to_cpu(path[depth].p_hdr->eh_entries)-m);
-+		le16_add_cpu(&path[depth].p_hdr->eh_entries, -m);
- 		err = ext4_ext_dirty(handle, inode, path + depth);
- 		if (err)
- 			goto cleanup;
-@@ -811,8 +810,7 @@ static int ext4_ext_split(handle_t *handle, struct inode *inode,
- 		if (m) {
- 			memmove(++fidx, path[i].p_idx - m,
- 				sizeof(struct ext4_extent_idx) * m);
--			neh->eh_entries =
--				cpu_to_le16(le16_to_cpu(neh->eh_entries) + m);
-+			le16_add_cpu(&neh->eh_entries, m);
- 		}
- 		set_buffer_uptodate(bh);
- 		unlock_buffer(bh);
-@@ -828,7 +826,7 @@ static int ext4_ext_split(handle_t *handle, struct inode *inode,
- 			err = ext4_ext_get_access(handle, inode, path + i);
- 			if (err)
- 				goto cleanup;
--			path[i].p_hdr->eh_entries = cpu_to_le16(le16_to_cpu(path[i].p_hdr->eh_entries)-m);
-+			le16_add_cpu(&path[i].p_hdr->eh_entries, -m);
- 			err = ext4_ext_dirty(handle, inode, path + i);
- 			if (err)
- 				goto cleanup;
-@@ -1363,7 +1361,7 @@ int ext4_ext_try_to_merge(struct inode *inode,
- 				* sizeof(struct ext4_extent);
- 			memmove(ex + 1, ex + 2, len);
- 		}
--		eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries) - 1);
-+		le16_add_cpu(&eh->eh_entries, -1);
- 		merge_done = 1;
- 		WARN_ON(eh->eh_entries == 0);
- 		if (!eh->eh_entries)
-@@ -1554,7 +1552,7 @@ has_space:
- 		path[depth].p_ext = nearex;
- 	}
+ 	/* update the free count for this dmap */
+-	dp->nfree = cpu_to_le32(le32_to_cpu(dp->nfree) - nblocks);
++	le32_add_cpu(&dp->nfree, -nblocks);
  
--	eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries)+1);
-+	le16_add_cpu(&eh->eh_entries, 1);
- 	nearex = path[depth].p_ext;
- 	nearex->ee_block = newext->ee_block;
- 	ext4_ext_store_pblock(nearex, ext_pblock(newext));
-@@ -1693,7 +1691,7 @@ static int ext4_ext_rm_idx(handle_t *handle, struct inode *inode,
- 	err = ext4_ext_get_access(handle, inode, path);
- 	if (err)
- 		return err;
--	path->p_hdr->eh_entries = cpu_to_le16(le16_to_cpu(path->p_hdr->eh_entries)-1);
-+	le16_add_cpu(&path->p_hdr->eh_entries, -1);
- 	err = ext4_ext_dirty(handle, inode, path);
- 	if (err)
- 		return err;
-@@ -1896,7 +1894,7 @@ ext4_ext_rm_leaf(handle_t *handle, struct inode *inode,
- 		if (num == 0) {
- 			/* this extent is removed; mark slot entirely unused */
- 			ext4_ext_store_pblock(ex, 0);
--			eh->eh_entries = cpu_to_le16(le16_to_cpu(eh->eh_entries)-1);
-+			le16_add_cpu(&eh->eh_entries, -1);
- 		}
+ 	BMAP_LOCK(bmp);
  
- 		ex->ee_block = cpu_to_le32(block);
-diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-index da18a74..843664c 100644
---- a/fs/ext4/ialloc.c
-+++ b/fs/ext4/ialloc.c
-@@ -223,11 +223,9 @@ void ext4_free_inode (handle_t *handle, struct inode * inode)
+@@ -2316,7 +2316,7 @@ static int dbFreeBits(struct bmap * bmp, struct dmap * dp, s64 blkno,
  
- 		if (gdp) {
- 			spin_lock(sb_bgl_lock(sbi, block_group));
--			gdp->bg_free_inodes_count = cpu_to_le16(
--				le16_to_cpu(gdp->bg_free_inodes_count) + 1);
-+			le16_add_cpu(&gdp->bg_free_inodes_count, 1);
- 			if (is_directory)
--				gdp->bg_used_dirs_count = cpu_to_le16(
--				  le16_to_cpu(gdp->bg_used_dirs_count) - 1);
-+				le16_add_cpu(&gdp->bg_used_dirs_count, -1);
- 			gdp->bg_checksum = ext4_group_desc_csum(sbi,
- 							block_group, gdp);
- 			spin_unlock(sb_bgl_lock(sbi, block_group));
-@@ -664,11 +662,9 @@ got:
- 				cpu_to_le16(EXT4_INODES_PER_GROUP(sb) - ino);
- 	}
- 
--	gdp->bg_free_inodes_count =
--		cpu_to_le16(le16_to_cpu(gdp->bg_free_inodes_count) - 1);
-+	le16_add_cpu(&gdp->bg_free_inodes_count, -1);
- 	if (S_ISDIR(mode)) {
--		gdp->bg_used_dirs_count =
--			cpu_to_le16(le16_to_cpu(gdp->bg_used_dirs_count) + 1);
-+		le16_add_cpu(&gdp->bg_used_dirs_count, 1);
- 	}
- 	gdp->bg_checksum = ext4_group_desc_csum(sbi, group, gdp);
- 	spin_unlock(sb_bgl_lock(sbi, group));
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index dd0fcfc..586a320 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -3074,9 +3074,7 @@ static int ext4_mb_mark_diskspace_used(struct ext4_allocation_context *ac,
- 						ac->ac_b_ex.fe_group,
- 						gdp));
- 	}
--	gdp->bg_free_blocks_count =
--		cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count)
--				- ac->ac_b_ex.fe_len);
-+	le16_add_cpu(&gdp->bg_free_blocks_count, -ac->ac_b_ex.fe_len);
- 	gdp->bg_checksum = ext4_group_desc_csum(sbi, ac->ac_b_ex.fe_group, gdp);
- 	spin_unlock(sb_bgl_lock(sbi, ac->ac_b_ex.fe_group));
- 	percpu_counter_sub(&sbi->s_freeblocks_counter, ac->ac_b_ex.fe_len);
-@@ -4564,8 +4562,7 @@ do_more:
- 	}
- 
- 	spin_lock(sb_bgl_lock(sbi, block_group));
--	gdp->bg_free_blocks_count =
--		cpu_to_le16(le16_to_cpu(gdp->bg_free_blocks_count) + count);
-+	le16_add_cpu(&gdp->bg_free_blocks_count, count);
- 	gdp->bg_checksum = ext4_group_desc_csum(sbi, block_group, gdp);
- 	spin_unlock(sb_bgl_lock(sbi, block_group));
- 	percpu_counter_add(&sbi->s_freeblocks_counter, count);
-diff --git a/fs/ext4/resize.c b/fs/ext4/resize.c
-index 9477a2b..f9e716a 100644
---- a/fs/ext4/resize.c
-+++ b/fs/ext4/resize.c
-@@ -502,8 +502,7 @@ static int add_new_gdb(handle_t *handle, struct inode *inode,
- 	EXT4_SB(sb)->s_gdb_count++;
- 	kfree(o_group_desc);
- 
--	es->s_reserved_gdt_blocks =
--		cpu_to_le16(le16_to_cpu(es->s_reserved_gdt_blocks) - 1);
-+	le16_add_cpu(&es->s_reserved_gdt_blocks, -1);
- 	ext4_journal_dirty_metadata(handle, EXT4_SB(sb)->s_sbh);
- 
- 	return 0;
-@@ -877,8 +876,7 @@ int ext4_group_add(struct super_block *sb, struct ext4_new_group_data *input)
+ 	/* update the free count for this dmap.
  	 */
- 	ext4_blocks_count_set(es, ext4_blocks_count(es) +
- 		input->blocks_count);
--	es->s_inodes_count = cpu_to_le32(le32_to_cpu(es->s_inodes_count) +
--		EXT4_INODES_PER_GROUP(sb));
-+	le32_add_cpu(&es->s_inodes_count, EXT4_INODES_PER_GROUP(sb));
+-	dp->nfree = cpu_to_le32(le32_to_cpu(dp->nfree) + nblocks);
++	le32_add_cpu(&dp->nfree, nblocks);
+ 
+ 	BMAP_LOCK(bmp);
+ 
+@@ -3226,7 +3226,7 @@ static int dbAllocDmapBU(struct bmap * bmp, struct dmap * dp, s64 blkno,
+ 	}
+ 
+ 	/* update the free count for this dmap */
+-	dp->nfree = cpu_to_le32(le32_to_cpu(dp->nfree) - nblocks);
++	le32_add_cpu(&dp->nfree, -nblocks);
+ 
+ 	/* reconstruct summary tree */
+ 	dbInitDmapTree(dp);
+@@ -3660,9 +3660,8 @@ static int dbInitDmap(struct dmap * dp, s64 Blkno, int nblocks)
+ 			goto initTree;
+ 		}
+ 	} else {
+-		dp->nblocks =
+-		    cpu_to_le32(le32_to_cpu(dp->nblocks) + nblocks);
+-		dp->nfree = cpu_to_le32(le32_to_cpu(dp->nfree) + nblocks);
++		le32_add_cpu(&dp->nblocks, nblocks);
++		le32_add_cpu(&dp->nfree, nblocks);
+ 	}
+ 
+ 	/* word number containing start block number */
+diff --git a/fs/jfs/jfs_imap.c b/fs/jfs/jfs_imap.c
+index 9bf29f7..734ec91 100644
+--- a/fs/jfs/jfs_imap.c
++++ b/fs/jfs/jfs_imap.c
+@@ -1019,8 +1019,7 @@ int diFree(struct inode *ip)
+ 		/* update the free inode counts at the iag, ag and
+ 		 * map level.
+ 		 */
+-		iagp->nfreeinos =
+-		    cpu_to_le32(le32_to_cpu(iagp->nfreeinos) + 1);
++		le32_add_cpu(&iagp->nfreeinos, 1);
+ 		imap->im_agctl[agno].numfree += 1;
+ 		atomic_inc(&imap->im_numfree);
+ 
+@@ -1219,9 +1218,8 @@ int diFree(struct inode *ip)
+ 	/* update the number of free inodes and number of free extents
+ 	 * for the iag.
+ 	 */
+-	iagp->nfreeinos = cpu_to_le32(le32_to_cpu(iagp->nfreeinos) -
+-				      (INOSPEREXT - 1));
+-	iagp->nfreeexts = cpu_to_le32(le32_to_cpu(iagp->nfreeexts) + 1);
++	le32_add_cpu(&iagp->nfreeinos, -(INOSPEREXT - 1));
++	le32_add_cpu(&iagp->nfreeexts, 1);
+ 
+ 	/* update the number of free inodes and backed inodes
+ 	 * at the ag and inode map level.
+@@ -2124,7 +2122,7 @@ static int diAllocBit(struct inomap * imap, struct iag * iagp, int ino)
+ 	/* update the free inode count at the iag, ag, inode
+ 	 * map levels.
+ 	 */
+-	iagp->nfreeinos = cpu_to_le32(le32_to_cpu(iagp->nfreeinos) - 1);
++	le32_add_cpu(&iagp->nfreeinos, -1);
+ 	imap->im_agctl[agno].numfree -= 1;
+ 	atomic_dec(&imap->im_numfree);
+ 
+@@ -2378,9 +2376,8 @@ static int diNewExt(struct inomap * imap, struct iag * iagp, int extno)
+ 	/* update the free inode and free extent counts for the
+ 	 * iag.
+ 	 */
+-	iagp->nfreeinos = cpu_to_le32(le32_to_cpu(iagp->nfreeinos) +
+-				      (INOSPEREXT - 1));
+-	iagp->nfreeexts = cpu_to_le32(le32_to_cpu(iagp->nfreeexts) - 1);
++	le32_add_cpu(&iagp->nfreeinos, (INOSPEREXT - 1));
++	le32_add_cpu(&iagp->nfreeexts, -1);
+ 
+ 	/* update the free and backed inode counts for the ag.
+ 	 */
+diff --git a/fs/jfs/jfs_xtree.c b/fs/jfs/jfs_xtree.c
+index a000aaa..5a61ebf 100644
+--- a/fs/jfs/jfs_xtree.c
++++ b/fs/jfs/jfs_xtree.c
+@@ -905,8 +905,7 @@ int xtInsert(tid_t tid,		/* transaction id */
+ 	XT_PUTENTRY(xad, xflag, xoff, xlen, xaddr);
+ 
+ 	/* advance next available entry index */
+-	p->header.nextindex =
+-	    cpu_to_le16(le16_to_cpu(p->header.nextindex) + 1);
++	le16_add_cpu(&p->header.nextindex, 1);
+ 
+ 	/* Don't log it if there are no links to the file */
+ 	if (!test_cflag(COMMIT_Nolink, ip)) {
+@@ -997,8 +996,7 @@ xtSplitUp(tid_t tid,
+ 			    split->addr);
+ 
+ 		/* advance next available entry index */
+-		sp->header.nextindex =
+-		    cpu_to_le16(le16_to_cpu(sp->header.nextindex) + 1);
++		le16_add_cpu(&sp->header.nextindex, 1);
+ 
+ 		/* Don't log it if there are no links to the file */
+ 		if (!test_cflag(COMMIT_Nolink, ip)) {
+@@ -1167,9 +1165,7 @@ xtSplitUp(tid_t tid,
+ 				    JFS_SBI(ip->i_sb)->nbperpage, rcbn);
+ 
+ 			/* advance next available entry index. */
+-			sp->header.nextindex =
+-			    cpu_to_le16(le16_to_cpu(sp->header.nextindex) +
+-					1);
++			le16_add_cpu(&sp->header.nextindex, 1);
+ 
+ 			/* Don't log it if there are no links to the file */
+ 			if (!test_cflag(COMMIT_Nolink, ip)) {
+@@ -1738,8 +1734,7 @@ int xtExtend(tid_t tid,		/* transaction id */
+ 		XT_PUTENTRY(xad, XAD_NEW, xoff, len, xaddr);
+ 
+ 		/* advance next available entry index */
+-		p->header.nextindex =
+-		    cpu_to_le16(le16_to_cpu(p->header.nextindex) + 1);
++		le16_add_cpu(&p->header.nextindex, 1);
+ 	}
+ 
+ 	/* get back old entry */
+@@ -1905,8 +1900,7 @@ printf("xtTailgate: xoff:0x%lx xlen:0x%x xaddr:0x%lx\n",
+ 		XT_PUTENTRY(xad, XAD_NEW, xoff, xlen, xaddr);
+ 
+ 		/* advance next available entry index */
+-		p->header.nextindex =
+-		    cpu_to_le16(le16_to_cpu(p->header.nextindex) + 1);
++		le16_add_cpu(&p->header.nextindex, 1);
+ 	}
+ 
+ 	/* get back old XAD */
+@@ -2567,8 +2561,7 @@ int xtAppend(tid_t tid,		/* transaction id */
+ 	XT_PUTENTRY(xad, xflag, xoff, xlen, xaddr);
+ 
+ 	/* advance next available entry index */
+-	p->header.nextindex =
+-	    cpu_to_le16(le16_to_cpu(p->header.nextindex) + 1);
++	le16_add_cpu(&p->header.nextindex, 1);
+ 
+ 	xtlck->lwm.offset =
+ 	    (xtlck->lwm.offset) ? min(index,(int) xtlck->lwm.offset) : index;
+@@ -2631,8 +2624,7 @@ int xtDelete(tid_t tid, struct inode *ip, s64 xoff, s32 xlen, int flag)
+ 	 * delete the entry from the leaf page
+ 	 */
+ 	nextindex = le16_to_cpu(p->header.nextindex);
+-	p->header.nextindex =
+-	    cpu_to_le16(le16_to_cpu(p->header.nextindex) - 1);
++	le16_add_cpu(&p->header.nextindex, -1);
  
  	/*
- 	 * We need to protect s_groups_count against other CPUs seeing
-diff --git a/fs/ext4/super.c b/fs/ext4/super.c
-index 6627ee0..5aa0a50 100644
---- a/fs/ext4/super.c
-+++ b/fs/ext4/super.c
-@@ -1391,7 +1391,7 @@ static int ext4_setup_super(struct super_block *sb, struct ext4_super_block *es,
- #endif
- 	if (!(__s16) le16_to_cpu(es->s_max_mnt_count))
- 		es->s_max_mnt_count = cpu_to_le16(EXT4_DFL_MAX_MNT_COUNT);
--	es->s_mnt_count=cpu_to_le16(le16_to_cpu(es->s_mnt_count) + 1);
-+	le16_add_cpu(&es->s_mnt_count, 1);
- 	es->s_mtime = cpu_to_le32(get_seconds());
- 	ext4_update_dynamic_rev(sb);
- 	EXT4_SET_INCOMPAT_FEATURE(sb, EXT4_FEATURE_INCOMPAT_RECOVER);
-diff --git a/fs/ext4/xattr.c b/fs/ext4/xattr.c
-index d796213..fedaa4f 100644
---- a/fs/ext4/xattr.c
-+++ b/fs/ext4/xattr.c
-@@ -484,8 +484,7 @@ ext4_xattr_release_block(handle_t *handle, struct inode *inode,
- 		get_bh(bh);
- 		ext4_forget(handle, 1, inode, bh, bh->b_blocknr);
- 	} else {
--		BHDR(bh)->h_refcount = cpu_to_le32(
--				le32_to_cpu(BHDR(bh)->h_refcount) - 1);
-+		le32_add_cpu(&BHDR(bh)->h_refcount, -1);
- 		error = ext4_journal_dirty_metadata(handle, bh);
- 		if (IS_SYNC(inode))
- 			handle->h_sync = 1;
-@@ -789,8 +788,7 @@ inserted:
- 				if (error)
- 					goto cleanup_dquot;
- 				lock_buffer(new_bh);
--				BHDR(new_bh)->h_refcount = cpu_to_le32(1 +
--					le32_to_cpu(BHDR(new_bh)->h_refcount));
-+				le32_add_cpu(&BHDR(new_bh)->h_refcount, 1);
- 				ea_bdebug(new_bh, "reusing; refcount now=%d",
- 					le32_to_cpu(BHDR(new_bh)->h_refcount));
- 				unlock_buffer(new_bh);
+ 	 * if the leaf page bocome empty, free the page
+@@ -2795,9 +2787,7 @@ xtDeleteUp(tid_t tid, struct inode *ip,
+ 					(nextindex - index -
+ 					 1) << L2XTSLOTSIZE);
+ 
+-			p->header.nextindex =
+-			    cpu_to_le16(le16_to_cpu(p->header.nextindex) -
+-					1);
++			le16_add_cpu(&p->header.nextindex, -1);
+ 			jfs_info("xtDeleteUp(entry): 0x%lx[%d]",
+ 				 (ulong) parent->bn, index);
+ 		}
 -- 
 1.5.3.7
 
