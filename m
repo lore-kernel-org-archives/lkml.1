@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934402AbYBMVnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbYBMVnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934402AbYBMVnc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:43:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763846AbYBMVau
+	id S934464AbYBMVnz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:43:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763914AbYBMVaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:30:50 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55726 "EHLO smtp6.pp.htv.fi"
+	Wed, 13 Feb 2008 16:30:52 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47524 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761117AbYBMVas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:30:48 -0500
-Date: Wed, 13 Feb 2008 23:30:32 +0200
+	id S1763866AbYBMVav (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:30:51 -0500
+Date: Wed, 13 Feb 2008 23:30:35 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: clameter@sgi.com, penberg@cs.helsinki.fi
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make slub.c:slab_address() static
-Message-ID: <20080213213032.GH3383@cs181133002.pp.htv.fi>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make smackfs.c:smk_cipso_doi() static
+Message-ID: <20080213213035.GI3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,22 +23,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-slab_address() can become static.
+smk_cipso_doi() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-fdd710f00d8bed8413c160685bc5229ec15b4d9f diff --git a/mm/slub.c b/mm/slub.c
-index e2989ae..af83daf 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -308,7 +308,7 @@ static inline int is_end(void *addr)
- 	return (unsigned long)addr & PAGE_MAPPING_ANON;
- }
- 
--void *slab_address(struct page *page)
-+static void *slab_address(struct page *page)
+
+BTW: -ENOMAINTAINERSENTRY
+
+299c2883384303ca7730df8fa4baae9194bd5d13 diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 15aa37f..13462ff 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -336,7 +336,7 @@ static const struct file_operations smk_load_ops = {
+ /**
+  * smk_cipso_doi - initialize the CIPSO domain
+  */
+-void smk_cipso_doi(void)
++static void smk_cipso_doi(void)
  {
- 	return page->end - PAGE_MAPPING_ANON;
- }
+ 	int rc;
+ 	struct cipso_v4_doi *doip;
 
