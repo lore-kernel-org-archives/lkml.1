@@ -1,65 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbYBMODJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbYBMOGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760279AbYBMODJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 09:03:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYBMOCz
+	id S1758615AbYBMOGg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 09:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYBMOG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 09:02:55 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:22197 "EHLO hobbit.corpit.ru"
+	Wed, 13 Feb 2008 09:06:26 -0500
+Received: from ts.adaptec.com ([162.62.93.58]:51993 "EHLO mail-gw3.adaptec.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752873AbYBMOCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 09:02:55 -0500
-Message-ID: <47B2F88D.7080300@msgid.tls.msk.ru>
-Date: Wed, 13 Feb 2008 17:02:53 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	id S1753568AbYBMOGZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 09:06:25 -0500
+From: "Salyzyn, Mark" <Mark_Salyzyn@adaptec.com>
+To: "marcin.slusarz@gmail.com" <marcin.slusarz@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>
+Date: Wed, 13 Feb 2008 06:06:22 -0800
+Subject: RE: [PATCH] scsi: le*_add_cpu conversion
+Thread-Topic: [PATCH] scsi: le*_add_cpu conversion
+Thread-Index: AchtzE+7rIBlrQhwSPqkDEpqpsMb0wAe9myA
+Message-ID: <532ABFBDAAC3A34EB12EBA6CEC2838F439963FA2@ADPE2K703.adaptec.com>
+References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
+ <1202857582-15450-9-git-send-email-marcin.slusarz@gmail.com>
+In-Reply-To: <1202857582-15450-9-git-send-email-marcin.slusarz@gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.24: RPC: bad TCP reclen 0x00020090 (large)
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+ACK
 
-After upgrading to 2.6.24 (from .23), we're seeing ALOT
-of messages like in $subj in dmesg:
+Sincerely -- Mark Salyzyn
 
-Feb 13 13:21:39 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-Feb 13 13:21:46 paltus kernel: printk: 3586 messages suppressed.
-Feb 13 13:21:46 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-Feb 13 13:21:49 paltus kernel: printk: 371 messages suppressed.
-Feb 13 13:21:49 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-Feb 13 13:21:55 paltus kernel: printk: 2979 messages suppressed.
-...
-
-with linux NFS server.  The clients are all linux too, mostly 2.6.23
-and some 2.6.22.
-
-I found the "offending" piece of code in net/sunrpc/svcsock.c,
-in routine svc_tcp_recvfrom() with condition being:
-
-   if (svsk->sk_reclen > serv->sv_max_mesg) ...
-
-This happens after a server reboot.  At this point, client(s) are trying
-to perform some NFS transaction and fail, and server starts generating
-the above messages - till I do a umount followed by mount on all clients.
-Before, such situation (nfs server reboot) were handled transparently,
-ie, there was nothing to do, the mount continued working just fine when
-the server comes back online.
-
-Now, I'm not sure if it's really 2.6.24-specific problem or a userspace
-problem.  Some time ago we also upgraded nfs-kernel-server (Debian)
-package, and the remount-after-nfs-server-reboot problem started to
-occur at THAT time (and it is something to worry about as well, I just
-had no time to deal with it); but the dmesg spamming only appeared
-with 2.6.24.
-
-How to debug the issue further on from this point?
-
-Thanks!
-
-/mjt
+> -----Original Message-----
+> From: marcin.slusarz@gmail.com [mailto:marcin.slusarz@gmail.com]
+> Sent: Tuesday, February 12, 2008 6:06 PM
+> To: LKML
+> Cc: Marcin Slusarz; linux-scsi@vger.kernel.org; AACRAID;
+> James.Bottomley@HansenPartnership.com
+> Subject: [PATCH] scsi: le*_add_cpu conversion
+>
+> From: Marcin Slusarz <marcin.slusarz@gmail.com>
+>
+> replace all:
+> little_endian_variable =
+> cpu_to_leX(leX_to_cpu(little_endian_variable) +
+>                                         expression_in_cpu_byteorder);
+> with:
+>         leX_add_cpu(&little_endian_variable,
+> expression_in_cpu_byteorder);
+> generated with semantic patch
+>
+> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
+> Cc: linux-scsi@vger.kernel.org
+> Cc: aacraid@adaptec.com
+> Cc: James.Bottomley@HansenPartnership.com
+> ---
+>  drivers/scsi/aacraid/commsup.c |    2 +-
+>  drivers/scsi/ips.c             |    8 ++------
+>  2 files changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/scsi/aacraid/commsup.c
+> b/drivers/scsi/aacraid/commsup.c
+> index 81b3692..3ac8c82 100644
+> --- a/drivers/scsi/aacraid/commsup.c
+> +++ b/drivers/scsi/aacraid/commsup.c
+> @@ -594,7 +594,7 @@ void aac_consumer_free(struct aac_dev *
+> dev, struct aac_queue *q, u32 qid)
+>         if (le32_to_cpu(*q->headers.consumer) >= q->entries)
+>                 *q->headers.consumer = cpu_to_le32(1);
+>         else
+> -               *q->headers.consumer =
+> cpu_to_le32(le32_to_cpu(*q->headers.consumer)+1);
+> +               le32_add_cpu(q->headers.consumer, 1);
+>
+>         if (wasfull) {
+>                 switch (qid) {
+> diff --git a/drivers/scsi/ips.c b/drivers/scsi/ips.c
+> index bb152fb..f45770a 100644
+> --- a/drivers/scsi/ips.c
+> +++ b/drivers/scsi/ips.c
+> @@ -3696,9 +3696,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
+>                         scb->cmd.basic_io.sg_count = scb->sg_len;
+>
+>                         if (scb->cmd.basic_io.lba)
+> -                               scb->cmd.basic_io.lba =
+> -                                   cpu_to_le32(le32_to_cpu
+> -
+> (scb->cmd.basic_io.lba) +
+> +                               le32_add_cpu(&scb->cmd.basic_io.lba,
+>
+> le16_to_cpu(scb->cmd.basic_io.
+>
+> sector_count));
+>                         else
+> @@ -3744,9 +3742,7 @@ ips_send_cmd(ips_ha_t * ha, ips_scb_t * scb)
+>                         scb->cmd.basic_io.sg_count = scb->sg_len;
+>
+>                         if (scb->cmd.basic_io.lba)
+> -                               scb->cmd.basic_io.lba =
+> -                                   cpu_to_le32(le32_to_cpu
+> -
+> (scb->cmd.basic_io.lba) +
+> +                               le32_add_cpu(&scb->cmd.basic_io.lba,
+>
+> le16_to_cpu(scb->cmd.basic_io.
+>
+> sector_count));
+>                         else
+> --
+> 1.5.3.7
