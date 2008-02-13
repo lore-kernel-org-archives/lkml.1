@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932632AbYBMJdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932539AbYBMJfF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932632AbYBMJdm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYBMJdY
+	id S932539AbYBMJfF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:35:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbYBMJeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:33:24 -0500
-Received: from mga05.intel.com ([192.55.52.89]:20101 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752119AbYBMJdX (ORCPT
+	Wed, 13 Feb 2008 04:34:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57015 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753832AbYBMJeo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:33:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,345,1199692800"; 
-   d="scan'208";a="517740193"
-Subject: 2.6.25-rc1: volanoMark 45% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: vatsa@linux.vnet.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 13 Feb 2008 17:30:28 +0800
-Message-Id: <1202895028.3027.27.camel@ymzhang>
+	Wed, 13 Feb 2008 04:34:44 -0500
+Date: Wed, 13 Feb 2008 01:32:55 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Bart Dopheide <dopheide@fmf.nl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <mzolnier@gmail.com>
+Subject: Re: Kernel BUG at fs/mpage.c:489
+Message-Id: <20080213013255.b4ea534c.akpm@linux-foundation.org>
+In-Reply-To: <200802132024.03687.nickpiggin@yahoo.com.au>
+References: <20080212194546.GA2174@fmf.nl>
+	<20080213072627.GB2174@fmf.nl>
+	<20080213010145.76ee9714.akpm@linux-foundation.org>
+	<200802132024.03687.nickpiggin@yahoo.com.au>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-volanoMark has 45% regression with kernel 2.6.25-rc1 on my both 8-core
-stoakley and 16-core Tigerton.
+On Wed, 13 Feb 2008 20:24:03 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 
-I used bisect to locate below patch.
+> BTW is it really true that the buffer can never be locked by
+> anything else at this point?
 
-commit 58e2d4ca581167c2a079f4ee02be2f0bc52e8729
-Author: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-Date:   Fri Jan 25 21:08:00 2008 +0100
+It has been for the past five or six years.  With the page locked, nobody
+else can get at that page.
 
-    sched: group scheduling, change how cpu load is calculated
+> What about fsync_buffers_list?
 
-
-
-hackbench has about 30% regression on 16-core tigerton, but has about 10% improvement
-on 8-core stoakley.
-
-In addition, tbench has about 6% regression on my 8-core stoakley and
-25% regression on 16-core stoakley. Some other benchmarks, like netperf/aim7
-also have some regression. I will verify if they are all related to the
-patch.
-
--yanmin
-
+They're metadata buffers, not regular file data.  Things might get ugly if
+IO to /dev/sda went via that path, but it doesn't.
 
