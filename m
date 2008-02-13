@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932659AbYBMJZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbYBMJ0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932659AbYBMJZt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:25:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932396AbYBMJYt
+	id S932722AbYBMJ0U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbYBMJZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:24:49 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59773 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932387AbYBMJYp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:24:45 -0500
-Date: Wed, 13 Feb 2008 01:22:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Ben Nizette <bn@niasdigital.com>, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Andrew Morgan <morgan@kernel.org>
-Subject: Re: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-Message-Id: <20080213012231.46865608.akpm@linux-foundation.org>
-In-Reply-To: <20080213101024.39347322@dhcp-252-066.norway.atmel.com>
-References: <1202816761.3299.19.camel@moss.renham>
-	<20080213004829.fd8afdc7.akpm@linux-foundation.org>
-	<20080213101024.39347322@dhcp-252-066.norway.atmel.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 04:25:09 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38568 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932507AbYBMJZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:25:05 -0500
+Date: Wed, 13 Feb 2008 10:24:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Mark Lord <mlord@pobox.com>, Jeff Garzik <jeff@garzik.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: [libata-dev #upstream-fixes] pata_legacy: don't call
+	ata_host_detach() after initialization failure
+Message-ID: <20080213092430.GA25258@elte.hu>
+References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080212081816.GA17820@elte.hu> <20080212071452.5c58ae6d@laptopd505.fenrus.org> <20080213090159.GA21614@elte.hu> <47B2B653.7020408@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B2B653.7020408@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 10:10:24 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-> On Wed, 13 Feb 2008 00:48:29 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Tue, 12 Feb 2008 22:46:01 +1100 Ben Nizette <bn@niasdigital.com> wrote:
-> > 
-> > > 
-> > > On an AVR32, root over NFS, config attached, running (from a startup
-> > > script):
-> > > 
-> > > iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-> > > 
-> > > Results in (dmesg extract including a bit of context for good measure):
-> > > -------------8<----------------
-> > > VFS: Mounted root (nfs filesystem).
-> > > Freeing init memory: 72K (90000000 - 90012000)
-> > > eth0: no IPv6 routers present
-> > > warning: `dnsmasq' uses 32-bit capabilities (legacy support in use)
-> 
-> Hmm. What does that mean? What size do capabilities normally have?
+* Tejun Heo <htejun@gmail.com> wrote:
 
-My near-namesake put than in, but I immediately forgot what it means?
+> ata_host_detach() detaches an attached port and shouldn't be called on 
+> a port which hasn't been attached yet.  pata_legacy incorrectly calls 
+> ata_host_detach() on unattached port after initialization failure 
+> causing oops.  Fix it.
+
+thanks, i'll try this!
+
+	Ingo
