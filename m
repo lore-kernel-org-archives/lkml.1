@@ -1,127 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbYBMJhN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932669AbYBMJie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932718AbYBMJhN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYBMJgy
+	id S932669AbYBMJie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbYBMJiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:36:54 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:62534 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbYBMJgv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:36:51 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=pk4reYm+dhKCLjQ2920g9uk8OXzVDCHhH+uU+qgm/r+VI1K5mZ11sdmeWQNGOS/MD
-	twTlPD2/jJF+j++xhxkqw==
-Date: Wed, 13 Feb 2008 01:36:25 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, clameter@sgi.com,
-       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-In-Reply-To: <20080213020344.45c9d924.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802130113020.3936@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com> <1202862136.4974.41.camel@localhost>
- <20080212215242.0342fa25.pj@sgi.com> <alpine.DEB.1.00.0802121955040.11889@chino.kir.corp.google.com> <20080212221354.a33799f2.pj@sgi.com> <alpine.DEB.1.00.0802122018550.11889@chino.kir.corp.google.com> <20080213020344.45c9d924.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 13 Feb 2008 04:38:17 -0500
+Received: from www.tglx.de ([62.245.132.106]:52487 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752233AbYBMJiN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:38:13 -0500
+Date: Wed, 13 Feb 2008 10:32:13 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Frans Pop <elendil@planet.nl>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>
+Subject: Re: [stable 2.6.24] WARNING: at kernel/time/clockevents.c
+In-Reply-To: <200802130947.10781.elendil@planet.nl>
+Message-ID: <alpine.LFD.1.00.0802131004460.12988@apollo.tec.linutronix.de>
+References: <200802101440.22118.elendil@planet.nl> <20080212230741.576b8004.akpm@linux-foundation.org> <alpine.LFD.1.00.0802130845380.12988@apollo.tec.linutronix.de> <200802130947.10781.elendil@planet.nl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Paul Jackson wrote:
-
-> The infamous unpublished (except to a few) patch I drafted on Christmas
-> (Dec 25, 2007) basically added two new modes for how mempolicy
-> nodemasks were to be resolved:
->  1) a static, no remap, mode, such as in this present patchset, and
->  2) a cpuset relative mode that correctly handled the case of cpusets
->     growing larger (increased numbers of nodes.)
+On Wed, 13 Feb 2008, Frans Pop wrote:
+> On Wednesday 13 February 2008, Thomas Gleixner wrote:
+> > On Tue, 12 Feb 2008, Andrew Morton wrote:
+> > > On Sun, 10 Feb 2008 14:40:21 +0100 Frans Pop <elendil@planet.nl> wrote:
+> > > the hrtimer code is preparing an invalid ktime_t.  Note that
+> > > clockevents_program_event() actually fails when this happens - I am
+> > > surprised that this is not causing observeable userspace problems.
+> > >
+> > > The WARN_ON_ONCE() means that you'll only see this warning once per
+> > > boot. But the actually error could be happening any number of times
+> > > without being reported.
+> > >
+> > > Looks pretty serious?
+> >
+> > Yes. It's the same problem, which got fixed with:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit
+> >;h=62f0f61e6673e67151a7c8c0f9a09c7ea43fe2b5
 > 
-> I'd like to persuade you to add case (2) as well.  But I suspect,
-> given that case (2) was never as compelling to you as it was to me
-> in our December discussions, that I'll have little luck doing that.
-> 
+> OK, so probably glibc performs a unit test during build that asks for a long 
+> sleep. I guess that makes sense.
 
-MPOL_F_STATIC_NODES already handles the second case because you can 
-specify nodes that aren't currently accessible because of your cpuset in 
-the hopes that eventually they will become accessible.  It's possible to 
-pass a nodemask with all bits set so that when the cpuset's set of nodes 
-expand, the mempolicy is effected over the intersection of the two on 
-rebind.
+Frans,
 
-Other than that, perhaps if you can elaborate more on what you imagined 
-supporting as far as cpusets growing larger (or supporting node hotplug, 
-which is the same type of problem), we can discuss that further before I 
-resend my patches.
+can you please apply the following patch ? I really should have
+thought about that, when I fixed the above one.
 
-> Notes and questions on your current patchset:
-> 
->  1) It looks like you -add- a second nodemask to struct mempolicy:
-> 	    nodemask_t cpuset_mems_allowed; /* mempolicy relative to these nodes */
-> 	    nodemask_t user_nodemask;       /* nodemask passed by user */
-> 
->     I believe you can overlay these two nodemasks using a union, and avoid making
->     struct mempolicy bigger.
-> 
+Thanks,
+	tglx
 
-Ahh, since policy->cpuset_mems_allowed is only meaningful in the 
-non-MPOL_F_STATIC_NODES case, that probably will work.  For the purposes 
-of this patchset, we can certainly do that.  I'm wondering whether future 
-expansions will require them to be separated again, however.
+------------>
 
->  2) Those 'mpol_mode()' wrappers on all those mempolicy->policy
->     evaluations look dangerous to me.  It looks like a code bug
->     waiting to happen.  Unless I miss my guess, if you forget one of
->     those wrappers (or someone making a future change misses one), no
->     one will notice until sometime at runtime, someone makes use of the
->     new fangled MPOL_F_STATIC_NODES mode in some new situation, and we
->     end up executing code that we didn't expect to execute just then.
-> 
->     I urge you to reconsider, and keep it so that the 'policy' field of struct
->     mempolicy naturally evaluates to just the policy.  There should be just one
->     pair of places, on entry to, and exit from, the kernel, where the code is
->     aware of the need to pack the mode and the policy into a single word.
-> 
+Subject: hrtimer: check relative timeouts for overflow
+From: Thomas Gleixner <tglx@linutronix.de>
 
-Ok.
+Various user space callers ask for relative timeouts. While we fixed
+that overflow issue in hrtimer_start(), the sites which convert
+relative user space values to absolute timeouts themself were uncovered.
 
->  3) Does your patchset allow the user to specify a nodemask that includes nodes
->     outside of the current cpuset with a MPOL_F_STATIC_NODES mode?  At first
->     glance, I didn't see that it did, but I should have looked closer.  This
->     strikes me as an essential aspect of this mode.
-> 
+Instead of putting overflow checks into each place add a function
+which does the sanity checking and convert all affected callers to use
+it.
 
-It does, and that's why I was a little curious about your second case at 
-the beginning of this email.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/ktime.h |    2 ++
+ kernel/futex.c        |    2 +-
+ kernel/futex_compat.c |    2 +-
+ kernel/hrtimer.c      |   33 ++++++++++++++++-----------------
+ kernel/posix-timers.c |    8 +++++---
+ 5 files changed, 25 insertions(+), 22 deletions(-)
 
-The user's nodemask is always stored unaltered in policy->user_nodemask.  
-In mpol_new(), we intersect the current accessible nodes with that 
-nodemask to determine if there's even a mempolicy to effect.  If not, 
-mpol_new() returns ERR_PTR(-EINVAL) and we fall back to the existing 
-policy (if any) for the VMA or task.  Otherwise, we use the intersection 
-of those two nodemasks.
-
-In mpol_rebind_policy() with MPOL_F_STATIC_NODES, we always intersect 
-policy->user_nodemask with the set of accessible nodes (nodemask_t 
-*newmask).  So if we can now access nodes that we previously couldn't, 
-they are now part of the interleave nodemask.  A similiar situation occurs 
-when building the zonelist for the MPOL_BIND case and you can see the 
-change I made to MPOL_PREFERRED in the incremental patch I sent you.
-
-The only way that newly-accessible nodes will not become a part of the 
-mempolicy nodemask is when the user's nodemask and the set of accessible 
-nodes is disjoint when the policy was created.
-
-It is arguable whether we want to support that behavior as well (and we 
-definitely could do it, it's not out of the scope of mempolicies).  Lee 
-had specific requirements of rejecting nodemasks that had no nodes in the 
-intersection based on the current implementation, but we could continue 
-discussing the possibility of setting up mempolicies that are uneffected 
-when they are created and only become policy when they are rebound later.
-
-		David
+Index: linux-2.6-hrt/include/linux/ktime.h
+===================================================================
+--- linux-2.6-hrt.orig/include/linux/ktime.h
++++ linux-2.6-hrt/include/linux/ktime.h
+@@ -310,6 +310,8 @@ static inline ktime_t ktime_sub_us(const
+ 	return ktime_sub_ns(kt, usec * 1000);
+ }
+ 
++extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
++
+ /*
+  * The resolution of the clocks. The resolution value is returned in
+  * the clock_getres() system call to give application programmers an
+Index: linux-2.6-hrt/kernel/futex.c
+===================================================================
+--- linux-2.6-hrt.orig/kernel/futex.c
++++ linux-2.6-hrt/kernel/futex.c
+@@ -2116,7 +2116,7 @@ asmlinkage long sys_futex(u32 __user *ua
+ 
+ 		t = timespec_to_ktime(ts);
+ 		if (cmd == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), t);
++			t = ktime_add_safe(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	/*
+Index: linux-2.6-hrt/kernel/futex_compat.c
+===================================================================
+--- linux-2.6-hrt.orig/kernel/futex_compat.c
++++ linux-2.6-hrt/kernel/futex_compat.c
+@@ -176,7 +176,7 @@ asmlinkage long compat_sys_futex(u32 __u
+ 
+ 		t = timespec_to_ktime(ts);
+ 		if (cmd == FUTEX_WAIT)
+-			t = ktime_add(ktime_get(), t);
++			t = ktime_add_safe(ktime_get(), t);
+ 		tp = &t;
+ 	}
+ 	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
+Index: linux-2.6-hrt/kernel/hrtimer.c
+===================================================================
+--- linux-2.6-hrt.orig/kernel/hrtimer.c
++++ linux-2.6-hrt/kernel/hrtimer.c
+@@ -326,6 +326,19 @@ u64 ktime_divns(const ktime_t kt, s64 di
+ #endif /* BITS_PER_LONG >= 64 */
+ 
+ /*
++ * Add two ktime values and do a safety check for overflow:
++ */
++ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
++{
++	ktime_t res = ktime_add(lhs, rhs);
++
++	if (res.tv64 < 0 || res.tv64 < lhs.tv64 || res.tv64 < rhs.tv64)
++		res.tv64 = KTIME_MAX;
++
++	return res;
++}
++
++/*
+  * Check, whether the timer is on the callback pending list
+  */
+ static inline int hrtimer_cb_pending(const struct hrtimer *timer)
+@@ -682,13 +695,7 @@ u64 hrtimer_forward(struct hrtimer *time
+ 		 */
+ 		orun++;
+ 	}
+-	timer->expires = ktime_add(timer->expires, interval);
+-	/*
+-	 * Make sure, that the result did not wrap with a very large
+-	 * interval.
+-	 */
+-	if (timer->expires.tv64 < 0)
+-		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
++	timer->expires = ktime_add_safe(timer->expires, interval);
+ 
+ 	return orun;
+ }
+@@ -839,7 +846,7 @@ hrtimer_start(struct hrtimer *timer, kti
+ 	new_base = switch_hrtimer_base(timer, base);
+ 
+ 	if (mode == HRTIMER_MODE_REL) {
+-		tim = ktime_add(tim, new_base->get_time());
++		tim = ktime_add_safe(tim, new_base->get_time());
+ 		/*
+ 		 * CONFIG_TIME_LOW_RES is a temporary way for architectures
+ 		 * to signal that they simply return xtime in
+@@ -848,16 +855,8 @@ hrtimer_start(struct hrtimer *timer, kti
+ 		 * timeouts. This will go away with the GTOD framework.
+ 		 */
+ #ifdef CONFIG_TIME_LOW_RES
+-		tim = ktime_add(tim, base->resolution);
++		tim = ktime_add_safe(tim, base->resolution);
+ #endif
+-		/*
+-		 * Careful here: User space might have asked for a
+-		 * very long sleep, so the add above might result in a
+-		 * negative number, which enqueues the timer in front
+-		 * of the queue.
+-		 */
+-		if (tim.tv64 < 0)
+-			tim.tv64 = KTIME_MAX;
+ 	}
+ 	timer->expires = tim;
+ 
+Index: linux-2.6-hrt/kernel/posix-timers.c
+===================================================================
+--- linux-2.6-hrt.orig/kernel/posix-timers.c
++++ linux-2.6-hrt/kernel/posix-timers.c
+@@ -767,9 +767,11 @@ common_timer_set(struct k_itimer *timr, 
+ 	/* SIGEV_NONE timers are not queued ! See common_timer_get */
+ 	if (((timr->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE)) {
+ 		/* Setup correct expiry time for relative timers */
+-		if (mode == HRTIMER_MODE_REL)
+-			timer->expires = ktime_add(timer->expires,
+-						   timer->base->get_time());
++		if (mode == HRTIMER_MODE_REL) {
++			timer->expires =
++				ktime_add_safe(timer->expires,
++					       timer->base->get_time());
++		}
+ 		return 0;
+ 	}
+ 
