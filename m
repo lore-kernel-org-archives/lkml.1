@@ -1,270 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933893AbYBMXmt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765095AbYBMXni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933893AbYBMXmt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:42:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbYBMXmf
+	id S1765095AbYBMXni (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:43:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760297AbYBMXnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:42:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42605 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757474AbYBMXmd (ORCPT
+	Wed, 13 Feb 2008 18:43:24 -0500
+Received: from web32510.mail.mud.yahoo.com ([68.142.207.220]:48749 "HELO
+	web32510.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758627AbYBMXnW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:42:33 -0500
-Date: Wed, 13 Feb 2008 15:40:29 -0800
-From: Greg KH <greg@kroah.com>
-To: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Subject: [RFC PATCH] PCI: remove initial bios sort of PCI devices on x86
-Message-ID: <20080213234029.GA5119@kroah.com>
+	Wed, 13 Feb 2008 18:43:22 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=euT/mTmd+Fv8vPkIZy1kQktKnnhfIjVH4qoRrKttX2qx6uE7ptWsePVgQRqdTPXJnPYZ7gadhPdYcr0O9yt6XuITX8vkj0GqiXmVoJdmM6Ei5grc/KNkECpxYHdAUgt0MIrXJa58wRunU0IOUME5B+m55BwkmirIjZLlOmKZUIM=;
+X-YMail-OSG: yCvj_vcVM1mIVxg_2b2fM.oq7IzzQzgEbOo74yj.gCub.R1Q0Fx1vDHXJzYJBEqJdJXj_9KR.QhcxQKOoCf9cGcDXkA2IyflxbT6KEWGjXt8n3uXzhM-
+Date: Wed, 13 Feb 2008 15:43:17 -0800 (PST)
+From: Kanoj Sarcar <kanojsarcar@yahoo.com>
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Christian Bell <christian.bell@qlogic.com>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.64.0802131452410.22542@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <866658.37093.qm@web32510.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently keep 2 lists of PCI devices in the system, one in the
-driver core, and one all on its own.  This second list is sorted at boot
-time, in "BIOS" order, to try to remain compatible with older kernels
-(2.2 and earlier days).  There was also a "nosort" option to turn this
-sorting off, to remain compatible with even older kernel versions, but
-that just ends up being what we have been doing from 2.5 days...
 
-Unfortunately, the second list of devices is not really ever used to
-determine the probing order of PCI devices or drivers[1].  That is done
-using the driver core list instead.  This change happened back in the
-early 2.5 days.
+--- Christoph Lameter <clameter@sgi.com> wrote:
 
-Relying on BIOS ording for the binding of drivers to specific device
-names is problematic for many reasons, and userspace tools like udev
-exist to properly name devices in a persistant manner if that is needed,
-no reliance on the BIOS is needed.
+> On Wed, 13 Feb 2008, Kanoj Sarcar wrote:
+> 
+> > It seems that the need is to solve potential
+> memory
+> > shortage and overcommit issues by being able to
+> > reclaim pages pinned by rdma driver/hardware. Is
+> my
+> > understanding correct?
+> 
+> Correct.
+> 
+> > If I do understand correctly, then why is rdma
+> page
+> > pinning any different than eg mlock pinning? I
+> imagine
+> > Oracle pins lots of memory (using mlock), how come
+> > they do not run into vm overcommit issues?
+> 
+> Mlocked pages are not pinned. They are movable by
+> f.e. page migration and 
+> will be potentially be moved by future memory defrag
+> approaches. Currently 
+> we have the same issues with mlocked pages as with
+> pinned pages. There is 
+> work in progress to put mlocked pages onto a
+> different lru so that reclaim 
+> exempts these pages and more work on limiting the
+> percentage of memory 
+> that can be mlocked.
+> 
+> > Are we up against some kind of breaking c-o-w
+> issue
+> > here that is different between mlock and rdma
+> pinning?
+> 
+> Not that I know.
+> 
+> > Asked another way, why should effort be spent on a
+> > notifier scheme, and rather not on fixing any
+> memory
+> > accounting problems and unifying how pin pages are
+> > accounted for that get pinned via mlock() or rdma
+> > drivers?
+> 
+> There are efforts underway to account for and limit
+> mlocked pages as 
+> described above. Page pinning the way it is done by
+> Infiniband through
+> increasing the page refcount is treated by the VM as
+> a temporary 
+> condition not as a permanent pin. The VM will
+> continually try to reclaim 
+> these pages thinking that the temporary usage of the
+> page must cease 
+> soon. This is why the use of large amounts of pinned
+> pages can lead to 
+> livelock situations.
 
-Matt Domsch and others at Dell noticed this back in 2006, and added a
-boot option to sort the PCI device lists (both of them) in a
-breadth-first manner to help remain compatible with the 2.4 order, if
-needed for any reason.  This option is not going away, as some systems
-rely on them.
+Oh ok, yes, I did see the discussion on this; sorry I
+missed it. I do see what notifiers bring to the table
+now (without endorsing it :-)).
 
-This patch removes the sorting of the internal PCI device list in "BIOS"
-mode, as it's not needed at all anymore, and hasn't for many years.
-I've also removed the PCI flags for this from some other arches that for
-some reason defined them, but never used them.
+An orthogonal question is this: is IB/rdma the only
+"culprit" that elevates page refcounts? Are there no
+other subsystems which do a similar thing?
 
-This should not change the ordering of any drivers or device probing.
+The example I am thinking about is rawio (Oracle's
+mlock'ed SHM regions are handed to rawio, isn't it?).
+My understanding of how rawio works in Linux is quite
+dated though ...
 
-[1] The old-style pci_get_device and pci_find_device() still used this
-sorting order, but there are very few drivers that use these functions,
-as they are deprecated for use in this manner.  If for some reason, a
-driver rely on the order and uses these functions, the breadth-first
-boot option will resolve any problem.
+Kanoj
 
-Cc: Matt Domsch <Matt_Domsch@dell.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> If we want to have pinning behavior then we could
+> mark pinned pages 
+> specially so that the VM will not continually try to
+> evict these pages. We 
+> could manage them similar to mlocked pages but just
+> not allow page 
+> migration, memory unplug and defrag to occur on
+> pinned memory. All of 
+> theses would have to fail. With the notifier scheme
+> the device driver 
+> could be told to get rid of the pinned memory. This
+> would make these 3 
+> techniques work despite having an RDMA memory
+> section.
+> 
+> > Startup benefits are well understood with the
+> notifier
+> > scheme (ie, not all pages need to be faulted in at
+> > memory region creation time), specially when most
+> of
+> > the memory region is not accessed at all. I would
+> > imagine most of HPC does not work this way though.
+> 
+> No for optimal performance  you would want to
+> prefault all pages like 
+> it is now. The notifier scheme would only become
+> relevant in memory 
+> shortage situations.
+> 
+> > Then again, as rdma hardware is applied
+> (increasingly?) towards apps 
+> > with short lived connections, the notifier scheme
+> will help with startup 
+> > times.
+> 
+> The main use of the notifier scheme is for stability
+> and reliability. The 
+> "pinned" pages become unpinnable on request by the
+> VM. So the VM can work 
+> itself out of memory shortage situations in
+> cooperation with the 
+> RDMA logic instead of simply failing.
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe
+> linux-mm' in
+> the body to majordomo@kvack.org.  For more info on
+> Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org">
+> email@kvack.org </a>
+> 
 
----
- Documentation/kernel-parameters.txt     |    4 -
- arch/frv/mb93090-mb00/pci-frv.h         |    2 
- arch/mn10300/unit-asb2305/pci-asb2305.h |    2 
- arch/sh/drivers/pci/pci-sh4.h           |    2 
- arch/x86/pci/common.c                   |    7 ---
- arch/x86/pci/pcbios.c                   |   72 --------------------------------
- arch/x86/pci/pci.h                      |    3 -
- include/asm-sh/mpc1211/pci.h            |    2 
- 8 files changed, 94 deletions(-)
 
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1393,10 +1393,6 @@ and is between 256 and 4096 characters. 
- 		nomsi		[MSI] If the PCI_MSI kernel config parameter is
- 				enabled, this kernel boot option can be used to
- 				disable the use of MSI interrupts system-wide.
--		nosort		[X86-32] Don't sort PCI devices according to
--				order given by the PCI BIOS. This sorting is
--				done to get a device order compatible with
--				older kernels.
- 		biosirq		[X86-32] Use PCI BIOS calls to get the interrupt
- 				routing table. These calls are known to be buggy
- 				on several machines and they hang the machine
---- a/arch/frv/mb93090-mb00/pci-frv.h
-+++ b/arch/frv/mb93090-mb00/pci-frv.h
-@@ -17,8 +17,6 @@
- #define PCI_PROBE_BIOS		0x0001
- #define PCI_PROBE_CONF1		0x0002
- #define PCI_PROBE_CONF2		0x0004
--#define PCI_NO_SORT		0x0100
--#define PCI_BIOS_SORT		0x0200
- #define PCI_NO_CHECKS		0x0400
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
---- a/arch/mn10300/unit-asb2305/pci-asb2305.h
-+++ b/arch/mn10300/unit-asb2305/pci-asb2305.h
-@@ -23,8 +23,6 @@
- #define PCI_PROBE_BIOS 1
- #define PCI_PROBE_CONF1 2
- #define PCI_PROBE_CONF2 4
--#define PCI_NO_SORT 0x100
--#define PCI_BIOS_SORT 0x200
- #define PCI_NO_CHECKS 0x400
- #define PCI_ASSIGN_ROMS 0x1000
- #define PCI_BIOS_IRQ_SCAN 0x2000
---- a/arch/sh/drivers/pci/pci-sh4.h
-+++ b/arch/sh/drivers/pci/pci-sh4.h
-@@ -15,8 +15,6 @@
- #define PCI_PROBE_BIOS		1
- #define PCI_PROBE_CONF1		2
- #define PCI_PROBE_CONF2		4
--#define PCI_NO_SORT		0x100
--#define PCI_BIOS_SORT		0x200
- #define PCI_NO_CHECKS		0x400
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -427,10 +427,6 @@ static int __init pcibios_init(void)
- 
- 	if (pci_bf_sort >= pci_force_bf)
- 		pci_sort_breadthfirst();
--#ifdef CONFIG_PCI_BIOS
--	if ((pci_probe & PCI_BIOS_SORT) && !(pci_probe & PCI_NO_SORT))
--		pcibios_sort();
--#endif
- 	return 0;
- }
- 
-@@ -455,9 +451,6 @@ char * __devinit  pcibios_setup(char *st
- 	} else if (!strcmp(str, "nobios")) {
- 		pci_probe &= ~PCI_PROBE_BIOS;
- 		return NULL;
--	} else if (!strcmp(str, "nosort")) {
--		pci_probe |= PCI_NO_SORT;
--		return NULL;
- 	} else if (!strcmp(str, "biosirq")) {
- 		pci_probe |= PCI_BIOS_IRQ_SCAN;
- 		return NULL;
---- a/arch/x86/pci/pcbios.c
-+++ b/arch/x86/pci/pcbios.c
-@@ -152,28 +152,6 @@ static int __devinit check_pcibios(void)
- 	return 0;
- }
- 
--static int __devinit pci_bios_find_device (unsigned short vendor, unsigned short device_id,
--					unsigned short index, unsigned char *bus, unsigned char *device_fn)
--{
--	unsigned short bx;
--	unsigned short ret;
--
--	__asm__("lcall *(%%edi); cld\n\t"
--		"jc 1f\n\t"
--		"xor %%ah, %%ah\n"
--		"1:"
--		: "=b" (bx),
--		  "=a" (ret)
--		: "1" (PCIBIOS_FIND_PCI_DEVICE),
--		  "c" (device_id),
--		  "d" (vendor),
--		  "S" ((int) index),
--		  "D" (&pci_indirect));
--	*bus = (bx >> 8) & 0xff;
--	*device_fn = bx & 0xff;
--	return (int) (ret & 0xff00) >> 8;
--}
--
- static int pci_bios_read(unsigned int seg, unsigned int bus,
- 			 unsigned int devfn, int reg, int len, u32 *value)
- {
-@@ -354,55 +332,6 @@ static struct pci_raw_ops * __devinit pc
- }
- 
- /*
-- * Sort the device list according to PCI BIOS. Nasty hack, but since some
-- * fool forgot to define the `correct' device order in the PCI BIOS specs
-- * and we want to be (possibly bug-to-bug ;-]) compatible with older kernels
-- * which used BIOS ordering, we are bound to do this...
-- */
--
--void __devinit pcibios_sort(void)
--{
--	LIST_HEAD(sorted_devices);
--	struct list_head *ln;
--	struct pci_dev *dev, *d;
--	int idx, found;
--	unsigned char bus, devfn;
--
--	DBG("PCI: Sorting device list...\n");
--	while (!list_empty(&pci_devices)) {
--		ln = pci_devices.next;
--		dev = pci_dev_g(ln);
--		idx = found = 0;
--		while (pci_bios_find_device(dev->vendor, dev->device, idx, &bus, &devfn) == PCIBIOS_SUCCESSFUL) {
--			idx++;
--			list_for_each(ln, &pci_devices) {
--				d = pci_dev_g(ln);
--				if (d->bus->number == bus && d->devfn == devfn) {
--					list_move_tail(&d->global_list, &sorted_devices);
--					if (d == dev)
--						found = 1;
--					break;
--				}
--			}
--			if (ln == &pci_devices) {
--				printk(KERN_WARNING "PCI: BIOS reporting unknown device %02x:%02x\n", bus, devfn);
--				/*
--				 * We must not continue scanning as several buggy BIOSes
--				 * return garbage after the last device. Grr.
--				 */
--				break;
--			}
--		}
--		if (!found) {
--			printk(KERN_WARNING "PCI: Device %s not found by BIOS\n",
--				pci_name(dev));
--			list_move_tail(&dev->global_list, &sorted_devices);
--		}
--	}
--	list_splice(&sorted_devices, &pci_devices);
--}
--
--/*
-  *  BIOS Functions for IRQ Routing
-  */
- 
-@@ -485,7 +414,6 @@ void __init pci_pcbios_init(void)
- {
- 	if ((pci_probe & PCI_PROBE_BIOS) 
- 		&& ((raw_pci_ops = pci_find_bios()))) {
--		pci_probe |= PCI_BIOS_SORT;
- 		pci_bios_present = 1;
- 	}
- }
---- a/arch/x86/pci/pci.h
-+++ b/arch/x86/pci/pci.h
-@@ -19,8 +19,6 @@
- #define PCI_PROBE_MASK		0x000f
- #define PCI_PROBE_NOEARLY	0x0010
- 
--#define PCI_NO_SORT		0x0100
--#define PCI_BIOS_SORT		0x0200
- #define PCI_NO_CHECKS		0x0400
- #define PCI_USE_PIRQ_MASK	0x0800
- #define PCI_ASSIGN_ROMS		0x1000
-@@ -101,7 +99,6 @@ extern int pci_direct_probe(void);
- extern void pci_direct_init(int type);
- extern void pci_pcbios_init(void);
- extern void pci_mmcfg_init(int type);
--extern void pcibios_sort(void);
- 
- /* pci-mmconfig.c */
- 
---- a/include/asm-sh/mpc1211/pci.h
-+++ b/include/asm-sh/mpc1211/pci.h
-@@ -24,8 +24,6 @@
- #define PCI_PROBE_BIOS    1
- #define PCI_PROBE_CONF1   2
- #define PCI_PROBE_CONF2   4
--#define PCI_NO_SORT       0x100
--#define PCI_BIOS_SORT     0x200
- #define PCI_NO_CHECKS     0x400
- #define PCI_ASSIGN_ROMS   0x1000
- #define PCI_BIOS_IRQ_SCAN 0x2000
+
+      ____________________________________________________________________________________
+Looking for last minute shopping deals?  
+Find them fast with Yahoo! Search.  http://tools.search.yahoo.com/newsearch/category.php?category=shopping
