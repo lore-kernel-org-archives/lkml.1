@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932521AbYBMWB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbYBMWB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932521AbYBMWB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbYBMVpj
+	id S1758363AbYBMWB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933941AbYBMVrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:45:39 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:38084 "EHLO gherkin.frus.com"
+	Wed, 13 Feb 2008 16:47:15 -0500
+Received: from mx.neterion.com ([72.1.205.142]:11823 "EHLO owa.neterion.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932740AbYBMVpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:45:36 -0500
-Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-In-Reply-To: <1202931545.20209.6.camel@lappy> "from Peter Zijlstra at Feb 13,
- 2008 08:39:05 pm"
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Wed, 13 Feb 2008 15:45:34 -0600 (CST)
-CC: linux-kernel@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	id S933936AbYBMVrM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:47:12 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080213214534.08824DBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6 patch] make s2io.c:init_tti() static
+Date: Wed, 13 Feb 2008 16:45:08 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD770305B135@nekter>
+In-Reply-To: <20080213213050.GN3383@cs181133002.pp.htv.fi>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6 patch] make s2io.c:init_tti() static
+Thread-Index: Achuh9PR6MKuzqfpQMq8oN8hJcc9dQAAbrFA
+References: <20080213213050.GN3383@cs181133002.pp.htv.fi>
+From: "Ramkrishna Vepa" <Ramkrishna.Vepa@neterion.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       "Adrian Bunk" <bunk@kernel.org>,
+       "Surjit Reang" <Surjit.Reang@neterion.com>,
+       "Sreenivasa Honnur" <Sreenivasa.Honnur@neterion.com>,
+       "Ramkrishna Vepa" <ram.vepa@neterion.com>,
+       "Rastapur Santosh" <santosh.rastapur@neterion.com>,
+       "Sivakumar Subramani" <Sivakumar.Subramani@neterion.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Does: http://lkml.org/lkml/2008/1/28/100
+Please apply. Looks good.
+
+Ram
+
+> -----Original Message-----
+> From: Adrian Bunk [mailto:bunk@kernel.org]
+> Sent: Wednesday, February 13, 2008 1:31 PM
+> To: Surjit Reang; Sreenivasa Honnur; Ramkrishna Vepa; Rastapur
+Santosh;
+> Sivakumar Subramani
+> Cc: netdev@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [2.6 patch] make s2io.c:init_tti() static
 > 
-> help?
+> This patch makes the needlessly global init_tti() static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> ---
+> 
+> This patch has been sent on:
+> - 30 Jan 2008
+> 
+> 1e8c2b07be955b181814e4c24366517a66557908
+> diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
+> index 5fab7d7..bc94e84 100644
+> --- a/drivers/net/s2io.c
+> +++ b/drivers/net/s2io.c
+> @@ -1088,7 +1088,7 @@ static int s2io_print_pci_mode(struct s2io_nic
+*nic)
+>   *  '-1' on failure
+>   */
+> 
+> -int init_tti(struct s2io_nic *nic, int link)
+> +static int init_tti(struct s2io_nic *nic, int link)
+>  {
+>  	struct XENA_dev_config __iomem *bar0 = nic->bar0;
+>  	register u64 val64 = 0;
 
-I'll give that a try this evening or tomorrow and let you know.
-
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
