@@ -1,58 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbYBMRTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbYBMRU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933221AbYBMRTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbYBMRTF
+	id S933537AbYBMRU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:20:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757586AbYBMRUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:19:05 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:39119 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756327AbYBMRTC (ORCPT
+	Wed, 13 Feb 2008 12:20:47 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:57699 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754403AbYBMRUp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:19:02 -0500
-Message-ID: <47B32664.7050201@qualcomm.com>
-Date: Wed, 13 Feb 2008 09:18:28 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 13 Feb 2008 12:20:45 -0500
+Message-ID: <47B32680.5020405@panasas.com>
+Date: Wed, 13 Feb 2008 19:18:56 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Paul Jackson <pj@sgi.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, gregkh@suse.de, rusty@rustcorp.com.au
-Subject: Re: [git pull] CPU isolation extensions (updated)
-References: <47AE6A8B.6030908@qualcomm.com> <20080209212156.ecc72fee.pj@sgi.com> <47AE76B8.6060304@qualcomm.com> <20080213105804.GE32241@elte.hu>
-In-Reply-To: <20080213105804.GE32241@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>	 <1202921122.3109.31.camel@localhost.localdomain>	 <47B31FC2.4040206@panasas.com> <1202922226.3109.36.camel@localhost.localdomain>
+In-Reply-To: <1202922226.3109.36.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Max Krasnyansky <maxk@qualcomm.com> wrote:
+On Wed, Feb 13 2008 at 19:03 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Wed, 2008-02-13 at 18:50 +0200, Boaz Harrosh wrote:
+>> On Wed, Feb 13 2008 at 18:45 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+>>> On Wed, 2008-02-13 at 18:33 +0200, Boaz Harrosh wrote:
+>>>> On Wed, Feb 13 2008 at 17:54 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>>>> On Wed, Feb 13 2008 at 17:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+>>>>>> On Tue, 2008-02-12 at 19:40 +0200, Boaz Harrosh wrote:
+>>>>>>> -	gdth_flush(ha);
+>>>>>>> -
+>>>>>> This piece doesn't look right.  gdth_flush() forces the internal cache
+>>>>>> to disk backing.  If you remove it, you're taking the chance that the
+>>>>>> machine will be powered off without a writeback which can cause data
+>>>>>> corruption.
+>>>>>>
+>>>>>> James
+>>>>>>
+>>>>> Yes. 
+>>>>> I have more problems reported, with exit, and am just sending one more patch that puts
+>>>>> this back in. Which was tested.
+>>>>>
+>>>>> So I will resend this one plus one new one.
+>>>>>
+>>>>> Boaz
+>>>>>
+>>>> The gdth driver would do a register_reboot_notifier(&gdth_notifier);
+>>>> to a gdth_halt() function, which would then redo half of what gdth_exit
+>>>> does, and wrongly so, and crash.  
+>>>>
+>>>> Are we guaranteed in todays kernel that modules .exit function be called
+>>>> on an halt or reboot? If so then there is no need for duplications and
+>>>> the gdth_halt() should go.
+>>> No.  The __exit section is actually discardable if you promise never to
+>>> remove the module.
+>>>
+>> I don't understand please explain. 
+>> What does a driver need to do if it needs a consistent shutdown retine?
+>> module or built in? unload or shutdown?
 > 
->> Ingo said a few different things (a bit too large to quote). 
+> It needs to register a reboot notifier, which gdth does.
 > 
-> [...]
->> And at the end he said:
->>> Also, i'd not mind some test-coverage in sched.git as well.
+> However, the notifier is only called on reboot, so it also needs to
+> clean up correctly on module exit as well.
 > 
->> I far as I know "do not mind" does not mean "must go to" ;-). [...]
-> 
-> the CPU isolation related patches have typically flown through 
-> sched.git/sched-devel.git, so yes, you can take my "i'd not mind" 
-> comment as "i'd not mind it at all". That's the tree that all the folks 
-> who deal with this (such as Paul) are following. So lets go via the 
-> normal contribution cycle and let this trickle through with all the 
-> scheduler folks? I'd say 2.6.26 would be a tentative target, if it holds 
-> up to scrutiny in sched-devel.git (both testing and review wise). And 
-> because Andrew tracks sched-devel.git it will thus show up in -mm too.
+> The alternative for GDTH would be to process the SCSI SYNCHRONIZE CACHE
 
-Sounds good. Can you pull my tree then ? Or do you want me to resend the patches.
-The tree is here:
-	git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git
-Take the for-linus branch.
-Or as I said please let me know and I'll resend the patches.
+Why would we think that the controller does not support this command
+is it not in the mandatory section of the standard?
 
-Thanx
-Max
+> command.  That's done by a shutdown notifier from sd, so the correct
+> thing would always get done; however it does mean the driver has to be
+> in a condition to process the last sync cache command.
+
+Why would it not be ready? what do other drivers do?
+The drivers is ready until the very last module's .exit. Is that good
+enough?
+
+> 
+> For the quick fix, just keep the current infrastructure and put back the
+> gdth_flush() command where it can be effective.
+> 
+
+Just did. But if needed I would prefer to emulate the SCSI SYNCHRONIZE CACHE
+command and not that boot notifier thing. Please advise.
+
+> James
+> 
+> 
+
+Boaz
