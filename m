@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932471AbYBMShx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759306AbYBMSpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932471AbYBMShx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764471AbYBMShg
+	id S1759306AbYBMSpZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbYBMSpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:37:36 -0500
-Received: from hu-out-0506.google.com ([72.14.214.239]:56123 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762782AbYBMShf (ORCPT
+	Wed, 13 Feb 2008 13:45:11 -0500
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5]:50590 "EHLO
+	mail3.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752951AbYBMSpJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:37:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=UH/8SaNoV3JJW5kS7hHpgDM1KLcHzY5hv1Dmatp45bRLBWnFksr+Q29VaprqJOAdai+m2XUmyXMXIqZWvzulE0JwGUL/Xul0dWSpn8PTFj+lb64JPwbGWstqwppxu3Oq8QTSmL9UkG52PpiVZApKz/8Mhczd8wl0LANW/ZN5dgA=
-Date: Wed, 13 Feb 2008 19:36:49 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] crypto: be*_add_cpu conversion
-Message-ID: <20080213183628.GB6150@joi>
-References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com> <1202857582-15450-2-git-send-email-marcin.slusarz@gmail.com> <47B2A98B.4050408@tiscali.nl>
+	Wed, 13 Feb 2008 13:45:09 -0500
+Date: Wed, 13 Feb 2008 10:45:06 -0800 (PST)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: linux-dvb-maintainer@linuxtv.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Ricardo Cerqueira <ricardo@cerqueira.org>
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes
+In-Reply-To: <20080213155352.06d966cd@gaivota>
+Message-ID: <Pine.LNX.4.58.0802131025440.6264@shell2.speakeasy.net>
+References: <20080212190235.4e86baf8@gaivota> <Pine.LNX.4.58.0802122120530.7642@shell2.speakeasy.net>
+ <20080213155352.06d966cd@gaivota>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B2A98B.4050408@tiscali.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 09:25:47AM +0100, Roel Kluin wrote:
-> marcin.slusarz@gmail.com wrote:
-> > From: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > 
-> > replace all:
-> > big_endian_variable = cpu_to_beX(beX_to_cpu(big_endian_variable) +
-> > 					expression_in_cpu_byteorder);
-> > with:
-> > 	beX_add_cpu(&big_endian_variable, expression_in_cpu_byteorder);
-> > generated with semantic patch
-> > 
-> > Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> > Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> > Cc: David S. Miller <davem@davemloft.net>
-> > ---
-> >  crypto/lrw.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/crypto/lrw.c b/crypto/lrw.c
-> > index 9d52e58..4d93928 100644
-> > --- a/crypto/lrw.c
-> > +++ b/crypto/lrw.c
-> > @@ -92,7 +92,7 @@ struct sinfo {
-> >  static inline void inc(be128 *iv)
-> >  {
-> >  	if (!(iv->b = cpu_to_be64(be64_to_cpu(iv->b) + 1)))
-> 
-> maybe you also want instead of the line above:
-> 
-> 	be64_add_cpu(&iv->b, 1);
-> 	if (!iv->b)
-> 
-> > -		iv->a = cpu_to_be64(be64_to_cpu(iv->a) + 1);
-> > +		be64_add_cpu(&iv->a, 1);
-> >  }
-> >  
-> >  static inline void lrw_round(struct sinfo *s, void *dst, const void *src)
-> 
-I'm a bit ashamed... but here is updated patch:
----
-crypto: replace all adds to big endians variables with be*_add_cpu
+On Wed, 13 Feb 2008, Mauro Carvalho Chehab wrote:
+> On Tue, 12 Feb 2008 21:21:43 -0800 (PST)
+> Trent Piepho <xyzzy@speakeasy.org> wrote:
+>
+> > On Tue, 12 Feb 2008, Mauro Carvalho Chehab wrote:
+> > >    - cx88-mpeg: Allow concurrent access to cx88-mpeg devices;
+> >
+> > So you decided to just commit this one with the race condition anyway?
+>
+> The version with problems is the one dated by Jan, 16:
+> http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-January/006119.html
+>
+> As Ricardo stated on Feb, 5, he fixed the lock issues, that were present on
+> your first revision:
+>
+> http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-February/006292.html
 
-replace all:
-big_endian_variable = cpu_to_beX(beX_to_cpu(big_endian_variable) +
-					expression_in_cpu_byteorder);
-with:
-	beX_add_cpu(&big_endian_variable, expression_in_cpu_byteorder);
+I don't see what you are saying in that message.  Ricardo agreed it had a
+race condition and said he would, at some future point, redo it, but I
+never saw a new patch.
 
-Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Roel Kluin <12o3l@tiscali.nl>
----
- crypto/lrw.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+> I've pushed the reviewed version at the same day, for testing, at the
 
-diff --git a/crypto/lrw.c b/crypto/lrw.c
-index 9d52e58..8ef664e 100644
---- a/crypto/lrw.c
-+++ b/crypto/lrw.c
-@@ -91,8 +91,9 @@ struct sinfo {
- 
- static inline void inc(be128 *iv)
- {
--	if (!(iv->b = cpu_to_be64(be64_to_cpu(iv->b) + 1)))
--		iv->a = cpu_to_be64(be64_to_cpu(iv->a) + 1);
-+	be64_add_cpu(&iv->b, 1);
-+	if (!iv->b)
-+		be64_add_cpu(&iv->a, 1);
- }
- 
- static inline void lrw_round(struct sinfo *s, void *dst, const void *src)
--- 
-1.5.3.7
+review-by == I saw your patch in my inbox and read the title
 
+> development environment:
+>
+> http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-February/006326.html
+>
+> Nobody pointed any newer issues on the reviewed version, since then.
+
+Nobody points to any issues, ever, when this happens.  Look at how broken
+the v4l2 only bttv driver was.  You still can't unload and load cx88-dvb
+since Markus's patch for hotplug, no one's fixed that regression.  Now
+there's yet another race in the cx88 subdriver code.  Maybe the original
+author who added that code should feel some motiviation to fix the
+regressions it caused....
+
+The only complaints that are ever generated on commits to the development
+enviroment are political, "so-and-so shouldn't be able to patch my
+fiefdom."
+
+> If you still see any issues, please send us a patch fixing it.
+
+I don't have the time or the desire to be the janitor who cleans up after
+sloppy coders' bugs.
