@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbYBMXjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932540AbYBMXmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763459AbYBMXjQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932758AbYBMXik
+	id S932540AbYBMXmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:42:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757474AbYBMXmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:38:40 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:64755 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932562AbYBMXih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:38:37 -0500
-From: Junio C Hamano <junio@pobox.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
-References: <20080213070215.GA11969@kroah.com>
- <20080212.230423.172781444.davem@davemloft.net>
- <1202887323.3129.10.camel@localhost> <20080213165924.GB10129@suse.de>
- <1202923995.3129.26.camel@localhost>
- <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
- <alpine.LFD.1.00.0802131014240.2920@woody.linux-foundation.org>
-cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+	Wed, 13 Feb 2008 18:42:14 -0500
+Received: from namei.org ([69.55.235.186]:42028 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756443AbYBMXmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 18:42:13 -0500
+Date: Thu, 14 Feb 2008 10:41:19 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: Paul Moore <paul.moore@hp.com>
+cc: Adrian Bunk <bunk@kernel.org>, coreteam@netfilter.org,
        linux-kernel@vger.kernel.org
-Date: Wed, 13 Feb 2008 15:38:20 -0800
-In-Reply-To: <alpine.LFD.1.00.0802131014240.2920@woody.linux-foundation.org>
- (Linus Torvalds's message of "Wed, 13 Feb 2008 10:19:25 -0800 (PST)")
-Message-ID: <7v4pcco2ab.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Subject: Re: [2.6 patch] make secmark_tg_destroy() static
+In-Reply-To: <200802131634.51116.paul.moore@hp.com>
+Message-ID: <Xine.LNX.4.64.0802141040440.3559@us.intercode.com.au>
+References: <20080213212940.GH3383@cs181133002.pp.htv.fi>
+ <200802131634.51116.paul.moore@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Wed, 13 Feb 2008, Paul Moore wrote:
 
-> On Wed, 13 Feb 2008, Linus Torvalds wrote:
->> 
->> So in that sense, I think both MAINTAINERS and the deprecation schedule 
->> are totally uninteresting. Yes, they have merge conflicts. But those merge 
->> conflicts are really really easy to handle.
->
-> That, btw, includes "automatic merges" for something like a Linux-next 
-> tree. It's easy to just make something that says: if the merge fails, try 
-> to fix up these xyz files by just committing them with merge error markers 
-> and all".
->
-> That's fine for testing, exactly because it has no coding impact (and then 
-> when a _real_ merge happens, you have a human that actually resolves it).
-> ...
-> Git if nothing if not scriptable, and things like this are *trivial*.
+> On Wednesday 13 February 2008 4:29:40 pm Adrian Bunk wrote:
+> > This patch makes the needlessly global secmark_tg_destroy() static.
+> >
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> 
+> Thanks for catching this.
+> 
+> Acked-by: Paul Moore <paul.moore@hp.com>
+> 
 
-You can also use "union" low-level merge driver for such files
-via gitattributes(5).
+Applied -- will push to Linus unless the netfilter folk do it first.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
