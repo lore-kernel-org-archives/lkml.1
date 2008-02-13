@@ -1,82 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbYBMDAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbYBMDKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761632AbYBMDAd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 22:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYBMDAY
+	id S1757622AbYBMDKV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 22:10:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYBMDJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 22:00:24 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:39104 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751823AbYBMDAW (ORCPT
+	Tue, 12 Feb 2008 22:09:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47995 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751874AbYBMDJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 22:00:22 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
-       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org>
-References: <47B1CB08.4020101@garzik.org>
-	 <20080212.155853.193190548.davem@davemloft.net>
-	 <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
-	 <20080212.172051.58554658.davem@davemloft.net>
-	 <1202869550.3137.182.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 21:00:16 -0600
-Message-Id: <1202871616.3137.197.camel@localhost.localdomain>
+	Tue, 12 Feb 2008 22:09:48 -0500
+Date: Tue, 12 Feb 2008 19:08:09 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: David Rientjes <rientjes@google.com>, Adrian Bunk <bunk@kernel.org>,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       Robert Reif <reif@earthlink.net>
+Subject: Re: [patch] sparc: fix build
+Message-Id: <20080212190809.75dbf52e.akpm@linux-foundation.org>
+In-Reply-To: <20080213025739.GO27894@ZenIV.linux.org.uk>
+References: <20080207231230.GE7198@cs181133002.pp.htv.fi>
+	<alpine.DEB.1.00.0802071538440.15050@chino.kir.corp.google.com>
+	<20080210153355.GA6737@palantir8>
+	<alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com>
+	<47AF7048.3060200@earthlink.net>
+	<alpine.DEB.1.00.0802101529310.17892@chino.kir.corp.google.com>
+	<20080212184654.85d5ae20.akpm@linux-foundation.org>
+	<20080213025739.GO27894@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 18:35 -0800, Linus Torvalds wrote:
-> 
-> On Tue, 12 Feb 2008, James Bottomley wrote:
+On Wed, 13 Feb 2008 02:57:39 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
+
+> On Tue, Feb 12, 2008 at 06:46:54PM -0800, Andrew Morton wrote:
+> > > diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+> > > --- a/include/linux/memcontrol.h
+> > > +++ b/include/linux/memcontrol.h
+> > > @@ -20,9 +20,6 @@
+> > >  #ifndef _LINUX_MEMCONTROL_H
+> > >  #define _LINUX_MEMCONTROL_H
+> > >  
+> > > -#include <linux/rcupdate.h>
+> > > -#include <linux/mm.h>
+> > > -
+> > >  struct mem_cgroup;
+> > >  struct page_cgroup;
+> > >  struct page;
 > > 
-> > Yes, this is exactly the feature I'm looking for.  It would allow the
-> > downstream users of a rebased tree to rebase themselves correctly.
+> > This really should have been in a separate patch and extensively tested.
 > > 
-> > All the information about the rebase is in the reflog ... it can't be
-> > too difficult to pass it through on a pull and allow the downstream tree
-> > to do the right thing.
+> > Have we checked that every file which directly or indirectly includes
+> > memcontrol.h does not have an requirement for rcupdate.h and mm.h, where
+> > that requirement was satisfied only via this nested inclusion?  For all
+> > architectures and for all config selections?  Think not.
+> > 
+> > Sadly, removal of nested includes is a *big* deal, and it takes quite a lot
+> > of time to get it all shaken down.
+> > 
+> > If we can confirm that all files (.c and .h) which include memcontrol.h
+> > also directly include rcupdate.h and mm.h then we're _probably_ ok (modulo
+> > ordering issues).
+> > 
+> > Otherwise we should perhaps be taking a second look at how to fix the sparc
+> > problem.
 > 
-> Guys, you simply have no idea what you're talking about.
-> 
-> Those downstream trees can have done things themselves. They *depended* on 
-> the state you gave them.
-> 
-> You can't just say "oops, I lied, this is the state you should have used, 
-> now it's _your_ mess to sort out".
-> 
-> OF COURSE it's what you'd like to use - it absolves you of any and all 
-> actual responsibility. But dammit, that's not what anybody else wants than 
-> the irresponsible person who cannot be bothered to stand up for his work!
-> 
-> If you're not confident enough about your work, don't push it out! It's 
-> that simple. Pushing out to a public branch is a small "release".
-> 
-> Have the f*cking back-bone to be able to stand behind what you did!
+> I've run allmodconfig builds on a bunch of target, FWIW (essentially the
+> same patch).  Note that these includes are recent addition caused by
+> added inline function that had since then become a define.  So while I
+> agree with your comments in general, in _this_ case it's pretty safe.
 
-Erm, I would like this feature as a downstream user.
+OK, thanks, that increases the comfort level,
 
-I'm not asking for this to be the default or even easily available.
-However, when you know you've based a downstream tree on what you know
-to be a volatile base, it would be very useful information to have.
+> Commit that had done it is 3062fc67dad01b1d2a15d58c709eff946389eca4
+> and switch to #define is 60c12b1202a60eabb1c61317e5d2678fcea9893f (BTW,
+> that warranted mentioning in changelog of the latter).
 
-Right at the moment, I maintain a <branch> and a <branch>-base and
-simply cherry pick the commits between the two to do the right thing
-when I know my volatile base has changed.  It would be very helpful to
-have a version of rebase that new my base had been rebased.
-
-Basing on a tree I know to be volatile is sometimes a development
-decision I make as a downstream user ... I'm just wishing the tools
-could help me handle the problems better.
-
-James
-
-
+I just copied-and-pasted your email ;)
