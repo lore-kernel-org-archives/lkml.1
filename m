@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932884AbYBMQbK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbYBMQb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932884AbYBMQbK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:31:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759351AbYBMQay
+	id S933298AbYBMQb1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:31:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbYBMQbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:30:54 -0500
-Received: from vms173003pub.verizon.net ([206.46.173.3]:38310 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758796AbYBMQax (ORCPT
+	Wed, 13 Feb 2008 11:31:06 -0500
+Received: from vms042pub.verizon.net ([206.46.252.42]:40616 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933193AbYBMQbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:30:53 -0500
-Date: Wed, 13 Feb 2008 10:20:53 -0600
+	Wed, 13 Feb 2008 11:31:04 -0500
+Date: Wed, 13 Feb 2008 10:30:48 -0600
 From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 1/8] IPMI: Hold ATTN until upper layer ready
+Subject: [PATCH 6/8] IPMI: Update driver version
 To: Linux Kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>,
-       Patrick Schoeller <Patrick.Schoeller@hp.com>,
        OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
 Reply-to: minyard@acm.org
-Message-id: <20080213162053.GA9830@minyard.local>
+Message-id: <20080213163048.GF9830@minyard.local>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-disposition: inline
@@ -29,28 +28,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Corey Minyard <cminyard@mvista.com>
 
-Hold handling of ATTN until the upper layer has reported that it is
-ready.
+Enough bug fixes and changes that we need a new driver version.
 
 Signed-off-by: Corey Minyard <cminyard@mvista.com>
-Cc: Patrick Schoeller <Patrick.Schoeller@hp.com>
----
 
-Index: linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
+Index: linux-2.6.23/drivers/char/ipmi/ipmi_msghandler.c
 ===================================================================
---- linux-2.6.24.orig/drivers/char/ipmi/ipmi_si_intf.c
-+++ linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
-@@ -723,8 +723,11 @@ static enum si_sm_result smi_event_handl
- 		si_sm_result = smi_info->handlers->event(smi_info->si_sm, 0);
- 	}
+--- linux-2.6.23.orig/drivers/char/ipmi/ipmi_msghandler.c
++++ linux-2.6.23/drivers/char/ipmi/ipmi_msghandler.c
+@@ -47,7 +47,7 @@
  
--	/* We prefer handling attn over new messages. */
--	if (si_sm_result == SI_SM_ATTN)
-+	/*
-+	 * We prefer handling attn over new messages.  But don't do
-+	 * this if there is not yet an upper layer to handle anything.
-+	 */
-+	if (likely(smi_info->intf) && si_sm_result == SI_SM_ATTN)
- 	{
- 		unsigned char msg[2];
+ #define PFX "IPMI message handler: "
  
+-#define IPMI_DRIVER_VERSION "39.1"
++#define IPMI_DRIVER_VERSION "39.2"
+ 
+ static struct ipmi_recv_msg *ipmi_alloc_recv_msg(void);
+ static int ipmi_init_msghandler(void);
