@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762092AbYBMDdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbYBMDmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762092AbYBMDdn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 22:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbYBMDdg
+	id S1756839AbYBMDmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 22:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750968AbYBMDmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 22:33:36 -0500
-Received: from ithilien.qualcomm.com ([129.46.51.59]:46413 "EHLO
-	ithilien.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751437AbYBMDdf (ORCPT
+	Tue, 12 Feb 2008 22:42:11 -0500
+Received: from hapkido.dreamhost.com ([66.33.216.122]:48590 "EHLO
+	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750787AbYBMDmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 22:33:35 -0500
-Message-ID: <47B264E3.4090605@qualcomm.com>
-Date: Tue, 12 Feb 2008 19:32:51 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 12 Feb 2008 22:42:10 -0500
+Message-ID: <47B266AE.3040908@sdiz.net>
+Date: Wed, 13 Feb 2008 11:40:30 +0800
+From: SDiZ <sdiz@sdiz.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: nickpiggin@yahoo.com.au, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl, gregkh@suse.de,
-       rusty@rustcorp.com.au
-Subject: Re: [git pull for -mm] CPU isolation extensions (updated2)
-References: <47B11C45.6060408@qualcomm.com>	<200802121741.22201.nickpiggin@yahoo.com.au> <20080211.224436.174153780.davem@davemloft.net>
-In-Reply-To: <20080211.224436.174153780.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: marcel@holtmann.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH][BLUETOOTH] add HCI_BROKEN_ISOC for 0e5e:6622 (bugzilla #9027)
+Content-Type: multipart/mixed;
+ boundary="------------070400050405050902010705"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Nick Piggin <nickpiggin@yahoo.com.au>
-> Date: Tue, 12 Feb 2008 17:41:21 +1100
-> 
->> stop machine is used for more than just module loading and unloading.
->> I don't think you can just disable it.
-> 
-> Right, in particular it is used for CPU hotplug.
-Ooops. Totally missed that. And a bunch of other places.
+This is a multi-part message in MIME format.
+--------------070400050405050902010705
+Content-Type: text/plain; charset=Big5-HKSCS
+Content-Transfer-Encoding: 7bit
 
-[maxk@duo2 cpuisol-2.6.git]$ git grep -l stop_machine_run
-Documentation/cpu-hotplug.txt
-arch/s390/kernel/kprobes.c
-drivers/char/hw_random/intel-rng.c
-include/linux/stop_machine.h
-kernel/cpu.c
-kernel/module.c
-kernel/stop_machine.c
-mm/page_alloc.c
+This patch fix bugzilla #9027.
+``Syslog flooded with "hci_scodata_packet: hci0 SCO packet for unknown
+connection handle 92" message"
 
-I wonder why I did not see any issues when I disabled stop machine completely.
-I mentioned in the other thread that I commented out the part that actually halts
-the machine and ran it for several hours on my dual core laptop and on the quad
-core server. Tried all kinds of workloads, which include constant module removal
-and insertion, and cpu hotplug as well. It cannot be just luck :).
-
-Clearly though, you guys are right. It cannot be simply disabled. Based on the 
-above grep it's needed for CPU hotplug, mem hotplug, kprobes on s390 and intel
-rng driver. Hopefully we can avoid it at least in module insertion/removal.
-
-Max
+see http://bugzilla.kernel.org/show_bug.cgi?id=9027
 
 
 
+
+
+
+
+--------------070400050405050902010705
+Content-Type: text/x-patch;
+ name="bugzilla9027.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="bugzilla9027.patch"
+
+diff --git a/drivers/bluetooth/hci_usb.c b/drivers/bluetooth/hci_usb.c
+index b474185..372c7ef 100644
+--- a/drivers/bluetooth/hci_usb.c
++++ b/drivers/bluetooth/hci_usb.c
+@@ -162,9 +162,6 @@ static struct usb_device_id blacklist_ids[] = {
+        /* Frontline ComProbe Bluetooth Sniffer */
+        { USB_DEVICE(0x16d3, 0x0002), .driver_info = HCI_SNIFFER },
+
++        /* Brandless USB Bluetooth Dongle */
++        { USB_DEVICE(0x0e5e, 0x6622), .driver_info = HCI_BROKEN_ISOC },
++
+        { }     /* Terminating entry */
+ };
+
+--------------070400050405050902010705--
