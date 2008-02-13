@@ -1,163 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764232AbYBMD6L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764660AbYBMD70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764232AbYBMD6L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 22:58:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754043AbYBMD5z
+	id S1764660AbYBMD70 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 22:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753618AbYBMD7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 22:57:55 -0500
-Received: from smtp102.sbc.mail.mud.yahoo.com ([68.142.198.201]:39685 "HELO
-	smtp102.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754006AbYBMD5x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 22:57:53 -0500
-X-YMail-OSG: 4BoBbB4VM1lLVPGViBt__IlO8von9ZW_IjZnUZwRe9VGYJGqBpjdH6u65XwV1hxy6tM1agXteWCYpi6efLfeP.dUxryDCzPzihadvmBd_yAIrw6JFo0-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [Scst-devel] Integration of SCST in the mainstream Linux kernel
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       scst-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Rik van Riel <riel@redhat.com>,
-       Chris Weiss <cweiss@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
-	 <47A8B757.10101@vlnb.net>
-	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
-	 <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 19:44:35 -0800
-Message-Id: <1202874275.14647.52.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Tue, 12 Feb 2008 22:59:18 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1970 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752262AbYBMD7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 22:59:17 -0500
+Message-ID: <47B26A6A.4000209@myri.com>
+Date: Tue, 12 Feb 2008 22:56:26 -0500
+From: Patrick Geoffray <patrick@myri.com>
+Organization: Myricom, Inc
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+CC: Christoph Lameter <clameter@sgi.com>, Roland Dreier <rdreier@cisco.com>,
+       Rik van Riel <riel@redhat.com>, steiner@sgi.com,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, linux-kernel@vger.kernel.org, avi@qumranet.com,
+       linux-mm@kvack.org, daniel.blueman@qua
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+References: <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf <20080213032533.GC32047@obsidianresearch.com>
+In-Reply-To: <20080213032533.GC32047@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+Jason,
 
-On Tue, 2008-02-12 at 17:05 +0100, Bart Van Assche wrote:
-> On Feb 6, 2008 1:11 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> > I have always observed the case with LIO SE/iSCSI target mode ...
-> 
-> Hello Nicholas,
-> 
-> Are you sure that the LIO-SE kernel module source code is ready for
-> inclusion in the mainstream Linux kernel ? As you know I tried to test
-> the LIO-SE iSCSI target. Already while configuring the target I
-> encountered a kernel crash that froze the whole system. I can
-> reproduce this kernel crash easily, and I reported it 11 days ago on
-> the LIO-SE mailing list (February 4, 2008). One of the call stacks I
-> posted shows a crash in mempool_alloc() called from jbd. Or: the crash
-> is most likely the result of memory corruption caused by LIO-SE.
-> 
+Jason Gunthorpe wrote:
+> I don't know much about Quadrics, but I would be hesitant to lump it
+> in too much with these RDMA semantics. Christian's comments sound like
+> they operate closer to what you described and that is why the have an
+> existing patch set. I don't know :)
 
-So I was able to FINALLY track this down to:
+The Quadrics folks have been doing RDMA for 10 years, there is a reason 
+why they maintained a patch.
 
--# CONFIG_SLUB_DEBUG is not set
--# CONFIG_SLAB is not set
--CONFIG_SLUB=y
-+CONFIG_SLAB=y
+> What it boils down to is that to implement true removal of pages in a
+> general way the kernel and HCA must either drop packets or stall
+> incoming packets, both are big performance problems - and I can't see
+> many users wanting this. Enterprise style people using SCSI, NFS, etc
+> already have short pin periods and HPC MPI users probably won't care
+> about the VM issues enough to warrent the performance overhead.
 
-in both your and Chris Weiss's configs that was causing the
-reproduceable general protection faults.  I also disabled
-CONFIG_RELOCATABLE and crash dump because I was debugging using kdb in
-x86_64 VM on 2.6.24 with your config.  I am pretty sure you can leave
-this (crash dump) in your config for testing.
+This is not true, HPC people do care about the VM issues a lot. Memory 
+registration (pinning and translating) is usually too expensive to be 
+performed in the critical path before and after each send or receive. So 
+they factor it out by registering a buffer the first time it is used, 
+and keeping it registered in a registration cache. However, the 
+application may free() a buffer that is in the registration cache, so 
+HPC people provide their own malloc to catch free(). They also try to 
+catch sbrk() and munmap() to deregister memory before it is released to 
+the OS. This is a Major pain that a VM notifier would easily solve. 
+Being able to swap registered pages to disk or migrate them in a NUMA 
+system is a welcome bonus.
 
-This can take a while to compile and take up alot of space, esp. with
-all of the kernel debug options enabled, which on 2.6.24, really amounts
-to alot of CPU time when building.  Also with your original config, I
-was seeing some strange undefined module objects after Stage 2 Link with
-iscsi_target_mod with modpost with the SLUB the lockups (which are not
-random btw, and are tracked back to __kmalloc())..  Also, at module load
-time with the original config, there where some warning about symbol
-objects (I believe it was SCSI related, same as the ones with modpost).
-
-In any event, the dozen 1000 loop discovery test is now working fine (as
-well as IPoIB) with the above config change, and you should be ready to
-go for your testing.
-
-Tomo, Vlad, Andrew and Co:
-
-Do you have any ideas why this would be the case with LIO-Target..?  Is
-anyone else seeing something similar to this with their target mode
-(mabye its all out of tree code..?) that is having an issue..? I am
-using Debian x86_64 and Bart and Chris are using Ubuntu x86_64 and we
-both have this problem with CONFIG_SLUB on >= 2.6.22 kernel.org
-kernels. 
-
-Also, I will recompile some of my non x86 machines with the above
-enabled and see if I can reproduce..  Here the Bart's config again:
-
-http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188
-
-
-> Because I was curious to know why it took so long to fix such a severe
-> crash, I started browsing through the LIO-SE source code. Analysis of
-> the LIO-SE kernel module source code learned me that this crash is not
-> a coincidence. Dynamic memory allocation (kmalloc()/kfree()) in the
-> LIO-SE kernel module is complex and hard to verify.
-
-What the LIO-SE Target module does is complex. :P  Sorry for taking so
-long, I had to start tracking this down by CONFIG_ option with your
-config on an x86_64 VM. 
-
->  There are 412
-> memory allocation/deallocation calls in the current version of the
-> LIO-SE kernel module source code, which is a lot. Additionally,
-> because of the complexity of the memory handling in LIO-SE, it is not
-> possible to verify the correctness of the memory handling by analyzing
-> a single function at a time. In my opinion this makes the LIO-SE
-> source code hard to maintain.
-> Furthermore, the LIO-SE kernel module source code does not follow
-> conventions that have proven their value in the past like grouping all
-> error handling at the end of a function. As could be expected, the
-> consequence is that error handling is not correct in several
-> functions, resulting in memory leaks in case of an error.
-
-I would be more than happy to point the release paths for iSCSI Target
-and LIO-SE to show they are not actual memory leaks (as I mentioned,
-this code has been stable for a number of years) for some particular SE
-or iSCSI Target logic if you are interested..
-
-Also, if we are talking about target mode storage engine that should be
-going upstream, the API to the current stable and future storage
-systems, and of course the Mem->SG and SG->Mem that handles all possible
-cases of max_sectors and sector_size to past, present, and future.  I
-really glad that you have been taking a look at this, because some of
-the code (as you mention) can get very complex to make this a reality as
-it has been with LIO-Target since v2.2.  
-
->  Some
-> examples of functions in which error handling is clearly incorrect:
-> * transport_allocate_passthrough().
-> * iscsi_do_build_list().
-> 
-
-You did find the one in transport_allocate_passthrough() and the
-strncpy() + strlen() in userspace.  Also, thanks for pointing me to the
-missing sg_init_table() and sg_mark_end() usage for 2.6.24.  I will post
-an update to my thread about how to do this for other drivers..
-
-I will have a look at your new changes and post them on LIO-Target-Dev
-for your review.  Please feel free to Ack them when I post.
-
-(Thanks Bart !!)
-
-PS:  Sometimes it takes a while when you are on the bleeding edge of
-development to track these types of issues down. :-)
-
---nab
-
+Patrick
+-- 
+Patrick Geoffray
+Myricom, Inc.
+http://www.myri.com
