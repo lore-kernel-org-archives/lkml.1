@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbYBMWz0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbYBMW4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763817AbYBMWz0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:55:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765444AbYBMWzK
+	id S933827AbYBMW4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbYBMWz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:55:10 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:33791 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763820AbYBMWzI (ORCPT
+	Wed, 13 Feb 2008 17:55:58 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:47022 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753001AbYBMWz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:55:08 -0500
-Date: Wed, 13 Feb 2008 14:54:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: harvey.harrison@gmail.com, torvalds@linux-foundation.org,
-       davem@davemloft.net, tglx@linutronix.de, hpa@zytor.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
- symbols going away
-Message-Id: <20080213145405.35fb5733.akpm@linux-foundation.org>
-In-Reply-To: <20080213224308.GD12383@cs181133002.pp.htv.fi>
-References: <1202941327.18204.11.camel@brick>
-	<20080213223455.GB12383@cs181133002.pp.htv.fi>
-	<20080213224308.GD12383@cs181133002.pp.htv.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 17:55:56 -0500
+Date: Wed, 13 Feb 2008 14:55:55 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
+Message-ID: <20080213225555.GN12393@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080211.171645.74019568.davem@davemloft.net> <20080212085714.GB2582@ff.dom.local> <20080212160729.GA9157@linux.vnet.ibm.com> <20080212193218.GA2803@ami.dom.local> <20080212194630.GB2803@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212194630.GB2803@ami.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 00:43:08 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+On Tue, Feb 12, 2008 at 08:46:30PM +0100, Jarek Poplawski wrote:
+> On Tue, Feb 12, 2008 at 08:32:18PM +0100, Jarek Poplawski wrote:
+> ...
+> > It seems the above version of this macro uses the barrier for 0, but
+> > if I miss something, or for these other: documenting reasons,
+> 
+> ...or __builtin_constants could be used for indexing (?!),
 
-> There's simply no point in treating the removal of exports differently
-> from the many other API breaks we have in each release.
+Yep.  For example:
 
-I have repeatedly and relatively patiently explained to you what the
-point is.  Simply saying that there isn't one doesn't actually make
-it go away.
+	elem[0].next = 1;
+	rcu_assign_index(global_index, 0);
+
+							Thanx, Paul
+
+> > then of
+> > course you are right.
+> 
+> Jarek P.
