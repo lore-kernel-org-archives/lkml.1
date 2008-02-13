@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762642AbYBMNDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762134AbYBMNE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762642AbYBMNDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 08:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbYBMNDK
+	id S1762134AbYBMNE5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 08:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755841AbYBMNEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 08:03:10 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51408
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761606AbYBMNDJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 08:03:09 -0500
-Date: Wed, 13 Feb 2008 05:03:40 -0800 (PST)
-Message-Id: <20080213.050340.64342037.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: rdreier@cisco.com, linux-kernel@vger.kernel.org
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080213125725.GC6344@elte.hu>
-References: <adazlu5tlve.fsf@cisco.com>
-	<20080212.230156.33759433.davem@davemloft.net>
-	<20080213125725.GC6344@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 08:04:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35428 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753263AbYBMNEs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 08:04:48 -0500
+Date: Wed, 13 Feb 2008 14:04:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Bob Tracy <rct@frus.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
+Message-ID: <20080213130432.GE6344@elte.hu>
+References: <20080213052903.B1F1CDBA2@gherkin.frus.com> <20080213092208.GC21614@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213092208.GC21614@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 13 Feb 2008 13:57:25 +0100
 
-> so .. how about the patch below? Note that we already had an "early 
-> bootup" special (the rq->idle check), it's now just made explicit via 
-> the scheduler_running flag.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-I don't see what the problem is.
+> > Unless someone has a good idea what's causing this, I see a massive 
+> > "git bisect" project in my future.  Won't be able to spend any time 
+> > with this until at least the weekend :-(.
+> 
+> hm, is this SMP? Alpha uses asm-generic/percpu.h. One "early bootup" 
+> effect on Alpha that i can think of could have been this family of 
+> commits:
 
-It is legal to access per-cpu data as early as you like,
-it just evaluates to the static copy in the per-cpu section
-of the kernel image until the per-cpu areas are setup.
+another possibility would be to turn off PRINTK_TIMESTAMPS [if they are 
+on in your .config].
 
-rq->idle should also be zero this early as well, that's
-also legal to rely upon
-
-I see nothing illegal in what cpu_clock() is doing, that's
-why I fixed the sparc64 per-cpu problem I ran into since
-sparc64 was doing the wrong thing when booted on a non-zero
-cpu.
+	Ingo
