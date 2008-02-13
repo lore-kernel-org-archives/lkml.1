@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbYBMF5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbYBMGBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759465AbYBMF5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 00:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbYBMF5i
+	id S1763028AbYBMGBV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 01:01:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbYBMGBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 00:57:38 -0500
-Received: from gherkin.frus.com ([192.158.254.49]:36867 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751530AbYBMF5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 00:57:38 -0500
-X-Greylist: delayed 1713 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 00:57:37 EST
-Subject: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-To: linux-kernel@vger.kernel.org
-Date: Tue, 12 Feb 2008 23:29:03 -0600 (CST)
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+	Wed, 13 Feb 2008 01:01:13 -0500
+Received: from wx-out-0506.google.com ([66.249.82.237]:62693 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbYBMGBM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 01:01:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=KL1naconcXOaHsYxA8khgJ3OO5TbcT0vqBCNd8ifGgk2gQpIoElhtkzQZbCmGjeVvzYYgFkGV6FTiLY2WoiLm+wEUqqnZ0JqAIwWoruBPccwHutIZzUAU52VGLRYycx1S3Lbgd9AUdgzByzMIS7FiTIWDclrdzIP5Xvm3Q4bHKM=
+Message-ID: <47B28892.2010500@gmail.com>
+Date: Wed, 13 Feb 2008 01:05:06 -0500
+From: Scott Lovenberg <scott.lovenberg@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Documentation about sysfs/procfs entries]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20080213052903.B1F1CDBA2@gherkin.frus.com>
-From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This isn't going to be terribly useful other than giving someone a
-heads-up there's a problem with something in 2.6.25-rc1 on the Alpha
-PWS 433au.  I get the usual messages out of "aboot", including
 
-aboot: zero-filling 210392 bytes at 0xfffffc0000776740
-aboot: starting kernel vmlinux.new.gz with argument ro root=/dev/sda3
 
-and then the screen background switches to red and the machine locks
-up solid.  No further console output.  Completely reproducible.  The
-2.6.24 kernel is fine.
+Randy Dunlap wrote:
+> On Wed, 13 Feb 2008 09:08:12 +0700 Mulyadi Santosa wrote:
+>
+>   
+>> Hi all...
+>>
+>> Here's my idea: what if we collaborate to extend and make the kernel
+>> documentation better? I have done (slow) start by editing profile=
+>> kernel param. It's not accepted by Adrian Bunk, but at least I did it.
+>> Feedback?
+>>     
+>
+> Adrian is no longer the trivial patch maintainer.
+> Did you send the patch to trivial@kernel.org ?
+>
+> Any doc additions or improvements would be appreciated.
+> I'll be glad to help get them merged...
+>
+> ---
+> ~Randy
+>
+>   
+I'd love to help, but I'm a bit of a newbie; what's protocol for
+documentation updates, standard diffs?
 
-Unless someone has a good idea what's causing this, I see a massive
-"git bisect" project in my future.  Won't be able to spend any time with
-this until at least the weekend :-(.
+How are we going to attack this thing, cleaning up and updating existing
+documentation first and then adding undocumented items, or file by file
+updating and adding in one fell swoop?
 
--- 
-------------------------------------------------------------------------
-Bob Tracy          |  "I was a beta tester for dirt.  They never did
-rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
-------------------------------------------------------------------------
+At any rate, I'm in.
+Hopefully this will turn out better than the last time I said those
+words and woke up in Mexico with a new tattoo and without my pants.  :)
