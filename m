@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764311AbYBMWVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932592AbYBMWVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764311AbYBMWVG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYBMWUw
+	id S932592AbYBMWVd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:21:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbYBMWVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:20:52 -0500
-Received: from web36601.mail.mud.yahoo.com ([209.191.85.18]:21724 "HELO
-	web36601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750767AbYBMWUv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:20:51 -0500
-X-YMail-OSG: ZHxDXbYVM1mdCZPJ9jXy1FCNiITWgJZk.A2iKFbkBC_ILEUv.K4zGWuuq7VNCiHYsg0m_VA5AHNXxxP7VbwuC7lo4YRzW1QAImowMOW.Cfcgi2rSYOY-
-X-RocketYMMF: rancidfat
-Date: Wed, 13 Feb 2008 14:20:43 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [2.6 patch] make smackfs.c:smk_cipso_doi() static
-To: Adrian Bunk <bunk@kernel.org>, Casey Schaufler <casey@schaufler-ca.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080213213035.GI3383@cs181133002.pp.htv.fi>
+	Wed, 13 Feb 2008 17:21:22 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:45980 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758363AbYBMWVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:21:20 -0500
+Date: Wed, 13 Feb 2008 14:21:19 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Adrian Bunk <bunk@kernel.org>
+cc: penberg@cs.helsinki.fi, linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] make slub.c:slab_address() static
+In-Reply-To: <20080213213032.GH3383@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0802131420590.21486@schroedinger.engr.sgi.com>
+References: <20080213213032.GH3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <990098.98014.qm@web36601.mail.mud.yahoo.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Queued-by: Christoph Lameter <clameter@sgi.com>
 
---- Adrian Bunk <bunk@kernel.org> wrote:
+On Wed, 13 Feb 2008, Adrian Bunk wrote:
 
-> smk_cipso_doi() can become static.
-
-This change is included in a patch I hope to submit today.
-
+> slab_address() can become static.
+> 
 > Signed-off-by: Adrian Bunk <bunk@kernel.org>
 > 
 > ---
-> 
-> BTW: -ENOMAINTAINERSENTRY
-> 
-> 299c2883384303ca7730df8fa4baae9194bd5d13 diff --git
-> a/security/smack/smackfs.c b/security/smack/smackfs.c
-> index 15aa37f..13462ff 100644
-> --- a/security/smack/smackfs.c
-> +++ b/security/smack/smackfs.c
-> @@ -336,7 +336,7 @@ static const struct file_operations smk_load_ops = {
->  /**
->   * smk_cipso_doi - initialize the CIPSO domain
->   */
-> -void smk_cipso_doi(void)
-> +static void smk_cipso_doi(void)
+> fdd710f00d8bed8413c160685bc5229ec15b4d9f diff --git a/mm/slub.c b/mm/slub.c
+> index e2989ae..af83daf 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -308,7 +308,7 @@ static inline int is_end(void *addr)
+>  	return (unsigned long)addr & PAGE_MAPPING_ANON;
+>  }
+>  
+> -void *slab_address(struct page *page)
+> +static void *slab_address(struct page *page)
 >  {
->  	int rc;
->  	struct cipso_v4_doi *doip;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  	return page->end - PAGE_MAPPING_ANON;
+>  }
 > 
 > 
-> 
-
-
-Casey Schaufler
-casey@schaufler-ca.com
