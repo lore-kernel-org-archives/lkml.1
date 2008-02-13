@@ -1,39 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933028AbYBMTJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbYBMTLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933028AbYBMTJY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 14:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbYBMTJJ
+	id S933032AbYBMTLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 14:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbYBMTLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 14:09:09 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54586 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753268AbYBMTJI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 14:09:08 -0500
-Subject: Re: [PATCH] Adaptec AACRAID: convert fibctx->wait_sem to completion
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Matthias Kaehlcke <matthias@kaehlcke.net>
-Cc: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080213183444.GA27068@traven>
-References: <20080213183444.GA27068@traven>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 13:09:00 -0600
-Message-Id: <1202929740.3109.79.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 14:11:36 -0500
+Received: from styx.suse.cz ([82.119.242.94]:51558 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752648AbYBMTLg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 14:11:36 -0500
+Date: Wed, 13 Feb 2008 20:11:35 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Paul Mundt <lethal@linux-sh.org>
+cc: dsterba@suse.cz, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] pcmcia: ipwireless depends on NETDEVICES.
+In-Reply-To: <20080213105752.GA17229@linux-sh.org>
+Message-ID: <Pine.LNX.4.64.0802132010540.30955@jikos.suse.cz>
+References: <20080213105752.GA17229@linux-sh.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-13 at 19:34 +0100, Matthias Kaehlcke wrote:
-> Adaptec AACRAID driver: The semaphore fibctx->wait_sem is used for
-> signalling an event. Convert it to a completion.
+On Wed, 13 Feb 2008, Paul Mundt wrote:
 
-What's the purpose of doing this?  The aacraid implementation seems to
-be a classic PV semaphore, so why does it need to become a completion?
+> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-James
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
+Thanks, Paul.
 
+-- 
+Jiri Kosina
