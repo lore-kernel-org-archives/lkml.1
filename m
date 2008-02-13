@@ -1,127 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbYBMOId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757866AbYBMOMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760395AbYBMOId (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 09:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbYBMOIW
+	id S1757866AbYBMOMX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 09:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYBMOMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 09:08:22 -0500
-Received: from emulex.emulex.com ([138.239.112.1]:54456 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753951AbYBMOIU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 09:08:20 -0500
-Message-ID: <47B2F9C3.8070207@emulex.com>
-Date: Wed, 13 Feb 2008 09:08:03 -0500
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 13 Feb 2008 09:12:15 -0500
+Received: from os.eurotux.com ([216.75.63.6]:34359 "EHLO os.eurotux.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751256AbYBMOMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 09:12:13 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 09:12:13 EST
+Date: Wed, 13 Feb 2008 14:05:27 +0000
+From: Luciano Rocha <luciano@eurotux.com>
+To: linux-kernel@vger.kernel.org
+Subject: sysfs: duplicate filename 'card0' can not be created
+Message-ID: <20080213140527.GA31014@bit.office.eurotux.com>
+Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: ltuikov@yahoo.com
-CC: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-References: <875344.96222.qm@web31808.mail.mud.yahoo.com>
-In-Reply-To: <875344.96222.qm@web31808.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Feb 2008 14:08:04.0601 (UTC) FILETIME=[D9CFEE90:01C86E49]
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="qDbXVdCdHGoSgWSk"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The keep-it-in-user-space arguments seem fairly compelling to me.
-Especially as we've pushed whole i/o subsystems out to user space
-(iscsi, stgt, talked about fcoe, a lot of dm control, etc).
 
-The functionality seems to align with Doug's sg/lsscsi utility chain
-as well.  Granted, the new utility would have to be designed in such
-as way that it can incorporate vendor "hardware handlers".  But, if
-James has a somewhat common implementation already for a kernel
-implementation, I'm sure that can be the starting point for lsscsi.
-
-So, the main question I believe is being asked is:
-- Do we need to represent this via the object/sysfs tree or can an
-   outside utility be depended upon to show it ?
-
-Note that I am not supporting:
-"Vendors may choose to distribute their own applications".
-For this to become truly useful, there needs to be a common tool/method
-that presents common features in a common manner, regardless of whether
-it is in kernel or not.
-
--- james s
+--qDbXVdCdHGoSgWSk
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
-Luben Tuikov wrote:
-> Which is already the case without the SES kernel bloat.
-> Case in point, the excellent user-space application
-> "lsscsi" would clearly show which device is SES.
-> 
-> And the excellent user-space application "sg_ses" could
-> control an SES device.
-> 
->> The pieces I think are absolutely standard are
->>
->> 1. Actual enclosure presence (is this device in an
->> enclosure)
-> 
-> "lsscsi"
-> 
->> 2. Activity LED, this seems to be a feature of every
->> enclosure.
-> 
-> So that means that it needs a kernel representation?
-> If this indeed were the case, for every "feature" of every
-> type of device (not only SCSI) then the kernel itself would
-> be insurmountably big.
-> 
->> I also think the following are reasonably standard (based
->> on the fact
->> that most enclosure standards recommend but don't
->> require this):
->>
->> 3. Locate LED (for locating the device).  Even if you only
->> have an
->> activity LED, this is usually done by flashing the activity
->> LED in a
->> well defined pattern.
->> 4. Fault.  this is the least standardised of the lot, but
->> does seem to
->> be present in about every enclosure implementation.
->>
->> All I've done is standardise these four pieces ... the
->> services actually
->> take into account that it might not be possible to do
->> certain of these
->> (like fault).
-> 
-> And none of this means that it needs a kernel representation.
-> 
-> 1. You're not "standardizing" any known, in-practice,
-> kernel representation, that is already in practice and
-> thusly needs a kernel representation.
-> 
-> 2. The kernel itself is not using nor needing this
-> "representation" in order to function properly (the kernel).
-> 
-> Leaving control of SES devices to user-space makes both
-> the kernel and the vendors happy.  All the kernel needs
-> to do is expose the SES device to user-space as it currently
-> does.  It makes it so much easier both to vendors and to
-> the kernel to stay out of unnecessary representations.
-> 
-> Vendors may choose to distribute their own applications
-> to control their hardware, as long as the kernel exposes
-> an SES device and provides functionality, as opposed to
-> policy of any kind.
-> 
->     Luben
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Hello,
+
+Is this known? I got the error while connecting usb headphones, running
+vanilla 2.6.24.
+
+Error:
+
+[.361992] usb 1-1.3: new full speed USB device using ehci_hcd and address 13
+[.448232] usb 1-1.3: configuration #1 chosen from 1 choice
+[.506787] sysfs: duplicate filename 'card0' can not be created
+[.506796] WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+[.506802] Pid: 794, comm: khubd Not tainted 2.6.24lcfs1 #1
+[.506819]  [<c04a07cd>] sysfs_add_one+0x54/0xb7
+[.506835]  [<c04a1415>] sysfs_create_link+0xbe/0x109
+[.506846]  [<c05db991>] device_add+0x132/0x447
+[.506856]  [<c057e9ba>] kobject_init+0x27/0x37
+[.506866]  [<c05dbf12>] device_create+0x77/0x97
+[.506873]  [<c0611fa1>] snd_card_register+0x3f/0x254
+[.506883]  [<f083fa71>] usb_driver_claim_interface+0x6b/0x86 [usbcore]
+[.506944]  [<f09b7cbb>] usb_audio_probe+0x6c7/0x76e [snd_usb_audio]
+[.506990]  [<f083f960>] usb_probe_interface+0xa2/0xda [usbcore]
+[.507010]  [<c05dd14b>] driver_sysfs_add+0x36/0x53
+[.507018]  [<c05dd2ab>] driver_probe_device+0xdd/0x15a
+[.507025]  [<c0688f9a>] klist_next+0x50/0x82
+[.507032]  [<c05dd328>] __device_attach+0x0/0x5
+[.507037]  [<c05dc7ce>] bus_for_each_drv+0x32/0x58
+[.507045]  [<c05dd3a5>] device_attach+0x5d/0x70
+[.507049]  [<c05dd328>] __device_attach+0x0/0x5
+[.507055]  [<c05dc74f>] bus_attach_device+0x26/0x73
+[.507062]  [<c05dbabc>] device_add+0x25d/0x447
+[.507073]  [<f083e316>] usb_set_configuration+0x3f6/0x469 [usbcore]
+[.507099]  [<f0844ba7>] generic_probe+0x50/0x91 [usbcore]
+[.507125]  [<f083f763>] usb_probe_device+0x32/0x37 [usbcore]
+[.507142]  [<c05dd2ab>] driver_probe_device+0xdd/0x15a
+[.507148]  [<c0688f9a>] klist_next+0x50/0x82
+[.507154]  [<c05dd328>] __device_attach+0x0/0x5
+[.507159]  [<c05dc7ce>] bus_for_each_drv+0x32/0x58
+[.507167]  [<c05dd3a5>] device_attach+0x5d/0x70
+[.507172]  [<c05dd328>] __device_attach+0x0/0x5
+[.507177]  [<c05dc74f>] bus_attach_device+0x26/0x73
+[.507184]  [<c05dbabc>] device_add+0x25d/0x447
+[.507195]  [<f0839c0f>] usb_new_device+0x41/0x7e [usbcore]
+[.507217]  [<f083ad51>] hub_thread+0x6b6/0xa93 [usbcore]
+[.507243]  [<c042fc93>] autoremove_wake_function+0x0/0x35
+[.507253]  [<c06895dc>] schedule+0x1e2/0x22e
+[.507258]  [<f083a69b>] hub_thread+0x0/0xa93 [usbcore]
+[.507276]  [<c042fbd9>] kthread+0x36/0x5d
+[.507280]  [<c042fba3>] kthread+0x0/0x5d
+[.507285]  [<c0404a1b>] kernel_thread_helper+0x7/0x10
+[.507294]  =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D
+[.511876] input: USB Audio as /devices/pci0000:00/0000:00:1e.0/0000:02:04.2=
+/usb1/1-1/1-1.3/1-1.3:1.3/input/input7
+[.537041] input: USB HID v1.00 Device [USB Audio] on usb-0000:02:04.2-1.3
+
+--=20
+Luciano Rocha <luciano@eurotux.com>
+Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
+
+--qDbXVdCdHGoSgWSk
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHsvkninSul6a7oB8RApwsAJ4wMcnHhYztgDnE433DlFC1dL/DuACfbEXb
+ICkuI/RSpOL3HRJgGZImYlI=
+=9VQ/
+-----END PGP SIGNATURE-----
+
+--qDbXVdCdHGoSgWSk--
