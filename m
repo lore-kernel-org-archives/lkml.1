@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbYBMPwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYBMPyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763323AbYBMPwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755706AbYBMPwW
+	id S1759292AbYBMPyk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:54:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYBMPyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:52:22 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:46889 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751933AbYBMPwV (ORCPT
+	Wed, 13 Feb 2008 10:54:31 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48606 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753349AbYBMPya (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:52:21 -0500
-Message-ID: <47B3120B.3040409@opengridcomputing.com>
-Date: Wed, 13 Feb 2008 09:51:39 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Wed, 13 Feb 2008 10:54:30 -0500
+Date: Wed, 13 Feb 2008 07:53:48 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>, pageexec@freemail.hu
+cc: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: vmsplice exploits, stack protector and Makefiles
+In-Reply-To: <47B30F05.29637.9A21F9B@pageexec.freemail.hu>
+Message-ID: <alpine.LFD.1.00.0802130749210.2920@woody.linux-foundation.org>
+References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <47B30F05.29637.9A21F9B@pageexec.freemail.hu>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopbackconnections.
-References: <20080212220929.24442.76874.stgit@dell3.ogc.int>	<adafxvxvgz3.fsf@cisco.com> <015c01c86e21$75317210$05c8a8c0@DIEGO>	<adaskzwuaeu.fsf@cisco.com> <adaodakua9v.fsf@cisco.com>
-In-Reply-To: <adaodakua9v.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> Steve, I had to update the patch adding an include and fixing the
-> function declaration (as below)... but how much testing have you done
-> with this??
+
+Ingo, 
+ if you're merging this, please do the independent parts really 
+independenrly. For example, the above is a patch in its own right, and 
+probably worth doing regardless of anything else.
+
+(Same goes for the ACPI parts, I'll bounce that part to Len,
+
+			Linus
+
+On Wed, 13 Feb 2008, pageexec@freemail.hu wrote:
 >
-
-Now I understand.  I thought I'd fixed these!  I fixed them locally in 
-the test tree on my victim and then tested, but forgot to update my git 
-tree.
-
-Sorry for this.
-
-You want me to resubmit?
-
-
-> commit 8704e9a8790cc9e394198663c1c9150c899fb9a2
-> Author: Steve Wise <swise@opengridcomputing.com>
-> Date:   Tue Feb 12 16:09:29 2008 -0600
-> 
->     RDMA/cxgb3: Fail loopback connections
->     
->     The cxgb3 HW and driver don't support loopback RDMA connections.  So
->     fail any connection attempt where the destination address is local.
->     
->     Signed-off-by: Steve Wise <swise@opengridcomputing.com>
->     Signed-off-by: Roland Dreier <rolandd@cisco.com>
-> 
-> diff --git a/drivers/infiniband/hw/cxgb3/iwch_cm.c b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-> index e9a08fa..320f2b6 100644
-> --- a/drivers/infiniband/hw/cxgb3/iwch_cm.c
-> +++ b/drivers/infiniband/hw/cxgb3/iwch_cm.c
-> @@ -35,6 +35,7 @@
->  #include <linux/skbuff.h>
->  #include <linux/timer.h>
->  #include <linux/notifier.h>
-> +#include <linux/inetdevice.h>
->  
->  #include <net/neighbour.h>
->  #include <net/netevent.h>
-> @@ -1784,6 +1785,17 @@ err:
->  	return err;
->  }
->  
-> +static int is_loopback_dst(struct iw_cm_id *cm_id)
-> +{
-> +	struct net_device *dev;
-> +
-> +	dev = ip_dev_find(&init_net, cm_id->remote_addr.sin_addr.s_addr);
-> +	if (!dev)
-> +		return 0;
-> +	dev_put(dev);
-> +	return 1;
-> +}
-> +
->  int iwch_connect(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
+> diff -u linux-2.6.24.2-pax/arch/x86/kernel/entry_64.S linux-2.6.24.2-pax/arch/x86/kernel/entry_64.S
+> --- linux-2.6.24.2-pax/arch/x86/kernel/entry_64.S	2008-01-25 15:34:25.000000000 +0100
+> +++ linux-2.6.24.2-pax/arch/x86/kernel/entry_64.S	2008-02-13 11:12:26.000000000 +0100
+> @@ -440,6 +440,7 @@
+>  	CFI_REGISTER rip, r11
+>  	SAVE_REST
+>  	FIXUP_TOP_OF_STACK %r11
+> +	movq %rsp, %rcx
+>  	call sys_execve
+>  	RESTORE_TOP_OF_STACK %r11
+>  	movq %rax,RAX(%rsp)
+> @@ -1004,15 +1005,16 @@
+>   *	rdi: name, rsi: argv, rdx: envp
+>   *
+>   * We want to fallback into:
+> - *	extern long sys_execve(char *name, char **argv,char **envp, struct pt_regs regs)
+> + *	extern long sys_execve(char *name, char **argv,char **envp, struct pt_regs *regs)
+>   *
+>   * do_sys_execve asm fallback arguments:
+> - *	rdi: name, rsi: argv, rdx: envp, fake frame on the stack
+> + *	rdi: name, rsi: argv, rdx: envp, rcx: fake frame on the stack
+>   */
+>  ENTRY(kernel_execve)
+>  	CFI_STARTPROC
+>  	FAKE_STACK_FRAME $0
+>  	SAVE_ALL	
+> +	movq %rsp,%rcx
+>  	call sys_execve
+>  	movq %rax, RAX(%rsp)	
+>  	RESTORE_REST
+> diff -u linux-2.6.24.2-pax/arch/x86/kernel/process_64.c linux-2.6.24.2-pax/arch/x86/kernel/process_64.c
+> --- linux-2.6.24.2-pax/arch/x86/kernel/process_64.c	2008-01-25 15:34:25.000000000 +0100
+> +++ linux-2.6.24.2-pax/arch/x86/kernel/process_64.c	2008-02-13 11:13:14.000000000 +0100
+> @@ -702,7 +701,7 @@
+>   */
+>  asmlinkage 
+>  long sys_execve(char __user *name, char __user * __user *argv,
+> -		char __user * __user *envp, struct pt_regs regs)
+> +		char __user * __user *envp, struct pt_regs *regs)
 >  {
->  	int err = 0;
-> @@ -1791,6 +1803,11 @@ int iwch_connect(struct iw_cm_id *cm_id, struct iw_cm_conn_param *conn_param)
->  	struct iwch_ep *ep;
->  	struct rtable *rt;
->  
-> +	if (is_loopback_dst(cm_id)) {
-> +		err = -ENOSYS;
-> +		goto out;
-> +	}
-> +
->  	ep = alloc_ep(sizeof(*ep), GFP_KERNEL);
->  	if (!ep) {
->  		printk(KERN_ERR MOD "%s - cannot alloc ep.\n", __FUNCTION__);
-
+>  	long error;
+>  	char * filename;
+> @@ -711,7 +710,7 @@
+>  	error = PTR_ERR(filename);
+>  	if (IS_ERR(filename)) 
+>  		return error;
+> -	error = do_execve(filename, argv, envp, &regs); 
+> +	error = do_execve(filename, argv, envp, regs);
+>  	if (error == 0) {
+>  		task_lock(current);
+>  		current->ptrace &= ~PT_DTRACE;
