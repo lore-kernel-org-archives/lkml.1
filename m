@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933081AbYBMTja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933221AbYBMTkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933081AbYBMTja (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 14:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765335AbYBMTjN
+	id S933221AbYBMTkS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 14:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbYBMTj7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 14:39:13 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:43892 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763863AbYBMTjM (ORCPT
+	Wed, 13 Feb 2008 14:39:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60894 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754769AbYBMTj6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 14:39:12 -0500
-Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Bob Tracy <rct@frus.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20080213052903.B1F1CDBA2@gherkin.frus.com>
-References: <20080213052903.B1F1CDBA2@gherkin.frus.com>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 20:39:05 +0100
-Message-Id: <1202931545.20209.6.camel@lappy>
+	Wed, 13 Feb 2008 14:39:58 -0500
+Date: Wed, 13 Feb 2008 11:39:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
+Subject: Re: [RFC v2 PATCH] RTTIME watchdog timer proc interface
+Message-Id: <20080213113907.5aec8ba3.akpm@linux-foundation.org>
+In-Reply-To: <47B32CD2.3040200@ct.jp.nec.com>
+References: <47B220A6.5090707@ct.jp.nec.com>
+	<20080213011310.e27dd9cf.akpm@linux-foundation.org>
+	<47B32CD2.3040200@ct.jp.nec.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Feb 2008 09:45:54 -0800
+Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-On Tue, 2008-02-12 at 23:29 -0600, Bob Tracy wrote:
-> This isn't going to be terribly useful other than giving someone a
-> heads-up there's a problem with something in 2.6.25-rc1 on the Alpha
-> PWS 433au.  I get the usual messages out of "aboot", including
+> > 
+> >> And /proc/<pid>/task/<tid>/rttime is also accessible.
+> > 
+> > Please describe the format in the changelog.
 > 
-> aboot: zero-filling 210392 bytes at 0xfffffc0000776740
-> aboot: starting kernel vmlinux.new.gz with argument ro root=/dev/sda3
-> 
-> and then the screen background switches to red and the machine locks
-> up solid.  No further console output.  Completely reproducible.  The
-> 2.6.24 kernel is fine.
-> 
-> Unless someone has a good idea what's causing this, I see a massive
-> "git bisect" project in my future.  Won't be able to spend any time with
-> this until at least the weekend :-(.
+> I'm sorry I cannot catch your meaning.
 
-Does: http://lkml.org/lkml/2008/1/28/100
-
-help?
-
+Please include an example of the output of
+`cat /proc/<pid>/task/<tid>/rttime' in the changelog so that we
+can see precisely what interface you are proposing.
