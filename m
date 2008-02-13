@@ -1,45 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbYBMH22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbYBMH2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932213AbYBMH22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbYBMH2M
+	id S932280AbYBMH2s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765660AbYBMH2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 13 Feb 2008 02:28:15 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:40553 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756577AbYBMH2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Feb 2008 02:28:12 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:39828 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755448AbYBMH2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:28:10 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: currently active Linux kernel versions
-References: <47B21F9A.8040904@wpkg.org> <20080213004951.GA29524@1wt.eu>
-Date: Wed, 13 Feb 2008 08:28:06 +0100
-In-Reply-To: <20080213004951.GA29524@1wt.eu> (Willy Tarreau's message of "Wed,
-	13 Feb 2008 01:49:51 +0100")
-Message-ID: <87k5l9pb7d.fsf@szonett.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+Date: Wed, 13 Feb 2008 08:28:07 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: <20080213061653.GA10784@kroah.com>
+Message-ID: <Pine.LNX.4.64.0802130824500.8857@anakin>
+References: <20080211211751.3e265754@laptopd505.fenrus.org>
+ <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org>
+ <20080212.155853.193190548.davem@davemloft.net> <20080213002948.GA8899@kroah.com>
+ <alpine.LFD.1.00.0802121645320.2920@woody.linux-foundation.org>
+ <20080213061653.GA10784@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau <w@1wt.eu> writes:
+On Tue, 12 Feb 2008, Greg KH wrote:
+> On Tue, Feb 12, 2008 at 04:49:46PM -0800, Linus Torvalds wrote:
+> > On Tue, 12 Feb 2008, Greg KH wrote:
+> > > Perhaps you need to switch to using quilt.  This is the main reason why
+> > > I use it.
+> > 
+> > Btw, on that note: if some quilt user can send an "annotated history file" 
+> > of their quilt usage, it's something that git really can do, and I'll see 
+> > if I can merge (or rather, coax Junio to merge) the relevant part of stgit 
+> > to make it possible to just basically get "quilt behaviour" for the parts 
+> > of a git tree that you haven't pushed out yet.
+> 
+> Ted's description matches mine (keep quilt tree in git, edit changelog
+> entries, rebase on newer kernel versions, etc.)  I can go into details
+> if needed.
 
-> I would suggest stable - N-1 for most usages. 2.6.24.y is open, 2.6.23.y is
-> supposed to be good. The advantage when you proceed like this is that you
-> can jump from an older kernel to a more recent one which has already got its
-> share of fixes and is still maintained for some time.
->
-> Generally, I would trust Greg when he drops an old kernel, it means that he's
-> confident enough in the next one.
+Ack. Same for PS3 and m68k (except I don't have the m68k patches in git (yet)).
 
-Thanks for the useful (and concise) summary and sharing your thoughts
-on the matter.  Now my only question is: how can I learn that Greg
-updated or dropped a kernel without following LKML (which my time
-unfortunately does not permit).  kernel-announce doesn't seem to
-mention such events...
--- 
-Regards,
-Feri.
+Two issues with using quilt:
+  1. Sometimes a patch still applies after it was integrated upstream,
+  2. Sometimes it's a lot of work to fixup the patches after an upstream
+     change. I wrote a script to do a tree-way-merge in case of a
+     conflict, but I haven't really tested it yet (not suitable big
+     conflict has happened since ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
