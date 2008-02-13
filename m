@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbYBMOpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbYBMOq7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762171AbYBMOpz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 09:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757256AbYBMOpp
+	id S1761801AbYBMOq7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 09:46:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754279AbYBMOqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 09:45:45 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57450 "EHLO mx1.suse.de"
+	Wed, 13 Feb 2008 09:46:51 -0500
+Received: from ns.suse.de ([195.135.220.2]:57822 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753387AbYBMOpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 09:45:44 -0500
-Date: Wed, 13 Feb 2008 15:45:43 +0100
-Message-ID: <s5hve4ssync.wl%tiwai@suse.de>
+	id S1754197AbYBMOqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 09:46:51 -0500
+Date: Wed, 13 Feb 2008 15:46:49 +0100
+Message-ID: <s5htzkcsyli.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Peter Zijlstra <peterz@infradead.org>
 Cc: Jaroslav Kysela <perex@perex.cz>, Jason Gaston <jason.d.gaston@intel.com>,
@@ -32,27 +32,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 At Wed, 13 Feb 2008 15:41:06 +0100,
 Peter Zijlstra wrote:
 > 
-> On Wed, 2008-02-13 at 15:31 +0100, Takashi Iwai wrote:
-> > At Wed, 13 Feb 2008 15:25:14 +0100,
-> > Peter Zijlstra wrote:
-> > > 
-> > > lspci -vvv:
-> > > 
-> > > 00:1b.0 Audio device: Intel Corporation 82801I (ICH9 Family) HD Audio Controller (rev 02)
-> > 
-> > Is this a regression, i.e. did you get similar Oops with previous
-> > kernels? 
+> >  Is pulseaudio 32bit?
 > 
-> New box, so I have no idea there.
+> Yes, 32bit userspace.
 
-OK, so bisect won't work...
+One thing forgot to ask:  Can you reproduce the bug with other apps?
+With 64bit apps?
 
-> >  Which codec does it have? 
-> 
-> How can I find the answer to that?
-
-See /proc/asound/card0/codec#* files.
-Better to run once alsa-info.sh and show its output:
-	http://hg.alsa-project.org/alsa/raw-file/tip/alsa-info.sh
 
 Takashi
