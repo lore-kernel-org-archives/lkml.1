@@ -1,46 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757090AbYBMNsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbYBMNv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757090AbYBMNsZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 08:48:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYBMNsO
+	id S1758087AbYBMNv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 08:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYBMNvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 08:48:14 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:41534 "EHLO mx2.suse.de"
+	Wed, 13 Feb 2008 08:51:48 -0500
+Received: from minas.ics.muni.cz ([147.251.4.40]:35600 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753568AbYBMNsN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 08:48:13 -0500
-Message-ID: <47B2F56D.1070004@suse.de>
-Date: Wed, 13 Feb 2008 14:49:33 +0100
-From: Andi Kleen <ak@suse.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	id S1752909AbYBMNvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 08:51:47 -0500
+Date: Wed, 13 Feb 2008 14:51:43 +0100
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.25-rc1 regression - ondemand governor does not work at all
+Message-ID: <20080213135143.GA4345@ics.muni.cz>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Andi Kleen <andi@firstfloor.org>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [1/5] Only do century BCD conversion when we know the
- RTC is BCD
-References: <20080209416.271135970@suse.de> <alpine.LFD.1.00.0802110924050.12988@apollo.tec.linutronix.de> <200802110956.16004.ak@suse.de> <alpine.LFD.1.00.0802112246590.12988@apollo.tec.linutronix.de> <20080211221514.GA12592@basil.nowhere.org> <alpine.LFD.1.00.0802122130280.12988@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802122130280.12988@apollo.tec.linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Muni-Spam-TestIP: 147.251.54.96
+X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Wed, 13 Feb 2008 14:51:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 11 Feb 2008, Andi Kleen wrote:
-> 
->>> So the warning comes a bit late :)
->> I suspect if this was wrong before it would not have been noticed
->> because user space hwclock would work around it. 
-> 
-> And how exaclty does it work aroalund ? By setting the binary cmos clock
-> with BCD values ?
+Hello,
 
-By reading the value directly from CMOS I suppose and checking
-the BCD bit and then setting the clock to the correct value [all
-theoretical; i have not checked the hwclock code if
-it does that or not. It might be wrong. Just a hypothesis.]
+as of 2.6.25-rc1, ondemand governor from cpufreq (acpi-p states driver) does
+not change frequency. Machine is still running at max frequency regardless of
+system load.
 
--Andi
-
+-- 
+Luká¹ Hejtmánek
