@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbYBMQnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbYBMQoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933271AbYBMQnn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbYBMQnT
+	id S1765973AbYBMQoO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:44:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933233AbYBMQni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:43:19 -0500
-Received: from viefep31-int.chello.at ([62.179.121.49]:61197 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764705AbYBMQnS (ORCPT
+	Wed, 13 Feb 2008 11:43:38 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:56039 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933182AbYBMQnf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:43:18 -0500
-Subject: Re: Regression in latest sched-git
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080213163715.GB19570@linux.vnet.ibm.com>
-References: <20080212185355.GA6320@linux.vnet.ibm.com>
-	 <1202845208.6247.82.camel@lappy> <20080213030035.GA3402@linux.vnet.ibm.com>
-	 <1202907078.20209.3.camel@lappy>
-	 <20080213163444.GA19570@linux.vnet.ibm.com>
-	 <20080213163715.GB19570@linux.vnet.ibm.com>
+	Wed, 13 Feb 2008 11:43:35 -0500
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: James.Smart@Emulex.Com
+Cc: ltuikov@yahoo.com, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+In-Reply-To: <47B3194C.7070809@emulex.com>
+References: <875344.96222.qm@web31808.mail.mud.yahoo.com>
+	 <47B2F9C3.8070207@emulex.com>
+	 <1202918691.3109.18.camel@localhost.localdomain>
+	 <47B3194C.7070809@emulex.com>
 Content-Type: text/plain
-Date: Wed, 13 Feb 2008 17:43:13 +0100
-Message-Id: <1202920993.6811.13.camel@twins>
+Date: Wed, 13 Feb 2008 10:43:26 -0600
+Message-Id: <1202921006.3109.29.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-13 at 22:07 +0530, Dhaval Giani wrote:
-> On Wed, Feb 13, 2008 at 10:04:44PM +0530, Dhaval Giani wrote:
-> > > > On the same lines, I cant understand how we can be seeing 700ms latency
-> > > > (below) unless we had: large number of active groups/users and large number of 
-> > > > tasks within each group/user.
-> > > 
-> > > All I can say it that its trivial to reproduce these horrid latencies.
-> > > 
-> > 
-> > Hi Peter,
-> > 
-> > I've been trying to reproduce the latencies, and the worst I have
-> > managed only 80ms. At an average I am getting around 60 ms. This is with
-> > a make -j4 as root, and dhaval running other programs. (with maxcpus=1).
-> > 
+On Wed, 2008-02-13 at 11:22 -0500, James Smart wrote:
+> James Bottomley wrote:
+> > I don't disagree with that, but the fact is that there isn't such a
+> > tool.   It's also a fact that the enterprise is reasonably unhappy with
+> > the lack of an enclosure management infrastructure, since it's something
+> > they got on all the other unix systems.
 > 
-> Totally missed here. Any more hints to reproduce?
+> I don't disagree.
+> 
+> > I think a minimal infrastructure in-kernel does just about everything
+> > the enterprise wants ... and since it's stateless, they can always use
+> > direct connect tools in addition.
+> > 
+> > However, I'm happy to be proven wrong ... anyone on this thread is
+> > welcome to come up with a userland enclosure infrastructure.  Once it
+> > does everything the in-kernel one does (which is really about the
+> > minimal possible set), I'll be glad to erase the in-kernel one.
+> 
+> yeah, but...  putting something new in, only to pull it later, is a bad
+> paradigm for adding new mgmt interfaces. Believe me, I've felt users pain in
+> the reverse flow : driver-specific stuff that then has to migrate to upstream
+> interfaces, complicated by different pull points by different distros. You can
+> migrate a management interface, but can you really remove/pull one out ?
 
-Not really, this is the recipie I took from Lukas Hejtmanek's report and
-it worked for me.
+That depends on the result.  I agree that migration will be a pain, so I
+suppose I set the bar a bit low; the user tool needs to be a bit more
+compelling; plus I'll manage the interface transition ... if there is
+one; there's no such tool yet.
 
-I'll see if I can find some time to try the ftrace patches to narrow
-this down.
+> Isn't it better to let the lack of an interface give motivation to create
+> the "right" interface, once the "right way" is determined - which is what I
+> thought we were discussing ?    or is this simply that there is no motivation
+> until something exists, that people don't like, thus they become motivated ?
+
+Well ... I did learn the latter from Andrew, so I thought I'd try it.
+It's certainly true that the enclosure problem has been an issue for
+over a decade, so there doesn't seem to be anything motivating anyone to
+solve it.  I wouldn't have bothered except that I could see ad-hoc
+in-kernel sysfs solutions beginning to appear.  At least this way they
+can all present a unified interface.
+
+James
+
 
