@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933032AbYBMXiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbYBMXjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933032AbYBMXiq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:38:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761231AbYBMXiC
+	id S1763459AbYBMXjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932758AbYBMXik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:38:02 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:55226 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757136AbYBMXh6 (ORCPT
+	Wed, 13 Feb 2008 18:38:40 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:64755 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932562AbYBMXih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:37:58 -0500
-From: Hans-Peter Jansen <hpj@urpla.net>
-To: petkovbb@gmail.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
-Date: Thu, 14 Feb 2008 00:37:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
-References: <200802121026.17420.hpj@urpla.net> <20080212172057.GA12480@gollum.tnic>
-In-Reply-To: <20080212172057.GA12480@gollum.tnic>
+	Wed, 13 Feb 2008 18:38:37 -0500
+From: Junio C Hamano <junio@pobox.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
+References: <20080213070215.GA11969@kroah.com>
+ <20080212.230423.172781444.davem@davemloft.net>
+ <1202887323.3129.10.camel@localhost> <20080213165924.GB10129@suse.de>
+ <1202923995.3129.26.camel@localhost>
+ <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
+ <alpine.LFD.1.00.0802131014240.2920@woody.linux-foundation.org>
+cc: Joe Perches <joe@perches.com>, Greg KH <gregkh@suse.de>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Date: Wed, 13 Feb 2008 15:38:20 -0800
+In-Reply-To: <alpine.LFD.1.00.0802131014240.2920@woody.linux-foundation.org>
+ (Linus Torvalds's message of "Wed, 13 Feb 2008 10:19:25 -0800 (PST)")
+Message-ID: <7v4pcco2ab.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802140037.51450.hpj@urpla.net>
-X-Provags-ID: V01U2FsdGVkX1/49q7mPGLfUhdC3ylbLsdkg/+4V14uWhAlHTC
- 9c9elyewlubWx4boYjr24+gfzAHYdxl/0rkjMWcjZV/SazQo5t
- uv8kP1E0PuOCxFptFShTA==
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 12. Februar 2008 schrieb Borislav Petkov:
-> On Tue, Feb 12, 2008 at 10:26:17AM +0100, Hans-Peter Jansen wrote:
-> > Hi,
-> >
-> > I suffer from unreliable cdrom operations (failing DAE and burn
-> > sessions) with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
+
+> On Wed, 13 Feb 2008, Linus Torvalds wrote:
+>> 
+>> So in that sense, I think both MAINTAINERS and the deprecation schedule 
+>> are totally uninteresting. Yes, they have merge conflicts. But those merge 
+>> conflicts are really really easy to handle.
 >
-> 			^^^^
-> Hi,
+> That, btw, includes "automatic merges" for something like a Linux-next 
+> tree. It's easy to just make something that says: if the merge fails, try 
+> to fix up these xyz files by just committing them with merge error markers 
+> and all".
 >
-> can please you test this with a more recent kernel. Yours is almost
-> ancient - from Sep. 2006.
+> That's fine for testing, exactly because it has no coding impact (and then 
+> when a _real_ merge happens, you have a human that actually resolves it).
+> ...
+> Git if nothing if not scriptable, and things like this are *trivial*.
 
-Sure, sorry. Here we go:
-
-Feb 14 00:18:18 kernel: hde: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
- Trying to recover by ending request.
-Feb 14 00:27:27 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01). 
- Trying to recover by ending request.
-
-~> uname -a
-Linux xrated 2.6.24.1-35-pae #1 SMP 2008/02/12 01:00:18 UTC i686 athlon i386 GNU/Linux
-
-Thanks for caring,
-Pete
+You can also use "union" low-level merge driver for such files
+via gitattributes(5).
