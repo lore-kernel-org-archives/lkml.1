@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932650AbYBMQnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933271AbYBMQnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932650AbYBMQnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:43:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755464AbYBMQnH
+	id S933271AbYBMQnn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:43:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbYBMQnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:43:07 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:55547 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755249AbYBMQnG (ORCPT
+	Wed, 13 Feb 2008 11:43:19 -0500
+Received: from viefep31-int.chello.at ([62.179.121.49]:61197 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764705AbYBMQnS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:43:06 -0500
-Message-ID: <47B31DE7.9060400@kernel.org>
-Date: Wed, 13 Feb 2008 08:42:15 -0800
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Ben Nizette <bn@niasdigital.com>, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-References: <1202816761.3299.19.camel@moss.renham>	<20080213004829.fd8afdc7.akpm@linux-foundation.org>	<20080213101024.39347322@dhcp-252-066.norway.atmel.com> <20080213012231.46865608.akpm@linux-foundation.org>
-In-Reply-To: <20080213012231.46865608.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 13 Feb 2008 11:43:18 -0500
+Subject: Re: Regression in latest sched-git
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080213163715.GB19570@linux.vnet.ibm.com>
+References: <20080212185355.GA6320@linux.vnet.ibm.com>
+	 <1202845208.6247.82.camel@lappy> <20080213030035.GA3402@linux.vnet.ibm.com>
+	 <1202907078.20209.3.camel@lappy>
+	 <20080213163444.GA19570@linux.vnet.ibm.com>
+	 <20080213163715.GB19570@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 17:43:13 +0100
+Message-Id: <1202920993.6811.13.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Haavard,
+On Wed, 2008-02-13 at 22:07 +0530, Dhaval Giani wrote:
+> On Wed, Feb 13, 2008 at 10:04:44PM +0530, Dhaval Giani wrote:
+> > > > On the same lines, I cant understand how we can be seeing 700ms latency
+> > > > (below) unless we had: large number of active groups/users and large number of 
+> > > > tasks within each group/user.
+> > > 
+> > > All I can say it that its trivial to reproduce these horrid latencies.
+> > > 
+> > 
+> > Hi Peter,
+> > 
+> > I've been trying to reproduce the latencies, and the worst I have
+> > managed only 80ms. At an average I am getting around 60 ms. This is with
+> > a make -j4 as root, and dhaval running other programs. (with maxcpus=1).
+> > 
+> 
+> Totally missed here. Any more hints to reproduce?
 
-It means your application is not capable(sic) of using the upper 32-bits
-of the 64-bit capability sets supported by this newer kernel.
+Not really, this is the recipie I took from Lukas Hejtmanek's report and
+it worked for me.
 
-You might consider rebuilding the offending application linking it
-against a newer version of libcap:
+I'll see if I can find some time to try the ftrace patches to narrow
+this down.
 
-http://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/
-
-However, it is a warning and, for any existing app that doesn't care
-about newly added capabilities, the warning is benign.
-
-Cheers
-
-Andrew
-
-Andrew Morton wrote:
-| On Wed, 13 Feb 2008 10:10:24 +0100 Haavard Skinnemoen
-<hskinnemoen@atmel.com> wrote:
-|
-|> On Wed, 13 Feb 2008 00:48:29 -0800
-|> Andrew Morton <akpm@linux-foundation.org> wrote:
-|>
-|>> On Tue, 12 Feb 2008 22:46:01 +1100 Ben Nizette <bn@niasdigital.com>
-wrote:
-|>>
-|>>> On an AVR32, root over NFS, config attached, running (from a startup
-|>>> script):
-|>>>
-|>>> iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-|>>>
-|>>> Results in (dmesg extract including a bit of context for good measure):
-|>>> -------------8<----------------
-|>>> VFS: Mounted root (nfs filesystem).
-|>>> Freeing init memory: 72K (90000000 - 90012000)
-|>>> eth0: no IPv6 routers present
-|>>> warning: `dnsmasq' uses 32-bit capabilities (legacy support in use)
-|> Hmm. What does that mean? What size do capabilities normally have?
-|
-| My near-namesake put than in, but I immediately forgot what it means?
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFHsx3n+bHCR3gb8jsRAjlNAKDK4RLJsPsMPN96JJnTj3U25Bx91ACdESeN
-2P3V2ISny33KY6v107iHsKU=
-=1jND
------END PGP SIGNATURE-----
