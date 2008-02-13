@@ -1,108 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765889AbYBMR7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934310AbYBMR7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765889AbYBMR7L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:59:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbYBMR6q
+	id S934310AbYBMR7i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934074AbYBMR6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:58:46 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42659 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbYBMR6o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:58:44 -0500
-Date: Wed, 13 Feb 2008 15:58:28 -0200
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Robert Fitzsimons <robfitz@273k.net>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
-       Michael Schimek <mschimek@gmx.at>
-Subject: Re: [PATCH] bttv: Fix overlay divide error.
-Message-ID: <20080213155828.4140b36c@gaivota>
-In-Reply-To: <20080213163634.GA2798@localhost>
-References: <20080213163634.GA2798@localhost>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
+	Wed, 13 Feb 2008 12:58:52 -0500
+Received: from mga02.intel.com ([134.134.136.20]:2485 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934050AbYBMR6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:58:48 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,347,1199692800"; 
+   d="scan'208";a="339394110"
+Date: Wed, 13 Feb 2008 09:45:02 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: ltuikov@yahoo.com, linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+Message-ID: <20080213094502.4112d5e5@appleyard>
+In-Reply-To: <1202844495.3137.120.camel@localhost.localdomain>
+References: <1202172065.3096.154.camel@localhost.localdomain>
+	<922945.25870.qm@web31811.mail.mud.yahoo.com>
+	<20080212102244.32869382@appleyard>
+	<1202841935.3137.94.camel@localhost.localdomain>
+	<20080212110752.21840627@appleyard>
+	<1202844495.3137.120.camel@localhost.localdomain>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 16:38:11 +0000
-Robert Fitzsimons <robfitz@273k.net> wrote:
+On Tue, 12 Feb 2008 13:28:15 -0600
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-> The initial work to convert the bttv driver to V4L2 "Partial conversion
-> from V4L1 to V4L2" (e84619b17440ccca4e4db7583d126c4189b987e5), missed
-> the line which set the appropriate overlay crop structure in the newly
-> allocated bttv_buffer.  This then causes a divide error in the
-> bttv_calc_geo function.
+> On Tue, 2008-02-12 at 11:07 -0800, Kristen Carlson Accardi wrote:
+> > I understand what you are trying to do - I guess I just doubt the
+> > value you've added by doing this.  I think that there's going to be
+> > so much customization that system vendors will want to add, that
+> > they are going to wind up adding a custom library regardless, so
+> > standardising those few things won't buy us anything.
 > 
-> Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
+> It depends ... if you actually have a use for the customisations, yes.
+> If you just want the basics of who (what's in the enclousure), what
+> (activity) and where (locate) then I think it solves your problem
+> almost entirely.
+> 
+> So, entirely as a straw horse, tell me what else your enclosures
+> provide that I haven't listed in the four points.  The SES standards
+> too provide a huge range of things that no-one ever seems to
+> implement (temperature, power, fan speeds etc).
+> 
+> I think the users of enclosures fall int these categories
+> 
+> 85% just want to know where their device actually is (i.e. that sdc is
+> in enclosure slot 5)
+> 50% like watching the activity lights
+> 30% want to be able to have a visual locate function
+> 20% want a visual failure indication (the other 80% rely on some OS
+> notification instead)
+> 
+> When you add up the overlapping needs, you get about 90% of people
+> happy with the basics that the enclosure services provide.  Could
+> there be more ... sure; should there be more ... I don't think so ...
+> that's what value add the user libraries can provide.
+> 
+> James
+> 
+> 
 
-Applied, thanks.
+I don't think I'm arguing whether or not your solution may work, what I
+am arguing is really a more philosophical point.  Not "can we do it
+this way", but "should we do it way".  I am of the opinion that
+management belongs in userspace.  I also am of the opinion that if you
+can successfully accomplish something in user space, you should.  I
+also believe that even if you provide this basic interface, all system
+vendors are going to provide libraries on top of that to customize it,
+so you've not added much value to just a simple message passing
+interface.
 
-> ---
->  drivers/media/video/bt8xx/bttv-driver.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> Hi Mauro
-> 
-> This patch against Linus's git tree fixes an overlay regression in the
-> bttv driver in 2.6.25-rc1.
-> 
-> Robert
-> 
->  divide error: 0000 [#1]
->  Modules linked in: usbhid hid ipt_MASQUERADE iptable_nat nf_nat ipt_LOG xt_limit xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables pppoe pppox ppp_generic slhc ipv6 tuner tea5767 tda8290 tda18271 tda827x tuner_xc2028 xc5000 tda9887 tuner_simple mt20xx tea5761 tvaudio msp3400 bttv videodev v4l1_compat ir_common compat_ioctl32 i2c_algo_bit v4l2_common videobuf_dma_sg videobuf_core btcx_risc tveeprom pcspkr i2c_core snd_bt87x ehci_hcd uhci_hcd sg usbcore sr_mod
-> 
->  Pid: 8691, comm: xawtv.bin Not tainted (2.6.25-rc1-00051-g96b5a46 #9)
->  EIP: 0060:[<e0addeb5>] EFLAGS: 00210246 CPU: 0
->  EIP is at bttv_calc_geo+0x1a5/0x287 [bttv]
->  EAX: 00000000 EBX: 00000180 ECX: 00000000 EDX: 00000000
->  ESI: 00000000 EDI: cbcc12a0 EBP: b8239dd8 ESP: b8239d98
->   DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
->  Process xawtv.bin (pid: 8691, ti=b8239000 task=b71c5000 task.ti=b8239000)
->  Stack: 00000000 cbcc107c 00000000 e0af708c 81979820 0000002a 00200297 b8239de0
->         00000000 00000004 000000d0 00000054 803c028c 9a6ee4d8 00000000 e0ae3b90
->         b8239e04 e0ade946 00000120 00000000 e0ae3708 cbcc12d4 e0af708c 00000000
->  Call Trace:
->   [<e0ade946>] ? bttv_overlay_risc+0x98/0x12d [bttv]
->   [<e0adb60b>] ? bttv_overlay+0xa6/0xcd [bttv]
->   [<e09914af>] ? __video_do_ioctl+0x1076/0x2b48 [videodev]
->   [<80143e1d>] ? slob_page_alloc+0x144/0x19e
->   [<e099320e>] ? video_ioctl2+0x19f/0x24b [videodev]
->   [<80120a3a>] ? autoremove_wake_function+0x0/0x30
->   [<801230b4>] ? ktime_get+0x13/0x2f
->   [<802bc933>] ? unix_ioctl+0x83/0x8c
->   [<8027c46a>] ? sock_ioctl+0x1aa/0x1cb
->   [<e099306f>] ? video_ioctl2+0x0/0x24b [videodev]
->   [<8014eaa4>] ? vfs_ioctl+0x3c/0x4f
->   [<8014ecae>] ? do_vfs_ioctl+0x1f7/0x205
->   [<8019dae6>] ? copy_to_user+0x2a/0x34
->   [<8014ece8>] ? sys_ioctl+0x2c/0x48
->   [<801029b2>] ? syscall_call+0x7/0xb
->   =======================
->  Code: 5f 04 0f 46 45 e0 d1 ea 89 45 e0 89 c8 c1 e0 0c 01 d0 31 d2 f7 f3 8b 55 14 66 2d 00 10 66 89 47 06 89 d8 0f af 02 31 d2 8d 04 01 <f7> f1 8b 4d e0 8b 55 10 66 89 4f 0a 83 e0 fe 66 89 45 ca 66 89
->  EIP: [<e0addeb5>] bttv_calc_geo+0x1a5/0x287 [bttv] SS:ESP 0068:b8239d98
->  ---[ end trace 588d2506a3db8987 ]---
-> 
-> 
-> diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-> index 907dc62..c152b81 100644
-> --- a/drivers/media/video/bt8xx/bttv-driver.c
-> +++ b/drivers/media/video/bt8xx/bttv-driver.c
-> @@ -2760,6 +2760,7 @@ static int bttv_overlay(struct file *file, void *f, unsigned int on)
->  	if (on) {
->  		fh->ov.tvnorm = btv->tvnorm;
->  		new = videobuf_pci_alloc(sizeof(*new));
-> +		new->crop = btv->crop[!!fh->do_crop].rect;
->  		bttv_overlay_risc(btv, &fh->ov, fh->ovfmt, new);
->  	} else {
->  		new = NULL;
+So, I'm happy to defer to Jeff's judgement call here - I just want to
+do what's right for our customers and get an enclosure management
+interface for SATA exposed, preferrably in time for the 2.6.26 merge
+window.  If he prefers your design, I'll disagree, but commit to his
+decision and try to get this to work for SATA. If he'd rather see
+something along the lines of what I proposed, then since it is 100% self
+contained in the SATA subsystem, it shouldn't impact whatever you
+want to do in the SCSI subsystem.
 
+Jeff?
 
-
-
-Cheers,
-Mauro
