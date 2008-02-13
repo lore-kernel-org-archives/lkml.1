@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933483AbYBNALa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933269AbYBNAOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933483AbYBNALa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbYBNALO
+	id S933269AbYBNAOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:14:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbYBNANy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:11:14 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:31496 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765998AbYBNALM (ORCPT
+	Wed, 13 Feb 2008 19:13:54 -0500
+Received: from outbound-mail-24.bluehost.com ([69.89.21.19]:34421 "HELO
+	outbound-mail-24.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760411AbYBNANx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:11:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=DtRwG7talWIu11XFGEQut/kKa8my06fqJRIVxXrdjDdTAyCy3nhUKolHORQKocl5nkIiZAe/XEI/uvdqNvFPdvt66knKUtjM21Z4D4SBFHg7DoOjvnIxhNqKKR4oFOiZj59r3qIz4ViGMMo4A5SH7RoHfjskbHNpsVNAxXhzn4c=
-Message-ID: <47B38718.4030509@gmail.com>
-Date: Thu, 14 Feb 2008 09:11:04 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 13 Feb 2008 19:13:53 -0500
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Kanoj Sarcar <kanojsarcar@yahoo.com>
+Subject: Re: Demand paging for memory regions
+Date: Wed, 13 Feb 2008 15:48:49 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Christian Bell <christian.bell@qlogic.com>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net, Dave Airlie <airlied@linux.ie>
+References: <866658.37093.qm@web32510.mail.mud.yahoo.com>
+In-Reply-To: <866658.37093.qm@web32510.mail.mud.yahoo.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH REPOST] printk: fix possible printk buffer overrun	introduced
- with recursion check
-References: <47B2AE7C.608@gmail.com> <20080213124548.GB6344@elte.hu>
-In-Reply-To: <20080213124548.GB6344@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802131548.50016.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
+On Wednesday, February 13, 2008 3:43 pm Kanoj Sarcar wrote:
+> Oh ok, yes, I did see the discussion on this; sorry I
+> missed it. I do see what notifiers bring to the table
+> now (without endorsing it :-)).
+>
+> An orthogonal question is this: is IB/rdma the only
+> "culprit" that elevates page refcounts? Are there no
+> other subsystems which do a similar thing?
+>
+> The example I am thinking about is rawio (Oracle's
+> mlock'ed SHM regions are handed to rawio, isn't it?).
+> My understanding of how rawio works in Linux is quite
+> dated though ...
 
-Ingo Molnar wrote:
-> but i'm not sure i agree with the moving of these variables inside 
-> vprintk:
-> 
->> -/* cpu currently holding logbuf_lock */
->> -static volatile unsigned int printk_cpu = UINT_MAX;
->> -
->> -const char printk_recursion_bug_msg [] =
->> -			KERN_CRIT "BUG: recent printk recursion!\n";
->> -static int printk_recursion_bug;
->> -
->>  asmlinkage int vprintk(const char *fmt, va_list args)
->>  {
->> +	/* cpu currently holding logbuf_lock */
->> +	static volatile unsigned int printk_cpu = UINT_MAX;
->> +	static const char printk_recursion_bug_msg [] =
->> +		KERN_CRIT "BUG: recent printk recursion!\n";
->> +	static int printk_recursion_bug;
->>  	static int log_level_unknown = 1;
->>  	static char printk_buf[1024];
-> 
-> it's easy to miss a static variable inside a function local variables 
+We're doing something similar in the DRM these days...  We need big chunks of 
+memory to be pinned so that the GPU can operate on them, but when the 
+operation completes we can allow them to be swappable again.  I think with 
+the current implementation, allocations are always pinned, but we'll 
+definitely want to change that soon.
 
-I find that difficult to agree.  As long as static ones are put above
-all local ones, they are visually distinctive enough.  static variables
-used by a single function are usually declared in the function all
-through the source tree.
+Dave?
 
-> block. It would b ebetter to move log_level_unknown and printk_buf 
-> _outside_ the function, to the other ones. [and to mark 
-> printk_recursion_bug_msg static]
-
-Well, I thought it was an obvious clean up.  Time to split this patch
-up, I guess.
-
-Thanks.
-
--- 
-tejun
+Jesse
