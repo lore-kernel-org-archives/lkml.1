@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757426AbYBMJ4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbYBMKId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757426AbYBMJ4H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:56:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbYBMJz6
+	id S1756712AbYBMKId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 05:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbYBMKI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:55:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57841 "EHLO mx1.redhat.com"
+	Wed, 13 Feb 2008 05:08:27 -0500
+Received: from gra-lx1.iram.es ([150.214.224.41]:59833 "EHLO gra-lx1.iram.es"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752036AbYBMJz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:55:57 -0500
-Subject: Re: [PATCH] gfs2: be*_add_cpu conversion
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: marcin.slusarz@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>, cluster-devel@redhat.com
-In-Reply-To: <1202857582-15450-6-git-send-email-marcin.slusarz@gmail.com>
-References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
-	 <1202857582-15450-6-git-send-email-marcin.slusarz@gmail.com>
-Content-Type: text/plain
-Organization: Red Hat UK Ltd
-Date: Wed, 13 Feb 2008 09:55:33 +0000
-Message-Id: <1202896533.3862.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	id S1752036AbYBMKIZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 05:08:25 -0500
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 13 Feb 2008 11:08:20 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 00/18] ide: warm-plug support for IDE devices and other goodies
+Message-ID: <20080213100820.GA19955@iram.es>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <1202460043.7079.157.camel@pasglop> <20080212114905.GA9940@iram.es> <20080212123002.GA11000@iram.es>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212123002.GA11000@iram.es>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Now in the GFS2 -nmw git tree. Thanks,
-
-Steve.
-
-On Wed, 2008-02-13 at 00:06 +0100, marcin.slusarz@gmail.com wrote:
-> From: Marcin Slusarz <marcin.slusarz@gmail.com>
+On Tue, Feb 12, 2008 at 01:30:03PM +0100, Gabriel Paubert wrote:
+> On Tue, Feb 12, 2008 at 12:49:05PM +0100, Gabriel Paubert wrote:
+> > On Fri, Feb 08, 2008 at 07:40:43PM +1100, Benjamin Herrenschmidt wrote:
+> > > 
+> > > On Fri, 2008-02-08 at 01:44 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > > - couple of fixes and preparatory patches
+> > > > 
+> > > > - rework of PowerMac media-bay support ([un]register IDE devices instead of
+> > > >   [un]registering IDE interface) [ it is the main reason for spamming PPC ML ]
+> > > 
+> > > Interesting... I was thinking about doing a full remove of the device at
+> > > a higher level instead but I suppose what you propose is easier.
+> > 
+> > Well, I have serious problem on a Pegasos which appeared some time
+> > between 2.6.24 and 2.6.25-rc1: at boot I get an infinite string of 
+> > 
+> > hdb: empty DMA table?
+> > 
+> > I'm trying to bisect it right now.
 > 
-> replace all:
-> big_endian_variable = cpu_to_beX(beX_to_cpu(big_endian_variable) +
-> 					expression_in_cpu_byteorder);
-> with:
-> 	beX_add_cpu(&big_endian_variable, expression_in_cpu_byteorder);
-> generated with semantic patch
+> Argh, the first bisect point ended up with timeouts on hdb...
 > 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Steven Whitehouse <swhiteho@redhat.com>
-> Cc: cluster-devel@redhat.com
-> ---
->  fs/gfs2/dir.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/gfs2/dir.c b/fs/gfs2/dir.c
-> index c347095..6f2e382 100644
-> --- a/fs/gfs2/dir.c
-> +++ b/fs/gfs2/dir.c
-> @@ -1021,13 +1021,13 @@ static int dir_split_leaf(struct inode *inode, const struct qstr *name)
->  
->  			new->de_inum = dent->de_inum; /* No endian worries */
->  			new->de_type = dent->de_type; /* No endian worries */
-> -			nleaf->lf_entries = cpu_to_be16(be16_to_cpu(nleaf->lf_entries)+1);
-> +			be16_add_cpu(&nleaf->lf_entries, 1);
->  
->  			dirent_del(dip, obh, prev, dent);
->  
->  			if (!oleaf->lf_entries)
->  				gfs2_consist_inode(dip);
-> -			oleaf->lf_entries = cpu_to_be16(be16_to_cpu(oleaf->lf_entries)-1);
-> +			be16_add_cpu(&oleaf->lf_entries, -1);
->  
->  			if (!prev)
->  				prev = dent;
-> @@ -1616,7 +1616,7 @@ int gfs2_dir_add(struct inode *inode, const struct qstr *name,
->  			dent->de_type = cpu_to_be16(type);
->  			if (ip->i_di.di_flags & GFS2_DIF_EXHASH) {
->  				leaf = (struct gfs2_leaf *)bh->b_data;
-> -				leaf->lf_entries = cpu_to_be16(be16_to_cpu(leaf->lf_entries) + 1);
-> +				be16_add_cpu(&leaf->lf_entries, 1);
->  			}
->  			brelse(bh);
->  			error = gfs2_meta_inode_buffer(ip, &bh);
+> Flagged as bad, to try to see when the problems started, but 
+> I suspect that there are several.
 
+Well, it's worse than this. After 7 or 8 bisections (all flagged
+bad) the symptoms changed: the system boots up to the point where
+it does not recognize LVM volumes. So there are at least 3 bugs:
+1) the timeout on interrupts (only seen on hdb)
+2) the empty DMA table messages (seen on hda and hdb)
+3) the inability to see logical volumes ("pvs" does not find them,
+  they are back when rebooting into 2.6.24). This is the apparently
+  the earliest introduced bug (no problems with the disks with that
+  version).
+
+I am away from that machine until next Tuesday. IIRC the last git
+bisect was something like 160 revisions left.
+
+	Gabriel
+
+> 
+> 	Gabriel
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
