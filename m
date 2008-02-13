@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764365AbYBMP1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbYBMP2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764365AbYBMP1J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:27:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbYBMP04
+	id S1763632AbYBMP2i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:28:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYBMP2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:26:56 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:34887 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754836AbYBMP04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:26:56 -0500
-Date: Wed, 13 Feb 2008 16:24:53 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-cc: linux-kernel@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>
-Subject: Re: Qemu & KVM bug
-In-Reply-To: <c4e36d110802130638i5057b49by280ab0b2c415064a@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802131621440.7699@twin.jikos.cz>
-References: <c4e36d110802130638i5057b49by280ab0b2c415064a@mail.gmail.com>
+	Wed, 13 Feb 2008 10:28:30 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:45336 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755078AbYBMP23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 10:28:29 -0500
+Date: Wed, 13 Feb 2008 10:28:22 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: list of references to non-existent include/linux headers
+Message-ID: <alpine.LFD.1.00.0802131027070.30845@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Zdenek Kabelac wrote:
 
-> I get this bug in my log whenever I start qemu-kvm - I do not use kqemu 
-> module - so it's with plain kernel modules. If more details are needed - 
-> just ask. (Cpu; C2D)
-> BUG: sleeping function called from invalid context at kernel/rwsem.c:48
-> in_atomic():1, irqs_disabled():0
-> INFO: lockdep is turned off.
-> Pid: 26600, comm: qemu-kvm Not tainted 2.6.25-rc1 #29
+  as the last scan of the day, here's a list of includes of the form
 
-This has been obviously caused by Marcelo's (added to CC) commit 
-10589a4699b, which added down_write(mmap_sem) to alloc_apic_access_page(), 
-which is called with preempt disabled from vmx_create_vcpu().
+  #include <linux/fubar.h>
 
--- 
-Jiri Kosina
-SUSE Labs
+for which there is no such include/linux/fubar.h header file.
 
+http://www.crashcourse.ca/wiki/index.php/Badref_linux_header_files
+
+rday
+--
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
