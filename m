@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765761AbYBMHFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbYBMHH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765761AbYBMHFn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:05:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYBMHFI
+	id S1764300AbYBMHH3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:07:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYBMHHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:05:08 -0500
-Received: from mga02.intel.com ([134.134.136.20]:11590 "EHLO mga02.intel.com"
+	Wed, 13 Feb 2008 02:07:18 -0500
+Received: from mga01.intel.com ([192.55.52.88]:13198 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765562AbYBMHFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:05:05 -0500
+	id S1752037AbYBMHHQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 02:07:16 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.25,344,1199692800"; 
-   d="scan'208";a="339116616"
+   d="scan'208";a="517684962"
 From: Dan Williams <dan.j.williams@intel.com>
-Subject: [PATCH 1/4] async_tx: checkpatch says s/__FUNCTION__/__func__/g
+Subject: [PATCH 4/4] iop-adma: remove the workaround for missed interrupts on
+	iop3xx
 To: linux-kernel@vger.kernel.org
 Cc: hskinnemoen@atmel.com, shannon.nelson@intel.com, olof@lixom.net,
        yur@emcraft.com
-Date: Wed, 13 Feb 2008 00:02:57 -0700
-Message-ID: <20080213070257.793.19449.stgit@dwillia2-linux.ch.intel.com>
+Date: Wed, 13 Feb 2008 00:03:14 -0700
+Message-ID: <20080213070313.793.21980.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20080213065944.793.23537.stgit@dwillia2-linux.ch.intel.com>
 References: <20080213065944.793.23537.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGIT/0.14.1
@@ -29,153 +30,100 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This workaround was covering the dependency submission bug in async_tx.
+
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
 
- crypto/async_tx/async_memcpy.c |    6 +++---
- crypto/async_tx/async_memset.c |    6 +++---
- crypto/async_tx/async_tx.c     |    6 +++---
- crypto/async_tx/async_xor.c    |   12 ++++++------
- 4 files changed, 15 insertions(+), 15 deletions(-)
+ drivers/dma/iop-adma.c                 |    5 -----
+ include/asm-arm/arch-iop13xx/adma.h    |    5 -----
+ include/asm-arm/hardware/iop3xx-adma.h |    8 --------
+ include/asm-arm/hardware/iop_adma.h    |    2 --
+ 4 files changed, 0 insertions(+), 20 deletions(-)
 
 
-diff --git a/crypto/async_tx/async_memcpy.c b/crypto/async_tx/async_memcpy.c
-index 0f62822..84caa4e 100644
---- a/crypto/async_tx/async_memcpy.c
-+++ b/crypto/async_tx/async_memcpy.c
-@@ -66,11 +66,11 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index 1cb4284..821bd17 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -255,8 +255,6 @@ static void __iop_adma_slot_cleanup(struct iop_adma_chan *iop_chan)
+ 
+ 	BUG_ON(!seen_current);
+ 
+-	iop_chan_idle(busy, iop_chan);
+-
+ 	if (cookie > 0) {
+ 		iop_chan->completed_cookie = cookie;
+ 		pr_debug("\tcompleted cookie %d\n", cookie);
+@@ -1226,9 +1224,6 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
  	}
  
- 	if (tx) {
--		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (async) len: %zu\n", __func__, len);
- 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
- 	} else {
- 		void *dest_buf, *src_buf;
--		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (sync) len: %zu\n", __func__, len);
+ 	spin_lock_init(&iop_chan->lock);
+-	init_timer(&iop_chan->cleanup_watchdog);
+-	iop_chan->cleanup_watchdog.data = (unsigned long) iop_chan;
+-	iop_chan->cleanup_watchdog.function = iop_adma_tasklet;
+ 	INIT_LIST_HEAD(&iop_chan->chain);
+ 	INIT_LIST_HEAD(&iop_chan->all_slots);
+ 	INIT_RCU_HEAD(&iop_chan->common.rcu);
+diff --git a/include/asm-arm/arch-iop13xx/adma.h b/include/asm-arm/arch-iop13xx/adma.h
+index efd9a5e..90d14ee 100644
+--- a/include/asm-arm/arch-iop13xx/adma.h
++++ b/include/asm-arm/arch-iop13xx/adma.h
+@@ -454,11 +454,6 @@ static inline void iop_chan_append(struct iop_adma_chan *chan)
+ 	__raw_writel(adma_accr, ADMA_ACCR(chan));
+ }
  
- 		/* wait for any prerequisite operations */
- 		if (depend_tx) {
-@@ -80,7 +80,7 @@ async_memcpy(struct page *dest, struct page *src, unsigned int dest_offset,
- 			BUG_ON(depend_tx->ack);
- 			if (dma_wait_for_async_tx(depend_tx) == DMA_ERROR)
- 				panic("%s: DMA_ERROR waiting for depend_tx\n",
--					__FUNCTION__);
-+					__func__);
- 		}
+-static inline void iop_chan_idle(int busy, struct iop_adma_chan *chan)
+-{
+-	do { } while (0);
+-}
+-
+ static inline u32 iop_chan_get_status(struct iop_adma_chan *chan)
+ {
+ 	return __raw_readl(ADMA_ACSR(chan));
+diff --git a/include/asm-arm/hardware/iop3xx-adma.h b/include/asm-arm/hardware/iop3xx-adma.h
+index 5c529e6..84d635b 100644
+--- a/include/asm-arm/hardware/iop3xx-adma.h
++++ b/include/asm-arm/hardware/iop3xx-adma.h
+@@ -767,20 +767,12 @@ static inline int iop_desc_get_zero_result(struct iop_adma_desc_slot *desc)
+ static inline void iop_chan_append(struct iop_adma_chan *chan)
+ {
+ 	u32 dma_chan_ctrl;
+-	/* workaround dropped interrupts on 3xx */
+-	mod_timer(&chan->cleanup_watchdog, jiffies + msecs_to_jiffies(3));
  
- 		dest_buf = kmap_atomic(dest, KM_USER0) + dest_offset;
-diff --git a/crypto/async_tx/async_memset.c b/crypto/async_tx/async_memset.c
-index 09c0e83..f5ff390 100644
---- a/crypto/async_tx/async_memset.c
-+++ b/crypto/async_tx/async_memset.c
-@@ -63,11 +63,11 @@ async_memset(struct page *dest, int val, unsigned int offset,
- 	}
+ 	dma_chan_ctrl = __raw_readl(DMA_CCR(chan));
+ 	dma_chan_ctrl |= 0x2;
+ 	__raw_writel(dma_chan_ctrl, DMA_CCR(chan));
+ }
  
- 	if (tx) {
--		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (async) len: %zu\n", __func__, len);
- 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
- 	} else { /* run the memset synchronously */
- 		void *dest_buf;
--		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (sync) len: %zu\n", __func__, len);
- 
- 		dest_buf = (void *) (((char *) page_address(dest)) + offset);
- 
-@@ -79,7 +79,7 @@ async_memset(struct page *dest, int val, unsigned int offset,
- 			BUG_ON(depend_tx->ack);
- 			if (dma_wait_for_async_tx(depend_tx) == DMA_ERROR)
- 				panic("%s: DMA_ERROR waiting for depend_tx\n",
--					__FUNCTION__);
-+					__func__);
- 		}
- 
- 		memset(dest_buf, val, len);
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index 5628821..2be3bae 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -472,11 +472,11 @@ async_trigger_callback(enum async_tx_flags flags,
- 		tx = NULL;
- 
- 	if (tx) {
--		pr_debug("%s: (async)\n", __FUNCTION__);
-+		pr_debug("%s: (async)\n", __func__);
- 
- 		async_tx_submit(chan, tx, flags, depend_tx, cb_fn, cb_param);
- 	} else {
--		pr_debug("%s: (sync)\n", __FUNCTION__);
-+		pr_debug("%s: (sync)\n", __func__);
- 
- 		/* wait for any prerequisite operations */
- 		if (depend_tx) {
-@@ -486,7 +486,7 @@ async_trigger_callback(enum async_tx_flags flags,
- 			BUG_ON(depend_tx->ack);
- 			if (dma_wait_for_async_tx(depend_tx) == DMA_ERROR)
- 				panic("%s: DMA_ERROR waiting for depend_tx\n",
--					__FUNCTION__);
-+					__func__);
- 		}
- 
- 		async_tx_sync_epilog(flags, depend_tx, cb_fn, cb_param);
-diff --git a/crypto/async_tx/async_xor.c b/crypto/async_tx/async_xor.c
-index 2259a4f..7a9db35 100644
---- a/crypto/async_tx/async_xor.c
-+++ b/crypto/async_tx/async_xor.c
-@@ -47,7 +47,7 @@ do_async_xor(struct dma_device *device,
- 	int i;
- 	unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
- 
--	pr_debug("%s: len: %zu\n", __FUNCTION__, len);
-+	pr_debug("%s: len: %zu\n", __func__, len);
- 
- 	dma_dest = dma_map_page(device->dev, dest, offset, len,
- 				DMA_FROM_DEVICE);
-@@ -86,7 +86,7 @@ do_sync_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 	void *_dest;
- 	int i;
- 
--	pr_debug("%s: len: %zu\n", __FUNCTION__, len);
-+	pr_debug("%s: len: %zu\n", __func__, len);
- 
- 	/* reuse the 'src_list' array to convert to buffer pointers */
- 	for (i = 0; i < src_cnt; i++)
-@@ -196,7 +196,7 @@ async_xor(struct page *dest, struct page **src_list, unsigned int offset,
- 					DMA_ERROR)
- 					panic("%s: DMA_ERROR waiting for "
- 						"depend_tx\n",
--						__FUNCTION__);
-+						__func__);
- 			}
- 
- 			do_sync_xor(dest, &src_list[src_off], offset,
-@@ -276,7 +276,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 		unsigned long dma_prep_flags = cb_fn ? DMA_PREP_INTERRUPT : 0;
- 		int i;
- 
--		pr_debug("%s: (async) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (async) len: %zu\n", __func__, len);
- 
- 		for (i = 0; i < src_cnt; i++)
- 			dma_src[i] = dma_map_page(device->dev, src_list[i],
-@@ -299,7 +299,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 	} else {
- 		unsigned long xor_flags = flags;
- 
--		pr_debug("%s: (sync) len: %zu\n", __FUNCTION__, len);
-+		pr_debug("%s: (sync) len: %zu\n", __func__, len);
- 
- 		xor_flags |= ASYNC_TX_XOR_DROP_DST;
- 		xor_flags &= ~ASYNC_TX_ACK;
-@@ -310,7 +310,7 @@ async_xor_zero_sum(struct page *dest, struct page **src_list,
- 		if (tx) {
- 			if (dma_wait_for_async_tx(tx) == DMA_ERROR)
- 				panic("%s: DMA_ERROR waiting for tx\n",
--					__FUNCTION__);
-+					__func__);
- 			async_tx_ack(tx);
- 		}
- 
+-static inline void iop_chan_idle(int busy, struct iop_adma_chan *chan)
+-{
+-	if (!busy)
+-		del_timer(&chan->cleanup_watchdog);
+-}
+-
+ static inline u32 iop_chan_get_status(struct iop_adma_chan *chan)
+ {
+ 	return __raw_readl(DMA_CSR(chan));
+diff --git a/include/asm-arm/hardware/iop_adma.h b/include/asm-arm/hardware/iop_adma.h
+index ca8e71f..cb7e361 100644
+--- a/include/asm-arm/hardware/iop_adma.h
++++ b/include/asm-arm/hardware/iop_adma.h
+@@ -51,7 +51,6 @@ struct iop_adma_device {
+  * @common: common dmaengine channel object members
+  * @last_used: place holder for allocation to continue from where it left off
+  * @all_slots: complete domain of slots usable by the channel
+- * @cleanup_watchdog: workaround missed interrupts on iop3xx
+  * @slots_allocated: records the actual size of the descriptor slot pool
+  * @irq_tasklet: bottom half where iop_adma_slot_cleanup runs
+  */
+@@ -65,7 +64,6 @@ struct iop_adma_chan {
+ 	struct dma_chan common;
+ 	struct iop_adma_desc_slot *last_used;
+ 	struct list_head all_slots;
+-	struct timer_list cleanup_watchdog;
+ 	int slots_allocated;
+ 	struct tasklet_struct irq_tasklet;
+ };
 
