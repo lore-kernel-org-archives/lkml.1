@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbYBMVmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934343AbYBMVm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932071AbYBMVmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763692AbYBMVas
+	id S934343AbYBMVm7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763792AbYBMVat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:30:48 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47519 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Feb 2008 16:30:49 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50824 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763655AbYBMVap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:30:45 -0500
-Date: Wed, 13 Feb 2008 23:30:29 +0200
+	id S1762565AbYBMVar (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:30:47 -0500
+Date: Wed, 13 Feb 2008 23:30:31 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Cliff Wickman <cpw@sgi.com>, David Rientjes <rientjes@google.com>
+To: Cliff Wickman <cpw@sgi.com>, pj@sgi.com, simon.derr@bull.net
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make cgroup_enable_task_cg_lists() static
-Message-ID: <20080213213029.GF3383@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] kernel/cpuset.c: make 3 functions static
+Message-ID: <20080213213031.GG3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +23,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global cgroup_enable_task_cg_lists() 
-static.
+This patch makes the following needlessly global functions static:
+- cpuset_test_cpumask()
+- cpuset_change_cpumask()
+- cpuset_do_move_task()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-a9d039842fb8c3170e63d2eba3301cf9865a864e diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 4766bb6..0317f79 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -1704,7 +1704,7 @@ static void cgroup_advance_iter(struct cgroup *cgrp,
-  * The tasklist_lock is not held here, as do_each_thread() and
-  * while_each_thread() are protected by RCU.
+
+ kernel/cpuset.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+581c9289db3ce36232a9102505f476681c7ecf4c diff --git a/kernel/cpuset.c b/kernel/cpuset.c
+index 3e296ed..5c21ae9 100644
+--- a/kernel/cpuset.c
++++ b/kernel/cpuset.c
+@@ -710,7 +710,8 @@ static inline int started_after(void *p1, void *p2)
+  * Return nonzero if this tasks's cpus_allowed mask should be changed (in other
+  * words, if its mask is not equal to its cpuset's mask).
   */
--void cgroup_enable_task_cg_lists(void)
-+static void cgroup_enable_task_cg_lists(void)
+-int cpuset_test_cpumask(struct task_struct *tsk, struct cgroup_scanner *scan)
++static int cpuset_test_cpumask(struct task_struct *tsk,
++			       struct cgroup_scanner *scan)
  {
- 	struct task_struct *p, *g;
- 	write_lock(&css_set_lock);
+ 	return !cpus_equal(tsk->cpus_allowed,
+ 			(cgroup_cs(scan->cg))->cpus_allowed);
+@@ -727,7 +728,8 @@ int cpuset_test_cpumask(struct task_struct *tsk, struct cgroup_scanner *scan)
+  * We don't need to re-check for the cgroup/cpuset membership, since we're
+  * holding cgroup_lock() at this point.
+  */
+-void cpuset_change_cpumask(struct task_struct *tsk, struct cgroup_scanner *scan)
++static void cpuset_change_cpumask(struct task_struct *tsk,
++				  struct cgroup_scanner *scan)
+ {
+ 	set_cpus_allowed(tsk, (cgroup_cs(scan->cg))->cpus_allowed);
+ }
+@@ -1648,7 +1650,8 @@ int __init cpuset_init(void)
+  * Called by cgroup_scan_tasks() for each task in a cgroup.
+  * Return nonzero to stop the walk through the tasks.
+  */
+-void cpuset_do_move_task(struct task_struct *tsk, struct cgroup_scanner *scan)
++static void cpuset_do_move_task(struct task_struct *tsk,
++				struct cgroup_scanner *scan)
+ {
+ 	struct cpuset_hotplug_scanner *chsp;
+ 
 
