@@ -1,65 +1,272 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933709AbYBMR22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933985AbYBMR3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933709AbYBMR22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757743AbYBMR2T
+	id S933985AbYBMR3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:29:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbYBMR3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:28:19 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:53520 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757331AbYBMR2S (ORCPT
+	Wed, 13 Feb 2008 12:29:04 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:40695 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757123AbYBMR3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:28:18 -0500
-Date: Wed, 13 Feb 2008 18:28:00 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, parabelboi@bopserverein.de
-Subject: [Patch 0/2] add check_legacy_ioport calls to prevent oops
-Message-ID: <20080213182800.5c6940a8@de.ibm.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Wed, 13 Feb 2008 12:29:00 -0500
+Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+Cc: Dave Hansen <haveblue@us.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, greg@kroah.com,
+       linux-mm <linux-mm@kvack.org>
+In-Reply-To: <20080213120746.FB76.Y-GOTO@jp.fujitsu.com>
+References: <1202853415.25604.59.camel@dyn9047017100.beaverton.ibm.com>
+	 <1202853976.11188.86.camel@nimitz.home.sr71.net>
+	 <20080213120746.FB76.Y-GOTO@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 09:31:41 -0800
+Message-Id: <1202923901.25604.100.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/SZZ6uCqtwy11xHhoEwyju4+";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/SZZ6uCqtwy11xHhoEwyju4+
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2008-02-13 at 14:09 +0900, Yasunori Goto wrote:
+> Thanks Badari-san.
+> 
+> I understand what was occured. :-)
+> 
+> > On Tue, 2008-02-12 at 13:56 -0800, Badari Pulavarty wrote:
+> > > > > +   /*
+> > > > > +    * Its ugly, but this is the best I can do - HELP !!
+> > > > > +    * We don't know where the allocations for section memmap and usemap
+> > > > > +    * came from. If they are allocated at the boot time, they would come
+> > > > > +    * from bootmem. If they are added through hot-memory-add they could be
+> > > > > +    * from sla or vmalloc. If they are allocated as part of hot-mem-add
+> > > > > +    * free them up properly. If they are allocated at boot, no easy way
+> > > > > +    * to correctly free them :(
+> > > > > +    */
+> > > > > +   if (usemap) {
+> > > > > +           if (PageSlab(virt_to_page(usemap))) {
+> > > > > +                   kfree(usemap);
+> > > > > +                   if (memmap)
+> > > > > +                           __kfree_section_memmap(memmap, nr_pages);
+> > > > > +           }
+> > > > > +   }
+> > > > > +}
+> > > > 
+> > > > Do what we did with the memmap and store some of its origination
+> > > > information in the low bits.
+> > > 
+> > > Hmm. my understand of memmap is limited. Can you help me out here ?
+> > 
+> > Never mind.  That was a bad suggestion.  I do think it would be a good
+> > idea to mark the 'struct page' of ever page we use as bootmem in some
+> > way.  Perhaps page->private? 
+> 
+> I agree. page->private is not used by bootmem allocator.
+> 
+> I would like to mark not only memmap but also pgdat (and so on)
+> for next step. It will be necessary for removing whole node. :-)
+> 
+> 
+> >  Otherwise, you can simply try all of the
+> > possibilities and consider the remainder bootmem.  Did you ever find out
+> > if we properly initialize the bootmem 'struct page's?
+> > 
+> > Please have mercy and put this in a helper, first of all.
+> > 
+> > static void free_usemap(unsigned long *usemap)
+> > {
+> > 	if (!usemap_
+> > 		return;
+> > 
+> > 	if (PageSlab(virt_to_page(usemap))) {
+> > 		kfree(usemap)
+> > 	} else if (is_vmalloc_addr(usemap)) {
+> > 		vfree(usemap);
+> > 	} else {
+> > 		int nid = page_to_nid(virt_to_page(usemap));
+> > 		bootmem_fun_here(NODE_DATA(nid), usemap);
+> > 	}
+> > }
+> > 
+> > right?
+> 
+> It may work. But, to be honest, I feel there are TOO MANY allocation/free
+> way for memmap (usemap and so on). If possible, I would like to
+> unify some of them. I would like to try it.
 
-Hi,
+Thank you for the offer. Here is the latest patch, feel free to
+rip it out.
 
-the following two patches prevent kernel from crashing on powerpc.
-The surrounding ifdefs will be obsolete, if check_legacy_ioport becomes
-generic code.
+Thanks,
+Badari
+
+Generic helper function to remove section mappings and sysfs entries
+for the section of the memory we are removing.  offline_pages() correctly 
+adjusted zone and marked the pages reserved.
+
+Issue: Need help on freeing up allocation made from bootmem. 
+
+Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+
+---
+ include/linux/memory_hotplug.h |    4 +++
+ mm/memory_hotplug.c            |   34 +++++++++++++++++++++++++++++++
+ mm/sparse.c                    |   44 ++++++++++++++++++++++++++++++++++++++---
+ 3 files changed, 79 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.24/mm/memory_hotplug.c
+===================================================================
+--- linux-2.6.24.orig/mm/memory_hotplug.c	2008-02-12 15:07:09.000000000 -0800
++++ linux-2.6.24/mm/memory_hotplug.c	2008-02-12 15:08:50.000000000 -0800
+@@ -102,6 +102,15 @@ static int __add_section(struct zone *zo
+ 	return register_new_memory(__pfn_to_section(phys_start_pfn));
+ }
+ 
++static void __remove_section(struct zone *zone, struct mem_section *ms)
++{
++	if (!valid_section(ms))
++		return;
++
++	unregister_memory_section(ms);
++	sparse_remove_one_section(zone, ms);
++}
++
+ /*
+  * Reasonably generic function for adding memory.  It is
+  * expected that archs that support memory hotplug will
+@@ -135,6 +144,31 @@ int __add_pages(struct zone *zone, unsig
+ }
+ EXPORT_SYMBOL_GPL(__add_pages);
+ 
++void __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
++		 unsigned long nr_pages)
++{
++	unsigned long i;
++	int sections_to_remove;
++	unsigned long flags;
++	struct pglist_data *pgdat = zone->zone_pgdat;
++
++	/*
++	 * We can only remove entire sections
++	 */
++	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
++	BUG_ON(nr_pages % PAGES_PER_SECTION);
++
++	sections_to_remove = nr_pages / PAGES_PER_SECTION;
++
++	for (i = 0; i < sections_to_remove; i++) {
++		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
++		pgdat_resize_lock(pgdat, &flags);
++		__remove_section(zone, __pfn_to_section(pfn));
++		pgdat_resize_unlock(pgdat, &flags);
++	}
++}
++EXPORT_SYMBOL_GPL(__remove_pages);
++
+ static void grow_zone_span(struct zone *zone,
+ 		unsigned long start_pfn, unsigned long end_pfn)
+ {
+Index: linux-2.6.24/mm/sparse.c
+===================================================================
+--- linux-2.6.24.orig/mm/sparse.c	2008-02-12 15:07:09.000000000 -0800
++++ linux-2.6.24/mm/sparse.c	2008-02-12 17:10:16.000000000 -0800
+@@ -198,12 +198,13 @@ static unsigned long sparse_encode_mem_m
+ }
+ 
+ /*
+- * We need this if we ever free the mem_maps.  While not implemented yet,
+- * this function is included for parity with its sibling.
++ * Decode mem_map from the coded memmap
+  */
+-static __attribute((unused))
++static
+ struct page *sparse_decode_mem_map(unsigned long coded_mem_map, unsigned long pnum)
+ {
++	/* mask off the extra low bits of information */
++	coded_mem_map &= SECTION_MAP_MASK;
+ 	return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum);
+ }
+ 
+@@ -363,6 +364,26 @@ static void __kfree_section_memmap(struc
+ }
+ #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+ 
++static void free_section_usemap(struct page *memmap, unsigned long *usemap)
++{
++	if (!usemap)
++		return;
++
++	/*
++	 * Check to see if allocation came from hot-plug-add
++	 */
++	if (PageSlab(virt_to_page(usemap))) {
++		kfree(usemap);
++		if (memmap)
++			__kfree_section_memmap(memmap, PAGES_PER_SECTION);
++		return;
++	}
++
++	/*
++	 * Allocations came from bootmem - how do I free up ?
++	 */
++}
++
+ /*
+  * returns the number of sections whose mem_maps were properly
+  * set.  If this is <=0, then that means that the passed-in
+@@ -415,4 +436,21 @@ out:
+ 	}
+ 	return ret;
+ }
++
++void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
++{
++	struct page *memmap = NULL;
++	unsigned long *usemap = NULL;
++	unsigned long flags;
++
++	if (ms->section_mem_map) {
++		usemap = ms->pageblock_flags;
++		memmap = sparse_decode_mem_map(ms->section_mem_map,
++						__section_nr(ms));
++		ms->section_mem_map = 0;
++		ms->pageblock_flags = NULL;
++	}
++
++	free_section_usemap(memmap, usemap);
++}
+ #endif
+Index: linux-2.6.24/include/linux/memory_hotplug.h
+===================================================================
+--- linux-2.6.24.orig/include/linux/memory_hotplug.h	2008-02-12 15:07:09.000000000 -0800
++++ linux-2.6.24/include/linux/memory_hotplug.h	2008-02-12 15:08:50.000000000 -0800
+@@ -8,6 +8,7 @@
+ struct page;
+ struct zone;
+ struct pglist_data;
++struct mem_section;
+ 
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ /*
+@@ -64,6 +65,8 @@ extern int offline_pages(unsigned long, 
+ /* reasonably generic interface to expand the physical pages in a zone  */
+ extern int __add_pages(struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
++extern void __remove_pages(struct zone *zone, unsigned long start_pfn,
++	unsigned long nr_pages);
+ 
+ /*
+  * Walk thorugh all memory which is registered as resource.
+@@ -188,5 +191,6 @@ extern int arch_add_memory(int nid, u64 
+ extern int remove_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
++extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+ 
+ #endif /* __LINUX_MEMORY_HOTPLUG_H */
 
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
-
-
-Vorsitzender des Aufsichtsrats:	Martin Jetter
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
---Sig_/SZZ6uCqtwy11xHhoEwyju4+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHsyiw6rqK4qDx+dcRAoIvAJ9w1s5v2gHg0k1qrA5RQ3E9rUKABgCaAzCx
-lrEY306uD08TWw5tv2aOvUI=
-=U3qV
------END PGP SIGNATURE-----
-
---Sig_/SZZ6uCqtwy11xHhoEwyju4+--
