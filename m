@@ -1,118 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761915AbYBMLQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765026AbYBMLS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761915AbYBMLQA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 06:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755175AbYBMLPs
+	id S1765026AbYBMLS2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 06:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYBMLSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 06:15:48 -0500
-Received: from web31808.mail.mud.yahoo.com ([68.142.207.71]:25940 "HELO
-	web31808.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753532AbYBMLPq (ORCPT
+	Wed, 13 Feb 2008 06:18:20 -0500
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:40524 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753978AbYBMLST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 06:15:46 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=feVQGi5S2mQ0KGndprAgZDSOy08v0XO1bsl08r8jOn/3H2zRXOv0z9fXEazak2yRntPIJdz9WZnYBDJgX1j+4Ci5EKSFWiEa5YMPhbSHoGh4XHZ3PY35Mx+s22uhK7m1WAvWBFfStp3xywQ8LU+yUFeq7vRtb5zhzk6Lv139vd8=;
-X-YMail-OSG: igOK340VM1lpARVXGSNYAw.dsb8TPvRcEwGpqDlWqtNHpDcxI4cqS6HGUjZe7P9R5LwDJA--
-X-Mailer: YahooMailWebService/0.7.162
-Date: Wed, 13 Feb 2008 03:15:41 -0800 (PST)
-From: Luben Tuikov <ltuikov@yahoo.com>
-Reply-To: ltuikov@yahoo.com
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-To: kristen.c.accardi@intel.com,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <172410.55272.qm@web31808.mail.mud.yahoo.com>
+	Wed, 13 Feb 2008 06:18:19 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080213061653.GA10784@kroah.com>
+References: <20080211211751.3e265754@laptopd505.fenrus.org>
+	 <20080211.221126.230471463.davem@davemloft.net>
+	 <47B1CB08.4020101@garzik.org>
+	 <20080212.155853.193190548.davem@davemloft.net>
+	 <20080213002948.GA8899@kroah.com>
+	 <alpine.LFD.1.00.0802121645320.2920@woody.linux-foundation.org>
+	 <20080213061653.GA10784@kroah.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Wed, 13 Feb 2008 10:48:33 +0000
+Message-Id: <1202899713.21202.10.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Feb 2008 10:48:29.0691 (UTC) FILETIME=[F835ACB0:01C86E2D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- On Tue, 2/12/08, James Bottomley James.Bottomley@HansenPartnership.com> wrote:
-> > I understand what you are trying to do - I guess I
-> just doubt the value
-> > you've added by doing this.  I think that
-> there's going to be so much
-> > customization that system vendors will want to add,
-> that they are going
-> > to wind up adding a custom library regardless, so
-> standardising those
-> > few things won't buy us anything.
-> 
-> It depends ... if you actually have a use for the
-> customisations, yes.
-> If you just want the basics of who (what's in the
-> enclousure), what
-> (activity) and where (locate) then I think it solves your
-> problem almost
-> entirely.
+On Tue, 2008-02-12 at 22:16 -0800, Greg KH wrote:
+> Ted's description matches mine (keep quilt tree in git, edit changelog
+> entries, rebase on newer kernel versions, etc.)  I can go into details
+> if needed.
 
-If the kernel doesn't solve it "entirely", then it is better
-off without the kernel bloat.  In fact vendors would distribute
-their own user-space application(s) to provide a consistent and
-complete solution(s) of their product(s) to their customer(s).
+I added some time ago patch history tracking in stgit and you can run
+"stg log [--graphical] <patch>" to see all the changes for that patch
+(as a list or via gitk). This is done by keeping a separate DAG of
+commits linking small changes to a patch.
 
-This could also be achieved via "sg_ses", which can also
-control custom vendor pages if the encodings are known by the
-customer (which they would be if they purchased the product).
+> I was amazed at how slow stgit was when I tried it out.  I use
+> git-quiltimport a lot and I don't think it's any slower than just using
+> quilt on its own.  So I think that the speed issue should be the same.
 
-> So, entirely as a straw horse, tell me what else your
-> enclosures provide
-> that I haven't listed in the four points.
+It shouldn't be slower than git-quiltimport (at least the recent stgit
+versions) as they seem to have a similar approach (using "git apply").
+There is probably an extra check stgit does for local changes before
+starting the import. Otherwise, just use git-quiltimport and "stg
+uncommit" to generate the patches.
 
-You shouldn't insist on this.  It should already be clear
-to you this direction isn't the vendor's preference.
+StGIT approach for pushing patches is to use git-apply and, only if this
+fails, switch to a three-way merge. These days it seems that the
+three-way merge is pretty fast anyway, we might drop the former (after
+some benchmarking).
 
->  The SES
-> standards too provide
-> a huge range of things that no-one ever seems to implement
-> (temperature,
-> power, fan speeds etc).
+> I had a number of issues last time I tried stgit out, but maybe they are
+> now resolved, I'll try it out tomorrow and report to the git list
+> anything I find that doesn't work for me.
 
-Vendors do use "temperature, power and fan speeds" and
-in fact more features, some of them completely custom
-for their product, since they end up writing the SES
-device server of the enclosure themselves (for their product).
-This kind of control and representation is better left to
-user-space.  The kernel neither needs to represent it
-nor know about it, since it is itself not using nor
-controlling it.
+Please try the last stable release, 0.14. The current HEAD has some
+restructuring done (but gets nice features like transactions, undo).
 
-> I think the users of enclosures fall int these categories
+Thanks.
 
-This statement (above) really means that the numbers below
-are but merely the speculation of one person.
-
-> 
-> 85% just want to know where their device actually is (i.e.
-> that sdc is
-> in enclosure slot 5)
-> 50% like watching the activity lights
-> 30% want to be able to have a visual locate function
-> 20% want a visual failure indication (the other 80% rely on
-> some OS
-> notification instead)
-> 
-> When you add up the overlapping needs, you get about 90% of
-> people happy
-> with the basics that the enclosure services provide.
-
-90% doesn't make it a necessary requirement for the kernel
-to have this, as well as the fact that the kernel is neither
-needing this to function properly, nor using it.
-
-> Could there be more ... sure; should there be more ... I don't think
-> so ... that's what value add the user libraries can provide.
-
-"should there be more ... I don't think so"
-
-This decision isn't yours to make.  In fact such a decision is never
-made by one person only.  This decision is made by 1) the industry,
-2) the customers and 3) vendors by the pricing of their product(s).
-
-   Luben
+-- 
+Catalin
 
