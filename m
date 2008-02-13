@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbYBMJDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932165AbYBMJE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932149AbYBMJDm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbYBMJDZ
+	id S932165AbYBMJE7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:04:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751742AbYBMJEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:03:25 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:38145 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbYBMJDV (ORCPT
+	Wed, 13 Feb 2008 04:04:39 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56619 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751186AbYBMJEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:03:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=mg5FlCxxCKThJuTnHa+Ign+45yUYuNZ++I5YKB+HjyivSMwn3069LnoE5oOzq54XzEw4cOBslqjT/5pAy4RkvXnxsJghPAN7XJIQDiLcauWHmEPb6sgYQpdKRz5xPGmUmwUr2LN3owimMj2r0fP94hzgrRs/NSnNi8dykOUx/uo=
-Message-ID: <47B2B250.8020209@gmail.com>
-Date: Wed, 13 Feb 2008 18:03:12 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] printk: implement printk_buf overflow warning
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 Feb 2008 04:04:35 -0500
+Date: Wed, 13 Feb 2008 01:01:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bart Dopheide <dopheide@fmf.nl>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <mzolnier@gmail.com>
+Subject: Re: Kernel BUG at fs/mpage.c:489
+Message-Id: <20080213010145.76ee9714.akpm@linux-foundation.org>
+In-Reply-To: <20080213072627.GB2174@fmf.nl>
+References: <20080212194546.GA2174@fmf.nl>
+	<20080212215006.170ade88@core>
+	<200802131205.45493.nickpiggin@yahoo.com.au>
+	<20080213072627.GB2174@fmf.nl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-printk silently truncates messages longer than 1024 - 1 bytes.
-Implement overflow detection and append "$PRINTK_BUF_OVERFLOW$\n" to
-truncated messages.
+On Wed, 13 Feb 2008 08:26:27 +0100 Bart Dopheide <dopheide@fmf.nl> wrote:
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- kernel/printk.c |   15 ++++++++++++---
- 1 files changed, 12 insertions(+), 3 deletions(-)
+> On Wed, Feb 13, 2008 at 12:05:45PM +1100, Nick Piggin wrote:
+> :)On Wednesday 13 February 2008 08:50, Alan Cox wrote:
+> :)> Almost certainly a hardware fail of some sort.
+> :)
+> :)Right, but the kernel shouldn't go bug...
+> 
+> Indeed, that's why I'm reporting.
+> 
+> 
+> :)I don't have a copy of your exact source code... which condition in
+> :)__mpage_writepage went BUG?
+> 
+> BUG_ON(buffer_locked(bh));
+> 
+> In a bit of context:
+> 482:    if (page_has_buffers(page)) {
+> 483:            struct buffer_head *head = page_buffers(page);
+> 484:            struct buffer_head *bh = head;
+> 485:
+> 486:            /* If they're all mapped and dirty, do it */
+> 487:            page_block = 0;
+> 488:            do {
+> 489:                    BUG_ON(buffer_locked(bh));
+> 490:                    if (!buffer_mapped(bh)) {
+> 491:                            /*
+> 492:                             * unmapped dirty buffers are created by
+> 493:                             * __set_page_dirty_buffers -> mmapped data
+> 494:                             */
+> 495:                            if (buffer_dirty(bh))
+> 496:                                    goto confused;
+> 497:                            if (first_unmapped == blocks_per_page)
+> 498:                                    first_unmapped = page_block;
+> 499:                            continue;
+> 500:                    }
+> 
 
-diff --git a/kernel/printk.c b/kernel/printk.c
-index 074a3ea..419cd47 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -42,6 +42,7 @@ void __attribute__((weak)) early_printk(const char *fmt, ...)
- {
- }
- 
-+#define PRINTK_BUF_LEN	1024
- #define __LOG_BUF_LEN	(1 << CONFIG_LOG_BUF_SHIFT)
- 
- /* printk's without a loglevel use this.. */
-@@ -619,9 +620,10 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 	static volatile unsigned int printk_cpu = UINT_MAX;
- 	static const char printk_recursion_bug_msg [] =
- 		KERN_CRIT "BUG: recent printk recursion!\n";
-+	static const char overflow_tag[] = "$PRINTK_BUF_OVERFLOW$\n";
- 	static int printk_recursion_bug;
- 	static int log_level_unknown = 1;
--	static char printk_buf[1024];
-+	static char printk_buf[PRINTK_BUF_LEN + sizeof(overflow_tag) - 1];
- 
- 	unsigned long flags;
- 	int printed_len = 0;
-@@ -663,8 +665,15 @@ asmlinkage int vprintk(const char *fmt, va_list args)
- 		printed_len = sizeof(printk_recursion_bug_msg);
- 	}
- 	/* Emit the output into the temporary buffer */
--	printed_len += vscnprintf(printk_buf + printed_len,
--				  sizeof(printk_buf) - printed_len, fmt, args);
-+	printed_len += vsnprintf(printk_buf + printed_len,
-+				 PRINTK_BUF_LEN - printed_len, fmt, args);
-+
-+	/* Check for overflow and tag the message if overflowed */
-+	if (printed_len >= PRINTK_BUF_LEN) {
-+		memcpy(printk_buf + PRINTK_BUF_LEN - 1, overflow_tag,
-+		       sizeof(overflow_tag));
-+		printed_len = sizeof(printk_buf) - 1;
-+	}
- 
- 	/*
- 	 * Copy the output into log_buf.  If the caller didn't provide
--- 
-1.5.2.4
+Probably means that either fat, IDE, block or fs/buffer.c failed to unlock a buffer_head
+when the IO error happened.  It's unlikely to be fat.
 
