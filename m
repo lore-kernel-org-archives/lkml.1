@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbYBMBhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756443AbYBMBjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbYBMBhx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:37:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbYBMBhq
+	id S1756443AbYBMBjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYBMBjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:37:46 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48898
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751520AbYBMBhp (ORCPT
+	Tue, 12 Feb 2008 20:39:31 -0500
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57167 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbYBMBja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:37:45 -0500
-Date: Tue, 12 Feb 2008 17:38:17 -0800 (PST)
-Message-Id: <20080212.173817.111913348.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: bfields@fieldses.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org>
-	<20080212.165014.01238510.davem@davemloft.net>
-	<alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 Feb 2008 20:39:30 -0500
+Message-ID: <47B24AB3.3040009@keyaccess.nl>
+Date: Wed, 13 Feb 2008 02:41:07 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: bzolnier@gmail.com, muli@il.ibm.com, jdmason@kudzu.us,
+       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, discuss@x86-64.org
+Subject: Re: "ide=reverse" do we still need this?
+References: <20080213001506.GA13933@kroah.com>
+In-Reply-To: <20080213001506.GA13933@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 12 Feb 2008 17:31:10 -0800 (PST)
+On 13-02-08 01:15, Greg KH wrote:
 
-> You don't see the problems as much, because you merge probably only
-> about a tenth of the volume I merge, and you can keep track of the
-> subsystem more.
+> I'm reworking the pci device list logic (we currently keep all PCI
+> devices in 2 lists, which isn't the nicest, we should be able to get
+> away with only 1 list.)
+> 
+> The only bother I've found so far is the pci_get_device_reverse()
+> function, it's used in 2 places, IDE and the calgary driver.
+> 
+> I'm curious if we really still support the ide=reverse option?  It's a
+> config option that I don't think the distros still enable (SuSE does
+> not).  Is this still needed these days?
+> 
+> In digging, we changed this option in 2.2.x from being called
+> "pci=reverse" and no one else seems to miss it.
+> 
+> Any thoughts?
 
-Good point.
+While details escape me somewhat again at the monment, a few months ago I 
+was playing around with a PCI Promise IDE controller and needed ide=reverse 
+to save me from having to switch disks around to still have a bootable system.
 
-Now how do I remove a bogus commit for a tree that I've already pushed
-out and published for other people, without any record of it appearing
-in the GIT tree any more?
+Or some such. Not too clear anymore, but I remember it saved the day.
 
-How do I insert build fixes into existing changesets so that the tree
-is more bisectable?
-
-If Jeff merged in a tree that introduced a ton of whitespace errors
-git is complaing about, is there a way I can fixup that changeset
-in-place? (or should I tell Jeff to start adhering to GIT's whitespace
-warning messages when he applies patches?)
-
-Those are basically the major operations that would allow me to
-seriously consider rebasing a ton less often.
+Rene.
