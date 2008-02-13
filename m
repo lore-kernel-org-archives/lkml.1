@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761676AbYBMV3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbYBMVaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761676AbYBMV3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:29:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752922AbYBMV3d
+	id S1753743AbYBMVaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:30:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761337AbYBMV3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:29:33 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55629 "EHLO smtp6.pp.htv.fi"
+	Wed, 13 Feb 2008 16:29:40 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50735 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbYBMV3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:29:32 -0500
-Date: Wed, 13 Feb 2008 23:29:14 +0200
+	id S1760989AbYBMV3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:29:39 -0500
+Date: Wed, 13 Feb 2008 23:29:19 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>
+To: Bernhard Walle <bwalle@suse.de>, p_gortmaker@yahoo.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make blk-core.c:request_cachep static again
-Message-ID: <20080213212914.GB3383@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] drivers/char/rtc.c: make 2 functions static
+Message-ID: <20080213212919.GC3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,23 +23,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-request_cachep needlessly became global.
+The following functions can now become static:
+- rtc_interrupt()
+- rtc_get_rtc_time()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-11b0ecec3d7a5208d95dd95392815a4785d70844 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 8ff9944..36588ff 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -37,7 +37,7 @@ static int __make_request(struct request_queue *q, struct bio *bio);
- /*
-  * For the allocated request tables
-  */
--struct kmem_cache *request_cachep;
-+static struct kmem_cache *request_cachep;
+
+ drivers/char/rtc.c  |    5 +++--
+ include/linux/rtc.h |    2 --
+ 2 files changed, 3 insertions(+), 4 deletions(-)
+
+e642155f0065ec03a83ed95eef2a78f272e73e01 
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 78b151c..39aba90 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -144,6 +144,7 @@ static ssize_t rtc_read(struct file *file, char __user *buf,
  
- /*
-  * For queue allocation
+ static int rtc_ioctl(struct inode *inode, struct file *file,
+ 		     unsigned int cmd, unsigned long arg);
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+ 
+ #ifdef RTC_IRQ
+ static unsigned int rtc_poll(struct file *file, poll_table *wait);
+@@ -235,7 +236,7 @@ static inline unsigned char rtc_is_updating(void)
+  *	(See ./arch/XXXX/kernel/time.c for the set_rtc_mmss() function.)
+  */
+ 
+-irqreturn_t rtc_interrupt(int irq, void *dev_id)
++static irqreturn_t rtc_interrupt(int irq, void *dev_id)
+ {
+ 	/*
+ 	 *	Can be an alarm interrupt, update complete interrupt,
+@@ -1298,7 +1299,7 @@ static int rtc_proc_open(struct inode *inode, struct file *file)
+ }
+ #endif
+ 
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm)
++static void rtc_get_rtc_time(struct rtc_time *rtc_tm)
+ {
+ 	unsigned long uip_watchdog = jiffies, flags;
+ 	unsigned char ctrl;
+diff --git a/include/linux/rtc.h b/include/linux/rtc.h
+index f2d0d15..1fc4f60 100644
+--- a/include/linux/rtc.h
++++ b/include/linux/rtc.h
+@@ -208,8 +208,6 @@ typedef struct rtc_task {
+ int rtc_register(rtc_task_t *task);
+ int rtc_unregister(rtc_task_t *task);
+ int rtc_control(rtc_task_t *t, unsigned int cmd, unsigned long arg);
+-void rtc_get_rtc_time(struct rtc_time *rtc_tm);
+-irqreturn_t rtc_interrupt(int irq, void *dev_id);
+ 
+ #endif /* __KERNEL__ */
+ 
 
