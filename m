@@ -1,110 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbYBMB6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYBMCBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbYBMB6w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYBMB6m
+	id S1758001AbYBMCBc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYBMCBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:58:42 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39957 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753013AbYBMB6l (ORCPT
+	Tue, 12 Feb 2008 21:01:24 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:47658 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751925AbYBMCBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:58:41 -0500
-Date: Tue, 12 Feb 2008 17:57:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: bfields@fieldses.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080212.173817.111913348.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org> <20080212.165014.01238510.davem@davemloft.net> <alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org> <20080212.173817.111913348.davem@davemloft.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 21:01:23 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=XgFj8Bh2hJ+mKV5u6xm7QHeEt+KBBfD01Xsvt6U2lzUHGLoZCuplgLTJH0Mowy/3Q
+	VjOy2BqqOrpqz7VwtoHTg==
+Date: Tue, 12 Feb 2008 18:00:58 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
+       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
+In-Reply-To: <20080212193229.edbff05a.pj@sgi.com>
+Message-ID: <alpine.DEB.1.00.0802121755400.23110@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <1202861432.4974.29.camel@localhost> <20080212183158.3ff4ccd5.pj@sgi.com> <Pine.LNX.4.64.0802121702431.11628@schroedinger.engr.sgi.com> <20080212193229.edbff05a.pj@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Feb 2008, Paul Jackson wrote:
 
-
-On Tue, 12 Feb 2008, David Miller wrote:
+> Christoph wrote:
+> > Good. And remove the enum.
+> > 
+> > It would be better to add some sort of flags field?
 > 
-> Now how do I remove a bogus commit for a tree that I've already pushed
-> out and published for other people, without any record of it appearing
-> in the GIT tree any more?
+> On the other hand, despite my brilliant (hah!) endorsement
+> of bit field flags in my reply a few minutes ago, I'd settle
+> for (1) removing the enum, and (2) using a flags field and
+> more defines for the new stuff.  I will grant that Christoph
+> is correct that that form is more common in the kernel, and
+> there is something to be said for doing things in the most
+> common manner.
+> 
 
-So, the answer is: if others have actually pulled, it's simply not 
-possible.
+The enum has already been removed, as I've said a few times.
 
-There simply is no way to undo history that isn't local any more. You just 
-*have* to revert, or you need to find every single person that pulled 
-(directly or indirectly) and ask them to undo all the work they did on top 
-of your bad commit.
+The 'flags' field would be wrong because you're ignoring that these flags 
+are both passed by the user to the kernel and by the kernel to the user as 
+part of the 'int *' parameter in either set_mempolicy() or mbind().
 
-This is not git-related, btw. That's just how the world works. It's a bit 
-like the internet - if you said something stupid on #IRC and it made it to 
-bash.org, there's not a whole lot you can do to "undo" your stupidity. You 
-can only hope to do better in the future and assume people forget. 
+So they must have predefined shift in linux/mempolicy.h to separate that 
+'int *' parameter into the policy mode and the optional mode flags.
 
-> How do I insert build fixes into existing changesets so that the tree
-> is more bisectable?
+If you introduced a separate flags member to struct mempolicy, you'd be 
+wasting the lower MPOL_FLAG_SHIFT bits for no apparent purpose so your 
+flag bits still work:
 
-Just delay pushing out. There really is _zero_ downside to this. None at 
-all. There are only upsides.
+	#define MPOL_F_STATIC_NODES	(1 << MPOL_FLAG_SHIFT)
 
-> If Jeff merged in a tree that introduced a ton of whitespace errors
-> git is complaing about, is there a way I can fixup that changeset
-> in-place? (or should I tell Jeff to start adhering to GIT's whitespace
-> warning messages when he applies patches?)
+There's no way around that without shifting before storing and each time 
+you read pol->flags.
 
-Umm. Git doesn't complain about whitespace _except_ when applying patches. 
-So if you don't rebase his work, you'll never see the whitespace warnings 
-either!
+So since those bits would have to be unused and can perfectly accomodate 
+the mode bits (with the current definition of MPOL_FLAG_SHIFT at 8, we 
+can accomodate up to 256 distinct modes), there is no reason why they 
+cannot be combined.  That is why I implemented it that way.
 
-Of course, we'd probably wish that Jeff cared about the whitespace 
-warnings and pushed back on them, but the fact is, that warning isn't 
-meant for you - because by the time you pull Jeff's tree, it's simply not 
-your issue any more. Jeff already applied it. Either he's your trusted 
-lietenant or he's not.
-
-Quite frankly, to me it sounds like you're not ready to "let go" and trust 
-the people under you. Trust me, it's worth it. It's why your life is easy: 
-I have let go and I trust you. 
-
-Also, I'd *much* rather have a few problems in the tree than have people 
-screw up history in order to hide them. Sure, we want to keep things 
-bisectable, but quite frankly, if you do a reasonable job and compile the 
-kernel before you push out, it will be "mostly bisectable".
-
-And yes, mistakes happen. Mistakes will *always* happen. It's ok. Relax. 
-
-Let me put it another way: You're _both_ going to be *much* better off 
-pushing back on Jeff, telling him that "I can't pull from you because your 
-tree is ugly and doesn't compile", than taking his tree and rebasing it.
-
-Remember? I used to do that all the time. I berated the ACPI people for 
-creating monster trees that were horrible and contained fifteen merges and 
-two real commits. I didn't try to clean it up for them, I just told them 
-what the problem was, and you know what? The ACPI tree is one of the 
-cleanest ones out there now!
-
-So in short:
-
- - clean trees and bisectability are all wonderful things. No doubt about 
-   that at all.
-
- - but if getting there means that you lose a lot of _other_ wonderful 
-   things (like being able to trust history, and the people being under 
-   your watchful eyes havign to deal with you re-writing their trees), 
-   we'd be much better off taking the occasional commit that fixes things 
-   up _after_ the fact rather than before!
-
- - and you actually can help fix your issues by doing some simple things 
-   *before* pushing out, rather than push out immediately. IOW, do your 
-   whitespace sanity fixes, your compile checks etc early, and don't push 
-   out until after you've done them.
-
-Hmm?
-
-			Linus
+		David
