@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764208AbYBMLaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932329AbYBMLbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764208AbYBMLaX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 06:30:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbYBMLaF
+	id S932329AbYBMLbX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 06:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbYBMLbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 06:30:05 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:52605 "EHLO relay.atmel.no"
+	Wed, 13 Feb 2008 06:31:15 -0500
+Received: from pip13.gyao.ne.jp ([61.122.117.251]:19010 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755176AbYBMLaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 06:30:04 -0500
-Date: Wed, 13 Feb 2008 12:29:47 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Ben Nizette <bn@niasdigital.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-Message-ID: <20080213122947.7345c7b7@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080213101024.39347322@dhcp-252-066.norway.atmel.com>
-References: <1202816761.3299.19.camel@moss.renham>
-	<20080213004829.fd8afdc7.akpm@linux-foundation.org>
-	<20080213101024.39347322@dhcp-252-066.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755880AbYBMLbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 06:31:14 -0500
+Date: Wed, 13 Feb 2008 20:30:03 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Tests of undefined CONFIG variables.
+Message-ID: <20080213113003.GA17418@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	"Robert P. J. Day" <rpjday@crashcourse.ca>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.1.00.0802130552370.19968@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802130552370.19968@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 10:10:24 +0100
-Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-
-> > > ip_tables: (C) 2000-2006 Netfilter Core Team
-> > > nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-> > > Unable to handle kernel paging request at virtual address d76a7138
-> > > ptbr = 91d3b000 pgd = 0000e5f3 pte = 00014370  
+On Wed, Feb 13, 2008 at 05:54:12AM -0500, Robert P. J. Day wrote:
+>   i've also updated the list of what i call "badref" CONFIG variables
+> -- that is, tests of CONFIG_ variables that appear to be undefined
+> anywhere in a Kconfig file (which typically represents a meaningless
+> test, naturally).
 > 
-> Hmm. It actually found something in the pte? Looks like a swap
-> entry...but that doesn't make sense at that virtual address. Userspace
-> is below 0x80000000.
-
-(...)
-
-> > If so, the bug could be almost anywhere - in slab, or in some random piece
-> > of code which scribbles on slab's data structures.  
+> http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
 > 
-> Yes, it looks like memory corruption, especially since the page table
-> appears to be corrupted as well. But I'll have a look and see if the
-> code that dumps the pte is doing something bogus...
+For SH:
 
-Yes, that code is indeed buggy. The below patch should fix it, although
-the page tables probably won't contain anything interesting, and it
-could still be a memory corruption issue. And it definitely won't fix
-the real issue.
+CONFIG_SERIAL
+CONFIG_CPU_HAS_PINT_IRQ
+CONFIG_LITTLE_ENDIAN
+CONFIG_SH64_PROC_TLB
 
-I have a couple of patches that will eliminate the need for this fixup
-(and probably improve performance as well), but they are probably 2.6.26
-material.
-
-Haavard
-
-diff --git a/arch/avr32/mm/fault.c b/arch/avr32/mm/fault.c
-index 6560cb1..ce4e429 100644
---- a/arch/avr32/mm/fault.c
-+++ b/arch/avr32/mm/fault.c
-@@ -189,6 +189,8 @@ no_context:
- 
- 	page = sysreg_read(PTBR);
- 	printk(KERN_ALERT "ptbr = %08lx", page);
-+	if (address >= TASK_SIZE)
-+		page = (unsigned long)swapper_pg_dir;
- 	if (page) {
- 		page = ((unsigned long *)page)[address >> 22];
- 		printk(" pgd = %08lx", page);
+are now fixed, thanks.
