@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759576AbYBMPPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763817AbYBMPQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759576AbYBMPPd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:15:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYBMPPZ
+	id S1763817AbYBMPQb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:16:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbYBMPQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:15:25 -0500
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:33008 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752247AbYBMPPY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:15:24 -0500
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <alpine.DEB.1.00.0802122100190.24022@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	 <1202862136.4974.41.camel@localhost>
-	 <alpine.DEB.1.00.0802122004190.11889@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0802122100190.24022@chino.kir.corp.google.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 13 Feb 2008 08:15:28 -0700
-Message-Id: <1202915728.4978.2.camel@localhost>
+	Wed, 13 Feb 2008 10:16:21 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36968 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752247AbYBMPQV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 10:16:21 -0500
+Date: Wed, 13 Feb 2008 16:16:28 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Josh Boyer <jwboyer@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: latest list of unused Kconfig variables
+Message-ID: <20080213151628.GA10915@uranus.ravnborg.org>
+References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain> <20080213073242.5c069c25@zod.rchland.ibm.com> <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 21:06 -0800, David Rientjes wrote:
-> On Tue, 12 Feb 2008, David Rientjes wrote:
+On Wed, Feb 13, 2008 at 10:07:27AM -0500, Robert P. J. Day wrote:
+> On Wed, 13 Feb 2008, Josh Boyer wrote:
 > 
-> > Since we're allowed to remap the node to a different node than the user 
-> > specified with either syscall, the current behavior is that "one node is 
-> > as good as another."  In other words, we're trying to accomodate the mode 
-> > first by setting pol->v.preferred_node to some accessible node and only 
-> > setting that to the user-supplied node if it is available.
-> > 
-> > If the node isn't available and the user specifically asked that it is not 
-> > remapped (with MPOL_F_STATIC_NODES), then I felt local allocation was best 
-> > compared to remapping to a node that may be unrelated to the VMA or task.  
-> > This preserves a sense of the current behavior that "one node is as good 
-> > as another," but the user specifically asked for no remap.
-> > 
+> > On Wed, 13 Feb 2008 03:56:34 -0500 (EST)
+> > "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
 > 
-> Upon further inspection, perhaps it's better to fallback to local 
-> allocation when the preferred node is not available on rebind and then, if 
-> it becomes available later, prefer it again.
+> > >   now that 2.6.25-rc1 is out, i can start updating the output from
+> > > my scanning scripts.  the first updated output is the list of
+> > > currently unused Kconfig variables -- variables that are defined
+> > > in some Kconfig file somewhere but appear to be entirely unused
+> > > throughout the source tree.
+> > >
+> > >   latest output here, sorted by architecture:
+> > >
+> > > http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
+> > >
+> > > as always, there will probably be some false positives for one
+> > > reason or another.
+> > >
+> > >   output from the other scanning scripts will be up in short order.
+> >
+> > You have lots of false positives (or something) for arch/powerpc.
+> > Seems your script picked up #define names and comments that happen
+> > to match a Kconfig variable?
 > 
-> In mpol_rebind_policy():
-> 
-> 	case MPOL_PREFERRED:
-> 		if (!remap) {
-> 			int nid = first_node(pol->user_nodemask);
-> 
-> 			if (node_isset(nid, *newmask))
-> 				pol->v.preferred_node = nid;
-> 			else {
-> 				/*
-> 				 * Fallback to local allocation since that
-> 				 * is the behavior in mpol_new().  The
-> 				 * node may eventually become available.
-> 				 */
-> 				pol->v.preferred_node = -1;
-> 			}
-> 		} else
-> 			pol->v.preferred_node = node_remap(pol->v.preferred_node,
-> 							*mpolmask, *newmask);
-> 		break;
-> 
-> What do you think, Lee?
+> it always will, given the proclivity of some folks to define their own
+> variables with a "CONFIG_" prefix.  as i point out on the wiki page, i
+> make no attempt to cull that list, i just print it as is, and readers
+> will have to peruse the list carefully to see what's meaningful and
+> what isn't.
 
-I agree.  I was still puzzled by your patch in this area as it appeared
-to me that you weren't remapping back to your original preferred node,
-which seemed to be the whole point of "static".  I was going to ask
-about this today, but you caught it first!
+CONFIG_* should in the kernel be assumed a reserved namespace for kconifg.
+So any use of variables/defines named CONFIG_* which is not a kconfig
+symbol is a bug.
 
-Lee
-
-> 
-> 		David
-
+	Sam
