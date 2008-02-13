@@ -1,91 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765625AbYBMPcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932076AbYBMPdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765625AbYBMPcw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbYBMPco
+	id S932076AbYBMPdP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:33:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765681AbYBMPcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:32:44 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:45556 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752384AbYBMPcn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:32:43 -0500
-Date: Wed, 13 Feb 2008 10:32:35 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Josh Boyer <jwboyer@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: latest list of unused Kconfig variables
-In-Reply-To: <20080213151628.GA10915@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.1.00.0802131031040.30876@localhost.localdomain>
-References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain> <20080213073242.5c069c25@zod.rchland.ibm.com> <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain> <20080213151628.GA10915@uranus.ravnborg.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 13 Feb 2008 10:32:55 -0500
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:16781 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765620AbYBMPcx convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 10:32:53 -0500
+X-Greylist: delayed 46160 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 10:32:52 EST
+Date: Wed, 13 Feb 2008 15:32:49 +0000
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Greg KH <greg@kroah.com>
+Cc: bzolnier@gmail.com, muli@il.ibm.com, jdmason@kudzu.us,
+       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, discuss@x86-64.org
+Subject: Re: "ide=reverse" do we still need this?
+Message-ID: <20080213153249.GA21749@deepthought>
+References: <20080213001506.GA13933@kroah.com> <20080213024329.GA6912@deepthought> <20080213044304.GA10101@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20080213044304.GA10101@kroah.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
+X-Cloudmark-Analysis: v=1.0 c=1 a=gcwBkTFKDvoA:10 a=9vzMQgj8eMJxLs+ya4Hk2A==:17 a=pNW6cQKn9FihKhajbjwA:9 a=Zqjk-1MapEMWYelw3PQA:7 a=tuQzrf_9KcnmJzNn_QOi9SDneBwA:4 a=LY0hPdMaydYA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Sam Ravnborg wrote:
+On Tue, Feb 12, 2008 at 08:43:04PM -0800, Greg KH wrote:
+> 
+> Can't you just boot with /dev/disk/by-id/ and an initramfs to not have
+> to worry about such a thing in the future?
+> 
+ Can comebody remind me what the initramfs is for in that situation,
+please ?  From the little I've noticed, I thought the /dev/disk/by-id
+part went into fstab ?  At the moment, I just build the things I
+think I need in to the kernel on that box, without modules.
 
-> On Wed, Feb 13, 2008 at 10:07:27AM -0500, Robert P. J. Day wrote:
-> > On Wed, 13 Feb 2008, Josh Boyer wrote:
-> >
-> > > On Wed, 13 Feb 2008 03:56:34 -0500 (EST)
-> > > "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-> >
-> > > >   now that 2.6.25-rc1 is out, i can start updating the output from
-> > > > my scanning scripts.  the first updated output is the list of
-> > > > currently unused Kconfig variables -- variables that are defined
-> > > > in some Kconfig file somewhere but appear to be entirely unused
-> > > > throughout the source tree.
-> > > >
-> > > >   latest output here, sorted by architecture:
-> > > >
-> > > > http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
-> > > >
-> > > > as always, there will probably be some false positives for one
-> > > > reason or another.
-> > > >
-> > > >   output from the other scanning scripts will be up in short order.
-> > >
-> > > You have lots of false positives (or something) for arch/powerpc.
-> > > Seems your script picked up #define names and comments that happen
-> > > to match a Kconfig variable?
-> >
-> > it always will, given the proclivity of some folks to define their own
-> > variables with a "CONFIG_" prefix.  as i point out on the wiki page, i
-> > make no attempt to cull that list, i just print it as is, and readers
-> > will have to peruse the list carefully to see what's meaningful and
-> > what isn't.
->
-> CONFIG_* should in the kernel be assumed a reserved namespace for
-> kconifg. So any use of variables/defines named CONFIG_* which is not
-> a kconfig symbol is a bug.
+ Anyway, I'll try to find time to read my notes to see if I can
+identify what happened/when, and to take the box down again so I
+can try to confirm exactly what the problem is, if it still exists.
+I certainly won't be taking it down until I've written my weekly
+backups to tape at the weekend, so maybe not before next week.
 
-heh ... good luck with *that*:
+> Have you tried the PATA drivers instead of IDE to see if this solves the
+> "moves around" issue?  If they work, then you would not need the command
+> line option at all.
 
-$ grep -r "^#define CONFIG_" * | wc -l
-752
-$
+ My previous kernel was 2.18-series, I think at that time they were
+still under development.  This box handles the backups for my
+various desktop boxes, which is why I'm very conservative about
+changing it.  I guess the drivers are stable now, I'll maybe give
+that a go (depending on time).
 
-rday
---
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
