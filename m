@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbYBMMU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbYBMMWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759859AbYBMMU5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:20:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbYBMMUe
+	id S1759354AbYBMMWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756159AbYBMMWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:20:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.169]:39111 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755677AbYBMMUb (ORCPT
+	Wed, 13 Feb 2008 07:22:46 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53779 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbYBMMWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:20:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=Qn44gRBbPSyL7m5tU1fj2l7i3Ef+NhGFXjcCbY48bgsxt1TASBLdOibuJWUwPklkDDYBgvpm+cH7UHyLef3myRbKd3feIDUUcqTc5YSY78NQ6h01yRQatT3LFkTDSO4QFHEPArLdBLDhs/B2Cs3rWlL/PNymTzdloDe9y5v58nQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Date: Wed, 13 Feb 2008 13:34:12 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-References: <20080213001506.GA13933@kroah.com> <20080213021737.72b9815d@core> <20080213044536.GC10101@kroah.com>
-In-Reply-To: <20080213044536.GC10101@kroah.com>
+	Wed, 13 Feb 2008 07:22:45 -0500
+Date: Wed, 13 Feb 2008 14:22:43 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: jaharkes@cs.cmu.edu
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] fs/coda: remove static inline forward declarations
+Message-ID: <Pine.LNX.4.64.0802131417460.31652@kivilampi-30.cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802131334.12351.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-1384520503-1202905363=:31652"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008, Greg KH wrote:
-> On Wed, Feb 13, 2008 at 02:17:37AM +0000, Alan Cox wrote:
-> > > Why does the calgary driver need this?  Can we just use pci_get_device()
-> > > instead?  Why do you need to walk the device list backwards?  Do you get
-> > > false positives going forward?
-> > 
-> > It doesn't look to be performance critical so the driver can
-> > pci_get_device until the end and use the final hit anyway.
-> 
-> That would make more sense.
-> 
-> > IDE reverse is more problematic but nobody seems to use it.
-> 
-> I've seen two posters say they use it.  I'm wondering what it is really
-> solving if they use it, and why if it's really needed, scsi never had to
-> implement such a hack...
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It is no longer solving anything, just adds more pain. ;)
+---696243703-1384520503-1202905363=:31652
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-[ The option comes from 2.2.x (so long before LABEL=/ and /dev/disk/by-id/
-  became popular).  Some "off-board" controllers integrated on motherboards
-  used to appear before "on-board" IDE on PCI bus so this option was meant
-  to preserve the legacy ordering. ]
+They're defined later on in the same file with bodies and
+nothingin between needs them.
 
-Since it is valid only when "Probe IDE PCI devices in the PCI bus order
-(DEPRECATED)" config option is used it is already on its way out (though
-marking it as obsoleted would make it more explicit).
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ include/linux/coda_linux.h |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
-I think that removing "ide=reverse" in 2.6.26 would be OK...
+diff --git a/include/linux/coda_linux.h b/include/linux/coda_linux.h
+index 1c47a34..31b7531 100644
+--- a/include/linux/coda_linux.h
++++ b/include/linux/coda_linux.h
+@@ -43,9 +43,6 @@ int coda_getattr(struct vfsmount *, struct dentry *, struct kstat *);
+ int coda_setattr(struct dentry *, struct iattr *);
+ 
+ /* this file:  heloers */
+-static __inline__ struct CodaFid *coda_i2f(struct inode *);
+-static __inline__ char *coda_i2s(struct inode *);
+-static __inline__ void coda_flag_inode(struct inode *, int flag);
+ char *coda_f2s(struct CodaFid *f);
+ int coda_isroot(struct inode *i);
+ int coda_iscontrol(const char *name, size_t length);
+-- 
+1.5.2.2
 
-Thanks,
-Bart
+---696243703-1384520503-1202905363=:31652--
