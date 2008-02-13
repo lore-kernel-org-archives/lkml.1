@@ -1,209 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932972AbYBMRqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933730AbYBMRqg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932972AbYBMRqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbYBMRqI
+	id S933730AbYBMRqg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:46:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932332AbYBMRqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:46:08 -0500
-Received: from homer.mvista.com ([63.81.120.158]:53681 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1756382AbYBMRqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:46:06 -0500
-Message-ID: <47B32CD2.3040200@ct.jp.nec.com>
-Date: Wed, 13 Feb 2008 09:45:54 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 13 Feb 2008 12:46:17 -0500
+Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:60892 "EHLO
+	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932089AbYBMRqQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:46:16 -0500
+From: Fabio Coatti <cova@ferrara.linux.it>
+Organization: FerraraLUG
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Date: Wed, 13 Feb 2008 18:46:12 +0100
+User-Agent: KMail/1.9.7
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+References: <200802121503.41328.cova@ferrara.linux.it> <200802131021.23974.cova@ferrara.linux.it> <20080213091642.b484a7ba.randy.dunlap@oracle.com>
+In-Reply-To: <20080213091642.b484a7ba.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
-Subject: Re: [RFC v2 PATCH] RTTIME watchdog timer proc interface
-References: <47B220A6.5090707@ct.jp.nec.com> <20080213011310.e27dd9cf.akpm@linux-foundation.org>
-In-Reply-To: <20080213011310.e27dd9cf.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802131846.13320.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Tue, 12 Feb 2008 14:41:42 -0800 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
-> 
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> Introduce new proc interface for RTTIME watchdog.
->> It makes administrator able to set RTTIME watchdog to existing
->> real-time applications without impact.
->>
->> $ echo 10000000 > /proc/<pid>/rttime
->> set RTTIME current value to 10000000, it means 10sec.
->>
->> $ echo "10000000 20000000" > /proc/<pid>/rttime
->> set RTTIME current value to 10000000 and max value to 20000000.
-> 
-> How does one set it to `unlimited'?
+Alle mercoledì 13 febbraio 2008, Randy Dunlap ha scritto:
 
-There is no way now. Will add.
+> > >
+> > > You're not supposed to have CONFIG_PM unset and CONFIG_ACPI set at the
+> > > same time.  The oldconfig generation must have gone wrong at one point.
+> >
+> > Maybe it's not supposed to have this situation, but maybe you should tell
+> > this to the kernel itself :)
+> >
+> > # zcat /proc/config.gz | egrep "PM|ACPI"
+> > CONFIG_X86_64_ACPI_NUMA=y
+> > # CONFIG_PM is not set
+> > CONFIG_ACPI=y
+> > # CONFIG_ACPI_PROCFS is not set
+> >
+> > # uname -rv
+> > 2.6.23.12 #3 SMP Tue Feb 12 11:22:16 CET 2008
+> >
+> > And you can easily get this situation from menuconfig: just fire up make
+> > menuconfig without any .config, go to power management options and turn
+> > off "Power Management support". exit and look at .config:
+> >
+> > # CONFIG_PM is not set
+> > CONFIG_SUSPEND_SMP_POSSIBLE=y
+> > CONFIG_HIBERNATION_SMP_POSSIBLE=y
+> > CONFIG_ACPI=y
+> >
+> > Maybe if this is not supposed to be the right situation, some
+> > dependencies are not respected... (tested on .16)
+>
+> Yes, this is yet another select problem.  X86_64_NUMA_ACPI
+> selects ACPI, even though PM is not enabled.  :(
+>
+> So you have a manual fix:  just enable CONFIG_PM.
+>
+> Is this specific config important to you?  I.e., do you want/need
+> NUMA support?  If so, you'll just need to continue enabling CONFIG_PM.
 
-> 
->> And /proc/<pid>/task/<tid>/rttime is also accessible.
-> 
-> Please describe the format in the changelog.
+Well, I suppose that I need to activate NUMA, as I'm running a dual 
+processor/dual core AMD 2216HE box... so I will go for CONFIG_PM option 
+enabled, I suppose :)
 
-I'm sorry I cannot catch your meaning.
 
-> 
->> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> ---
->>  fs/proc/base.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
->>  1 files changed, 89 insertions(+), 0 deletions(-)
->>
->> diff --git a/fs/proc/base.c b/fs/proc/base.c
->> index 7c6b4ec..3212b44 100644
->> --- a/fs/proc/base.c
->> +++ b/fs/proc/base.c
->> @@ -381,6 +381,93 @@ static const struct file_operations proc_lstats_operations = {
->>  
->>  #endif
->>  
->> +static int rttime_show_proc(struct seq_file *m, void *v)
->> +{
->> +	struct task_struct *task = m->private;
->> +	struct signal_struct *signal = task->signal;
->> +	struct rlimit *rt = &signal->rlim[RLIMIT_RTTIME];
->> +
->> +	if (rt->rlim_cur == RLIM_INFINITY)
->> +		seq_printf(m, "unlimited ");
->> +	else
->> +		seq_printf(m, "%lu ", rt->rlim_cur);
->> +
->> +	if (rt->rlim_max == RLIM_INFINITY)
->> +		seq_printf(m, "unlimited\n");
->> +	else
->> +		seq_printf(m, "%lu\n", rt->rlim_max);
->> +
->> +	return 0;
->> +}
->> +
->> +static int rttime_open(struct inode *inode, struct file *file)
->> +{
->> +	int ret;
->> +	struct seq_file *m;
->> +	struct task_struct *task = get_proc_task(inode);
->> +
->> +	ret = single_open(file, rttime_show_proc, NULL);
->> +	if (!ret) {
->> +		m = file->private_data;
->> +		m->private = task;
->> +	}
->> +	return ret;
->> +}
-> 
-> get_proc_task() can return NULL, in which case it appears that the kernel
-> will later oops?
 
-Yes, it could cause oops. Will fix.
-
-> 
->> +static ssize_t rttime_write(struct file *file,
->> +			    const char __user *buf,
->> +			    size_t count,
->> +			    loff_t *ppos)
->> +{
->> +	struct seq_file *m = file->private_data;
->> +	struct task_struct *task = m->private;
->> +	char buffer[PROC_NUMBUF], *end;
->> +	struct rlimit new_rlim, *old_rlim;
->> +	int n, ret;
-> 
-> `n' should be size_t.  And a better name would be nice.
-
-Agree.
-
-> 
->> +	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
->> +	new_rlim = *old_rlim;
->> +	memset(buffer, 0, sizeof(buffer));
->> +	n = count;
->> +	if (n > sizeof(buffer) - 1)
->> +		n = sizeof(buffer) - 1;
-> 
-> min()
-
-Thanks, I hadn't noticed min().
-
-> 
->> +	if (copy_from_user(buffer, buf, n))
->> +		return -EFAULT;
->> +	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
->> +	if (*end == ' ') {
->> +		++end;
->> +		buf += end - buffer;
->> +		memset(buffer, 0, sizeof(buffer));
->> +		n = count - (end - buffer);
->> +		if (n > sizeof(buffer) - 1)
->> +			n = sizeof(buffer) - 1;
-> 
-> min()
-> 
->> +		if (copy_from_user(buffer, buf, n))
->> +			return -EFAULT;
->> +		new_rlim.rlim_max = simple_strtoul(buffer, &end, 0);
-> 
-> strict_strtoul()?
-
-OK, I should look at it.
-
-> 
->> +	}
->> +	if (new_rlim.rlim_cur > new_rlim.rlim_max)
->> +		return -EINVAL;
->> +	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
->> +	    !capable(CAP_SYS_RESOURCE))
->> +		return -EPERM;
->> +	ret = security_task_setrlimit(RLIMIT_RTTIME, &new_rlim);
->> +	if (ret)
->> +		return ret;
->> +	task_lock(task->group_leader);
->> +	*old_rlim = new_rlim;
->> +	task_unlock(task->group_leader);
-> 
-> hm.  Why do we lock on ->group_leader rather than the task itself?
-
-It's same as setrlimit.
-
-> 
->> +	return count;
->> +}
->> +
->> +static const struct file_operations proc_rttime_operations = {
->> +	.open		= rttime_open,
->> +	.read		= seq_read,
->> +	.write		= rttime_write,
->> +	.llseek		= seq_lseek,
->> +	.release	= single_release,
->> +};
->> +
->>  /* The badness from the OOM killer */
->>  unsigned long badness(struct task_struct *p, unsigned long uptime);
->>  static int proc_oom_score(struct task_struct *task, char *buffer)
->> @@ -2300,6 +2387,7 @@ static const struct pid_entry tgid_base_stuff[] = {
->>  	LNK("exe",        exe),
->>  	REG("mounts",     S_IRUGO, mounts),
->>  	REG("mountstats", S_IRUSR, mountstats),
->> +	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
->>  #ifdef CONFIG_PROC_PAGE_MONITOR
->>  	REG("clear_refs", S_IWUSR, clear_refs),
->>  	REG("smaps",      S_IRUGO, smaps),
->> @@ -2630,6 +2718,7 @@ static const struct pid_entry tid_base_stuff[] = {
->>  	LNK("root",      root),
->>  	LNK("exe",       exe),
->>  	REG("mounts",    S_IRUGO, mounts),
->> +	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
->>  #ifdef CONFIG_PROC_PAGE_MONITOR
->>  	REG("clear_refs", S_IWUSR, clear_refs),
->>  	REG("smaps",     S_IRUGO, smaps),
-
-Thanks for reviewing.
-
-Hiroshi Shimamoto
+-- 
+Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova     
+Ferrara Linux Users Group           http://ferrara.linux.it
+GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
+Old SysOps never die... they simply forget their password.
