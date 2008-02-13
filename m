@@ -1,103 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932867AbYBMWmF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933548AbYBMWmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932867AbYBMWmF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:42:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYBMWlv
+	id S933548AbYBMWmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbYBMWmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:41:51 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:60393 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752566AbYBMWlt (ORCPT
+	Wed, 13 Feb 2008 17:42:35 -0500
+Received: from rv-out-0910.google.com ([209.85.198.188]:42699 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753526AbYBMWmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:41:49 -0500
-Date: Wed, 13 Feb 2008 14:41:34 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Stephen Hemminger <"stephen.hemminger@vyatta.com"@mail.vyatta.com>
-Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
-       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       herbert@gondor.apana.org.au, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with type/macro safety
-Message-ID: <20080213224134.GK12393@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080213220024.GA30729@linux.vnet.ibm.com> <20080213143537.1b806790@extreme>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213143537.1b806790@extreme>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 13 Feb 2008 17:42:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Vmg5HErxlKo8/HtMUQvAP+pT8IzIjMhMgSCUYRI7kNPWiX/MyqKjcVVxyA5Ajnz/vBjGvf+N16ssdOf4Tajq7vEnYqV1o4UEQd11g+SDdauHImdYo7CqM/qJMq9vu31shMBuD196pmIeMBOpDPx2Z4DAocn4UBwyWvzkbyyo/Ao=
+Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
+	symbols going away
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Emelyanov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080213223455.GB12383@cs181133002.pp.htv.fi>
+References: <1202941327.18204.11.camel@brick>
+	 <20080213223455.GB12383@cs181133002.pp.htv.fi>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 14:42:30 -0800
+Message-Id: <1202942550.18204.18.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 02:35:37PM -0800, Stephen Hemminger wrote:
-> On Wed, 13 Feb 2008 14:00:24 -0800
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Thu, 2008-02-14 at 00:34 +0200, Adrian Bunk wrote:
+> On Wed, Feb 13, 2008 at 02:22:06PM -0800, Harvey Harrison wrote:
+> > +
+> > +What:	__inet_hash_connect
+> > +Where:	net/ipv4/inet_hashtables.c
+> > +When:	2.6.28
+> > +Why:	No in tree users
+> > +
+> > +---------------------------
+> > +
+> > +What:	io_delay_type
+> > +Where:	arch/x86/kernel/io_delay.c
+> > +When:	2.6.28
+> > +Why:	No in tree users
+> > +
+> > +---------------------------
+> >...
 > 
-> > Hello!
-> > 
-> > This is an updated version of the patch posted last November:
-> > 
-> > 	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
-> > 
-> > This new version permits arguments with side effects, for example:
-> > 
-> > 	rcu_assign_pointer(global_p, p++);
-> > 
-> > and also verifies that the arguments are pointers, while still avoiding
-> > the unnecessary memory barrier when assigning NULL to a pointer.
-> > This memory-barrier avoidance means that rcu_assign_pointer() is now only
-> > permitted for pointers (not array indexes), and so this version emits a
-> > compiler warning if the first argument is not a pointer.  I built a "make
-> > allyesconfig" version on an x86 system, and received no such warnings.
-> > If RCU is ever applied to array indexes, then the second patch in this
-> > series should be applied, and the resulting rcu_assign_index() be used.
-> > 
-> > Given the rather surprising history of subtlely broken implementations of
-> > rcu_assign_pointer(), I took the precaution of generating a full set of
-> > test cases and verified that memory barriers and compiler warnings were
-> > emitted when required.  I guess it is the simple things that get you...
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  rcupdate.h |   16 ++++++++++++----
-> >  1 file changed, 12 insertions(+), 4 deletions(-)
-> > 
-> > diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
-> > --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
-> > +++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
-> > @@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
-> >   * structure after the pointer assignment.  More importantly, this
-> >   * call documents which pointers will be dereferenced by RCU read-side
-> >   * code.
-> > + *
-> > + * Throws a compiler warning for non-pointer arguments.
-> > + *
-> > + * Does not insert a memory barrier for a NULL pointer.
-> >   */
-> >  
-> > -#define rcu_assign_pointer(p, v)	({ \
-> > -						smp_wmb(); \
-> > -						(p) = (v); \
-> > -					})
-> > +#define rcu_assign_pointer(p, v)	\
-> > +	({ \
-> > +		typeof(*p) *_________p1 = (v); \
-> > +		\
-> > +		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
-> > +			smp_wmb(); \
-> > +		(p) = _________p1; \
-> > +	})
-> >  
-> >  /**
-> >   * synchronize_sched - block until all CPUs have exited any non-preemptive
+> NAK.
 > 
-> Will this still work if p is unsigned long?
+> It's a well-known and documented fact that we not have a stable API for 
+> modules.
+> 
+> And as long as we anyway break the modules API in so many other cases 
+> with each kernel release there's simply no point in not removing exports 
+> immediately.
+> 
+> Oh, and for increasing the amount of nonsense even further, you should 
+> explain why unused exports that just sneaked into 2.6.25-rc1 must be 
+> shipped in 4 stable kernels before they can be removed.
+> 
 
-Hello, Steve,
+Without comment on the validity of the exports themselves, I was more
+interested in the principle of announcing these removals, and if it
+was wanted.
 
-If p is unsigned long, then use rcu_assign_index() from the next patch in
-the set.  Looks like Andrew has applied it to -mm -- so please make sure
-that he is aware if you do use it.
+Cheers,
 
-							Thanx, Paul
+Harvey
+
