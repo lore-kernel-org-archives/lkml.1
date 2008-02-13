@@ -1,84 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbYBMRee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933720AbYBMRex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbYBMRee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765914AbYBMReG
+	id S933720AbYBMRex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbYBMReP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:34:06 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:47385 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759962AbYBMReD (ORCPT
+	Wed, 13 Feb 2008 12:34:15 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:32648 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764870AbYBMReJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:34:03 -0500
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Sven =?ISO-8859-1?Q?K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-In-Reply-To: <47B32680.5020405@panasas.com>
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
-	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>
-	 <1202917468.3109.5.camel@localhost.localdomain>
-	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>
-	 <1202921122.3109.31.camel@localhost.localdomain>
-	 <47B31FC2.4040206@panasas.com>
-	 <1202922226.3109.36.camel@localhost.localdomain>
-	 <47B32680.5020405@panasas.com>
+	Wed, 13 Feb 2008 12:34:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=oHXrF+vnAF5tWSKSxIt0X6jip4dszTtnvgRGkpO2RRnF/cT0125ugwsV+LTA/QFRVZ7iD//dQcN7P/eoJ0jfQHbYF61geEnIXaSaWCS2hN8LehvMDtxq6y635Kkkum24iJ+hoYlmqfCCjef84Nucs9BvuEz7j44SqClQMoWTiA4=
+Subject: Re: [PATCH] x86: include prototype for no_broadcast in
+	mach-default/setup.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080213104227.GC32241@elte.hu>
+References: <1202848517.28953.11.camel@brick>
+	 <20080213104227.GC32241@elte.hu>
 Content-Type: text/plain
-Date: Wed, 13 Feb 2008 11:33:55 -0600
-Message-Id: <1202924035.3109.48.camel@localhost.localdomain>
+Date: Wed, 13 Feb 2008 09:34:06 -0800
+Message-Id: <1202924047.9824.14.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-13 at 19:18 +0200, Boaz Harrosh wrote:
-> On Wed, Feb 13 2008 at 19:03 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > It needs to register a reboot notifier, which gdth does.
-> > 
-> > However, the notifier is only called on reboot, so it also needs to
-> > clean up correctly on module exit as well.
-> > 
-> > The alternative for GDTH would be to process the SCSI SYNCHRONIZE CACHE
+On Wed, 2008-02-13 at 11:42 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
 > 
-> Why would we think that the controller does not support this command
-> is it not in the mandatory section of the standard?
-
-Um, because the controller isn't a SCSI device.  It's an emulated device
-which means the SCSI comands are processed in the driver.  It does look
-like the driver<->HBA communication is some sort of translated dialect
-of SCSI.
-
-> > command.  That's done by a shutdown notifier from sd, so the correct
-> > thing would always get done; however it does mean the driver has to be
-> > in a condition to process the last sync cache command.
+> > Fixes sparse warning:
+> > arch/x86/mach-default/setup.c:19:5: warning: symbol 'no_broadcast' was not declared. Should it be static?
 > 
-> Why would it not be ready? what do other drivers do?
-> The drivers is ready until the very last module's .exit. Is that good
-> enough?
-
-shutdown is called as part of device removal and module unload ...
-usually from scsi_remove_host().  So you can't tear down command
-processing before that point.
-
-> > 
-> > For the quick fix, just keep the current infrastructure and put back the
-> > gdth_flush() command where it can be effective.
-> > 
+> hm, this patch causes a build failure:
 > 
-> Just did. But if needed I would prefer to emulate the SCSI SYNCHRONIZE CACHE
-> command and not that boot notifier thing. Please advise.
+> In file included from arch/x86/mach-default/setup.c:13:
+> include/asm/mach-default/mach_ipi.h: In function '__local_send_IPI_allbutself':
+> include/asm/mach-default/mach_ipi.h:25: error: 'APIC_DEST_ALLBUT' undeclared (first use in this function)
+> include/asm/mach-default/mach_ipi.h:25: error: (Each undeclared identifier is reported only once
+> include/asm/mach-default/mach_ipi.h:25: error: for each function it appears in.)include/asm/mach-default/mach_ipi.h: In function '__local_send_IPI_all':
+> include/asm/mach-default/mach_ipi.h:33: error: 'APIC_DEST_ALLINC' undeclared (first use in this function)
+> 
+> config attached. The include file dependencies in this area are a bit of 
+> a mess - perhaps they need some cleanups?
 
-I think such a change, though desirable, would be too large to count as
-a bug fix.
+OK, I'm building all(yes|mod)configs and didn't see this.  Agreed about
+the file dependencies here, I'll take a look.  If you have any notes
+lying around, would appreciate the head-start.
 
-James
+
+Harvey
 
 
