@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbYBMKLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYBMKSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932131AbYBMKLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 05:11:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYBMKL1
+	id S1758775AbYBMKSY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 05:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYBMKSM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 05:11:27 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38609 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755552AbYBMKLY (ORCPT
+	Wed, 13 Feb 2008 05:18:12 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58431 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753089AbYBMKSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 05:11:24 -0500
-Date: Wed, 13 Feb 2008 10:11:22 +0000
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Pete MacKay <linux01@architechnical.net>
-Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org,
-       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-       Mike Arthur <mike.arthur@wolfsonmicro.com>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Stanley Cai <stanley.cai@intel.com>,
-       Rodolfo Giometti <giometti@enneenne.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
-       Vincent Sanders <vince@kyllikki.org>,
-       Andrew Zabolotny <zap@homelink.ru>
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-Message-ID: <20080213101122.GB31617@rakim.wolfsonmicro.main>
-Mail-Followup-To: Pete MacKay <linux01@architechnical.net>,
-	Dmitry Torokhov <dtor@mail.ru>,
-	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
-	Graeme Gregory <gg@opensource.wolfsonmicro.com>,
-	Mike Arthur <mike.arthur@wolfsonmicro.com>,
-	Dmitry Baryshkov <dbaryshkov@gmail.com>,
-	Stanley Cai <stanley.cai@intel.com>,
-	Rodolfo Giometti <giometti@enneenne.com>,
-	Russell King <rmk@arm.linux.org.uk>,
-	Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
-	Vincent Sanders <vince@kyllikki.org>,
-	Andrew Zabolotny <zap@homelink.ru>
-References: <20080212101738.GB21039@rakim.wolfsonmicro.main> <1202811705-2303-1-git-send-email-broonie@opensource.wolfsonmicro.com> <65343.69.30.58.166.1202876923.squirrel@architechnical.net>
-MIME-Version: 1.0
+	Wed, 13 Feb 2008 05:18:11 -0500
+Date: Wed, 13 Feb 2008 10:07:01 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080213100700.GB21694@flint.arm.linux.org.uk>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Al Viro <viro@ZenIV.linux.org.uk>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
+	arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	linux-arch@vger.kernel.org, akpm@linux-foundation.org
+References: <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain> <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org> <20080212194100.GH27894@ZenIV.linux.org.uk> <20080212215152.1470fe7f@core>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <65343.69.30.58.166.1202876923.squirrel@architechnical.net>
-X-Cookie: HUGH BEAUMONT died in 1982!!
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080212215152.1470fe7f@core>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 11:28:43PM -0500, Pete MacKay wrote:
-
-> We're using the wm9712 codec with the sound/soc/pxa code configured in and
-> came across this build error:
-
-Which kernel version are you building against?  I've been testing with
-v2.6.24 (and have just updated to v2.6.25-rc1 which is also building
-fine for me) and...
-
->  #ifndef _LINUX_WM97XX_H
->  #define _LINUX_WM97XX_H
+On Tue, Feb 12, 2008 at 09:51:52PM +0000, Alan Cox wrote:
+> > We could simply decide that API changes affecting more than one subsystem
+> > Must Be Serialized(tm).  Explicitly.  As in "any such change is posted
 > 
-> +#include <sound/driver.h>
+> Welcome to dreamland. The only way I can get serial changes done is to
+> wait months and eventually simply persuade Andrew to ignore the
+> "maintainers" who are basically not responding.
 
-...this header is deprecated so should never need to be included (yes,
-there are other instances in there which need to be cleaned up) so I'm a
-bit mystified as to what's going wrong for you here.  Which kernel
-version are you using?
+... because we didn't realise that the pre-requisits for those patches
+had already gone in.  If that had been the case, I'd have applied the
+ARM changes for the new tty ioctls immediately.
+
+It was a communication problem, not a process problem.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
