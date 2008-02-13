@@ -1,113 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932831AbYBMXZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933648AbYBMX0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932831AbYBMXZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:25:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756953AbYBMXZL
+	id S933648AbYBMX0E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:26:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbYBMXZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:25:11 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:22554 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756502AbYBMXZI (ORCPT
+	Wed, 13 Feb 2008 18:25:42 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:36326 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760343AbYBMXZh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:25:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4bqSmRc1EJzALJxHizPpl+bxiFZ4mewJkWqGrz+B+q2fPUE87tisHOGo4qrsfk890WY2zUg42Ms6Doz4OivinaLQLr+tLJ+0t7IGeemwpYzK1dpXb0VAQbyNWfjKnTTscK6O/AHeWGK40bvOBLGxDGuhc6MhLu/vlGhxz7ZQSok=  ;
-X-YMail-OSG: M7fpUeQVM1lrNz1T4iLDpboQgGGm0VMo26qL2rcVHtrZXdu2Wlz7JFjHRTFFqvamo1Gwi4QQ8A--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4 resend] [x86] Add generic GPIO support to x86
-Date: Wed, 13 Feb 2008 15:25:05 -0800
-User-Agent: KMail/1.9.6
-Cc: Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       Ingo Molnar <mingo@elte.hu>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-References: <200710181551.24912.florian.fainelli@telecomint.eu> <20080213140258.78380f5d.akpm@linux-foundation.org>
-In-Reply-To: <20080213140258.78380f5d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 13 Feb 2008 18:25:37 -0500
+Subject: Re: [PATCH] SCSI: fix data corruption caused by ses
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       kristen.c.accardi@intel.com, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <200802122310.23050.yinghai.lu@sun.com>
+References: <200802090413.53275.yinghai.lu@sun.com>
+	 <1202749326.3122.39.camel@localhost.localdomain>
+	 <200802111225.04021.yinghai.lu@sun.com>
+	 <200802122310.23050.yinghai.lu@sun.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 17:25:27 -0600
+Message-Id: <1202945127.3109.89.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131525.05967.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008, Andrew Morton wrote:
-> Someone please fix.
+On Tue, 2008-02-12 at 23:10 -0800, Yinghai Lu wrote:
+>  			if (type_ptr[0] != ENCLOSURE_COMPONENT_DEVICE &&
+>  			    type_ptr[0] != ENCLOSURE_COMPONENT_ARRAY_DEVICE)
+> -				continue;
+> +				goto next;
+> +
+>  			ecomp =	enclosure_component_register(edev,
+>  							     components++,
+>  							     type_ptr[0],
+>  							     name);
+> +
+> +			if (desc_ptr && !IS_ERR(ecomp) && addl_desc_ptr)
+> +				ses_process_descriptor(ecomp,
+> +						       addl_desc_ptr);
+> +		next:
+>  			if (desc_ptr) {
+>  				desc_ptr += len;
+> -				if (!IS_ERR(ecomp))
+> -					ses_process_descriptor(ecomp,
+> -							       addl_desc_ptr);
+>  
+>  				if (addl_desc_ptr)
+>  					addl_desc_ptr += addl_desc_ptr[1] + 2;
 
-This is what I was using purely for test builds ... most x86 hardware
-actually has no GPIOs, and I sure don't have any of the "unusual" x86
-platforms here, so I'd not want to see this version merge.  Someone
-more clued in on how x86 handles what ARM does with e.g. <asm/arch/...>
-should make a better patch.
+Everything looks fine, thanks, except this piece.
 
-(And my vote is to **NOT** use the "-I..." magic that PowerPC uses,
-that's just confusing as all get-out.  And not needed.)
+That 
 
+if (x)
+     goto next;
+...
+next:
 
-> It would be more modern to have a <linux/gpio.h> which takes care of
-> cruddy details, but it's getting too late for that.
+Needs to be
 
-That could be added eventually ... if the platform has GPIO support
-it could include the <asm/gpio.h> else it could define all the calls
-as error-returning inlines.
+if (!x) {
+   ...
+}
 
-- Dave
+I've fixed it up below. (I suppose the same thing goes for the
+no_page10: label as well).
 
-
-========= CUT HERE
-DEBUG ONLY -- make X86_PC use gpiolib.
-
-It's not clear to me how the various x86-ish platforms should
-be made to work here, since there seems to be no convention
-that each platform type has its own <asm/arch/...> subdir.
+James
 
 ---
- arch/x86/Kconfig       |    2 ++
- include/asm-x86/gpio.h |   19 ++++++++++++++++++-
- 2 files changed, 20 insertions(+), 1 deletion(-)
 
---- g26.orig/arch/x86/Kconfig	2008-02-10 16:06:30.000000000 -0800
-+++ g26/arch/x86/Kconfig	2008-02-10 16:09:44.000000000 -0800
-@@ -228,6 +228,8 @@ choice
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Date: Tue, 12 Feb 2008 23:10:22 -0800
+Subject: [SCSI] ses: fix data corruption
+
+one system: initrd get courrupted:
+
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (-28 != 2048) 134217728
+crc error
+VFS: Mounted root (ext2 filesystem).
+Freeing unused kernel memory: 388k freed
+init_special_inode: bogus i_mode (177777)
+Warning: unable to open an initial console.
+init_special_inode: bogus i_mode (177777)
+init_special_inode: bogus i_mode (177777)
+Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
+
+bisected to
+commit 9927c68864e9c39cc317b4f559309ba29e642168
+Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date:   Sun Feb 3 15:48:56 2008 -0600
+
+    [SCSI] ses: add new Enclosure ULD
+
+changes:
+1. change char to unsigned char to avoid type change later.
+2. preserve len for page1
+3. need to move desc_ptr even the entry is not
+   enclosure_component_device/raid.  so keep desc_ptr on right
+   position
+4. also record page7 len, and double check if desc_ptr out of boundary
+   before touch.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/ses.c |   75 ++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 41 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/scsi/ses.c b/drivers/scsi/ses.c
+index a57fed4..614879e 100644
+--- a/drivers/scsi/ses.c
++++ b/drivers/scsi/ses.c
+@@ -33,9 +33,9 @@
+ #include <scsi/scsi_host.h>
  
- config X86_PC
- 	bool "PC-compatible"
-+	select GENERIC_GPIO
-+	select HAVE_GPIO_LIB
- 	help
- 	  Choose this option if your computer is a standard PC or compatible.
+ struct ses_device {
+-	char *page1;
+-	char *page2;
+-	char *page10;
++	unsigned char *page1;
++	unsigned char *page2;
++	unsigned char *page10;
+ 	short page1_len;
+ 	short page2_len;
+ 	short page10_len;
+@@ -67,7 +67,7 @@ static int ses_probe(struct device *dev)
+ static int ses_recv_diag(struct scsi_device *sdev, int page_code,
+ 			 void *buf, int bufflen)
+ {
+-	char cmd[] = {
++	unsigned char cmd[] = {
+ 		RECEIVE_DIAGNOSTIC,
+ 		1,		/* Set PCV bit */
+ 		page_code,
+@@ -85,7 +85,7 @@ static int ses_send_diag(struct scsi_device *sdev, int page_code,
+ {
+ 	u32 result;
  
---- g26.orig/include/asm-x86/gpio.h	2008-02-10 16:06:30.000000000 -0800
-+++ g26/include/asm-x86/gpio.h	2008-02-10 16:09:44.000000000 -0800
-@@ -1,6 +1,23 @@
- #ifndef _ASM_I386_GPIO_H
- #define _ASM_I386_GPIO_H
+-	char cmd[] = {
++	unsigned char cmd[] = {
+ 		SEND_DIAGNOSTIC,
+ 		0x10,		/* Set PF bit */
+ 		0,
+@@ -104,13 +104,13 @@ static int ses_send_diag(struct scsi_device *sdev, int page_code,
  
--#include <gpio.h>
-+// #include <gpio.h>
-+
-+#include <asm-generic/gpio.h>           /* cansleep wrappers */
-+
-+#define gpio_get_value	__gpio_get_value
-+#define gpio_set_value	__gpio_set_value
-+#define gpio_cansleep	__gpio_cansleep
-+
-+static inline int gpio_to_irq(unsigned gpio)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int irq_to_gpio(unsigned irq)
-+{
-+	return -EINVAL;
-+}
-+
+ static int ses_set_page2_descriptor(struct enclosure_device *edev,
+ 				      struct enclosure_component *ecomp,
+-				      char *desc)
++				      unsigned char *desc)
+ {
+ 	int i, j, count = 0, descriptor = ecomp->number;
+ 	struct scsi_device *sdev = to_scsi_device(edev->cdev.dev);
+ 	struct ses_device *ses_dev = edev->scratch;
+-	char *type_ptr = ses_dev->page1 + 12 + ses_dev->page1[11];
+-	char *desc_ptr = ses_dev->page2 + 8;
++	unsigned char *type_ptr = ses_dev->page1 + 12 + ses_dev->page1[11];
++	unsigned char *desc_ptr = ses_dev->page2 + 8;
  
- #endif /* _ASM_I386_GPIO_H */
+ 	/* Clear everything */
+ 	memset(desc_ptr, 0, ses_dev->page2_len - 8);
+@@ -133,14 +133,14 @@ static int ses_set_page2_descriptor(struct enclosure_device *edev,
+ 	return ses_send_diag(sdev, 2, ses_dev->page2, ses_dev->page2_len);
+ }
+ 
+-static char *ses_get_page2_descriptor(struct enclosure_device *edev,
++static unsigned char *ses_get_page2_descriptor(struct enclosure_device *edev,
+ 				      struct enclosure_component *ecomp)
+ {
+ 	int i, j, count = 0, descriptor = ecomp->number;
+ 	struct scsi_device *sdev = to_scsi_device(edev->cdev.dev);
+ 	struct ses_device *ses_dev = edev->scratch;
+-	char *type_ptr = ses_dev->page1 + 12 + ses_dev->page1[11];
+-	char *desc_ptr = ses_dev->page2 + 8;
++	unsigned char *type_ptr = ses_dev->page1 + 12 + ses_dev->page1[11];
++	unsigned char *desc_ptr = ses_dev->page2 + 8;
+ 
+ 	ses_recv_diag(sdev, 2, ses_dev->page2, ses_dev->page2_len);
+ 
+@@ -160,17 +160,18 @@ static char *ses_get_page2_descriptor(struct enclosure_device *edev,
+ static void ses_get_fault(struct enclosure_device *edev,
+ 			  struct enclosure_component *ecomp)
+ {
+-	char *desc;
++	unsigned char *desc;
+ 
+ 	desc = ses_get_page2_descriptor(edev, ecomp);
+-	ecomp->fault = (desc[3] & 0x60) >> 4;
++	if (desc)
++		ecomp->fault = (desc[3] & 0x60) >> 4;
+ }
+ 
+ static int ses_set_fault(struct enclosure_device *edev,
+ 			  struct enclosure_component *ecomp,
+ 			 enum enclosure_component_setting val)
+ {
+-	char desc[4] = {0 };
++	unsigned char desc[4] = {0 };
+ 
+ 	switch (val) {
+ 	case ENCLOSURE_SETTING_DISABLED:
+@@ -190,26 +191,28 @@ static int ses_set_fault(struct enclosure_device *edev,
+ static void ses_get_status(struct enclosure_device *edev,
+ 			   struct enclosure_component *ecomp)
+ {
+-	char *desc;
++	unsigned char *desc;
+ 
+ 	desc = ses_get_page2_descriptor(edev, ecomp);
+-	ecomp->status = (desc[0] & 0x0f);
++	if (desc)
++		ecomp->status = (desc[0] & 0x0f);
+ }
+ 
+ static void ses_get_locate(struct enclosure_device *edev,
+ 			   struct enclosure_component *ecomp)
+ {
+-	char *desc;
++	unsigned char *desc;
+ 
+ 	desc = ses_get_page2_descriptor(edev, ecomp);
+-	ecomp->locate = (desc[2] & 0x02) ? 1 : 0;
++	if (desc)
++		ecomp->locate = (desc[2] & 0x02) ? 1 : 0;
+ }
+ 
+ static int ses_set_locate(struct enclosure_device *edev,
+ 			  struct enclosure_component *ecomp,
+ 			  enum enclosure_component_setting val)
+ {
+-	char desc[4] = {0 };
++	unsigned char desc[4] = {0 };
+ 
+ 	switch (val) {
+ 	case ENCLOSURE_SETTING_DISABLED:
+@@ -229,7 +232,7 @@ static int ses_set_active(struct enclosure_device *edev,
+ 			  struct enclosure_component *ecomp,
+ 			  enum enclosure_component_setting val)
+ {
+-	char desc[4] = {0 };
++	unsigned char desc[4] = {0 };
+ 
+ 	switch (val) {
+ 	case ENCLOSURE_SETTING_DISABLED:
+@@ -409,11 +412,11 @@ static int ses_intf_add(struct class_device *cdev,
+ {
+ 	struct scsi_device *sdev = to_scsi_device(cdev->dev);
+ 	struct scsi_device *tmp_sdev;
+-	unsigned char *buf = NULL, *hdr_buf, *type_ptr, *desc_ptr,
+-		*addl_desc_ptr;
++	unsigned char *buf = NULL, *hdr_buf, *type_ptr, *desc_ptr = NULL,
++		*addl_desc_ptr = NULL;
+ 	struct ses_device *ses_dev;
+ 	u32 result;
+-	int i, j, types, len, components = 0;
++	int i, j, types, len, page7_len = 0, components = 0;
+ 	int err = -ENOMEM;
+ 	struct enclosure_device *edev;
+ 	struct ses_component *scomp = NULL;
+@@ -461,9 +464,8 @@ static int ses_intf_add(struct class_device *cdev,
+ 		goto recv_failed;
+ 
+ 	types = buf[10];
+-	len = buf[11];
+ 
+-	type_ptr = buf + 12 + len;
++	type_ptr = buf + 12 + buf[11];
+ 
+ 	for (i = 0; i < types; i++, type_ptr += 4) {
+ 		if (type_ptr[0] == ENCLOSURE_COMPONENT_DEVICE ||
+@@ -530,7 +532,7 @@ static int ses_intf_add(struct class_device *cdev,
+ 	if (result)
+ 		goto simple_populate;
+ 
+-	len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
++	page7_len = len = (hdr_buf[2] << 8) + hdr_buf[3] + 4;
+ 	/* add 1 for trailing '\0' we'll use */
+ 	buf = kzalloc(len + 1, GFP_KERNEL);
+ 	if (!buf)
+@@ -547,7 +549,8 @@ static int ses_intf_add(struct class_device *cdev,
+ 		len = (desc_ptr[2] << 8) + desc_ptr[3];
+ 		/* skip past overall descriptor */
+ 		desc_ptr += len + 4;
+-		addl_desc_ptr = ses_dev->page10 + 8;
++		if (ses_dev->page10)
++			addl_desc_ptr = ses_dev->page10 + 8;
+ 	}
+ 	type_ptr = ses_dev->page1 + 12 + ses_dev->page1[11];
+ 	components = 0;
+@@ -557,6 +560,8 @@ static int ses_intf_add(struct class_device *cdev,
+ 			struct enclosure_component *ecomp;
+ 
+ 			if (desc_ptr) {
++				if (desc_ptr >= buf + page7_len)
++					break;
+ 				len = (desc_ptr[2] << 8) + desc_ptr[3];
+ 				desc_ptr += 4;
+ 				/* Add trailing zero - pushes into
+@@ -564,18 +569,20 @@ static int ses_intf_add(struct class_device *cdev,
+ 				desc_ptr[len] = '\0';
+ 				name = desc_ptr;
+ 			}
+-			if (type_ptr[0] != ENCLOSURE_COMPONENT_DEVICE &&
+-			    type_ptr[0] != ENCLOSURE_COMPONENT_ARRAY_DEVICE)
+-				continue;
+-			ecomp =	enclosure_component_register(edev,
++			if (type_ptr[0] == ENCLOSURE_COMPONENT_DEVICE ||
++			    type_ptr[0] == ENCLOSURE_COMPONENT_ARRAY_DEVICE) {
++
++				ecomp = enclosure_component_register(edev,
+ 							     components++,
+ 							     type_ptr[0],
+ 							     name);
+-			if (desc_ptr) {
+-				desc_ptr += len;
+-				if (!IS_ERR(ecomp))
++
++				if (desc_ptr && !IS_ERR(ecomp) && addl_desc_ptr)
+ 					ses_process_descriptor(ecomp,
+ 							       addl_desc_ptr);
++			}
++			if (desc_ptr) {
++				desc_ptr += len;
+ 
+ 				if (addl_desc_ptr)
+ 					addl_desc_ptr += addl_desc_ptr[1] + 2;
+-- 
+1.5.3.8
+
+
 
