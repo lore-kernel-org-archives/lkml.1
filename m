@@ -1,146 +1,261 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765247AbYBMJVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbYBMJWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765247AbYBMJVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYBMJV2
+	id S932298AbYBMJWW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765746AbYBMJVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:21:28 -0500
-Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:60405 "EHLO
-	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751669AbYBMJV0 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:21:26 -0500
-From: Fabio Coatti <cova@ferrara.linux.it>
-Organization: FerraraLUG
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: stuck with 2.6.23.14 on x86_64
-Date: Wed, 13 Feb 2008 10:21:23 +0100
-User-Agent: KMail/1.9.7
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-References: <200802121503.41328.cova@ferrara.linux.it> <200802121847.19991.cova@ferrara.linux.it> <200802122155.13959.rjw@sisk.pl>
-In-Reply-To: <200802122155.13959.rjw@sisk.pl>
+	Wed, 13 Feb 2008 04:21:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:44659 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764313AbYBMJVn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:21:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=EbKCa5VhO1JKw59uWuYZT6l6TPTzQ/qgxUc8f0rrQkMenY7jKifk19E4QuqraYOOpIYCBfkC2XQGtDHPGW/PeTA82MkRDG5aiSPKMMpyCe7nGfyn3i1TzffY4LjFbENbv/IbSaiKWRGDAGlCNvO6sSvPZ5d+Bfj16GBKKHEF/r8=
+Message-ID: <47B2B6A2.9020206@gmail.com>
+Date: Wed, 13 Feb 2008 10:21:38 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802131021.23974.cova@ferrara.linux.it>
+To: Jeff Garzik <jeff@garzik.org>
+CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gdth: convert to PCI hotplug API
+References: <20080212234928.GA13892@havoc.gtf.org>
+In-Reply-To: <20080212234928.GA13892@havoc.gtf.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alle martedì 12 febbraio 2008, Rafael J. Wysocki ha scritto:
-> On Tuesday, 12 of February 2008, Fabio Coatti wrote:
-> > Alle martedì 12 febbraio 2008, Randy Dunlap ha scritto:
-> > > On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
-> > > > Hi all,
-> > > > I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so
-> > > > to fix the splice bug I've had to apply by hand the patch. (x86_64)
-> > > >
-> > > > Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine
-> > > > won't boot due to a problem with cciss driver, that prevents to find
-> > > > the / partition. (bug described here: Kernel Bug Tracker Bug 9859
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
-> > > >
-> > > > With kernels 2.6.23, the lastest that I can compile is 2.6.23.14;
-> > > > starting from .15 (and .16) I get this message:
-> > > >
-> > > > ======================
-> > > >   UPD     include/linux/compile.h
-> > > >   CC      init/version.o
-> > > >   LD      init/built-in.o
-> > > >   LD      .tmp_vmlinux1
-> > > > drivers/built-in.o: In function `acpi_init':
-> > > > bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
-> > > > bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
-> > > > ======================
-> > > >
-> > > > All .config are the same, (make oldconfig) beside the obvious
-> > > > differences between .23 and .24
-> > > >
-> > > > Hardware: x86_64 AMD 2216HE
-> > > > SCSI controller: HP Smart Array E200i Controller
-> > > > Compiler: gcc (GCC) 4.1.1
-> > > > binutils: 2.16.1
-> > > >
-> > > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
-> > > > with a cciss0: HP Smart Array 6i Controller,
-> > > > the 2.6.24.2 compiles just fine and works, so the cciss problems
-> > > > seems related only to E200i controller.
-> > > >
-> > > > Right now, on AMD64 machines, I'm forced to patch by hand the kernel,
-> > > > that's quite uncomfortable :)
-> > > >
-> > > > Can someone point me in the right direction to get out of this
-> > > > situation? Of course I can provide any further information. (.config
-> > > > not inlcuded now to avoid cluttering  )
-> > > >
-> > > > Thanks for any answer.
-> > >
-> > > a/ send .config file for the build problem above
-> > > b/ How do you download and/or apply 2.6.23.{15,16} ?
-> > > 	Full tarball or base tarball + patches?
-> > > 	If patches, what base tree are they applied to?
-> >
-> > full tarball from kernel.org (.16), tried also applying patches to 2.6.23
-> > vanilla.(.15,.16) Same process leads to successful compilation for .14
->
-> You're not supposed to have CONFIG_PM unset and CONFIG_ACPI set at the same
-> time.  The oldconfig generation must have gone wrong at one point.
+On 02/13/2008 12:49 AM, Jeff Garzik wrote:
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> ---
+>  drivers/scsi/gdth.c |  143 +++++++++++++++++++++++++++++++---------------------
+>  1 file changed, 86 insertions(+), 57 deletions(-)
+> 
+> 06196f50915da97bb897495863f9f084d785c1e4
+> diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+> index c825239..1b53e92 100644
+> --- a/drivers/scsi/gdth.c
+> +++ b/drivers/scsi/gdth.c
+> @@ -595,85 +595,107 @@ static int __init gdth_search_isa(ulong32 bios_adr)
+>  #endif /* CONFIG_ISA */
+>  
+>  #ifdef CONFIG_PCI
+> -static void gdth_search_dev(gdth_pci_str *pcistr, ushort *cnt,
+> -                            ushort vendor, ushort dev);
+> +static gdth_pci_str gdth_pcistr[MAXHA];
+> +static int gdth_pci_cnt;
+> +static bool gdth_pci_registered;
+>  
+> -static int __init gdth_search_pci(gdth_pci_str *pcistr)
+> +static bool __init gdth_search_vortex(ushort device)
+>  {
+> -    ushort device, cnt;
+> -    
+> -    TRACE(("gdth_search_pci()\n"));
+> -
+> -    cnt = 0;
+> -    for (device = 0; device <= PCI_DEVICE_ID_VORTEX_GDT6555; ++device)
+> -        gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_VORTEX, device);
+> -    for (device = PCI_DEVICE_ID_VORTEX_GDT6x17RP; 
+> -         device <= PCI_DEVICE_ID_VORTEX_GDTMAXRP; ++device)
+> -        gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_VORTEX, device);
+> -    gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_VORTEX, 
+> -                    PCI_DEVICE_ID_VORTEX_GDTNEWRX);
+> -    gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_VORTEX, 
+> -                    PCI_DEVICE_ID_VORTEX_GDTNEWRX2);
+> -    gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_INTEL,
+> -                    PCI_DEVICE_ID_INTEL_SRC);
+> -    gdth_search_dev(pcistr, &cnt, PCI_VENDOR_ID_INTEL,
+> -                    PCI_DEVICE_ID_INTEL_SRC_XSCALE);
+> -    return cnt;
+> +	if (device <= PCI_DEVICE_ID_VORTEX_GDT6555)
+> +		return true;
+> +	if (device >= PCI_DEVICE_ID_VORTEX_GDT6x17RP &&
+> +	    device <= PCI_DEVICE_ID_VORTEX_GDTMAXRP)
+> +		return true;
+> +	if (device == PCI_DEVICE_ID_VORTEX_GDTNEWRX ||
+> +	    device == PCI_DEVICE_ID_VORTEX_GDTNEWRX2)
+> +		return true;
+> +	return false;
+>  }
+>  
+> +static int gdth_pci_init_one(struct pci_dev *pdev,
+> +			     const struct pci_device_id *ent);
+> +static void gdth_pci_remove_one(struct pci_dev *pdev);
+> +static void gdth_remove_one(gdth_ha_str *ha);
+> +
+>  /* Vortex only makes RAID controllers.
+>   * We do not really want to specify all 550 ids here, so wildcard match.
+>   */
+> -static struct pci_device_id gdthtable[] __maybe_unused = {
+> -    {PCI_VENDOR_ID_VORTEX,PCI_ANY_ID,PCI_ANY_ID, PCI_ANY_ID},
+> -    {PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SRC,PCI_ANY_ID,PCI_ANY_ID}, 
+> -    {PCI_VENDOR_ID_INTEL,PCI_DEVICE_ID_INTEL_SRC_XSCALE,PCI_ANY_ID,PCI_ANY_ID}, 
+> -    {0}
+> +static struct pci_device_id gdthtable[] __devinitdata = {
+> +	{ PCI_VDEVICE(VORTEX, PCI_ANY_ID) },
+> +	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_SRC) },
+> +	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_SRC_XSCALE) },
+> +	{ }	/* terminate list */
+> +};
+> +MODULE_DEVICE_TABLE(pci, gdthtable);
+> +
+> +static struct pci_driver gdth_pci_driver = {
+> +	.name		= "gdth",
+> +	.id_table	= gdthtable,
+> +	.probe		= gdth_pci_init_one,
+> +	.remove		= gdth_pci_remove_one,
 
-Maybe it's not supposed to have this situation, but maybe you should tell this 
-to the kernel itself :)
+__devexit_p()
 
-# zcat /proc/config.gz | egrep "PM|ACPI"
-CONFIG_X86_64_ACPI_NUMA=y
-# CONFIG_PM is not set
-CONFIG_ACPI=y
-# CONFIG_ACPI_PROCFS is not set
+>  };
+> -MODULE_DEVICE_TABLE(pci,gdthtable);
+>  
+> -static void __init gdth_search_dev(gdth_pci_str *pcistr, ushort *cnt,
+> -                                   ushort vendor, ushort device)
+> +static void gdth_pci_remove_one(struct pci_dev *pdev)
+> +{
+> +	gdth_ha_str *ha = pci_get_drvdata(pdev);
+> +
+> +	pci_set_drvdata(pdev, NULL);
+> +
+> +	list_del(&ha->list);
 
-# uname -rv
-2.6.23.12 #3 SMP Tue Feb 12 11:22:16 CET 2008
+If you remove the card before the sort and gdth_pci_probe_one function, this 
+will oops. Also the adds/removes to the list are racy and may break the 
+gdth_instances list.
 
-And you can easily get this situation from menuconfig: just fire up make 
-menuconfig without any .config, go to power management options and turn 
-off "Power Management support". exit and look at .config:
+> +	gdth_remove_one(ha);
 
-# CONFIG_PM is not set
-CONFIG_SUSPEND_SMP_POSSIBLE=y
-CONFIG_HIBERNATION_SMP_POSSIBLE=y
-CONFIG_ACPI=y
+And so this...
 
-Maybe if this is not supposed to be the right situation, some dependencies are 
-not respected... (tested on .16)
+> +	pci_disable_device(pdev);
+> +}
+> +
+> +static int __devinit gdth_pci_init_one(struct pci_dev *pdev,
+> +				       const struct pci_device_id *ent)
+>  {
+> -    ulong base0, base1, base2;
+> -    struct pci_dev *pdev;
+> +	ushort vendor = pdev->vendor;
+> +	ushort device = pdev->device;
+> +	ulong base0, base1, base2;
+> +	int rc;
+>      
+> -    TRACE(("gdth_search_dev() cnt %d vendor %x device %x\n",
+> -          *cnt, vendor, device));
+> +	TRACE(("gdth_search_dev() cnt %d vendor %x device %x\n",
+> +	       gdth_pci_cnt, vendor, device));
+> +
+> +	if (vendor == PCI_VENDOR_ID_VORTEX && !gdth_search_vortex(device))
+> +		return -ENODEV;
+> +
+> +	rc = pci_enable_device(pdev);
+> +	if (rc)
+> +		return rc;
+> +
+> +	if (gdth_pci_cnt >= MAXHA)
+> +		return -EBUSY;
+> -    pdev = NULL;
+> -    while ((pdev = pci_find_device(vendor, device, pdev)) 
+> -           != NULL) {
+> -        if (pci_enable_device(pdev))
+> -            continue;
+> -        if (*cnt >= MAXHA)
+> -            return;
+>          /* GDT PCI controller found, resources are already in pdev */
+> -        pcistr[*cnt].pdev = pdev;
+> -        pcistr[*cnt].irq = pdev->irq;
+> +	gdth_pcistr[gdth_pci_cnt].pdev = pdev;
+> +	gdth_pcistr[gdth_pci_cnt].irq = pdev->irq;
+>          base0 = pci_resource_flags(pdev, 0);
+>          base1 = pci_resource_flags(pdev, 1);
+>          base2 = pci_resource_flags(pdev, 2);
+>          if (device <= PCI_DEVICE_ID_VORTEX_GDT6000B ||   /* GDT6000/B */
+>              device >= PCI_DEVICE_ID_VORTEX_GDT6x17RP) {  /* MPR */
+>              if (!(base0 & IORESOURCE_MEM)) 
+> -                continue;
+> -            pcistr[*cnt].dpmem = pci_resource_start(pdev, 0);
+> +		return -ENODEV;
+> +	    gdth_pcistr[gdth_pci_cnt].dpmem = pci_resource_start(pdev, 0);
+>          } else {                                  /* GDT6110, GDT6120, .. */
+>              if (!(base0 & IORESOURCE_MEM) ||
+>                  !(base2 & IORESOURCE_MEM) ||
+>                  !(base1 & IORESOURCE_IO)) 
+> -                continue;
+> -            pcistr[*cnt].dpmem = pci_resource_start(pdev, 2);
+> -            pcistr[*cnt].io_mm = pci_resource_start(pdev, 0);
+> -            pcistr[*cnt].io    = pci_resource_start(pdev, 1);
+> +		return -ENODEV;
+> +	    gdth_pcistr[gdth_pci_cnt].dpmem = pci_resource_start(pdev, 2);
+> +	    gdth_pcistr[gdth_pci_cnt].io_mm = pci_resource_start(pdev, 0);
+> +	    gdth_pcistr[gdth_pci_cnt].io    = pci_resource_start(pdev, 1);
+>          }
+>          TRACE2(("Controller found at %d/%d, irq %d, dpmem 0x%lx\n",
+> -                pcistr[*cnt].pdev->bus->number,
+> -		PCI_SLOT(pcistr[*cnt].pdev->devfn),
+> -                pcistr[*cnt].irq, pcistr[*cnt].dpmem));
+> -        (*cnt)++;
+> -    }       
+> +		gdth_pcistr[gdth_pci_cnt].pdev->bus->number,
+> +		PCI_SLOT(gdth_pcistr[gdth_pci_cnt].pdev->devfn),
+> +		gdth_pcistr[gdth_pci_cnt].irq,
+> +		gdth_pcistr[gdth_pci_cnt].dpmem));
+> +	gdth_pci_cnt++;
+> +
+> +	return 0;
+>  }   
+>  
+>  static void __init gdth_sort_pci(gdth_pci_str *pcistr, int cnt)
+> @@ -5100,6 +5122,7 @@ static int __init gdth_pci_probe_one(gdth_pci_str *pcistr, int ctr)
+>  	if (error)
+>  		goto out_free_coal_stat;
+>  	list_add_tail(&ha->list, &gdth_instances);
+> +	pci_set_drvdata(ha->pdev, ha);
+>  	return 0;
+>  
+>   out_free_coal_stat:
+> @@ -5198,15 +5221,16 @@ static int __init gdth_init(void)
+>  
+>  #ifdef CONFIG_PCI
+>  	/* scanning for PCI controllers */
+> -	{
+> -		gdth_pci_str pcistr[MAXHA];
+> +	if (pci_register_driver(&gdth_pci_driver) == 0) {
+>  		int cnt,ctr;
+> +		gdth_pci_str *pcistr = gdth_pcistr;
+>  
+> -		cnt = gdth_search_pci(pcistr);
+> +		cnt = gdth_pci_cnt;
+>  		printk("GDT-HA: Found %d PCI Storage RAID Controllers\n", cnt);
+>  		gdth_sort_pci(pcistr,cnt);
+>  		for (ctr = 0; ctr < cnt; ++ctr)
+>  			gdth_pci_probe_one(pcistr, ctr);
 
-Anyway, with .16 and CONFIG_PM set, I get this :
-===================
-WARNING: vmlinux.o(.text+0x1f6395): Section mismatch: reference 
-to .init.data.14:pxm_to_node_map (between 'pxm_to_node' and 'node_to_pxm')
-WARNING: vmlinux.o(.text+0x1f63a7): Section mismatch: reference 
-to .init.data.14:node_to_pxm_map (between 'node_to_pxm' 
-and '__acpi_map_pxm_to_node')
-WARNING: vmlinux.o(.text+0x1f63b2): Section mismatch: reference 
-to .init.data.14:pxm_to_node_map (between '__acpi_map_pxm_to_node' 
-and 'acpi_get_pxm')
-WARNING: vmlinux.o(.text+0x1f63bc): Section mismatch: reference 
-to .init.data.14:node_to_pxm_map (between '__acpi_map_pxm_to_node' 
-and 'acpi_get_pxm')
-WARNING: vmlinux.o(.text+0x1f6412): Section mismatch: reference 
-to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
-and 'acpi_get_node')
-WARNING: vmlinux.o(.text+0x1f6458): Section mismatch: reference 
-to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
-and 'acpi_get_node')
-WARNING: vmlinux.o(.text+0x1f645f): Section mismatch: reference 
-to .init.data.14:node_to_pxm_map (between 'acpi_map_pxm_to_node' 
-and 'acpi_get_node')
-=========================
+This is not true hotplug... this should go into the probe function, right? But 
+it can't due to the sort? Then what this change brings to the driver? Isn't 
+conversion to pci_get_device better in this case (As who will gaurantee that the 
+register returns after calling probes for all devices in the future)?
 
-Anyway, it booted and so far it runs without "splice" problem, thanks.
-
-
--- 
-Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova     
-Ferrara Linux Users Group           http://ferrara.linux.it
-GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
-Old SysOps never die... they simply forget their password.
+> +		gdth_pci_registered = true;
+>  	}
+>  #endif /* CONFIG_PCI */
+>  
+> @@ -5234,6 +5258,11 @@ static void __exit gdth_exit(void)
+>  {
+>  	gdth_ha_str *ha;
+>  
+> +#ifdef CONFIG_PCI
+> +	if (gdth_pci_registered)
+> +		pci_unregister_driver(&gdth_pci_driver);
+> +#endif
+> +
+>  	list_for_each_entry(ha, &gdth_instances, list)
+>  		gdth_remove_one(ha);
+>  
