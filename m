@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbYBMC54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbYBMC74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbYBMC54 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYBMC5r
+	id S1756597AbYBMC74 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751153AbYBMC7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:57:47 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52523 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750770AbYBMC5q (ORCPT
+	Tue, 12 Feb 2008 21:59:48 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51955 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751106AbYBMC7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:57:46 -0500
-Date: Wed, 13 Feb 2008 02:57:39 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>, Adrian Bunk <bunk@kernel.org>,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
-       Robert Reif <reif@earthlink.net>
-Subject: Re: [patch] sparc: fix build
-Message-ID: <20080213025739.GO27894@ZenIV.linux.org.uk>
-References: <20080207231230.GE7198@cs181133002.pp.htv.fi> <alpine.DEB.1.00.0802071538440.15050@chino.kir.corp.google.com> <20080210153355.GA6737@palantir8> <alpine.DEB.1.00.0802101117510.5043@chino.kir.corp.google.com> <47AF7048.3060200@earthlink.net> <alpine.DEB.1.00.0802101529310.17892@chino.kir.corp.google.com> <20080212184654.85d5ae20.akpm@linux-foundation.org>
+	Tue, 12 Feb 2008 21:59:48 -0500
+Date: Tue, 12 Feb 2008 20:59:44 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
+Message-Id: <20080212205944.86ab2dc7.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802121832520.29792@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+	<1202861432.4974.29.camel@localhost>
+	<20080212183158.3ff4ccd5.pj@sgi.com>
+	<Pine.LNX.4.64.0802121702431.11628@schroedinger.engr.sgi.com>
+	<20080212193229.edbff05a.pj@sgi.com>
+	<alpine.DEB.1.00.0802121755400.23110@chino.kir.corp.google.com>
+	<20080212202201.a534cef8.pj@sgi.com>
+	<alpine.DEB.1.00.0802121832520.29792@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212184654.85d5ae20.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 06:46:54PM -0800, Andrew Morton wrote:
-> > diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-> > --- a/include/linux/memcontrol.h
-> > +++ b/include/linux/memcontrol.h
-> > @@ -20,9 +20,6 @@
-> >  #ifndef _LINUX_MEMCONTROL_H
-> >  #define _LINUX_MEMCONTROL_H
-> >  
-> > -#include <linux/rcupdate.h>
-> > -#include <linux/mm.h>
-> > -
-> >  struct mem_cgroup;
-> >  struct page_cgroup;
-> >  struct page;
-> 
-> This really should have been in a separate patch and extensively tested.
-> 
-> Have we checked that every file which directly or indirectly includes
-> memcontrol.h does not have an requirement for rcupdate.h and mm.h, where
-> that requirement was satisfied only via this nested inclusion?  For all
-> architectures and for all config selections?  Think not.
-> 
-> Sadly, removal of nested includes is a *big* deal, and it takes quite a lot
-> of time to get it all shaken down.
-> 
-> If we can confirm that all files (.c and .h) which include memcontrol.h
-> also directly include rcupdate.h and mm.h then we're _probably_ ok (modulo
-> ordering issues).
-> 
-> Otherwise we should perhaps be taking a second look at how to fix the sparc
-> problem.
+> I do not subscribe to the theory that just because we have a couple extra 
+> bytes of space somewhere in struct mempolicy that we have to use it 
+> immediately.
 
-I've run allmodconfig builds on a bunch of target, FWIW (essentially the
-same patch).  Note that these includes are recent addition caused by
-added inline function that had since then become a define.  So while I
-agree with your comments in general, in _this_ case it's pretty safe.
+Good grief ... I'm not lobbying for separate flag fields because the
+space is there.  I was just dealing with one possible obection, by
+noting that it wouldn't cost us in terms of struct mempolicy size.
 
-Commit that had done it is 3062fc67dad01b1d2a15d58c709eff946389eca4
-and switch to #define is 60c12b1202a60eabb1c61317e5d2678fcea9893f (BTW,
-that warranted mentioning in changelog of the latter).
+> It makes the kernel code simpler, in a way.
+> 
+> Now we only have to pass a single actual among functions that include both 
+> the mode and optional flags (there are a lot of them and they span not 
+> only the VM but also filesystem code).
+
+This gets closer to the key issue.
+
+We both agree we want "simpler", but disagree on what that means.
+
+We don't measure complexity -solely- by counting the size of parameter lists.
+If we did that, we'd be packing all manner of sub-integer fields into single
+'int' parameters.
+
+I tend to measure complexity a level up from the bits and bytes,
+and more in terms of how I think about things.  If I think of a routine
+as taking two values, such as in this case an mempolicy mode (such as
+MPOL_BIND or MPOL_INTERLEAVE) and this new flag (MPOL_F_STATIC_NODES),
+which have a different sort of affect.
+
+==> If each time I look at some 'flags' field, I have to think of it
+as a couple of things glued together that I will have to pick apart to
+use, that's more mental work than seeing those two things explicit and
+separate, through most of the mempolicy.c code <==
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
