@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbYBMA4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765298AbYBMA45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764377AbYBMA4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 19:56:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753286AbYBMA4L
+	id S1765298AbYBMA45 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 19:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbYBMA4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 19:56:11 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:41409 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753620AbYBMA4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 19:56:10 -0500
-Date: Tue, 12 Feb 2008 19:56:04 -0500
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080213005604.GA5830@fieldses.org>
-References: <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org> <20080212.155107.251983955.davem@davemloft.net> <20080212235401.GL27894@ZenIV.linux.org.uk> <20080213001650.GY18625@fieldses.org> <20080213004841.GM27894@ZenIV.linux.org.uk>
+	Tue, 12 Feb 2008 19:56:48 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59888 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753286AbYBMA4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 19:56:47 -0500
+Date: Tue, 12 Feb 2008 16:56:45 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Roland Dreier <rdreier@cisco.com>
+cc: Steve Wise <swise@opengridcomputing.com>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, steiner@sgi.com, linux-kernel@vger.kernel.org,
+       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <adazlu5vlub.fsf@cisco.com>
+Message-ID: <Pine.LNX.4.64.0802121653460.11628@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>
+ <20080208234302.GH26564@sgi.com> <20080208155641.2258ad2c.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com>
+ <adaprv70yyt.fsf@cisco.com> <Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com>
+ <adalk5v0yi6.fsf@cisco.com> <Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com>
+ <20080209012446.GB7051@v2.random> <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
+ <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
+ <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+ <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+ <adazlu5vlub.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213004841.GM27894@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 12:48:41AM +0000, Al Viro wrote:
-> On Tue, Feb 12, 2008 at 07:16:50PM -0500, J. Bruce Fields wrote:
-> > > Ahem...  Use of git-cherry-pick preserves commit information just fine.
-> > 
-> > Not by default, at least (note they said "commiters", not "authors"):
-> 
-> That's why you give it -r.
+On Tue, 12 Feb 2008, Roland Dreier wrote:
 
-What version of git have you tried this with?  At least on my version,
--r is a no-op, and the results are the same; the author is still kept
-and the maintainer changed.  I thought it had been that way for ages.
+> I don't know anything about the T3 internals, but it's not clear that
+> you could do this without a new chip design in general.  Lot's of RDMA
+> devices were designed expecting that when a packet arrives, the HW can
+> look up the bus address for a given memory region/offset and place the
+> packet immediately.  It seems like a major change to be able to
+> generate a "page fault" interrupt when a page isn't present, or even
+> just wait to scatter some data until the host finishes updating page
+> tables when the HW needs the translation.
 
---b.
+Well if the VM wants to invalidate a page then the remote end first has to 
+remove its mapping. 
 
-bfields@pig:~/local/linux-2.6$ git --version
-git version 1.5.4.rc2.60.gb2e62
-bfields@pig:~/local/linux-2.6$ git cherry-pick -r v2.6.25-rc1
-Finished one cherry-pick.
-Created commit 0277143: Linux 2.6.25-rc1
- 1 files changed, 2 insertions(+), 2 deletions(-)
-bfields@pig:~/local/linux-2.6$ git cat-file -p HEAD
-tree 4018d5d93f857d946dd89acbb4e45c9da04eadaf
-parent b6ce068a1285a24185b01be8a49021827516b3e1
-author Linus Torvalds <torvalds@woody.linux-foundation.org> 1202681894 -0800
-committer J. Bruce Fields <bfields@citi.umich.edu> 1202863894 -0500
+If a page has been removed then the remote end would encounter a fault and 
+then would have to wait for the local end to reestablish its mapping 
+before proceeding.
 
-Linux 2.6.25-rc1
+So the packet would only be generated when both ends are in sync.
 
-.. and I really need to call it something else.  Maybe it is time to
-bring back the weasel series, since weasels always make me feel good
-about a kernel.
 
