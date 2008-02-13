@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765075AbYBMATc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762776AbYBMATr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765075AbYBMATc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 19:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764516AbYBMASs
+	id S1762776AbYBMATr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 19:19:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764491AbYBMATU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 19:18:48 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:38726 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764377AbYBMASq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 19:18:46 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mirco Tischler <mt-ml@gmx.de>
-Subject: Re: [REGRESSION]fan turns at highspeed after suspend2ram
-Date: Wed, 13 Feb 2008 01:16:52 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: lkml <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
-       Pavel Machek <pavel@suse.cz>, Ray Lee <ray-lk@madrabbit.org>
-References: <1202664109.8394.19.camel@mtlp> <200802130023.06167.rjw@sisk.pl> <1202861284.7548.2.camel@mtlp>
-In-Reply-To: <1202861284.7548.2.camel@mtlp>
+	Tue, 12 Feb 2008 19:19:20 -0500
+Received: from simmts5.bellnexxia.net ([206.47.199.163]:34957 "EHLO
+	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764966AbYBMATS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 19:19:18 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAALrGsUecIprE/2dsb2JhbAAIihGjNw
+Message-ID: <47B2377C.3000207@gmail.com>
+Date: Tue, 12 Feb 2008 20:19:08 -0400
+From: Kevin Winchester <kjwinchester@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802130116.52841.rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git-x86 mm branch compile error
+References: <47B2366C.4020901@gmail.com>
+In-Reply-To: <47B2366C.4020901@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 of February 2008, Mirco Tischler wrote:
+Kevin Winchester wrote:
+>   CC      arch/x86/mm/pageattr.o
+> arch/x86/mm/pageattr.c: In function ‘change_page_attr_set_clr’:
+> arch/x86/mm/pageattr.c:778: error: incompatible type for argument 1 of
+> ‘cpa_check_alias’
+> make[1]: *** [arch/x86/mm/pageattr.o] Error 1
+> make: *** [arch/x86/mm] Error 2
 > 
-> On Mi, 2008-02-13 at 00:23 +0100, Rafael J. Wysocki wrote:
-> > Ah, ok.  Thanks for testing. :-)
-> > 
-> > Can you please check if the current mainline with the following patch applied
-> > works on your box?
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/acpi/hardware/hwsleep.c |    1 +
-> >  1 file changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/acpi/hardware/hwsleep.c
-> > +++ linux-2.6/drivers/acpi/hardware/hwsleep.c
-> > @@ -616,6 +616,7 @@ acpi_status acpi_leave_sleep_state(u8 sl
-> >  		return_ACPI_STATUS(status);
-> >  	}
-> >  
-> > +	arg.integer.value = sleep_state;
-> >  	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
-> >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> >  		ACPI_EXCEPTION((AE_INFO, status, "During Method _WAK"));
-> Yes, works with current mainline too.
+> at tip 5248bbad9c72dd576aa8f3b44b5a959a7cae6ce1 x86: make
+> DEBUG_PAGEALLOC & HIBERNATE work
 > 
-> Much thanks for your help
+> 
+> 
 
-Well, thanks for your patience. :-)
+I assume the following is an acceptable fix (it will be completely
+whitespace damaged due to thunderbird, but I think you get the idea)
 
-It's a well-hidden bug, so it probably would have taken much time to find it
-without your ability to reproduce the problem.
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index cf91149..76a3de5 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -729,7 +729,7 @@ cpa_check_alias(struct cpa_data *cpa, unsigned long
+addr, int numpages)
+ #else
 
-Thanks,
-Rafael
+ static int
+-cpa_check_alias(struct cpa_data cpa, unsigned long addr, int numpages)
++cpa_check_alias(struct cpa_data *cpa, unsigned long addr, int numpages)
+ {
+        return 0;
+ }
