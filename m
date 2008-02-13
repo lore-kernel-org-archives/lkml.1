@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932595AbYBMS5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932942AbYBMS6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932595AbYBMS5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762803AbYBMS5d
+	id S932942AbYBMS6e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbYBMS6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:57:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43144 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762602AbYBMS5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:57:31 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Date: Wed, 13 Feb 2008 19:55:53 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <200802111623.38478.elendil@planet.nl> <200802131239.14305.elendil@planet.nl> <20080213165837.GA10129@suse.de>
-In-Reply-To: <20080213165837.GA10129@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 13 Feb 2008 13:58:24 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47253 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753866AbYBMS6Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 13:58:24 -0500
+Date: Wed, 13 Feb 2008 12:58:20 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, clameter@sgi.com,
+       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
+Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
+Message-Id: <20080213125820.26afea31.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802131035020.9186@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
+	<1202862136.4974.41.camel@localhost>
+	<20080212215242.0342fa25.pj@sgi.com>
+	<alpine.DEB.1.00.0802121955040.11889@chino.kir.corp.google.com>
+	<20080212221354.a33799f2.pj@sgi.com>
+	<alpine.DEB.1.00.0802122018550.11889@chino.kir.corp.google.com>
+	<20080213020344.45c9d924.pj@sgi.com>
+	<alpine.DEB.1.00.0802130113020.3936@chino.kir.corp.google.com>
+	<1202918501.4978.38.camel@localhost>
+	<alpine.DEB.1.00.0802131035020.9186@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131955.53821.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 13 of February 2008, Greg KH wrote:
-> On Wed, Feb 13, 2008 at 12:39:13PM +0100, Frans Pop wrote:
-> > On Tuesday 12 February 2008, Greg KH wrote:
-> > > On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
-> > > > On Monday 11 February 2008, Frans Pop wrote:
-> > > > > In general 2.6.25 if looking quite good on my desktop, but there's
-> > > > > one important issue: the system no longer powers off after shutdown.
-> > > > > This works fine with 2.6.24.
-> > > >
-> > > > Don't ask me why, but bisection shows this commit to be the cause of
-> > > > the failure to power off:
-> > > > commit c10997f6575f476ff38442fa18fd4a0d80345f9d
-> > > > Author: Greg Kroah-Hartman <gregkh@suse.de>
-> > > > Date:   Thu Dec 20 08:13:05 2007 -0800
-> > > >
-> > > >     Kobject: convert drivers/* from kobject_unregister() to
-> > > > kobject_put()
-> > > >
-> > > > Because it seemed somewhat unlikely, I have double checked this by
-> > > > doing an extra compilation for this commit and its predecessor.
-> > >
-> > > What is the symptom of not powering off?
-> > 
-> > I already noticed yesterday that there's one hunk in that commit that's not
-> > a straight replacement:
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 9e102af..5efd555 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -1030,8 +1030,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
-> > 
-> >         unlock_policy_rwsem_write(cpu);
-> > 
-> > -       kobject_unregister(&data->kobj);
-> > -
-> >         kobject_put(&data->kobj);
-> > 
-> >         /* we need to make sure that the underlying kobj is actually
-> > 
-> > 
-> > So, just on the off chance, I applied the patch below and bingo, the system
-> > powers off again. I doubt this will be the correct solution, but just in
-> > case it is, here's my signed off. A comment why the double put is needed
-> > would probably be good though.
-> 
-> There is a bug in the cpufreq kref logic that makes this "double put"
-> necessary.  A real fix has already been posted to solve this issue, and
-> I think it should be on it's way to Linus for -rc2 already.
-> 
-> Please let me know if -rc2 comes out without this needed fix.
+David wrote:
+> Yeah, it gets tricky.
 
-Can you point me to the fix, please?
+If you can stand to read my code, look at that big patch I sent you
+and Lee, dated "Sun, 23 Dec 2007 22:24:02 -0600", under the Subject
+of "Re: [RFC] cpuset relative memory policies - second choice",
+where I did this, keeping the 'policy' field unchanged in struct
+mempolicy and adding additional fields for the (three, in my case)
+new modes.
 
-Thanks,
-Rafael
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
