@@ -1,187 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762058AbYBMNA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbYBMNDD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762058AbYBMNA3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 08:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYBMNAU
+	id S1761280AbYBMNDD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 08:03:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757002AbYBMNCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 08:00:20 -0500
-Received: from hel.is.scarlet.be ([193.74.71.26]:41887 "EHLO hel.is.scarlet.be"
+	Wed, 13 Feb 2008 08:02:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47891 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756871AbYBMNAT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 08:00:19 -0500
-X-Greylist: delayed 1044 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 08:00:18 EST
-Date: Wed, 13 Feb 2008 13:42:10 +0100
-Message-Id: <JW6GMA$1445536B7A545413BA0D6B6753D6901F@scarlet.be>
-Subject: Re: parisc compile error
+	id S1752572AbYBMNCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 08:02:53 -0500
+Date: Wed, 13 Feb 2008 14:02:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: rdreier@cisco.com, linux-kernel@vger.kernel.org
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+Message-ID: <20080213130236.GA8345@elte.hu>
+References: <adazlu5tlve.fsf@cisco.com> <20080212.230156.33759433.davem@davemloft.net> <20080213125725.GC6344@elte.hu>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "rubisher" <rubisher@scarlet.be>
-To: "rubi\.sher" <rubi.sher@scarlet.be>
-Cc: "kyle" <kyle@mcmartin.ca>, "clameter" <clameter@sgi.com>,
-       "kyle" <kyle@mcmartin.ca>, "bunk" <bunk@kernel.org>,
-       "kyle" <kyle@parisc-linux.org>, "matthew" <matthew@wil.cx>,
-       "grundler" <grundler@parisc-linux.org>,
-       "linux-parisc" <linux-parisc@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "rubisher" <rubisher@scarlet.be>
-X-XaM3-API-Version: 4.1 (B54)
-X-type: 0
-X-SenderIP: 57.67.177.33
-X-DCC-scarlet.be-Metrics: hel; whitelist
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213125725.GC6344@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Thu, Feb 07, 2008 at 03:33:07PM -0800, Christoph Lameter wrote:
-> > > On Thu, 7 Feb 2008, Kyle McMartin wrote:
-> > > 
-> > > > yes, it's in my batch of fixes.
-> > > 
-> > > <big sigh of relief> So I do not have to worry about it?
-> > > 
-> > 
-> > haha no. i don't expect people to have to untangle the mess of includes
-> > that is <asm-parisc/*.h> :)
-> > 
-> > cheers, kyle
-> > -
-> This move to define those symbol before including linux/mm.h seems to make the
-> drill:
-> --- include/asm-parisc/pgtable.h.Orig	2007-10-22 08:19:20.000000000 +0000
-> +++ include/asm-parisc/pgtable.h	2008-02-12 16:28:36.000000000 +0000
-> @@ -10,6 +10,12 @@
->   * we simulate an x86-style page table for the linux mm code
->   */
->  
-> +extern  void *vmalloc_start;
-> +#define PCXL_DMA_MAP_SIZE   (8*1024*1024)
-> +#define VMALLOC_START   ((unsigned long)vmalloc_start)
-> +/* this is a fixmap remnant, see fixmap.h */
-> +#define VMALLOC_END	(KERNEL_MAP_END)
-> +
->  #include <linux/mm.h>		/* for vm_area_struct */
->  #include <linux/bitops.h>
->  #include <asm/processor.h>
-> @@ -116,14 +122,6 @@
->  
->  #define FIRST_USER_ADDRESS	0
->  
-> -#ifndef __ASSEMBLY__
-> -extern  void *vmalloc_start;
-> -#define PCXL_DMA_MAP_SIZE   (8*1024*1024)
-> -#define VMALLOC_START   ((unsigned long)vmalloc_start)
-> -/* this is a fixmap remnant, see fixmap.h */
-> -#define VMALLOC_END	(KERNEL_MAP_END)
-> -#endif
-> -
->  /* NB: The tlb miss handlers make certain assumptions about the order */
->  /*     of the following bits, so be careful (One example, bits 25-31  */
->  /*     are moved together in one instruction).                        */
-> === <> ====
-> 
-> But next compile error appears there:
-> 
-> In file included from
-> /CAD/linux-2.6.25-rc1-pa-git-20080212/arch/parisc/mm/init.c:26:
-> include2/asm/pgalloc.h:142: error: conflicting types for 'pte_free_kernel'
-> include2/asm/pgalloc.h:137: error: previous definition of 'pte_free_kernel'
-> was here
-> include2/asm/pgalloc.h: In function 'pte_free_kernel':
-> include2/asm/pgalloc.h:144: error: expected ')' before ';' token
-> include2/asm/pgalloc.h:145: error: too few arguments to function
-'pte_free_kernel'
-> include2/asm/pgalloc.h:145: error: expected ';' before '}' token
-> make[2]: *** [arch/parisc/mm/init.o] Error 1
-> make[1]: *** [arch/parisc/mm] Error 2
-> make: *** [sub-make] Error 2
-> 
-> 
-> and in include/asm-parisc/pgalloc.h we can read:
-> 
-> static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-> {
->         free_page((unsigned long)pte);
-> }
-> 
-> static inline void pte_free_kernel(struct mm_struct *mm, struct page *pte)
-> {
->         pgtable_page_dtor(pte);
->         pte_free_kernel(page_address((pte));
-> }
-> 
-Well may be is it much more what parisc need?
---- ./include/asm-parisc/pgalloc.h.Orig	2008-02-11 07:31:24.000000000 +0000
-+++ ./include/asm-parisc/pgalloc.h	2008-02-13 10:02:53.000000000 +0000
-@@ -138,10 +138,10 @@
- 	free_page((unsigned long)pte);
- }
- 
--static inline void pte_free_kernel(struct mm_struct *mm, struct page *pte)
-+static inline void pte_free(struct mm_struct *mm, pgtable_t pte)
- {
- 	pgtable_page_dtor(pte);
--	pte_free_kernel(page_address((pte));
-+	pte_free_kernel(mm, page_address((pte)));
- }
- 
- #define check_pgt_cache()	do { } while (0)
-=== <> ===
 
-And btw some more small hunk:
-    - sys_timerfd was gone so
---- ./arch/parisc/kernel/syscall_table.S.Orig	2007-10-22 08:18:54.000000000 +0000
-+++ ./arch/parisc/kernel/syscall_table.S	2008-02-13 12:00:08.000000000 +0000
-@@ -401,7 +401,7 @@
- 	ENTRY_COMP(kexec_load)		/* 300 */
- 	ENTRY_COMP(utimensat)
- 	ENTRY_COMP(signalfd)
--	ENTRY_COMP(timerfd)
-+	ENTRY_SAME(ni_syscall)		/* 303 (timerfd -- dead) */
- 	ENTRY_SAME(eventfd)
- 	ENTRY_COMP(fallocate)		/* 305 */
- 
-=== <> ===
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-    - some lake of changes of kset to kobj:
---- ./drivers/parisc/pdc_stable.c.Orig	2008-01-28 07:09:26.000000000 +0000
-+++ ./drivers/parisc/pdc_stable.c	2008-02-13 11:22:16.000000000 +0000
-@@ -829,7 +829,7 @@
- 				   struct kobj_attribute *attr,
- 				   const char *buf, size_t count)
- {
--	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOBOOT);
-+	return pdcs_auto_write(kobj, attr, buf, count, PF_AUTOBOOT);
- }
- 
- /**
-@@ -845,7 +845,7 @@
- 				     struct kobj_attribute *attr,
- 				     const char *buf, size_t count)
- {
--	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOSEARCH);
-+	return pdcs_auto_write(kobj, attr, buf, count, PF_AUTOSEARCH);
- }
- 
- /**
-@@ -1066,7 +1066,7 @@
- 	}
- 
- 	/* Don't forget the root entries */
--	error = sysfs_create_group(stable_kobj, pdcs_attr_group);
-+	error = sysfs_create_group(stable_kobj, &pdcs_attr_group);
- 
- 	/* register the paths kset as a child of the stable kset */
- 	paths_kset = kset_create_and_add("paths", NULL, stable_kobj);
-=== <> ===
+> so .. how about the patch below? Note that we already had an "early 
+> bootup" special (the rq->idle check), it's now just made explicit via 
+> the scheduler_running flag.
 
-And the kernel build, but I don't yet try to boot it...
+the one below even builds. (untested otherwise)
 
-Hth,
-r.
+	Ingo
+
+----------->
+Subject: sched: make sched_clock() early-bootup capable
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Feb 13 13:49:36 CET 2008
+
+do not call sched_clock() too early. Not only might rq->idle
+not be set up - but pure per-cpu data might not be accessible
+either.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
-Scarlet One, ADSL 6 Mbps + Telephone, from EUR 29,95...
-http://www.scarlet.be/
+ kernel/sched.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
+Index: linux-x86.q/kernel/sched.c
+===================================================================
+--- linux-x86.q.orig/kernel/sched.c
++++ linux-x86.q/kernel/sched.c
+@@ -666,6 +666,8 @@ const_debug unsigned int sysctl_sched_rt
+  */
+ const_debug unsigned int sysctl_sched_rt_ratio = 62259;
+ 
++static __read_mostly int scheduler_running;
++
+ /*
+  * For kernel-internal use: high-speed (but slightly incorrect) per-cpu
+  * clock constructed from sched_clock():
+@@ -676,14 +678,16 @@ unsigned long long cpu_clock(int cpu)
+ 	unsigned long flags;
+ 	struct rq *rq;
+ 
+-	local_irq_save(flags);
+-	rq = cpu_rq(cpu);
+ 	/*
+ 	 * Only call sched_clock() if the scheduler has already been
+ 	 * initialized (some code might call cpu_clock() very early):
+ 	 */
+-	if (rq->idle)
+-		update_rq_clock(rq);
++	if (unlikely(!scheduler_running))
++		return 0;
++
++	local_irq_save(flags);
++	rq = cpu_rq(cpu);
++	update_rq_clock(rq);
+ 	now = rq->clock;
+ 	local_irq_restore(flags);
+ 
+@@ -7255,6 +7259,8 @@ void __init sched_init(void)
+ 	 * During early bootup we pretend to be a normal task:
+ 	 */
+ 	current->sched_class = &fair_sched_class;
++
++	scheduler_running = 1;
+ }
+ 
+ #ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
