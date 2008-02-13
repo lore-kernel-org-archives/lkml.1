@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757003AbYBMI5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757366AbYBMI6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757003AbYBMI5i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 03:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYBMI53
+	id S1757366AbYBMI6P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 03:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbYBMI54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 03:57:29 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52208 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753976AbYBMI52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 03:57:28 -0500
-Date: Wed, 13 Feb 2008 09:57:35 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>
-Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT]: Make LMB code sharable with sparc64.
-Message-ID: <20080213085735.GB8091@uranus.ravnborg.org>
-References: <20080213.004120.22092044.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213.004120.22092044.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 13 Feb 2008 03:57:56 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:11395 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756009AbYBMI5y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 03:57:54 -0500
+Message-ID: <47B2B101.3090106@panasas.com>
+Date: Wed, 13 Feb 2008 10:57:37 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Sergio Luis <sergio@larces.uece.br>,
+       Achim Leubner <achim_leubner@adaptec.com>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c
+ into using pci_get device
+References: <47B1ADCE.40202@larces.uece.br>	 <1202833354.3137.19.camel@localhost.localdomain>	 <47B1CF45.5070407@panasas.com>  <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain>
+In-Reply-To: <1202861823.3137.170.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Feb 2008 08:57:49.0954 (UTC) FILETIME=[829E3620:01C86E1E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 12:41:20AM -0800, David Miller wrote:
+On Wed, Feb 13 2008 at 2:17 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Tue, 2008-02-12 at 20:48 -0300, Sergio Luis wrote:
+>> reposting an updated version of it. Please check if it's ok.
 > 
-> As I mentioned to a few ppc folks at LCA08 I plan to use
-> the LMB code from powerpc as a basis for NUMA support on
-> sparc64.
+> Looks fine, thanks!  You added an extra space at the end of 
 > 
-> There are two changes.
+> while ((pdev = pci_get_device(vendor, device, pdev)) 
 > 
-> 1) Move arch/powerpc/mm/lmb.c to lib/lmb.c, put the main
->    interface bits in include/linux/lmb.h, put arch-specific
->    bits in asm/lmb.h and add Kconfig machinery to build this
->    stuff on sparc64.
+> Which I fixed.  Unfortunately checkpatch isn't very helpful for this
+> driver since it uses spaces not tabs everywhere, which checkpatch really
+> hates.
 > 
-> 2) Fix a bug in lmb_alloc() wherein the size was not aligned
->    so we could easily run out of reserve blocks because
->    every aligned allocation would create a tiny hole, and
->    secondly the lmb_reserve() call there did not have it's
->    return value checked.
+> James
 > 
-> Powerpc folks, if there are no objections please pull, thanks!
 > 
-> The following changes since commit 96b5a46e2a72dc1829370c87053e0cd558d58bc0:
->   Linus Torvalds (1):
->         WMI: initialize wmi_blocks.list even if ACPI is disabled
-> 
-> are available in the git repository at:
-> 
->   master.kernel.org:/pub/scm/linux/kernel/git/davem/lmb-2.6.git master
+James hi
+This patch is now obsolete. After Jeff's patch to convert it to 
+hot plug API. Jeffs patch looks very good to me. I will try
+to push it through the testers.
 
-Review had been easier if the patch was inlined.
-Took a quick look at the small Kconfig bits.
+I still don't have a card for testing myself. Again anyone
+wants to send me a card. Intel people anybody home?
 
->From arch/sparc64/Kconfig:
-+config LMB
-+       def_bool y
-+
+I will add the missing Kconfig hunk to jeff's patch and will
+push it after it is tested.
 
-Can we plase have this changed to use:
-
- config SPARC64
-+	select HAVE_LMB
-
-And then in lib/Kconfig have
-+config HAVE_LMB
-+	bool
-
-So we avoid creating a new variable each time we introdce LMB support.
-You would need to update powerpc Kconfig too of course.
-
-This way of doing it is documented in:
-Documenation/kbuild/kconfig.language.txt
-
-Thanks,
-	Sam
+Thanks
+Boaz
