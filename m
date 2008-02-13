@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932956AbYBMQP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbYBMQT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932956AbYBMQP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762642AbYBMQPP
+	id S932105AbYBMQT1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYBMQTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:15:15 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:49889 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932351AbYBMQPN (ORCPT
+	Wed, 13 Feb 2008 11:19:19 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:49439 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752133AbYBMQTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:15:13 -0500
-Date: Wed, 13 Feb 2008 08:14:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Ferenc Wagner <wferi@niif.hu>
-Cc: "Mike Snitzer" <snitzer@gmail.com>, linux-kernel@vger.kernel.org,
-       "Willy Tarreau" <w@1wt.eu>
-Subject: Re: currently active Linux kernel versions
-Message-Id: <20080213081414.f97fc5fe.randy.dunlap@oracle.com>
-In-Reply-To: <87fxvxpb0s.fsf@szonett.ki.iif.hu>
-References: <87skzx53a9.fsf@szonett.ki.iif.hu>
-	<1202850783.6697.0.camel@bip.parateam.prv>
-	<87wsp9q3ev.fsf@szonett.ki.iif.hu>
-	<170fa0d20802121337t35787cbby52286f5a08ea2e15@mail.gmail.com>
-	<87fxvxpb0s.fsf@szonett.ki.iif.hu>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Feb 2008 11:19:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=g48BxXI8Sa7W5IJMazTOCBAxqgumz97x+tufxIQ8zDLgYziiaHWN3xdti6pH3AYPYsV5lQmLpND8nT6ujHvEPNJfHCagmnXcLKNagbUvN8mU+lxfj81/ZcXnJu1knMQR5BIOzdauNrvDkwYpWSB1k0TR+EcZbM3I+xEluhklt1k=
+Message-ID: <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com>
+Date: Wed, 13 Feb 2008 21:49:14 +0530
+From: "Balbir Singh" <balbir@linux.vnet.ibm.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [git pull] x86 updates
+Cc: linux-kernel@vger.kernel.org, "Avi Kivity" <avi@argo.co.il>
+In-Reply-To: <20080213155725.GA19523@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20080213155725.GA19523@elte.hu>
+X-Google-Sender-Auth: 215467420c28aabd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 08:32:03 +0100 Ferenc Wagner wrote:
+Ingo, could you also please consider the KVM build fix at
+http://marc.info/?l=linux-kernel&m=120262794315024&w=2 which has been
+acked by Avi. I suspect this patch should be route through git-x86
+since it affects arch/x86/Kconfig.
 
-> "Mike Snitzer" <snitzer@gmail.com> writes:
-> 
-> > 2.6.23.x and 2.6.24.x are obviously quite active for stable@kernel.org
-> 
-> What is stable@kernel.org?  That sounds promising.  The closest I
-> could find is stable-commits@vger.kernel.org.
+Balbir
 
-stable@kernel.org is the mailing address to send patches that
-should be applied to a stable kernel series.  From the
-MAINTAINERS file:
-
-STABLE BRANCH:
-P:	Greg Kroah-Hartman
-M:	greg@kroah.com
-P:	Chris Wright
-M:	chrisw@sous-sol.org
-L:	stable@kernel.org
-S:	Maintained
-
-
----
-~Randy
+PS: Modified cc's to reduce the noise.
