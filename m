@@ -1,108 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbYBMGH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYBMGSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765346AbYBMGH1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 01:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYBMGHO
+	id S1759499AbYBMGSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 01:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBMGSe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 01:07:14 -0500
-Received: from numenor.qualcomm.com ([129.46.51.58]:47863 "EHLO
-	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbYBMGHM (ORCPT
+	Wed, 13 Feb 2008 01:18:34 -0500
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:37807 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752531AbYBMGSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 01:07:12 -0500
-Message-ID: <47B288E4.2080403@qualcomm.com>
-Date: Tue, 12 Feb 2008 22:06:28 -0800
-From: Max Krasnyansky <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl, gregkh@suse.de,
-       rusty@rustcorp.com.au
-Subject: Re: [git pull for -mm] CPU isolation extensions (updated2)
-References: <47B11C45.6060408@qualcomm.com> <20080211.224436.174153780.davem@davemloft.net> <47B264E3.4090605@qualcomm.com> <200802131511.28643.nickpiggin@yahoo.com.au>
-In-Reply-To: <200802131511.28643.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 Feb 2008 01:18:32 -0500
+X-YMail-OSG: 79vOLX8VM1mA9O74_Yg4Q2Nkk2.eVsIT9NQWOAm30FHT.9UmtnLVm.NbpNE.9gjIXxJlZA5.nlU3R9aIi2diIGB4cxlDN14QxYFNNrjX2CUDElfBuTQpLHT1SnuBUA--
+X-Yahoo-Newman-Property: ymail-3
+Subject: CONFIG_SLUB and reproducable general protection faults on 2.6.2x
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Bart Van Assche <bart.vanassche@gmail.com>
+Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, Rik van Riel <riel@redhat.com>,
+       Chris Weiss <cweiss@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <1202874275.14647.52.camel@haakon2.linux-iscsi.org>
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
+	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
+	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
+	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
+	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
+	 <47A8B757.10101@vlnb.net>
+	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
+	 <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
+	 <1202874275.14647.52.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 22:18:27 -0800
+Message-Id: <1202883507.21178.1.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Wednesday 13 February 2008 14:32, Max Krasnyansky wrote:
->> David Miller wrote:
->>> From: Nick Piggin <nickpiggin@yahoo.com.au>
->>> Date: Tue, 12 Feb 2008 17:41:21 +1100
->>>
->>>> stop machine is used for more than just module loading and unloading.
->>>> I don't think you can just disable it.
->>> Right, in particular it is used for CPU hotplug.
->> Ooops. Totally missed that. And a bunch of other places.
->>
->> [maxk@duo2 cpuisol-2.6.git]$ git grep -l stop_machine_run
->> Documentation/cpu-hotplug.txt
->> arch/s390/kernel/kprobes.c
->> drivers/char/hw_random/intel-rng.c
->> include/linux/stop_machine.h
->> kernel/cpu.c
->> kernel/module.c
->> kernel/stop_machine.c
->> mm/page_alloc.c
->>
->> I wonder why I did not see any issues when I disabled stop machine
->> completely. I mentioned in the other thread that I commented out the part
->> that actually halts the machine and ran it for several hours on my dual
->> core laptop and on the quad core server. Tried all kinds of workloads,
->> which include constant module removal and insertion, and cpu hotplug as
->> well. It cannot be just luck :).
+On Tue, 2008-02-12 at 19:57 -0800, Nicholas A. Bellinger wrote:
+> Greetings all,
 > 
-> It really is. With subtle races, it can take a lot more than a few
-> hours. Consider that we have subtle races still in the kernel now,
-> which are almost never or rarely hit in maybe 10,000 hours * every
-> single person who has been using the current kernel for the past
-> year.
+> On Tue, 2008-02-12 at 17:05 +0100, Bart Van Assche wrote:
+> > On Feb 6, 2008 1:11 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
+> > > I have always observed the case with LIO SE/iSCSI target mode ...
+> > 
+> > Hello Nicholas,
+> > 
+> > Are you sure that the LIO-SE kernel module source code is ready for
+> > inclusion in the mainstream Linux kernel ? As you know I tried to test
+> > the LIO-SE iSCSI target. Already while configuring the target I
+> > encountered a kernel crash that froze the whole system. I can
+> > reproduce this kernel crash easily, and I reported it 11 days ago on
+> > the LIO-SE mailing list (February 4, 2008). One of the call stacks I
+> > posted shows a crash in mempool_alloc() called from jbd. Or: the crash
+> > is most likely the result of memory corruption caused by LIO-SE.
+> > 
 > 
-> For a less theoretical example -- when I was writing the RCU radix
-> tree code, I tried to run directed stress tests on a 64 CPU Altix
-> machine (which found no bugs). Then I ran it on a dedicated test
-> harness that could actually do a lot more than the existing kernel
-> users are able to, and promptly found a couple more bugs (on a 2
-> CPU system).
+> So I was able to FINALLY track this down to:
 > 
-> But your primary defence against concurrency bugs _has_ to be
-> knowing the code and all its interactions.
-100% agree. 
-btw For modules though it does not seem like luck (ie that it worked fine for me). 
-I mean subsystems are supposed to cleanly register/unregister anyway. But I can of
-course be wrong. We'll see what Rusty says.    
+> -# CONFIG_SLUB_DEBUG is not set
+> -# CONFIG_SLAB is not set
+> -CONFIG_SLUB=y
+> +CONFIG_SLAB=y
+> 
+> in both your and Chris Weiss's configs that was causing the
+> reproduceable general protection faults.  I also disabled
+> CONFIG_RELOCATABLE and crash dump because I was debugging using kdb in
+> x86_64 VM on 2.6.24 with your config.  I am pretty sure you can leave
+> this (crash dump) in your config for testing.
+> 
+> This can take a while to compile and take up alot of space, esp. with
+> all of the kernel debug options enabled, which on 2.6.24, really amounts
+> to alot of CPU time when building.  Also with your original config, I
+> was seeing some strange undefined module objects after Stage 2 Link with
+> iscsi_target_mod with modpost with the SLUB the lockups (which are not
+> random btw, and are tracked back to __kmalloc())..  Also, at module load
+> time with the original config, there where some warning about symbol
+> objects (I believe it was SCSI related, same as the ones with modpost).
+> 
+> In any event, the dozen 1000 loop discovery test is now working fine (as
+> well as IPoIB) with the above config change, and you should be ready to
+> go for your testing.
+> 
+> Tomo, Vlad, Andrew and Co:
+> 
+> Do you have any ideas why this would be the case with LIO-Target..?  Is
+> anyone else seeing something similar to this with their target mode
+> (mabye its all out of tree code..?) that is having an issue..? I am
+> using Debian x86_64 and Bart and Chris are using Ubuntu x86_64 and we
+> both have this problem with CONFIG_SLUB on >= 2.6.22 kernel.org
+> kernels. 
+> 
+> Also, I will recompile some of my non x86 machines with the above
+> enabled and see if I can reproduce..  Here the Bart's config again:
+> 
+> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188
+> 
 
->> Clearly though, you guys are right. It cannot be simply disabled. Based on
->> the above grep it's needed for CPU hotplug, mem hotplug, kprobes on s390
->> and intel rng driver. Hopefully we can avoid it at least in module
->> insertion/removal.
-> 
-> Yes, reducing the number of users by going through their code and
-> showing that it is safe, is the right way to do this. Also, you
-> could avoid module insertion/removal?
-I could. But it'd be nice if I did not have to :)
+This is also failing on CONFIG_SLUB on 2.6.24 ppc64.  Since the rest of
+the system seems to work fine, my only guess it may be related to the
+fact that the module is being compiled out of tree.  I took a quick
+glance at what kbuild was using for compiler and linker parameters, but
+nothing looked out of the ordinary.
 
-> FWIW, I think the idea of trying to turn Linux into giving hard
-> realtime guarantees is just insane. If that is what you want, you
-> would IMO be much better off to spend effort with something like
-> improving adeos and communicatoin/administration between Linux and
-> the hard-rt kernel.
-> 
-> But don't let me dissuade you from making these good improvements
-> to Linux as well :) Just that it isn't really going to be hard-rt
-> in general.
-Actually that's the cool thing about CPU isolation. Get rid of all latency sources
-from the CPU(s) and you get youself as hard-RT as it gets. 
-I mean I _already_ have multi-core hard-RT systems that show ~1.2 usec worst case and 
-~200nsec average latency. I do not even need Adeos/Xenomai or Preemp-RT just a few
-very small patches. And it can be used for non RT stuff too.
- 
-Max
+I will take a look with kdb and SLUB re-enabled on x86_64 and see if this
+helps shed any light on the issue.  Is anyone else seeing an issue with CONFIG_SLUB..?
+
+Also, I wonder who else aside from Ubuntu is using this by default in
+their .config..?
 
 
+--nab
 
