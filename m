@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765342AbYBMIzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763866AbYBMI4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765342AbYBMIzB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 03:55:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYBMIyu
+	id S1763866AbYBMI4t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 03:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYBMI4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 03:54:50 -0500
-Received: from alice.et.bocholt.fh-gelsenkirchen.de ([193.175.197.63]:48487
-	"EHLO alice.et.bocholt.fh-gelsenkirchen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752244AbYBMIyt (ORCPT
+	Wed, 13 Feb 2008 03:56:41 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:36060 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751248AbYBMI4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 03:54:49 -0500
-X-DKIM: Sendmail DKIM Filter v2.4.0 alice.et.bocholt.fh-gelsenkirchen.de m1D8sAlp011157
-To: Greg KH <greg@kroah.com>
-cc: bzolnier@gmail.com, muli@il.ibm.com, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jdmason@kudzu.us, linux-pci@atrey.karlin.mff.cuni.cz
-Subject: Re: [discuss] "ide=reverse" do we still need this? 
-In-reply-to: <20080213082643.GB14098@kroah.com> 
-References: <20080213001506.GA13933@kroah.com> <1237.1202889295@sora.hank.home> <20080213082643.GB14098@kroah.com>
-Comments: In-reply-to Greg KH <greg@kroah.com>
-   message dated "Wed, 13 Feb 2008 00:26:43 -0800."
-X-Mailer: MH-E 8.0.3; nmh 1.2; GNU Emacs 22.1.1
-Date: Wed, 13 Feb 2008 09:54:09 +0100
-Message-ID: <1572.1202892849@sora.hank.home>
-From: Dirk GOUDERS <hank@et.bocholt.fh-gelsenkirchen.de>
+	Wed, 13 Feb 2008 03:56:40 -0500
+Date: Wed, 13 Feb 2008 03:56:34 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: latest list of unused Kconfig variables
+Message-ID: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> Hm, so, to summarize:
->   - you needed this option many years ago to get a box to work properly
->   - you don't need this today
+  now that 2.6.25-rc1 is out, i can start updating the output from my
+scanning scripts.  the first updated output is the list of currently
+unused Kconfig variables -- variables that are defined in some Kconfig
+file somewhere but appear to be entirely unused throughout the source
+tree.
 
-I would summarize:
+  latest output here, sorted by architecture:
 
-    - ide=reverse solved certain problems and I am not sure if there are
-      users who still need this option
+http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
 
-> So, if the option went away, you would not be inconvenienced?
+as always, there will probably be some false positives for one reason
+or another.
 
-I remember that the disks of the old box are still in a drawer and today,
-I will try to reanimate the system and see if grub's ability to map
-drives helps to boot the system without ide=reverse.  I'll report later.
+  output from the other scanning scripts will be up in short order.
 
-Dirk
+rday
+--
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
