@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbYBMSLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbYBMSOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbYBMSLm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:11:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932180AbYBMSLb
+	id S1758835AbYBMSOc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYBMSOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:11:31 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53704 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765915AbYBMSLa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:11:30 -0500
-Message-ID: <47B3322A.2030607@redhat.com>
-Date: Wed, 13 Feb 2008 13:08:42 -0500
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 13 Feb 2008 13:14:24 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52729 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751044AbYBMSOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 13:14:24 -0500
+Date: Wed, 13 Feb 2008 10:13:42 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Joe Perches <joe@perches.com>
+cc: Greg KH <gregkh@suse.de>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
+In-Reply-To: <1202923995.3129.26.camel@localhost>
+Message-ID: <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
+References: <20080213070215.GA11969@kroah.com>  <20080212.230423.172781444.davem@davemloft.net>  <1202887323.3129.10.camel@localhost>  <20080213165924.GB10129@suse.de> <1202923995.3129.26.camel@localhost>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-CC: lenb@kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc1 panics on boot
-References: <20080213170310.GC19570@linux.vnet.ibm.com>
-In-Reply-To: <20080213170310.GC19570@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dhaval Giani wrote:
-> I am getting the following oops on bootup on 2.6.25-rc1
-...
-> I am booting using kexec with maxcpus=1. It does not have any problems
-> with maxcpus=2 or higher.
 
-Sounds like another (the same?) kexec cpu numbering bug.  Can you 
-post/link the entire dmesg from both a cold boot and a kexec boot so we 
-can compare?
 
-	-- Chris
+On Wed, 13 Feb 2008, Joe Perches wrote:
+> 
+> MAINTAINERS is the most frequently patched file
+
+Almost all of them merge perfectly, with no problems what-so-ever. And the 
+merge conflicts, when they happen, are generally really trivial, and never 
+cause any subtle run-time bugs even if they were to happen.
+
+So in that sense, I think both MAINTAINERS and the deprecation schedule 
+are totally uninteresting. Yes, they have merge conflicts. But those merge 
+conflicts are really really easy to handle.
+
+		Linus
