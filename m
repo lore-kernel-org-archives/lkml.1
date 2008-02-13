@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYBMJ0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932848AbYBMJ1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbYBMJ0p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932576AbYBMJZN
+	id S932848AbYBMJ1Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932621AbYBMJZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:25:13 -0500
-Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51889 "EHLO
-	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1766014AbYBMJZI (ORCPT
+	Wed, 13 Feb 2008 04:25:43 -0500
+Received: from smtp101.biz.mail.re2.yahoo.com ([68.142.229.215]:29775 "HELO
+	smtp101.biz.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754660AbYBMJZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:25:08 -0500
-X-Greylist: delayed 1617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 04:25:07 EST
-To: linux-kernel@vger.kernel.org
-Subject: Upgrade to 2.6.24 breaks NFS service
-From: Nix <nix@esperi.org.uk>
-Emacs: (setq software-quality (/ 1 number-of-authors))
-Date: Wed, 13 Feb 2008 08:58:03 +0000
-Message-ID: <87lk5pjkro.fsf@hades.wkstn.nix>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
+	Wed, 13 Feb 2008 04:25:39 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 04:25:39 EST
+X-YMail-OSG: IBt7tfQVM1kEYyG2.HEC9kkDcq8BqBHIncAHx3dVgjyJvQ_plW77BJlJlyOj7d6CYyBehHLlJ3oV1lLjmco65J.ovy_Yd8.kArLni2mak182mJxCYfkTUYl4B9lFCAwdelRt9SQlYkEfPw--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <015c01c86e21$75317210$05c8a8c0@DIEGO>
+From: "Diego Guella" <diego.guella@sircomtech.com>
+To: "Steve Wise" <swise@opengridcomputing.com>,
+       "Roland Dreier" <rdreier@cisco.com>
+Cc: <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <general@lists.openfabrics.org>
+References: <20080212220929.24442.76874.stgit@dell3.ogc.int> <adafxvxvgz3.fsf@cisco.com>
+Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopbackconnections.
+Date: Wed, 13 Feb 2008 10:18:53 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-DCC-dcc1-Metrics: hades 1182; Body=1 Fuz1=1 Fuz2=1
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I upgraded from 2.6.23.10 to 2.6.24.2 yesterday, and found NFS service
-failing.
+One question below
 
-To be specific, all locks were blocking forever, with an endless flood
-of
 
-Feb 12 22:53:10 loki notice: kernel: statd: server localhost not responding, timed out
-Feb 12 22:53:10 loki notice: kernel: lockd: cannot monitor esperi
-Feb 12 22:53:45 loki notice: kernel: statd: server localhost not responding, timed out
-Feb 12 22:53:45 loki notice: kernel: lockd: cannot monitor esperi
-Feb 12 22:54:20 loki notice: kernel: statd: server localhost not responding, timed out
-Feb 12 22:54:20 loki notice: kernel: lockd: cannot monitor esperi
-Feb 12 22:54:55 loki notice: kernel: statd: server localhost not responding, timed out
-Feb 12 22:54:55 loki notice: kernel: lockd: cannot monitor esperi
-Feb 12 22:55:20 esperi notice: kernel: lockd: server loki.wkstn.nix not responding, still trying
+----- Original Message ----- 
+From: "Roland Dreier" <rdreier@cisco.com>
+To: "Steve Wise" <swise@opengridcomputing.com>
+Cc: <netdev@vger.kernel.org>; <linux-kernel@vger.kernel.org>; <general@lists.openfabrics.org>
+Sent: Wednesday, February 13, 2008 1:26 AM
+Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopbackconnections.
 
-(esperi is a UML instance on the same machine, connected via a bridged
-TUN/TAP interface: the bridge, and network service to esperi and to the
-rest of the local net across that bridge, was fine.)
 
-I'm currently using NFSv3 atop nfs-utils 1.1.0.33-gdd08789, with daemons
-being started in the suggested order (portmap, mountd, statd
---no-notify, nfsd). This evening I'm going to try to upgrade to
-nfs-utils HEAD and see if this continues.
+> applied, although:
+> 
+> > +static void is_loopback_dst(struct iw_cm_id *cm_id)
+> > +{
+> > + struct net_device *dev;
+> > + 
+> > + dev = ip_dev_find(&init_net, cm_id->remote_addr.sin_addr.s_addr);
+> > + if (!dev)
+> > + return 0;
 
--- 
-`The rest is a tale of post and counter-post.' --- Ian Rawlings
-                                                   describes USENET
+how can a static void function return 0?
+%)
+
+> > + dev_put(dev);
+> > + return 1;
+
+same here
+
+
