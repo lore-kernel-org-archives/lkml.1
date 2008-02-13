@@ -1,96 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbYBMWM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934099AbYBMWMr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766016AbYBMWM2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYBMWMG
+	id S934099AbYBMWMr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:12:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763063AbYBMWMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:12:06 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59236 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751159AbYBMWMC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:12:02 -0500
-Date: Wed, 13 Feb 2008 14:11:02 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
-       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       herbert@gondor.apana.org.au
-Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
- type/macro safety
-Message-Id: <20080213141102.70730bec.akpm@linux-foundation.org>
-In-Reply-To: <20080213220024.GA30729@linux.vnet.ibm.com>
-References: <20080213220024.GA30729@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 17:12:23 -0500
+Received: from styx.suse.cz ([82.119.242.94]:56435 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761330AbYBMWMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:12:21 -0500
+Date: Wed, 13 Feb 2008 23:12:20 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Adrian Bunk <bunk@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+cc: David Sterba <dsterba@suse.cz>, Jiri Slaby <jslaby@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] ipwireless: remove unused debugging functions (was Re: [2.6
+ patch] #if 0 ipwireless_dump_{hardware,network}_state())
+In-Reply-To: <20080213213004.GU3383@cs181133002.pp.htv.fi>
+Message-ID: <Pine.LNX.4.64.0802132307470.30955@jikos.suse.cz>
+References: <20080213213004.GU3383@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 14:00:24 -0800
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Wed, 13 Feb 2008, Adrian Bunk wrote:
 
-> Hello!
-> 
-> This is an updated version of the patch posted last November:
-> 
-> 	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
-> 
-> This new version permits arguments with side effects, for example:
-> 
-> 	rcu_assign_pointer(global_p, p++);
-> 
-> and also verifies that the arguments are pointers, while still avoiding
-> the unnecessary memory barrier when assigning NULL to a pointer.
-> This memory-barrier avoidance means that rcu_assign_pointer() is now only
-> permitted for pointers (not array indexes), and so this version emits a
-> compiler warning if the first argument is not a pointer.  I built a "make
-> allyesconfig" version on an x86 system, and received no such warnings.
-> If RCU is ever applied to array indexes, then the second patch in this
-> series should be applied, and the resulting rcu_assign_index() be used.
-> 
-> Given the rather surprising history of subtlely broken implementations of
-> rcu_assign_pointer(), I took the precaution of generating a full set of
-> test cases and verified that memory barriers and compiler warnings were
-> emitted when required.  I guess it is the simple things that get you...
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  rcupdate.h |   16 ++++++++++++----
->  1 file changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
-> --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
-> +++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+> This patch #if 0's the unused ipwireless_dump_{hardware,network}_state().
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-whoop, ancient kernel alert.
+Adrian,
 
-> @@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
->   * structure after the pointer assignment.  More importantly, this
->   * call documents which pointers will be dereferenced by RCU read-side
->   * code.
-> + *
-> + * Throws a compiler warning for non-pointer arguments.
-> + *
-> + * Does not insert a memory barrier for a NULL pointer.
->   */
->  
-> -#define rcu_assign_pointer(p, v)	({ \
-> -						smp_wmb(); \
-> -						(p) = (v); \
-> -					})
-> +#define rcu_assign_pointer(p, v)	\
-> +	({ \
-> +		typeof(*p) *_________p1 = (v); \
-> +		\
-> +		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
-> +			smp_wmb(); \
-> +		(p) = _________p1; \
-> +	})
+I'd rather remove it completely. Thanks for noticing this.
 
-Someone already merged the dont-do-it-for-NULL patch so I reworked this
-appropriately.  Was too lazy to update the changelog though.
 
+From: Jiri Kosina <jkosina@suse.cz>
+
+Remove unused leftovers of debugging functions. Noticed by Adrian Bunk.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/drivers/char/pcmcia/ipwireless/hardware.c b/drivers/char/pcmcia/ipwireless/hardware.c
+index 1f978ff..fa9d3c9 100644
+--- a/drivers/char/pcmcia/ipwireless/hardware.c
++++ b/drivers/char/pcmcia/ipwireless/hardware.c
+@@ -354,32 +354,6 @@ struct ipw_rx_packet {
+ 	unsigned int channel_idx;
+ };
+ 
+-#ifdef IPWIRELESS_STATE_DEBUG
+-int ipwireless_dump_hardware_state(char *p, size_t limit,
+-				   struct ipw_hardware *hw)
+-{
+-	return snprintf(p, limit,
+-			"debug: initializing=%d\n"
+-			"debug: tx_ready=%d\n"
+-			"debug: tx_queued=%d\n"
+-			"debug: rx_ready=%d\n"
+-			"debug: rx_bytes_queued=%d\n"
+-			"debug: blocking_rx=%d\n"
+-			"debug: removed=%d\n"
+-			"debug: hardware.shutting_down=%d\n"
+-			"debug: to_setup=%d\n",
+-			hw->initializing,
+-			hw->tx_ready,
+-			hw->tx_queued,
+-			hw->rx_ready,
+-			hw->rx_bytes_queued,
+-			hw->blocking_rx,
+-			hw->removed,
+-			hw->shutting_down,
+-			hw->to_setup);
+-}
+-#endif
+-
+ static char *data_type(const unsigned char *buf, unsigned length)
+ {
+ 	struct nl_packet_header *hdr = (struct nl_packet_header *) buf;
+diff --git a/drivers/char/pcmcia/ipwireless/hardware.h b/drivers/char/pcmcia/ipwireless/hardware.h
+index c83190f..19ce5eb 100644
+--- a/drivers/char/pcmcia/ipwireless/hardware.h
++++ b/drivers/char/pcmcia/ipwireless/hardware.h
+@@ -58,7 +58,5 @@ void ipwireless_init_hardware_v1(struct ipw_hardware *hw,
+ 				 void *reboot_cb_data);
+ void ipwireless_init_hardware_v2_v3(struct ipw_hardware *hw);
+ void ipwireless_sleep(unsigned int tenths);
+-int ipwireless_dump_hardware_state(char *p, size_t limit,
+-				   struct ipw_hardware *hw);
+ 
+ #endif
+diff --git a/drivers/char/pcmcia/ipwireless/network.c b/drivers/char/pcmcia/ipwireless/network.c
+index ff35230..6e189ed 100644
+--- a/drivers/char/pcmcia/ipwireless/network.c
++++ b/drivers/char/pcmcia/ipwireless/network.c
+@@ -63,21 +63,6 @@ struct ipw_network {
+ 	struct work_struct work_go_offline;
+ };
+ 
+-
+-#ifdef IPWIRELESS_STATE_DEBUG
+-int ipwireless_dump_network_state(char *p, size_t limit,
+-				  struct ipw_network *network)
+-{
+-	return snprintf(p, limit,
+-			"debug: ppp_blocked=%d\n"
+-			"debug: outgoing_packets_queued=%d\n"
+-			"debug: network.shutting_down=%d\n",
+-			network->ppp_blocked,
+-			network->outgoing_packets_queued,
+-			network->shutting_down);
+-}
+-#endif
+-
+ static void notify_packet_sent(void *callback_data, unsigned int packet_length)
+ {
+ 	struct ipw_network *network = callback_data;
+diff --git a/drivers/char/pcmcia/ipwireless/network.h b/drivers/char/pcmcia/ipwireless/network.h
+index b0e1e95..ccacd26 100644
+--- a/drivers/char/pcmcia/ipwireless/network.h
++++ b/drivers/char/pcmcia/ipwireless/network.h
+@@ -49,7 +49,4 @@ void ipwireless_ppp_close(struct ipw_network *net);
+ int ipwireless_ppp_channel_index(struct ipw_network *net);
+ int ipwireless_ppp_unit_number(struct ipw_network *net);
+ 
+-int ipwireless_dump_network_state(char *p, size_t limit,
+-				  struct ipw_network *net);
+-
+ #endif
