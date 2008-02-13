@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932968AbYBMQTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbYBMQWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932968AbYBMQTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:19:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYBMQTf
+	id S932470AbYBMQWZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:22:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYBMQWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:19:35 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:52248 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763334AbYBMQTc (ORCPT
+	Wed, 13 Feb 2008 11:22:16 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:60593 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755245AbYBMQWP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:19:32 -0500
-Date: Wed, 13 Feb 2008 08:18:32 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Joe Perches <joe@perches.com>
-Cc: David Miller <davem@davemloft.net>, gregkh@suse.de,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
-Message-Id: <20080213081832.23c0e5dc.randy.dunlap@oracle.com>
-In-Reply-To: <1202887323.3129.10.camel@localhost>
-References: <20080213070215.GA11969@kroah.com>
-	<20080212.230423.172781444.davem@davemloft.net>
-	<1202887323.3129.10.camel@localhost>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 13 Feb 2008 11:22:15 -0500
+Date: Wed, 13 Feb 2008 10:22:12 -0600
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH 2/8] IPMI: Change device node ordering to reflect probe order
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Carol Hebert <cah@us.ibm.com>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Reply-to: minyard@acm.org
+Message-id: <20080213162212.GB9830@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 23:22:02 -0800 Joe Perches wrote:
+From: Carol Hebert <cah@us.ibm.com>
 
-> On Tue, 2008-02-12 at 23:04 -0800, David Miller wrote:
-> > > In the big "linux-next" series of emails, David Miller suggested that
-> > > the feature-removal-schedule file be broken up into little pieces, as it
-> > > is causing merge problems for different trees.
-> 
-> I suggest the same for MAINTAINERS
-> 
-> I'd prefer a Maintainers subdirectory.
-> 
-> I have such a tree.  Anyone want it?
+Currently, on systems with multiple BMC interfaces, the ipmi device
+names are being created in reverse order relative to how they are
+discovered on the system (e.g. on an IBM x3950 multinode server with N
+nodes, the device name for the BMC in the first node is /dev/ipmiN-1 and
+the device name for the BMC in the last node is /dev/ipmi0, etc.). The
+problem is caused by the list handling routines chosen in dmi_scan.c.
+Using list_add() causes the multiple ipmi devices to be added to the
+device list using a stack-paradigm and so the ipmi driver subsequently
+pulls them off during initialization in LIFO order.  This patch changes
+the dmi_save_ipmi_device() list handling paradigm to a queue, thereby
+allowing the ipmi driver to build the ipmi device names in the order in
+which they are found on the system.
 
-I'd prefer that neither of them be split up...
-
-The merge problems for either of them should be trivial.
-
+Signed-off-by: Carol Hebert <cah@us.ibm.com>
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
 ---
-~Randy
+
+--- linux-2.6.24.orig/drivers/firmware/dmi_scan.c	2008-01-30 11:21:55.000000000 -0800
++++ linux-2.6.24/drivers/firmware/dmi_scan.c	2008-01-30 11:18:05.000000000 -0800
+@@ -219,7 +219,7 @@ static void __init dmi_save_ipmi_device(
+ 	dev->name = "IPMI controller";
+ 	dev->device_data = data;
+ 
+-	list_add(&dev->list, &dmi_devices);
++	list_add_tail(&dev->list, &dmi_devices);
+ }
+ 
+ /*
+
