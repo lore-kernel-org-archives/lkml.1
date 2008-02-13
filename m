@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934199AbYBMRhv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933933AbYBMRjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934199AbYBMRhv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:37:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765719AbYBMRhg
+	id S933933AbYBMRjB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYBMRiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:37:36 -0500
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:45391 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764103AbYBMRhc (ORCPT
+	Wed, 13 Feb 2008 12:38:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43387 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755801AbYBMRiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:37:32 -0500
-Date: Wed, 13 Feb 2008 18:37:01 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org
-Subject: Re: [Patch 2/2] powerpc: i2c-isa: add access check to legacy
- ioports
-Message-ID: <20080213183701.254391cc@de.ibm.com>
-In-Reply-To: <20080213182800.5c6940a8@de.ibm.com>
-References: <20080213182800.5c6940a8@de.ibm.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/x82tJ18quo/VNEsVC.yFIHh";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Wed, 13 Feb 2008 12:38:50 -0500
+Date: Wed, 13 Feb 2008 09:33:22 -0800
+From: Greg KH <greg@kroah.com>
+To: Hans-J??rgen Koch <hjk@linutronix.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: UIO sysfs attributes broken in 2.6.25-rc1
+Message-ID: <20080213173322.GD10733@kroah.com>
+References: <20080213180304.4ffa81e9@dilbert.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213180304.4ffa81e9@dilbert.local>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/x82tJ18quo/VNEsVC.yFIHh
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, Feb 13, 2008 at 06:03:04PM +0100, Hans-J??rgen Koch wrote:
+> In 2.6.25-rc1, there's a strange effect:
+> Although the map attributes "addr" and "size" show up correctly:
+> 
+> -r--r--r-- 1 root root 4096 2008-02-13 17:49 addr
+> -r--r--r-- 1 root root 4096 2008-02-13 17:49 size
+> 
+> you cannot access them, not even as root. Something like "cat addr"
+> fails with a no-permission-error. It works fine in 2.6.24-rc8.
+> 
+> This is probably related to this patch:
+> 
+> http://lkml.org/lkml/2008/1/25/149
+> 
+> Unfortunately, I signed-off that one, too... I checked if all sysfs
+> files appear, but didn't try to access them. Sorry.
 
-when probing i2c-pca-isa writes to legacy ioports, which crashes the kernel
-if there is no device at that port.
-This patch adds a check_legacy_ioport call, so probe failes gracefully
-and thus prevents the oops.
+Heh, well at least it wasn't just me that thought the patch was correct
+:)
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> Greg, any ideas?
 
-Index: linux.git/drivers/i2c/busses/i2c-pca-isa.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.git.orig/drivers/i2c/busses/i2c-pca-isa.c
-+++ linux.git/drivers/i2c/busses/i2c-pca-isa.c
-@@ -125,6 +125,13 @@ static int __devinit pca_isa_probe(struc
-=20
- 	dev_info(dev, "i/o base %#08lx. irq %d\n", base, irq);
-=20
-+#ifdef CONFIG_PPC_MERGE
-+	if (check_legacy_ioport(base)) {
-+		dev_err(dev, "I/O address %#08lx is not available\n", base);
-+		goto out;
-+	}
-+#endif
-+
- 	if (!request_region(base, IO_SIZE, "i2c-pca-isa")) {
- 		dev_err(dev, "I/O address %#08lx is in use\n", base);
- 		goto out;
+I'll look into it this afternoon...
 
+thanks,
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
-
-
-Vorsitzender des Aufsichtsrats:	Martin Jetter
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
---Sig_/x82tJ18quo/VNEsVC.yFIHh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHsyq/6rqK4qDx+dcRAqGjAKCAH0JTGXPrVDXCrvdKzhrhyEAb/QCfc3s/
-v52DW2XZKyxbLJ4+ATJir8o=
-=kR/U
------END PGP SIGNATURE-----
-
---Sig_/x82tJ18quo/VNEsVC.yFIHh--
+greg k-h
