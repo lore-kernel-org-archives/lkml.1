@@ -1,55 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932942AbYBMS6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765770AbYBMTAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932942AbYBMS6e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbYBMS6Y
+	id S1765770AbYBMTAW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 14:00:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756280AbYBMTAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:58:24 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47253 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753866AbYBMS6Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:58:24 -0500
-Date: Wed, 13 Feb 2008 12:58:20 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, clameter@sgi.com,
-       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080213125820.26afea31.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802131035020.9186@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	<1202862136.4974.41.camel@localhost>
-	<20080212215242.0342fa25.pj@sgi.com>
-	<alpine.DEB.1.00.0802121955040.11889@chino.kir.corp.google.com>
-	<20080212221354.a33799f2.pj@sgi.com>
-	<alpine.DEB.1.00.0802122018550.11889@chino.kir.corp.google.com>
-	<20080213020344.45c9d924.pj@sgi.com>
-	<alpine.DEB.1.00.0802130113020.3936@chino.kir.corp.google.com>
-	<1202918501.4978.38.camel@localhost>
-	<alpine.DEB.1.00.0802131035020.9186@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 14:00:09 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:50746 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755290AbYBMTAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 14:00:06 -0500
+Date: Wed, 13 Feb 2008 11:00:05 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Christian Bell <christian.bell@qlogic.com>
+cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <20080213040905.GQ29340@mv.qlogic.com>
+Message-ID: <Pine.LNX.4.64.0802131052360.18472@schroedinger.engr.sgi.com>
+References: <20080209075556.63062452@bree.surriel.com>
+ <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+ <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+ <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com>
+ <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+ <20080213012638.GD31435@obsidianresearch.com>
+ <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
+ <20080213040905.GQ29340@mv.qlogic.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> Yeah, it gets tricky.
+On Tue, 12 Feb 2008, Christian Bell wrote:
 
-If you can stand to read my code, look at that big patch I sent you
-and Lee, dated "Sun, 23 Dec 2007 22:24:02 -0600", under the Subject
-of "Re: [RFC] cpuset relative memory policies - second choice",
-where I did this, keeping the 'policy' field unchanged in struct
-mempolicy and adding additional fields for the (three, in my case)
-new modes.
+> You're arguing that a HW page table is not needed by describing a use
+> case that is essentially what all RDMA solutions already do above the
+> wire protocols (all solutions except Quadrics, of course).
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+The HW page table is not essential to the notification scheme. That the 
+RDMA uses the page table for linearization is another issue. A chip could 
+just have a TLB cache and lookup the entries using the OS page table f.e.
+
+> > Lets say you have a two systems A and B. Each has their memory region MemA 
+> > and MemB. Each side also has page tables for this region PtA and PtB.
+> > If either side then accesses the page again then the reverse process 
+> > happens. If B accesses the page then it wil first of all incur a page 
+> > fault because the entry in PtB is missing. The fault will then cause a 
+> > message to be send to A to establish the page again. A will create an 
+> > entry in PtA and will then confirm to B that the page was established. At 
+> > that point RDMA operations can occur again.
+> 
+> The notifier-reclaim cycle you describe is akin to the out-of-band
+> pin-unpin control messages used by existing communication libraries.
+> Also, I think what you are proposing can have problems at scale -- A
+> must keep track of all of the (potentially many systems) of memA and
+> cooperatively get an agreement from all these systems before reclaiming
+> the page.
+
+Right. We (SGI) have done something like this for a long time with XPmem 
+and it scales ok.
+
+> When messages are sufficiently large, the control messaging necessary
+> to setup/teardown the regions is relatively small.  This is not
+> always the case however -- in programming models that employ smaller
+> messages, the one-sided nature of RDMA is the most attractive part of
+> it.  
+
+The messaging would only be needed if a process comes under memory 
+pressure. As long as there is enough memory nothing like this will occur.
+
+> Nothing any communication/runtime system can't already do today.  The
+> point of RDMA demand paging is enabling the possibility of using RDMA
+> without the implied synchronization -- the optimistic part.  Using
+> the notifiers to duplicate existing memory region handling for RDMA
+> hardware that doesn't have HW page tables is possible but undermines
+> the more important consumer of your patches in my opinion.
+
+The notifier schemet should integrate into existing memory region 
+handling and not cause a duplication. If you already have library layers 
+that do this then it should be possible to integrate it.
+
+> One other area that has not been brought up yet (I think) is the
+> applicability of notifiers in letting users know when pinned memory
+> is reclaimed by the kernel.  This is useful when a lower-level
+> library employs lazy deregistration strategies on memory regions that
+> are subsequently released to the kernel via the application's use of
+> munmap or sbrk.  Ohio Supercomputing Center has work in this area but
+> a generalized approach in the kernel would certainly be welcome.
+
+The driver gets the notifications about memory being reclaimed. The driver 
+could then notify user code about the release as well.
+
+Pinned memory current *cannot* be reclaimed by the kernel. The refcount is 
+elevated. This means that the VM tries to remove the mappings and then 
+sees that it was not able to remove all references. Then it gives up and 
+tries again and again and again.... Thus the potential for livelock.
+
