@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbYBMNV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756212AbYBMNeK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755876AbYBMNV3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 08:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbYBMNVV
+	id S1756212AbYBMNeK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 08:34:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752727AbYBMNdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 08:21:21 -0500
-Received: from emerald.lightlink.com ([205.232.34.14]:24943 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYBMNVV (ORCPT
+	Wed, 13 Feb 2008 08:33:55 -0500
+Received: from wr-out-0506.google.com ([64.233.184.227]:42629 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751339AbYBMNdy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 08:21:21 -0500
-Date: Wed, 13 Feb 2008 08:17:55 -0500
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Greg KH <greg@kroah.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lm-sensors@lm-sensors.org
-Subject: Re: [PATCH] hwmon: (adm1026) Properly terminate sysfs groups (Was:
-	panic about sysfs with adm1026)
-Message-ID: <20080213131755.GG1154@jupiter.solarsys.private>
-References: <86802c440802092355l7393fe07gfbd021e9cef66181@mail.gmail.com> <20080210171004.GB25353@kroah.com> <20080210190115.2ebd4124@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080210190115.2ebd4124@hyperion.delvare>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 13 Feb 2008 08:33:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=EIhH9O1iyYU+i5hHl1AKxM2lXQGXwgYWrZj6f6y662Y3zrvToQe/aoBqOgIwiDPORvlqnlObLoDpjhCX5CzzjdoXblamdvIUjuRxqoKx801ZNKfLATI5edHWrCg2LDHt5dDPe95gU3uaMZZbtNfhkifYmHDOOdFGWgh0VZaml6o=
+Date: Wed, 13 Feb 2008 07:32:42 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: "Robert P. J. Day" <rpjday@crashcourse.ca>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: latest list of unused Kconfig variables
+Message-ID: <20080213073242.5c069c25@zod.rchland.ibm.com>
+In-Reply-To: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain>
+References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean et. al.:
+On Wed, 13 Feb 2008 03:56:34 -0500 (EST)
+"Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
 
-* Jean Delvare <khali@linux-fr.org> [2008-02-10 19:01:15 +0100]:
-> The missing NULL at the end of two sysfs file groups causes a kernel
-> crash when calling sysfs_create_group().
 > 
-> Signed-off-by: Jean Delvare <khali@linux-fr.org>
-> ---
->  drivers/hwmon/adm1026.c |    2 ++
->  1 file changed, 2 insertions(+)
+>   now that 2.6.25-rc1 is out, i can start updating the output from my
+> scanning scripts.  the first updated output is the list of currently
+> unused Kconfig variables -- variables that are defined in some Kconfig
+> file somewhere but appear to be entirely unused throughout the source
+> tree.
 > 
-> --- linux-2.6.25-rc0.orig/drivers/hwmon/adm1026.c	2008-02-10 11:21:54.000000000 +0100
-> +++ linux-2.6.25-rc0/drivers/hwmon/adm1026.c	2008-02-10 18:51:00.000000000 +0100
-> @@ -1624,6 +1624,7 @@ static struct attribute *adm1026_attribu
->  	&dev_attr_temp3_crit_enable.attr,
->  	&dev_attr_temp3_auto_point1_pwm.attr,
->  	&dev_attr_temp3_auto_point2_pwm.attr,
-> +	NULL
->  };
->  
->  static const struct attribute_group adm1026_group_temp3 = {
-> @@ -1639,6 +1640,7 @@ static struct attribute *adm1026_attribu
->  	&sensor_dev_attr_in9_max.dev_attr.attr,
->  	&sensor_dev_attr_in9_min.dev_attr.attr,
->  	&sensor_dev_attr_in9_alarm.dev_attr.attr,
-> +	NULL
->  };
->  
->  static const struct attribute_group adm1026_group_in8_9 = {
+>   latest output here, sorted by architecture:
+> 
+> http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
+> 
+> as always, there will probably be some false positives for one reason
+> or another.
+> 
+>   output from the other scanning scripts will be up in short order.
 
-Applied to hwmon-2.6.git/testing, thanks.
+You have lots of false positives (or something) for arch/powerpc.  Seems
+your script picked up #define names and comments that happen to match a
+Kconfig variable?  And you have false positives on several CPU
+variables, as they are used within Kconfig files themselves to select
+different sets of options.
 
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
+For arch/ppc, the WANT_EARLY_SERIAL stuff was added by Al to fix those
+boards that unconditionally called early_serial_setup by selecting
+SERIAL_8250 in commit f08243a491f3e21feabbb04476a03fb0cbc975ff.  Al,
+couldn't we just select SERIAL_8250 right in the board config
+instead?  
 
+Of course, arch/ppc is dying soon-ish anyway so we might not even
+bother.
+
+josh
