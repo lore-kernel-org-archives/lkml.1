@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761529AbYBMCJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYBMCJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761529AbYBMCJF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYBMCIx
+	id S1762910AbYBMCJe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:09:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYBMCJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:08:53 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45684 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754027AbYBMCIw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:08:52 -0500
-Date: Tue, 12 Feb 2008 18:06:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, bfields@fieldses.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-Id: <20080212180613.a1a07264.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org>
-	<20080212.165014.01238510.davem@davemloft.net>
-	<alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org>
-	<20080212.173817.111913348.davem@davemloft.net>
-	<alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 21:09:25 -0500
+Received: from mga03.intel.com ([143.182.124.21]:64715 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754112AbYBMCJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 21:09:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,343,1199692800"; 
+   d="scan'208";a="378320529"
+Subject: Re: Latest kernel doesn't boot
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       jason.fleischli@hp.com
+In-Reply-To: <47ADF34A.6010804@m3y3r.de>
+References: <1202249704.47a8dfe89a99c@213.133.104.17>
+	 <47A8E427.6040205@zytor.com> <47AA1633.4000309@m3y3r.de>
+	 <47AA2082.4000402@zytor.com> <47AA2634.7020907@m3y3r.de>
+	 <47AA2A75.80909@zytor.com>  <47ADF34A.6010804@m3y3r.de>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Wed, 13 Feb 2008 10:01:58 +0800
+Message-Id: <1202868118.5026.10.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 13 Feb 2008 02:01:44.0450 (UTC) FILETIME=[62049E20:01C86DE4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 17:57:19 -0800 (PST) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
->  - and you actually can help fix your issues by doing some simple things 
->    *before* pushing out, rather than push out immediately. IOW, do your 
->    whitespace sanity fixes, your compile checks etc early, and don't push 
->    out until after you've done them.
+On Sat, 2008-02-09 at 19:39 +0100, Thomas Meyer wrote:
+> H. Peter Anvin schrieb:
+> > Thomas Meyer wrote:
+> >> H. Peter Anvin schrieb:
+> >>> Thomas Meyer wrote:
+> >>>>
+> >>>> I can not revert the commit 
+> >>>> e429795c68d3001ecae74f6465420c9f043b0ece. it gave me errors.
+> >>>> but i'm also not sure what could be wrong with this commit!
+> >>>>
+> >>>> my first idea was that the commit 
+> >>>> "[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 
+> >>>> memory map on EFI 32 platform" is the offender, because the macbook 
+> >>>> pro doesn't provide a e820 memory map at all. but bisect showed 
+> >>>> that i'm wrong here?!
+> >>>>
+> >>>
+> >>> ELILO is expected to convert the memory map from EFI to e820 format.
+> >> I'm using elilo-3.6-ia32.efi provided at the elilo homepage.  i 
+> >> wasn't able to create a working efi toolchain :-(
+> >> Does elilo-3.6 already do the converting of the memory map, or not?
+> >
+> > Don't know.
+> 3.6 doesn't do the mapping in ia32/system.c create_boot_params().
+> 3.8 does.
 > 
+> The problem is, that i wasn't able to produce a working elilo.efi files 
+> with my gentoo toolchain. the files elilo-3.8.efi provided by the elilo 
+> project also doesn't work (gives a load error from the efi runtime).
+> 
+> So i guess i'm stuck here.
 
-One of the things which linux-next could/should do is to help weed out the
-silly build breaks, typos, missing documentation updates, missed checkpatch
-opportunities, etc, etc. As well as real bugs.
+Can you attach the error message with elilo 3.8?
 
-So it would not be efficient for David to do all this queue-cleaning
-*prior* to putting the tree into linux-next, because more stuff will pop up
-anyway.
+> It should be noted somewhere that with Huangs patches, elilo version 3.8 
+> is needed.
 
-So perhaps a better workflow would be keep the linux-next trees all messy,
-and then each developer can consolidate, rebase, join and drop things prior
-to sending their individual trees to Linus.
+Yes. I will add this.
 
-If so, then git could perhaps help, by retaining sufficient metadata for
-the maintainer to track the fact that this-patch-here fixes
-that-patch-there.
+Best Regards,
+Huang Ying
 
