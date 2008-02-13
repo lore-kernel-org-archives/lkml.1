@@ -1,23 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934651AbYBMVqh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbYBMVq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934651AbYBMVqh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:46:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764214AbYBMVbP
+	id S1763340AbYBMVq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764195AbYBMVbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:31:15 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:50850 "EHLO smtp4.pp.htv.fi"
+	Wed, 13 Feb 2008 16:31:16 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:55750 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764195AbYBMVbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:31:06 -0500
-Date: Wed, 13 Feb 2008 23:30:50 +0200
+	id S1759633AbYBMVbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:31:08 -0500
+Date: Wed, 13 Feb 2008 23:30:52 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Surjit Reang <surjit.reang@neterion.com>,
-       Sreenivasa Honnur <sreenivasa.honnur@neterion.com>,
-       Ramkrishna Vepa <ram.vepa@neterion.com>, santosh.rastapur@neterion.com,
-       sivakumar.subramani@neterion.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make s2io.c:init_tti() static
-Message-ID: <20080213213050.GN3383@cs181133002.pp.htv.fi>
+To: paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] powerpc: vdso_do_func_patch{32,64}() must be __init
+Message-ID: <20080213213052.GO3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -26,7 +23,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global init_tti() static.
+This patch fixes the following section mismatches:
+
+<--  snip  -->
+
+...
+WARNING: vmlinux.o(.text+0xe49c): Section mismatch in reference from the function .vdso_do_func_patch64() to the function .init.text:.find_symbol64()
+WARNING: vmlinux.o(.text+0xe4d0): Section mismatch in reference from the function .vdso_do_func_patch64() to the function .init.text:.find_symbol64()
+WARNING: vmlinux.o(.text+0xe56c): Section mismatch in reference from the function .vdso_do_func_patch32() to the function .init.text:.find_symbol32()
+WARNING: vmlinux.o(.text+0xe5a0): Section mismatch in reference from the function .vdso_do_func_patch32() to the function .init.text:.find_symbol32()
+...
+
+<--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
@@ -35,18 +43,38 @@ Signed-off-by: Adrian Bunk <bunk@kernel.org>
 This patch has been sent on:
 - 30 Jan 2008
 
-1e8c2b07be955b181814e4c24366517a66557908 
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index 5fab7d7..bc94e84 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -1088,7 +1088,7 @@ static int s2io_print_pci_mode(struct s2io_nic *nic)
-  *  '-1' on failure
-  */
+ arch/powerpc/kernel/vdso.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+1c52ed2049b82e8458d03e50633b01ac5e1dfa40 
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 3702df7..d3437c4 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -336,9 +336,9 @@ static unsigned long __init find_function32(struct lib32_elfinfo *lib,
+ 	return sym->st_value - VDSO32_LBASE;
+ }
  
--int init_tti(struct s2io_nic *nic, int link)
-+static int init_tti(struct s2io_nic *nic, int link)
+-static int vdso_do_func_patch32(struct lib32_elfinfo *v32,
+-				struct lib64_elfinfo *v64,
+-				const char *orig, const char *fix)
++static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
++				       struct lib64_elfinfo *v64,
++				       const char *orig, const char *fix)
  {
- 	struct XENA_dev_config __iomem *bar0 = nic->bar0;
- 	register u64 val64 = 0;
+ 	Elf32_Sym *sym32_gen, *sym32_fix;
+ 
+@@ -433,9 +433,9 @@ static unsigned long __init find_function64(struct lib64_elfinfo *lib,
+ #endif
+ }
+ 
+-static int vdso_do_func_patch64(struct lib32_elfinfo *v32,
+-				struct lib64_elfinfo *v64,
+-				const char *orig, const char *fix)
++static int __init vdso_do_func_patch64(struct lib32_elfinfo *v32,
++				       struct lib64_elfinfo *v64,
++				       const char *orig, const char *fix)
+ {
+ 	Elf64_Sym *sym64_gen, *sym64_fix;
+ 
 
