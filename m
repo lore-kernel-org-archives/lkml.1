@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbYBMUSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763447AbYBMUWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761470AbYBMUSc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 15:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYBMUSY
+	id S1763447AbYBMUWk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 15:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756808AbYBMUWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 15:18:24 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:7814 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754382AbYBMUSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 15:18:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FhdKJcSefUEPmuO01RN1NNLvoVV3Aja/beeuWdH8aYKDs09uxvJs0J0nEyyqR/V6le07i58gJXHq/eesrbfzxTSkbcqH1C/UqkR24pdmFYNGs7W79FntIx7ZBjWl9hvKqb9YxxPIN65K9qQTLjM/fgc8Y9+Vl35/6moR0skIF9U=
-Message-ID: <c4e36d110802131218i7bcc873bub5c8df96192b9563@mail.gmail.com>
-Date: Wed, 13 Feb 2008 21:18:21 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: "Jiri Kosina" <jkosina@suse.cz>
-Subject: Re: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
-       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0802132039240.30955@jikos.suse.cz>
+	Wed, 13 Feb 2008 15:22:32 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:60020 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756746AbYBMUWc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 15:22:32 -0500
+Date: Wed, 13 Feb 2008 21:22:25 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: losetup INFO: possible circular locking dependency detected
+In-Reply-To: <Pine.LNX.4.64.0802131815430.7699@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.64.0802132121220.7699@twin.jikos.cz>
+References: <c4e36d110802130554m72a2d80dpe9786851fe294e88@mail.gmail.com>
+ <Pine.LNX.4.64.0802131815430.7699@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com>
-	 <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz>
-	 <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
-	 <20080213193538.GA16402@elte.hu>
-	 <Pine.LNX.4.64.0802132039240.30955@jikos.suse.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2008/2/13, Jiri Kosina <jkosina@suse.cz>:
-> On Wed, 13 Feb 2008, Ingo Molnar wrote:
->
-> > The longer-term fix will be to not run int3 exception handlers in a
-> > non-preemptible context (like 32-bit does) - but that will need more
-> > testing.
->
-> Yup, exactly.
->
-> > Jiri Kosina reported the following deadlock scenario with
-> > show_unhandled_signals enabled:
->
-> Actually the kernel error message was reported to me by Zdenek. Zdenek,
-> could you please try the fix?
+On Wed, 13 Feb 2008, Jiri Kosina wrote:
 
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> loop - fix deadlock against block
+> 
+> A:                                      B:
+>         bdev_open() for ino X
+>            (locks bd_mutex for bdev Y)
+>                                           lo_ioctl(LOOP_CLR_FD) for ino X
+>                                             (locks lo_ctl_mutex)
+>                                           fput()
+>                                           __fput()
+>                                           blkdev_close()
+>                                             (hangs on bd_mutex for bdev Y)
+>         lo_open()
+>            (hangs on lo_ctl_mutex)
+> 
+> Fix this by letting releasing the lock inside loop_clr_fd() after the 
+> loopback structure has been completely deinitialized, but before calling 
+> final fput().
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-Ok - great I do not get this BUG log
-So this has fixed 2 problems a 3 other remains :)
+OK, the previous one was buggy, could you please try this one instead?
 
-I'll open them tomorrow I guess :) at my two were fixed pretty quickly.
-
-PS: Ingo did you have a chance to check my kernel IPI problem ?
-
-Zdenek
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 91ebb00..bfb2e90 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -881,6 +881,7 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+ 	struct file *filp = lo->lo_backing_file;
+ 	gfp_t gfp = lo->old_gfp_mask;
+ 
++	mutex_lock(&lo->lo_ctl_mutex);
+ 	if (lo->lo_state != Lo_bound)
+ 		return -ENXIO;
+ 
+@@ -916,6 +917,7 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
+ 	bd_set_size(bdev, 0);
+ 	mapping_set_gfp_mask(filp->f_mapping, gfp);
+ 	lo->lo_state = Lo_unbound;
++	mutex_unlock(&lo->lo_ctl_mutex);
+ 	fput(filp);
+ 	/* This is safe: open() is still holding a reference. */
+ 	module_put(THIS_MODULE);
+@@ -1143,8 +1145,11 @@ static int lo_ioctl(struct inode * inode, struct file * file,
+ 		err = loop_change_fd(lo, file, inode->i_bdev, arg);
+ 		break;
+ 	case LOOP_CLR_FD:
++		/* loop_clr_fd must do the locking itself, so that it
++		 * doesn't deadlock with bdev */
++		mutex_unlock(&lo->lo_ctl_mutex);
+ 		err = loop_clr_fd(lo, inode->i_bdev);
+-		break;
++		goto out_unlocked;
+ 	case LOOP_SET_STATUS:
+ 		err = loop_set_status_old(lo, (struct loop_info __user *) arg);
+ 		break;
+@@ -1161,6 +1166,7 @@ static int lo_ioctl(struct inode * inode, struct file * file,
+ 		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
+ 	}
+ 	mutex_unlock(&lo->lo_ctl_mutex);
++out_unlocked:
+ 	return err;
+ }
+ 
