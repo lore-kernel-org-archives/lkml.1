@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbYBMRQP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbYBMRQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933515AbYBMRQP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:16:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758705AbYBMRP5
+	id S933929AbYBMRQf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbYBMRQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:15:57 -0500
-Received: from r00tworld.com ([212.85.137.21]:46394 "EHLO r00tworld.com"
+	Wed, 13 Feb 2008 12:16:10 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57374 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758714AbYBMRP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:15:56 -0500
-From: pageexec@freemail.hu
+	id S932821AbYBMRQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:16:08 -0500
+Date: Wed, 13 Feb 2008 18:16:14 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
 To: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 13 Feb 2008 18:15:13 +0200
-MIME-Version: 1.0
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: vmsplice exploits, stack protector and Makefiles
-Reply-to: pageexec@freemail.hu
-CC: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Message-ID: <47B333B1.28931.A31602E@pageexec.freemail.hu>
-In-reply-to: <20080213164853.GA25476@elte.hu>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org>, <20080213152900.GA28959@elte.hu>, <20080213164853.GA25476@elte.hu>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Wed, 13 Feb 2008 18:13:28 +0100 (CET)
+Message-ID: <20080213171614.GA12259@uranus.ravnborg.org>
+References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <47B30F05.29637.9A21F9B@pageexec.freemail.hu> <alpine.LFD.1.00.0802130749210.2920@woody.linux-foundation.org> <20080213160148.GA20241@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213160148.GA20241@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13 Feb 2008 at 17:48, Ingo Molnar wrote:
-
-> hm, had to pull it again because it crashed in testing:
-
-i've only tested .24, not .25 so maybe something changed. did you
-make sure that
-
-  write_pda(stack_canary, next_p->stack_canary);
-
-was removed from arch/x86/kernel/process_64.c:__switch_to? that's
-the only reason i can think of that would trigger this trace.
-
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 1
-> AMD Athlon(tm) 64 X2 Dual Core Processor 3800+ stepping 02
-> Brought up 2 CPUs
-> stack corrupted in: thread_return+0xd0/0xe2
-> Pid: 0, comm: swapper Not tainted 2.6.25-rc1 #3
+On Wed, Feb 13, 2008 at 05:01:48PM +0100, Ingo Molnar wrote:
 > 
-> Call Trace:
->  [<ffffffff80242018>] __stack_chk_fail+0x2a/0x68
->  [<ffffffff807a0478>] thread_return+0xd0/0xe2
->  [<ffffffff8025f5c3>] getnstimeofday+0x3f/0xab
->  [<ffffffff8025cfc7>] ktime_get_ts+0x27/0x6f
->  [<ffffffff8025d02b>] ktime_get+0x1c/0x66
->  [<ffffffff802639af>] tick_nohz_stop_idle+0x39/0x76
->  [<ffffffff8020b204>] cpu_idle+0xb6/0xca
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Kernel panic - not syncing: stack-protector: Kernel stack is corrupted
+> > if you're merging this, please do the independent parts really 
+> > independenrly. For example, the above is a patch in its own right, and 
+> > probably worth doing regardless of anything else.
 > 
-> config attached.
-> 
-> 	Ingo
-> 
+> yes. I wanted to have it tested for a bit, because the lack of use of 
+> the gcc flag means complete lack of testing coverage. The obligatory 
+> "please add a stackprotector self-test" debug feature request went to 
+> Arjan two days ago already.
 
+Do you think that the top-lvel Makefile change is OK to merge?
+I would like to merge it separatly to have maximum bisectability.
 
-
+	Sam
