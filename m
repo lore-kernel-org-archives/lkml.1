@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbYBMWbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765375AbYBMWbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbYBMWbV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbYBMWbE
+	id S1765375AbYBMWbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:31:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757720AbYBMWbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:31:04 -0500
-Received: from styx.suse.cz ([82.119.242.94]:56800 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753081AbYBMWbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:31:01 -0500
-Date: Wed, 13 Feb 2008 23:31:00 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: casey@schaufler-ca.com
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] SMACK: add maintainers entry
-Message-ID: <Pine.LNX.4.64.0802132329300.30955@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Feb 2008 17:31:07 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:57252 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755592AbYBMWbF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:31:05 -0500
+Date: Wed, 13 Feb 2008 14:30:24 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       hpa@zytor.com, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: make dump_pagetable() static
+Message-ID: <20080213143024.048967c1@laptopd505.fenrus.org>
+In-Reply-To: <20080213213131.GA3383@cs181133002.pp.htv.fi>
+References: <20080213213131.GA3383@cs181133002.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey,
+On Wed, 13 Feb 2008 23:31:31 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-what do you think about this one? :) We really should have entry for smack 
-there. Thanks.
+> dump_pagetable() can now become static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 
-From: Jiri Kosina <jkosina@suse.cz>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
 
-SMACK: add maintainers entry
 
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 6680ec4..0461c3c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1888,6 +1888,13 @@ W:	http://www.ia64-linux.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
- S:	Maintained
- 
-+SMACK (Simplified Mandatory Access Control Kernel)
-+P:	Casey Schaufler
-+M:	casey@schaufler-ca.com
-+L:	linux-kernel@vger.kernel.org
-+W:	http://schaufler-ca.com/
-+S:	Maintained
-+
- SN-IA64 (Itanium) SUB-PLATFORM
- P:	Jes Sorensen
- M:	jes@sgi.com
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
