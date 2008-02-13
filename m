@@ -1,60 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYBMW3W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbYBMWbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754419AbYBMW3W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:29:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbYBMW26
+	id S1760920AbYBMWbV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:31:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbYBMWbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:28:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:3110 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764375AbYBMW24 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:28:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
-        b=NF2Uq8NbPCBoRq7wEx0Dit7NFGO5JiJsExCFYnAP+Wen0ihNTVA4qjTCeQuXXPYONwjn51qBOJctz4PhsgB+zK7HenVrXvtrVqjVJzWrO1q3rcIq3Aby6iyZBi3/l8irCFdjLGWKEysRLrXleTSvqDVB+9eA/1YAHx+ozX0EWqI=
-From: Alessandro Guido <alessandro.guido@gmail.com>
-To: hjk@linutronix.de
-Subject: [PATCH] Use menuconfig for CONFIG_UIO
-Date: Wed, 13 Feb 2008 23:28:19 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
+	Wed, 13 Feb 2008 17:31:04 -0500
+Received: from styx.suse.cz ([82.119.242.94]:56800 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753081AbYBMWbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:31:01 -0500
+Date: Wed, 13 Feb 2008 23:31:00 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: casey@schaufler-ca.com
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] SMACK: add maintainers entry
+Message-ID: <Pine.LNX.4.64.0802132329300.30955@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802132328.19310.alessandro.guido@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
+Casey,
 
----
+what do you think about this one? :) We really should have entry for smack 
+there. Thanks.
 
- drivers/uio/Kconfig |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-index b778ed7..dce4cae 100644
---- a/drivers/uio/Kconfig
-+++ b/drivers/uio/Kconfig
-@@ -1,8 +1,6 @@
--menu "Userspace I/O"
--	depends on !S390
--
--config UIO
-+menuconfig UIO
- 	tristate "Userspace I/O drivers"
-+	depends on !S390
- 	default n
- 	help
- 	  Enable this to allow the userspace driver core code to be
-@@ -25,5 +23,3 @@ config UIO_CIF
+From: Jiri Kosina <jkosina@suse.cz>
+
+SMACK: add maintainers entry
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 6680ec4..0461c3c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1888,6 +1888,13 @@ W:	http://www.ia64-linux.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ S:	Maintained
  
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called uio_cif.
--
--endmenu
++SMACK (Simplified Mandatory Access Control Kernel)
++P:	Casey Schaufler
++M:	casey@schaufler-ca.com
++L:	linux-kernel@vger.kernel.org
++W:	http://schaufler-ca.com/
++S:	Maintained
++
+ SN-IA64 (Itanium) SUB-PLATFORM
+ P:	Jes Sorensen
+ M:	jes@sgi.com
