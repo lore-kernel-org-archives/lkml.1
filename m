@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932551AbYBMJXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbYBMJYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932551AbYBMJXU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932363AbYBMJWa
+	id S1763758AbYBMJYl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:24:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbYBMJYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:22:30 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52665 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932348AbYBMJW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:22:26 -0500
-Date: Wed, 13 Feb 2008 10:22:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Bob Tracy <rct@frus.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-Message-ID: <20080213092208.GC21614@elte.hu>
-References: <20080213052903.B1F1CDBA2@gherkin.frus.com>
+	Wed, 13 Feb 2008 04:24:22 -0500
+Received: from smtp110.mail.mud.yahoo.com ([209.191.85.220]:41953 "HELO
+	smtp110.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752508AbYBMJYS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:24:18 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=m8zJpFF7f7/B7BQ1LHw+JVpxMxId3tzRnY2v9BLPLhmXQGzZCdH8LGRKuRmNoN3P+w7XW4tL7IQRjZPaFGyG4W9emmjk/Ugvpr/VW7l+7XUVG3SqN7FOrLhqAolkuKp65oJwFk+wFzWp7b+dWS+3fIDvcLeO5bAa7IgLLQr+tX4=  ;
+X-YMail-OSG: WbqzYwwVM1kEYno0tpjX_NAjZluK4K_l6VFnCMpYGhENFevePjhfEIS.y36f89a4Jk6diHnYgw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Kernel BUG at fs/mpage.c:489
+Date: Wed, 13 Feb 2008 20:24:03 +1100
+User-Agent: KMail/1.9.5
+Cc: Bart Dopheide <dopheide@fmf.nl>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel@vger.kernel.org,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Bartlomiej Zolnierkiewicz <mzolnier@gmail.com>
+References: <20080212194546.GA2174@fmf.nl> <20080213072627.GB2174@fmf.nl> <20080213010145.76ee9714.akpm@linux-foundation.org>
+In-Reply-To: <20080213010145.76ee9714.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080213052903.B1F1CDBA2@gherkin.frus.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200802132024.03687.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 13 February 2008 20:01, Andrew Morton wrote:
+> On Wed, 13 Feb 2008 08:26:27 +0100 Bart Dopheide <dopheide@fmf.nl> wrote:
+> > On Wed, Feb 13, 2008 at 12:05:45PM +1100, Nick Piggin wrote:
+> > :)On Wednesday 13 February 2008 08:50, Alan Cox wrote:
+> > :)> Almost certainly a hardware fail of some sort.
+> > :)
+> > :)Right, but the kernel shouldn't go bug...
+> >
+> > Indeed, that's why I'm reporting.
+> >
+> > :)I don't have a copy of your exact source code... which condition in
+> > :)__mpage_writepage went BUG?
+> >
+> > BUG_ON(buffer_locked(bh));
+> >
+> > In a bit of context:
+> > 482:    if (page_has_buffers(page)) {
+> > 483:            struct buffer_head *head = page_buffers(page);
+> > 484:            struct buffer_head *bh = head;
+> > 485:
+> > 486:            /* If they're all mapped and dirty, do it */
+> > 487:            page_block = 0;
+> > 488:            do {
+> > 489:                    BUG_ON(buffer_locked(bh));
+> > 490:                    if (!buffer_mapped(bh)) {
+> > 491:                            /*
+> > 492:                             * unmapped dirty buffers are created by
+> > 493:                             * __set_page_dirty_buffers -> mmapped
+> > data 494:                             */
+> > 495:                            if (buffer_dirty(bh))
+> > 496:                                    goto confused;
+> > 497:                            if (first_unmapped == blocks_per_page)
+> > 498:                                    first_unmapped = page_block;
+> > 499:                            continue;
+> > 500:                    }
+>
+> Probably means that either fat, IDE, block or fs/buffer.c failed to unlock
+> a buffer_head when the IO error happened.  It's unlikely to be fat.
 
-* Bob Tracy <rct@frus.com> wrote:
+Yes that looks like it would be the problem. I can't really
+see anything in buffer.c that would do it... 
 
-> This isn't going to be terribly useful other than giving someone a 
-> heads-up there's a problem with something in 2.6.25-rc1 on the Alpha 
-> PWS 433au.  I get the usual messages out of "aboot", including
-> 
-> aboot: zero-filling 210392 bytes at 0xfffffc0000776740 aboot: starting 
-> kernel vmlinux.new.gz with argument ro root=/dev/sda3
-> 
-> and then the screen background switches to red and the machine locks 
-> up solid.  No further console output.  Completely reproducible.  The 
-> 2.6.24 kernel is fine.
-> 
-> Unless someone has a good idea what's causing this, I see a massive 
-> "git bisect" project in my future.  Won't be able to spend any time 
-> with this until at least the weekend :-(.
-
-hm, is this SMP? Alpha uses asm-generic/percpu.h. One "early bootup" 
-effect on Alpha that i can think of could have been this family of 
-commits:
-
- commit acdac87202a408133ee8f7985076de9d2e0dc5ab
- Author: travis@sgi.com <travis@sgi.com>
- Date:   Wed Jan 30 13:32:52 2008 +0100
-
-     percpu: make the asm-generic/percpu.h more "generic"
-
-you wont be able to revert this patch cleanly, perhaps try to compile 
-commit cf8fa920cb4271f17e0265c863d64bea1b31941a and see whether it 
-boots. (that tree does not have the percpu changes yet)
-
-if that doesnt help then i guess it's the bisection of 9000+ commits :-/
-
-	Ingo
+BTW is it really true that the buffer can never be locked by
+anything else at this point? What about fsync_buffers_list?
