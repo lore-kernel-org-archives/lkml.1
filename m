@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758243AbYBMH15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932213AbYBMH22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758243AbYBMH15 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765973AbYBMH1b
+	id S932213AbYBMH22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbYBMH2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:27:31 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57618 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765915AbYBMH1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:27:30 -0500
-Date: Tue, 12 Feb 2008 23:31:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Scott Lovenberg <scott.lovenberg@gmail.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Mulyadi Santosa <mulyadi.santosa@gmail.com>,
-       Peter Teoh <htmldeveloper@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Message-ID: <20080213073159.GA13414@kroah.com>
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com> <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com> <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com> <47B15DD2.3090706@gmail.com> <f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com> <20080212204348.4a858650.randy.dunlap@oracle.com> <47B2874F.5000805@gmail.com>
+	Wed, 13 Feb 2008 02:28:12 -0500
+Received: from tac.ki.iif.hu ([193.6.222.43]:39828 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755448AbYBMH2K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 02:28:10 -0500
+From: Ferenc Wagner <wferi@niif.hu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: currently active Linux kernel versions
+References: <47B21F9A.8040904@wpkg.org> <20080213004951.GA29524@1wt.eu>
+Date: Wed, 13 Feb 2008 08:28:06 +0100
+In-Reply-To: <20080213004951.GA29524@1wt.eu> (Willy Tarreau's message of "Wed,
+	13 Feb 2008 01:49:51 +0100")
+Message-ID: <87k5l9pb7d.fsf@szonett.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B2874F.5000805@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 12:59:43AM -0500, Scott Lovenberg wrote:
-> Randy Dunlap wrote:
->> On Wed, 13 Feb 2008 09:08:12 +0700 Mulyadi Santosa wrote:
->>
->>   
->>> Hi all...
->>>
->>> Here's my idea: what if we collaborate to extend and make the kernel
->>> documentation better? I have done (slow) start by editing profile=
->>> kernel param. It's not accepted by Adrian Bunk, but at least I did it.
->>> Feedback?
->>>     
->>
->> Adrian is no longer the trivial patch maintainer.
->> Did you send the patch to trivial@kernel.org ?
->>
->> Any doc additions or improvements would be appreciated.
->> I'll be glad to help get them merged...
->>
->> ---
->> ~Randy
->>
->>   
-> I'd love to help, but I'm a bit of a newbie; what's protocol for 
-> documentation updates, standard diffs?
+Willy Tarreau <w@1wt.eu> writes:
 
-Yes.
+> I would suggest stable - N-1 for most usages. 2.6.24.y is open, 2.6.23.y is
+> supposed to be good. The advantage when you proceed like this is that you
+> can jump from an older kernel to a more recent one which has already got its
+> share of fixes and is still maintained for some time.
+>
+> Generally, I would trust Greg when he drops an old kernel, it means that he's
+> confident enough in the next one.
 
-> How are we going to attack this thing, cleaning up and updating existing 
-> documentation first and then adding undocumented items, or file by file 
-> updating and adding in one fell swoop?
-
-File by file.
-
-And please place the new documentation of sysfs and procfs entries into
-the framework in the Documentation/ABI/ directory tree, which is where
-it belongs.
-
-thanks,
-
-greg k-h
+Thanks for the useful (and concise) summary and sharing your thoughts
+on the matter.  Now my only question is: how can I learn that Greg
+updated or dropped a kernel without following LKML (which my time
+unfortunately does not permit).  kernel-announce doesn't seem to
+mention such events...
+-- 
+Regards,
+Feri.
