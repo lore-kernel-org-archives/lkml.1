@@ -1,63 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbYBMXXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbYBMXXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764255AbYBMXXT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:23:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbYBMXXH
+	id S932604AbYBMXXh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759338AbYBMXXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:23:07 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52385 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Feb 2008 18:23:13 -0500
+Received: from quasar.osc.edu ([192.148.249.15]:56887 "EHLO quasar.osc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754984AbYBMXXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:23:04 -0500
-Date: Thu, 14 Feb 2008 01:22:48 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: harvey.harrison@gmail.com, torvalds@linux-foundation.org,
-       davem@davemloft.net, tglx@linutronix.de, hpa@zytor.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
-	symbols going away
-Message-ID: <20080213232248.GF12383@cs181133002.pp.htv.fi>
-References: <1202941327.18204.11.camel@brick> <20080213223455.GB12383@cs181133002.pp.htv.fi> <20080213224308.GD12383@cs181133002.pp.htv.fi> <20080213145405.35fb5733.akpm@linux-foundation.org>
+	id S1758387AbYBMXXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 18:23:10 -0500
+Date: Wed, 13 Feb 2008 18:23:08 -0500
+From: Pete Wyckoff <pw@osc.edu>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Christian Bell <christian.bell@qlogic.com>, Rik van Riel <riel@redhat.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+Message-ID: <20080213232308.GB7597@osc.edu>
+References: <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com> <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com> <20080213012638.GD31435@obsidianresearch.com> <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com> <20080213040905.GQ29340@mv.qlogic.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080213145405.35fb5733.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080213040905.GQ29340@mv.qlogic.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 02:54:05PM -0800, Andrew Morton wrote:
-> On Thu, 14 Feb 2008 00:43:08 +0200
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
-> > There's simply no point in treating the removal of exports differently
-> > from the many other API breaks we have in each release.
-> 
-> I have repeatedly and relatively patiently explained to you what the
-> point is.  Simply saying that there isn't one doesn't actually make
-> it go away.
+christian.bell@qlogic.com wrote on Tue, 12 Feb 2008 20:09 -0800:
+> One other area that has not been brought up yet (I think) is the
+> applicability of notifiers in letting users know when pinned memory
+> is reclaimed by the kernel.  This is useful when a lower-level
+> library employs lazy deregistration strategies on memory regions that
+> are subsequently released to the kernel via the application's use of
+> munmap or sbrk.  Ohio Supercomputing Center has work in this area but
+> a generalized approach in the kernel would certainly be welcome.
 
-Yes, we had this when you insisted on the deprecation period for 
-sys_open which still brings me to explosion each time such topics come 
-up and brought you _very_ near at being the first person ever in my 
-killfile.
+The whole need for memory registration is a giant pain.  There is no
+motivating application need for it---it is simply a hack around
+virtual memory and the lack of full VM support in current hardware.
+There are real hardware issues that interact poorly with virtual
+memory, as discussed previously in this thread.
 
-I don't get your point why bigger API changes should still be allowed 
-without any advance warning while removing an export should require 
-deprecation periods.
+The way a messaging cycle goes in IB is:
 
-If you want to offer a stable API for external modules then please do 
-it completely and with all consequences.
+    register buf
+    post send from buf
+    wait for completion
+    deregister buf
 
-cu
-Adrian
+This tends to get hidden via userspace software libraries into
+a single call:
 
--- 
+    MPI_send(buf)
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Now if you actually do the reg/dereg every time, things are very
+slow.  So userspace library writers came up with the idea of caching
+registrations:
+
+    if buf is not registered:
+	register buf
+    post send from buf
+    wait for completion
+
+The second time that the app happens to do a send from the same
+buffer, it proceeds much faster.  Spatial locality applies here, and
+this caching is generally worth it.  Some libraries have schemes to
+limit the size of the registration cache too.
+
+But there are plenty of ways to hurt yourself with such a scheme.
+The first being a huge pool of unused but registered memory, as the
+library doesn't know the app patterns, and it doesn't know the VM
+pressure level in the kernel.
+
+There are plenty of subtle ways that this breaks too.  If the
+registered buf is removed from the address space via munmap() or
+sbrk() or other ways, the mapping and registration are gone, but the
+library has no way of knowing that the app just did this.  Sure the
+physical page is still there and pinned, but the app cannot get at
+it.  Later if new address space arrives at the same virtual address
+but a different physical page, the library will mistakenly think it
+already has it registered properly, and data is transferred from
+this old now-unmapped physical page.
+
+The whole situation is rather ridiculuous, but we are quite stuck
+with it for current generation IB and iWarp hardware.  If we can't
+have the kernel interact with the device directly, we could at least
+manage state in these multiple userspace registration caches.  The
+VM could ask for certain (or any) pages to be released, and the
+library would respond if they are indeed not in use by the device.
+The app itself does not know about pinned regions, and the library
+is aware of exactly which regions are potentially in use.
+
+Since the great majority of userspace messaging over IB goes through
+middleware like MPI or PGAS languages, and they all have the same
+approach to registration caching, this approach could fix the
+problem for a big segment of use cases.
+
+More text on the registration caching problem is here:
+
+    http://www.osc.edu/~pw/papers/wyckoff-memreg-ccgrid05.pdf
+
+with an approach using vm_ops open and close operations in a kernel
+module here:
+
+    http://www.osc.edu/~pw/dreg/
+
+There is a place for VM notifiers in RDMA messaging, but not in
+talking to devices, at least not the current set.  If you can define
+a reasonable userspace interface for VM notifiers, libraries can
+manage registration caches more efficiently, letting the kernel
+unmap pinned pages as it likes.
+
+		-- Pete
 
