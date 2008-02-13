@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764098AbYBMG6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYBMHBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764098AbYBMG6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 01:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757390AbYBMG5z
+	id S1756826AbYBMHBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:01:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYBMHBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 01:57:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:60346 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756930AbYBMG5x (ORCPT
+	Wed, 13 Feb 2008 02:01:25 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41846
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752587AbYBMHBY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 01:57:53 -0500
-Date: Tue, 12 Feb 2008 22:16:53 -0800
-From: Greg KH <greg@kroah.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
-       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080213061653.GA10784@kroah.com>
-References: <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <20080212.155853.193190548.davem@davemloft.net> <20080213002948.GA8899@kroah.com> <alpine.LFD.1.00.0802121645320.2920@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802121645320.2920@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 13 Feb 2008 02:01:24 -0500
+Date: Tue, 12 Feb 2008 23:01:56 -0800 (PST)
+Message-Id: <20080212.230156.33759433.davem@davemloft.net>
+To: rdreier@cisco.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <adazlu5tlve.fsf@cisco.com>
+References: <adazlu5tlve.fsf@cisco.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 04:49:46PM -0800, Linus Torvalds wrote:
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 12 Feb 2008 22:24:05 -0800
+
+> I'm seeing a strange hang with current git (head 96b5a46e) on an ia64
+> box -- an Intel SDV with 2 dual core hyperthreaded Itanium 2 CPUs (so
+> 8 logical CPUs to the kernel).  It hangs without printing anything
+> ("Uncompressing Linux... done" from ELILO is the last thing I see) if
+> I have CONFIG_PRINTK_TIME=y; it works fine with CONFIG_PRINTK_TIME=n.
 > 
+> The really strange thing is that I have bisected this down to 326e96b9
+> ("printk: revert ktime_get() timestamps"), and verified that if revert
+> this one patch on top of my current git tree, then the kernel boots
+> fine with CONFIG_PRINTK_TIME=y.  The strange thing is that I have also
+> checked that the real v2.6.24 kernel boots fine on this system, and as
+> far as I can tell, 2.6.24 didn't have the commit that 326e96b9 reverts
+> (19ef9309), so there is some interaction with another patch that made
+> 19ef9309 necessary on my system.
 > 
-> On Tue, 12 Feb 2008, Greg KH wrote:
-> > 
-> > Perhaps you need to switch to using quilt.  This is the main reason why
-> > I use it.
-> 
-> Btw, on that note: if some quilt user can send an "annotated history file" 
-> of their quilt usage, it's something that git really can do, and I'll see 
-> if I can merge (or rather, coax Junio to merge) the relevant part of stgit 
-> to make it possible to just basically get "quilt behaviour" for the parts 
-> of a git tree that you haven't pushed out yet.
+> Any good idea how to debug this, given that the broken kernels don't
+> give any output at all?
 
-Ted's description matches mine (keep quilt tree in git, edit changelog
-entries, rebase on newer kernel versions, etc.)  I can go into details
-if needed.
+The kernel now derefernces per-cpu variables very early, essentially
+in the very first printk() (via printk()'s call to cpu_clock()).
 
-> A pure patch-stack will be faster at that thing than git would be (it's 
-> simply easier to just track patches), but on the other hand, using git 
-> would get some other advantages outside of the integration issue (eg the 
-> cherry-pick thing really is a proper three-way merge, not just an "apply 
-> patch", so it can do better).
+This bit me on sparc64 because of how I do the per-cpu address
+formation.  If I booted on a non-zero cpuid things would explode.
 
-I was amazed at how slow stgit was when I tried it out.  I use
-git-quiltimport a lot and I don't think it's any slower than just using
-quilt on its own.  So I think that the speed issue should be the same.
-
-I had a number of issues last time I tried stgit out, but maybe they are
-now resolved, I'll try it out tomorrow and report to the git list
-anything I find that doesn't work for me.
-
-thanks,
-
-greg k-h
+You might be hitting something similar.
