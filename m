@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765434AbYBMP3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbYBMPbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765434AbYBMP3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbYBMP3Z
+	id S1763390AbYBMPbz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYBMPbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:29:25 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34210 "EHLO mx2.mail.elte.hu"
+	Wed, 13 Feb 2008 10:31:47 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:4682 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753622AbYBMP3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:29:24 -0500
-Date: Wed, 13 Feb 2008 16:29:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: pageexec@freemail.hu
-Cc: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Message-ID: <20080213152900.GA28959@elte.hu>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <47B30F05.29637.9A21F9B@pageexec.freemail.hu>
+	id S1752432AbYBMPbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 10:31:46 -0500
+Date: Wed, 13 Feb 2008 10:06:16 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, bfields@fieldses.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080213150616.GB31839@tuxdriver.com>
+References: <20080212.173817.111913348.davem@davemloft.net> <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org> <20080212180613.a1a07264.akpm@linux-foundation.org> <20080212.182012.153642549.davem@davemloft.net> <20080213024730.GA8798@mail.oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47B30F05.29637.9A21F9B@pageexec.freemail.hu>
+In-Reply-To: <20080213024730.GA8798@mail.oracle.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 12, 2008 at 06:47:30PM -0800, Joel Becker wrote:
 
-* pageexec@freemail.hu <pageexec@freemail.hu> wrote:
+> 	Make the distinction earlier.  With ocfs2 and configfs (we got
+> this scheme from Jeff), we keep the topic branches as "unsafe" - that
+> is, officially rebaseable .  We merge them all into a big "ALL" branch,
+> which is also "unsafe".  Andrew pulls this for -mm, and it gets tested 
+> here.  If there is a brown-paper-bag problem, we can tell the original
+> author to fix it.  Then we re-pull the topic - effectively a rebase.
+> The ALL is also rebased.  But that's Ok, it will never go towards Linus.
+> 	When a topic is considered worthy of going upstream, we pull it
+> to a branch called "upstream-linus".  This branch is *NEVER* rebased.
+> Now that the topic is in upstream-linus, the original topic branch can't
+> be rebased either.  So any fixes to that topic going forward will stay
+> in the history.  Since that topic was pulled into ALL for testing, we
+> are using the identical commits that got tested.
 
-> patches to get CONFIG_CC_STACKPROTECTOR_ALL actually to work (it 
-> includes the Makefile patch proposed in this thread already).
-> 
-> note that the fix to ACPI is an actual stack corruption bug (caught by 
-> ssp thanks to a lucky stack layout), due to the misuse of the pci 
-> accessor functions, probably a whole-tree audit is in order for 
-> similar bugs.
-> 
-> note also that the vsyscall functions (more precisely, all the code 
-> that goes into .vsyscall* sections) had better be separated into their 
-> own .c files so that they can be compiled without -mcmodel=kernel and 
-> use %fs for getting the ssp cookie, if ssp is desired at all there).
+This is essentially the same process I've been using in wireless-2.6
+with the (regularly rebased) 'everything' branch.  Still I find
+that it causes lots of confusion and complaining.  Perhaps I am not
+communicating clearly enough... :-)
 
-thanks, i've picked up your patch into x86.git#mm and also made 
-stackprotector-all default-enabled so that we get more test coverage of 
-this critical security feature. x86.git#mm can be picked up via:
+Do you find that people are happy with that process?  Forgive me for
+not knowing, but how many developers are actively (or occasionaly)
+involved in ocfs2 and configfs?  How many 'normal' users pull your
+tree looking for 'latest and greatest' code?
 
-  http://people.redhat.com/mingo/x86.git/README
-
-head of the tree:
-
-  ---------------->
-  commit e1d96d3e489d02b12984fb3c755b0f9a9ae0fe5f
-  Author: Ingo Molnar <mingo@elte.hu>
-  Date:   Wed Feb 13 16:15:34 2008 +0100
-
-      x86: enable stack-protector by default
-
-      also enable the rodata and nx tests.
-  <----------------
-
-your patch booted fine here with stackprotector-all enabled.
-
-	Ingo
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
