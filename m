@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbYBMBl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYBMBm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756780AbYBMBl5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752297AbYBMBls
+	id S1759549AbYBMBm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYBMBmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:41:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:42782 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751847AbYBMBlr (ORCPT
+	Tue, 12 Feb 2008 20:42:05 -0500
+Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:57125 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757188AbYBMBmA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:41:47 -0500
-Date: Tue, 12 Feb 2008 17:41:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Miller <davem@davemloft.net>
-cc: jeff@garzik.org, arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080212.172051.58554658.davem@davemloft.net>
-Message-ID: <alpine.LFD.1.00.0802121733000.2920@woody.linux-foundation.org>
-References: <47B1CB08.4020101@garzik.org> <20080212.155853.193190548.davem@davemloft.net> <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org> <20080212.172051.58554658.davem@davemloft.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 20:42:00 -0500
+Message-ID: <47B24AE1.7040709@opengridcomputing.com>
+Date: Tue, 12 Feb 2008 19:41:53 -0600
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopback connections.
+References: <20080212220929.24442.76874.stgit@dell3.ogc.int> <adafxvxvgz3.fsf@cisco.com>
+In-Reply-To: <adafxvxvgz3.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 Feb 2008, David Miller wrote:
+Roland Dreier wrote:
+> applied, although:
 > 
-> But as soon as I've applied any patches to my tree I've "pushed out".
-> So this scheme doesn't work for me.  The first thing I do when I have
-> changes to apply is clone a tree locally and on master.kernel.org,
-> then I apply that first patch locally and push it out to master.
+>  > +static void is_loopback_dst(struct iw_cm_id *cm_id)
+>  > +{
+>  > +	struct net_device *dev;
+>  > +	
+>  > +	dev = ip_dev_find(&init_net, cm_id->remote_addr.sin_addr.s_addr);
+>  > +	if (!dev)
+>  > +		return 0;
+>  > +	dev_put(dev);
+>  > +	return 1;
+>  > +}
+> 
+> is there any way this could trigger when it should, like if I'm trying
+> to make a connection from one local device to a different local device
+> (which should work fine)?
+> 
 
-I actually suggest you literally delay your push-out.
+As far as I can tell, if the app does a rdma_resolve_addr() on the dst 
+addr (which is a local address), then the routing lookup will find the 
+local interface with that dst addr, and that device will be used for the 
+connect.  IE src and dst devices are the same.
 
-I don't generally delay things by a lot, but I tend to try to at least do 
-a compile in between pushing out - and even if I've pulled something in 
-between the thing that broke, I'll just "git reset --hard" to a working 
-state if something broke, and just re-pull instead of even trying to 
-rebase or anything like that.
+Maybe if the app does an explicit bind to the addr on one device, then 
+connects to the addr on the other device.  But that's not gonna work 
+either, I think.  I still think it will resolve to one device and that 
+device cannot do loopback...
 
-(IOW, I often find it much easier to just start over and re-do than 
-actually doing a rebase).
 
-I don't do it all the time, by any means, but there's really no huge 
-reason to push out all the time. And that's doubly true for subsystem 
-maintainers. Quite often, the right thing to do is to only push out when 
-you are ready to do the "please pull" message.
-
-> What would be really cool is if you could do the rebase thing, push
-> that to a remote tree you were already pushing into and others could
-> pull from that and all the right things happen.
-
-It would also be really cool if Claudia Schiffer had decided that hiding 
-under my desk is a good idea. 
-
-IOW, you really haven't though that through. That is how TLA and darcs 
-worked, and it's a total disaster.
-
-Trust me, you don't know how good you have it.
-
-			Linus
+Steve.
