@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbYBMBBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765375AbYBMBBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763566AbYBMBBA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:01:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbYBMBAw
+	id S1765375AbYBMBBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764823AbYBMBBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:00:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54640 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751577AbYBMBAv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:00:51 -0500
-Date: Tue, 12 Feb 2008 16:59:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: "J. Bruce Fields" <bfields@fieldses.org>,
-       David Miller <davem@davemloft.net>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080213004841.GM27894@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.00.0802121654300.2920@woody.linux-foundation.org>
-References: <20080212055312.GA5631@kroah.com> <20080211.220726.157328337.davem@davemloft.net> <47B1C9F4.30402@garzik.org> <20080212.155107.251983955.davem@davemloft.net> <20080212235401.GL27894@ZenIV.linux.org.uk> <20080213001650.GY18625@fieldses.org>
- <20080213004841.GM27894@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 12 Feb 2008 20:01:19 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:54423 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754448AbYBMBBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 20:01:18 -0500
+Date: Tue, 12 Feb 2008 17:01:17 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+cc: Roland Dreier <rdreier@cisco.com>, Rik van Riel <riel@redhat.com>,
+       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <20080212232329.GC31435@obsidianresearch.com>
+Message-ID: <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+References: <20080209012446.GB7051@v2.random>
+ <Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com>
+ <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
+ <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+ <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+ <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
 
+> Well, certainly today the memfree IB devices store the page tables in
+> host memory so they are already designed to hang onto packets during
+> the page lookup over PCIE, adding in faulting makes this time
+> larger.
 
-On Wed, 13 Feb 2008, Al Viro wrote:
-
-> On Tue, Feb 12, 2008 at 07:16:50PM -0500, J. Bruce Fields wrote:
-> > > Ahem...  Use of git-cherry-pick preserves commit information just fine.
-> > 
-> > Not by default, at least (note they said "commiters", not "authors"):
-> 
-> That's why you give it -r.
-
-Hmm. "-r" is a no-op to git-cherry-pick.
-
-And even if you thought it should preserve committer information, it 
-really _really_ shouldn't. You're creating a new commit, you're the new 
-committer. The old committer is meaningless. It doesn't matter at all if 
-you try to keep the old committer information (which you can do by faking 
-GIT_COMMITER_NAME¦EMAIL): you're simply just _lying_ at that point. The 
-original committer has a different commit in his tree, and if you try to 
-claim that your cherry-picked commit is his, you're only doing everybody a 
-disservice.
-
-If you meant using "-x", then yes, that retains the actual pointer to the 
-original commit, but it's not the default, because it shouldn't be used 
-unless you plan to carry both around on purpose (ie it's mainly useful for 
-"maintain a stable branch that has commits cherry-picked from mainline" 
-kinds of things).
-
-			Linus
+You really do not need a page table to use it. What needs to be maintained 
+is knowledge on both side about what pages are currently shared across 
+RDMA. If the VM decides to reclaim a page then the notification is used to 
+remove the remote entry. If the remote side then tries to access the page 
+again then the page fault on the remote side will stall until the local 
+page has been brought back. RDMA can proceed after both sides again agree 
+on that page now being sharable.
