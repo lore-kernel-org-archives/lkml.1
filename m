@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933698AbYBMQ7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933770AbYBMQ7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933698AbYBMQ7A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764447AbYBMQ6f
+	id S933770AbYBMQ7a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933638AbYBMQ6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:58:35 -0500
-Received: from rtr.ca ([76.10.145.34]:4359 "EHLO mail.rtr.ca"
+	Wed, 13 Feb 2008 11:58:48 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:43401 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757492AbYBMQ6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:58:33 -0500
-Message-ID: <47B321B7.4080608@rtr.ca>
-Date: Wed, 13 Feb 2008 11:58:31 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S933630AbYBMQ6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 11:58:46 -0500
+Date: Wed, 13 Feb 2008 17:58:30 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Andi Kleen <ak@suse.de>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org
+Subject: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
+In-Reply-To: <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz>
+Message-ID: <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
+References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com>
+ <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alon Bar-Lev <alon.barlev@gmail.com>,
-       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
-       marcel@holtmann.org, bluez-devel@lists.sourceforge.net
-Subject: Re: [BUG] rfcomm
-References: <200710231950.31313.alon.barlev@gmail.com>	<a8e1da0711051849ma591d4k6a816e2de7390347@mail.gmail.com>	<9e0cf0bf0711052149t5c9fe50j19d13e368690efb@mail.gmail.com>	<200802111757.56537.alon.barlev@gmail.com> <20080212235814.b4a2e565.akpm@linux-foundation.org>
-In-Reply-To: <20080212235814.b4a2e565.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 11 Feb 2008 17:57:54 +0200 Alon Bar-Lev <alon.barlev@gmail.com> wrote:
+[ sorry for forgetting to change subject properly :) ]
+
+On Wed, 13 Feb 2008, Jiri Kosina wrote:
+
+> [ the original mail was sent by Zdenek to me offlist ]
 > 
->> On Tuesday 06 November 2007, Alon Bar-Lev wrote:
->>> On 11/6/07, Dave Young <hidave.darkstar@gmail.com> wrote:
->>>> Hi,
->>>> sorry for reply again, this seems a diffrent issue ...
->>> All that I do is running pppd over the rfcomm, suspending the system and resume.
->>> I don't load any binary module.
-..
->> Tried 2.6.24.1...
-..
->> Feb 11 17:46:05 alon1 usb 3-1: new full speed USB device using uhci_hcd and address 8
->> Feb 11 17:46:05 alon1 usb 3-1: configuration #1 chosen from 1 choice
->> Feb 11 17:46:05 alon1 BUG: unable to handle kernel NULL pointer dereference at virtual address 00000008
->> Feb 11 17:46:05 alon1 printing eip: c01b2da6 *pde = 00000000 
->> Feb 11 17:46:05 alon1 Oops: 0000 [#1] PREEMPT 
->> Feb 11 17:46:05 alon1 Modules linked in: aes_generic crypto_algapi ieee80211_crypt_ccmp ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async thinkpad_acpi hwmon nvram vmnet(P) vmmon(P) tun radeon drm autofs4 ipv6 nf_nat_irc nf_nat_ftp nf_conntrack_irc nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat ipt_REJECT xt_tcpudp ipt_LOG xt_limit xt_state nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables x_tables rfcomm l2cap snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device ppp_generic slhc ioatdma dca cfq_iosched cpufreq_powersave cpufreq_ondemand cpufreq_conservative acpi_cpufreq freq_table uinput fan af_packet nls_cp1255 nls_iso8859_1 nls_utf8 nls_base hci_usb bluetooth pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm ipw2200 nsc_ircc snd_timer irda ieee80211 snd psmouse yenta_socket ehci_hcd pcspkr ieee80211_crypt e1000 rsrc_nonstatic uhci_hcd soundcore i2c_i801 intel_agp crc_ccitt thermal sr_mod pcmcia_core snd_page_al
-!
->  lo!
->>  c battery rtc firmware_class agpgart ac processor cdrom sg button unix usbcore evdev ext3 jbd ext2 mbcache loop ata_piix libata sd_mod scsi_mod
->> Feb 11 17:46:05 alon1 
->> Feb 11 17:46:05 alon1 Pid: 4, comm: events/0 Tainted: P        (2.6.24-gentoo-r1 #1)
->> Feb 11 17:46:05 alon1 EIP: 0060:[<c01b2da6>] EFLAGS: 00010286 CPU: 0
->> Feb 11 17:46:05 alon1 EIP is at sysfs_get_dentry+0x26/0x80
->> Feb 11 17:46:05 alon1 EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: ebf21000
->> Feb 11 17:46:05 alon1 ESI: eab4e880 EDI: f713bb40 EBP: f713bb40 ESP: f7c49f00
->> Feb 11 17:46:05 alon1 DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
->> Feb 11 17:46:05 alon1 Process events/0 (pid: 4, ti=f7c48000 task=f7c3efc0 task.ti=f7c48000)
->> Feb 11 17:46:05 alon1 Stack: f7c97120 f7135a68 f7e71e10 c01b303d ffffffff ffffffff fffffffe c030ba9c 
->> Feb 11 17:46:05 alon1 f7c97120 f7135a68 f2fefb40 f7c97120 f7135a68 f2fefb40 c030ba8e c01ce1fb 
->> Feb 11 17:46:05 alon1 f75f1b00 c030ba8e f2fefb40 f75f1b00 f75f1b00 00000000 f7135a00 00000000 
->> Feb 11 17:46:05 alon1 Call Trace:
->> Feb 11 17:46:05 alon1 [<c01b303d>] sysfs_move_dir+0x3d/0x1f0
->> Feb 11 17:46:05 alon1 [<c01ce1fb>] kobject_move+0x9b/0x120
->> Feb 11 17:46:05 alon1 [<c0241701>] device_move+0x51/0x110
->> Feb 11 17:46:05 alon1 [<f9a8adb0>] del_conn+0x0/0x40 [bluetooth]
->> Feb 11 17:46:05 alon1 [<f9a8adc0>] del_conn+0x10/0x40 [bluetooth]
->> Feb 11 17:46:05 alon1 [<c012c1a1>] run_workqueue+0x81/0x140
->> Feb 11 17:46:05 alon1 [<c02c0c78>] schedule+0x168/0x2e0
->> Feb 11 17:46:05 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
->> Feb 11 17:46:05 alon1 [<c012c9cb>] worker_thread+0x9b/0xf0
->> Feb 11 17:46:05 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
->> Feb 11 17:46:05 alon1 [<c012c930>] worker_thread+0x0/0xf0
->> Feb 11 17:46:05 alon1 [<c012f962>] kthread+0x42/0x70
->> Feb 11 17:46:05 alon1 [<c012f920>] kthread+0x0/0x70
->> Feb 11 17:46:05 alon1 [<c0104c2f>] kernel_thread_helper+0x7/0x18
->> Feb 11 17:46:05 alon1 =======================
->> Feb 11 17:46:05 alon1 Code: 26 00 00 00 00 57 89 c7 a1 50 1b 3a c0 56 53 8b 70 38 85 f6 74 08 8b 0e 85 c9 74 58 ff 06 8b 56 50 39 fa 74 47 89 fb eb 02 89 c3 <8b> 43 08 39 c2 75 f7 8b 46 08 83 c0 68 e8 98 e7 10 00 8b 43 10 
->> Feb 11 17:46:05 alon1 EIP: [<c01b2da6>] sysfs_get_dentry+0x26/0x80 SS:ESP 0068:f7c49f00
+> On Wed, 13 Feb 2008, Zdenek Kabelac wrote:
 > 
-> A number of bluetooth fixes went into 2.6.25-rc1.  It would be interestig
-> to see if we fixed this.
-..
-
-I had a strange thing happen with 2.6.24[.0] the other day.
-My bluetooth serial dongles stopped working.
-Unloading/reloading modules and daemons had no effect.
-A system reboot cured it (for now).
-
-That's the first time I've had unfixable bluetooth trouble, well, ever I suppose.
-Just another useless data tidbit on 2.6.24.
-
--ml
+> > [   68.379022] gnome-settings-[2941] trap int3 ip:3d2c840f34
+> > sp:7fff36f5d100 error:0<3>BUG: sleeping function called from invalid
+> > context at kernel/rwsem.c:21
+> > [   68.379039] in_atomic():1, irqs_disabled():0
+> > [   68.379044] no locks held by gnome-settings-/2941.
+> > [   68.379050] Pid: 2941, comm: gnome-settings- Not tainted 2.6.25-rc1 #30
+> > [   68.379054]
+> > [   68.379056] Call Trace:
+> > [   68.379061]  <#DB>  [<ffffffff81064883>] ? __debug_show_held_locks+0x13/0x30
+> > [   68.379109]  [<ffffffff81036765>] __might_sleep+0xe5/0x110
+> > [   68.379123]  [<ffffffff812f2240>] down_read+0x20/0x70
+> > [   68.379137]  [<ffffffff8109cdca>] print_vma_addr+0x3a/0x110
+> > [   68.379152]  [<ffffffff8100f435>] do_trap+0xf5/0x170
+> > [   68.379168]  [<ffffffff8100f52b>] do_int3+0x7b/0xe0
+> > [   68.379180]  [<ffffffff812f4a6f>] int3+0x9f/0xd0
+> > [   68.379203]  <<EOE>>
+> > [   68.379229]  in libglib-2.0.so.0.1505.0[3d2c800000+dc000]
+> 
+> Andi,
+> 
+> in commit 03252919 you introduced print_vma_addr(), but this funcion for 
+> obvious reasons takes mmap_sem, so it is not safe to call it from atomic 
+> context (i.e. do_trap(), for example), which is behavior your patch 
+> introduced.
+> 
+> 
