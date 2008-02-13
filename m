@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933535AbYBMQ4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933481AbYBMQ5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933535AbYBMQ4A (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:56:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762727AbYBMQzu
+	id S933481AbYBMQ5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759292AbYBMQ5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:55:50 -0500
-Received: from mga02.intel.com ([134.134.136.20]:13530 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757882AbYBMQzt convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 11:57:32 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:46031 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757690AbYBMQ5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:55:49 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,347,1199692800"; 
-   d="scan'208";a="257752426"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] ipw2200: le*_add_cpu conversion
-Date: Wed, 13 Feb 2008 08:54:48 -0800
-Message-ID: <D936D925018D154694D8A362EEB0892003A7F5B9@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <1202857582-15450-8-git-send-email-marcin.slusarz@gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] ipw2200: le*_add_cpu conversion
-Thread-Index: Achtzjb7g9dljZeQT4i0s3VW95D79gAkq+cg
-References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com> <1202857582-15450-8-git-send-email-marcin.slusarz@gmail.com>
-From: "Chatre, Reinette" <reinette.chatre@intel.com>
-To: <marcin.slusarz@gmail.com>, "LKML" <linux-kernel@vger.kernel.org>
-Cc: "Zhu, Yi" <yi.zhu@intel.com>, "John W. Linville" <linville@tuxdriver.com>,
-       <linux-wireless@vger.kernel.org>
-X-OriginalArrivalTime: 13 Feb 2008 16:54:49.0421 (UTC) FILETIME=[25264FD0:01C86E61]
+	Wed, 13 Feb 2008 11:57:31 -0500
+Date: Wed, 13 Feb 2008 22:36:48 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in latest sched-git
+Message-ID: <20080213170648.GA28410@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20080212185355.GA6320@linux.vnet.ibm.com> <1202845208.6247.82.camel@lappy> <20080213030035.GA3402@linux.vnet.ibm.com> <1202907078.20209.3.camel@lappy> <20080213163444.GA19570@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213163444.GA19570@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, February 12, 2008 3:06 PM,
-linux-wireless-owner@vger.kernel.org  wrote:
+On Wed, Feb 13, 2008 at 10:04:44PM +0530, Dhaval Giani wrote:
+> I know I am missing something, but aren't we trying to reduce latencies
+> here?
 
-> From: Marcin Slusarz <marcin.slusarz@gmail.com>
-> 
-> replace all:
-> little_endian_variable =
-> cpu_to_leX(leX_to_cpu(little_endian_variable) +
-> 					expression_in_cpu_byteorder);
-> with:
-> 	leX_add_cpu(&little_endian_variable,
-> expression_in_cpu_byteorder);
-> generated with semantic patch
-> 
-> Signed-off-by: Marcin Slusarz <marcin.slusarz@gmail.com>
-> Cc: Zhu Yi <yi.zhu@intel.com>
-> Cc: John W. Linville <linville@tuxdriver.com>
-> Cc: linux-wireless@vger.kernel.org
-> ---
-> drivers/net/wireless/ipw2200.c |    4 +---
-> 1 files changed, 1 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/net/wireless/ipw2200.c
-> b/drivers/net/wireless/ipw2200.c
-> index 3e6ad7b..5d9854e 100644
-> --- a/drivers/net/wireless/ipw2200.c
-> +++ b/drivers/net/wireless/ipw2200.c
-> @@ -10326,9 +10326,7 @@ static int ipw_tx_skb(struct ipw_priv
-> *priv, struct ieee80211_txb *txb,
-> 					 remaining_bytes,
-> 					 PCI_DMA_TODEVICE));
-> 
-> -			tfd->u.data.num_chunks =
-> -
-> cpu_to_le32(le32_to_cpu(tfd->u.data.num_chunks) +
-> -					1);
-> +			le32_add_cpu(&tfd->u.data.num_chunks, 1);
-> 		}
-> 	}
-> 
-> --
-> 1.5.3.7
+I guess Peter is referring to the latency in seeing fairness results. In
+other words, with single rq approach, you may require more time for the groups 
+to converge on fairness.
 
-Thanks!
-
-Signed-off-by: Reinette Chatre <reinette.chatre@intel.com>
-
-Reinette
-
+-- 
+Regards,
+vatsa
