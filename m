@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763405AbYBMChN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761736AbYBMCkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763405AbYBMChN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753749AbYBMChB
+	id S1761736AbYBMCkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbYBMCkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:37:01 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37306 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753469AbYBMChA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:37:00 -0500
-Date: Tue, 12 Feb 2008 18:35:21 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: linux-kernel@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>
-Subject: Re: [PATCH 3/4] fib_trie: print statistics for multiple tables
-Message-Id: <20080212183521.2c19e2a0.akpm@linux-foundation.org>
-In-Reply-To: <20080213005122.805195833@vyatta.com>
-References: <20080213005042.150212716@vyatta.com>
-	<20080213005122.805195833@vyatta.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 21:40:47 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:40977 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752792AbYBMCkq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 21:40:46 -0500
+Date: Wed, 13 Feb 2008 10:40:20 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Eugene Teo <eugeneteo@kernel.sg>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       corbet@lwn.net
+Subject: Re: [PATCH 2/2 resend] mm: various cleanups in get_user_pages()
+Message-ID: <20080213024020.GA4002@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+References: <20080212112919.GB3481@kernel.sg> <20080212114024.GA4440@kernel.sg> <20080212131030.GA3332@kernel.sg> <200802131213.04902.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802131213.04902.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 16:50:45 -0800 Stephen Hemminger <shemminger@vyatta.com> wrote:
+Hi Nick,
 
-> +/**
-> + * hlist_for_each_entry_continue_rcu - iterate over rcu hlist after current point
-> + * @tpos:	the type * to use as a loop cursor.
-> + * @pos:	the &struct hlist_node to use as a loop cursor.
-> + * @member:	the name of the hlist_node within the struct.
-> + */
-> +#define hlist_for_each_entry_continue_rcu(tpos, pos, member)		\
-> +	for (pos = (pos)->next;						\
-> +	     rcu_dereference(pos) && ({ prefetch(pos->next); 1;}) &&	\
-> +		     ({ tpos = hlist_entry(pos, typeof(*tpos), member); 1;}); \
-> +	     pos = pos->next)
+Thanks for the review.
 
-Is the compiler allowed to look at a term such as
+<quote sender="Nick Piggin">
+> On Wednesday 13 February 2008 00:10, Eugene Teo wrote:
+[...]
+> > diff --git a/mm/memory.c b/mm/memory.c
+> > index 54f951b..c7e0610 100644
+> > --- a/mm/memory.c
+> > +++ b/mm/memory.c
+> > @@ -1003,7 +1003,9 @@ int get_user_pages(struct task_struct *tsk, struct
+> > mm_struct *mm, unsigned int foll_flags;
+> >
+> >  		vma = find_extend_vma(mm, start);
+> > -		if (!vma && in_gate_area(tsk, start)) {
+> > +		if (!vma)
+> > +			goto finish_or_fault;
+> > +		if (in_gate_area(tsk, start)) {
+> >  			unsigned long pg = start & PAGE_MASK;
+> >  			struct vm_area_struct *gate_vma = get_gate_vma(tsk);
+> >  			pgd_t *pgd;
+> 
+> Doesn't this break the logic?
+> 
+> If you don't have a vma, but you are in the gate area, then you
+> should use the gate vma. With your patch, gate area will fault.
 
-	({ prefetch(pos->next); 1;})
+Yes, you are right. I also relooked at the patch, and actually vma is
+validated after if (... in_gate_area(tsk, start)) { ... }, so my patch
+is not correct.
 
-and, when it is used as a truth value, say "hey, that's always true" and
-then elide the call to prefetch()?  We've no way of telling because this
-remains gcc-specific territory, afaik.
+> > @@ -1011,7 +1013,7 @@ int get_user_pages(struct task_struct *tsk, struct
+> > mm_struct *mm, pmd_t *pmd;
+> >  			pte_t *pte;
+> >  			if (write) /* user gate pages are read-only */
+> > -				return i ? : -EFAULT;
+> > +				goto finish_or_fault;
+> 
+> I don't know if this is exactly a cleanup or not... I guess gcc
+> probably isn't smart enough to fold them all together, so it should
+> use a little less code in the unlikely branches. Does it?
 
-(cc Paul for rcu stuff)
+Agree.
+
+Eugene
