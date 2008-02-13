@@ -1,92 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933337AbYBMXoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbYBMXol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933337AbYBMXoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764428AbYBMXnv
+	id S934186AbYBMXol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934104AbYBMXo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:43:51 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42635 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764381AbYBMXnt (ORCPT
+	Wed, 13 Feb 2008 18:44:26 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43377 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764428AbYBMXoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:43:49 -0500
-Date: Wed, 13 Feb 2008 15:41:40 -0800
-From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080213234140.GA5169@kroah.com>
-References: <20080213001506.GA13933@kroah.com> <20080213172824.GB10733@kroah.com> <20080213181655.GB8960@kroah.com> <200802132320.37172.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802132320.37172.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 13 Feb 2008 18:44:25 -0500
+Date: Wed, 13 Feb 2008 15:43:31 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: harvey.harrison@gmail.com, torvalds@linux-foundation.org,
+       davem@davemloft.net, tglx@linutronix.de, hpa@zytor.com,
+       xemul@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
+ symbols going away
+Message-Id: <20080213154331.f11efc63.akpm@linux-foundation.org>
+In-Reply-To: <20080213232248.GF12383@cs181133002.pp.htv.fi>
+References: <1202941327.18204.11.camel@brick>
+	<20080213223455.GB12383@cs181133002.pp.htv.fi>
+	<20080213224308.GD12383@cs181133002.pp.htv.fi>
+	<20080213145405.35fb5733.akpm@linux-foundation.org>
+	<20080213232248.GF12383@cs181133002.pp.htv.fi>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 11:20:36PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Wednesday 13 February 2008, Greg KH wrote:
-> > On Wed, Feb 13, 2008 at 09:28:24AM -0800, Greg KH wrote:
-> > > On Wed, Feb 13, 2008 at 01:34:12PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Wednesday 13 February 2008, Greg KH wrote:
-> > > > > On Wed, Feb 13, 2008 at 02:17:37AM +0000, Alan Cox wrote:
-> > > > > > > Why does the calgary driver need this?  Can we just use pci_get_device()
-> > > > > > > instead?  Why do you need to walk the device list backwards?  Do you get
-> > > > > > > false positives going forward?
-> > > > > > 
-> > > > > > It doesn't look to be performance critical so the driver can
-> > > > > > pci_get_device until the end and use the final hit anyway.
-> > > > > 
-> > > > > That would make more sense.
-> > > > > 
-> > > > > > IDE reverse is more problematic but nobody seems to use it.
-> > > > > 
-> > > > > I've seen two posters say they use it.  I'm wondering what it is really
-> > > > > solving if they use it, and why if it's really needed, scsi never had to
-> > > > > implement such a hack...
-> > > > 
-> > > > It is no longer solving anything, just adds more pain. ;)
-> > > > 
-> > > > [ The option comes from 2.2.x (so long before LABEL=/ and /dev/disk/by-id/
-> > > >   became popular).  Some "off-board" controllers integrated on motherboards
-> > > >   used to appear before "on-board" IDE on PCI bus so this option was meant
-> > > >   to preserve the legacy ordering. ]
-> > > > 
-> > > > Since it is valid only when "Probe IDE PCI devices in the PCI bus order
-> > > > (DEPRECATED)" config option is used it is already on its way out (though
-> > > > marking it as obsoleted would make it more explicit).
-> > > > 
-> > > > I think that removing "ide=reverse" in 2.6.26 would be OK...
-> > > 
-> > > Great, thanks for your blessing.  I'll make up a patch and send it to
-> > > you for approval.
-> > 
-> > How does the patch below look?  I didn't want to remove the whole config
-> > option, as there is more to the logic than just the "reverse order"
-> > stuff there.
-> 
-> looks fine,
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+On Thu, 14 Feb 2008 01:22:48 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-Thanks.
+> I don't get your point why bigger API changes should still be allowed 
+> without any advance warning while removing an export should require 
+> deprecation periods.
 
-> > If you don't mind, can I take this through the PCI tree so as to allow
-> > the removal of this pci function afterwards?
-> 
-> [...]
-> 
-> great, could you also:
-> - rebase it on top of the patch below
-> - forward the patch below to Linus for 2.6.25
+Because the cost to us of giving people a few months warning is miniscule,
+and doing so a) is courteous to our users and b) possibly avoids driving
+away testers.
 
-Sure, you want this to go in for .25, but not the one I just posted
-removing this option, correct?  That should wait for .26?
+otoh the cost to us of avoiding large API changes is much much higher, so
+the tradeoff has a different outcome.
 
-thanks,
+> If you want to offer a stable API for external modules then please do 
+> it completely and with all consequences.
 
-greg k-h
+Sorry, but you have this belief that if we do X in one case then we should
+rigorously do X in all cases.  That everything we do sets precedents which
+must be forever and in all cases followed.  That it is all about rules and
+sticking to them.  That if you can catch person A taking action B then you
+can trap that person into doing B in all cases for ever more.
+
+Well it doesn't work like that.  Each case is different and each case has
+pros and cons and each one needs to be weighed according to those pros and
+cons.
