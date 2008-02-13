@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765798AbYBMBEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765450AbYBMBGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765798AbYBMBEi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:04:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753365AbYBMBE0
+	id S1765450AbYBMBGR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYBMBGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:04:26 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50811 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753066AbYBMBEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:04:25 -0500
-Date: Tue, 12 Feb 2008 17:04:24 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Paul Jackson <pj@sgi.com>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, rientjes@google.com,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-In-Reply-To: <20080212183158.3ff4ccd5.pj@sgi.com>
-Message-ID: <Pine.LNX.4.64.0802121702431.11628@schroedinger.engr.sgi.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
- <1202861432.4974.29.camel@localhost> <20080212183158.3ff4ccd5.pj@sgi.com>
+	Tue, 12 Feb 2008 20:06:03 -0500
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:21066 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752537AbYBMBGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 20:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=tLq6CuYxdovvYyF+zrRZcLxJsDUtdo/NAm/ldx8GBJYcSyaDXKKY7CkjDOOl26C/3wNDG14bh2WQZ2eypfRXVv3iGijLaloDvGGvSyEXEvEBUikhsh4A5+tHMkEVdF5goYVC+RQ7mwW5uxCcAkDJuJlz+6Nj2jGpbBUDysJ+Viw=  ;
+X-YMail-OSG: nB0BsuEVM1lTz.YZOu8voFSXOjnvUYMS18CEh_KsIa51zTGrQRiBC9Cz5Zg7X8ZBpE73GsSSmA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Kernel BUG at fs/mpage.c:489
+Date: Wed, 13 Feb 2008 12:05:45 +1100
+User-Agent: KMail/1.9.5
+Cc: Bart Dopheide <dopheide@fmf.nl>, linux-kernel@vger.kernel.org
+References: <20080212194546.GA2174@fmf.nl> <20080212215006.170ade88@core>
+In-Reply-To: <20080212215006.170ade88@core>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802131205.45493.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Paul Jackson wrote:
+On Wednesday 13 February 2008 08:50, Alan Cox wrote:
+> > Feb 12 19:55:08 butterfly kernel: hde: dma timeout error: status=0xd0 {
+> > Busy } Feb 12 19:55:08 butterfly kernel: ide: failed opcode was: unknown
+>
+> Your drive stopped responding.
+>
+> > Feb 12 19:55:08 butterfly kernel: hde: DMA disabled
+> > Feb 12 19:55:08 butterfly kernel: PDC202XX: Primary channel reset.
+> > Feb 12 19:55:08 butterfly kernel: PDC202XX: Secondary channel reset.
+>
+> We gave it a good kicking and it stayed offline
+>
+> > Feb 12 19:55:08 butterfly kernel: hde: set_drive_speed_status:
+> > status=0xd0 { Busy } Feb 12 19:55:08 butterfly kernel: ide: failed opcode
+> > was: unknown Feb 12 19:55:47 butterfly kernel: ide2: reset timed-out,
+> > status=0xd0 Feb 12 19:55:47 butterfly kernel: hde: status timeout:
+> > status=0xd0 { Busy }
+>
+> And we gave up.
+>
+> Almost certainly a hardware fail of some sort.
 
-> I'm inclined toward the original types for the 'policy' field.
+Right, but the kernel shouldn't go bug...
 
-Good. And remove the enum.
-
-> Specifically, I'd suggest adding the one line for 'mode_f_static_nodes'
-> as below, and leaving the code involving the encoding of the policy
-> field alone.
-> 
-> struct mempolicy {
->         atomic_t refcnt;
->         short policy;   /* See MPOL_* above */
-> 	int mode_f_static_nodes:1;			/* <== Added line <== */
-
-It would be better to add some sort of flags field?
-
-> Single bit fields (The ":1" above) provide the simplest way to add
-> boolean flags to structs.  Let the compiler do the work of packing
-> and unpacking the field.
-
-We usually do that with unsigned XXX and constants. You may want to check 
-multiple flags at once or do other fancy things.
-
+I don't have a copy of your exact source code... which condition in
+__mpage_writepage went BUG?
