@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932495AbYBMJNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932093AbYBMJPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932495AbYBMJNX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932519AbYBMJLS
+	id S932093AbYBMJPX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:15:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbYBMJPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:11:18 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:51270 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932493AbYBMJLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:11:12 -0500
-Date: Wed, 13 Feb 2008 10:10:24 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ben Nizette <bn@niasdigital.com>, netfilter-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
-Message-ID: <20080213101024.39347322@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080213004829.fd8afdc7.akpm@linux-foundation.org>
-References: <1202816761.3299.19.camel@moss.renham>
-	<20080213004829.fd8afdc7.akpm@linux-foundation.org>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+	Wed, 13 Feb 2008 04:15:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38065 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750899AbYBMJO5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:14:57 -0500
+Date: Wed, 13 Feb 2008 01:13:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, a.p.zijlstra@chello.nl
+Subject: Re: [RFC v2 PATCH] RTTIME watchdog timer proc interface
+Message-Id: <20080213011310.e27dd9cf.akpm@linux-foundation.org>
+In-Reply-To: <47B220A6.5090707@ct.jp.nec.com>
+References: <47B220A6.5090707@ct.jp.nec.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -28,59 +26,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 00:48:29 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, 12 Feb 2008 14:41:42 -0800 Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com> wrote:
 
-> On Tue, 12 Feb 2008 22:46:01 +1100 Ben Nizette <bn@niasdigital.com> wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> > 
-> > On an AVR32, root over NFS, config attached, running (from a startup
-> > script):
-> > 
-> > iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-> > 
-> > Results in (dmesg extract including a bit of context for good measure):
-> > -------------8<----------------
-> > VFS: Mounted root (nfs filesystem).
-> > Freeing init memory: 72K (90000000 - 90012000)
-> > eth0: no IPv6 routers present
-> > warning: `dnsmasq' uses 32-bit capabilities (legacy support in use)
-
-Hmm. What does that mean? What size do capabilities normally have?
-
-> > ip_tables: (C) 2000-2006 Netfilter Core Team
-> > nf_conntrack version 0.5.0 (1024 buckets, 4096 max)
-> > Unable to handle kernel paging request at virtual address d76a7138
-> > ptbr = 91d3b000 pgd = 0000e5f3 pte = 00014370
-
-Hmm. It actually found something in the pte? Looks like a swap
-entry...but that doesn't make sense at that virtual address. Userspace
-is below 0x80000000.
-
-> > Oops: Kernel access of bad area, sig: 11 [#1]
-> > FRAME_POINTER chip: 0x01f:0x1e82 rev 2
-> > Modules linked in: nf_conntrack_ipv4(+) nf_conntrack ip_tables
-> > PC is at kmem_cache_alloc+0x2c/0x54
-> > LR is at nf_conntrack_l4proto_register+0x34/0x9c [nf_conntrack]
+> Introduce new proc interface for RTTIME watchdog.
+> It makes administrator able to set RTTIME watchdog to existing
+> real-time applications without impact.
 > 
-> I take it that the above means that the crash is in kmem_cache_alloc()?
-
-That's correct.
-
-> If so, the bug could be almost anywhere - in slab, or in some random piece
-> of code which scribbles on slab's data structures.
-
-Yes, it looks like memory corruption, especially since the page table
-appears to be corrupted as well. But I'll have a look and see if the
-code that dumps the pte is doing something bogus...
-
-> > Perfectly repeatable.
+> $ echo 10000000 > /proc/<pid>/rttime
+> set RTTIME current value to 10000000, it means 10sec.
 > 
-> If my theory is correct, changing pretty much anything in the kernel config
-> might just make it go away.  But still, it would be most valuable if you
-> could try running a bisection search, as described in
-> http://www.kernel.org/doc/local/git-quick.html, thanks.
+> $ echo "10000000 20000000" > /proc/<pid>/rttime
+> set RTTIME current value to 10000000 and max value to 20000000.
 
-Yes, that would be very valuable.
+How does one set it to `unlimited'?
 
-Haavard
+> And /proc/<pid>/task/<tid>/rttime is also accessible.
+
+Please describe the format in the changelog.
+
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  fs/proc/base.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 89 insertions(+), 0 deletions(-)
+> 
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> index 7c6b4ec..3212b44 100644
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -381,6 +381,93 @@ static const struct file_operations proc_lstats_operations = {
+>  
+>  #endif
+>  
+> +static int rttime_show_proc(struct seq_file *m, void *v)
+> +{
+> +	struct task_struct *task = m->private;
+> +	struct signal_struct *signal = task->signal;
+> +	struct rlimit *rt = &signal->rlim[RLIMIT_RTTIME];
+> +
+> +	if (rt->rlim_cur == RLIM_INFINITY)
+> +		seq_printf(m, "unlimited ");
+> +	else
+> +		seq_printf(m, "%lu ", rt->rlim_cur);
+> +
+> +	if (rt->rlim_max == RLIM_INFINITY)
+> +		seq_printf(m, "unlimited\n");
+> +	else
+> +		seq_printf(m, "%lu\n", rt->rlim_max);
+> +
+> +	return 0;
+> +}
+> +
+> +static int rttime_open(struct inode *inode, struct file *file)
+> +{
+> +	int ret;
+> +	struct seq_file *m;
+> +	struct task_struct *task = get_proc_task(inode);
+> +
+> +	ret = single_open(file, rttime_show_proc, NULL);
+> +	if (!ret) {
+> +		m = file->private_data;
+> +		m->private = task;
+> +	}
+> +	return ret;
+> +}
+
+get_proc_task() can return NULL, in which case it appears that the kernel
+will later oops?
+
+> +static ssize_t rttime_write(struct file *file,
+> +			    const char __user *buf,
+> +			    size_t count,
+> +			    loff_t *ppos)
+> +{
+> +	struct seq_file *m = file->private_data;
+> +	struct task_struct *task = m->private;
+> +	char buffer[PROC_NUMBUF], *end;
+> +	struct rlimit new_rlim, *old_rlim;
+> +	int n, ret;
+
+`n' should be size_t.  And a better name would be nice.
+
+> +	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
+> +	new_rlim = *old_rlim;
+> +	memset(buffer, 0, sizeof(buffer));
+> +	n = count;
+> +	if (n > sizeof(buffer) - 1)
+> +		n = sizeof(buffer) - 1;
+
+min()
+
+> +	if (copy_from_user(buffer, buf, n))
+> +		return -EFAULT;
+> +	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
+> +	if (*end == ' ') {
+> +		++end;
+> +		buf += end - buffer;
+> +		memset(buffer, 0, sizeof(buffer));
+> +		n = count - (end - buffer);
+> +		if (n > sizeof(buffer) - 1)
+> +			n = sizeof(buffer) - 1;
+
+min()
+
+> +		if (copy_from_user(buffer, buf, n))
+> +			return -EFAULT;
+> +		new_rlim.rlim_max = simple_strtoul(buffer, &end, 0);
+
+strict_strtoul()?
+
+> +	}
+> +	if (new_rlim.rlim_cur > new_rlim.rlim_max)
+> +		return -EINVAL;
+> +	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
+> +	    !capable(CAP_SYS_RESOURCE))
+> +		return -EPERM;
+> +	ret = security_task_setrlimit(RLIMIT_RTTIME, &new_rlim);
+> +	if (ret)
+> +		return ret;
+> +	task_lock(task->group_leader);
+> +	*old_rlim = new_rlim;
+> +	task_unlock(task->group_leader);
+
+hm.  Why do we lock on ->group_leader rather than the task itself?
+
+> +	return count;
+> +}
+> +
+> +static const struct file_operations proc_rttime_operations = {
+> +	.open		= rttime_open,
+> +	.read		= seq_read,
+> +	.write		= rttime_write,
+> +	.llseek		= seq_lseek,
+> +	.release	= single_release,
+> +};
+> +
+>  /* The badness from the OOM killer */
+>  unsigned long badness(struct task_struct *p, unsigned long uptime);
+>  static int proc_oom_score(struct task_struct *task, char *buffer)
+> @@ -2300,6 +2387,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+>  	LNK("exe",        exe),
+>  	REG("mounts",     S_IRUGO, mounts),
+>  	REG("mountstats", S_IRUSR, mountstats),
+> +	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
+>  #ifdef CONFIG_PROC_PAGE_MONITOR
+>  	REG("clear_refs", S_IWUSR, clear_refs),
+>  	REG("smaps",      S_IRUGO, smaps),
+> @@ -2630,6 +2718,7 @@ static const struct pid_entry tid_base_stuff[] = {
+>  	LNK("root",      root),
+>  	LNK("exe",       exe),
+>  	REG("mounts",    S_IRUGO, mounts),
+> +	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
+>  #ifdef CONFIG_PROC_PAGE_MONITOR
+>  	REG("clear_refs", S_IWUSR, clear_refs),
+>  	REG("smaps",     S_IRUGO, smaps),
+
