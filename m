@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762604AbYBMFOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765028AbYBMFPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762604AbYBMFOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 00:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbYBMFON
+	id S1765028AbYBMFPC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 00:15:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752561AbYBMFOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 00:14:13 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:37199 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbYBMFOL (ORCPT
+	Wed, 13 Feb 2008 00:14:51 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:28296 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750972AbYBMFOt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 00:14:11 -0500
-Date: Wed, 13 Feb 2008 14:09:55 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: Dave Hansen <haveblue@us.ibm.com>, Badari Pulavarty <pbadari@us.ibm.com>
-Subject: Re: [-mm PATCH] register_memory/unregister_memory clean ups
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, greg@kroah.com,
-       linux-mm <linux-mm@kvack.org>
-In-Reply-To: <1202853976.11188.86.camel@nimitz.home.sr71.net>
-References: <1202853415.25604.59.camel@dyn9047017100.beaverton.ibm.com> <1202853976.11188.86.camel@nimitz.home.sr71.net>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20080213120746.FB76.Y-GOTO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.27 [ja]
+	Wed, 13 Feb 2008 00:14:49 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 13 Feb 2008 00:14:41 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-reply-to: <alpine.LFD.1.00.0802121904270.2920@woody.linux-foundation.org>
+Message-id: <alpine.LFD.1.00.0802130011360.2732@xanadu.home>
+References: <47B1CB08.4020101@garzik.org>
+ <20080212.155853.193190548.davem@davemloft.net>
+ <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
+ <20080212.172051.58554658.davem@davemloft.net>
+ <1202869550.3137.182.camel@localhost.localdomain>
+ <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org>
+ <1202871616.3137.197.camel@localhost.localdomain>
+ <alpine.LFD.1.00.0802121904270.2920@woody.linux-foundation.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks Badari-san.
+On Tue, 12 Feb 2008, Linus Torvalds wrote:
 
-I understand what was occured. :-)
-
-> On Tue, 2008-02-12 at 13:56 -0800, Badari Pulavarty wrote:
-> > > > +   /*
-> > > > +    * Its ugly, but this is the best I can do - HELP !!
-> > > > +    * We don't know where the allocations for section memmap and usemap
-> > > > +    * came from. If they are allocated at the boot time, they would come
-> > > > +    * from bootmem. If they are added through hot-memory-add they could be
-> > > > +    * from sla or vmalloc. If they are allocated as part of hot-mem-add
-> > > > +    * free them up properly. If they are allocated at boot, no easy way
-> > > > +    * to correctly free them :(
-> > > > +    */
-> > > > +   if (usemap) {
-> > > > +           if (PageSlab(virt_to_page(usemap))) {
-> > > > +                   kfree(usemap);
-> > > > +                   if (memmap)
-> > > > +                           __kfree_section_memmap(memmap, nr_pages);
-> > > > +           }
-> > > > +   }
-> > > > +}
-> > > 
-> > > Do what we did with the memmap and store some of its origination
-> > > information in the low bits.
-> > 
-> > Hmm. my understand of memmap is limited. Can you help me out here ?
+> So let's say that you have a remote branch that you track that goes 
+> rebasing (let's call it "origin/pu" to match the real-life git behaviour), 
+> then you should literally be able to do
 > 
-> Never mind.  That was a bad suggestion.  I do think it would be a good
-> idea to mark the 'struct page' of ever page we use as bootmem in some
-> way.  Perhaps page->private? 
-
-I agree. page->private is not used by bootmem allocator.
-
-I would like to mark not only memmap but also pgdat (and so on)
-for next step. It will be necessary for removing whole node. :-)
-
-
->  Otherwise, you can simply try all of the
-> possibilities and consider the remainder bootmem.  Did you ever find out
-> if we properly initialize the bootmem 'struct page's?
+> 	old=$(git rev-parse origin/pu)	&&
+> 	git fetch			&&
+> 	new=$(git rev-parse origin/pu)	&&
+> 	git rebase --onto $new $old
 > 
-> Please have mercy and put this in a helper, first of all.
-> 
-> static void free_usemap(unsigned long *usemap)
-> {
-> 	if (!usemap_
-> 		return;
-> 
-> 	if (PageSlab(virt_to_page(usemap))) {
-> 		kfree(usemap)
-> 	} else if (is_vmalloc_addr(usemap)) {
-> 		vfree(usemap);
-> 	} else {
-> 		int nid = page_to_nid(virt_to_page(usemap));
-> 		bootmem_fun_here(NODE_DATA(nid), usemap);
-> 	}
-> }
-> 
-> right?
+> and no, I didn't actually test it, but hey, it really should be that 
+> simple.
 
-It may work. But, to be honest, I feel there are TOO MANY allocation/free
-way for memmap (usemap and so on). If possible, I would like to
-unify some of them. I would like to try it.
+Or, with Git 1.5.4, just:
 
-Bye.
+	git pull --rebase
 
--- 
-Yasunori Goto 
+And I didn't test it yet either.  Same caveats do apply.
 
 
+Nicolas
