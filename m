@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759549AbYBMBm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYBMBp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759549AbYBMBm1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYBMBmF
+	id S1757527AbYBMBp4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYBMBpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:42:05 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:57125 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757188AbYBMBmA (ORCPT
+	Tue, 12 Feb 2008 20:45:47 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50396
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752437AbYBMBpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:42:00 -0500
-Message-ID: <47B24AE1.7040709@opengridcomputing.com>
-Date: Tue, 12 Feb 2008 19:41:53 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopback connections.
-References: <20080212220929.24442.76874.stgit@dell3.ogc.int> <adafxvxvgz3.fsf@cisco.com>
-In-Reply-To: <adafxvxvgz3.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 12 Feb 2008 20:45:45 -0500
+Date: Tue, 12 Feb 2008 17:46:17 -0800 (PST)
+Message-Id: <20080212.174617.154760933.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: jeff@garzik.org, arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.1.00.0802121733000.2920@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
+	<20080212.172051.58554658.davem@davemloft.net>
+	<alpine.LFD.1.00.0802121733000.2920@woody.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> applied, although:
-> 
->  > +static void is_loopback_dst(struct iw_cm_id *cm_id)
->  > +{
->  > +	struct net_device *dev;
->  > +	
->  > +	dev = ip_dev_find(&init_net, cm_id->remote_addr.sin_addr.s_addr);
->  > +	if (!dev)
->  > +		return 0;
->  > +	dev_put(dev);
->  > +	return 1;
->  > +}
-> 
-> is there any way this could trigger when it should, like if I'm trying
-> to make a connection from one local device to a different local device
-> (which should work fine)?
-> 
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 12 Feb 2008 17:41:19 -0800 (PST)
 
-As far as I can tell, if the app does a rdma_resolve_addr() on the dst 
-addr (which is a local address), then the routing lookup will find the 
-local interface with that dst addr, and that device will be used for the 
-connect.  IE src and dst devices are the same.
+> Trust me, you don't know how good you have it.
 
-Maybe if the app does an explicit bind to the addr on one device, then 
-connects to the addr on the other device.  But that's not gonna work 
-either, I think.  I still think it will resolve to one device and that 
-device cannot do loopback...
+I know, preserving history is valuable.
 
-
-Steve.
+I'll take up the various suggestions and try working
+a little differently this time around.  We'll see
+how well it works.
