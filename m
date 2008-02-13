@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763377AbYBMBPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbYBMBUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763377AbYBMBPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:15:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYBMBPd
+	id S1759252AbYBMBUh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYBMBU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:15:33 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56919
+	Tue, 12 Feb 2008 20:20:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54075
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752386AbYBMBPc (ORCPT
+	by vger.kernel.org with ESMTP id S1753262AbYBMBUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:15:32 -0500
-Date: Tue, 12 Feb 2008 17:16:03 -0800 (PST)
-Message-Id: <20080212.171603.14132226.davem@davemloft.net>
-To: akpm@linux-foundation.org
+	Tue, 12 Feb 2008 20:20:19 -0500
+Date: Tue, 12 Feb 2008 17:20:51 -0800 (PST)
+Message-Id: <20080212.172051.58554658.davem@davemloft.net>
+To: torvalds@linux-foundation.org
 Cc: jeff@garzik.org, arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
        linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
 Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080212163742.c9e778e6.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
 References: <47B1CB08.4020101@garzik.org>
 	<20080212.155853.193190548.davem@davemloft.net>
-	<20080212163742.c9e778e6.akpm@linux-foundation.org>
+	<alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -30,31 +30,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 12 Feb 2008 16:37:42 -0800
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 12 Feb 2008 16:44:47 -0800 (PST)
 
-> Well there's a case in point.  rcupdate.h is not a part of networking, and
-> it is random tree-wandering like this which causes me problems and which
-> will cause Stephen problems.
+> 	gitk --merge
+ ...
+> This is something where I actually think git could and should do better: 
+> git has the capability to act as more of a "quilt replacement", but 
+> because it wasn't part of the original design, we never actualy exposed 
+> the simple queue management commands to do this (stgit does things like 
+> that, though).
 > 
-> Now, I don't know which tree "owns" rcupdate.h but it ain't networking. 
-> Probably git-sched.
-> 
-> Nothing in networking depends upon that change (which has a typo in the
-> comment, btw) hence it can and should have gone through
-> whichever-tree-owns-that-file.
-> 
-> For Stephen's sake: please.
+> So if you haven't pushed out, right now you'd have to do this stupid 
+> thing:
 
-At least thie time I did make sure that change got posted to
-linux-kernel and got properly reviewed by the de-facto maintainer
-(Paul McKenney). :-)
+Thanks for all the useful info.
 
-I'll toss it.
+But as soon as I've applied any patches to my tree I've "pushed out".
+So this scheme doesn't work for me.  The first thing I do when I have
+changes to apply is clone a tree locally and on master.kernel.org,
+then I apply that first patch locally and push it out to master.
 
-But how do I do that using GIT without rebasing and without
-having this ugly changeset and revert in there?
+What would be really cool is if you could do the rebase thing, push
+that to a remote tree you were already pushing into and others could
+pull from that and all the right things happen.
 
-That's the thing I want answered, and although Al claims it does,
-git cherry-pick does not seem to do what I want either.
-
+A rebase is just a series of events, and those could propagate to
+people who are pulling from the tree.  I'm pretty sure GIT could
+support this.
