@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757450AbYBMCIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761529AbYBMCJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757450AbYBMCIY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753682AbYBMCIP
+	id S1761529AbYBMCJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYBMCIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:08:15 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:22580 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753600AbYBMCIO (ORCPT
+	Tue, 12 Feb 2008 21:08:53 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45684 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754027AbYBMCIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:08:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jagulKQNnP1lIIMqlPygS4c/vQr0GS278up4NaUVqvXOO6klGAyN3IRn861ZmZ/DHGmatIhq93/Hrt70lXSBW1bzBR3PZTWjQRIErfbLvRDkVbSeLn+H5Si0Z1cAiSgk3taZUC31DF2RmO986JmJTRrcEEw7g7Z0Z/7h328zfgU=
-Message-ID: <f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com>
-Date: Wed, 13 Feb 2008 09:08:12 +0700
-From: "Mulyadi Santosa" <mulyadi.santosa@gmail.com>
-To: "Scott Lovenberg" <scott.lovenberg@gmail.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Cc: "Peter Teoh" <htmldeveloper@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <47B15DD2.3090706@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 12 Feb 2008 21:08:52 -0500
+Date: Tue, 12 Feb 2008 18:06:13 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, bfields@fieldses.org, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-Id: <20080212180613.a1a07264.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org>
+	<20080212.165014.01238510.davem@davemloft.net>
+	<alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org>
+	<20080212.173817.111913348.davem@davemloft.net>
+	<alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
-	 <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
-	 <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
-	 <47B15DD2.3090706@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
+On Tue, 12 Feb 2008 17:57:19 -0800 (PST) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Here's my idea: what if we collaborate to extend and make the kernel
-documentation better? I have done (slow) start by editing profile=
-kernel param. It's not accepted by Adrian Bunk, but at least I did it.
-Feedback?
+>  - and you actually can help fix your issues by doing some simple things 
+>    *before* pushing out, rather than push out immediately. IOW, do your 
+>    whitespace sanity fixes, your compile checks etc early, and don't push 
+>    out until after you've done them.
+> 
 
-regards,
+One of the things which linux-next could/should do is to help weed out the
+silly build breaks, typos, missing documentation updates, missed checkpatch
+opportunities, etc, etc. As well as real bugs.
 
-Mulyadi.
+So it would not be efficient for David to do all this queue-cleaning
+*prior* to putting the tree into linux-next, because more stuff will pop up
+anyway.
+
+So perhaps a better workflow would be keep the linux-next trees all messy,
+and then each developer can consolidate, rebase, join and drop things prior
+to sending their individual trees to Linus.
+
+If so, then git could perhaps help, by retaining sufficient metadata for
+the maintainer to track the fact that this-patch-here fixes
+that-patch-there.
+
