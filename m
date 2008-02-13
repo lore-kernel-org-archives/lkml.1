@@ -1,115 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbYBMSwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYBMS51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbYBMSwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759962AbYBMSwQ
+	id S1759962AbYBMS51 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:57:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbYBMS5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:52:16 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:36750 "EHLO smtp3-g19.free.fr"
+	Wed, 13 Feb 2008 13:57:19 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:45900 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758305AbYBMSwP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:52:15 -0500
-Message-ID: <47B33C56.3070502@inria.fr>
-Date: Wed, 13 Feb 2008 19:52:06 +0100
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	id S1753278AbYBMS5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 13:57:18 -0500
+Date: Wed, 13 Feb 2008 20:57:03 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: starvik@axis.com, jesper.nilsson@axis.com
+Cc: dev-etrax@axis.com, linux-kernel@vger.kernel.org
+Subject: cris/arch-v10/lib/memset.c compile error
+Message-ID: <20080213185703.GC14269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mundt <lethal@linux-sh.org>,
-       Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Purpose of numa_node?
-References: <47A11ACD.1090400@redhat.com> <20080131074045.GA13788@linux-sh.org>	 <47A1D03A.3020508@inria.fr>	 <86802c440801311329h67a79139xa33994e2cc116781@mail.gmail.com>	 <47A23F1C.7080809@inria.fr>	 <86802c440801311342y16ff7c7eib28bf1c576be7075@mail.gmail.com> <86802c440801311535v2bb9977ma884129662c9a2d5@mail.gmail.com>
-In-Reply-To: <86802c440801311535v2bb9977ma884129662c9a2d5@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
->>> Have a look at the above link. I don't get -1. I get 0 everywhere, while
->>> I should get 1 for some devices. And if I unplug/replug a device using
->>> fakephp, numa_node becomes correct (1 instead of 0). This just looks
->>> like the code is there but things are initialized in the wrong order.
->>>       
->> do you have
->> ...
->> bus 00 -> pxm 0 -> node 0
->> ...
->> bus 40 -> pxm 1 -> node 1
->> ...
->> bus 80 -> pxm 1 -> node 1
->>
->> in your boot msg or dmesg?
->>
->> if not, your dsdt doesn't have _PXM for pci root bus. or you need to
->> ask your HW vendor to add that in their BIOS, or use my patchset.
->>     
->
-> please try the attached patchset
->
-> please get x86.git then use quilt apply the patch
->
-> http://people.redhat.com/mingo/x86.git/README
->   
+Trying to compile a cris defconfig with an svn gcc (that will become
+gcc 4.3) fails with the following error:
 
-I finally managed to test this and it seems to work. I now get the
-following numa_node attributes:
-/sys/devices/pci0000:00/0000:00:01.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:07.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:07.0/0000:38:0d.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:08.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:08.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:08.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:09.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:09.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:09.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:0a.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0a.0/0000:22:00.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0b.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0c.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0c.0/0000:0c:00.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0c.0/0000:0c:00.0/0000:0d:00.0/numa_node   
-0
-/sys/devices/pci0000:00/0000:00:0d.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0d.0/0000:01:00.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0e.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0e.0/0000:17:00.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:0e.0/0000:17:00.0/0000:18:00.0/numa_node   
-0
-/sys/devices/pci0000:00/0000:00:18.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:18.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:18.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:18.3/numa_node    0
-/sys/devices/pci0000:00/0000:00:19.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:19.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:19.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:19.3/numa_node    0
-/sys/devices/pci0000:00/0000:00:1a.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:1a.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:1a.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:1a.3/numa_node    0
-/sys/devices/pci0000:00/0000:00:1b.0/numa_node    0
-/sys/devices/pci0000:00/0000:00:1b.1/numa_node    0
-/sys/devices/pci0000:00/0000:00:1b.2/numa_node    0
-/sys/devices/pci0000:00/0000:00:1b.3/numa_node    0
-/sys/devices/pci0000:40/0000:40:0f.0/numa_node    1
-/sys/devices/pci0000:40/0000:40:10.0/numa_node    1
-/sys/devices/pci0000:40/0000:40:11.0/numa_node    1
-/sys/devices/pci0000:40/0000:40:12.0/numa_node    1
-/sys/devices/pci0000:40/0000:40:12.0/0000:51:00.0/numa_node    1
-/sys/devices/pci0000:40/0000:40:13.0/numa_node    1
+<--  snip  -->
 
-The 5 last lines above would report 0 instead of 1 with an older kernel.
-Everything looks correct now (0000:40 is the second PCIe bus and it is
-attached to socket #1).
+...
+  CC      arch/cris/arch-v10/lib/memset.o
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c: In function 'memset':
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:164: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:165: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:166: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:167: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:185: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:189: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:192: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:196: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:200: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:201: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:205: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:206: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:209: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:210: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:214: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:215: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:219: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:220: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:221: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:225: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:226: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:227: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:230: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:231: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:232: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:236: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:237: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:238: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:242: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:243: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:244: error: lvalue required as increment operand
+/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:245: error: lvalue required as increment operand
+make[2]: *** [arch/cris/arch-v10/lib/memset.o] Error 1
+make[1]: *** [arch/cris/arch-v10/lib] Error 2
+make: *** [sub-make] Error 2
 
-Thanks a lot, Yinghai! Are you planning to merge these patches in the
-near future? 2.6.26?
+<--  snip  -->
 
-Brice
+cu
+Adrian
 
-PS: I saved the corresponding dmesg. If you want to look at it, please
-let me know.
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
