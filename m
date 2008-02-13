@@ -1,96 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932252AbYBMPdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765877AbYBMPez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932252AbYBMPdb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:33:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765931AbYBMPdG
+	id S1765877AbYBMPez (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756181AbYBMPeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:33:06 -0500
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:60021 "EHLO
-	outbound1-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765903AbYBMPdC (ORCPT
+	Wed, 13 Feb 2008 10:34:46 -0500
+Received: from sd-green-bigip-145.dreamhost.com ([208.97.132.145]:60218 "EHLO
+	spunkymail-a10.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755963AbYBMPep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:33:02 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0JW6NYC-01-5PD-01
-X-Server-Uuid: DF9F24A0-1A5C-40A5-8B0A-DEB676E72ECF
-Message-ID: <20080213151841.586864000@amd.com>
-References: <20080213151811.804698000@amd.com>
-User-Agent: quilt/0.46-1
-From: "Robert Richter" <robert.richter@amd.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-cc: "LKML" <linux-kernel@vger.kernel.org>,
-       "Robert Richter" <robert.richter@amd.com>
-Subject: [patch 2/2] x86: apic: Extended interrupt LVT support for AMD
- Barcelona (32bit)
-Date: Wed, 13 Feb 2008 16:19:36 +0100 (CET)
-X-OriginalArrivalTime: 13 Feb 2008 15:19:36.0665 (UTC)
- FILETIME=[D814EC90:01C86E53]
+	Wed, 13 Feb 2008 10:34:45 -0500
+X-Greylist: delayed 42845 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 10:34:45 EST
+Message-ID: <47B30E11.2080903@sdiz.net>
+Date: Wed, 13 Feb 2008 23:34:41 +0800
+From: SDiZ <sdiz@sdiz.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-X-WSS-ID: 6BADD54E07S10443439-01-01
-Content-Disposition: inline;
- filename=0002-x86-apic-Extended-interrupt-LVT-support-for-AMD-Ba.patch
-Content-Type: text/plain
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][BLUETOOTH] add HCI_BROKEN_ISOC for 0e5e:6622 (bugzilla
+ #9027)
+References: <47B266AE.3040908@sdiz.net> <1202898692.7664.369.camel@violet>
+In-Reply-To: <1202898692.7664.369.camel@violet>
+Content-Type: text/plain; charset=Big5-HKSCS
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Robert Richter <robert.richter@amd.com>
----
- arch/x86/kernel/apic_32.c |   31 +++++++++++++++++++++++++++++++
- 1 files changed, 31 insertions(+), 0 deletions(-)
+Hi,
 
-diff --git a/arch/x86/kernel/apic_32.c b/arch/x86/kernel/apic_32.c
-index 35a568e..a6f9d25 100644
---- a/arch/x86/kernel/apic_32.c
-+++ b/arch/x86/kernel/apic_32.c
-@@ -621,6 +621,37 @@ int setup_profiling_timer(unsigned int multiplier)
- }
- 
- /*
-+ * Setup extended LVT, AMD specific (K8, family 10h)
-+ *
-+ * Vector mappings are hard coded. On K8 only offset 0 (APIC500) and
-+ * MCE interrupts are supported. Thus MCE offset must be set to 0.
-+ */
-+
-+#define APIC_EILVT_LVTOFF_MCE 0
-+#define APIC_EILVT_LVTOFF_IBS 1
-+
-+static void setup_APIC_eilvt(u8 lvt_off, u8 vector, u8 msg_type, u8 mask)
-+{
-+	unsigned long reg = (lvt_off << 4) + APIC_EILVT0;
-+	unsigned int  v   = (mask << 16) | (msg_type << 8) | vector;
-+	apic_write(reg, v);
-+}
-+
-+u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask)
-+{
-+	setup_APIC_eilvt(APIC_EILVT_LVTOFF_MCE, vector, msg_type, mask);
-+	return APIC_EILVT_LVTOFF_MCE;
-+}
-+EXPORT_SYMBOL(setup_APIC_eilvt_mce);
-+
-+u8 setup_APIC_eilvt_ibs(u8 vector, u8 msg_type, u8 mask)
-+{
-+	setup_APIC_eilvt(APIC_EILVT_LVTOFF_IBS, vector, msg_type, mask);
-+	return APIC_EILVT_LVTOFF_IBS;
-+}
-+EXPORT_SYMBOL(setup_APIC_eilvt_ibs);
-+
-+/*
-  * Local APIC start and shutdown
-  */
- 
--- 
-1.5.1.6
+Marcel Holtmann wrote:
+> Hi,
+>   
+>> This patch fix bugzilla #9027.
+>> ``Syslog flooded with "hci_scodata_packet: hci0 SCO packet for unknown
+>> connection handle 92" message"
+>>
+>> see http://bugzilla.kernel.org/show_bug.cgi?id=9027
+>>     
+>
+> when we get the content of /proc/bus/usb/devices for this one. Do you
+> have the manufacturer name of it or at least an idea which kind of
+> device this is. Check "hciconfig hci0 version".
+>   
+It have no text on the chips and package, so I don't know the
+manufacturer name.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+/proc/bus/usb/devices shows:
 
 
+T: Bus=01 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#= 2 Spd=12 MxCh= 0
+D: Ver= 1.10 Cls=e0(unk. ) Sub=01 Prot=01 MxPS=16 #Cfgs= 1
+P: Vendor=0e5e ProdID=6622 Rev= 1.34
+C:* #Ifs= 2 Cfg#= 1 Atr=80 MxPwr=100mA
+I:* If#= 0 Alt= 0 #EPs= 3 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+E: Ad=81(I) Atr=03(Int.) MxPS= 16 Ivl=1ms
+E: Ad=82(I) Atr=02(Bulk) MxPS= 64 Ivl=0ms
+E: Ad=02(O) Atr=02(Bulk) MxPS= 64 Ivl=0ms
+I: If#= 1 Alt= 0 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+E: Ad=83(I) Atr=01(Isoc) MxPS= 0 Ivl=1ms
+E: Ad=03(O) Atr=01(Isoc) MxPS= 0 Ivl=1ms
+I: If#= 1 Alt= 1 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+E: Ad=83(I) Atr=01(Isoc) MxPS= 9 Ivl=1ms
+E: Ad=03(O) Atr=01(Isoc) MxPS= 9 Ivl=1ms
+I:* If#= 1 Alt= 2 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+E: Ad=83(I) Atr=01(Isoc) MxPS= 17 Ivl=1ms
+E: Ad=03(O) Atr=01(Isoc) MxPS= 17 Ivl=1ms
+
+> Dave, I don't think this is a broken dongle. I think he hits the case of
+> eSCO versus SCO connection (the fallback to SCO case). I am working on
+> the proper fix for that, but that is not as simple as it seems.
+>
+> Regards
+>
+> Marcel
+>   
+Regards,
+Yuk-Pong, Cheng (SDiZ)
 
