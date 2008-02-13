@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762910AbYBMCJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763268AbYBMCKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762910AbYBMCJe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:09:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYBMCJZ
+	id S1763268AbYBMCKb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:10:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYBMCKR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:09:25 -0500
-Received: from mga03.intel.com ([143.182.124.21]:64715 "EHLO mga03.intel.com"
+	Tue, 12 Feb 2008 21:10:17 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:41198 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754112AbYBMCJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:09:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,343,1199692800"; 
-   d="scan'208";a="378320529"
-Subject: Re: Latest kernel doesn't boot
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       jason.fleischli@hp.com
-In-Reply-To: <47ADF34A.6010804@m3y3r.de>
-References: <1202249704.47a8dfe89a99c@213.133.104.17>
-	 <47A8E427.6040205@zytor.com> <47AA1633.4000309@m3y3r.de>
-	 <47AA2082.4000402@zytor.com> <47AA2634.7020907@m3y3r.de>
-	 <47AA2A75.80909@zytor.com>  <47ADF34A.6010804@m3y3r.de>
-Content-Type: text/plain
+	id S1753600AbYBMCKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 21:10:15 -0500
+Message-ID: <47B2517E.3080606@garzik.org>
+Date: Tue, 12 Feb 2008 21:10:06 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: chris.mason@oracle.com, jengelh@computergmbh.de,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       btrfs-devel@oss.oracle.com
+Subject: Re: BTRFS partition usage...
+References: <200802120849.34477.chris.mason@oracle.com>	<Pine.LNX.4.64.0802121458420.21102@fbirervta.pbzchgretzou.qr>	<200802120908.59602.chris.mason@oracle.com> <20080212.153329.98384016.davem@davemloft.net>
+In-Reply-To: <20080212.153329.98384016.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 13 Feb 2008 10:01:58 +0800
-Message-Id: <1202868118.5026.10.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 13 Feb 2008 02:01:44.0450 (UTC) FILETIME=[62049E20:01C86DE4]
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-09 at 19:39 +0100, Thomas Meyer wrote:
-> H. Peter Anvin schrieb:
-> > Thomas Meyer wrote:
-> >> H. Peter Anvin schrieb:
-> >>> Thomas Meyer wrote:
-> >>>>
-> >>>> I can not revert the commit 
-> >>>> e429795c68d3001ecae74f6465420c9f043b0ece. it gave me errors.
-> >>>> but i'm also not sure what could be wrong with this commit!
-> >>>>
-> >>>> my first idea was that the commit 
-> >>>> "[2215e69d2cf5024647f9a034807990590d25dd4e] x86 boot: use E820 
-> >>>> memory map on EFI 32 platform" is the offender, because the macbook 
-> >>>> pro doesn't provide a e820 memory map at all. but bisect showed 
-> >>>> that i'm wrong here?!
-> >>>>
-> >>>
-> >>> ELILO is expected to convert the memory map from EFI to e820 format.
-> >> I'm using elilo-3.6-ia32.efi provided at the elilo homepage.  i 
-> >> wasn't able to create a working efi toolchain :-(
-> >> Does elilo-3.6 already do the converting of the memory map, or not?
-> >
-> > Don't know.
-> 3.6 doesn't do the mapping in ia32/system.c create_boot_params().
-> 3.8 does.
+David Miller wrote:
+> From: Chris Mason <chris.mason@oracle.com>
+> Date: Tue, 12 Feb 2008 09:08:59 -0500
 > 
-> The problem is, that i wasn't able to produce a working elilo.efi files 
-> with my gentoo toolchain. the files elilo-3.8.efi provided by the elilo 
-> project also doesn't work (gives a load error from the efi runtime).
+>> I've had requests to move the super down to 64k to make room for
+>> bootloaders, which may not matter for sparc, but I don't really plan
+>> on different locations for different arches.
 > 
-> So i guess i'm stuck here.
+> The Sun disk label sits in the first 512 bytes and the boot loader
+> block sits in the second 512 bytes.
+> 
+> I think leaving even more space is a good idea for several reasons.
 
-Can you attach the error message with elilo 3.8?
 
-> It should be noted somewhere that with Huangs patches, elilo version 3.8 
-> is needed.
+Yep.  I chose 32K unused space in the prototype filesystem I wrote [1, 
+2.4 era].  I'm pretty sure I got that number from some other filesystem, 
+maybe even some NTFS incarnation.  It's just good practice to avoid the 
+first and last "chunks" of a partition, FSVO chunk.
 
-Yes. I will add this.
+	Jeff
 
-Best Regards,
-Huang Ying
 
+[1] http://kernel.org/pub/linux/kernel/people/jgarzik/ibu/
