@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763863AbYBMTjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933081AbYBMTja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763863AbYBMTjO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 14:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbYBMTi5
+	id S933081AbYBMTja (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 14:39:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765335AbYBMTjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 14:38:57 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33919 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753828AbYBMTi4 (ORCPT
+	Wed, 13 Feb 2008 14:39:13 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43892 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763863AbYBMTjM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 14:38:56 -0500
-Date: Wed, 13 Feb 2008 20:38:55 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>,
-       =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-In-Reply-To: <47B2B268.1070702@panasas.com>
-Message-ID: <Pine.LNX.4.64.0802132038320.29154@fbirervta.pbzchgretzou.qr>
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
- <47B1D7A8.8010108@panasas.com> <47B1DA2A.1060904@panasas.com>
- <47B29702.7050503@allied-internet.ag> <47B2B268.1070702@panasas.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Feb 2008 14:39:12 -0500
+Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Bob Tracy <rct@frus.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080213052903.B1F1CDBA2@gherkin.frus.com>
+References: <20080213052903.B1F1CDBA2@gherkin.frus.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 20:39:05 +0100
+Message-Id: <1202931545.20209.6.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Feb 13 2008 11:03, Boaz Harrosh wrote:
->> 
->> I've tested this patch now - and it works fine. Now rmmod, halt and 
->> reboot also works.
->> 
->> Stefan Priebe
->> 
->This is grate news Stefan. Thank you very much for all your time
->and effort, with out we could not have fixed all this.
+On Tue, 2008-02-12 at 23:29 -0600, Bob Tracy wrote:
+> This isn't going to be terribly useful other than giving someone a
+> heads-up there's a problem with something in 2.6.25-rc1 on the Alpha
+> PWS 433au.  I get the usual messages out of "aboot", including
+> 
+> aboot: zero-filling 210392 bytes at 0xfffffc0000776740
+> aboot: starting kernel vmlinux.new.gz with argument ro root=/dev/sda3
+> 
+> and then the screen background switches to red and the machine locks
+> up solid.  No further console output.  Completely reproducible.  The
+> 2.6.24 kernel is fine.
+> 
+> Unless someone has a good idea what's causing this, I see a massive
+> "git bisect" project in my future.  Won't be able to spend any time with
+> this until at least the weekend :-(.
 
-Do you have a git tree with the latest pieces?
+Does: http://lkml.org/lkml/2008/1/28/100
+
+help?
+
