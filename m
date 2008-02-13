@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765333AbYBMB0a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765662AbYBMB0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765333AbYBMB0a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:26:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753776AbYBMB0N
+	id S1765662AbYBMB0p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764619AbYBMB01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:26:13 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:59787 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752847AbYBMB0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:26:11 -0500
-In-Reply-To: <20080212.152652.217936905.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: btrfs-devel@oss.oracle.com, chris.mason@oracle.com,
-       jengelh@computergmbh.de, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Subject: Re: BTRFS partition usage...
-X-Mailer: Lotus Notes Release 7.0 HF277 June 21, 2006
-Message-ID: <OF91619394.99460343-ON882573EE.0006CBE5-882573EE.0007D541@us.ibm.com>
-From: Bryan Henderson <hbryan@us.ibm.com>
-Date: Tue, 12 Feb 2008 17:25:32 -0800
-X-MIMETrack: Serialize by Router on D01ML604/01/M/IBM(Release 8.0|August 02, 2007) at 02/12/2008
- 20:26:07,
-	Serialize complete at 02/12/2008 20:26:07
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 12 Feb 2008 20:26:27 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36899
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1762558AbYBMB0Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 20:26:25 -0500
+Date: Tue, 12 Feb 2008 17:26:56 -0800 (PST)
+Message-Id: <20080212.172656.118569021.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: paulmck@us.ibm.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/4] hlist_for_each_entry_continue simplification
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080213005122.879352336@vyatta.com>
+References: <20080213005042.150212716@vyatta.com>
+	<20080213005122.879352336@vyatta.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The Sun disk label only allows you to specify the start of a partition
-> in cylinders, so if you want to use a filesystem like XFS you have to
-> start the partition on cylinder 1 which can be many blocks into the
-> disk.  That entire first cylinder is completely wasted.
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Tue, 12 Feb 2008 16:50:46 -0800
 
-I don't believe a cylinder of wasted disk space is significant.  I don't 
-believe a cylinder of disk is worth adding the complexity of sharing a 
-partition to a filesystem.  That complexity translates into engineering 
-time and mistakes.
+> All the users of hlist_for_each_entry_continue had to intialize pos
+> before use; change API so pos is a pure temporary variable which matches
+> the usage of other xxxx_for_each_entry routines.
+> 
+> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
 
-Your other arguments for making a hole in the filesystem, based on 
-tradition, are more convincing.
+linux/list.h changes need to be reviewed on linux-kernel and
+merged into Linus's tree via some means other than the
+networking tree.
 
---
-Bryan Henderson                     IBM Almaden Research Center
-San Jose CA                         Filesystems
-
+I just got chewed out for a similar issue wrt. the rcupdate.h
+changes of yesterday and thus have to remove them from my
+tree.
