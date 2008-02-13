@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756547AbYBMOCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760279AbYBMODJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756547AbYBMOCV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 09:02:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752873AbYBMOCK
+	id S1760279AbYBMODJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 09:03:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbYBMOCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 09:02:10 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:58659 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752520AbYBMOCJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 09:02:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=M8obVfhCiYfAXzkOtJura0OlT6y2gfTLocpF71RnfPXQuQcQB9A6o53q4mRv3j995+g7hZzS1MygnHs6dwJvI4Fg5SJgR8pOFHZDQMvUIjF8r8BwNzt/ixhQKs64b1xMjw+8Kt/EoaRgfl6vwIPyyovgTRPykE5CTGXwx1RmyXo=
-Message-ID: <38b2ab8a0802130602r7d8fc470i7896e406d0451ec7@mail.gmail.com>
-Date: Wed, 13 Feb 2008 15:02:08 +0100
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Question on timekeeping subsystem
-Cc: johnstul@us.ibm.com
+	Wed, 13 Feb 2008 09:02:55 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22197 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752873AbYBMOCz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 09:02:55 -0500
+Message-ID: <47B2F88D.7080300@msgid.tls.msk.ru>
+Date: Wed, 13 Feb 2008 17:02:53 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: 2.6.24: RPC: bad TCP reclen 0x00020090 (large)
+X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello!
 
-I looked at this subsystem, trying to understand how this works on Linux
-but call me a dumb xxx but I think I really miss something.
+After upgrading to 2.6.24 (from .23), we're seeing ALOT
+of messages like in $subj in dmesg:
 
-First I tried to find some documentation on the current implementation
-but haven't found any thing really usefull. Specially there's nothing about
-it in Documentation/ directory. Please correct me if I'm already wrong.
+Feb 13 13:21:39 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+Feb 13 13:21:46 paltus kernel: printk: 3586 messages suppressed.
+Feb 13 13:21:46 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+Feb 13 13:21:49 paltus kernel: printk: 371 messages suppressed.
+Feb 13 13:21:49 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+Feb 13 13:21:55 paltus kernel: printk: 2979 messages suppressed.
+...
 
-Actually I read the implementation of update_wall_time() and I really fail
-to understand how it works. This is probably because I don't know
-what "xtime_nsec" and "error" fields in clocksource struct are for.
-These fields are not documented anywhere in the source code so it
-should be obvious but unfortunately not for me.
+with linux NFS server.  The clients are all linux too, mostly 2.6.23
+and some 2.6.22.
 
-Another example almost the first thing done by this function is:
+I found the "offending" piece of code in net/sunrpc/svcsock.c,
+in routine svc_tcp_recvfrom() with condition being:
 
-    clock->xtime_nsec += (s64)xtime.tv_nsec << clock->shift;
+   if (svsk->sk_reclen > serv->sv_max_mesg) ...
 
-What's the hell this ?
+This happens after a server reboot.  At this point, client(s) are trying
+to perform some NFS transaction and fail, and server starts generating
+the above messages - till I do a umount followed by mount on all clients.
+Before, such situation (nfs server reboot) were handled transparently,
+ie, there was nothing to do, the mount continued working just fine when
+the server comes back online.
 
-I know I'm stupid but please enlight me ;)
+Now, I'm not sure if it's really 2.6.24-specific problem or a userspace
+problem.  Some time ago we also upgraded nfs-kernel-server (Debian)
+package, and the remount-after-nfs-server-reboot problem started to
+occur at THAT time (and it is something to worry about as well, I just
+had no time to deal with it); but the dmesg spamming only appeared
+with 2.6.24.
 
-Thanks
--- 
-Francis
+How to debug the issue further on from this point?
+
+Thanks!
+
+/mjt
