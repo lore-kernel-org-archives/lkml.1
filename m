@@ -1,142 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932108AbYBMTeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbYBMTgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932108AbYBMTeT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 14:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYBMTeK
+	id S1765427AbYBMTgB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 14:36:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbYBMTfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 14:34:10 -0500
-Received: from web36610.mail.mud.yahoo.com ([209.191.85.27]:36811 "HELO
-	web36610.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751584AbYBMTeI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 14:34:08 -0500
-X-YMail-OSG: OZOiWOEVM1lamvgNcArPWS322lnqrHgfK.jaXBw68GFb17N14ZlO0nb45rfBixVdn4Ah5E4Uv4nL6akouiOMrZSQE7mEGyPrsNPSft8fGFhvPYRjkE8-
-X-RocketYMMF: rancidfat
-Date: Wed, 13 Feb 2008 11:34:07 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: + smack-check-for-struct-socket-with-null-sk.patch added to -mm tree
-To: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org
-Cc: darwish.07@gmail.com, casey@schuafler-ca.com
-In-Reply-To: <200802130811.m1D8BOx9015575@imap1.linux-foundation.org>
+	Wed, 13 Feb 2008 14:35:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58525 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754507AbYBMTfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 14:35:51 -0500
+Date: Wed, 13 Feb 2008 20:35:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andi Kleen <ak@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
+Message-ID: <20080213193538.GA16402@elte.hu>
+References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com> <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz> <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <694696.12762.qm@web36610.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---- akpm@linux-foundation.org wrote:
+* Jiri Kosina <jkosina@suse.cz> wrote:
 
-> 
-> The patch titled
->      Smack: check for 'struct socket' with NULL sk
-> has been added to the -mm tree.  Its filename is
->      smack-check-for-struct-socket-with-null-sk.patch
-> 
-> Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
-> 
-> *** Remember to use Documentation/SubmitChecklist when testing your code ***
-> 
-> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
-> out what to do about this
-> 
-> The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
-> 
-> ------------------------------------------------------
-> Subject: Smack: check for 'struct socket' with NULL sk
-> From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-> 
-> There's a small problem with smack and NFS. A similar report was also
-> sent here: http://lkml.org/lkml/2007/10/27/85
-> 
-> I've also added similar checks in inode_{get/set}security().  Cheating from
-> SELinux post_create_socket(), it does the same.
-> 
-> Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-> Acked-by: Casey Schaufler <casey@schuafler-ca.com>
-Acked-by: Casey Schaufler <casey@schaufler-ca.com>
+> > > [   68.379054]
+> > > [   68.379056] Call Trace:
+> > > [   68.379061]  <#DB>  [<ffffffff81064883>] ? __debug_show_held_locks+0x13/0x30
+> > > [   68.379109]  [<ffffffff81036765>] __might_sleep+0xe5/0x110
+> > > [   68.379123]  [<ffffffff812f2240>] down_read+0x20/0x70
+> > > [   68.379137]  [<ffffffff8109cdca>] print_vma_addr+0x3a/0x110
+> > > [   68.379152]  [<ffffffff8100f435>] do_trap+0xf5/0x170
+> > > [   68.379168]  [<ffffffff8100f52b>] do_int3+0x7b/0xe0
+> > > [   68.379180]  [<ffffffff812f4a6f>] int3+0x9f/0xd0
+> > > [   68.379203]  <<EOE>>
+> > > [   68.379229]  in libglib-2.0.so.0.1505.0[3d2c800000+dc000]
 
-Correct the dislexio in the ack.
+ouch. Could you try the fix below? This makes print_vma_addr() more 
+robust and should fix the immediate bug.
 
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  security/smack/smack_lsm.c |   10 ++++++----
->  1 file changed, 6 insertions(+), 4 deletions(-)
-> 
-> diff -puN
-> security/smack/smack_lsm.c~smack-check-for-struct-socket-with-null-sk
-> security/smack/smack_lsm.c
-> --- a/security/smack/smack_lsm.c~smack-check-for-struct-socket-with-null-sk
-> +++ a/security/smack/smack_lsm.c
-> @@ -701,7 +701,7 @@ static int smack_inode_getsecurity(const
->  		return -EOPNOTSUPP;
->  
->  	sock = SOCKET_I(ip);
-> -	if (sock == NULL)
-> +	if (sock == NULL || sock->sk == NULL)
->  		return -EOPNOTSUPP;
->  
->  	ssp = sock->sk->sk_security;
-> @@ -1280,10 +1280,12 @@ static void smack_to_secattr(char *smack
->   */
->  static int smack_netlabel(struct sock *sk)
->  {
-> -	struct socket_smack *ssp = sk->sk_security;
-> +	struct socket_smack *ssp;
->  	struct netlbl_lsm_secattr secattr;
->  	int rc = 0;
->  
-> +	BUG_ON(sk == NULL);
-> +	ssp = sk->sk_security;
->  	netlbl_secattr_init(&secattr);
->  	smack_to_secattr(ssp->smk_out, &secattr);
->  	if (secattr.flags != NETLBL_SECATTR_NONE)
-> @@ -1331,7 +1333,7 @@ static int smack_inode_setsecurity(struc
->  		return -EOPNOTSUPP;
->  
->  	sock = SOCKET_I(inode);
-> -	if (sock == NULL)
-> +	if (sock == NULL || sock->sk == NULL)
->  		return -EOPNOTSUPP;
->  
->  	ssp = sock->sk->sk_security;
-> @@ -1362,7 +1364,7 @@ static int smack_inode_setsecurity(struc
->  static int smack_socket_post_create(struct socket *sock, int family,
->  				    int type, int protocol, int kern)
->  {
-> -	if (family != PF_INET)
-> +	if (family != PF_INET || sock->sk == NULL)
->  		return 0;
->  	/*
->  	 * Set the outbound netlbl.
-> _
-> 
-> Patches currently in -mm which might be from darwish.07@gmail.com are
-> 
-> origin.patch
-> smack-check-for-struct-socket-with-null-sk.patch
-> smack-check-for-struct-socket-with-null-sk-fix.patch
-> git-kvm.patch
-> git-x86.patch
->
-embed-a-struct-path-into-struct-nameidata-instead-of-nd-dentrymnt-smack-fix.patch
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe mm-commits" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
+The longer-term fix will be to not run int3 exception handlers in a 
+non-preemptible context (like 32-bit does) - but that will need more 
+testing.
 
+	Ingo
 
-Casey Schaufler
-casey@schaufler-ca.com
+---------------->
+Subject: x86: fix "BUG: sleeping function called from invalid context" in print_vma_addr()
+From: Ingo Molnar <mingo@elte.hu>
+Date: Wed Feb 13 20:21:06 CET 2008
+
+Jiri Kosina reported the following deadlock scenario with
+show_unhandled_signals enabled:
+
+ [   68.379022] gnome-settings-[2941] trap int3 ip:3d2c840f34
+ sp:7fff36f5d100 error:0<3>BUG: sleeping function called from invalid
+ context at kernel/rwsem.c:21
+ [   68.379039] in_atomic():1, irqs_disabled():0
+ [   68.379044] no locks held by gnome-settings-/2941.
+ [   68.379050] Pid: 2941, comm: gnome-settings- Not tainted 2.6.25-rc1 #30
+ [   68.379054]
+ [   68.379056] Call Trace:
+ [   68.379061]  <#DB>  [<ffffffff81064883>] ? __debug_show_held_locks+0x13/0x30
+ [   68.379109]  [<ffffffff81036765>] __might_sleep+0xe5/0x110
+ [   68.379123]  [<ffffffff812f2240>] down_read+0x20/0x70
+ [   68.379137]  [<ffffffff8109cdca>] print_vma_addr+0x3a/0x110
+ [   68.379152]  [<ffffffff8100f435>] do_trap+0xf5/0x170
+ [   68.379168]  [<ffffffff8100f52b>] do_int3+0x7b/0xe0
+ [   68.379180]  [<ffffffff812f4a6f>] int3+0x9f/0xd0
+ [   68.379203]  <<EOE>>
+ [   68.379229]  in libglib-2.0.so.0.1505.0[3d2c800000+dc000]
+
+and tracked it down to:
+
+  commit 03252919b79891063cf99145612360efbdf9500b
+  Author: Andi Kleen <ak@suse.de>
+  Date:   Wed Jan 30 13:33:18 2008 +0100
+
+      x86: print which shared library/executable faulted in segfault etc. messages
+
+the problem is that we call down_read() from an atomic context.
+
+Solve this by returning from print_vma_addr() if the preempt count is
+elevated. Update preempt_conditional_sti / preempt_conditional_cli to
+unconditionally lift the preempt count even on !CONFIG_PREEMPT.
+
+Reported-by: Jiri Kosina <jkosina@suse.cz>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/traps_64.c |    4 ++--
+ mm/memory.c                |    7 +++++++
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+Index: linux-x86.q/arch/x86/kernel/traps_64.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/traps_64.c
++++ linux-x86.q/arch/x86/kernel/traps_64.c
+@@ -84,7 +84,7 @@ static inline void conditional_sti(struc
+ 
+ static inline void preempt_conditional_sti(struct pt_regs *regs)
+ {
+-	preempt_disable();
++	inc_preempt_count();
+ 	if (regs->flags & X86_EFLAGS_IF)
+ 		local_irq_enable();
+ }
+@@ -95,7 +95,7 @@ static inline void preempt_conditional_c
+ 		local_irq_disable();
+ 	/* Make sure to not schedule here because we could be running
+ 	   on an exception stack. */
+-	preempt_enable_no_resched();
++	dec_preempt_count();
+ }
+ 
+ int kstack_depth_to_print = 12;
+Index: linux-x86.q/mm/memory.c
+===================================================================
+--- linux-x86.q.orig/mm/memory.c
++++ linux-x86.q/mm/memory.c
+@@ -2711,6 +2711,13 @@ void print_vma_addr(char *prefix, unsign
+ 	struct mm_struct *mm = current->mm;
+ 	struct vm_area_struct *vma;
+ 
++	/*
++	 * Do not print if we are in atomic
++	 * contexts (in exception stacks, etc.):
++	 */
++	if (preempt_count())
++		return;
++
+ 	down_read(&mm->mmap_sem);
+ 	vma = find_vma(mm, ip);
+ 	if (vma && vma->vm_file) {
+
