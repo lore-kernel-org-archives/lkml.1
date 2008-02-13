@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbYBMHBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbYBMHCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbYBMHBd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:01:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbYBMHBZ
+	id S1760810AbYBMHCP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYBMHCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:01:25 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41846
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752587AbYBMHBY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:01:24 -0500
-Date: Tue, 12 Feb 2008 23:01:56 -0800 (PST)
-Message-Id: <20080212.230156.33759433.davem@davemloft.net>
-To: rdreier@cisco.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <adazlu5tlve.fsf@cisco.com>
-References: <adazlu5tlve.fsf@cisco.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 02:02:01 -0500
+Received: from www.tglx.de ([62.245.132.106]:37199 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750881AbYBMHCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 02:02:00 -0500
+Date: Wed, 13 Feb 2008 08:01:46 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: git-x86 mm branch compile error
+In-Reply-To: <47B2377C.3000207@gmail.com>
+Message-ID: <alpine.LFD.1.00.0802130759180.12988@apollo.tec.linutronix.de>
+References: <47B2366C.4020901@gmail.com> <47B2377C.3000207@gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1919183126-1202886107=:12988"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 12 Feb 2008 22:24:05 -0800
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> I'm seeing a strange hang with current git (head 96b5a46e) on an ia64
-> box -- an Intel SDV with 2 dual core hyperthreaded Itanium 2 CPUs (so
-> 8 logical CPUs to the kernel).  It hangs without printing anything
-> ("Uncompressing Linux... done" from ELILO is the last thing I see) if
-> I have CONFIG_PRINTK_TIME=y; it works fine with CONFIG_PRINTK_TIME=n.
+--8323328-1919183126-1202886107=:12988
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Tue, 12 Feb 2008, Kevin Winchester wrote:
+
+> Kevin Winchester wrote:
+> >   CC      arch/x86/mm/pageattr.o
+> > arch/x86/mm/pageattr.c: In function ‘change_page_attr_set_clr’:
+> > arch/x86/mm/pageattr.c:778: error: incompatible type for argument 1 of
+> > ‘cpa_check_alias’
+> > make[1]: *** [arch/x86/mm/pageattr.o] Error 1
+> > make: *** [arch/x86/mm] Error 2
+> > 
+> > at tip 5248bbad9c72dd576aa8f3b44b5a959a7cae6ce1 x86: make
+> > DEBUG_PAGEALLOC & HIBERNATE work
+
+Sorry. I pushed the wrong branch out.
+
+> I assume the following is an acceptable fix (it will be completely
+> whitespace damaged due to thunderbird, but I think you get the idea)
+
+Applied. Thanks,
+
+	 tglx
+
+> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+> index cf91149..76a3de5 100644
+> --- a/arch/x86/mm/pageattr.c
+> +++ b/arch/x86/mm/pageattr.c
+> @@ -729,7 +729,7 @@ cpa_check_alias(struct cpa_data *cpa, unsigned long
+> addr, int numpages)
+>  #else
 > 
-> The really strange thing is that I have bisected this down to 326e96b9
-> ("printk: revert ktime_get() timestamps"), and verified that if revert
-> this one patch on top of my current git tree, then the kernel boots
-> fine with CONFIG_PRINTK_TIME=y.  The strange thing is that I have also
-> checked that the real v2.6.24 kernel boots fine on this system, and as
-> far as I can tell, 2.6.24 didn't have the commit that 326e96b9 reverts
-> (19ef9309), so there is some interaction with another patch that made
-> 19ef9309 necessary on my system.
+>  static int
+> -cpa_check_alias(struct cpa_data cpa, unsigned long addr, int numpages)
+> +cpa_check_alias(struct cpa_data *cpa, unsigned long addr, int numpages)
+>  {
+>         return 0;
+>  }
 > 
-> Any good idea how to debug this, given that the broken kernels don't
-> give any output at all?
-
-The kernel now derefernces per-cpu variables very early, essentially
-in the very first printk() (via printk()'s call to cpu_clock()).
-
-This bit me on sparc64 because of how I do the per-cpu address
-formation.  If I booted on a non-zero cpuid things would explode.
-
-You might be hitting something similar.
+--8323328-1919183126-1202886107=:12988--
