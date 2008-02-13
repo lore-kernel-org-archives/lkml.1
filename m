@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765706AbYBMB1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754152AbYBMB20@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765706AbYBMB1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757138AbYBMB05
+	id S1754152AbYBMB20 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:28:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbYBMB2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:26:57 -0500
-Received: from quartz.orcorp.ca ([142.179.161.236]:34797 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751953AbYBMB0y (ORCPT
+	Tue, 12 Feb 2008 20:28:06 -0500
+Received: from ug-out-1314.google.com ([66.249.92.170]:58604 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755316AbYBMB2D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:26:54 -0500
-Date: Tue, 12 Feb 2008 18:26:38 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Rik van Riel <riel@redhat.com>,
-       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-Message-ID: <20080213012638.GD31435@obsidianresearch.com>
-References: <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com> <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com> <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+	Tue, 12 Feb 2008 20:28:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=wLqIs8zYH0fZx7qHTjN+CTgEqI8Sv05Y4omzga9zrQU3pd8MTnyfYgZhck/wYqedAKvi9NRzBXHovNEEF0OjONeB6QjHtxisHmRVmv84yGq/8iUSyOs+ROpMn1CSZBvyhPDOIzBSxNpEcMu+wEv1trq7Q59a54dxoI2/ja0Q+d4=
+Date: Wed, 13 Feb 2008 03:25:23 +0200
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Casey Schaufler <casey@schuafler-ca.com>, Joerg Platte <jplatte@naasa.net>,
+       LKML <linux-kernel@vger.kernel.org>, Netdev <netdev@vger.kernel.org>
+Subject: [PATCH BUGFIX 25-rc1] Smack: Don't fail against Nulled sk sockets
+Message-ID: <20080213012523.GA12416@ubuntu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 05:01:17PM -0800, Christoph Lameter wrote:
-> On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
-> 
-> > Well, certainly today the memfree IB devices store the page tables in
-> > host memory so they are already designed to hang onto packets during
-> > the page lookup over PCIE, adding in faulting makes this time
-> > larger.
-> 
-> You really do not need a page table to use it. What needs to be maintained 
-> is knowledge on both side about what pages are currently shared across 
-> RDMA. If the VM decides to reclaim a page then the notification is used to 
-> remove the remote entry. If the remote side then tries to access the page 
-> again then the page fault on the remote side will stall until the local 
-> page has been brought back. RDMA can proceed after both sides again agree 
-> on that page now being sharable.
+Hi!,
 
-The problem is that the existing wire protocols do not have a
-provision for doing an 'are you ready' or 'I am not ready' exchange
-and they are not designed to store page tables on both sides as you
-propose. The remote side can send RDMA WRITE traffic at any time after
-the RDMA region is established. The local side must be able to handle
-it. There is no way to signal that a page is not ready and the remote
-should not send.
+Appropriately handle sockets with sk = NULL. This is usually the socket
+case when starting kernel nfsd.
 
-This means the only possible implementation is to stall/discard at the
-local adaptor when a RDMA WRITE is recieved for a page that has been
-reclaimed. This is what leads to deadlock/poor performance..
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+Acked-by: Casey Schaufler <casey@schuafler-ca.com>
+Tested-by: Joerg Platte <jplatte@naasa.net>
+--
 
-Jason
+diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
+index 1c11e42..eb04278 100644
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -701,7 +701,7 @@ static int smack_inode_getsecurity(const struct inode *inode,
+ 		return -EOPNOTSUPP;
+ 
+ 	sock = SOCKET_I(ip);
+-	if (sock == NULL)
++	if (sock == NULL || sock->sk == NULL)
+ 		return -EOPNOTSUPP;
+ 
+ 	ssp = sock->sk->sk_security;
+@@ -1280,10 +1280,12 @@ static void smack_to_secattr(char *smack, struct netlbl_lsm_secattr *nlsp)
+  */
+ static int smack_netlabel(struct sock *sk)
+ {
+-	struct socket_smack *ssp = sk->sk_security;
++	struct socket_smack *ssp;
+ 	struct netlbl_lsm_secattr secattr;
+ 	int rc = 0;
+ 
++	BUG_ON(sk == NULL);
++	ssp = sk->sk_security;
+ 	netlbl_secattr_init(&secattr);
+ 	smack_to_secattr(ssp->smk_out, &secattr);
+ 	if (secattr.flags != NETLBL_SECATTR_NONE)
+@@ -1331,7 +1333,7 @@ static int smack_inode_setsecurity(struct inode *inode, const char *name,
+ 		return -EOPNOTSUPP;
+ 
+ 	sock = SOCKET_I(inode);
+-	if (sock == NULL)
++	if (sock == NULL || sock->sk == NULL)
+ 		return -EOPNOTSUPP;
+ 
+ 	ssp = sock->sk->sk_security;
+@@ -1362,7 +1364,7 @@ static int smack_inode_setsecurity(struct inode *inode, const char *name,
+ static int smack_socket_post_create(struct socket *sock, int family,
+ 				    int type, int protocol, int kern)
+ {
+-	if (family != PF_INET)
++	if (family != PF_INET || sock->sk == NULL)
+ 		return 0;
+ 	/*
+ 	 * Set the outbound netlbl.
+
+
+Warm regards
+
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
