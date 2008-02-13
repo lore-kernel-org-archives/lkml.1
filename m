@@ -1,2014 +1,3822 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934809AbYBMVsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934251AbYBMVtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934809AbYBMVsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:48:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762361AbYBMVb3
+	id S934251AbYBMVtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:49:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764428AbYBMVbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:31:29 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47564 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Feb 2008 16:31:43 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50873 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760239AbYBMVbV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:31:21 -0500
-Date: Wed, 13 Feb 2008 23:31:01 +0200
+	id S1764259AbYBMVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:31:24 -0500
+Date: Wed, 13 Feb 2008 23:31:05 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: "John W. Linville" <linville@tuxdriver.com>, Larry.Finger@lwfinger.net,
-       stefano.brivio@polimi.it
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dsd@gentoo.org
-Subject: [2.6.26 patch] the scheduled bcm43xx removal
-Message-ID: <20080213213101.GR3383@cs181133002.pp.htv.fi>
+To: "John W. Linville" <linville@tuxdriver.com>, dsd@gentoo.org
+Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6.26 patch] the scheduled ieee80211 softmac removal
+Message-ID: <20080213213105.GS3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="oLBj+sq0vYjzfsbl"
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---oLBj+sq0vYjzfsbl
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-
-This patch contains the scheduled bcm43xx removal.
+This patch contains the scheduled ieee80211 softmac removal.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
-Due to its size the patch is attached compressed.
+ Documentation/feature-removal-schedule.txt      |    8 
+ MAINTAINERS                                     |    6 
+ include/net/ieee80211softmac.h                  |  373 ----------
+ include/net/ieee80211softmac_wx.h               |   99 --
+ net/ieee80211/Kconfig                           |    1 
+ net/ieee80211/Makefile                          |    1 
+ net/ieee80211/softmac/Kconfig                   |   12 
+ net/ieee80211/softmac/Makefile                  |    9 
+ net/ieee80211/softmac/ieee80211softmac_assoc.c  |  489 -------------
+ net/ieee80211/softmac/ieee80211softmac_auth.c   |  413 -----------
+ net/ieee80211/softmac/ieee80211softmac_event.c  |  189 -----
+ net/ieee80211/softmac/ieee80211softmac_io.c     |  488 -------------
+ net/ieee80211/softmac/ieee80211softmac_module.c |  568 ----------------
+ net/ieee80211/softmac/ieee80211softmac_priv.h   |  244 ------
+ net/ieee80211/softmac/ieee80211softmac_scan.c   |  254 -------
+ net/ieee80211/softmac/ieee80211softmac_wx.c     |  508 --------------
+ 16 files changed, 3662 deletions(-)
 
- Documentation/feature-removal-schedule.txt     |    9 
- Documentation/laptops/acer-wmi.txt             |    2 
- Documentation/networking/bcm43xx.txt           |   89 
- MAINTAINERS                                    |    9 
- drivers/net/wireless/Kconfig                   |    1 
- drivers/net/wireless/Makefile                  |    1 
- drivers/net/wireless/bcm43xx/Kconfig           |   70 
- drivers/net/wireless/bcm43xx/Makefile          |   12 
- drivers/net/wireless/bcm43xx/bcm43xx.h         |  997 ---
- drivers/net/wireless/bcm43xx/bcm43xx_debugfs.c |  556 --
- drivers/net/wireless/bcm43xx/bcm43xx_debugfs.h |  118 
- drivers/net/wireless/bcm43xx/bcm43xx_dma.c     | 1263 -----
- drivers/net/wireless/bcm43xx/bcm43xx_dma.h     |  386 -
- drivers/net/wireless/bcm43xx/bcm43xx_ethtool.c |   50 
- drivers/net/wireless/bcm43xx/bcm43xx_ethtool.h |    8 
- drivers/net/wireless/bcm43xx/bcm43xx_ilt.c     |  352 -
- drivers/net/wireless/bcm43xx/bcm43xx_ilt.h     |   33 
- drivers/net/wireless/bcm43xx/bcm43xx_leds.c    |  307 -
- drivers/net/wireless/bcm43xx/bcm43xx_leds.h    |   62 
- drivers/net/wireless/bcm43xx/bcm43xx_main.c    | 4281 -----------------
- drivers/net/wireless/bcm43xx/bcm43xx_main.h    |  133 
- drivers/net/wireless/bcm43xx/bcm43xx_phy.c     | 2346 ---------
- drivers/net/wireless/bcm43xx/bcm43xx_phy.h     |   78 
- drivers/net/wireless/bcm43xx/bcm43xx_pio.c     |  674 --
- drivers/net/wireless/bcm43xx/bcm43xx_pio.h     |  163 
- drivers/net/wireless/bcm43xx/bcm43xx_power.c   |  393 -
- drivers/net/wireless/bcm43xx/bcm43xx_power.h   |   56 
- drivers/net/wireless/bcm43xx/bcm43xx_radio.c   | 2170 --------
- drivers/net/wireless/bcm43xx/bcm43xx_radio.h   |  115 
- drivers/net/wireless/bcm43xx/bcm43xx_sysfs.c   |  471 -
- drivers/net/wireless/bcm43xx/bcm43xx_sysfs.h   |    9 
- drivers/net/wireless/bcm43xx/bcm43xx_wx.c      | 1035 ----
- drivers/net/wireless/bcm43xx/bcm43xx_wx.h      |   36 
- drivers/net/wireless/bcm43xx/bcm43xx_xmit.c    |  565 --
- drivers/net/wireless/bcm43xx/bcm43xx_xmit.h    |  150 
- 35 files changed, 1 insertion(+), 16999 deletions(-)
+63b3027c4038c09d1727bb71db2cafbeafd32291 diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index dade1d1..2cf4d7a 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -230,14 +230,6 @@ Who:	Jean Delvare <khali@linux-fr.org>
+ 
+ ---------------------------
+ 
+-What:	ieee80211 softmac wireless networking component
+-When:	2.6.26 (or after removal of bcm43xx and port of zd1211rw to mac80211)
+-Files:	net/ieee80211/softmac
+-Why:	No in-kernel drivers will depend on it any longer.
+-Who:	John W. Linville <linville@tuxdriver.com>
+-
+----------------------------
+-
+ What:	rc80211-simple rate control algorithm for mac80211
+ When:	2.6.26
+ Files:	net/mac80211/rc80211-simple.c
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 03d764e..c3e6768 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3566,12 +3566,6 @@ M:	mhoffman@lightlink.com
+ L:	lm-sensors@lm-sensors.org
+ S:	Maintained
+ 
+-SOFTMAC LAYER (IEEE 802.11)
+-P:	Daniel Drake
+-M:	dsd@gentoo.org
+-L:	linux-wireless@vger.kernel.org
+-S:	Obsolete
+-
+ SOFTWARE RAID (Multiple Disks) SUPPORT
+ P:	Ingo Molnar
+ M:	mingo@redhat.com
+diff --git a/include/net/ieee80211softmac.h b/include/net/ieee80211softmac.h
+deleted file mode 100644
+index 1ef6282..0000000
+--- a/include/net/ieee80211softmac.h
++++ /dev/null
+@@ -1,373 +0,0 @@
+-/*
+- * ieee80211softmac.h - public interface to the softmac
+- *
+- * Copyright (c) 2005 Johannes Berg <johannes@sipsolutions.net>
+- *                    Joseph Jezak <josejx@gentoo.org>
+- *                    Larry Finger <Larry.Finger@lwfinger.net>
+- *                    Danny van Dyk <kugelfang@gentoo.org>
+- *                    Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#ifndef IEEE80211SOFTMAC_H_
+-#define IEEE80211SOFTMAC_H_
+-
+-#include <linux/kernel.h>
+-#include <linux/spinlock.h>
+-#include <linux/workqueue.h>
+-#include <linux/list.h>
+-#include <net/ieee80211.h>
+-
+-/* Once the API is considered more or less stable,
+- * this should be incremented on API incompatible changes.
+- */
+-#define IEEE80211SOFTMAC_API	0
+-
+-#define IEEE80211SOFTMAC_MAX_RATES_LEN		8
+-#define IEEE80211SOFTMAC_MAX_EX_RATES_LEN	255
+-
+-struct ieee80211softmac_ratesinfo {
+-	u8 count;
+-	u8 rates[IEEE80211SOFTMAC_MAX_RATES_LEN + IEEE80211SOFTMAC_MAX_EX_RATES_LEN];
+-};
+-
+-/* internal structures */
+-struct ieee80211softmac_network;
+-struct ieee80211softmac_scaninfo;
+-
+-struct ieee80211softmac_essid {
+-	u8 len;
+-	char data[IW_ESSID_MAX_SIZE+1];
+-};
+-
+-struct ieee80211softmac_wpa {
+-	char *IE;
+-	int IElen;
+-	int IEbuflen;
+-};
+-
+-/*
+- * Information about association
+- */
+-struct ieee80211softmac_assoc_info {
+-
+-	struct mutex mutex;
+-
+-	/*
+-	 * This is the requested ESSID. It is written
+-	 * only by the WX handlers.
+-	 *
+-	 */
+-	struct ieee80211softmac_essid req_essid;
+-	/*
+-	 * the ESSID of the network we're currently
+-	 * associated (or trying) to. This is
+-	 * updated to the network's actual ESSID
+-	 * even if the requested ESSID was 'ANY'
+-	 */
+-	struct ieee80211softmac_essid associate_essid;
+-	
+-	/* BSSID we're trying to associate to */
+-	char bssid[ETH_ALEN];
+-	
+-	/* some flags.
+-	 * static_essid is valid if the essid is constant,
+-	 * this is for use by the wx handlers only.
+-	 *
+-	 * associating is true, if the network has been
+-	 * auth'ed on and we are in the process of associating.
+-	 *
+-	 * bssvalid is true if we found a matching network
+-	 * and saved it's BSSID into the bssid above.
+-	 *
+-	 * bssfixed is used for SIOCSIWAP.
+-	 */
+-	u8 static_essid;
+-	u8 short_preamble_available;
+-	u8 associating;
+-	u8 associated;
+-	u8 assoc_wait;
+-	u8 bssvalid;
+-	u8 bssfixed;
+-
+-	/* Scan retries remaining */
+-	int scan_retry;
+-
+-	struct delayed_work work;
+-	struct delayed_work timeout;
+-};
+-
+-struct ieee80211softmac_bss_info {
+-	/* Rates supported by the network */
+-	struct ieee80211softmac_ratesinfo supported_rates;
+-
+-	/* This indicates whether frames can currently be transmitted with
+-	 * short preamble (only use this variable during TX at CCK rates) */
+-	u8 short_preamble:1;
+-
+-	/* This indicates whether protection (e.g. self-CTS) should be used
+-	 * when transmitting with OFDM modulation */
+-	u8 use_protection:1;
+-};
+-
+-enum {
+-	IEEE80211SOFTMAC_AUTH_OPEN_REQUEST	= 1,
+-	IEEE80211SOFTMAC_AUTH_OPEN_RESPONSE	= 2,
+-};
+-
+-enum {
+-	IEEE80211SOFTMAC_AUTH_SHARED_REQUEST	= 1,
+-	IEEE80211SOFTMAC_AUTH_SHARED_CHALLENGE = 2,
+-	IEEE80211SOFTMAC_AUTH_SHARED_RESPONSE	= 3,
+-	IEEE80211SOFTMAC_AUTH_SHARED_PASS	= 4,
+-};
+-
+-/* We should make these tunable
+- * AUTH_TIMEOUT seems really long, but that's what it is in BSD */
+-#define IEEE80211SOFTMAC_AUTH_TIMEOUT		(12 * HZ)
+-#define IEEE80211SOFTMAC_AUTH_RETRY_LIMIT	5
+-#define IEEE80211SOFTMAC_ASSOC_SCAN_RETRY_LIMIT	3
+-
+-struct ieee80211softmac_txrates {
+-	/* The Bit-Rate to be used for multicast frames. */
+-	u8 mcast_rate;
+-
+-	/* The Bit-Rate to be used for multicast management frames. */
+-	u8 mgt_mcast_rate;
+-
+-	/* The Bit-Rate to be used for any other (normal) data packet. */
+-	u8 default_rate;
+-	/* The Bit-Rate to be used for default fallback
+-	 * (If the device supports fallback and hardware-retry)
+-	 */
+-	u8 default_fallback;
+-
+-	/* This is the rate that the user asked for */
+-	u8 user_rate;
+-};
+-
+-/* Bits for txrates_change callback. */
+-#define IEEE80211SOFTMAC_TXRATECHG_DEFAULT		(1 << 0) /* default_rate */
+-#define IEEE80211SOFTMAC_TXRATECHG_DEFAULT_FBACK	(1 << 1) /* default_fallback */
+-#define IEEE80211SOFTMAC_TXRATECHG_MCAST		(1 << 2) /* mcast_rate */
+-#define IEEE80211SOFTMAC_TXRATECHG_MGT_MCAST		(1 << 3) /* mgt_mcast_rate */
+-
+-#define IEEE80211SOFTMAC_BSSINFOCHG_RATES		(1 << 0) /* supported_rates */
+-#define IEEE80211SOFTMAC_BSSINFOCHG_SHORT_PREAMBLE	(1 << 1) /* short_preamble */
+-#define IEEE80211SOFTMAC_BSSINFOCHG_PROTECTION		(1 << 2) /* use_protection */
+-
+-struct ieee80211softmac_device {
+-	/* 802.11 structure for data stuff */
+-	struct ieee80211_device *ieee;
+-	struct net_device *dev;
+-
+-	/* only valid if associated, then holds the Association ID */
+-	u16 association_id;
+-	
+-	/* the following methods are callbacks that the driver
+-	 * using this framework has to assign
+-	 */
+-
+-	/* always assign these */
+-	void (*set_bssid_filter)(struct net_device *dev, const u8 *bssid);
+-	void (*set_channel)(struct net_device *dev, u8 channel);
+-
+-	/* assign if you need it, informational only */
+-	void (*link_change)(struct net_device *dev);
+-
+-	/* If the hardware can do scanning, assign _all_ three of these callbacks.
+-	 * When the scan finishes, call ieee80211softmac_scan_finished().
+-	 */
+-	
+-	/* when called, start_scan is guaranteed to not be called again
+-	 * until you call ieee80211softmac_scan_finished.
+-	 * Return 0 if scanning could start, error otherwise.
+-	 * SOFTMAC AUTHORS: don't call this, use ieee80211softmac_start_scan */
+-	int (*start_scan)(struct net_device *dev);
+-	/* this should block until after ieee80211softmac_scan_finished was called
+-	 * SOFTMAC AUTHORS: don't call this, use ieee80211softmac_wait_for_scan */
+-	void (*wait_for_scan)(struct net_device *dev);
+-	/* stop_scan aborts a scan, but is asynchronous.
+-	 * if you want to wait for it too, use wait_for_scan
+-	 * SOFTMAC AUTHORS: don't call this, use ieee80211softmac_stop_scan */
+-	void (*stop_scan)(struct net_device *dev);
+-
+-	/* we'll need something about beacons here too, for AP or ad-hoc modes */
+-
+-	/* Transmission rates to be used by the driver.
+-	 * The SoftMAC figures out the best possible rates.
+-	 * The driver just needs to read them.
+-	 */
+-	struct ieee80211softmac_txrates txrates;
+-
+-	/* If the driver needs to do stuff on TX rate changes, assign this
+-	 * callback. See IEEE80211SOFTMAC_TXRATECHG for change flags. */
+-	void (*txrates_change)(struct net_device *dev,
+-			       u32 changes);
+-
+-	/* If the driver needs to do stuff when BSS properties change, assign
+-	 * this callback. see IEEE80211SOFTMAC_BSSINFOCHG for change flags. */
+-	void (*bssinfo_change)(struct net_device *dev,
+-			       u32 changes);
+-
+-	/* private stuff follows */
+-	/* this lock protects this structure */
+-	spinlock_t lock;
+-
+-	struct workqueue_struct *wq;
+-
+-	u8 running; /* SoftMAC started? */
+-	u8 scanning;
+-
+-	struct ieee80211softmac_scaninfo *scaninfo;
+-	struct ieee80211softmac_assoc_info associnfo;
+-	struct ieee80211softmac_bss_info bssinfo;
+-
+-	struct list_head auth_queue;
+-	struct list_head events;
+-
+- 	struct ieee80211softmac_ratesinfo ratesinfo;
+-	int txrate_badness;
+-	
+-	/* WPA stuff */
+-	struct ieee80211softmac_wpa wpa;
+-
+-	/* we need to keep a list of network structs we copied */
+-	struct list_head network_list;
+-
+-	/* This must be the last item so that it points to the data
+-	 * allocated beyond this structure by alloc_ieee80211 */
+-	u8 priv[0];
+-};
+-
+-extern void ieee80211softmac_scan_finished(struct ieee80211softmac_device *sm);
+-
+-static inline void * ieee80211softmac_priv(struct net_device *dev)
+-{
+-	return ((struct ieee80211softmac_device *)ieee80211_priv(dev))->priv;
+-}
+-
+-extern struct net_device * alloc_ieee80211softmac(int sizeof_priv);
+-extern void free_ieee80211softmac(struct net_device *dev);
+-
+-/* Call this function if you detect a lost TX fragment.
+- * (If the device indicates failure of ACK RX, for example.)
+- * It is wise to call this function if you are able to detect lost packets,
+- * because it contributes to the TX Rates auto adjustment.
+- */
+-extern void ieee80211softmac_fragment_lost(struct net_device *dev,
+-					   u16 wireless_sequence_number);
+-/* Call this function before _start to tell the softmac what rates
+- * the hw supports. The rates parameter is copied, so you can
+- * free it right after calling this function. 
+- * Note that the rates need to be sorted. */
+-extern void ieee80211softmac_set_rates(struct net_device *dev, u8 count, u8 *rates);
+-
+-/* Finds the highest rate which is:
+- *  1. Present in ri (optionally a basic rate)
+- *  2. Supported by the device
+- *  3. Less than or equal to the user-defined rate
+- */
+-extern u8 ieee80211softmac_highest_supported_rate(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_ratesinfo *ri, int basic_only);
+-
+-/* Helper function which advises you the rate at which a frame should be
+- * transmitted at. */
+-static inline u8 ieee80211softmac_suggest_txrate(struct ieee80211softmac_device *mac,
+-						 int is_multicast,
+-						 int is_mgt)
+-{
+-	struct ieee80211softmac_txrates *txrates = &mac->txrates;
+-
+-	if (!mac->associnfo.associated)
+-		return txrates->mgt_mcast_rate;
+-
+-	/* We are associated, sending unicast frame */
+-	if (!is_multicast)
+-		return txrates->default_rate;
+-
+-	/* We are associated, sending multicast frame */
+-	if (is_mgt)
+-		return txrates->mgt_mcast_rate;
+-	else
+-		return txrates->mcast_rate;
+-}
+-
+-/* Helper function which advises you when it is safe to transmit with short
+- * preamble.
+- * You should only call this function when transmitting at CCK rates. */
+-static inline int ieee80211softmac_short_preamble_ok(struct ieee80211softmac_device *mac,
+-						    int is_multicast,
+-						    int is_mgt)
+-{
+-	return (is_multicast && is_mgt) ? 0 : mac->bssinfo.short_preamble;
+-}
+-
+-/* Helper function which advises you whether protection (e.g. self-CTS) is
+- * needed. 1 = protection needed, 0 = no protection needed
+- * Only use this function when transmitting with OFDM modulation. */
+-static inline int ieee80211softmac_protection_needed(struct ieee80211softmac_device *mac)
+-{
+-	return mac->bssinfo.use_protection;
+-}
+-
+-/* Start the SoftMAC. Call this after you initialized the device
+- * and it is ready to run.
+- */
+-extern void ieee80211softmac_start(struct net_device *dev);
+-/* Stop the SoftMAC. Call this before you shutdown the device. */
+-extern void ieee80211softmac_stop(struct net_device *dev);
+-
+-/*
+- * Event system
+- */
+-
+-/* valid event types */
+-#define IEEE80211SOFTMAC_EVENT_ANY			-1 /*private use only*/
+-#define IEEE80211SOFTMAC_EVENT_SCAN_FINISHED		0
+-#define IEEE80211SOFTMAC_EVENT_ASSOCIATED		1
+-#define IEEE80211SOFTMAC_EVENT_ASSOCIATE_FAILED		2
+-#define IEEE80211SOFTMAC_EVENT_ASSOCIATE_TIMEOUT	3
+-#define IEEE80211SOFTMAC_EVENT_AUTHENTICATED		4
+-#define IEEE80211SOFTMAC_EVENT_AUTH_FAILED		5
+-#define IEEE80211SOFTMAC_EVENT_AUTH_TIMEOUT		6
+-#define IEEE80211SOFTMAC_EVENT_ASSOCIATE_NET_NOT_FOUND	7
+-#define IEEE80211SOFTMAC_EVENT_DISASSOCIATED		8
+-/* keep this updated! */
+-#define IEEE80211SOFTMAC_EVENT_LAST			8
+-/*
+- * If you want to be notified of certain events, you can call
+- * ieee80211softmac_notify[_atomic] with
+- * 	- event set to one of the constants below
+- * 	- fun set to a function pointer of the appropriate type
+- *	- context set to the context data you want passed
+- * The return value is 0, or an error.
+- */
+-typedef void (*notify_function_ptr)(struct net_device *dev, int event_type, void *context);
+-
+-#define ieee80211softmac_notify(dev, event, fun, context) ieee80211softmac_notify_gfp(dev, event, fun, context, GFP_KERNEL);
+-#define ieee80211softmac_notify_atomic(dev, event, fun, context) ieee80211softmac_notify_gfp(dev, event, fun, context, GFP_ATOMIC);
+-
+-extern int ieee80211softmac_notify_gfp(struct net_device *dev,
+-	int event, notify_function_ptr fun, void *context, gfp_t gfp_mask);
+-
+-/* To clear pending work (for ifconfig down, etc.) */
+-extern void
+-ieee80211softmac_clear_pending_work(struct ieee80211softmac_device *sm);
+-
+-#endif /* IEEE80211SOFTMAC_H_ */
+diff --git a/include/net/ieee80211softmac_wx.h b/include/net/ieee80211softmac_wx.h
+deleted file mode 100644
+index 4ee3ad5..0000000
+--- a/include/net/ieee80211softmac_wx.h
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/*
+- * This file contains the prototypes for the wireless extension
+- * handlers that the softmac API provides. Include this file to
+- * use the wx handlers, you can assign these directly.
+- *
+- * Copyright (c) 2005 Johannes Berg <johannes@sipsolutions.net>
+- *                    Joseph Jezak <josejx@gentoo.org>
+- *                    Larry Finger <Larry.Finger@lwfinger.net>
+- *                    Danny van Dyk <kugelfang@gentoo.org>
+- *                    Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#ifndef _IEEE80211SOFTMAC_WX_H
+-#define _IEEE80211SOFTMAC_WX_H
+-
+-#include <net/ieee80211softmac.h>
+-#include <net/iw_handler.h>
+-
+-extern int
+-ieee80211softmac_wx_trigger_scan(struct net_device *net_dev,
+-				 struct iw_request_info *info,
+-				 union iwreq_data *data,
+-				 char *extra);
+-
+-extern int
+-ieee80211softmac_wx_get_scan_results(struct net_device *net_dev,
+-				     struct iw_request_info *info,
+-				     union iwreq_data *data,
+-				     char *extra);
+-
+-extern int
+-ieee80211softmac_wx_set_essid(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra);
+-
+-extern int
+-ieee80211softmac_wx_get_essid(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra);
+-
+-extern int
+-ieee80211softmac_wx_set_rate(struct net_device *net_dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *data,
+-			     char *extra);
+-
+-extern int
+-ieee80211softmac_wx_get_rate(struct net_device *net_dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *data,
+-			     char *extra);
+-
+-extern int
+-ieee80211softmac_wx_get_wap(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra);
+-
+-extern int
+-ieee80211softmac_wx_set_wap(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra);
+-
+-extern int
+-ieee80211softmac_wx_set_genie(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra);
+-
+-extern int
+-ieee80211softmac_wx_get_genie(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra);
+-extern int
+-ieee80211softmac_wx_set_mlme(struct net_device *dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *wrqu,
+-			     char *extra);
+-#endif /* _IEEE80211SOFTMAC_WX */
+diff --git a/net/ieee80211/Kconfig b/net/ieee80211/Kconfig
+index bd50104..94ed7d3 100644
+--- a/net/ieee80211/Kconfig
++++ b/net/ieee80211/Kconfig
+@@ -71,4 +71,3 @@ config IEEE80211_CRYPT_TKIP
+ 	This can be compiled as a module and it will be called
+ 	"ieee80211_crypt_tkip".
+ 
+-source "net/ieee80211/softmac/Kconfig"
+diff --git a/net/ieee80211/Makefile b/net/ieee80211/Makefile
+index 796a7c7..f988417 100644
+--- a/net/ieee80211/Makefile
++++ b/net/ieee80211/Makefile
+@@ -10,4 +10,3 @@ ieee80211-objs := \
+ 	ieee80211_wx.o \
+ 	ieee80211_geo.o
+ 
+-obj-$(CONFIG_IEEE80211_SOFTMAC) += softmac/
+diff --git a/net/ieee80211/softmac/Kconfig b/net/ieee80211/softmac/Kconfig
+deleted file mode 100644
+index 2811651..0000000
+--- a/net/ieee80211/softmac/Kconfig
++++ /dev/null
+@@ -1,12 +0,0 @@
+-config IEEE80211_SOFTMAC
+-	tristate "Software MAC add-on to the IEEE 802.11 networking stack"
+-	depends on IEEE80211 && EXPERIMENTAL
+-	select WIRELESS_EXT
+-	select IEEE80211_CRYPT_WEP
+-	---help---
+-	This option enables the hardware independent software MAC addon
+-	for the IEEE 802.11 networking stack.
+-
+-config IEEE80211_SOFTMAC_DEBUG
+-	bool "Enable full debugging output"
+-	depends on IEEE80211_SOFTMAC
+diff --git a/net/ieee80211/softmac/Makefile b/net/ieee80211/softmac/Makefile
+deleted file mode 100644
+index bfcb391..0000000
+--- a/net/ieee80211/softmac/Makefile
++++ /dev/null
+@@ -1,9 +0,0 @@
+-obj-$(CONFIG_IEEE80211_SOFTMAC) += ieee80211softmac.o
+-ieee80211softmac-objs := \
+-			ieee80211softmac_io.o \
+-			ieee80211softmac_auth.o \
+-			ieee80211softmac_module.o \
+-			ieee80211softmac_scan.o \
+-			ieee80211softmac_wx.o \
+-			ieee80211softmac_assoc.o \
+-			ieee80211softmac_event.o
+diff --git a/net/ieee80211/softmac/ieee80211softmac_assoc.c b/net/ieee80211/softmac/ieee80211softmac_assoc.c
+deleted file mode 100644
+index c4d122d..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_assoc.c
++++ /dev/null
+@@ -1,489 +0,0 @@
+-/*
+- * This file contains the softmac's association logic.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-
+-/*
+- * Overview
+- *
+- * Before you can associate, you have to authenticate.
+- *
+- */
+-
+-/* Sends out an association request to the desired AP */
+-static void
+-ieee80211softmac_assoc(struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net)
+-{
+-	unsigned long flags;
+-
+-	/* Switch to correct channel for this network */
+-	mac->set_channel(mac->dev, net->channel);
+-
+-	/* Send association request */
+-	ieee80211softmac_send_mgt_frame(mac, net, IEEE80211_STYPE_ASSOC_REQ, 0);
+-
+-	dprintk(KERN_INFO PFX "sent association request!\n");
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	mac->associnfo.associated = 0; /* just to make sure */
+-
+-	/* Set a timer for timeout */
+-	/* FIXME: make timeout configurable */
+-	if (likely(mac->running))
+-		queue_delayed_work(mac->wq, &mac->associnfo.timeout, 5 * HZ);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-
+-void
+-ieee80211softmac_assoc_timeout(struct work_struct *work)
+-{
+-	struct ieee80211softmac_device *mac =
+-		container_of(work, struct ieee80211softmac_device,
+-			     associnfo.timeout.work);
+-	struct ieee80211softmac_network *n;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-	/* we might race against ieee80211softmac_handle_assoc_response,
+-	 * so make sure only one of us does something */
+-	if (!mac->associnfo.associating)
+-		goto out;
+-	mac->associnfo.associating = 0;
+-	mac->associnfo.bssvalid = 0;
+-	mac->associnfo.associated = 0;
+-
+-	n = ieee80211softmac_get_network_by_bssid_locked(mac, mac->associnfo.bssid);
+-
+-	dprintk(KERN_INFO PFX "assoc request timed out!\n");
+-	ieee80211softmac_call_events(mac, IEEE80211SOFTMAC_EVENT_ASSOCIATE_TIMEOUT, n);
+-out:
+-	mutex_unlock(&mac->associnfo.mutex);
+-}
+-
+-void
+-ieee80211softmac_disassoc(struct ieee80211softmac_device *mac)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	if (mac->associnfo.associating)
+-		cancel_delayed_work(&mac->associnfo.timeout);
+-
+-	netif_carrier_off(mac->dev);
+-
+-	mac->associnfo.associated = 0;
+-	mac->associnfo.bssvalid = 0;
+-	mac->associnfo.associating = 0;
+-	ieee80211softmac_init_bss(mac);
+-	ieee80211softmac_call_events_locked(mac, IEEE80211SOFTMAC_EVENT_DISASSOCIATED, NULL);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-
+-/* Sends out a disassociation request to the desired AP */
+-void
+-ieee80211softmac_send_disassoc_req(struct ieee80211softmac_device *mac, u16 reason)
+-{
+-	struct ieee80211softmac_network *found;
+-
+-	if (mac->associnfo.bssvalid && mac->associnfo.associated) {
+-		found = ieee80211softmac_get_network_by_bssid(mac, mac->associnfo.bssid);
+-		if (found)
+-			ieee80211softmac_send_mgt_frame(mac, found, IEEE80211_STYPE_DISASSOC, reason);
+-	}
+-
+-	ieee80211softmac_disassoc(mac);
+-}
+-
+-static inline int
+-we_support_all_basic_rates(struct ieee80211softmac_device *mac, u8 *from, u8 from_len)
+-{
+-	int idx;
+-	u8 rate;
+-
+-	for (idx = 0; idx < (from_len); idx++) {
+-		rate = (from)[idx];
+-		if (!(rate & IEEE80211_BASIC_RATE_MASK))
+-			continue;
+-		rate &= ~IEEE80211_BASIC_RATE_MASK;
+-		if (!ieee80211softmac_ratesinfo_rate_supported(&mac->ratesinfo, rate))
+-			return 0;
+-	}
+-	return 1;
+-}
+-
+-static int
+-network_matches_request(struct ieee80211softmac_device *mac, struct ieee80211_network *net)
+-{
+-	/* we cannot associate to networks whose name we don't know */
+-	if (ieee80211_is_empty_essid(net->ssid, net->ssid_len))
+-		return 0;
+-	/* do not associate to a network whose BSSBasicRateSet we cannot support */
+-	if (!we_support_all_basic_rates(mac, net->rates, net->rates_len))
+-		return 0;
+-	/* do we really need to check the ex rates? */
+-	if (!we_support_all_basic_rates(mac, net->rates_ex, net->rates_ex_len))
+-		return 0;
+-
+-	/* assume that users know what they're doing ...
+-	 * (note we don't let them select a net we're incompatible with) */
+-	if (mac->associnfo.bssfixed) {
+-		return !memcmp(mac->associnfo.bssid, net->bssid, ETH_ALEN);
+-	}
+-
+-	/* if 'ANY' network requested, take any that doesn't have privacy enabled */
+-	if (mac->associnfo.req_essid.len == 0
+-	    && !(net->capability & WLAN_CAPABILITY_PRIVACY))
+-		return 1;
+-	if (net->ssid_len != mac->associnfo.req_essid.len)
+-		return 0;
+-	if (!memcmp(net->ssid, mac->associnfo.req_essid.data, mac->associnfo.req_essid.len))
+-		return 1;
+-	return 0;
+-}
+-
+-static void
+-ieee80211softmac_assoc_notify_scan(struct net_device *dev, int event_type, void *context)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	ieee80211softmac_assoc_work(&mac->associnfo.work.work);
+-}
+-
+-static void
+-ieee80211softmac_assoc_notify_auth(struct net_device *dev, int event_type, void *context)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	switch (event_type) {
+-	case IEEE80211SOFTMAC_EVENT_AUTHENTICATED:
+-		ieee80211softmac_assoc_work(&mac->associnfo.work.work);
+-		break;
+-	case IEEE80211SOFTMAC_EVENT_AUTH_FAILED:
+-	case IEEE80211SOFTMAC_EVENT_AUTH_TIMEOUT:
+-		ieee80211softmac_disassoc(mac);
+-		break;
+-	}
+-}
+-
+-/* This function is called to handle userspace requests (asynchronously) */
+-void
+-ieee80211softmac_assoc_work(struct work_struct *work)
+-{
+-	struct ieee80211softmac_device *mac =
+-		container_of(work, struct ieee80211softmac_device,
+-			     associnfo.work.work);
+-	struct ieee80211softmac_network *found = NULL;
+-	struct ieee80211_network *net = NULL, *best = NULL;
+-	int bssvalid;
+-	unsigned long flags;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-
+-	if (!mac->associnfo.associating)
+-		goto out;
+-
+-	/* ieee80211_disassoc might clear this */
+-	bssvalid = mac->associnfo.bssvalid;
+-
+-	/* meh */
+-	if (mac->associnfo.associated)
+-		ieee80211softmac_send_disassoc_req(mac, WLAN_REASON_DISASSOC_STA_HAS_LEFT);
+-
+-	/* try to find the requested network in our list, if we found one already */
+-	if (bssvalid || mac->associnfo.bssfixed)
+-		found = ieee80211softmac_get_network_by_bssid(mac, mac->associnfo.bssid);
+-
+-	/* Search the ieee80211 networks for this network if we didn't find it by bssid,
+-	 * but only if we've scanned at least once (to get a better list of networks to
+-	 * select from). If we have not scanned before, the !found logic below will be
+-	 * invoked and will scan. */
+-	if (!found && (mac->associnfo.scan_retry < IEEE80211SOFTMAC_ASSOC_SCAN_RETRY_LIMIT))
+-	{
+-		s8 rssi = -128;	/* if I don't initialise, gcc emits an invalid warning
+-				   because it cannot follow the best pointer logic. */
+-		spin_lock_irqsave(&mac->ieee->lock, flags);
+-		list_for_each_entry(net, &mac->ieee->network_list, list) {
+-			/* we're supposed to find the network with
+-			 * the best signal here, as we're asked to join
+-			 * any network with a specific ESSID, and many
+-			 * different ones could have that.
+-			 *
+-			 * I'll for now just go with the reported rssi.
+-			 *
+-			 * We also should take into account the rateset
+-			 * here to find the best BSSID to try.
+-			 */
+-			if (network_matches_request(mac, net)) {
+-				if (!best) {
+-					best = net;
+-					rssi = best->stats.rssi;
+-					continue;
+-				}
+-				/* we already had a matching network, so
+-				 * compare their properties to get the
+-				 * better of the two ... (see above)
+-				 */
+-				if (rssi < net->stats.rssi) {
+-					best = net;
+-					rssi = best->stats.rssi;
+-				}
+-			}
+-		}
+-		/* if we unlock here, we might get interrupted and the `best'
+-		 * pointer could go stale */
+-		if (best) {
+-			found = ieee80211softmac_create_network(mac, best);
+-			/* if found is still NULL, then we got -ENOMEM somewhere */
+-			if (found)
+-				ieee80211softmac_add_network(mac, found);
+-		}
+-		spin_unlock_irqrestore(&mac->ieee->lock, flags);
+-	}
+-
+-	if (!found) {
+-		if (mac->associnfo.scan_retry > 0) {
+-			mac->associnfo.scan_retry--;
+-
+-			/* We know of no such network. Let's scan.
+-			 * NB: this also happens if we had no memory to copy the network info...
+-			 * Maybe we can hope to have more memory after scanning finishes ;)
+-			 */
+-			dprintk(KERN_INFO PFX "Associate: Scanning for networks first.\n");
+-			ieee80211softmac_notify(mac->dev, IEEE80211SOFTMAC_EVENT_SCAN_FINISHED, ieee80211softmac_assoc_notify_scan, NULL);
+-			if (ieee80211softmac_start_scan(mac)) {
+-				dprintk(KERN_INFO PFX "Associate: failed to initiate scan. Is device up?\n");
+-			}
+-			goto out;
+-		} else {
+-			mac->associnfo.associating = 0;
+-			mac->associnfo.associated = 0;
+-
+-			dprintk(KERN_INFO PFX "Unable to find matching network after scan!\n");
+-			/* reset the retry counter for the next user request since we
+-			 * break out and don't reschedule ourselves after this point. */
+-			mac->associnfo.scan_retry = IEEE80211SOFTMAC_ASSOC_SCAN_RETRY_LIMIT;
+-			ieee80211softmac_call_events(mac, IEEE80211SOFTMAC_EVENT_ASSOCIATE_NET_NOT_FOUND, NULL);
+-			goto out;
+-		}
+-	}
+-
+-	/* reset the retry counter for the next user request since we
+-	 * now found a net and will try to associate to it, but not
+-	 * schedule this function again. */
+-	mac->associnfo.scan_retry = IEEE80211SOFTMAC_ASSOC_SCAN_RETRY_LIMIT;
+-	mac->associnfo.bssvalid = 1;
+-	memcpy(mac->associnfo.bssid, found->bssid, ETH_ALEN);
+-	/* copy the ESSID for displaying it */
+-	mac->associnfo.associate_essid.len = found->essid.len;
+-	memcpy(mac->associnfo.associate_essid.data, found->essid.data, IW_ESSID_MAX_SIZE + 1);
+-
+-	/* we found a network! authenticate (if necessary) and associate to it. */
+-	if (found->authenticating) {
+-		dprintk(KERN_INFO PFX "Already requested authentication, waiting...\n");
+-		if(!mac->associnfo.assoc_wait) {
+-			mac->associnfo.assoc_wait = 1;
+-			ieee80211softmac_notify_internal(mac, IEEE80211SOFTMAC_EVENT_ANY, found, ieee80211softmac_assoc_notify_auth, NULL, GFP_KERNEL);
+-		}
+-		goto out;
+-	}
+-	if (!found->authenticated && !found->authenticating) {
+-		/* This relies on the fact that _auth_req only queues the work,
+-		 * otherwise adding the notification would be racy. */
+-		if (!ieee80211softmac_auth_req(mac, found)) {
+-			if(!mac->associnfo.assoc_wait) {
+-				dprintk(KERN_INFO PFX "Cannot associate without being authenticated, requested authentication\n");
+-				mac->associnfo.assoc_wait = 1;
+-				ieee80211softmac_notify_internal(mac, IEEE80211SOFTMAC_EVENT_ANY, found, ieee80211softmac_assoc_notify_auth, NULL, GFP_KERNEL);
+-			}
+-		} else {
+-			printkl(KERN_WARNING PFX "Not authenticated, but requesting authentication failed. Giving up to associate\n");
+-			mac->associnfo.assoc_wait = 0;
+-			ieee80211softmac_call_events(mac, IEEE80211SOFTMAC_EVENT_ASSOCIATE_FAILED, found);
+-		}
+-		goto out;
+-	}
+-	/* finally! now we can start associating */
+-	mac->associnfo.assoc_wait = 0;
+-	ieee80211softmac_assoc(mac, found);
+-
+-out:
+-	mutex_unlock(&mac->associnfo.mutex);
+-}
+-
+-/* call this to do whatever is necessary when we're associated */
+-static void
+-ieee80211softmac_associated(struct ieee80211softmac_device *mac,
+-	struct ieee80211_assoc_response * resp,
+-	struct ieee80211softmac_network *net)
+-{
+-	u16 cap = le16_to_cpu(resp->capability);
+-	u8 erp_value = net->erp_value;
+-
+-	mac->associnfo.associating = 0;
+-	mac->bssinfo.supported_rates = net->supported_rates;
+-	ieee80211softmac_recalc_txrates(mac);
+-
+-	mac->associnfo.associated = 1;
+-
+-	mac->associnfo.short_preamble_available =
+-		(cap & WLAN_CAPABILITY_SHORT_PREAMBLE) != 0;
+-	ieee80211softmac_process_erp(mac, erp_value);
+-
+-	if (mac->set_bssid_filter)
+-		mac->set_bssid_filter(mac->dev, net->bssid);
+-	memcpy(mac->ieee->bssid, net->bssid, ETH_ALEN);
+-	netif_carrier_on(mac->dev);
+-
+-	mac->association_id = le16_to_cpup(&resp->aid);
+-}
+-
+-/* received frame handling functions */
+-int
+-ieee80211softmac_handle_assoc_response(struct net_device * dev,
+-				       struct ieee80211_assoc_response * resp,
+-				       struct ieee80211_network * _ieee80211_network)
+-{
+-	/* NOTE: the network parameter has to be mostly ignored by
+-	 *       this code because it is the ieee80211's pointer
+-	 *       to the struct, not ours (we made a copy)
+-	 */
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	u16 status = le16_to_cpup(&resp->status);
+-	struct ieee80211softmac_network *network = NULL;
+-	unsigned long flags;
+-	DECLARE_MAC_BUF(mac2);
+-
+-	if (unlikely(!mac->running))
+-		return -ENODEV;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-
+-	if (!mac->associnfo.associating) {
+-		/* we race against the timeout function, so make sure
+-		 * only one of us can do work */
+-		spin_unlock_irqrestore(&mac->lock, flags);
+-		return 0;
+-	}
+-	network = ieee80211softmac_get_network_by_bssid_locked(mac, resp->header.addr3);
+-
+-	/* someone sending us things without us knowing him? Ignore. */
+-	if (!network) {
+-		dprintk(KERN_INFO PFX "Received unrequested assocation response from %s\n",
+-			print_mac(mac2, resp->header.addr3));
+-		spin_unlock_irqrestore(&mac->lock, flags);
+-		return 0;
+-	}
+-
+-	/* now that we know it was for us, we can cancel the timeout */
+-	cancel_delayed_work(&mac->associnfo.timeout);
+-
+-	/* if the association response included an ERP IE, update our saved
+-	 * copy */
+-	if (_ieee80211_network->flags & NETWORK_HAS_ERP_VALUE)
+-		network->erp_value = _ieee80211_network->erp_value;
+-
+-	switch (status) {
+-		case 0:
+-			dprintk(KERN_INFO PFX "associated!\n");
+-			ieee80211softmac_associated(mac, resp, network);
+-			ieee80211softmac_call_events_locked(mac, IEEE80211SOFTMAC_EVENT_ASSOCIATED, network);
+-			break;
+-		case WLAN_REASON_STA_REQ_ASSOC_WITHOUT_AUTH:
+-			if (!network->auth_desynced_once) {
+-				/* there seem to be a few rare cases where our view of
+-				 * the world is obscured, or buggy APs that don't DEAUTH
+-				 * us properly. So we handle that, but allow it only once.
+-				 */
+-				printkl(KERN_INFO PFX "We were not authenticated during association, retrying...\n");
+-				network->authenticated = 0;
+-				/* we don't want to do this more than once ... */
+-				network->auth_desynced_once = 1;
+-				queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-				break;
+-			}
+-		default:
+-			dprintk(KERN_INFO PFX "associating failed (reason: 0x%x)!\n", status);
+-			mac->associnfo.associating = 0;
+-			mac->associnfo.bssvalid = 0;
+-			mac->associnfo.associated = 0;
+-			ieee80211softmac_call_events_locked(mac, IEEE80211SOFTMAC_EVENT_ASSOCIATE_FAILED, network);
+-	}
+-
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	return 0;
+-}
+-
+-void
+-ieee80211softmac_try_reassoc(struct ieee80211softmac_device *mac)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	mac->associnfo.associating = 1;
+-	queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-
+-int
+-ieee80211softmac_handle_disassoc(struct net_device * dev,
+-				 struct ieee80211_disassoc *disassoc)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	if (unlikely(!mac->running))
+-		return -ENODEV;
+-
+-	if (memcmp(disassoc->header.addr2, mac->associnfo.bssid, ETH_ALEN))
+-		return 0;
+-
+-	if (memcmp(disassoc->header.addr1, mac->dev->dev_addr, ETH_ALEN))
+-		return 0;
+-
+-	dprintk(KERN_INFO PFX "got disassoc frame\n");
+-	ieee80211softmac_disassoc(mac);
+-
+-	ieee80211softmac_try_reassoc(mac);
+-
+-	return 0;
+-}
+-
+-int
+-ieee80211softmac_handle_reassoc_req(struct net_device * dev,
+-				    struct ieee80211_reassoc_request * resp)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	struct ieee80211softmac_network *network;
+-
+-	if (unlikely(!mac->running))
+-		return -ENODEV;
+-
+-	network = ieee80211softmac_get_network_by_bssid(mac, resp->header.addr3);
+-	if (!network) {
+-		dprintkl(KERN_INFO PFX "reassoc request from unknown network\n");
+-		return 0;
+-	}
+-	queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-
+-	return 0;
+-}
+diff --git a/net/ieee80211/softmac/ieee80211softmac_auth.c b/net/ieee80211/softmac/ieee80211softmac_auth.c
+deleted file mode 100644
+index 1a96c25..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_auth.c
++++ /dev/null
+@@ -1,413 +0,0 @@
+-/*
+- * This file contains the softmac's authentication logic.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-
+-static void ieee80211softmac_auth_queue(struct work_struct *work);
+-
+-/* Queues an auth request to the desired AP */
+-int
+-ieee80211softmac_auth_req(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net)
+-{
+-	struct ieee80211softmac_auth_queue_item *auth;
+-	unsigned long flags;
+-	DECLARE_MAC_BUF(mac2);
+-
+-	if (net->authenticating || net->authenticated)
+-		return 0;
+-	net->authenticating = 1;
+-
+-	/* Add the network if it's not already added */
+-	ieee80211softmac_add_network(mac, net);
+-
+-	dprintk(KERN_NOTICE PFX "Queueing Authentication Request to %s\n", print_mac(mac2, net->bssid));
+-	/* Queue the auth request */
+-	auth = (struct ieee80211softmac_auth_queue_item *)
+-		kmalloc(sizeof(struct ieee80211softmac_auth_queue_item), GFP_KERNEL);
+-	if(auth == NULL)
+-		return -ENOMEM;
+-
+-	auth->net = net;
+-	auth->mac = mac;
+-	auth->retry = IEEE80211SOFTMAC_AUTH_RETRY_LIMIT;
+-	auth->state = IEEE80211SOFTMAC_AUTH_OPEN_REQUEST;
+-	INIT_DELAYED_WORK(&auth->work, ieee80211softmac_auth_queue);
+-
+-	/* Lock (for list) */
+-	spin_lock_irqsave(&mac->lock, flags);
+-
+-	/* add to list */
+-	list_add_tail(&auth->list, &mac->auth_queue);
+-	queue_delayed_work(mac->wq, &auth->work, 0);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	return 0;
+-}
+-
+-
+-/* Sends an auth request to the desired AP and handles timeouts */
+-static void
+-ieee80211softmac_auth_queue(struct work_struct *work)
+-{
+-	struct ieee80211softmac_device *mac;
+-	struct ieee80211softmac_auth_queue_item *auth;
+-	struct ieee80211softmac_network *net;
+-	unsigned long flags;
+-	DECLARE_MAC_BUF(mac2);
+-
+-	auth = container_of(work, struct ieee80211softmac_auth_queue_item,
+-			    work.work);
+-	net = auth->net;
+-	mac = auth->mac;
+-
+-	if(auth->retry > 0) {
+-		/* Switch to correct channel for this network */
+-		mac->set_channel(mac->dev, net->channel);
+-
+-		/* Lock and set flags */
+-		spin_lock_irqsave(&mac->lock, flags);
+-		if (unlikely(!mac->running)) {
+-			/* Prevent reschedule on workqueue flush */
+-			spin_unlock_irqrestore(&mac->lock, flags);
+-			return;
+-		}
+-		net->authenticated = 0;
+-		/* add a timeout call so we eventually give up waiting for an auth reply */
+-		queue_delayed_work(mac->wq, &auth->work, IEEE80211SOFTMAC_AUTH_TIMEOUT);
+-		auth->retry--;
+-		spin_unlock_irqrestore(&mac->lock, flags);
+-		if (ieee80211softmac_send_mgt_frame(mac, auth->net, IEEE80211_STYPE_AUTH, auth->state))
+-			dprintk(KERN_NOTICE PFX "Sending Authentication Request to %s failed (this shouldn't happen, wait for the timeout).\n",
+-				print_mac(mac2, net->bssid));
+-		else
+-			dprintk(KERN_NOTICE PFX "Sent Authentication Request to %s.\n", print_mac(mac2, net->bssid));
+-		return;
+-	}
+-
+-	printkl(KERN_WARNING PFX "Authentication timed out with %s\n", print_mac(mac2, net->bssid));
+-	/* Remove this item from the queue */
+-	spin_lock_irqsave(&mac->lock, flags);
+-	net->authenticating = 0;
+-	ieee80211softmac_call_events_locked(mac, IEEE80211SOFTMAC_EVENT_AUTH_TIMEOUT, net);
+-	cancel_delayed_work(&auth->work); /* just to make sure... */
+-	list_del(&auth->list);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	/* Free it */
+-	kfree(auth);
+-}
+-
+-/* Sends a response to an auth challenge (for shared key auth). */
+-static void
+-ieee80211softmac_auth_challenge_response(struct work_struct *work)
+-{
+-	struct ieee80211softmac_auth_queue_item *aq =
+-		container_of(work, struct ieee80211softmac_auth_queue_item,
+-			     work.work);
+-
+-	/* Send our response */
+-	ieee80211softmac_send_mgt_frame(aq->mac, aq->net, IEEE80211_STYPE_AUTH, aq->state);
+-}
+-
+-/* Handle the auth response from the AP
+- * This should be registered with ieee80211 as handle_auth
+- */
+-int
+-ieee80211softmac_auth_resp(struct net_device *dev, struct ieee80211_auth *auth)
+-{
+-
+-	struct list_head *list_ptr;
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	struct ieee80211softmac_auth_queue_item *aq = NULL;
+-	struct ieee80211softmac_network *net = NULL;
+-	unsigned long flags;
+-	u8 * data;
+-	DECLARE_MAC_BUF(mac2);
+-
+-	if (unlikely(!mac->running))
+-		return -ENODEV;
+-
+-	/* Find correct auth queue item */
+-	spin_lock_irqsave(&mac->lock, flags);
+-	list_for_each(list_ptr, &mac->auth_queue) {
+-		aq = list_entry(list_ptr, struct ieee80211softmac_auth_queue_item, list);
+-		net = aq->net;
+-		if (!memcmp(net->bssid, auth->header.addr2, ETH_ALEN))
+-			break;
+-		else
+-			aq = NULL;
+-	}
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	/* Make sure that we've got an auth queue item for this request */
+-	if(aq == NULL)
+-	{
+-		dprintkl(KERN_DEBUG PFX "Authentication response received from %s but no queue item exists.\n", print_mac(mac2, auth->header.addr2));
+-		/* Error #? */
+-		return -1;
+-	}
+-
+-	/* Check for out of order authentication */
+-	if(!net->authenticating)
+-	{
+-		dprintkl(KERN_DEBUG PFX "Authentication response received from %s but did not request authentication.\n",print_mac(mac2, auth->header.addr2));
+-		return -1;
+-	}
+-
+-	/* Parse the auth packet */
+-	switch(le16_to_cpu(auth->algorithm)) {
+-	case WLAN_AUTH_OPEN:
+-		/* Check the status code of the response */
+-
+-		switch(le16_to_cpu(auth->status)) {
+-		case WLAN_STATUS_SUCCESS:
+-			/* Update the status to Authenticated */
+-			spin_lock_irqsave(&mac->lock, flags);
+-			net->authenticating = 0;
+-			net->authenticated = 1;
+-			spin_unlock_irqrestore(&mac->lock, flags);
+-
+-			/* Send event */
+-			printkl(KERN_NOTICE PFX "Open Authentication completed with %s\n", print_mac(mac2, net->bssid));
+-			ieee80211softmac_call_events(mac, IEEE80211SOFTMAC_EVENT_AUTHENTICATED, net);
+-			break;
+-		default:
+-			/* Lock and reset flags */
+-			spin_lock_irqsave(&mac->lock, flags);
+-			net->authenticated = 0;
+-			net->authenticating = 0;
+-			spin_unlock_irqrestore(&mac->lock, flags);
+-
+-			printkl(KERN_NOTICE PFX "Open Authentication with %s failed, error code: %i\n",
+-				print_mac(mac2, net->bssid), le16_to_cpup(&auth->status));
+-			/* Count the error? */
+-			break;
+-		}
+-		goto free_aq;
+-		break;
+-	case WLAN_AUTH_SHARED_KEY:
+-		/* Figure out where we are in the process */
+-		switch(le16_to_cpu(auth->transaction)) {
+-		case IEEE80211SOFTMAC_AUTH_SHARED_CHALLENGE:
+-			/* Check to make sure we have a challenge IE */
+-			data = (u8 *)auth->info_element;
+-			if (*data++ != MFIE_TYPE_CHALLENGE) {
+-				printkl(KERN_NOTICE PFX "Shared Key Authentication failed due to a missing challenge.\n");
+-				break;
+-			}
+-			/* Save the challenge */
+-			spin_lock_irqsave(&mac->lock, flags);
+-			net->challenge_len = *data++;
+-			if (net->challenge_len > WLAN_AUTH_CHALLENGE_LEN)
+-				net->challenge_len = WLAN_AUTH_CHALLENGE_LEN;
+-			kfree(net->challenge);
+-			net->challenge = kmemdup(data, net->challenge_len,
+-						 GFP_ATOMIC);
+-			if (net->challenge == NULL) {
+-				printkl(KERN_NOTICE PFX "Shared Key "
+-					"Authentication failed due to "
+-					"memory shortage.\n");
+-				spin_unlock_irqrestore(&mac->lock, flags);
+-				break;
+-			}
+-			aq->state = IEEE80211SOFTMAC_AUTH_SHARED_RESPONSE;
+-
+-			/* We reuse the work struct from the auth request here.
+-			 * It is safe to do so as each one is per-request, and
+-			 * at this point (dealing with authentication response)
+-			 * we have obviously already sent the initial auth
+-			 * request. */
+-			cancel_delayed_work(&aq->work);
+-			INIT_DELAYED_WORK(&aq->work, &ieee80211softmac_auth_challenge_response);
+-			queue_delayed_work(mac->wq, &aq->work, 0);
+-			spin_unlock_irqrestore(&mac->lock, flags);
+-			return 0;
+-		case IEEE80211SOFTMAC_AUTH_SHARED_PASS:
+-			kfree(net->challenge);
+-			net->challenge = NULL;
+-			net->challenge_len = 0;
+-			/* Check the status code of the response */
+-			switch(auth->status) {
+-			case WLAN_STATUS_SUCCESS:
+-				/* Update the status to Authenticated */
+-				spin_lock_irqsave(&mac->lock, flags);
+-				net->authenticating = 0;
+-				net->authenticated = 1;
+-				spin_unlock_irqrestore(&mac->lock, flags);
+-				printkl(KERN_NOTICE PFX "Shared Key Authentication completed with %s\n",
+-					print_mac(mac2, net->bssid));
+-				ieee80211softmac_call_events(mac, IEEE80211SOFTMAC_EVENT_AUTHENTICATED, net);
+-				break;
+-			default:
+-				printkl(KERN_NOTICE PFX "Shared Key Authentication with %s failed, error code: %i\n",
+-					print_mac(mac2, net->bssid), le16_to_cpup(&auth->status));
+-				/* Lock and reset flags */
+-				spin_lock_irqsave(&mac->lock, flags);
+-				net->authenticating = 0;
+-				net->authenticated = 0;
+-				spin_unlock_irqrestore(&mac->lock, flags);
+-				/* Count the error? */
+-				break;
+-			}
+-			goto free_aq;
+-			break;
+-		default:
+-			printkl(KERN_WARNING PFX "Unhandled Authentication Step: %i\n", auth->transaction);
+-			break;
+-		}
+-		goto free_aq;
+-		break;
+-	default:
+-		/* ERROR */
+-		goto free_aq;
+-		break;
+-	}
+-	return 0;
+-free_aq:
+-	/* Cancel the timeout */
+-	spin_lock_irqsave(&mac->lock, flags);
+-	cancel_delayed_work(&aq->work);
+-	/* Remove this item from the queue */
+-	list_del(&aq->list);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	/* Free it */
+-	kfree(aq);
+-	return 0;
+-}
+-
+-/*
+- * Handle deauthorization
+- */
+-static void
+-ieee80211softmac_deauth_from_net(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net)
+-{
+-	struct ieee80211softmac_auth_queue_item *aq = NULL;
+-	struct list_head *list_ptr;
+-	unsigned long flags;
+-
+-	/* deauthentication implies disassociation */
+-	ieee80211softmac_disassoc(mac);
+-
+-	/* Lock and reset status flags */
+-	spin_lock_irqsave(&mac->lock, flags);
+-	net->authenticating = 0;
+-	net->authenticated = 0;
+-
+-	/* Find correct auth queue item, if it exists */
+-	list_for_each(list_ptr, &mac->auth_queue) {
+-		aq = list_entry(list_ptr, struct ieee80211softmac_auth_queue_item, list);
+-		if (!memcmp(net->bssid, aq->net->bssid, ETH_ALEN))
+-			break;
+-		else
+-			aq = NULL;
+-	}
+-
+-	/* Cancel pending work */
+-	if(aq != NULL)
+-		/* Not entirely safe?  What about running work? */
+-		cancel_delayed_work(&aq->work);
+-
+-	/* Free our network ref */
+-	ieee80211softmac_del_network_locked(mac, net);
+-	if(net->challenge != NULL)
+-		kfree(net->challenge);
+-	kfree(net);
+-
+-	/* can't transmit data right now... */
+-	netif_carrier_off(mac->dev);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	ieee80211softmac_try_reassoc(mac);
+-}
+-
+-/*
+- * Sends a deauth request to the desired AP
+- */
+-int
+-ieee80211softmac_deauth_req(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net, int reason)
+-{
+-	int ret;
+-
+-	/* Make sure the network is authenticated */
+-	if (!net->authenticated)
+-	{
+-		dprintkl(KERN_DEBUG PFX "Can't send deauthentication packet, network is not authenticated.\n");
+-		/* Error okay? */
+-		return -EPERM;
+-	}
+-
+-	/* Send the de-auth packet */
+-	if((ret = ieee80211softmac_send_mgt_frame(mac, net, IEEE80211_STYPE_DEAUTH, reason)))
+-		return ret;
+-
+-	ieee80211softmac_deauth_from_net(mac, net);
+-	return 0;
+-}
+-
+-/*
+- * This should be registered with ieee80211 as handle_deauth
+- */
+-int
+-ieee80211softmac_deauth_resp(struct net_device *dev, struct ieee80211_deauth *deauth)
+-{
+-
+-	struct ieee80211softmac_network *net = NULL;
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	DECLARE_MAC_BUF(mac2);
+-
+-	if (unlikely(!mac->running))
+-		return -ENODEV;
+-
+-	if (!deauth) {
+-		dprintk("deauth without deauth packet. eek!\n");
+-		return 0;
+-	}
+-
+-	net = ieee80211softmac_get_network_by_bssid(mac, deauth->header.addr2);
+-
+-	if (net == NULL) {
+-		dprintkl(KERN_DEBUG PFX "Received deauthentication packet from %s, but that network is unknown.\n",
+-			print_mac(mac2, deauth->header.addr2));
+-		return 0;
+-	}
+-
+-	/* Make sure the network is authenticated */
+-	if(!net->authenticated)
+-	{
+-		dprintkl(KERN_DEBUG PFX "Can't perform deauthentication, network is not authenticated.\n");
+-		/* Error okay? */
+-		return -EPERM;
+-	}
+-
+-	ieee80211softmac_deauth_from_net(mac, net);
+-
+-	/* let's try to re-associate */
+-	queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-	return 0;
+-}
+diff --git a/net/ieee80211/softmac/ieee80211softmac_event.c b/net/ieee80211/softmac/ieee80211softmac_event.c
+deleted file mode 100644
+index 8cef05b..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_event.c
++++ /dev/null
+@@ -1,189 +0,0 @@
+-/*
+- * Event system
+- * Also see comments in public header file and longer explanation below.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-
+-/*
+- * Each event has associated to it
+- *  - an event type (see constants in public header)
+- *  - an event context (see below)
+- *  - the function to be called
+- *  - a context (extra parameter to call the function with)
+- *  - and the softmac struct
+- *
+- * The event context is private and can only be used from
+- * within this module. Its meaning varies with the event
+- * type:
+- *  SCAN_FINISHED,
+- *  DISASSOCIATED:	NULL
+- *  ASSOCIATED,
+- *  ASSOCIATE_FAILED,
+- *  ASSOCIATE_TIMEOUT,
+- *  AUTHENTICATED,
+- *  AUTH_FAILED,
+- *  AUTH_TIMEOUT:	a pointer to the network struct
+- * ...
+- * Code within this module can use the event context to be only
+- * called when the event is true for that specific context
+- * as per above table.
+- * If the event context is NULL, then the notification is always called,
+- * regardless of the event context. The event context is not passed to
+- * the callback, it is assumed that the context suffices.
+- *
+- * You can also use the event context only by setting the event type
+- * to -1 (private use only), in which case you'll be notified
+- * whenever the event context matches.
+- */
+-
+-static char *event_descriptions[IEEE80211SOFTMAC_EVENT_LAST+1] = {
+-	NULL, /* scan finished */
+-	NULL, /* associated */
+-	"associating failed",
+-	"associating timed out",
+-	"authenticated",
+-	"authenticating failed",
+-	"authenticating timed out",
+-	"associating failed because no suitable network was found",
+-	NULL, /* disassociated */
+-};
+-
+-
+-static void
+-ieee80211softmac_notify_callback(struct work_struct *work)
+-{
+-	struct ieee80211softmac_event *pevent =
+-		container_of(work, struct ieee80211softmac_event, work.work);
+-	struct ieee80211softmac_event event = *pevent;
+-	kfree(pevent);
+-
+-	event.fun(event.mac->dev, event.event_type, event.context);
+-}
+-
+-int
+-ieee80211softmac_notify_internal(struct ieee80211softmac_device *mac,
+-	int event, void *event_context, notify_function_ptr fun, void *context, gfp_t gfp_mask)
+-{
+-	struct ieee80211softmac_event *eventptr;
+-	unsigned long flags;
+-
+-	if (event < -1 || event > IEEE80211SOFTMAC_EVENT_LAST)
+-		return -ENOSYS;
+-
+-	if (!fun)
+-		return -EINVAL;
+-
+-	eventptr = kmalloc(sizeof(struct ieee80211softmac_event), gfp_mask);
+-	if (!eventptr)
+-		return -ENOMEM;
+-
+-	eventptr->event_type = event;
+-	INIT_DELAYED_WORK(&eventptr->work, ieee80211softmac_notify_callback);
+-	eventptr->fun = fun;
+-	eventptr->context = context;
+-	eventptr->mac = mac;
+-	eventptr->event_context = event_context;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	list_add(&eventptr->list, &mac->events);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	return 0;
+-}
+-
+-int
+-ieee80211softmac_notify_gfp(struct net_device *dev,
+-	int event, notify_function_ptr fun, void *context, gfp_t gfp_mask)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	if (event < 0 || event > IEEE80211SOFTMAC_EVENT_LAST)
+-		return -ENOSYS;
+-
+-	return ieee80211softmac_notify_internal(mac, event, NULL, fun, context, gfp_mask);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_notify_gfp);
+-
+-/* private -- calling all callbacks that were specified */
+-void
+-ieee80211softmac_call_events_locked(struct ieee80211softmac_device *mac, int event, void *event_ctx)
+-{
+-	struct ieee80211softmac_event *eventptr, *tmp;
+-	struct ieee80211softmac_network *network;
+-
+-	if (event >= 0) {
+-		union iwreq_data wrqu;
+-		int we_event;
+-		char *msg = NULL;
+-
+-		memset(&wrqu, '\0', sizeof (union iwreq_data));
+-
+-		switch(event) {
+-		case IEEE80211SOFTMAC_EVENT_ASSOCIATED:
+-			network = (struct ieee80211softmac_network *)event_ctx;
+-			memcpy(wrqu.ap_addr.sa_data, &network->bssid[0], ETH_ALEN);
+-			/* fall through */
+-		case IEEE80211SOFTMAC_EVENT_DISASSOCIATED:
+-			wrqu.ap_addr.sa_family = ARPHRD_ETHER;
+-			we_event = SIOCGIWAP;
+-			break;
+-		case IEEE80211SOFTMAC_EVENT_SCAN_FINISHED:
+-			we_event = SIOCGIWSCAN;
+-			break;
+-		default:
+-			msg = event_descriptions[event];
+-			if (!msg)
+-				msg = "SOFTMAC EVENT BUG";
+-			wrqu.data.length = strlen(msg);
+-			we_event = IWEVCUSTOM;
+-			break;
+-		}
+-		wireless_send_event(mac->dev, we_event, &wrqu, msg);
+-	}
+-
+-	if (!list_empty(&mac->events))
+-		list_for_each_entry_safe(eventptr, tmp, &mac->events, list) {
+-			if ((eventptr->event_type == event || eventptr->event_type == -1)
+-				&& (eventptr->event_context == NULL || eventptr->event_context == event_ctx)) {
+-				list_del(&eventptr->list);
+-				/* User may have subscribed to ANY event, so
+-				 * we tell them which event triggered it. */
+-				eventptr->event_type = event;
+-				queue_delayed_work(mac->wq, &eventptr->work, 0);
+-			}
+-		}
+-}
+-
+-void
+-ieee80211softmac_call_events(struct ieee80211softmac_device *mac, int event, void *event_ctx)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	ieee80211softmac_call_events_locked(mac, event, event_ctx);
+-
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+diff --git a/net/ieee80211/softmac/ieee80211softmac_io.c b/net/ieee80211/softmac/ieee80211softmac_io.c
+deleted file mode 100644
+index 73b4b13..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_io.c
++++ /dev/null
+@@ -1,488 +0,0 @@
+-/*
+- * Some parts based on code from net80211
+- * Copyright (c) 2001 Atsushi Onoe
+- * Copyright (c) 2002-2005 Sam Leffler, Errno Consulting
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- * 3. The name of the author may not be used to endorse or promote products
+- *    derived from this software without specific prior written permission.
+- *
+- * Alternatively, this software may be distributed under the terms of the
+- * GNU General Public License ("GPL") version 2 as published by the Free
+- * Software Foundation.
+- *
+- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-
+-/* Helper functions for inserting data into the frames */
+-
+-/*
+- * Adds an ESSID element to the frame
+- *
+- */
+-static u8 *
+-ieee80211softmac_add_essid(u8 *dst, struct ieee80211softmac_essid *essid)
+-{
+-	if (essid) {
+-		*dst++ = MFIE_TYPE_SSID;
+-		*dst++ = essid->len;
+-		memcpy(dst, essid->data, essid->len);
+-		return dst+essid->len;
+-	} else {
+-		*dst++ = MFIE_TYPE_SSID;
+-		*dst++ = 0;
+-		return dst;
+-	}
+-}
+-
+-/* Adds Supported Rates and if required Extended Rates Information Element
+- * to the frame, ASSUMES WE HAVE A SORTED LIST OF RATES */
+-static u8 *
+-ieee80211softmac_frame_add_rates(u8 *dst, const struct ieee80211softmac_ratesinfo *r)
+-{
+-	int cck_len, ofdm_len;
+-	*dst++ = MFIE_TYPE_RATES;
+-
+-	for(cck_len=0; ieee80211_is_cck_rate(r->rates[cck_len]) && (cck_len < r->count);cck_len++);
+-
+-	if(cck_len > IEEE80211SOFTMAC_MAX_RATES_LEN)
+-		cck_len = IEEE80211SOFTMAC_MAX_RATES_LEN;
+-	*dst++ = cck_len;
+-	memcpy(dst, r->rates, cck_len);
+-	dst += cck_len;
+-
+-	if(cck_len < r->count){
+-		for (ofdm_len=0; ieee80211_is_ofdm_rate(r->rates[ofdm_len + cck_len]) && (ofdm_len + cck_len < r->count); ofdm_len++);
+-		if (ofdm_len > 0) {
+-			if (ofdm_len > IEEE80211SOFTMAC_MAX_EX_RATES_LEN)
+-				ofdm_len = IEEE80211SOFTMAC_MAX_EX_RATES_LEN;
+-			*dst++ = MFIE_TYPE_RATES_EX;
+-			*dst++ = ofdm_len;
+-			memcpy(dst, r->rates + cck_len, ofdm_len);
+-			dst += ofdm_len;
+-		}
+-	}
+-	return dst;
+-}
+-
+-/* Allocate a management frame */
+-static u8 *
+-ieee80211softmac_alloc_mgt(u32 size)
+-{
+-	u8 * data;
+-
+-	/* Add the header and FCS to the size */
+-	size = size + IEEE80211_3ADDR_LEN;
+-	if(size > IEEE80211_DATA_LEN)
+-		return NULL;
+-	/* Allocate the frame */
+-	data = kzalloc(size, GFP_ATOMIC);
+-	return data;
+-}
+-
+-/*
+- * Add a 2 Address Header
+- */
+-static void
+-ieee80211softmac_hdr_2addr(struct ieee80211softmac_device *mac,
+-	struct ieee80211_hdr_2addr *header, u32 type, u8 *dest)
+-{
+-	/* Fill in the frame control flags */
+-	header->frame_ctl = cpu_to_le16(type);
+-	/* Control packets always have WEP turned off */
+-	if(type > IEEE80211_STYPE_CFENDACK && type < IEEE80211_STYPE_PSPOLL)
+-		header->frame_ctl |= mac->ieee->sec.level ? cpu_to_le16(IEEE80211_FCTL_PROTECTED) : 0;
+-
+-	/* Fill in the duration */
+-	header->duration_id = 0;
+-	/* FIXME: How do I find this?
+-	 * calculate. But most drivers just fill in 0 (except if it's a station id of course) */
+-
+-	/* Fill in the Destination Address */
+-	if(dest == NULL)
+-		memset(header->addr1, 0xFF, ETH_ALEN);
+-	else
+-		memcpy(header->addr1, dest, ETH_ALEN);
+-	/* Fill in the Source Address */
+-	memcpy(header->addr2, mac->ieee->dev->dev_addr, ETH_ALEN);
+-
+-}
+-
+-
+-/* Add a 3 Address Header */
+-static void
+-ieee80211softmac_hdr_3addr(struct ieee80211softmac_device *mac,
+-	struct ieee80211_hdr_3addr *header, u32 type, u8 *dest, u8 *bssid)
+-{
+-	/* This is common with 2addr, so use that instead */
+-	ieee80211softmac_hdr_2addr(mac, (struct ieee80211_hdr_2addr *)header, type, dest);
+-
+-	/* Fill in the BSS ID */
+-	if(bssid == NULL)
+-		memset(header->addr3, 0xFF, ETH_ALEN);
+-	else
+-		memcpy(header->addr3, bssid, ETH_ALEN);
+-
+-	/* Fill in the sequence # */
+-	/* FIXME: I need to add this to the softmac struct
+-	 * shouldn't the sequence number be in ieee80211? */
+-}
+-
+-static __le16
+-ieee80211softmac_capabilities(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net)
+-{
+-	__le16 capability = 0;
+-
+-	/* ESS and IBSS bits are set according to the current mode */
+-	switch (mac->ieee->iw_mode) {
+-	case IW_MODE_INFRA:
+-		capability = cpu_to_le16(WLAN_CAPABILITY_ESS);
+-		break;
+-	case IW_MODE_ADHOC:
+-		capability = cpu_to_le16(WLAN_CAPABILITY_IBSS);
+-		break;
+-	case IW_MODE_AUTO:
+-		capability = cpu_to_le16(net->capabilities &
+-			(WLAN_CAPABILITY_ESS|WLAN_CAPABILITY_IBSS));
+-		break;
+-	default:
+-		/* bleh. we don't ever go to these modes */
+-		printk(KERN_ERR PFX "invalid iw_mode!\n");
+-		break;
+-	}
+-
+-	/* CF Pollable / CF Poll Request */
+-	/* Needs to be implemented, for now, the 0's == not supported */
+-
+-	/* Privacy Bit */
+-	capability |= mac->ieee->sec.level ?
+-		cpu_to_le16(WLAN_CAPABILITY_PRIVACY) : 0;
+-
+-	/* Short Preamble */
+-	/* Always supported: we probably won't ever be powering devices which
+-	 * dont support this... */
+-	capability |= cpu_to_le16(WLAN_CAPABILITY_SHORT_PREAMBLE);
+-
+-	/* PBCC */
+-	/* Not widely used */
+-
+-	/* Channel Agility */
+-	/* Not widely used */
+-
+-	/* Short Slot */
+-	/* Will be implemented later */
+-
+-	/* DSSS-OFDM */
+-	/* Not widely used */
+-
+-	return capability;
+-}
+-
+-/*****************************************************************************
+- * Create Management packets
+- *****************************************************************************/
+-
+-/* Creates an association request packet */
+-static u32
+-ieee80211softmac_assoc_req(struct ieee80211_assoc_request **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net)
+-{
+-	u8 *data;
+-	(*pkt) = (struct ieee80211_assoc_request *)ieee80211softmac_alloc_mgt(
+-		2 +		/* Capability Info */
+-		2 +	 	/* Listen Interval */
+-		/* SSID IE */
+-		1 + 1 + IW_ESSID_MAX_SIZE +
+-		/* Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_RATES_LEN +
+-		/* Extended Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_EX_RATES_LEN +
+-		/* WPA IE if present */
+-		mac->wpa.IElen
+-		/* Other IE's?  Optional?
+-		 * Yeah, probably need an extra IE parameter -- lots of vendors like to
+-		 * fill in their own IEs */
+-	);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), IEEE80211_STYPE_ASSOC_REQ, net->bssid, net->bssid);
+-
+-	/* Fill in the capabilities */
+-	(*pkt)->capability = ieee80211softmac_capabilities(mac, net);
+-
+-	/* Fill in Listen Interval (?) */
+-	(*pkt)->listen_interval = cpu_to_le16(10);
+-
+-	data = (u8 *)(*pkt)->info_element;
+-	/* Add SSID */
+-	data = ieee80211softmac_add_essid(data, &net->essid);
+-	/* Add Rates */
+-	data = ieee80211softmac_frame_add_rates(data, &mac->ratesinfo);
+-	/* Add WPA IE */
+-	if (mac->wpa.IElen && mac->wpa.IE) {
+-		memcpy(data, mac->wpa.IE, mac->wpa.IElen);
+-		data += mac->wpa.IElen;
+-	}
+-	/* Return the number of used bytes */
+-	return (data - (u8*)(*pkt));
+-}
+-
+-/* Create a reassociation request packet */
+-static u32
+-ieee80211softmac_reassoc_req(struct ieee80211_reassoc_request **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net)
+-{
+-	u8 *data;
+-	(*pkt) = (struct ieee80211_reassoc_request *)ieee80211softmac_alloc_mgt(
+-		2 +		/* Capability Info */
+-		2 +	 	/* Listen Interval */
+-		ETH_ALEN +	/* AP MAC */
+-		/* SSID IE */
+-		1 + 1 + IW_ESSID_MAX_SIZE +
+-		/* Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_RATES_LEN +
+-		/* Extended Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_EX_RATES_LEN
+-		/* Other IE's? */
+-	);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), IEEE80211_STYPE_REASSOC_REQ, net->bssid, net->bssid);
+-
+-	/* Fill in the capabilities */
+-	(*pkt)->capability = ieee80211softmac_capabilities(mac, net);
+-
+-	/* Fill in Listen Interval (?) */
+-	(*pkt)->listen_interval = cpu_to_le16(10);
+-	/* Fill in the current AP MAC */
+-	memcpy((*pkt)->current_ap, mac->ieee->bssid, ETH_ALEN);
+-
+-	data = (u8 *)(*pkt)->info_element;
+-	/* Add SSID */
+-	data = ieee80211softmac_add_essid(data, &net->essid);
+-	/* Add Rates */
+-	data = ieee80211softmac_frame_add_rates(data, &mac->ratesinfo);
+-	/* Return packet size */
+-	return (data - (u8 *)(*pkt));
+-}
+-
+-/* Create an authentication packet */
+-static u32
+-ieee80211softmac_auth(struct ieee80211_auth **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net,
+-	u16 transaction, u16 status, int *encrypt_mpdu)
+-{
+-	u8 *data;
+-	int auth_mode = mac->ieee->sec.auth_mode;
+-	int is_shared_response = (auth_mode == WLAN_AUTH_SHARED_KEY
+-		&& transaction == IEEE80211SOFTMAC_AUTH_SHARED_RESPONSE);
+-
+-	/* Allocate Packet */
+-	(*pkt) = (struct ieee80211_auth *)ieee80211softmac_alloc_mgt(
+-		2 +		/* Auth Algorithm */
+-		2 +		/* Auth Transaction Seq */
+-		2 +		/* Status Code */
+-		 /* Challenge Text IE */
+-		(is_shared_response ? 1 + 1 + net->challenge_len : 0)
+-	);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), IEEE80211_STYPE_AUTH, net->bssid, net->bssid);
+-
+-	/* Algorithm */
+-	(*pkt)->algorithm = cpu_to_le16(auth_mode);
+-	/* Transaction */
+-	(*pkt)->transaction = cpu_to_le16(transaction);
+-	/* Status */
+-	(*pkt)->status = cpu_to_le16(status);
+-
+-	data = (u8 *)(*pkt)->info_element;
+-	/* Challenge Text */
+-	if (is_shared_response) {
+-		*data = MFIE_TYPE_CHALLENGE;
+-		data++;
+-
+-		/* Copy the challenge in */
+-		*data = net->challenge_len;
+-		data++;
+-		memcpy(data, net->challenge, net->challenge_len);
+-		data += net->challenge_len;
+-
+-		/* Make sure this frame gets encrypted with the shared key */
+-		*encrypt_mpdu = 1;
+-	} else
+-		*encrypt_mpdu = 0;
+-
+-	/* Return the packet size */
+-	return (data - (u8 *)(*pkt));
+-}
+-
+-/* Create a disassocation or deauthentication packet */
+-static u32
+-ieee80211softmac_disassoc_deauth(struct ieee80211_disassoc **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net,
+-	u16 type, u16 reason)
+-{
+-	/* Allocate Packet */
+-	(*pkt) = (struct ieee80211_disassoc *)ieee80211softmac_alloc_mgt(2);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), type, net->bssid, net->bssid);
+-	/* Reason */
+-	(*pkt)->reason = cpu_to_le16(reason);
+-	/* Return the packet size */
+-	return (2 + IEEE80211_3ADDR_LEN);
+-}
+-
+-/* Create a probe request packet */
+-static u32
+-ieee80211softmac_probe_req(struct ieee80211_probe_request **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_essid *essid)
+-{
+-	u8 *data;
+-	/* Allocate Packet */
+-	(*pkt) = (struct ieee80211_probe_request *)ieee80211softmac_alloc_mgt(
+-		/* SSID of requested network */
+-		1 + 1 + IW_ESSID_MAX_SIZE +
+-		/* Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_RATES_LEN +
+-		/* Extended Rates IE */
+-		1 + 1 + IEEE80211SOFTMAC_MAX_EX_RATES_LEN
+-	);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), IEEE80211_STYPE_PROBE_REQ, NULL, NULL);
+-
+-	data = (u8 *)(*pkt)->info_element;
+-	/* Add ESSID (can be NULL) */
+-	data = ieee80211softmac_add_essid(data, essid);
+-	/* Add Rates */
+-	data = ieee80211softmac_frame_add_rates(data, &mac->ratesinfo);
+-	/* Return packet size */
+-	return (data - (u8 *)(*pkt));
+-}
+-
+-/* Create a probe response packet */
+-/* FIXME: Not complete */
+-static u32
+-ieee80211softmac_probe_resp(struct ieee80211_probe_response **pkt,
+-	struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net)
+-{
+-	u8 *data;
+-	/* Allocate Packet */
+-	(*pkt) = (struct ieee80211_probe_response *)ieee80211softmac_alloc_mgt(
+-		8 +		/* Timestamp */
+-		2 +		/* Beacon Interval */
+-		2 +		/* Capability Info */
+-				/* SSID IE */
+-		1 + 1 + IW_ESSID_MAX_SIZE +
+-		7 + 		/* FH Parameter Set */
+-		2 +		/* DS Parameter Set */
+-		8 +		/* CF Parameter Set */
+-		4 		/* IBSS Parameter Set */
+-	);
+-	if (unlikely((*pkt) == NULL))
+-		return 0;
+-	ieee80211softmac_hdr_3addr(mac, &((*pkt)->header), IEEE80211_STYPE_PROBE_RESP, net->bssid, net->bssid);
+-	data = (u8 *)(*pkt)->info_element;
+-
+-	/* Return the packet size */
+-	return (data - (u8 *)(*pkt));
+-}
+-
+-
+-/* Sends a manangement packet
+- * FIXME: document the use of the arg parameter
+- * for _AUTH: (transaction #) | (status << 16)
+- */
+-int
+-ieee80211softmac_send_mgt_frame(struct ieee80211softmac_device *mac,
+-	void *ptrarg, u32 type, u32 arg)
+-{
+-	void *pkt = NULL;
+-	u32 pkt_size = 0;
+-	int encrypt_mpdu = 0;
+-
+-	switch(type) {
+-	case IEEE80211_STYPE_ASSOC_REQ:
+-		pkt_size = ieee80211softmac_assoc_req((struct ieee80211_assoc_request **)(&pkt), mac, (struct ieee80211softmac_network *)ptrarg);
+-		break;
+-	case IEEE80211_STYPE_REASSOC_REQ:
+-		pkt_size = ieee80211softmac_reassoc_req((struct ieee80211_reassoc_request **)(&pkt), mac, (struct ieee80211softmac_network *)ptrarg);
+-		break;
+-	case IEEE80211_STYPE_AUTH:
+-		pkt_size = ieee80211softmac_auth((struct ieee80211_auth **)(&pkt), mac, (struct ieee80211softmac_network *)ptrarg, (u16)(arg & 0xFFFF), (u16) (arg >> 16), &encrypt_mpdu);
+-		break;
+-	case IEEE80211_STYPE_DISASSOC:
+-	case IEEE80211_STYPE_DEAUTH:
+-		pkt_size = ieee80211softmac_disassoc_deauth((struct ieee80211_disassoc **)(&pkt), mac, (struct ieee80211softmac_network *)ptrarg, type, (u16)(arg & 0xFFFF));
+-		break;
+-	case IEEE80211_STYPE_PROBE_REQ:
+-		pkt_size = ieee80211softmac_probe_req((struct ieee80211_probe_request **)(&pkt), mac, (struct ieee80211softmac_essid *)ptrarg);
+-		break;
+-	case IEEE80211_STYPE_PROBE_RESP:
+-		pkt_size = ieee80211softmac_probe_resp((struct ieee80211_probe_response **)(&pkt), mac, (struct ieee80211softmac_network *)ptrarg);
+-		break;
+-	default:
+-		printkl(KERN_DEBUG PFX "Unsupported Management Frame type: %i\n", type);
+-		return -EINVAL;
+-	};
+-
+-	if(pkt_size == 0 || pkt == NULL) {
+-		printkl(KERN_DEBUG PFX "Error, packet is nonexistant or 0 length\n");
+-		return -ENOMEM;
+-	}
+-
+-	/* Send the packet to the ieee80211 layer for tx */
+-	/* we defined softmac->mgmt_xmit for this. Should we keep it
+-	 * as it is (that means we'd need to wrap this into a txb),
+-	 * modify the prototype (so it matches this function),
+-	 * or get rid of it alltogether?
+-	 * Does this work for you now?
+-	 */
+-	ieee80211_tx_frame(mac->ieee, (struct ieee80211_hdr *)pkt,
+-		IEEE80211_3ADDR_LEN, pkt_size, encrypt_mpdu);
+-
+-	kfree(pkt);
+-	return 0;
+-}
+-
+-/* Beacon handling */
+-int ieee80211softmac_handle_beacon(struct net_device *dev,
+-	struct ieee80211_beacon *beacon,
+-	struct ieee80211_network *network)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	/* This might race, but we don't really care and it's not worth
+-	 * adding heavyweight locking in this fastpath.
+-	 */
+-	if (mac->associnfo.associated) {
+-		if (memcmp(network->bssid, mac->associnfo.bssid, ETH_ALEN) == 0)
+-			ieee80211softmac_process_erp(mac, network->erp_value);
+-	}
+-
+-	return 0;
+-}
+-
+diff --git a/net/ieee80211/softmac/ieee80211softmac_module.c b/net/ieee80211/softmac/ieee80211softmac_module.c
+deleted file mode 100644
+index 07505ca..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_module.c
++++ /dev/null
+@@ -1,568 +0,0 @@
+-/*
+- * Contains some basic softmac functions along with module registration code etc.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-#include <linux/sort.h>
+-#include <linux/etherdevice.h>
+-
+-struct net_device *alloc_ieee80211softmac(int sizeof_priv)
+-{
+-	struct ieee80211softmac_device *softmac;
+-	struct net_device *dev;
+-
+-	dev = alloc_ieee80211(sizeof(*softmac) + sizeof_priv);
+-	if (!dev)
+-		return NULL;
+-	softmac = ieee80211_priv(dev);
+-	softmac->wq = create_freezeable_workqueue("softmac");
+-	if (!softmac->wq) {
+-		free_ieee80211(dev);
+-		return NULL;
+-	}
+-
+-	softmac->dev = dev;
+-	softmac->ieee = netdev_priv(dev);
+-	spin_lock_init(&softmac->lock);
+-
+-	softmac->ieee->handle_auth = ieee80211softmac_auth_resp;
+-	softmac->ieee->handle_deauth = ieee80211softmac_deauth_resp;
+-	softmac->ieee->handle_assoc_response = ieee80211softmac_handle_assoc_response;
+-	softmac->ieee->handle_reassoc_request = ieee80211softmac_handle_reassoc_req;
+-	softmac->ieee->handle_disassoc = ieee80211softmac_handle_disassoc;
+-	softmac->ieee->handle_beacon = ieee80211softmac_handle_beacon;
+-	softmac->scaninfo = NULL;
+-
+-	softmac->associnfo.scan_retry = IEEE80211SOFTMAC_ASSOC_SCAN_RETRY_LIMIT;
+-
+-	/* TODO: initialise all the other callbacks in the ieee struct
+-	 *	 (once they're written)
+-	 */
+-
+-	INIT_LIST_HEAD(&softmac->auth_queue);
+-	INIT_LIST_HEAD(&softmac->network_list);
+-	INIT_LIST_HEAD(&softmac->events);
+-
+-	mutex_init(&softmac->associnfo.mutex);
+-	INIT_DELAYED_WORK(&softmac->associnfo.work, ieee80211softmac_assoc_work);
+-	INIT_DELAYED_WORK(&softmac->associnfo.timeout, ieee80211softmac_assoc_timeout);
+-	softmac->start_scan = ieee80211softmac_start_scan_implementation;
+-	softmac->wait_for_scan = ieee80211softmac_wait_for_scan_implementation;
+-	softmac->stop_scan = ieee80211softmac_stop_scan_implementation;
+-
+-	/* to start with, we can't send anything ... */
+-	netif_carrier_off(dev);
+-
+-	return dev;
+-}
+-EXPORT_SYMBOL_GPL(alloc_ieee80211softmac);
+-
+-/* Clears the pending work queue items, stops all scans, etc. */
+-void
+-ieee80211softmac_clear_pending_work(struct ieee80211softmac_device *sm)
+-{
+-	unsigned long flags;
+-	struct ieee80211softmac_event *eventptr, *eventtmp;
+-	struct ieee80211softmac_auth_queue_item *authptr, *authtmp;
+-	struct ieee80211softmac_network *netptr, *nettmp;
+-
+-	ieee80211softmac_stop_scan(sm);
+-	ieee80211softmac_wait_for_scan(sm);
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	sm->running = 0;
+-
+-	/* Free all pending assoc work items */
+-	cancel_delayed_work(&sm->associnfo.work);
+-
+-	/* Free all pending scan work items */
+-	if(sm->scaninfo != NULL)
+-		cancel_delayed_work(&sm->scaninfo->softmac_scan);
+-
+-	/* Free all pending auth work items */
+-	list_for_each_entry(authptr, &sm->auth_queue, list)
+-		cancel_delayed_work(&authptr->work);
+-
+-	/* delete all pending event calls and work items */
+-	list_for_each_entry_safe(eventptr, eventtmp, &sm->events, list)
+-		cancel_delayed_work(&eventptr->work);
+-
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	flush_workqueue(sm->wq);
+-
+-	/* now we should be save and no longer need locking... */
+-	spin_lock_irqsave(&sm->lock, flags);
+-	/* Free all pending auth work items */
+-	list_for_each_entry_safe(authptr, authtmp, &sm->auth_queue, list) {
+-		list_del(&authptr->list);
+-		kfree(authptr);
+-	}
+-
+-	/* delete all pending event calls and work items */
+-	list_for_each_entry_safe(eventptr, eventtmp, &sm->events, list) {
+-		list_del(&eventptr->list);
+-		kfree(eventptr);
+-	}
+-
+-	/* Free all networks */
+-	list_for_each_entry_safe(netptr, nettmp, &sm->network_list, list) {
+-		ieee80211softmac_del_network_locked(sm, netptr);
+-		if(netptr->challenge != NULL)
+-			kfree(netptr->challenge);
+-		kfree(netptr);
+-	}
+-
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_clear_pending_work);
+-
+-void free_ieee80211softmac(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(dev);
+-	ieee80211softmac_clear_pending_work(sm);
+-	kfree(sm->scaninfo);
+-	kfree(sm->wpa.IE);
+-	destroy_workqueue(sm->wq);
+-	free_ieee80211(dev);
+-}
+-EXPORT_SYMBOL_GPL(free_ieee80211softmac);
+-
+-static void ieee80211softmac_start_check_rates(struct ieee80211softmac_device *mac)
+-{
+-	struct ieee80211softmac_ratesinfo *ri = &mac->ratesinfo;
+-	/* I took out the sorting check, we're seperating by modulation now. */
+-	if (ri->count)
+-		return;
+-	/* otherwise assume we hav'em all! */
+-	if (mac->ieee->modulation & IEEE80211_CCK_MODULATION) {
+-		ri->rates[ri->count++] = IEEE80211_CCK_RATE_1MB;
+-		ri->rates[ri->count++] = IEEE80211_CCK_RATE_2MB;
+-		ri->rates[ri->count++] = IEEE80211_CCK_RATE_5MB;
+-		ri->rates[ri->count++] = IEEE80211_CCK_RATE_11MB;
+-	}
+-	if (mac->ieee->modulation & IEEE80211_OFDM_MODULATION) {
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_6MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_9MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_12MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_18MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_24MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_36MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_48MB;
+-		ri->rates[ri->count++] = IEEE80211_OFDM_RATE_54MB;
+-	}
+-}
+-
+-int ieee80211softmac_ratesinfo_rate_supported(struct ieee80211softmac_ratesinfo *ri, u8 rate)
+-{
+-	int search;
+-	u8 search_rate;
+-
+-	for (search = 0; search < ri->count; search++) {
+-		search_rate = ri->rates[search];
+-		search_rate &= ~IEEE80211_BASIC_RATE_MASK;
+-		if (rate == search_rate)
+-			return 1;
+-	}
+-
+-	return 0;
+-}
+-
+-u8 ieee80211softmac_highest_supported_rate(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_ratesinfo *ri, int basic_only)
+-{
+-	u8 user_rate = mac->txrates.user_rate;
+-	int i;
+-
+-	if (ri->count == 0)
+-		return IEEE80211_CCK_RATE_1MB;
+-
+-	for (i = ri->count - 1; i >= 0; i--) {
+-		u8 rate = ri->rates[i];
+-		if (basic_only && !(rate & IEEE80211_BASIC_RATE_MASK))
+-			continue;
+-		rate &= ~IEEE80211_BASIC_RATE_MASK;
+-		if (rate > user_rate)
+-			continue;
+-		if (ieee80211softmac_ratesinfo_rate_supported(&mac->ratesinfo, rate))
+-			return rate;
+-	}
+-
+-	/* If we haven't found a suitable rate by now, just trust the user */
+-	return user_rate;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_highest_supported_rate);
+-
+-void ieee80211softmac_process_erp(struct ieee80211softmac_device *mac,
+-	u8 erp_value)
+-{
+-	int use_protection;
+-	int short_preamble;
+-	u32 changes = 0;
+-
+-	/* Barker preamble mode */
+-	short_preamble = ((erp_value & WLAN_ERP_BARKER_PREAMBLE) == 0
+-			  && mac->associnfo.short_preamble_available) ? 1 : 0;
+-
+-	/* Protection needed? */
+-	use_protection = (erp_value & WLAN_ERP_USE_PROTECTION) != 0;
+-
+-	if (mac->bssinfo.short_preamble != short_preamble) {
+-		changes |= IEEE80211SOFTMAC_BSSINFOCHG_SHORT_PREAMBLE;
+-		mac->bssinfo.short_preamble = short_preamble;
+-	}
+-
+-	if (mac->bssinfo.use_protection != use_protection) {
+-		changes |= IEEE80211SOFTMAC_BSSINFOCHG_PROTECTION;
+-		mac->bssinfo.use_protection = use_protection;
+-	}
+-
+-	if (mac->bssinfo_change && changes)
+-		mac->bssinfo_change(mac->dev, changes);
+-}
+-
+-void ieee80211softmac_recalc_txrates(struct ieee80211softmac_device *mac)
+-{
+-	struct ieee80211softmac_txrates *txrates = &mac->txrates;
+-	u32 change = 0;
+-
+-	change |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT;
+-	txrates->default_rate = ieee80211softmac_highest_supported_rate(mac, &mac->bssinfo.supported_rates, 0);
+-
+-	change |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT_FBACK;
+-	txrates->default_fallback = lower_rate(mac, txrates->default_rate);
+-
+-	change |= IEEE80211SOFTMAC_TXRATECHG_MCAST;
+-	txrates->mcast_rate = ieee80211softmac_highest_supported_rate(mac, &mac->bssinfo.supported_rates, 1);
+-
+-	if (mac->txrates_change)
+-		mac->txrates_change(mac->dev, change);
+-
+-}
+-
+-void ieee80211softmac_init_bss(struct ieee80211softmac_device *mac)
+-{
+-	struct ieee80211_device *ieee = mac->ieee;
+-	u32 change = 0;
+-	struct ieee80211softmac_txrates *txrates = &mac->txrates;
+-	struct ieee80211softmac_bss_info *bssinfo = &mac->bssinfo;
+-
+-	/* TODO: We need some kind of state machine to lower the default rates
+-	 *       if we loose too many packets.
+-	 */
+-	/* Change the default txrate to the highest possible value.
+-	 * The txrate machine will lower it, if it is too high.
+-	 */
+-	if (ieee->modulation & IEEE80211_OFDM_MODULATION)
+-		txrates->user_rate = IEEE80211_OFDM_RATE_24MB;
+-	else
+-		txrates->user_rate = IEEE80211_CCK_RATE_11MB;
+-
+-	txrates->default_rate = IEEE80211_CCK_RATE_1MB;
+-	change |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT;
+-
+-	txrates->default_fallback = IEEE80211_CCK_RATE_1MB;
+-	change |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT_FBACK;
+-
+-	txrates->mcast_rate = IEEE80211_CCK_RATE_1MB;
+-	change |= IEEE80211SOFTMAC_TXRATECHG_MCAST;
+-
+-	txrates->mgt_mcast_rate = IEEE80211_CCK_RATE_1MB;
+-	change |= IEEE80211SOFTMAC_TXRATECHG_MGT_MCAST;
+-
+-	if (mac->txrates_change)
+-		mac->txrates_change(mac->dev, change);
+-
+-	change = 0;
+-
+-	bssinfo->supported_rates.count = 0;
+-	memset(bssinfo->supported_rates.rates, 0,
+-		sizeof(bssinfo->supported_rates.rates));
+-	change |= IEEE80211SOFTMAC_BSSINFOCHG_RATES;
+-
+-	bssinfo->short_preamble = 0;
+-	change |= IEEE80211SOFTMAC_BSSINFOCHG_SHORT_PREAMBLE;
+-
+-	bssinfo->use_protection = 0;
+-	change |= IEEE80211SOFTMAC_BSSINFOCHG_PROTECTION;
+-
+-	if (mac->bssinfo_change)
+-		mac->bssinfo_change(mac->dev, change);
+-
+-	mac->running = 1;
+-}
+-
+-void ieee80211softmac_start(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	ieee80211softmac_start_check_rates(mac);
+-	ieee80211softmac_init_bss(mac);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_start);
+-
+-void ieee80211softmac_stop(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-
+-	ieee80211softmac_clear_pending_work(mac);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_stop);
+-
+-void ieee80211softmac_set_rates(struct net_device *dev, u8 count, u8 *rates)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	memcpy(mac->ratesinfo.rates, rates, count);
+-	mac->ratesinfo.count = count;
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_set_rates);
+-
+-static u8 raise_rate(struct ieee80211softmac_device *mac, u8 rate)
+-{
+-	int i;
+-	struct ieee80211softmac_ratesinfo *ri = &mac->ratesinfo;
+-
+-	for (i=0; i<ri->count-1; i++) {
+-		if (ri->rates[i] == rate)
+-			return ri->rates[i+1];
+-	}
+-	/* I guess we can't go any higher... */
+-	return ri->rates[ri->count];
+-}
+-
+-u8 ieee80211softmac_lower_rate_delta(struct ieee80211softmac_device *mac, u8 rate, int delta)
+-{
+-	int i;
+-	struct ieee80211softmac_ratesinfo *ri = &mac->ratesinfo;
+-
+-	for (i=delta; i<ri->count; i++) {
+-		if (ri->rates[i] == rate)
+-			return ri->rates[i-delta];
+-	}
+-	/* I guess we can't go any lower... */
+-	return ri->rates[0];
+-}
+-
+-static void ieee80211softmac_add_txrates_badness(struct ieee80211softmac_device *mac,
+-						 int amount)
+-{
+-	u8 default_rate = mac->txrates.default_rate;
+-	u8 default_fallback = mac->txrates.default_fallback;
+-	u32 changes = 0;
+-
+-	//TODO: This is highly experimental code.
+-	//      Maybe the dynamic rate selection does not work
+-	//      and it has to be removed again.
+-
+-printk("badness %d\n", mac->txrate_badness);
+-	mac->txrate_badness += amount;
+-	if (mac->txrate_badness <= -1000) {
+-		/* Very small badness. Try a faster bitrate. */
+-		default_rate = raise_rate(mac, default_rate);
+-		changes |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT;
+-		default_fallback = get_fallback_rate(mac, default_rate);
+-		changes |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT_FBACK;
+-		mac->txrate_badness = 0;
+-printk("Bitrate raised to %u\n", default_rate);
+-	} else if (mac->txrate_badness >= 10000) {
+-		/* Very high badness. Try a slower bitrate. */
+-		default_rate = lower_rate(mac, default_rate);
+-		changes |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT;
+-		default_fallback = get_fallback_rate(mac, default_rate);
+-		changes |= IEEE80211SOFTMAC_TXRATECHG_DEFAULT_FBACK;
+-		mac->txrate_badness = 0;
+-printk("Bitrate lowered to %u\n", default_rate);
+-	}
+-
+-	mac->txrates.default_rate = default_rate;
+-	mac->txrates.default_fallback = default_fallback;
+-
+-	if (changes && mac->txrates_change)
+-		mac->txrates_change(mac->dev, changes);
+-}
+-
+-void ieee80211softmac_fragment_lost(struct net_device *dev,
+-				    u16 wl_seq)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	ieee80211softmac_add_txrates_badness(mac, 1000);
+-	//TODO
+-
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_fragment_lost);
+-
+-static int rate_cmp(const void *a_, const void *b_) {
+-	u8 *a, *b;
+-	a = (u8*)a_;
+-	b = (u8*)b_;
+-	return ((*a & ~IEEE80211_BASIC_RATE_MASK) - (*b & ~IEEE80211_BASIC_RATE_MASK));
+-}
+-
+-/* Allocate a softmac network struct and fill it from a network */
+-struct ieee80211softmac_network *
+-ieee80211softmac_create_network(struct ieee80211softmac_device *mac,
+-	struct ieee80211_network *net)
+-{
+-	struct ieee80211softmac_network *softnet;
+-	softnet = kzalloc(sizeof(struct ieee80211softmac_network), GFP_ATOMIC);
+-	if(softnet == NULL)
+-		return NULL;
+-	memcpy(softnet->bssid, net->bssid, ETH_ALEN);
+-	softnet->channel = net->channel;
+-	softnet->essid.len = net->ssid_len;
+-	memcpy(softnet->essid.data, net->ssid, softnet->essid.len);
+-
+-	/* copy rates over */
+-	softnet->supported_rates.count = net->rates_len;
+-	memcpy(&softnet->supported_rates.rates[0], net->rates, net->rates_len);
+-	memcpy(&softnet->supported_rates.rates[softnet->supported_rates.count], net->rates_ex, net->rates_ex_len);
+-	softnet->supported_rates.count += net->rates_ex_len;
+-	sort(softnet->supported_rates.rates, softnet->supported_rates.count, sizeof(softnet->supported_rates.rates[0]), rate_cmp, NULL);
+-
+-	/* we save the ERP value because it is needed at association time, and
+-	 * many AP's do not include an ERP IE in the association response. */
+-	softnet->erp_value = net->erp_value;
+-
+-	softnet->capabilities = net->capability;
+-	return softnet;
+-}
+-
+-
+-/* Add a network to the list, while locked */
+-void
+-ieee80211softmac_add_network_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *add_net)
+-{
+-	struct ieee80211softmac_network *softmac_net;
+-
+-	list_for_each_entry(softmac_net, &mac->network_list, list) {
+-		if(!memcmp(softmac_net->bssid, add_net->bssid, ETH_ALEN))
+-			return;
+-	}
+-	list_add(&(add_net->list), &mac->network_list);
+-}
+-
+-/* Add a network to the list, with locking */
+-void
+-ieee80211softmac_add_network(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *add_net)
+-{
+-	unsigned long flags;
+-	spin_lock_irqsave(&mac->lock, flags);
+-	ieee80211softmac_add_network_locked(mac, add_net);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-
+-
+-/* Delete a network from the list, while locked*/
+-void
+-ieee80211softmac_del_network_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *del_net)
+-{
+-	list_del(&(del_net->list));
+-}
+-
+-/* Delete a network from the list with locking */
+-void
+-ieee80211softmac_del_network(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *del_net)
+-{
+-	unsigned long flags;
+-	spin_lock_irqsave(&mac->lock, flags);
+-	ieee80211softmac_del_network_locked(mac, del_net);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-}
+-
+-/* Get a network from the list by MAC while locked */
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_bssid_locked(struct ieee80211softmac_device *mac,
+-	u8 *bssid)
+-{
+-	struct ieee80211softmac_network *softmac_net;
+-
+-	list_for_each_entry(softmac_net, &mac->network_list, list) {
+-		if(!memcmp(softmac_net->bssid, bssid, ETH_ALEN))
+-			return softmac_net;
+-	}
+-	return NULL;
+-}
+-
+-/* Get a network from the list by BSSID with locking */
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_bssid(struct ieee80211softmac_device *mac,
+-	u8 *bssid)
+-{
+-	unsigned long flags;
+-	struct ieee80211softmac_network *softmac_net;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	softmac_net = ieee80211softmac_get_network_by_bssid_locked(mac, bssid);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	return softmac_net;
+-}
+-
+-/* Get a network from the list by ESSID while locked */
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_essid_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_essid *essid)
+-{
+-	struct ieee80211softmac_network *softmac_net;
+-
+-	list_for_each_entry(softmac_net, &mac->network_list, list) {
+-		if (softmac_net->essid.len == essid->len &&
+-			!memcmp(softmac_net->essid.data, essid->data, essid->len))
+-			return softmac_net;
+-	}
+-	return NULL;
+-}
+-
+-/* Get a network from the list by ESSID with locking */
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_essid(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_essid *essid)
+-{
+-	unsigned long flags;
+-	struct ieee80211softmac_network *softmac_net = NULL;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-	softmac_net = ieee80211softmac_get_network_by_essid_locked(mac, essid);
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	return softmac_net;
+-}
+-
+-MODULE_LICENSE("GPL");
+-MODULE_AUTHOR("Johannes Berg");
+-MODULE_AUTHOR("Joseph Jezak");
+-MODULE_AUTHOR("Larry Finger");
+-MODULE_AUTHOR("Danny van Dyk");
+-MODULE_AUTHOR("Michael Buesch");
+-MODULE_DESCRIPTION("802.11 software MAC");
+diff --git a/net/ieee80211/softmac/ieee80211softmac_priv.h b/net/ieee80211/softmac/ieee80211softmac_priv.h
+deleted file mode 100644
+index c43b189..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_priv.h
++++ /dev/null
+@@ -1,244 +0,0 @@
+-/*
+- * Internal softmac API definitions.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#ifndef IEEE80211SOFTMAC_PRIV_H_
+-#define IEEE80211SOFTMAC_PRIV_H_
+-
+-#include <net/ieee80211softmac.h>
+-#include <net/ieee80211softmac_wx.h>
+-#include <linux/kernel.h>
+-#include <linux/stringify.h>
+-
+-
+-#define PFX				"SoftMAC: "
+-
+-#ifdef assert
+-# undef assert
+-#endif
+-#ifdef CONFIG_IEEE80211_SOFTMAC_DEBUG
+-#define assert(expr) \
+-	do {										\
+-		if (unlikely(!(expr))) {						\
+-		printkl(KERN_ERR PFX "ASSERTION FAILED (%s) at: %s:%d:%s()\n", #expr,	\
+-			__FILE__, __LINE__, __FUNCTION__);				\
+-		}									\
+-	} while (0)
+-#else
+-#define assert(expr) do {} while (0)
+-#endif
+-
+-/* rate limited printk(). */
+-#ifdef printkl
+-# undef printkl
+-#endif
+-#define printkl(f, x...)  do { if (printk_ratelimit()) printk(f ,##x); } while (0)
+-/* rate limited printk() for debugging */
+-#ifdef dprintkl
+-# undef dprintkl
+-#endif
+-#ifdef CONFIG_IEEE80211_SOFTMAC_DEBUG
+-# define dprintkl		printkl
+-#else
+-# define dprintkl(f, x...)	do { /* nothing */ } while (0)
+-#endif
+-
+-/* debugging printk() */
+-#ifdef dprintk
+-# undef dprintk
+-#endif
+-#ifdef CONFIG_IEEE80211_SOFTMAC_DEBUG
+-# define dprintk(f, x...)  do { printk(f ,##x); } while (0)
+-#else
+-# define dprintk(f, x...)  do { /* nothing */ } while (0)
+-#endif
+-
+-/* private definitions and prototypes */
+-
+-/*** prototypes from _scan.c */
+-void ieee80211softmac_scan(struct work_struct *work);
+-/* for internal use if scanning is needed */
+-int ieee80211softmac_start_scan(struct ieee80211softmac_device *mac);
+-void ieee80211softmac_stop_scan(struct ieee80211softmac_device *mac);
+-void ieee80211softmac_wait_for_scan(struct ieee80211softmac_device *mac);
+-
+-/* for use by _module.c to assign to the callbacks */
+-int ieee80211softmac_start_scan_implementation(struct net_device *dev);
+-void ieee80211softmac_stop_scan_implementation(struct net_device *dev);
+-void ieee80211softmac_wait_for_scan_implementation(struct net_device *dev);
+-
+-/*** Network prototypes from _module.c */
+-struct ieee80211softmac_network * ieee80211softmac_create_network(
+-	struct ieee80211softmac_device *mac, struct ieee80211_network *net);
+-void ieee80211softmac_add_network_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net);
+-void ieee80211softmac_add_network(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net);
+-void ieee80211softmac_del_network_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net);
+-void ieee80211softmac_del_network(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_network *net);
+-struct ieee80211softmac_network * ieee80211softmac_get_network_by_bssid_locked(
+-	struct ieee80211softmac_device *mac, u8 *ea);
+-struct ieee80211softmac_network * ieee80211softmac_get_network_by_bssid(
+-	struct ieee80211softmac_device *mac, u8 *ea);
+-struct ieee80211softmac_network * ieee80211softmac_get_network_by_ssid_locked(
+-	struct ieee80211softmac_device *mac, u8 *ssid, u8 ssid_len);
+-struct ieee80211softmac_network * ieee80211softmac_get_network_by_ssid(
+-	struct ieee80211softmac_device *mac, u8 *ssid, u8 ssid_len);
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_essid_locked(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_essid *essid);
+-struct ieee80211softmac_network *
+-ieee80211softmac_get_network_by_essid(struct ieee80211softmac_device *mac,
+-	struct ieee80211softmac_essid *essid);
+-
+-/* Rates related */
+-void ieee80211softmac_process_erp(struct ieee80211softmac_device *mac,
+-	u8 erp_value);
+-int ieee80211softmac_ratesinfo_rate_supported(struct ieee80211softmac_ratesinfo *ri, u8 rate);
+-u8 ieee80211softmac_lower_rate_delta(struct ieee80211softmac_device *mac, u8 rate, int delta);
+-void ieee80211softmac_init_bss(struct ieee80211softmac_device *mac);
+-void ieee80211softmac_recalc_txrates(struct ieee80211softmac_device *mac);
+-static inline u8 lower_rate(struct ieee80211softmac_device *mac, u8 rate) {
+-	return ieee80211softmac_lower_rate_delta(mac, rate, 1);
+-}
+-
+-static inline u8 get_fallback_rate(struct ieee80211softmac_device *mac, u8 rate)
+-{
+-	return ieee80211softmac_lower_rate_delta(mac, rate, 2);
+-}
+-
+-
+-/*** prototypes from _io.c */
+-int ieee80211softmac_send_mgt_frame(struct ieee80211softmac_device *mac,
+-	void* ptrarg, u32 type, u32 arg);
+-int ieee80211softmac_handle_beacon(struct net_device *dev,
+-	struct ieee80211_beacon *beacon,
+-	struct ieee80211_network *network);
+-
+-/*** prototypes from _auth.c */
+-/* do these have to go into the public header? */
+-int ieee80211softmac_auth_req(struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net);
+-int ieee80211softmac_deauth_req(struct ieee80211softmac_device *mac, struct ieee80211softmac_network *net, int reason);
+-
+-/* for use by _module.c to assign to the callbacks */
+-int ieee80211softmac_auth_resp(struct net_device *dev, struct ieee80211_auth *auth);
+-int ieee80211softmac_deauth_resp(struct net_device *dev, struct ieee80211_deauth *deauth);
+-
+-/*** prototypes from _assoc.c */
+-void ieee80211softmac_assoc_work(struct work_struct *work);
+-int ieee80211softmac_handle_assoc_response(struct net_device * dev,
+-					   struct ieee80211_assoc_response * resp,
+-					   struct ieee80211_network * network);
+-int ieee80211softmac_handle_disassoc(struct net_device * dev,
+-				     struct ieee80211_disassoc * disassoc);
+-int ieee80211softmac_handle_reassoc_req(struct net_device * dev,
+-					struct ieee80211_reassoc_request * reassoc);
+-void ieee80211softmac_assoc_timeout(struct work_struct *work);
+-void ieee80211softmac_send_disassoc_req(struct ieee80211softmac_device *mac, u16 reason);
+-void ieee80211softmac_disassoc(struct ieee80211softmac_device *mac);
+-
+-/* some helper functions */
+-static inline int ieee80211softmac_scan_handlers_check_self(struct ieee80211softmac_device *sm)
+-{
+-	return (sm->start_scan == ieee80211softmac_start_scan_implementation) &&
+-		(sm->stop_scan == ieee80211softmac_stop_scan_implementation) &&
+-		(sm->wait_for_scan == ieee80211softmac_wait_for_scan_implementation);
+-}
+-
+-static inline int ieee80211softmac_scan_sanity_check(struct ieee80211softmac_device *sm)
+-{
+-	return ((sm->start_scan != ieee80211softmac_start_scan_implementation) &&
+-		(sm->stop_scan != ieee80211softmac_stop_scan_implementation) &&
+-		(sm->wait_for_scan != ieee80211softmac_wait_for_scan_implementation)
+-		) || ieee80211softmac_scan_handlers_check_self(sm);
+-}
+-
+-#define IEEE80211SOFTMAC_PROBE_DELAY		HZ/50
+-#define IEEE80211SOFTMAC_WORKQUEUE_NAME_LEN	(17 + IFNAMSIZ)
+-
+-struct ieee80211softmac_network {
+-	struct list_head		list;	/* List */
+-	/* Network information copied from ieee80211_network */
+-	u8 bssid[ETH_ALEN];
+-	u8 channel;
+-	struct ieee80211softmac_essid essid;
+-
+-	struct ieee80211softmac_ratesinfo supported_rates;
+-
+-	/* SoftMAC specific */
+-	u16 authenticating:1,			/* Status Flags */
+-	    authenticated:1,
+-	    auth_desynced_once:1;
+-
+-	u8 erp_value;				/* Saved ERP value */
+-	u16 capabilities;			/* Capabilities bitfield */
+-	u8 challenge_len;			/* Auth Challenge length */
+-	char *challenge;			/* Challenge Text */
+-};
+-
+-/* structure used to keep track of networks we're auth'ing to */
+-struct ieee80211softmac_auth_queue_item {
+-	struct list_head		list;	/* List head */
+-	struct ieee80211softmac_network	*net;	/* Network to auth */
+-	struct ieee80211softmac_device	*mac;	/* SoftMAC device */
+-	u8 retry;				/* Retry limit */
+-	u8 state;				/* Auth State */
+-	struct delayed_work		work;	/* Work queue */
+-};
+-
+-/* scanning information */
+-struct ieee80211softmac_scaninfo {
+-	u8 current_channel_idx,
+-	   number_channels;
+-	struct ieee80211_channel *channels;
+-	u8 started:1,
+-	   stop:1;
+-	u8 skip_flags;
+-	struct completion finished;
+-	struct delayed_work softmac_scan;
+-	struct ieee80211softmac_device *mac;
+-};
+-
+-/* private event struct */
+-struct ieee80211softmac_event {
+-	struct list_head list;
+-	int event_type;
+-	void *event_context;
+-	struct delayed_work work;
+-	notify_function_ptr fun;
+-	void *context;
+-	struct ieee80211softmac_device *mac;
+-};
+-
+-void ieee80211softmac_call_events(struct ieee80211softmac_device *mac, int event, void *event_context);
+-void ieee80211softmac_call_events_locked(struct ieee80211softmac_device *mac, int event, void *event_context);
+-int ieee80211softmac_notify_internal(struct ieee80211softmac_device *mac,
+-	int event, void *event_context, notify_function_ptr fun, void *context, gfp_t gfp_mask);
+-
+-void ieee80211softmac_try_reassoc(struct ieee80211softmac_device *mac);
+-
+-#endif /* IEEE80211SOFTMAC_PRIV_H_ */
+diff --git a/net/ieee80211/softmac/ieee80211softmac_scan.c b/net/ieee80211/softmac/ieee80211softmac_scan.c
+deleted file mode 100644
+index bfab8d7..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_scan.c
++++ /dev/null
+@@ -1,254 +0,0 @@
+-/*
+- * Scanning routines.
+- *
+- * These are not exported because they're assigned to the function pointers.
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include <linux/completion.h>
+-#include "ieee80211softmac_priv.h"
+-
+-/* internal, use to trigger scanning if needed.
+- * Returns -EBUSY if already scanning,
+- * result of start_scan otherwise */
+-int
+-ieee80211softmac_start_scan(struct ieee80211softmac_device *sm)
+-{
+-	unsigned long flags;
+-	int ret;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	if (sm->scanning)
+-	{
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return -EINPROGRESS;
+-	}
+-	sm->scanning = 1;
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-
+-	ret = sm->start_scan(sm->dev);
+-	if (ret) {
+-		spin_lock_irqsave(&sm->lock, flags);
+-		sm->scanning = 0;
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-	}
+-	return ret;
+-}
+-
+-void
+-ieee80211softmac_stop_scan(struct ieee80211softmac_device *sm)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-
+-	if (!sm->scanning) {
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return;
+-	}
+-
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	sm->stop_scan(sm->dev);
+-}
+-
+-void
+-ieee80211softmac_wait_for_scan(struct ieee80211softmac_device *sm)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-
+-	if (!sm->scanning) {
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return;
+-	}
+-
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	sm->wait_for_scan(sm->dev);
+-}
+-
+-
+-/* internal scanning implementation follows */
+-void ieee80211softmac_scan(struct work_struct *work)
+-{
+-	int invalid_channel;
+-	u8 current_channel_idx;
+-	struct ieee80211softmac_scaninfo *si =
+-		container_of(work, struct ieee80211softmac_scaninfo,
+-			     softmac_scan.work);
+-	struct ieee80211softmac_device *sm = si->mac;
+-	unsigned long flags;
+-
+-	while (!(si->stop) && (si->current_channel_idx < si->number_channels)) {
+-		current_channel_idx = si->current_channel_idx;
+-		si->current_channel_idx++; /* go to the next channel */
+-
+-		invalid_channel = (si->skip_flags & si->channels[current_channel_idx].flags);
+-
+-		if (!invalid_channel) {
+-			sm->set_channel(sm->dev, si->channels[current_channel_idx].channel);
+-			// FIXME make this user configurable (active/passive)
+-			if(ieee80211softmac_send_mgt_frame(sm, NULL, IEEE80211_STYPE_PROBE_REQ, 0))
+-				printkl(KERN_DEBUG PFX "Sending Probe Request Failed\n");
+-
+-			/* also send directed management frame for the network we're looking for */
+-			// TODO: is this if correct, or should we do this only if scanning from assoc request?
+-			if (sm->associnfo.req_essid.len)
+-				ieee80211softmac_send_mgt_frame(sm, &sm->associnfo.req_essid, IEEE80211_STYPE_PROBE_REQ, 0);
+-
+-			spin_lock_irqsave(&sm->lock, flags);
+-			if (unlikely(!sm->running)) {
+-				/* Prevent reschedule on workqueue flush */
+-				spin_unlock_irqrestore(&sm->lock, flags);
+-				break;
+-			}
+-			queue_delayed_work(sm->wq, &si->softmac_scan, IEEE80211SOFTMAC_PROBE_DELAY);
+-			spin_unlock_irqrestore(&sm->lock, flags);
+-			return;
+-		} else {
+-			dprintk(PFX "Not probing Channel %d (not allowed here)\n", si->channels[current_channel_idx].channel);
+-		}
+-	}
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	cancel_delayed_work(&si->softmac_scan);
+-	si->started = 0;
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-
+-	dprintk(PFX "Scanning finished: scanned %d channels starting with channel %d\n",
+-		     sm->scaninfo->number_channels, sm->scaninfo->channels[0].channel);
+-	ieee80211softmac_scan_finished(sm);
+-	complete_all(&sm->scaninfo->finished);
+-}
+-
+-static inline struct ieee80211softmac_scaninfo *allocate_scaninfo(struct ieee80211softmac_device *mac)
+-{
+-	/* ugh. can we call this without having the spinlock held? */
+-	struct ieee80211softmac_scaninfo *info = kmalloc(sizeof(struct ieee80211softmac_scaninfo), GFP_ATOMIC);
+-	if (unlikely(!info))
+-		return NULL;
+-	INIT_DELAYED_WORK(&info->softmac_scan, ieee80211softmac_scan);
+-	info->mac = mac;
+-	init_completion(&info->finished);
+-	return info;
+-}
+-
+-int ieee80211softmac_start_scan_implementation(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(dev);
+-	unsigned long flags;
+-
+-	if (!(dev->flags & IFF_UP))
+-		return -ENODEV;
+-
+-	assert(ieee80211softmac_scan_handlers_check_self(sm));
+-	if (!ieee80211softmac_scan_handlers_check_self(sm))
+-		return -EINVAL;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	/* it looks like we need to hold the lock here
+-	 * to make sure we don't allocate two of these... */
+-	if (unlikely(!sm->scaninfo))
+-		sm->scaninfo = allocate_scaninfo(sm);
+-	if (unlikely(!sm->scaninfo)) {
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return -ENOMEM;
+-	}
+-
+-	sm->scaninfo->skip_flags = IEEE80211_CH_INVALID;
+-	if (0 /* not scanning in IEEE802.11b */)//TODO
+-		sm->scaninfo->skip_flags |= IEEE80211_CH_B_ONLY;
+-	if (0 /* IEEE802.11a */) {//TODO
+-		sm->scaninfo->channels = sm->ieee->geo.a;
+-		sm->scaninfo->number_channels = sm->ieee->geo.a_channels;
+-	} else {
+-		sm->scaninfo->channels = sm->ieee->geo.bg;
+-		sm->scaninfo->number_channels = sm->ieee->geo.bg_channels;
+-	}
+-	sm->scaninfo->current_channel_idx = 0;
+-	sm->scaninfo->started = 1;
+-	sm->scaninfo->stop = 0;
+-	INIT_COMPLETION(sm->scaninfo->finished);
+-	queue_delayed_work(sm->wq, &sm->scaninfo->softmac_scan, 0);
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	return 0;
+-}
+-
+-void ieee80211softmac_stop_scan_implementation(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(dev);
+-	unsigned long flags;
+-
+-	assert(ieee80211softmac_scan_handlers_check_self(sm));
+-	if (!ieee80211softmac_scan_handlers_check_self(sm))
+-		return;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	assert(sm->scaninfo != NULL);
+-	if (sm->scaninfo) {
+-		if (sm->scaninfo->started)
+-			sm->scaninfo->stop = 1;
+-		else
+-			complete_all(&sm->scaninfo->finished);
+-	}
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-}
+-
+-void ieee80211softmac_wait_for_scan_implementation(struct net_device *dev)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(dev);
+-	unsigned long flags;
+-
+-	assert(ieee80211softmac_scan_handlers_check_self(sm));
+-	if (!ieee80211softmac_scan_handlers_check_self(sm))
+-		return;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	if (!sm->scaninfo->started) {
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return;
+-	}
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	wait_for_completion(&sm->scaninfo->finished);
+-}
+-
+-/* this is what drivers (that do scanning) call when they're done */
+-void ieee80211softmac_scan_finished(struct ieee80211softmac_device *sm)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	sm->scanning = 0;
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-
+-	if (sm->associnfo.bssvalid) {
+-		struct ieee80211softmac_network *net;
+-
+-		net = ieee80211softmac_get_network_by_bssid(sm, sm->associnfo.bssid);
+-		if (net)
+-			sm->set_channel(sm->dev, net->channel);
+-	}
+-	ieee80211softmac_call_events(sm, IEEE80211SOFTMAC_EVENT_SCAN_FINISHED, NULL);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_scan_finished);
+diff --git a/net/ieee80211/softmac/ieee80211softmac_wx.c b/net/ieee80211/softmac/ieee80211softmac_wx.c
+deleted file mode 100644
+index e01b59a..0000000
+--- a/net/ieee80211/softmac/ieee80211softmac_wx.c
++++ /dev/null
+@@ -1,508 +0,0 @@
+-/*
+- * This file contains our _wx handlers. Make sure you EXPORT_SYMBOL_GPL them
+- *
+- * Copyright (c) 2005, 2006 Johannes Berg <johannes@sipsolutions.net>
+- *                          Joseph Jezak <josejx@gentoo.org>
+- *                          Larry Finger <Larry.Finger@lwfinger.net>
+- *                          Danny van Dyk <kugelfang@gentoo.org>
+- *                          Michael Buesch <mbuesch@freenet.de>
+- *
+- * This program is free software; you can redistribute it and/or modify it
+- * under the terms of version 2 of the GNU General Public License as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed in the hope that it will be useful, but WITHOUT
+- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+- * more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+- * The full GNU General Public License is included in this distribution in the
+- * file called COPYING.
+- */
+-
+-#include "ieee80211softmac_priv.h"
+-
+-#include <net/iw_handler.h>
+-/* for is_broadcast_ether_addr and is_zero_ether_addr */
+-#include <linux/etherdevice.h>
+-
+-int
+-ieee80211softmac_wx_trigger_scan(struct net_device *net_dev,
+-				 struct iw_request_info *info,
+-				 union iwreq_data *data,
+-				 char *extra)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(net_dev);
+-	return ieee80211softmac_start_scan(sm);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_trigger_scan);
+-
+-
+-/* if we're still scanning, return -EAGAIN so that userspace tools
+- * can get the complete scan results, otherwise return 0. */
+-int
+-ieee80211softmac_wx_get_scan_results(struct net_device *net_dev,
+-				     struct iw_request_info *info,
+-				     union iwreq_data *data,
+-				     char *extra)
+-{
+-	unsigned long flags;
+-	struct ieee80211softmac_device *sm = ieee80211_priv(net_dev);
+-
+-	spin_lock_irqsave(&sm->lock, flags);
+-	if (sm->scanning) {
+-		spin_unlock_irqrestore(&sm->lock, flags);
+-		return -EAGAIN;
+-	}
+-	spin_unlock_irqrestore(&sm->lock, flags);
+-	return ieee80211_wx_get_scan(sm->ieee, info, data, extra);
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_scan_results);
+-
+-int
+-ieee80211softmac_wx_set_essid(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(net_dev);
+-	struct ieee80211softmac_auth_queue_item *authptr;
+-	int length = 0;
+-	DECLARE_MAC_BUF(mac);
+-
+-check_assoc_again:
+-	mutex_lock(&sm->associnfo.mutex);
+-	if((sm->associnfo.associating || sm->associnfo.associated) &&
+-	   (data->essid.flags && data->essid.length)) {
+-		dprintk(KERN_INFO PFX "Canceling existing associate request!\n");
+-		/* Cancel assoc work */
+-		cancel_delayed_work(&sm->associnfo.work);
+-		/* We don't have to do this, but it's a little cleaner */
+-		list_for_each_entry(authptr, &sm->auth_queue, list)
+-			cancel_delayed_work(&authptr->work);
+-		sm->associnfo.bssvalid = 0;
+-		sm->associnfo.bssfixed = 0;
+-		sm->associnfo.associating = 0;
+-		sm->associnfo.associated = 0;
+-		/* We must unlock to avoid deadlocks with the assoc workqueue
+-		 * on the associnfo.mutex */
+-		mutex_unlock(&sm->associnfo.mutex);
+-		flush_workqueue(sm->wq);
+-		/* Avoid race! Check assoc status again. Maybe someone started an
+-		 * association while we flushed. */
+-		goto check_assoc_again;
+-	}
+-
+-	sm->associnfo.static_essid = 0;
+-	sm->associnfo.assoc_wait = 0;
+-
+-	if (data->essid.flags && data->essid.length) {
+-		length = min((int)data->essid.length, IW_ESSID_MAX_SIZE);
+-		if (length) {
+-			memcpy(sm->associnfo.req_essid.data, extra, length);
+-			sm->associnfo.static_essid = 1;
+-		}
+-	}
+-
+-	/* set our requested ESSID length.
+-	 * If applicable, we have already copied the data in */
+-	sm->associnfo.req_essid.len = length;
+-
+-	sm->associnfo.associating = 1;
+-	/* queue lower level code to do work (if necessary) */
+-	queue_delayed_work(sm->wq, &sm->associnfo.work, 0);
+-
+-	mutex_unlock(&sm->associnfo.mutex);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_set_essid);
+-
+-int
+-ieee80211softmac_wx_get_essid(struct net_device *net_dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *data,
+-			      char *extra)
+-{
+-	struct ieee80211softmac_device *sm = ieee80211_priv(net_dev);
+-
+-	mutex_lock(&sm->associnfo.mutex);
+-	/* If all fails, return ANY (empty) */
+-	data->essid.length = 0;
+-	data->essid.flags = 0;  /* active */
+-
+-	/* If we have a statically configured ESSID then return it */
+-	if (sm->associnfo.static_essid) {
+-		data->essid.length = sm->associnfo.req_essid.len;
+-		data->essid.flags = 1;  /* active */
+-		memcpy(extra, sm->associnfo.req_essid.data, sm->associnfo.req_essid.len);
+-		dprintk(KERN_INFO PFX "Getting essid from req_essid\n");
+-	} else if (sm->associnfo.associated || sm->associnfo.associating) {
+-	/* If we're associating/associated, return that */
+-		data->essid.length = sm->associnfo.associate_essid.len;
+-		data->essid.flags = 1;  /* active */
+-		memcpy(extra, sm->associnfo.associate_essid.data, sm->associnfo.associate_essid.len);
+-		dprintk(KERN_INFO PFX "Getting essid from associate_essid\n");
+-	}
+-	mutex_unlock(&sm->associnfo.mutex);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_essid);
+-
+-int
+-ieee80211softmac_wx_set_rate(struct net_device *net_dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *data,
+-			     char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(net_dev);
+-	struct ieee80211_device *ieee = mac->ieee;
+-	unsigned long flags;
+-	s32 in_rate = data->bitrate.value;
+-	u8 rate;
+-	int is_ofdm = 0;
+-	int err = -EINVAL;
+-
+-	if (in_rate == -1) {
+-		if (ieee->modulation & IEEE80211_OFDM_MODULATION)
+-			in_rate = 24000000;
+-		else
+-			in_rate = 11000000;
+-	}
+-
+-	switch (in_rate) {
+-	case 1000000:
+-		rate = IEEE80211_CCK_RATE_1MB;
+-		break;
+-	case 2000000:
+-		rate = IEEE80211_CCK_RATE_2MB;
+-		break;
+-	case 5500000:
+-		rate = IEEE80211_CCK_RATE_5MB;
+-		break;
+-	case 11000000:
+-		rate = IEEE80211_CCK_RATE_11MB;
+-		break;
+-	case 6000000:
+-		rate = IEEE80211_OFDM_RATE_6MB;
+-		is_ofdm = 1;
+-		break;
+-	case 9000000:
+-		rate = IEEE80211_OFDM_RATE_9MB;
+-		is_ofdm = 1;
+-		break;
+-	case 12000000:
+-		rate = IEEE80211_OFDM_RATE_12MB;
+-		is_ofdm = 1;
+-		break;
+-	case 18000000:
+-		rate = IEEE80211_OFDM_RATE_18MB;
+-		is_ofdm = 1;
+-		break;
+-	case 24000000:
+-		rate = IEEE80211_OFDM_RATE_24MB;
+-		is_ofdm = 1;
+-		break;
+-	case 36000000:
+-		rate = IEEE80211_OFDM_RATE_36MB;
+-		is_ofdm = 1;
+-		break;
+-	case 48000000:
+-		rate = IEEE80211_OFDM_RATE_48MB;
+-		is_ofdm = 1;
+-		break;
+-	case 54000000:
+-		rate = IEEE80211_OFDM_RATE_54MB;
+-		is_ofdm = 1;
+-		break;
+-	default:
+-		goto out;
+-	}
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-
+-	/* Check if correct modulation for this PHY. */
+-	if (is_ofdm && !(ieee->modulation & IEEE80211_OFDM_MODULATION))
+-		goto out_unlock;
+-
+-	mac->txrates.user_rate = rate;
+-	ieee80211softmac_recalc_txrates(mac);
+-	err = 0;
+-
+-out_unlock:
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-out:
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_set_rate);
+-
+-int
+-ieee80211softmac_wx_get_rate(struct net_device *net_dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *data,
+-			     char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(net_dev);
+-	unsigned long flags;
+-	int err = -EINVAL;
+-
+-	spin_lock_irqsave(&mac->lock, flags);
+-
+-	if (unlikely(!mac->running)) {
+-		err = -ENODEV;
+-		goto out_unlock;
+-	}
+-
+-	switch (mac->txrates.default_rate) {
+-	case IEEE80211_CCK_RATE_1MB:
+-		data->bitrate.value = 1000000;
+-		break;
+-	case IEEE80211_CCK_RATE_2MB:
+-		data->bitrate.value = 2000000;
+-		break;
+-	case IEEE80211_CCK_RATE_5MB:
+-		data->bitrate.value = 5500000;
+-		break;
+-	case IEEE80211_CCK_RATE_11MB:
+-		data->bitrate.value = 11000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_6MB:
+-		data->bitrate.value = 6000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_9MB:
+-		data->bitrate.value = 9000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_12MB:
+-		data->bitrate.value = 12000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_18MB:
+-		data->bitrate.value = 18000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_24MB:
+-		data->bitrate.value = 24000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_36MB:
+-		data->bitrate.value = 36000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_48MB:
+-		data->bitrate.value = 48000000;
+-		break;
+-	case IEEE80211_OFDM_RATE_54MB:
+-		data->bitrate.value = 54000000;
+-		break;
+-	default:
+-		assert(0);
+-		goto out_unlock;
+-	}
+-	err = 0;
+-out_unlock:
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_rate);
+-
+-int
+-ieee80211softmac_wx_get_wap(struct net_device *net_dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *data,
+-			    char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(net_dev);
+-	int err = 0;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-	if (mac->associnfo.bssvalid)
+-		memcpy(data->ap_addr.sa_data, mac->associnfo.bssid, ETH_ALEN);
+-	else
+-		memset(data->ap_addr.sa_data, 0xff, ETH_ALEN);
+-	data->ap_addr.sa_family = ARPHRD_ETHER;
+-	mutex_unlock(&mac->associnfo.mutex);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_wap);
+-
+-int
+-ieee80211softmac_wx_set_wap(struct net_device *net_dev,
+-			    struct iw_request_info *info,
+-			    union iwreq_data *data,
+-			    char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(net_dev);
+-
+-	/* sanity check */
+-	if (data->ap_addr.sa_family != ARPHRD_ETHER) {
+-		return -EINVAL;
+-	}
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-	if (is_broadcast_ether_addr(data->ap_addr.sa_data)) {
+-		/* the bssid we have is not to be fixed any longer,
+-		 * and we should reassociate to the best AP. */
+-		mac->associnfo.bssfixed = 0;
+-		/* force reassociation */
+-		mac->associnfo.bssvalid = 0;
+-		if (mac->associnfo.associated)
+-			queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-	} else if (is_zero_ether_addr(data->ap_addr.sa_data)) {
+-		/* the bssid we have is no longer fixed */
+-		mac->associnfo.bssfixed = 0;
+-	} else {
+-		if (!memcmp(mac->associnfo.bssid, data->ap_addr.sa_data, ETH_ALEN)) {
+-			if (mac->associnfo.associating || mac->associnfo.associated) {
+-			/* bssid unchanged and associated or associating - just return */
+-				goto out;
+-			}
+-		} else {
+-			/* copy new value in data->ap_addr.sa_data to bssid */
+-			memcpy(mac->associnfo.bssid, data->ap_addr.sa_data, ETH_ALEN);
+-		}
+-		/* tell the other code that this bssid should be used no matter what */
+-		mac->associnfo.bssfixed = 1;
+-		/* queue associate if new bssid or (old one again and not associated) */
+-		queue_delayed_work(mac->wq, &mac->associnfo.work, 0);
+-	}
+-
+- out:
+-	mutex_unlock(&mac->associnfo.mutex);
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_set_wap);
+-
+-int
+-ieee80211softmac_wx_set_genie(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	unsigned long flags;
+-	int err = 0;
+-	char *buf;
+-	int i;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-	spin_lock_irqsave(&mac->lock, flags);
+-	/* bleh. shouldn't be locked for that kmalloc... */
+-
+-	if (wrqu->data.length) {
+-		if ((wrqu->data.length < 2) || (extra[1]+2 != wrqu->data.length)) {
+-			/* this is an IE, so the length must be
+-			 * correct. Is it possible though that
+-			 * more than one IE is passed in?
+-			 */
+-			err = -EINVAL;
+-			goto out;
+-		}
+-		if (mac->wpa.IEbuflen <= wrqu->data.length) {
+-			buf = kmalloc(wrqu->data.length, GFP_ATOMIC);
+-			if (!buf) {
+-				err = -ENOMEM;
+-				goto out;
+-			}
+-			kfree(mac->wpa.IE);
+-			mac->wpa.IE = buf;
+-			mac->wpa.IEbuflen = wrqu->data.length;
+-		}
+-		memcpy(mac->wpa.IE, extra, wrqu->data.length);
+-		dprintk(KERN_INFO PFX "generic IE set to ");
+-		for (i=0;i<wrqu->data.length;i++)
+-			dprintk("%.2x", (u8)mac->wpa.IE[i]);
+-		dprintk("\n");
+-		mac->wpa.IElen = wrqu->data.length;
+-	} else {
+-		kfree(mac->wpa.IE);
+-		mac->wpa.IE = NULL;
+-		mac->wpa.IElen = 0;
+-		mac->wpa.IEbuflen = 0;
+-	}
+-
+- out:
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	mutex_unlock(&mac->associnfo.mutex);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_set_genie);
+-
+-int
+-ieee80211softmac_wx_get_genie(struct net_device *dev,
+-			      struct iw_request_info *info,
+-			      union iwreq_data *wrqu,
+-			      char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	unsigned long flags;
+-	int err = 0;
+-	int space = wrqu->data.length;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-	spin_lock_irqsave(&mac->lock, flags);
+-
+-	wrqu->data.length = 0;
+-
+-	if (mac->wpa.IE && mac->wpa.IElen) {
+-		wrqu->data.length = mac->wpa.IElen;
+-		if (mac->wpa.IElen <= space)
+-			memcpy(extra, mac->wpa.IE, mac->wpa.IElen);
+-		else
+-			err = -E2BIG;
+-	}
+-	spin_unlock_irqrestore(&mac->lock, flags);
+-	mutex_unlock(&mac->associnfo.mutex);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_get_genie);
+-
+-int
+-ieee80211softmac_wx_set_mlme(struct net_device *dev,
+-			     struct iw_request_info *info,
+-			     union iwreq_data *wrqu,
+-			     char *extra)
+-{
+-	struct ieee80211softmac_device *mac = ieee80211_priv(dev);
+-	struct iw_mlme *mlme = (struct iw_mlme *)extra;
+-	u16 reason = mlme->reason_code;
+-	struct ieee80211softmac_network *net;
+-	int err = -EINVAL;
+-
+-	mutex_lock(&mac->associnfo.mutex);
+-
+-	if (memcmp(mac->associnfo.bssid, mlme->addr.sa_data, ETH_ALEN)) {
+-		printk(KERN_DEBUG PFX "wx_set_mlme: requested operation on net we don't use\n");
+-		goto out;
+-	}
+-
+-	switch (mlme->cmd) {
+-	case IW_MLME_DEAUTH:
+-		net = ieee80211softmac_get_network_by_bssid_locked(mac, mlme->addr.sa_data);
+-		if (!net) {
+-			printk(KERN_DEBUG PFX "wx_set_mlme: we should know the net here...\n");
+-			goto out;
+-		}
+-		err =  ieee80211softmac_deauth_req(mac, net, reason);
+-		goto out;
+-	case IW_MLME_DISASSOC:
+-		ieee80211softmac_send_disassoc_req(mac, reason);
+-		mac->associnfo.associated = 0;
+-		mac->associnfo.associating = 0;
+-		err = 0;
+-		goto out;
+-	default:
+-		err = -EOPNOTSUPP;
+-	}
+-
+-out:
+-	mutex_unlock(&mac->associnfo.mutex);
+-
+-	return err;
+-}
+-EXPORT_SYMBOL_GPL(ieee80211softmac_wx_set_mlme);
 
-
-
---oLBj+sq0vYjzfsbl
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename="patch-remove-bcm43xx.gz"
-Content-Transfer-Encoding: base64
-
-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
-Ap1yLQOs5P8HQgh+DD7HBwA=
-
---oLBj+sq0vYjzfsbl--
