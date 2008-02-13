@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbYBMLdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765645AbYBMLfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932770AbYBMLdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 06:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYBMLdM
+	id S1765645AbYBMLfz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 06:35:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbYBMLfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 06:33:12 -0500
-Received: from ip-58-28-152-52.static-xdsl.xnet.co.nz ([58.28.152.52]:43720
-	"EHLO sol.unix.geek.nz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757492AbYBMLdL (ORCPT
+	Wed, 13 Feb 2008 06:35:47 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39286 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbYBMLfq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 06:33:11 -0500
-X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 06:33:11 EST
-Subject: 2.6.25-rc1 on Sun Ultra 40
-From: Jasper Bryant-Greene <jasper@unix.geek.nz>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VppLb94RudfZDzZo1zCb"
-Date: Thu, 14 Feb 2008 00:25:08 +1300
-Message-Id: <1202901908.11100.8.camel@phobos.jasper.bg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Wed, 13 Feb 2008 06:35:46 -0500
+Date: Wed, 13 Feb 2008 06:35:39 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Paul Mundt <lethal@linux-sh.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Tests of undefined CONFIG variables.
+In-Reply-To: <20080213113003.GA17418@linux-sh.org>
+Message-ID: <alpine.LFD.1.00.0802130635200.20362@localhost.localdomain>
+References: <alpine.LFD.1.00.0802130552370.19968@localhost.localdomain> <20080213113003.GA17418@linux-sh.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Feb 2008, Paul Mundt wrote:
 
---=-VppLb94RudfZDzZo1zCb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> On Wed, Feb 13, 2008 at 05:54:12AM -0500, Robert P. J. Day wrote:
+> >   i've also updated the list of what i call "badref" CONFIG variables
+> > -- that is, tests of CONFIG_ variables that appear to be undefined
+> > anywhere in a Kconfig file (which typically represents a meaningless
+> > test, naturally).
+> >
+> > http://www.crashcourse.ca/wiki/index.php/Badref_CONFIG_variables
+> >
+> For SH:
+>
+> CONFIG_SERIAL
+> CONFIG_CPU_HAS_PINT_IRQ
+> CONFIG_LITTLE_ENDIAN
+> CONFIG_SH64_PROC_TLB
+>
+> are now fixed, thanks.
 
-I have been attempting to test 2.6.25-rc1 on my Sun Ultra 40 (two
-dual-core Opteron 2222 CPUs).
+ok, removed.
 
-There is some issue with the HPET clocksource which causes it to hang
-the boot process if enabled, which I will look into in due course (the
-HPET works fine on at least 2.6.19).
+rday
+--
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
 
-More pressing is that the system will not boot at all even with HPET
-disabled - kernel gets no further than "NET: Registered protocol family
-2".
-
-I cannot think of a way to find out what the problem is, because the
-system has only USB ports, and the USB keyboard is not working at this
-stage, either because the system has locked up hard, or because the USB
-support has not yet loaded (I tried both standard USB-HID and boot
-protocol keyboard support, both compiled in). Thus I cannot use
-magic-sysrq, or even scrollback to look at boot messages. There is also
-no serial port to assist with the latter...
-
-Any thoughts on a procedure for debugging this would be much
-appreciated.
-
--j
-
---=-VppLb94RudfZDzZo1zCb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQBHstOUJdSFNCc4WA0RAsLdAKC3+LO0hiDHEALZX04NVHOwOr7x6wCfeO2z
-7w9R+3C9JmXXW9SqM69vJDY=
-=zpND
------END PGP SIGNATURE-----
-
---=-VppLb94RudfZDzZo1zCb--
-
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
