@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbYBMJcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932632AbYBMJdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270AbYBMJcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:32:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbYBMJcd
+	id S932632AbYBMJdm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYBMJdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:32:33 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:57616 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754242AbYBMJcb (ORCPT
+	Wed, 13 Feb 2008 04:33:24 -0500
+Received: from mga05.intel.com ([192.55.52.89]:20101 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752119AbYBMJdX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:32:31 -0500
-Date: Wed, 13 Feb 2008 11:32:26 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: jdmason@kudzu.us, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080213093225.GA16985@rhun.haifa.ibm.com>
-References: <20080213001506.GA13933@kroah.com> <20080213001638.GB13933@kroah.com>
+	Wed, 13 Feb 2008 04:33:23 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,345,1199692800"; 
+   d="scan'208";a="517740193"
+Subject: 2.6.25-rc1: volanoMark 45% regression
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 13 Feb 2008 17:30:28 +0800
+Message-Id: <1202895028.3027.27.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213001638.GB13933@kroah.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 04:16:38PM -0800, Greg KH wrote:
+volanoMark has 45% regression with kernel 2.6.25-rc1 on my both 8-core
+stoakley and 16-core Tigerton.
 
-> Why does the calgary driver need this?  Can we just use
-> pci_get_device() instead?  Why do you need to walk the device list
-> backwards?  Do you get false positives going forward?
+I used bisect to locate below patch.
 
-It's not strictly needed, we used it for symmetry. Feel free to nuke
-it and walk the list forward.
+commit 58e2d4ca581167c2a079f4ee02be2f0bc52e8729
+Author: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Date:   Fri Jan 25 21:08:00 2008 +0100
 
-Cheers,
-Muli
+    sched: group scheduling, change how cpu load is calculated
+
+
+
+hackbench has about 30% regression on 16-core tigerton, but has about 10% improvement
+on 8-core stoakley.
+
+In addition, tbench has about 6% regression on my 8-core stoakley and
+25% regression on 16-core stoakley. Some other benchmarks, like netperf/aim7
+also have some regression. I will verify if they are all related to the
+patch.
+
+-yanmin
+
+
