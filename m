@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758835AbYBMSOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762937AbYBMSPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758835AbYBMSOc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:14:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbYBMSOY
+	id S1762937AbYBMSPg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751613AbYBMSP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:14:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52729 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751044AbYBMSOY (ORCPT
+	Wed, 13 Feb 2008 13:15:28 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33939
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbYBMSP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:14:24 -0500
-Date: Wed, 13 Feb 2008 10:13:42 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-cc: Greg KH <gregkh@suse.de>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
-In-Reply-To: <1202923995.3129.26.camel@localhost>
-Message-ID: <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
-References: <20080213070215.GA11969@kroah.com>  <20080212.230423.172781444.davem@davemloft.net>  <1202887323.3129.10.camel@localhost>  <20080213165924.GB10129@suse.de> <1202923995.3129.26.camel@localhost>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Wed, 13 Feb 2008 13:15:27 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: linux-kernel@vger.kernel.org
+Subject: No, you do NOT already need perl to build the kernel!
+Date: Wed, 13 Feb 2008 12:15:22 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: torvalds@linux-foundation.org, hpa@zytor.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802131215.23297.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please revert commit bdc807871d58285737d50dc6163d0feb72cb0dc2 because it's 
+based on a false assumption:
 
+>     At Ralf Baechle's suggestion, this version uses a Perl script to
+> compute the necessary constants.  We already have dependencies on Perl for
+> kernel compiles.
 
-On Wed, 13 Feb 2008, Joe Perches wrote:
-> 
-> MAINTAINERS is the most frequently patched file
+You do NOT need perl to build the kernel.  Perl is used in various debugging 
+tools for stack checking and stuff (just like python is used in 
+bloat-o-meter).  But perl is NOT required to compile the kernel, and never 
+has been.  Not on x86, x86-64, arm, mips, powerpc, super hitachi, or sparc.  
+(Haven't personally tested the others recently.)
 
-Almost all of them merge perfectly, with no problems what-so-ever. And the 
-merge conflicts, when they happen, are generally really trivial, and never 
-cause any subtle run-time bugs even if they were to happen.
+I submitted a patch to _remove_ a perl dependency from the User Mode Linux 
+build back in 2005.  (During the bitkeeper days, although git 
+b05d85a87d9711f5f5f2eb05c79038d5d5ff1f44 updated said patch to work with 
+older versions of sed).
 
-So in that sense, I think both MAINTAINERS and the deprecation schedule 
-are totally uninteresting. Yes, they have merge conflicts. But those merge 
-conflicts are really really easy to handle.
+Please don't reintroduce this.  I can recompile a system from source code 
+under itself with only seven packages (linux, uClibc, busybox, gcc, binutils, 
+make, bash), meaning that's the minimal environment I have to bootstrap on a 
+new hardware platform in order to be able to compile my way up to a full 
+distro in a self-hosting manner.  Adding perl to that would _double_ the 
+complexity.  (Getting perl to cross compile requires involves medieval 
+torture implements and several lewd acts with a chicken, and that's just for 
+microperl...)
 
-		Linus
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
