@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934042AbYBMRQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934065AbYBMRRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934042AbYBMRQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:16:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933870AbYBMRQ3
+	id S934065AbYBMRRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:17:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbYBMRRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:16:29 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:15921 "EHLO
+	Wed, 13 Feb 2008 12:17:23 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:16447 "EHLO
 	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933862AbYBMRQ1 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1755317AbYBMRRV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:16:27 -0500
-Date: Wed, 13 Feb 2008 09:15:45 -0800
+	Wed, 13 Feb 2008 12:17:21 -0500
+Date: Wed, 13 Feb 2008 09:16:42 -0800
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Fabio Coatti <cova@ferrara.linux.it>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
        len.brown@intel.com
 Subject: Re: stuck with 2.6.23.14 on x86_64
-Message-Id: <20080213091545.a9dcc5b9.randy.dunlap@oracle.com>
+Message-Id: <20080213091642.b484a7ba.randy.dunlap@oracle.com>
 In-Reply-To: <200802131021.23974.cova@ferrara.linux.it>
 References: <200802121503.41328.cova@ferrara.linux.it>
 	<200802121847.19991.cova@ferrara.linux.it>
@@ -129,7 +129,7 @@ So you have a manual fix:  just enable CONFIG_PM.
 Is this specific config important to you?  I.e., do you want/need
 NUMA support?  If so, you'll just need to continue enabling CONFIG_PM.
 
-I made a patch that prevents the select problem (see below).
+I made a patch that prevents the select problem (see below [now added]).
 
 The "select PCI" in the X86_64_ACPI_NUMA config option is evil.  :(
 
@@ -162,4 +162,26 @@ The "select PCI" in the X86_64_ACPI_NUMA config option is evil.  :(
 
 
 ---
-~Randy
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Fix a kconfig 'select' problem: X86_64_NUMA_ACPI selects ACPI,
+so ACPI could be enabled even when PM is not enabled.
+This causes a build failure, so make X86_64_NUMA_ACPI depend on PM.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86_64/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- linux-2.6.23.16.orig/arch/x86_64/Kconfig
++++ linux-2.6.23.16/arch/x86_64/Kconfig
+@@ -367,7 +367,7 @@ config NODES_SHIFT
+ 
+ config X86_64_ACPI_NUMA
+        bool "ACPI NUMA detection"
+-       depends on NUMA
++       depends on NUMA && PM
+        select ACPI 
+ 	select PCI
+        select ACPI_NUMA
+
