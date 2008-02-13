@@ -1,53 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbYBMC0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYBMC36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763476AbYBMC0O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:26:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbYBMCZ5
+	id S1761968AbYBMC36 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:29:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYBMC3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:25:57 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:54679 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754268AbYBMCZ4 (ORCPT
+	Tue, 12 Feb 2008 21:29:47 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36451 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753552AbYBMC3q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:25:56 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Miller <davem@davemloft.net>
-Cc: torvalds@linux-foundation.org, jeff@garzik.org, arjan@infradead.org,
-       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20080212.172051.58554658.davem@davemloft.net>
-References: <47B1CB08.4020101@garzik.org>
-	 <20080212.155853.193190548.davem@davemloft.net>
-	 <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
-	 <20080212.172051.58554658.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 20:25:50 -0600
-Message-Id: <1202869550.3137.182.camel@localhost.localdomain>
+	Tue, 12 Feb 2008 21:29:46 -0500
+Date: Tue, 12 Feb 2008 18:28:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/4] fib_trie: improve output format for
+ /proc/net/fib_trie
+Message-Id: <20080212182823.6f8a3a12.akpm@linux-foundation.org>
+In-Reply-To: <20080213005122.727447010@vyatta.com>
+References: <20080213005042.150212716@vyatta.com>
+	<20080213005122.727447010@vyatta.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 17:20 -0800, David Miller wrote:
-> What would be really cool is if you could do the rebase thing, push
-> that to a remote tree you were already pushing into and others could
-> pull from that and all the right things happen.
+On Tue, 12 Feb 2008 16:50:44 -0800 Stephen Hemminger <shemminger@vyatta.com> wrote:
+
+> Make output format prettier (more tree like).
 > 
-> A rebase is just a series of events, and those could propagate to
-> people who are pulling from the tree.  I'm pretty sure GIT could
-> support this.
+>    <local>:
+>    --- 0.0.0.0/0
+>      |--- 10.111.111.0/24
+>      |  +-- 10.111.111.0/32 link broadcast
+>      |  |--- 10.111.111.254/31
+>      |  |  +-- 10.111.111.254/32 host local
+>      |  |  +-- 10.111.111.255/32 link broadcast
+>      |--- 127.0.0.0/8
+>      |  |--- 127.0.0.0/31
+>      |  |  +-- 127.0.0.0/32 link broadcast
+>      |  |  +-- 127.0.0.0/8 host local
+>      |  |  +-- 127.0.0.1/32 host local
+>      |  +-- 127.255.255.255/32 link broadcast
+>      |--- 192.168.1.0/24
+>      |  |--- 192.168.1.0/28
+>      |  |  +-- 192.168.1.0/32 link broadcast
+>      |  |  +-- 192.168.1.9/32 host local
+>      |  +-- 192.168.1.255/32 link broadcast
+>    <main>:
+>    --- 0.0.0.0/0
+>      |--- 0.0.0.0/4
+>      |  +-- 0.0.0.0/0 universe unicast
+>      |  +-- 10.111.111.0/24 link unicast
+>      +-- 169.254.0.0/16 link unicast
+>      +-- 192.168.1.0/24 link unicast
 
-Yes, this is exactly the feature I'm looking for.  It would allow the
-downstream users of a rebased tree to rebase themselves correctly.
+isn't that a non-back-compatible kernel ABI change?  It might
+break pre-existing parsers?
 
-All the information about the rebase is in the reflog ... it can't be
-too difficult to pass it through on a pull and allow the downstream tree
-to do the right thing.
-
-James
-
-
+aside: how lame are we to put pretty-printers in the kernel?
+English-only ones, at that?  Root cause: kernel developers still
+don't have a sufficiently easy way of shipping userspace tools.
