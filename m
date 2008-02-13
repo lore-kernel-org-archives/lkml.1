@@ -1,44 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934731AbYBMWKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766016AbYBMWM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934731AbYBMWKL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:10:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYBMWJw
+	id S1766016AbYBMWM2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:12:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbYBMWMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:09:52 -0500
-Received: from mx1.suse.de ([195.135.220.2]:43688 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751309AbYBMWJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:09:51 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
-Date: Wed, 13 Feb 2008 23:09:43 +0100
-User-Agent: KMail/1.9.6
-Cc: Jiri Kosina <jkosina@suse.cz>, Thomas Gleixner <tglx@linutronix.de>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org
-References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com> <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz> <20080213193538.GA16402@elte.hu>
-In-Reply-To: <20080213193538.GA16402@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 13 Feb 2008 17:12:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59236 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751159AbYBMWMC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:12:02 -0500
+Date: Wed, 13 Feb 2008 14:11:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au
+Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
+ type/macro safety
+Message-Id: <20080213141102.70730bec.akpm@linux-foundation.org>
+In-Reply-To: <20080213220024.GA30729@linux.vnet.ibm.com>
+References: <20080213220024.GA30729@linux.vnet.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802132309.43184.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008 20:35:38 Ingo Molnar wrote:
+On Wed, 13 Feb 2008 14:00:24 -0800
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> +	/*
-> +	 * Do not print if we are in atomic
-> +	 * contexts (in exception stacks, etc.):
-> +	 */
-> +	if (preempt_count())
-> +		return;
+> Hello!
+> 
+> This is an updated version of the patch posted last November:
+> 
+> 	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
+> 
+> This new version permits arguments with side effects, for example:
+> 
+> 	rcu_assign_pointer(global_p, p++);
+> 
+> and also verifies that the arguments are pointers, while still avoiding
+> the unnecessary memory barrier when assigning NULL to a pointer.
+> This memory-barrier avoidance means that rcu_assign_pointer() is now only
+> permitted for pointers (not array indexes), and so this version emits a
+> compiler warning if the first argument is not a pointer.  I built a "make
+> allyesconfig" version on an x86 system, and received no such warnings.
+> If RCU is ever applied to array indexes, then the second patch in this
+> series should be applied, and the resulting rcu_assign_index() be used.
+> 
+> Given the rather surprising history of subtlely broken implementations of
+> rcu_assign_pointer(), I took the precaution of generating a full set of
+> test cases and verified that memory barriers and compiler warnings were
+> emitted when required.  I guess it is the simple things that get you...
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+> 
+>  rcupdate.h |   16 ++++++++++++----
+>  1 file changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
+> --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
+> +++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
 
-It should print the address even in this case; just not resolve the VMA
-name.
+whoop, ancient kernel alert.
 
--Andi
+> @@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
+>   * structure after the pointer assignment.  More importantly, this
+>   * call documents which pointers will be dereferenced by RCU read-side
+>   * code.
+> + *
+> + * Throws a compiler warning for non-pointer arguments.
+> + *
+> + * Does not insert a memory barrier for a NULL pointer.
+>   */
+>  
+> -#define rcu_assign_pointer(p, v)	({ \
+> -						smp_wmb(); \
+> -						(p) = (v); \
+> -					})
+> +#define rcu_assign_pointer(p, v)	\
+> +	({ \
+> +		typeof(*p) *_________p1 = (v); \
+> +		\
+> +		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
+> +			smp_wmb(); \
+> +		(p) = _________p1; \
+> +	})
+
+Someone already merged the dont-do-it-for-NULL patch so I reworked this
+appropriately.  Was too lazy to update the changelog though.
+
