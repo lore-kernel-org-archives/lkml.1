@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbYBMNoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757753AbYBMNp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbYBMNoQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 08:44:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbYBMNoA
+	id S1757753AbYBMNp4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 08:45:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753671AbYBMNpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 08:44:00 -0500
-Received: from odyssey.analogic.com ([204.178.40.5]:3257 "EHLO
-	odyssey.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751409AbYBMNn7 convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 08:45:43 -0500
+Received: from emerald.lightlink.com ([205.232.34.14]:31902 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbYBMNpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 08:43:59 -0500
+	Wed, 13 Feb 2008 08:45:42 -0500
+Date: Wed, 13 Feb 2008 08:45:20 -0500
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, trenn@suse.de,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lenb@kernel.org
+Subject: Re: [PATCH 2/5] Provide acpi_check_{mem_}region.
+Message-ID: <20080213134520.GB17512@jupiter.solarsys.private>
+References: <1193236379.4590.229.camel@queen.suse.de> <20080207234002.e31563be.akpm@linux-foundation.org> <20080210132536.7c4d1cb1@hyperion.delvare> <20080211115546.87a738b1.akpm@linux-foundation.org> <20080211221829.7fcf749e@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 13 Feb 2008 13:43:54.0659 (UTC) FILETIME=[79945730:01C86E46]
-Content-class: urn:content-classes:message
-Subject: Re: [PATCH] fs/coda: remove static inline forward declarations
-Date: Wed, 13 Feb 2008 08:43:53 -0500
-Message-ID: <Pine.LNX.4.61.0802130838100.4463@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.64.0802131417460.31652@kivilampi-30.cs.helsinki.fi>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fs/coda: remove static inline forward declarations
-Thread-Index: AchuRnmdzJH7zttDTcuYF21qQxidOA==
-References: <Pine.LNX.4.64.0802131417460.31652@kivilampi-30.cs.helsinki.fi>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: =?iso-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: <jaharkes@cs.cmu.edu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080211221829.7fcf749e@hyperion.delvare>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Andrew, Jean:
 
-On Wed, 13 Feb 2008, [iso-8859-1] Ilpo Järvinen wrote:
+* Jean Delvare <khali@linux-fr.org> [2008-02-11 22:18:29 +0100]:
+> On Mon, 11 Feb 2008 11:55:46 -0800, Andrew Morton wrote:
+> > On Sun, 10 Feb 2008 13:25:36 +0100 Jean Delvare wrote:
+> > > Andrew, both patches are
+> > > 
+> > > Acked-by: Jean Delvare <khali@linux-fr.org>
+> > 
+> > We already have Signed-off-by:you, which I figure outranks acked-by: ;)
+> 
+> Yeah but that wasn't the same me. That was me-developer-at-suse,
+> who doesn't yet have the same aura as
+> me-maintainer-of-i2c-and-former-maintainer-of-hwmon ;)
+> 
+> > > and I am totally fine with you pushing them to Linus now. But of course
+> > > having Mark's ack would be good too.
+> > 
+> > That would be nice.  But I'll merge them mid-week anyway unless Mark actually
+> > nacks them:
+> > 
+> > http://userweb.kernel.org/~akpm/mmotm/broken-out/check-for-acpi-resource-conflicts-in-hwmon-drivers.patch
+> > 
+> > http://userweb.kernel.org/~akpm/mmotm/broken-out/check-for-acpi-resource-conflicts-in-i2c-bus-drivers.patch
+> 
+> Yeah, sounds like a good plan, thanks for taking care.
 
-> They're defined later on in the same file with bodies and
-> nothingin between needs them.
->
-> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
-> ---
-> include/linux/coda_linux.h |    3 ---
-> 1 files changed, 0 insertions(+), 3 deletions(-)
->
-> diff --git a/include/linux/coda_linux.h b/include/linux/coda_linux.h
-> index 1c47a34..31b7531 100644
-> --- a/include/linux/coda_linux.h
-> +++ b/include/linux/coda_linux.h
-> @@ -43,9 +43,6 @@ int coda_getattr(struct vfsmount *, struct dentry *, struct kstat *);
-> int coda_setattr(struct dentry *, struct iattr *);
->
-> /* this file:  heloers */
-> -static __inline__ struct CodaFid *coda_i2f(struct inode *);
-> -static __inline__ char *coda_i2s(struct inode *);
-> -static __inline__ void coda_flag_inode(struct inode *, int flag);
-> char *coda_f2s(struct CodaFid *f);
-> int coda_isroot(struct inode *i);
-> int coda_iscontrol(const char *name, size_t length);
-> -- 
-> 1.5.2.2
->
+OK, I pulled the first of those into my hwmon testing tree and merged
+it, since there are trivial conflicts with some of the other patches
+already there.  I'll send it to Linus before -rc2.
 
-I was taught formally that all procedures must be declared
-before they are encountered in a file. This constitutes what
-is generally known as "good standards of engineering practice."
-It also guarantees a compiler diagnostic if the declaration and
-the function doesn't match.
+Andrew: hopefully that makes your life .001% easier. ;)
 
-You should not remove things just because you don't think they
-are necessary. They do no harm and removing them can cause
-code checking tools to issue diagnostic messages.
+Regards,
 
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
-
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
-
-Thank you.
