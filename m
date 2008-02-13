@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764925AbYBMVcK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754537AbYBMVcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764925AbYBMVcK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:32:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762835AbYBMV3z
+	id S1754537AbYBMVcf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:32:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762850AbYBMV35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:29:55 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:55649 "EHLO smtp6.pp.htv.fi"
+	Wed, 13 Feb 2008 16:29:57 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:47459 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762729AbYBMV3y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:29:54 -0500
-Date: Wed, 13 Feb 2008 23:29:38 +0200
+	id S1753408AbYBMV34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:29:56 -0500
+Date: Wed, 13 Feb 2008 23:29:40 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: David Teigland <teigland@redhat.com>, pcaulfie@redhat.com
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make dlm_print_rsb() static
-Message-ID: <20080213212938.GG3383@cs181133002.pp.htv.fi>
+To: Paul Moore <paul.moore@hp.com>, James Morris <jmorris@namei.org>,
+       coreteam@netfilter.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make secmark_tg_destroy() static
+Message-ID: <20080213212940.GH3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,40 +24,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dlm_print_rsb() can now become static.
+This patch makes the needlessly global secmark_tg_destroy() static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- fs/dlm/lock.c |    2 +-
- fs/dlm/lock.h |    1 -
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-95f682b14f6bcea2cb8f3ff7acb3c5a11593e354 
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index ff4a198..8f99a57 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -165,7 +165,7 @@ void dlm_print_lkb(struct dlm_lkb *lkb)
- 	       lkb->lkb_grmode, lkb->lkb_wait_type, lkb->lkb_ast_type);
+df66d8d74309b41298ae011532fd284aad3ed2ba 
+diff --git a/net/netfilter/xt_SECMARK.c b/net/netfilter/xt_SECMARK.c
+index 7708e20..c028485 100644
+--- a/net/netfilter/xt_SECMARK.c
++++ b/net/netfilter/xt_SECMARK.c
+@@ -111,7 +111,7 @@ secmark_tg_check(const char *tablename, const void *entry,
+ 	return true;
  }
  
--void dlm_print_rsb(struct dlm_rsb *r)
-+static void dlm_print_rsb(struct dlm_rsb *r)
+-void secmark_tg_destroy(const struct xt_target *target, void *targinfo)
++static void secmark_tg_destroy(const struct xt_target *target, void *targinfo)
  {
- 	printk(KERN_ERR "rsb: nodeid %d flags %lx first %x rlc %d name %s\n",
- 	       r->res_nodeid, r->res_flags, r->res_first_lkid,
-diff --git a/fs/dlm/lock.h b/fs/dlm/lock.h
-index 27b6ed3..3b31b07 100644
---- a/fs/dlm/lock.h
-+++ b/fs/dlm/lock.h
-@@ -13,7 +13,6 @@
- #ifndef __LOCK_DOT_H__
- #define __LOCK_DOT_H__
- 
--void dlm_print_rsb(struct dlm_rsb *r);
- void dlm_dump_rsb(struct dlm_rsb *r);
- void dlm_print_lkb(struct dlm_lkb *lkb);
- void dlm_receive_message_saved(struct dlm_ls *ls, struct dlm_message *ms);
+ 	switch (mode) {
+ 	case SECMARK_MODE_SEL:
 
