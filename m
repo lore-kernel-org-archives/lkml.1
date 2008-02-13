@@ -1,312 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbYBMAKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYBMALm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760325AbYBMAKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 19:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbYBMAKa
+	id S1760641AbYBMALm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 19:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbYBMALc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 19:10:30 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:30216 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757512AbYBMAK2 (ORCPT
+	Tue, 12 Feb 2008 19:11:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56798
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752464AbYBMALb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 19:10:28 -0500
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 12 Feb 2008 17:10:31 -0700
-Message-Id: <1202861432.4974.29.camel@localhost>
+	Tue, 12 Feb 2008 19:11:31 -0500
+Date: Tue, 12 Feb 2008 16:12:03 -0800 (PST)
+Message-Id: <20080212.161203.16478915.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080212170422.GE3051@tuxdriver.com>
+References: <20080211.220726.157328337.davem@davemloft.net>
+	<47B1C9F4.30402@garzik.org>
+	<20080212170422.GE3051@tuxdriver.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-11 at 07:30 -0800, David Rientjes wrote: 
-> The mempolicy mode constants, MPOL_DEFAULT, MPOL_PREFERRED, MPOL_BIND,
-> and MPOL_INTERLEAVE, are better declared as part of an enum for type
-> checking.
-> 
-> The policy member of struct mempolicy is also converted from type short
-> to type unsigned short.  A negative policy does not have any legitimate
-> meaning, so it is possible to change its type in preparation for adding
-> optional mode flags later.
-> 
-> The equivalent member of struct shmem_sb_info is also changed from int
-> to unsigned short.
-> 
-> For compatibility, the policy formal to get_mempolicy() remains as a
-> pointer to an int:
-> 
-> 	int get_mempolicy(int *policy, unsigned long *nmask,
-> 			  unsigned long maxnode, unsigned long addr,
-> 			  unsigned long flags);
-> 
-> although the only possible values is the range of type unsigned short.
-> 
-> Cc: Paul Jackson <pj@sgi.com>
-> Cc: Christoph Lameter <clameter@sgi.com>
-> Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-> Cc: Andi Kleen <ak@suse.de>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  Applies on top of V3 of Lee Schermerhorn's mempolicy patch posted to
->  LKML on February 8.
-> 
->  include/linux/mempolicy.h |   21 +++++++++++----------
->  include/linux/shmem_fs.h  |    2 +-
->  mm/mempolicy.c            |   29 +++++++++++++++++------------
->  mm/shmem.c                |   11 ++++++-----
->  4 files changed, 35 insertions(+), 28 deletions(-)
-> 
-> diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-> --- a/include/linux/mempolicy.h
-> +++ b/include/linux/mempolicy.h
-> @@ -9,12 +9,13 @@
->   */
->  
->  /* Policies */
-> -#define MPOL_DEFAULT	0
-> -#define MPOL_PREFERRED	1
-> -#define MPOL_BIND	2
-> -#define MPOL_INTERLEAVE	3
-> -
-> -#define MPOL_MAX MPOL_INTERLEAVE
-> +enum mempolicy_mode {
-> +	MPOL_DEFAULT,
-> +	MPOL_PREFERRED,
-> +	MPOL_BIND,
-> +	MPOL_INTERLEAVE,
-> +	MPOL_MAX,	/* always last member of mempolicy_mode */
-> +};
->  
->  /* Flags for get_mem_policy */
->  #define MPOL_F_NODE	(1<<0)	/* return next IL mode instead of node mask */
-> @@ -62,7 +63,7 @@ struct mm_struct;
->   */
->  struct mempolicy {
->  	atomic_t refcnt;
-> -	short policy; 	/* See MPOL_* above */
-> +	unsigned short policy; 	/* See MPOL_* above */
->  	union {
->  		struct zonelist  *zonelist;	/* bind */
->  		short 		 preferred_node; /* preferred */
-> @@ -133,8 +134,8 @@ struct shared_policy {
->  	spinlock_t lock;
->  };
->  
-> -void mpol_shared_policy_init(struct shared_policy *info, int policy,
-> -				nodemask_t *nodes);
-> +void mpol_shared_policy_init(struct shared_policy *info,
-> +		enum mempolicy_mode policy, nodemask_t *nodes);
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 12 Feb 2008 12:04:22 -0500
 
-Perhaps just my own myopia, but I don't see the benefit of this change;
-especially when taken with the subsequent patch [2/4].  The only place
-we pass around a "naked" policy member [outside of a mempolicy struct]
-is between the sys call interface [and shmem_sb_info] and the
-mpol_check_policy()/mpol_new() functions.  In the subsequent patch,
-you'll add the optional flags to this member and this type change either
-requires a separate argument [as you've done] or requires undoing this
-change [as I'd like to see].
+> 	net-2.6.26		updates certain to go to the next release
+> 	net-2.6.26-maybe	updates that might not make it to the next release
 
-Why not leave it as an int.  Will simplify this and subsequent patch.
-See comments there.
+If I knew something was "maybe" ahead of time I simply would not apply
+it.
 
-Other than that, I'm fine with this patch.
+Everything I apply to my tree I feel is likely to get integrated.  If
+it isn't, I let the patch work itself out on the lists and amongst the
+interested developers.
 
->  int mpol_set_shared_policy(struct shared_policy *info,
->  				struct vm_area_struct *vma,
->  				struct mempolicy *new);
-> @@ -200,7 +201,7 @@ static inline int mpol_set_shared_policy(struct shared_policy *info,
->  }
->  
->  static inline void mpol_shared_policy_init(struct shared_policy *info,
-> -					int policy, nodemask_t *nodes)
-> +			enum mempolicy_type policy, nodemask_t *nodes)
->  {
->  }
->  
-> diff --git a/include/linux/shmem_fs.h b/include/linux/shmem_fs.h
-> --- a/include/linux/shmem_fs.h
-> +++ b/include/linux/shmem_fs.h
-> @@ -34,7 +34,7 @@ struct shmem_sb_info {
->  	uid_t uid;		    /* Mount uid for root directory */
->  	gid_t gid;		    /* Mount gid for root directory */
->  	mode_t mode;		    /* Mount mode for root directory */
-> -	int policy;		    /* Default NUMA memory alloc policy */
-> +	unsigned short policy;	    /* Default NUMA memory alloc policy */
->  	nodemask_t policy_nodes;    /* nodemask for preferred and bind */
->  };
->  
-> diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-> --- a/mm/mempolicy.c
-> +++ b/mm/mempolicy.c
-> @@ -114,7 +114,7 @@ static void mpol_rebind_policy(struct mempolicy *pol,
->                                 const nodemask_t *newmask);
->  
->  /* Do sanity checking on a policy */
-> -static int mpol_check_policy(int mode, nodemask_t *nodes)
-> +static int mpol_check_policy(enum mempolicy_mode mode, nodemask_t *nodes)
->  {
->  	int was_empty, is_empty;
->  
-> @@ -159,6 +159,8 @@ static int mpol_check_policy(int mode, nodemask_t *nodes)
->  		if (!was_empty && is_empty)
->  			return -EINVAL;
->  		break;
-> +	default:
-> +		BUG();
->  	}
->  	return 0;
->  }
-> @@ -201,7 +203,7 @@ static struct zonelist *bind_zonelist(nodemask_t *nodes)
->  }
->  
->  /* Create a new policy */
-> -static struct mempolicy *mpol_new(int mode, nodemask_t *nodes)
-> +static struct mempolicy *mpol_new(enum mempolicy_mode mode, nodemask_t *nodes)
->  {
->  	struct mempolicy *policy;
->  
-> @@ -235,6 +237,8 @@ static struct mempolicy *mpol_new(int mode, nodemask_t *nodes)
->  			return error_code;
->  		}
->  		break;
-> +	default:
-> +		BUG();
->  	}
->  	policy->policy = mode;
->  	policy->cpuset_mems_allowed = cpuset_mems_allowed(current);
-> @@ -479,7 +483,7 @@ static void mpol_set_task_struct_flag(void)
->  }
->  
->  /* Set the process memory policy */
-> -static long do_set_mempolicy(int mode, nodemask_t *nodes)
-> +static long do_set_mempolicy(enum mempolicy_mode mode, nodemask_t *nodes)
->  {
->  	struct mempolicy *new;
->  
-> @@ -781,7 +785,7 @@ static struct page *new_vma_page(struct page *page, unsigned long private, int *
->  #endif
->  
->  static long do_mbind(unsigned long start, unsigned long len,
-> -		     unsigned long mode, nodemask_t *nmask,
-> +		     enum mempolicy_mode mode, nodemask_t *nmask,
->  		     unsigned long flags)
->  {
->  	struct vm_area_struct *vma;
-> @@ -791,9 +795,8 @@ static long do_mbind(unsigned long start, unsigned long len,
->  	int err;
->  	LIST_HEAD(pagelist);
->  
-> -	if ((flags & ~(unsigned long)(MPOL_MF_STRICT |
-> +	if (flags & ~(unsigned long)(MPOL_MF_STRICT |
->  				      MPOL_MF_MOVE | MPOL_MF_MOVE_ALL))
-> -	    || mode > MPOL_MAX)
->  		return -EINVAL;
->  	if ((flags & MPOL_MF_MOVE_ALL) && !capable(CAP_SYS_NICE))
->  		return -EPERM;
-> @@ -826,7 +829,7 @@ static long do_mbind(unsigned long start, unsigned long len,
->  	if (!new)
->  		flags |= MPOL_MF_DISCONTIG_OK;
->  
-> -	pr_debug("mbind %lx-%lx mode:%ld nodes:%lx\n",start,start+len,
-> +	pr_debug("mbind %lx-%lx mode:%d nodes:%lx\n",start,start+len,
->  		 mode, nmask ? nodes_addr(*nmask)[0] : -1);
->  
->  	down_write(&mm->mmap_sem);
-> @@ -927,6 +930,8 @@ asmlinkage long sys_mbind(unsigned long start, unsigned long len,
->  	nodemask_t nodes;
->  	int err;
->  
-> +	if (mode >= MPOL_MAX)
-> +		return -EINVAL;
->  	err = get_nodes(&nodes, nmask, maxnode);
->  	if (err)
->  		return err;
-> @@ -940,7 +945,7 @@ asmlinkage long sys_set_mempolicy(int mode, unsigned long __user *nmask,
->  	int err;
->  	nodemask_t nodes;
->  
-> -	if (mode < 0 || mode > MPOL_MAX)
-> +	if (mode < 0 || mode >= MPOL_MAX)
->  		return -EINVAL;
->  	err = get_nodes(&nodes, nmask, maxnode);
->  	if (err)
-> @@ -1206,7 +1211,7 @@ static unsigned interleave_nodes(struct mempolicy *policy)
->   */
->  unsigned slab_node(struct mempolicy *policy)
->  {
-> -	int pol = policy ? policy->policy : MPOL_DEFAULT;
-> +	enum mempolicy_mode pol = policy ? policy->policy : MPOL_DEFAULT;
->  
->  	switch (pol) {
->  	case MPOL_INTERLEAVE:
-> @@ -1634,8 +1639,8 @@ restart:
->  	return 0;
->  }
->  
-> -void mpol_shared_policy_init(struct shared_policy *info, int policy,
-> -				nodemask_t *policy_nodes)
-> +void mpol_shared_policy_init(struct shared_policy *info,
-> +		enum mempolicy_mode policy, nodemask_t *policy_nodes)
->  {
->  	info->root = RB_ROOT;
->  	spin_lock_init(&info->lock);
-> @@ -1853,7 +1858,7 @@ static inline int mpol_to_str(char *buffer, int maxlen, struct mempolicy *pol)
->  	char *p = buffer;
->  	int l;
->  	nodemask_t nodes;
-> -	int mode = pol ? pol->policy : MPOL_DEFAULT;
-> +	enum mempolicy_mode mode = pol ? pol->policy : MPOL_DEFAULT;
->  
->  	switch (mode) {
->  	case MPOL_DEFAULT:
-> diff --git a/mm/shmem.c b/mm/shmem.c
-> --- a/mm/shmem.c
-> +++ b/mm/shmem.c
-> @@ -1082,7 +1082,8 @@ redirty:
->  
->  #ifdef CONFIG_NUMA
->  #ifdef CONFIG_TMPFS
-> -static int shmem_parse_mpol(char *value, int *policy, nodemask_t *policy_nodes)
-> +static int shmem_parse_mpol(char *value, unsigned short *policy,
-> +			    nodemask_t *policy_nodes)
->  {
->  	char *nodelist = strchr(value, ':');
->  	int err = 1;
-> @@ -1131,7 +1132,7 @@ out:
->  	return err;
->  }
->  
-> -static void shmem_show_mpol(struct seq_file *seq, int policy,
-> +static void shmem_show_mpol(struct seq_file *seq, enum mempolicy_mode policy,
->  			    const nodemask_t policy_nodes)
->  {
->  	char *policy_string;
-> @@ -1200,14 +1201,14 @@ static struct page *shmem_alloc_page(gfp_t gfp,
->  }
->  #else /* !CONFIG_NUMA */
->  #ifdef CONFIG_TMPFS
-> -static inline int shmem_parse_mpol(char *value, int *policy,
-> +static inline int shmem_parse_mpol(char *value, unsigned short *policy,
->  						nodemask_t *policy_nodes)
->  {
->  	return 1;
->  }
->  
-> -static inline void shmem_show_mpol(struct seq_file *seq, int policy,
-> -			    const nodemask_t policy_nodes)
-> +static inline void shmem_show_mpol(struct seq_file *seq,
-> +		enum mempolicy_mode policy, const nodemask_t policy_nodes)
->  {
->  }
->  #endif /* CONFIG_TMPFS */
+The real issue is deleting crap.  Once something that seemed like a
+good idea turns sour I want to remove it entirely.  This isn't doable
+without a rebase.
 
+Also, and Andrew does this a lot, I want to clean up changes which
+have problems I only notice later.  In fact the rebase process turns
+up all kinds of things such as whitespace errors that I get when
+merging other people's trees.  Having extra changesets with the
+small fixups adds zero value and just more churn to go over when
+reading changesets.  A small annotation to the changelog will
+do, that answers the "where did this come from?".
+
+With patches and rebasing that operation is easy, and I'm willing to
+deal with all of the rebasing of subsequent changesets that is usually
+caused by such things.  Yes, I'm even willing to do it to patch #1 in
+a 1500 patch tree. :-)
