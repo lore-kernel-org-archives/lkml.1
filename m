@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932595AbYBMP5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbYBMP5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932595AbYBMP5e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764105AbYBMP5L
+	id S1759172AbYBMP5y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932326AbYBMP5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:57:11 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:51193 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761213AbYBMP5K (ORCPT
+	Wed, 13 Feb 2008 10:57:16 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:41374 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932229AbYBMP5P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:57:10 -0500
-Date: Wed, 13 Feb 2008 18:57:13 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-Message-ID: <20080213155713.GA376@jurassic.park.msu.ru>
-References: <20080213052903.B1F1CDBA2@gherkin.frus.com> <20080213092208.GC21614@elte.hu> <20080213130432.GE6344@elte.hu>
+	Wed, 13 Feb 2008 10:57:15 -0500
+Message-ID: <47B312B3.3010200@panasas.com>
+Date: Wed, 13 Feb 2008 17:54:27 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213130432.GE6344@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com> <1202917468.3109.5.camel@localhost.localdomain>
+In-Reply-To: <1202917468.3109.5.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 02:04:32PM +0100, Ingo Molnar wrote:
-> > > Unless someone has a good idea what's causing this, I see a massive 
-> > > "git bisect" project in my future.  Won't be able to spend any time 
-> > > with this until at least the weekend :-(.
-> > 
-> > hm, is this SMP? Alpha uses asm-generic/percpu.h. One "early bootup" 
-> > effect on Alpha that i can think of could have been this family of 
-> > commits:
+On Wed, Feb 13 2008 at 17:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Tue, 2008-02-12 at 19:40 +0200, Boaz Harrosh wrote:
+>> -	gdth_flush(ha);
+>> -
 > 
-> another possibility would be to turn off PRINTK_TIMESTAMPS [if they are 
-> on in your .config].
+> This piece doesn't look right.  gdth_flush() forces the internal cache
+> to disk backing.  If you remove it, you're taking the chance that the
+> machine will be powered off without a writeback which can cause data
+> corruption.
+> 
+> James
+> 
+Yes. 
+I have more problems reported, with exit, and am just sending one more patch that puts
+this back in. Which was tested.
 
-No SMP, no PRINTK_TIMESTAMPS in my case. Looks like it dies trying to
-to switch to vga console, but I had no time to debug this yet...
+So I will resend this one plus one new one.
 
-Ivan.
+Boaz
