@@ -1,164 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbYBMQHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933061AbYBMQHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997AbYBMQHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757977AbYBMQHR
+	id S933061AbYBMQHy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:07:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbYBMQHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:07:17 -0500
-Received: from mga11.intel.com ([192.55.52.93]:55549 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760800AbYBMQHO convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 11:07:43 -0500
+Received: from balanced.mail.policyd.dreamhost.com ([208.97.132.119]:44943
+	"EHLO spunkymail-a1.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756711AbYBMQHm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:07:14 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,347,1199692800"; 
-   d="scan'208";a="517907356"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 13 Feb 2008 11:07:42 -0500
+Message-ID: <47B315CA.4080600@sdiz.net>
+Date: Thu, 14 Feb 2008 00:07:38 +0800
+From: SDiZ <sdiz@sdiz.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 3/4] async_tx: kill ->device_dependency_added
-Date: Wed, 13 Feb 2008 08:05:50 -0800
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C0401018E@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080213070308.793.70810.stgit@dwillia2-linux.ch.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 3/4] async_tx: kill ->device_dependency_added
-Thread-Index: AchuDrr4/Og2xR0mQMG8lwrWDC+KQQAS0Hpw
-References: <20080213065944.793.23537.stgit@dwillia2-linux.ch.intel.com> <20080213070308.793.70810.stgit@dwillia2-linux.ch.intel.com>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>
-Cc: <hskinnemoen@atmel.com>, <olof@lixom.net>, <yur@emcraft.com>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-X-OriginalArrivalTime: 13 Feb 2008 16:05:51.0212 (UTC) FILETIME=[4DD732C0:01C86E5A]
+To: Marcel Holtmann <marcel@holtmann.org>
+Cc: SDiZ <sdiz@sdiz.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][BLUETOOTH] add HCI_BROKEN_ISOC for 0e5e:6622 (bugzilla
+ #9027)
+References: <47B266AE.3040908@sdiz.net> <1202898692.7664.369.camel@violet>	 <47B30E11.2080903@sdiz.net> <1202917206.7664.417.camel@violet>
+In-Reply-To: <1202917206.7664.417.camel@violet>
+Content-Type: multipart/mixed;
+ boundary="------------010303060000010908070404"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Williams, Dan J 
->Sent: Tuesday, February 12, 2008 11:03 PM
->To: linux-kernel@vger.kernel.org
->Cc: hskinnemoen@atmel.com; Nelson, Shannon; olof@lixom.net; 
->yur@emcraft.com
->Subject: [PATCH 3/4] async_tx: kill ->device_dependency_added
->
->DMA drivers no longer need to be notified of depdency 
->submission events as
->async_tx_run_dependencies and async_tx_channel_switch will handle the
->scheduling and execution of dependent operations.
->
->Signed-off-by: Dan Williams <dan.j.williams@intel.com>
->---
->
-> drivers/dma/dmaengine.c   |    1 -
-> drivers/dma/ioat_dma.c    |   12 ------------
-> drivers/dma/iop-adma.c    |    7 -------
-> include/linux/dmaengine.h |    2 --
-> 4 files changed, 0 insertions(+), 22 deletions(-)
->
->
->diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
->index 9369781..5ca0d94 100644
->--- a/drivers/dma/dmaengine.c
->+++ b/drivers/dma/dmaengine.c
->@@ -362,7 +362,6 @@ int dma_async_device_register(struct 
->dma_device *device)
-> 
-> 	BUG_ON(!device->device_alloc_chan_resources);
-> 	BUG_ON(!device->device_free_chan_resources);
->-	BUG_ON(!device->device_dependency_added);
-> 	BUG_ON(!device->device_is_tx_complete);
-> 	BUG_ON(!device->device_issue_pending);
-> 	BUG_ON(!device->dev);
->diff --git a/drivers/dma/ioat_dma.c b/drivers/dma/ioat_dma.c
->index dff38ac..05ace54 100644
->--- a/drivers/dma/ioat_dma.c
->+++ b/drivers/dma/ioat_dma.c
->@@ -922,17 +922,6 @@ static void 
->ioat_dma_memcpy_cleanup(struct ioat_dma_chan *ioat_chan)
-> 	spin_unlock_bh(&ioat_chan->cleanup_lock);
-> }
-> 
->-static void ioat_dma_dependency_added(struct dma_chan *chan)
->-{
->-	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
->-	spin_lock_bh(&ioat_chan->desc_lock);
->-	if (ioat_chan->pending == 0) {
->-		spin_unlock_bh(&ioat_chan->desc_lock);
->-		ioat_dma_memcpy_cleanup(ioat_chan);
->-	} else
->-		spin_unlock_bh(&ioat_chan->desc_lock);
->-}
->-
-> /**
->  * ioat_dma_is_complete - poll the status of a IOAT DMA transaction
->  * @chan: IOAT DMA channel handle
->@@ -1314,7 +1303,6 @@ struct ioatdma_device 
->*ioat_dma_probe(struct pci_dev *pdev,
-> 
-> 	dma_cap_set(DMA_MEMCPY, device->common.cap_mask);
-> 	device->common.device_is_tx_complete = ioat_dma_is_complete;
->-	device->common.device_dependency_added = 
->ioat_dma_dependency_added;
-> 	switch (device->version) {
-> 	case IOAT_VER_1_2:
-> 		device->common.device_prep_dma_memcpy = 
->ioat1_dma_prep_memcpy;
->diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
->index a6171da..1cb4284 100644
->--- a/drivers/dma/iop-adma.c
->+++ b/drivers/dma/iop-adma.c
->@@ -672,12 +672,6 @@ iop_adma_prep_dma_zero_sum(struct 
->dma_chan *chan, dma_addr_t *dma_src,
-> 	return sw_desc ? &sw_desc->async_tx : NULL;
-> }
-> 
->-static void iop_adma_dependency_added(struct dma_chan *chan)
->-{
->-	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
->-	tasklet_schedule(&iop_chan->irq_tasklet);
->-}
->-
-> static void iop_adma_free_chan_resources(struct dma_chan *chan)
-> {
-> 	struct iop_adma_chan *iop_chan = to_iop_adma_chan(chan);
->@@ -1178,7 +1172,6 @@ static int __devinit 
->iop_adma_probe(struct platform_device *pdev)
-> 	dma_dev->device_free_chan_resources = 
->iop_adma_free_chan_resources;
-> 	dma_dev->device_is_tx_complete = iop_adma_is_complete;
-> 	dma_dev->device_issue_pending = iop_adma_issue_pending;
->-	dma_dev->device_dependency_added = iop_adma_dependency_added;
-> 	dma_dev->dev = &pdev->dev;
-> 
-> 	/* set prep routines based on capability */
->diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
->index d04b169..e2538b4 100644
->--- a/include/linux/dmaengine.h
->+++ b/include/linux/dmaengine.h
->@@ -258,7 +258,6 @@ struct dma_async_tx_descriptor {
->  * @device_prep_dma_zero_sum: prepares a zero_sum operation
->  * @device_prep_dma_memset: prepares a memset operation
->  * @device_prep_dma_interrupt: prepares an end of chain 
->interrupt operation
->- * @device_dependency_added: async_tx notifies the channel 
->about new deps
->  * @device_issue_pending: push pending transactions to hardware
->  */
-> struct dma_device {
->@@ -293,7 +292,6 @@ struct dma_device {
-> 	struct dma_async_tx_descriptor *(*device_prep_dma_interrupt)(
-> 		struct dma_chan *chan);
-> 
->-	void (*device_dependency_added)(struct dma_chan *chan);
-> 	enum dma_status (*device_is_tx_complete)(struct dma_chan *chan,
-> 			dma_cookie_t cookie, dma_cookie_t *last,
-> 			dma_cookie_t *used);
->
->
+This is a multi-part message in MIME format.
+--------------010303060000010908070404
+Content-Type: text/plain; charset=Big5-HKSCS
+Content-Transfer-Encoding: 7bit
 
-Acked-by: Shannon Nelson <shannon.nelson@intel.com>
+Marcel Holtmann wrote:
+> Hi,
+>
+>   
+>>>> This patch fix bugzilla #9027.
+>>>> ``Syslog flooded with "hci_scodata_packet: hci0 SCO packet for unknown
+>>>> connection handle 92" message"
+>>>>
+>>>> see http://bugzilla.kernel.org/show_bug.cgi?id=9027
+>>>>     
+>>>>         
+>>> when we get the content of /proc/bus/usb/devices for this one. Do you
+>>> have the manufacturer name of it or at least an idea which kind of
+>>> device this is. Check "hciconfig hci0 version".
+>>>   
+>>>       
+>> It have no text on the chips and package, so I don't know the
+>> manufacturer name.
+>>     
+>
+> and what about "hciconfig hci0 version"?
+>   
+hci0: Type: USB
+BD Address: 11:11:11:11:11:11 ACL MTU: 672:3 SCO MTU: 48:1
+HCI Ver: 2.0 (0x3) HCI Rev: 0x1f4 LMP Ver: 2.0 (0x3) LMP Subver: 0x1f4
+Manufacturer: CONWISE Technology Corporation Ltd (66)
+>> /proc/bus/usb/devices shows:
+>>
+>>
+>> T: Bus=01 Lev=01 Prnt=01 Port=01 Cnt=01 Dev#= 2 Spd=12 MxCh= 0
+>> D: Ver= 1.10 Cls=e0(unk. ) Sub=01 Prot=01 MxPS=16 #Cfgs= 1
+>> P: Vendor=0e5e ProdID=6622 Rev= 1.34
+>> C:* #Ifs= 2 Cfg#= 1 Atr=80 MxPwr=100mA
+>> I:* If#= 0 Alt= 0 #EPs= 3 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+>> E: Ad=81(I) Atr=03(Int.) MxPS= 16 Ivl=1ms
+>> E: Ad=82(I) Atr=02(Bulk) MxPS= 64 Ivl=0ms
+>> E: Ad=02(O) Atr=02(Bulk) MxPS= 64 Ivl=0ms
+>> I: If#= 1 Alt= 0 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+>> E: Ad=83(I) Atr=01(Isoc) MxPS= 0 Ivl=1ms
+>> E: Ad=03(O) Atr=01(Isoc) MxPS= 0 Ivl=1ms
+>> I: If#= 1 Alt= 1 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+>> E: Ad=83(I) Atr=01(Isoc) MxPS= 9 Ivl=1ms
+>> E: Ad=03(O) Atr=01(Isoc) MxPS= 9 Ivl=1ms
+>> I:* If#= 1 Alt= 2 #EPs= 2 Cls=e0(unk. ) Sub=01 Prot=01 Driver=hci_usb
+>> E: Ad=83(I) Atr=01(Isoc) MxPS= 17 Ivl=1ms
+>> E: Ad=03(O) Atr=01(Isoc) MxPS= 17 Ivl=1ms
+>>     
+>
+> That is not all. Otherwise it is violating the Bluetooth HCI USB
+> specification and we have bigger problems when switching USB alternate
+> endpoints.
+>   
+hmm.. there are some entries for usb mouse and hubs, nothing else.
+I have attached the whole file for your reference.
+
+Other then the annoying syslog message, everything work fine.
+> Regards
+>
+> Marcel
+>
+>
+>   
+
+Regards,
+Yuk-Pong, Cheng (SDiZ)
+
+
+
+
+--------------010303060000010908070404
+Content-Type: text/plain;
+ name="usb-device.txt"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="usb-device.txt"
+
+ClQ6ICBCdXM9MDUgTGV2PTAwIFBybnQ9MDAgUG9ydD0wMCBDbnQ9MDAgRGV2Iz0gIDEgU3Bk
+PTQ4MCBNeENoPSA4CkI6ICBBbGxvYz0gIDAvODAwIHVzICggMCUpLCAjSW50PSAgMCwgI0lz
+bz0gIDAKRDogIFZlcj0gMi4wMCBDbHM9MDkoaHViICApIFN1Yj0wMCBQcm90PTAxIE14UFM9
+NjQgI0NmZ3M9ICAxClA6ICBWZW5kb3I9MDAwMCBQcm9kSUQ9MDAwMCBSZXY9IDIuMDYKUzog
+IE1hbnVmYWN0dXJlcj1MaW51eCAyLjYuMjQtMS02ODYgZWhjaV9oY2QKUzogIFByb2R1Y3Q9
+RUhDSSBIb3N0IENvbnRyb2xsZXIKUzogIFNlcmlhbE51bWJlcj0wMDAwOjAwOjFkLjcKQzoq
+ICNJZnM9IDEgQ2ZnIz0gMSBBdHI9ZTAgTXhQd3I9ICAwbUEKSToqIElmIz0gMCBBbHQ9IDAg
+I0VQcz0gMSBDbHM9MDkoaHViICApIFN1Yj0wMCBQcm90PTAwIERyaXZlcj1odWIKRTogIEFk
+PTgxKEkpIEF0cj0wMyhJbnQuKSBNeFBTPSAgIDQgSXZsPTI1Nm1zCgpUOiAgQnVzPTA0IExl
+dj0wMCBQcm50PTAwIFBvcnQ9MDAgQ250PTAwIERldiM9ICAxIFNwZD0xMiAgTXhDaD0gMgpC
+OiAgQWxsb2M9ICAwLzkwMCB1cyAoIDAlKSwgI0ludD0gIDAsICNJc289ICAwCkQ6ICBWZXI9
+IDEuMTAgQ2xzPTA5KGh1YiAgKSBTdWI9MDAgUHJvdD0wMCBNeFBTPTY0ICNDZmdzPSAgMQpQ
+OiAgVmVuZG9yPTAwMDAgUHJvZElEPTAwMDAgUmV2PSAyLjA2ClM6ICBNYW51ZmFjdHVyZXI9
+TGludXggMi42LjI0LTEtNjg2IHVoY2lfaGNkClM6ICBQcm9kdWN0PVVIQ0kgSG9zdCBDb250
+cm9sbGVyClM6ICBTZXJpYWxOdW1iZXI9MDAwMDowMDoxZC4zCkM6KiAjSWZzPSAxIENmZyM9
+IDEgQXRyPWUwIE14UHdyPSAgMG1BCkk6KiBJZiM9IDAgQWx0PSAwICNFUHM9IDEgQ2xzPTA5
+KGh1YiAgKSBTdWI9MDAgUHJvdD0wMCBEcml2ZXI9aHViCkU6ICBBZD04MShJKSBBdHI9MDMo
+SW50LikgTXhQUz0gICAyIEl2bD0yNTVtcwoKVDogIEJ1cz0wMyBMZXY9MDAgUHJudD0wMCBQ
+b3J0PTAwIENudD0wMCBEZXYjPSAgMSBTcGQ9MTIgIE14Q2g9IDIKQjogIEFsbG9jPSAgMC85
+MDAgdXMgKCAwJSksICNJbnQ9ICAwLCAjSXNvPSAgMApEOiAgVmVyPSAxLjEwIENscz0wOSho
+dWIgICkgU3ViPTAwIFByb3Q9MDAgTXhQUz02NCAjQ2Zncz0gIDEKUDogIFZlbmRvcj0wMDAw
+IFByb2RJRD0wMDAwIFJldj0gMi4wNgpTOiAgTWFudWZhY3R1cmVyPUxpbnV4IDIuNi4yNC0x
+LTY4NiB1aGNpX2hjZApTOiAgUHJvZHVjdD1VSENJIEhvc3QgQ29udHJvbGxlcgpTOiAgU2Vy
+aWFsTnVtYmVyPTAwMDA6MDA6MWQuMgpDOiogI0lmcz0gMSBDZmcjPSAxIEF0cj1lMCBNeFB3
+cj0gIDBtQQpJOiogSWYjPSAwIEFsdD0gMCAjRVBzPSAxIENscz0wOShodWIgICkgU3ViPTAw
+IFByb3Q9MDAgRHJpdmVyPWh1YgpFOiAgQWQ9ODEoSSkgQXRyPTAzKEludC4pIE14UFM9ICAg
+MiBJdmw9MjU1bXMKClQ6ICBCdXM9MDIgTGV2PTAwIFBybnQ9MDAgUG9ydD0wMCBDbnQ9MDAg
+RGV2Iz0gIDEgU3BkPTEyICBNeENoPSAyCkI6ICBBbGxvYz0gNTYvOTAwIHVzICggNiUpLCAj
+SW50PSAgMiwgI0lzbz0gIDEKRDogIFZlcj0gMS4xMCBDbHM9MDkoaHViICApIFN1Yj0wMCBQ
+cm90PTAwIE14UFM9NjQgI0NmZ3M9ICAxClA6ICBWZW5kb3I9MDAwMCBQcm9kSUQ9MDAwMCBS
+ZXY9IDIuMDYKUzogIE1hbnVmYWN0dXJlcj1MaW51eCAyLjYuMjQtMS02ODYgdWhjaV9oY2QK
+UzogIFByb2R1Y3Q9VUhDSSBIb3N0IENvbnRyb2xsZXIKUzogIFNlcmlhbE51bWJlcj0wMDAw
+OjAwOjFkLjEKQzoqICNJZnM9IDEgQ2ZnIz0gMSBBdHI9ZTAgTXhQd3I9ICAwbUEKSToqIElm
+Iz0gMCBBbHQ9IDAgI0VQcz0gMSBDbHM9MDkoaHViICApIFN1Yj0wMCBQcm90PTAwIERyaXZl
+cj1odWIKRTogIEFkPTgxKEkpIEF0cj0wMyhJbnQuKSBNeFBTPSAgIDIgSXZsPTI1NW1zCgpU
+OiAgQnVzPTAyIExldj0wMSBQcm50PTAxIFBvcnQ9MDAgQ250PTAxIERldiM9ICA0IFNwZD0x
+MiAgTXhDaD0gMApEOiAgVmVyPSAxLjEwIENscz1lMCh1bmsuICkgU3ViPTAxIFByb3Q9MDEg
+TXhQUz0xNiAjQ2Zncz0gIDEKUDogIFZlbmRvcj0wZTVlIFByb2RJRD02NjIyIFJldj0gMS4z
+NApDOiogI0lmcz0gMiBDZmcjPSAxIEF0cj04MCBNeFB3cj0xMDBtQQpJOiogSWYjPSAwIEFs
+dD0gMCAjRVBzPSAzIENscz1lMCh1bmsuICkgU3ViPTAxIFByb3Q9MDEgRHJpdmVyPWhjaV91
+c2IKRTogIEFkPTgxKEkpIEF0cj0wMyhJbnQuKSBNeFBTPSAgMTYgSXZsPTFtcwpFOiAgQWQ9
+ODIoSSkgQXRyPTAyKEJ1bGspIE14UFM9ICA2NCBJdmw9MG1zCkU6ICBBZD0wMihPKSBBdHI9
+MDIoQnVsaykgTXhQUz0gIDY0IEl2bD0wbXMKSTogIElmIz0gMSBBbHQ9IDAgI0VQcz0gMiBD
+bHM9ZTAodW5rLiApIFN1Yj0wMSBQcm90PTAxIERyaXZlcj1oY2lfdXNiCkU6ICBBZD04MyhJ
+KSBBdHI9MDEoSXNvYykgTXhQUz0gICAwIEl2bD0xbXMKRTogIEFkPTAzKE8pIEF0cj0wMShJ
+c29jKSBNeFBTPSAgIDAgSXZsPTFtcwpJOiAgSWYjPSAxIEFsdD0gMSAjRVBzPSAyIENscz1l
+MCh1bmsuICkgU3ViPTAxIFByb3Q9MDEgRHJpdmVyPWhjaV91c2IKRTogIEFkPTgzKEkpIEF0
+cj0wMShJc29jKSBNeFBTPSAgIDkgSXZsPTFtcwpFOiAgQWQ9MDMoTykgQXRyPTAxKElzb2Mp
+IE14UFM9ICAgOSBJdmw9MW1zCkk6KiBJZiM9IDEgQWx0PSAyICNFUHM9IDIgQ2xzPWUwKHVu
+ay4gKSBTdWI9MDEgUHJvdD0wMSBEcml2ZXI9aGNpX3VzYgpFOiAgQWQ9ODMoSSkgQXRyPTAx
+KElzb2MpIE14UFM9ICAxNyBJdmw9MW1zCkU6ICBBZD0wMyhPKSBBdHI9MDEoSXNvYykgTXhQ
+Uz0gIDE3IEl2bD0xbXMKClQ6ICBCdXM9MDIgTGV2PTAxIFBybnQ9MDEgUG9ydD0wMSBDbnQ9
+MDIgRGV2Iz0gIDMgU3BkPTEuNSBNeENoPSAwCkQ6ICBWZXI9IDEuMTAgQ2xzPTAwKD5pZmMg
+KSBTdWI9MDAgUHJvdD0wMCBNeFBTPSA4ICNDZmdzPSAgMQpQOiAgVmVuZG9yPTA1ZTMgUHJv
+ZElEPTEyMDUgUmV2PSAxLjEwClM6ICBQcm9kdWN0PVVTQiBNb3VzZQpDOiogI0lmcz0gMSBD
+ZmcjPSAxIEF0cj1hMCBNeFB3cj0xMDBtQQpJOiogSWYjPSAwIEFsdD0gMCAjRVBzPSAxIENs
+cz0wMyhISUQgICkgU3ViPTAxIFByb3Q9MDIgRHJpdmVyPXVzYmhpZApFOiAgQWQ9ODEoSSkg
+QXRyPTAzKEludC4pIE14UFM9ICAgNCBJdmw9MTBtcwoKVDogIEJ1cz0wMSBMZXY9MDAgUHJu
+dD0wMCBQb3J0PTAwIENudD0wMCBEZXYjPSAgMSBTcGQ9MTIgIE14Q2g9IDIKQjogIEFsbG9j
+PSAgMC85MDAgdXMgKCAwJSksICNJbnQ9ICAwLCAjSXNvPSAgMApEOiAgVmVyPSAxLjEwIENs
+cz0wOShodWIgICkgU3ViPTAwIFByb3Q9MDAgTXhQUz02NCAjQ2Zncz0gIDEKUDogIFZlbmRv
+cj0wMDAwIFByb2RJRD0wMDAwIFJldj0gMi4wNgpTOiAgTWFudWZhY3R1cmVyPUxpbnV4IDIu
+Ni4yNC0xLTY4NiB1aGNpX2hjZApTOiAgUHJvZHVjdD1VSENJIEhvc3QgQ29udHJvbGxlcgpT
+OiAgU2VyaWFsTnVtYmVyPTAwMDA6MDA6MWQuMApDOiogI0lmcz0gMSBDZmcjPSAxIEF0cj1l
+MCBNeFB3cj0gIDBtQQpJOiogSWYjPSAwIEFsdD0gMCAjRVBzPSAxIENscz0wOShodWIgICkg
+U3ViPTAwIFByb3Q9MDAgRHJpdmVyPWh1YgpFOiAgQWQ9ODEoSSkgQXRyPTAzKEludC4pIE14
+UFM9ICAgMiBJdmw9MjU1bXMK
+--------------010303060000010908070404--
