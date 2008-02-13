@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbYBMXSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761081AbYBMXVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757474AbYBMXSW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbYBMXR5
+	id S1761081AbYBMXVM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:21:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbYBMXU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:17:57 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40393
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1762598AbYBMXR4 (ORCPT
+	Wed, 13 Feb 2008 18:20:59 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45312 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755593AbYBMXU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:17:56 -0500
-Date: Wed, 13 Feb 2008 15:18:28 -0800 (PST)
-Message-Id: <20080213.151828.177835338.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: bgill@freescale.com, linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] [POWERPC] Make lmb support large physical
- addressing
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1202943042.7296.48.camel@pasglop>
-References: <Pine.LNX.4.64.0802131639200.24317@monty.am.freescale.net>
-	<1202943042.7296.48.camel@pasglop>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 13 Feb 2008 18:20:58 -0500
+Date: Wed, 13 Feb 2008 15:20:18 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: minyard@acm.org
+Cc: linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net
+Subject: Re: [PATCH 3/8] IPMI: Run to completion fixes
+Message-Id: <20080213152018.98d427c7.akpm@linux-foundation.org>
+In-Reply-To: <20080213162342.GC9830@minyard.local>
+References: <20080213162342.GC9830@minyard.local>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 14 Feb 2008 09:50:42 +1100
+On Wed, 13 Feb 2008 10:23:42 -0600
+Corey Minyard <minyard@acm.org> wrote:
 
+> From: Corey Minyard <cminyard@mvista.com>
 > 
-> On Wed, 2008-02-13 at 16:43 -0600, Becky Bruce wrote:
-> > Convert the lmb code to use phys_addr_t instead of unsigned long for
-> > physical addresses and sizes.  This is needed to support large amounts
-> > of RAM on 32-bit systems that support 36-bit physical addressing.
-> > 
-> > Built/booted on mpc8641; build tested on pasemi and 44x.
-> > 
-> > Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
-> > ---
-> > Folks,
-> > 
-> > This has been sitting in my tree for a few days, and now it looks like
-> > David M. has submitted a patch that changes the lmb code to be shared
-> > between sparc and powerpc.  Sparc has no notion of a phys_addr_t.
-> > Should we just use u64 everywhere in this code instead?  Thoughts?
+> The "run_to_completion" mode was somewhat broken.  Locks need to be
+> avoided in run_to_completion mode, and it shouldn't be used by normal
+> users, just internally for panic situations.
 > 
-> An option would be to use resource_size_t, though it's a bit yucky...
+> This patch removes locks in run_to_completion mode and removes the
+> user call for setting the mode.  The only user was the poweroff
+> code, but it was easily converted to use the polling interface.
 > 
-> Dave, what do you prefer ?
+> +	/*
+> +	 * Spin until our message is done.
+> +	 */
+> +	while (atomic_read(&dummy_count) > 0) {
+> +		ipmi_poll_interface(user);
+> +		barrier();
+> +	}
 
-u64 is fine with me, either way we'll be casting the printk()
-arguments all over the place so the choice really isn't
-so important one way or the other as far as I can tell.
+we'd normally use cpu_relax() here.
+
+
