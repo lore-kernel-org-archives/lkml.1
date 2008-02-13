@@ -1,101 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbYBMMQt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758795AbYBMMUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758164AbYBMMQt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:16:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYBMMQj
+	id S1758795AbYBMMUl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbYBMMUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:16:39 -0500
-Received: from ozlabs.org ([203.10.76.45]:59163 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752028AbYBMMQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:16:38 -0500
-Subject: Re: "ide=reverse" do we still need this?
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Rene Herman <rene.herman@keyaccess.nl>
-Cc: Greg KH <greg@kroah.com>, bzolnier@gmail.com, muli@il.ibm.com,
-       jdmason@kudzu.us, linux-ide@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-In-Reply-To: <47B2DD45.7080709@keyaccess.nl>
-References: <20080213001506.GA13933@kroah.com>
-	 <47B24AB3.3040009@keyaccess.nl> <20080213044436.GB10101@kroah.com>
-	 <47B2DD45.7080709@keyaccess.nl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-GSV2L6sa3QZTlXkXtIBS"
-Date: Wed, 13 Feb 2008 23:16:36 +1100
-Message-Id: <1202904996.6974.11.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Wed, 13 Feb 2008 07:20:31 -0500
+Received: from ik-out-1112.google.com ([66.249.90.178]:5785 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbYBMMUa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 07:20:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=eyk7krKrXw7jWbxQqswbhWVQKvWqhXw48QjrGVwGQieKRP6Pwnx5XqUu+w9pL82uwCK72pRxuZpj8kaSZerYMCqrDVfevcdNWnvanbZ4v595qBAmNJb3ocAtP+FjuycEhbrrzhZPUOMIXFTQXs7SGyGTzjM4cUwmKttnYDK0HdU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 09/18] ide: rework PowerMac media-bay support
+Date: Wed, 13 Feb 2008 13:26:02 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain> <20080208004523.17746.24578.sendpatchset@localhost.localdomain> <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802131326.02783.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-GSV2L6sa3QZTlXkXtIBS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-On Wed, 2008-02-13 at 13:06 +0100, Rene Herman wrote:
-> On 13-02-08 05:44, Greg KH wrote:
->=20
-> >> While details escape me somewhat again at the monment, a few months ag=
-o
-> >> I was playing around with a PCI Promise IDE controller and needed
-> >> ide=3Dreverse to save me from having to switch disks around to still h=
-ave
-> >> a bootable system.
-> >>=20
-> >> Or some such. Not too clear anymore, but I remember it saved the day.
-> >=20
-> > You couldn't just change the boot disk in grub?
-> >=20
-> > Or use an initramfs and /dev/disk/by-id/ to keep any future moves stabl=
-e?
->=20
-> No. The thing is that you need these kinds of hacks while messing with ol=
-d=20
-> systems, building and stripping them, often in recovery type of situation=
-s.
->=20
-> As said (same as the other person I saw reacting) details of what was mos=
-t=20
-> decidedly needed last time around escape me at the moment, but ide=3Dreve=
-rse=20
-> is the kind of hack that saves one hours of unscrewing computer cases and=
-=20
-> switching disks around while building stuff, making quick tests, doing=20
-> recovery...
->=20
-> If it must go for the greater architectural good, so be it, but it's the=20
-> type of thing that's used specifically in the situations where you don't=20
-> have stable, well arranged (or known!) setups to begin with.
+On Wednesday 13 February 2008, Michael Ellerman wrote:
+> On Fri, 2008-02-08 at 01:45 +0100, Bartlomiej Zolnierkiewicz wrote:
+> > Rework PowerMac media-bay support in such way that instead of
+> > un/registering the IDE interface we un/register IDE devices:
+> > 
+> > * Add ide_port_scan() helper for probing+registerering devices on a port.
+> > 
+> > * Rename ide_port_unregister_devices() to __ide_port_unregister_devices().
+> > 
+> > * Add ide_port_unregister_devices() helper for unregistering devices on a port.
+> > 
+> > * Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' instead
+> >   of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_port'.
+> > 
+> > * Use ide_port_unregister_devices() instead of ide_unregister()
+> >   and ide_port_scan() instead of ide_register_hw() in media_bay_step().
+> > 
+> > * Unexport ide_register_hw() and make it static.
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
+> >  drivers/ide/ide.c              |   22 ++++++++++++++++------
+> >  drivers/ide/ppc/pmac.c         |    3 ++-
+> >  drivers/macintosh/mediabay.c   |   17 +++++++----------
+> >  include/asm-powerpc/mediabay.h |    4 +++-
+> >  include/linux/ide.h            |    6 ++----
+> >  6 files changed, 48 insertions(+), 22 deletions(-)
+> 
+> > Index: b/include/asm-powerpc/mediabay.h
+> > ===================================================================
+> > --- a/include/asm-powerpc/mediabay.h
+> > +++ b/include/asm-powerpc/mediabay.h
+> > @@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
+> >  /* Number of bays in the machine or 0 */
+> >  extern int media_bay_count;
+> >  
+> > +#ifdef CONFIG_BLK_DEV_IDE_PMAC
 
-I might be off the deep end, but isn't this what
-Documentation/feature-removal-schedule.txt is for?
+Does adding:
 
-cheers
+#include <linux/ide.h>
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+after ifdef help?
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-GSV2L6sa3QZTlXkXtIBS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHst+kdSjSd0sB4dIRAtheAJ9/B8k6pd1scVRvHog5WAywyZHjsACfXnoV
-I5haLvFUBjf1iqThCYnZYzs=
-=Hv7S
------END PGP SIGNATURE-----
-
---=-GSV2L6sa3QZTlXkXtIBS--
-
+> >  int check_media_bay_by_base(unsigned long base, int what);
+> >  /* called by IDE PMAC host driver to register IDE controller for media bay */
+> >  int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long base,
+> > -			    int irq, int index);
+> > +			    int irq, ide_hwif_t *hwif);
+> > +#endif
+> >  
+> >  #endif /* __KERNEL__ */
+> >  #endif /* _PPC_MEDIABAY_H */
+> 
+> This hunk breaks pmac32_defconfig for me.
+> 
+> include2/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
+> make[3]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+> make[2]: *** [arch/powerpc/platforms/powermac] Error 2
+> make[1]: *** [arch/powerpc/platforms] Error 2
+> make: *** [sub-make] Error 2
+> 
+> cheers
