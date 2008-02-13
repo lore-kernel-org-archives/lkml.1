@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933678AbYBMROd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933813AbYBMRPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933678AbYBMROd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932369AbYBMRNx
+	id S933813AbYBMRPE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:15:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761735AbYBMROr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:13:53 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:49829 "EHLO mx2.suse.de"
+	Wed, 13 Feb 2008 12:14:47 -0500
+Received: from gherkin.frus.com ([192.158.254.49]:60744 "EHLO gherkin.frus.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933103AbYBMRNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:13:51 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
-Date: Wed, 13 Feb 2008 18:13:46 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org
-References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com> <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz> <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
+	id S1764705AbYBMROq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:14:46 -0500
+Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
+In-Reply-To: <20080213155713.GA376@jurassic.park.msu.ru> "from Ivan Kokshaysky
+ at Feb 13, 2008 06:57:13 pm"
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Date: Wed, 13 Feb 2008 11:14:43 -0600 (CST)
+CC: Ingo Molnar <mingo@elte.hu>, Bob Tracy <rct@frus.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131813.47136.ak@suse.de>
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20080213171443.80C8BDBA2@gherkin.frus.com>
+From: rct@frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ivan Kokshaysky wrote:
+> No SMP, no PRINTK_TIMESTAMPS in my case. Looks like it dies trying to
+> to switch to vga console, but I had no time to debug this yet...
 
-> > in commit 03252919 you introduced print_vma_addr(), but this funcion for 
-> > obvious reasons takes mmap_sem, so it is not safe to call it from atomic 
-> > context (i.e. do_trap(), for example), which is behavior your patch 
-> > introduced.
+Same basic configuration as Ivan.  Concur with the observation that
+death seems to happen during the console switch.  Using the radeonfb
+driver (built-in, default graphics mode 80x30).
 
-Ah yes -- this behaviour of int3 do_trap was always a source of bugs. I remember
-fixing such things in this area several times (last time in the RT kernel), but 
-I keep forgetting it. Sorry.
-
-The correct fix is to run the int3 and debug handlers on the process stack 
-when the fault originated from user space. Then they can run preemptive
-and it's ok to schedule for the lock too.
-
-I'll fix that tomorrow.
-
--Andi
+-- 
+------------------------------------------------------------------------
+Bob Tracy          |  "I was a beta tester for dirt.  They never did
+rct@frus.com       |   get all the bugs out." - Steve McGrew on /.
+------------------------------------------------------------------------
