@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbYBMCf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbYBMCfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761253AbYBMCf0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYBMCfO
+	id S1764052AbYBMCfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761826AbYBMCfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:35:14 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:42674 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751030AbYBMCfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:35:12 -0500
-Date: Tue, 12 Feb 2008 18:35:09 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-cc: Roland Dreier <rdreier@cisco.com>, Rik van Riel <riel@redhat.com>,
-       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-In-Reply-To: <20080213012638.GD31435@obsidianresearch.com>
-Message-ID: <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
-References: <20080209015659.GC7051@v2.random>
- <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
- <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
- <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
- <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
- <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com>
- <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
- <20080213012638.GD31435@obsidianresearch.com>
+	Tue, 12 Feb 2008 21:35:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58875 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753749AbYBMCfj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 21:35:39 -0500
+Date: Tue, 12 Feb 2008 18:35:12 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
+       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: <1202869550.3137.182.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org>
+References: <47B1CB08.4020101@garzik.org>  <20080212.155853.193190548.davem@davemloft.net>  <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>  <20080212.172051.58554658.davem@davemloft.net> <1202869550.3137.182.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
 
-> The problem is that the existing wire protocols do not have a
-> provision for doing an 'are you ready' or 'I am not ready' exchange
-> and they are not designed to store page tables on both sides as you
-> propose. The remote side can send RDMA WRITE traffic at any time after
-> the RDMA region is established. The local side must be able to handle
-> it. There is no way to signal that a page is not ready and the remote
-> should not send.
+
+On Tue, 12 Feb 2008, James Bottomley wrote:
 > 
-> This means the only possible implementation is to stall/discard at the
-> local adaptor when a RDMA WRITE is recieved for a page that has been
-> reclaimed. This is what leads to deadlock/poor performance..
+> Yes, this is exactly the feature I'm looking for.  It would allow the
+> downstream users of a rebased tree to rebase themselves correctly.
+> 
+> All the information about the rebase is in the reflog ... it can't be
+> too difficult to pass it through on a pull and allow the downstream tree
+> to do the right thing.
 
-You would only use the wire protocols *after* having established the RDMA 
-region. The notifier chains allows a RDMA region (or parts thereof) to be 
-down on demand by the VM. The region can be reestablished if one of 
-the side accesses it. I hope I got that right. Not much exposure to 
-Infiniband so far.
+Guys, you simply have no idea what you're talking about.
 
-Lets say you have a two systems A and B. Each has their memory region MemA 
-and MemB. Each side also has page tables for this region PtA and PtB.
+Those downstream trees can have done things themselves. They *depended* on 
+the state you gave them.
 
-Now you establish a RDMA connection between both side. The pages in both
-MemB and MemA are present and so are entries in PtA and PtB. RDMA 
-traffic can proceed.
+You can't just say "oops, I lied, this is the state you should have used, 
+now it's _your_ mess to sort out".
 
-The VM on system A now gets into a situation in which memory becomes 
-heavily used by another (maybe non RDMA process) and after checking that 
-there was no recent reference to MemA and MemB (via a notifier aging 
-callback) decides to reclaim the memory from MemA.
+OF COURSE it's what you'd like to use - it absolves you of any and all 
+actual responsibility. But dammit, that's not what anybody else wants than 
+the irresponsible person who cannot be bothered to stand up for his work!
 
-In that case it will notify the RDMA subsystem on A that it is trying to
-reclaim a certain page.
+If you're not confident enough about your work, don't push it out! It's 
+that simple. Pushing out to a public branch is a small "release".
 
-The RDMA subsystem on A will then send a message to B notifying it that 
-the memory will be going away. B now has to remove its corresponding page 
-from memory (and drop the entry in PtB) and confirm to A that this has 
-happened. RDMA traffic is then stopped for this page. Then A can also 
-remove its page, the corresponding entry in PtA and the page is reclaimed 
-or pushed out to swap completing the page reclaim.
+Have the f*cking back-bone to be able to stand behind what you did!
 
-If either side then accesses the page again then the reverse process 
-happens. If B accesses the page then it wil first of all incur a page 
-fault because the entry in PtB is missing. The fault will then cause a 
-message to be send to A to establish the page again. A will create an 
-entry in PtA and will then confirm to B that the page was established. At 
-that point RDMA operations can occur again.
-
-So the whole scheme does not really need a hardware page table in the RDMA 
-hardware. The page tables of the two systems A and B are sufficient.
-
-The scheme can also be applied to a larger range than only a single page. 
-The RDMA subsystem could tear down a large section when reclaim is 
-pushing on it and then reestablish it as needed.
-
-Swapping and page reclaim is certainly not something that improves the 
-speed of the application affected by swapping and page reclaim but it 
-allows the VM to manage memory effectively if multiple loads are runing on 
-a system.
-
+		Linus
