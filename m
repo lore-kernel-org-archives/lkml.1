@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbYBMWFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbYBMWFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932189AbYBMWFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:05:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935181AbYBMVx6
+	id S1760737AbYBMWFx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:05:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbYBMWBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:53:58 -0500
-Received: from mail7.sea5.speakeasy.net ([69.17.117.9]:36569 "EHLO
-	mail7.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933694AbYBMVx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:53:56 -0500
-Date: Wed, 13 Feb 2008 13:53:55 -0800 (PST)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Ricardo Cerqueira <v4l@cerqueira.org>
-cc: linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes
-In-Reply-To: <1202935004.17260.54.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.58.0802131349400.6264@shell2.speakeasy.net>
-References: <20080212190235.4e86baf8@gaivota> <Pine.LNX.4.58.0802122120530.7642@shell2.speakeasy.net>
- <20080213155352.06d966cd@gaivota> <Pine.LNX.4.58.0802131025440.6264@shell2.speakeasy.net>
- <1202935004.17260.54.camel@localhost.localdomain>
+	Wed, 13 Feb 2008 17:01:39 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:46107 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763068AbYBMWBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:01:33 -0500
+Date: Wed, 13 Feb 2008 14:00:24 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: shemminger@vyatta.com, davem@davemloft.net, netdev@vger.kernel.org,
+       dipankar@in.ibm.com, ego@in.ibm.com, herbert@gondor.apana.org.au,
+       akpm@linux-foundation.org
+Subject: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with type/macro safety
+Message-ID: <20080213220024.GA30729@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Ricardo Cerqueira wrote:
-> On Wed, 2008-02-13 at 10:45 -0800, Trent Piepho wrote:
-> > On Wed, 13 Feb 2008, Mauro Carvalho Chehab wrote:
-> > > On Tue, 12 Feb 2008 21:21:43 -0800 (PST)
-> > > Trent Piepho <xyzzy@speakeasy.org> wrote:
-> > >
-> > Nobody points to any issues, ever, when this happens.  Look at how broken
-> > the v4l2 only bttv driver was.  You still can't unload and load cx88-dvb
-> > since Markus's patch for hotplug, no one's fixed that regression.  Now
-> > there's yet another race in the cx88 subdriver code.  Maybe the original
-> > author who added that code should feel some motiviation to fix the
-> > regressions it caused....
->
-> Read the code that was actually committed: here's a helpful link:
->
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=41a93616082af630e7242cba766a161d7847560b
+Hello!
 
-I did.  Looks like there is a race on access to core->active_ref.
+This is an updated version of the patch posted last November:
 
-> > I don't have the time or the desire to be the janitor who cleans up after
-> > sloppy coders' bugs.
->
-> You properly raised a red flag, and got a fix in return.
-> Don't expect fixes to be accompanied by a "are you happy now?"
-> follow-up; if you took the time to check the first commit, take the time
-> to read the rest.
+	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
 
-You could also CC the relevant parties.  Unless you're hoping they won't
-notice something.
+This new version permits arguments with side effects, for example:
+
+	rcu_assign_pointer(global_p, p++);
+
+and also verifies that the arguments are pointers, while still avoiding
+the unnecessary memory barrier when assigning NULL to a pointer.
+This memory-barrier avoidance means that rcu_assign_pointer() is now only
+permitted for pointers (not array indexes), and so this version emits a
+compiler warning if the first argument is not a pointer.  I built a "make
+allyesconfig" version on an x86 system, and received no such warnings.
+If RCU is ever applied to array indexes, then the second patch in this
+series should be applied, and the resulting rcu_assign_index() be used.
+
+Given the rather surprising history of subtlely broken implementations of
+rcu_assign_pointer(), I took the precaution of generating a full set of
+test cases and verified that memory barriers and compiler warnings were
+emitted when required.  I guess it is the simple things that get you...
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ rcupdate.h |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
+--- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
++++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+@@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
+  * structure after the pointer assignment.  More importantly, this
+  * call documents which pointers will be dereferenced by RCU read-side
+  * code.
++ *
++ * Throws a compiler warning for non-pointer arguments.
++ *
++ * Does not insert a memory barrier for a NULL pointer.
+  */
+ 
+-#define rcu_assign_pointer(p, v)	({ \
+-						smp_wmb(); \
+-						(p) = (v); \
+-					})
++#define rcu_assign_pointer(p, v)	\
++	({ \
++		typeof(*p) *_________p1 = (v); \
++		\
++		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
++			smp_wmb(); \
++		(p) = _________p1; \
++	})
+ 
+ /**
+  * synchronize_sched - block until all CPUs have exited any non-preemptive
