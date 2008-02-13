@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbYBMCBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbYBMCBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbYBMCBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYBMCBY
+	id S1762210AbYBMCBv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:01:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbYBMCBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:01:24 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:47658 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbYBMCBX (ORCPT
+	Tue, 12 Feb 2008 21:01:41 -0500
+Received: from nat-0.pathscale.com ([198.186.3.72]:43058 "EHLO
+	mx.mv.qlogic.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751925AbYBMCBk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:01:23 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=XgFj8Bh2hJ+mKV5u6xm7QHeEt+KBBfD01Xsvt6U2lzUHGLoZCuplgLTJH0Mowy/3Q
-	VjOy2BqqOrpqz7VwtoHTg==
-Date: Tue, 12 Feb 2008 18:00:58 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com,
-       akpm@linux-foundation.org, ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-In-Reply-To: <20080212193229.edbff05a.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802121755400.23110@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <1202861432.4974.29.camel@localhost> <20080212183158.3ff4ccd5.pj@sgi.com> <Pine.LNX.4.64.0802121702431.11628@schroedinger.engr.sgi.com> <20080212193229.edbff05a.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 Feb 2008 21:01:40 -0500
+X-Greylist: delayed 365 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 Feb 2008 21:01:40 EST
+Date: Tue, 12 Feb 2008 17:55:33 -0800
+From: Christian Bell <christian.bell@qlogic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+Message-ID: <20080213015533.GP29340@mv.qlogic.com>
+References: <20080209015659.GC7051@v2.random> <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com> <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com> <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Paul Jackson wrote:
+On Tue, 12 Feb 2008, Christoph Lameter wrote:
 
-> Christoph wrote:
-> > Good. And remove the enum.
-> > 
-> > It would be better to add some sort of flags field?
+> On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
 > 
-> On the other hand, despite my brilliant (hah!) endorsement
-> of bit field flags in my reply a few minutes ago, I'd settle
-> for (1) removing the enum, and (2) using a flags field and
-> more defines for the new stuff.  I will grant that Christoph
-> is correct that that form is more common in the kernel, and
-> there is something to be said for doing things in the most
-> common manner.
+> > Well, certainly today the memfree IB devices store the page tables in
+> > host memory so they are already designed to hang onto packets during
+> > the page lookup over PCIE, adding in faulting makes this time
+> > larger.
 > 
+> You really do not need a page table to use it. What needs to be maintained 
+> is knowledge on both side about what pages are currently shared across 
+> RDMA. If the VM decides to reclaim a page then the notification is used to 
+> remove the remote entry. If the remote side then tries to access the page 
+> again then the page fault on the remote side will stall until the local 
+> page has been brought back. RDMA can proceed after both sides again agree 
+> on that page now being sharable.
 
-The enum has already been removed, as I've said a few times.
+HPC environments won't be amenable to a pessimistic approach of
+synchronizing before every data transfer.  RDMA is assumed to be a
+low-level data movement mechanism that has no implied
+synchronization.  In some parallel programming models, it's not
+uncommon to use RDMA to send 8-byte messages.  It can be difficult to
+make and hold guarantees about in-memory pages when many concurrent
+RDMA operations are in flight (not uncommon in reasonably large
+machines).  Some of the in-memory page information could be shared
+with some form of remote caching strategy but then it's a different
+problem with its own scalability challenges.
 
-The 'flags' field would be wrong because you're ignoring that these flags 
-are both passed by the user to the kernel and by the kernel to the user as 
-part of the 'int *' parameter in either set_mempolicy() or mbind().
+I think there are very potential clients of the interface when an
+optimistic approach is used.  Part of the trick, however, has to do
+with being able to re-start transfers instead of buffering the data
+or making guarantees about delivery that could cause deadlock (as was
+alluded to earlier in this thread).  InfiniBand is constrained in
+this regard since it requires message-ordering between endpoints (or
+queue pairs).  One could argue that this is still possible with IB,
+at the cost of throwing more packets away when a referenced page is
+not in memory.  With this approach, the worse case demand paging
+scenario is met when the active working set of referenced pages is
+larger than the amount physical memory -- but HPC applications are
+already bound by this anyway.
 
-So they must have predefined shift in linux/mempolicy.h to separate that 
-'int *' parameter into the policy mode and the optional mode flags.
+You'll find that Quadrics has the most experience in this area and
+that their entire architecture is adapted to being optimistic about
+demand paging in RDMA transfers -- they've been maintaining a patchset
+to do this for years.
 
-If you introduced a separate flags member to struct mempolicy, you'd be 
-wasting the lower MPOL_FLAG_SHIFT bits for no apparent purpose so your 
-flag bits still work:
+    . . christian
 
-	#define MPOL_F_STATIC_NODES	(1 << MPOL_FLAG_SHIFT)
-
-There's no way around that without shifting before storing and each time 
-you read pol->flags.
-
-So since those bits would have to be unused and can perfectly accomodate 
-the mode bits (with the current definition of MPOL_FLAG_SHIFT at 8, we 
-can accomodate up to 256 distinct modes), there is no reason why they 
-cannot be combined.  That is why I implemented it that way.
-
-		David
