@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763572AbYBMKLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbYBMKLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763572AbYBMKLa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 05:11:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbYBMKLU
+	id S932131AbYBMKLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 05:11:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753828AbYBMKL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 05:11:20 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56263 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752036AbYBMKLS (ORCPT
+	Wed, 13 Feb 2008 05:11:27 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:38609 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755552AbYBMKLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 05:11:18 -0500
-Date: Wed, 13 Feb 2008 10:05:03 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080213100503.GA21694@flint.arm.linux.org.uk>
-Mail-Followup-To: Greg KH <greg@kroah.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-	arjan@infradead.org, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	linux-arch@vger.kernel.org, akpm@linux-foundation.org
-References: <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain> <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org> <20080212191914.GB20883@kroah.com>
-Mime-Version: 1.0
+	Wed, 13 Feb 2008 05:11:24 -0500
+Date: Wed, 13 Feb 2008 10:11:22 +0000
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Pete MacKay <linux01@architechnical.net>
+Cc: Dmitry Torokhov <dtor@mail.ru>, linux-input@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org,
+       Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+       Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+       Mike Arthur <mike.arthur@wolfsonmicro.com>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Stanley Cai <stanley.cai@intel.com>,
+       Rodolfo Giometti <giometti@enneenne.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
+       Vincent Sanders <vince@kyllikki.org>,
+       Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
+Message-ID: <20080213101122.GB31617@rakim.wolfsonmicro.main>
+Mail-Followup-To: Pete MacKay <linux01@architechnical.net>,
+	Dmitry Torokhov <dtor@mail.ru>,
+	linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+	Liam Girdwood <liam.girdwood@wolfsonmicro.com>,
+	Graeme Gregory <gg@opensource.wolfsonmicro.com>,
+	Mike Arthur <mike.arthur@wolfsonmicro.com>,
+	Dmitry Baryshkov <dbaryshkov@gmail.com>,
+	Stanley Cai <stanley.cai@intel.com>,
+	Rodolfo Giometti <giometti@enneenne.com>,
+	Russell King <rmk@arm.linux.org.uk>,
+	Marc Kleine-Budde <mkl@pengutronix.de>, Ian Molton <spyro@f2s.com>,
+	Vincent Sanders <vince@kyllikki.org>,
+	Andrew Zabolotny <zap@homelink.ru>
+References: <20080212101738.GB21039@rakim.wolfsonmicro.main> <1202811705-2303-1-git-send-email-broonie@opensource.wolfsonmicro.com> <65343.69.30.58.166.1202876923.squirrel@architechnical.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080212191914.GB20883@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <65343.69.30.58.166.1202876923.squirrel@architechnical.net>
+X-Cookie: HUGH BEAUMONT died in 1982!!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 11:19:14AM -0800, Greg KH wrote:
-> We usually get this warning today in -mm.
+On Tue, Feb 12, 2008 at 11:28:43PM -0500, Pete MacKay wrote:
 
-We don't always - and I'd say in terms of ARM it would be extremely rare.
-The sysfs API changes at the start of the last merge window is one example
-of this.
+> We're using the wm9712 codec with the sound/soc/pxa code configured in and
+> came across this build error:
 
-I had everything nicely prepared in the ARM tree for merging shortly
-after the window opened, and then wham bam thankyou mam, the merge
-window opened and a lot ended up breaking.
+Which kernel version are you building against?  I've been testing with
+v2.6.24 (and have just updated to v2.6.25-rc1 which is also building
+fine for me) and...
 
-We know that the -mm tree is pretty much useless in terms of code
-coverage for ARM, and it's getting increasingly unlikely that anything
-short of a build of all ARM defconfigs will pick up on merge issues -
-which is a lot of CPU cycles, and I'm not going to insist its something
-that should be done.
+>  #ifndef _LINUX_WM97XX_H
+>  #define _LINUX_WM97XX_H
+> 
+> +#include <sound/driver.h>
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+...this header is deprecated so should never need to be included (yes,
+there are other instances in there which need to be cleaned up) so I'm a
+bit mystified as to what's going wrong for you here.  Which kernel
+version are you using?
