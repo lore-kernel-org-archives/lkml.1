@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbYBMLcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932770AbYBMLdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932501AbYBMLcp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 06:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbYBMLcg
+	id S932770AbYBMLdV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 06:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbYBMLdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 06:32:36 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:22688 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756779AbYBMLcf (ORCPT
+	Wed, 13 Feb 2008 06:33:12 -0500
+Received: from ip-58-28-152-52.static-xdsl.xnet.co.nz ([58.28.152.52]:43720
+	"EHLO sol.unix.geek.nz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757492AbYBMLdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 06:32:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Oqjxc9MX6O6Adb1jpD0zNUE7nTQ2KC7JkrVEePnwc1BIAao4H34zpJKYI5TaAXkLV4FilRSuoC6FinzZlHWNCc3Tga6kZlM7w9hUP/fWABIoIla4TEzQZ9gQjwHvIqPoDm09HISfmU8d91Vwhh14oJySihT34DTTn2yXDYRE840=
-Message-ID: <bc64b4640802130332h50415be0s413430f917dfe07d@mail.gmail.com>
-Date: Wed, 13 Feb 2008 14:32:27 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Dmitry Baryshkov" <dbaryshkov@gmail.com>,
-       "Mark Brown" <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-In-Reply-To: <20080213111907.GC31617@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080212101738.GB21039@rakim.wolfsonmicro.main>
-	 <1202811705-2303-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <fot8b9$b6c$1@ger.gmane.org>
-	 <20080213111907.GC31617@rakim.wolfsonmicro.main>
+	Wed, 13 Feb 2008 06:33:11 -0500
+X-Greylist: delayed 483 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 06:33:11 EST
+Subject: 2.6.25-rc1 on Sun Ultra 40
+From: Jasper Bryant-Greene <jasper@unix.geek.nz>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-VppLb94RudfZDzZo1zCb"
+Date: Thu, 14 Feb 2008 00:25:08 +1300
+Message-Id: <1202901908.11100.8.camel@phobos.jasper.bg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-2008/2/13, Mark Brown <broonie@opensource.wolfsonmicro.com>:
-> On Tue, Feb 12, 2008 at 10:58:50PM +0000, Dmitry Baryshkov wrote:
->
-> > You used platform_device_register, but should be using platform_device_add,
-> > otherwise you get barfs with 2.6.25-rc1 (device is initialized twice). Also
->
-> Thanks for that.  I feel like I should knock up a patch to clarify the
-> platform API documentation here.
+--=-VppLb94RudfZDzZo1zCb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-:)
+I have been attempting to test 2.6.25-rc1 on my Sun Ultra 40 (two
+dual-core Opteron 2222 CPUs).
 
-> > as <sound/driver.h> got deprecated there is no point including it.
->
-> Indeed - this is bit rot due to the age of the driver.  Hopefully it
-> will make it into at least 2.6.26.
+There is some issue with the HPET clocksource which causes it to hang
+the boot process if enabled, which I will look into in due course (the
+HPET works fine on at least 2.6.19).
 
-Hope so too. It  should be in the mainline since long ago.
+More pressing is that the system will not boot at all even with HPET
+disabled - kernel gets no further than "NET: Registered protocol family
+2".
 
-> BTW, could you please keep at least me in the CC list when discussing
-> these patches?  It's easy to miss things on the lists and they're one of
-> the first things I stop reading when I'm busy.
+I cannot think of a way to find out what the problem is, because the
+system has only USB ports, and the USB keyboard is not working at this
+stage, either because the system has locked up hard, or because the USB
+support has not yet loaded (I tried both standard USB-HID and boot
+protocol keyboard support, both compiled in). Thus I cannot use
+magic-sysrq, or even scrollback to look at boot messages. There is also
+no serial port to assist with the latter...
 
-Sorry. I often reply to the patchserie via gmane and it doesn't honour
-non-ml addresses.
+Any thoughts on a procedure for debugging this would be much
+appreciated.
 
--- 
-With best wishes
-Dmitry
+-j
+
+--=-VppLb94RudfZDzZo1zCb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQBHstOUJdSFNCc4WA0RAsLdAKC3+LO0hiDHEALZX04NVHOwOr7x6wCfeO2z
+7w9R+3C9JmXXW9SqM69vJDY=
+=zpND
+-----END PGP SIGNATURE-----
+
+--=-VppLb94RudfZDzZo1zCb--
+
