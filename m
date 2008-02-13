@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933207AbYBMQZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbYBMQ2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933207AbYBMQZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933017AbYBMQYH
+	id S932318AbYBMQ2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbYBMQ2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:24:07 -0500
-Received: from vms042pub.verizon.net ([206.46.252.42]:33942 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762238AbYBMQYF (ORCPT
+	Wed, 13 Feb 2008 11:28:03 -0500
+Received: from vms048pub.verizon.net ([206.46.252.48]:37569 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757882AbYBMQ2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:24:05 -0500
-Date: Wed, 13 Feb 2008 10:23:42 -0600
+	Wed, 13 Feb 2008 11:28:01 -0500
+Date: Wed, 13 Feb 2008 10:27:49 -0600
 From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 3/8] IPMI: Run to completion fixes
+Subject: [PATCH 4/8] IPMI: Don't grab locks in run-to-completion mode
 To: Linux Kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>,
+       Konstantin Baydarov <kbaidarov@ru.mvista.com>,
        OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
 Reply-to: minyard@acm.org
-Message-id: <20080213162342.GC9830@minyard.local>
+Message-id: <20080213162749.GD9830@minyard.local>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-disposition: inline
@@ -26,218 +27,120 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Corey Minyard <cminyard@mvista.com>
+From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
 
-The "run_to_completion" mode was somewhat broken.  Locks need to be
-avoided in run_to_completion mode, and it shouldn't be used by normal
-users, just internally for panic situations.
-
-This patch removes locks in run_to_completion mode and removes the
-user call for setting the mode.  The only user was the poweroff
-code, but it was easily converted to use the polling interface.
-
+This patch prevents deadlocks in IPMI panic handler caused by msg_lock
+in smi_info structure and waiting_msgs_lock in ipmi_smi structure.
+  
+Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
 Signed-off-by: Corey Minyard <cminyard@mvista.com>
 ---
 
-Index: linux-2.6.21/drivers/char/ipmi/ipmi_msghandler.c
+Index: linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
 ===================================================================
---- linux-2.6.21.orig/drivers/char/ipmi/ipmi_msghandler.c
-+++ linux-2.6.21/drivers/char/ipmi/ipmi_msghandler.c
-@@ -1197,13 +1197,6 @@ int ipmi_unregister_for_cmd(ipmi_user_t 
+--- linux-2.6.24.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
+@@ -289,7 +289,8 @@ static enum si_sm_result start_next_msg(
+ 
+ 	/* No need to save flags, we aleady have interrupts off and we
+ 	   already hold the SMI lock. */
+-	spin_lock(&(smi_info->msg_lock));
++	if (!smi_info->run_to_completion)
++		spin_lock(&(smi_info->msg_lock));
+ 
+ 	/* Pick the high priority queue first. */
+ 	if (!list_empty(&(smi_info->hp_xmit_msgs))) {
+@@ -329,7 +330,8 @@ static enum si_sm_result start_next_msg(
+ 		rv = SI_SM_CALL_WITHOUT_DELAY;
+ 	}
+ 	out:
+-	spin_unlock(&(smi_info->msg_lock));
++	if (!smi_info->run_to_completion)
++		spin_unlock(&(smi_info->msg_lock));
+ 
  	return rv;
  }
- 
--void ipmi_user_set_run_to_completion(ipmi_user_t user, int val)
--{
--	ipmi_smi_t intf = user->intf;
--	if (intf->handlers)
--		intf->handlers->set_run_to_completion(intf->send_info, val);
--}
--
- static unsigned char
- ipmb_checksum(unsigned char *data, int size)
- {
-@@ -4201,5 +4194,4 @@ EXPORT_SYMBOL(ipmi_get_my_address);
- EXPORT_SYMBOL(ipmi_set_my_LUN);
- EXPORT_SYMBOL(ipmi_get_my_LUN);
- EXPORT_SYMBOL(ipmi_smi_add_proc_entry);
--EXPORT_SYMBOL(ipmi_user_set_run_to_completion);
- EXPORT_SYMBOL(ipmi_free_recv_msg);
-Index: linux-2.6.21/drivers/char/ipmi/ipmi_poweroff.c
+Index: linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
 ===================================================================
---- linux-2.6.21.orig/drivers/char/ipmi/ipmi_poweroff.c
-+++ linux-2.6.21/drivers/char/ipmi/ipmi_poweroff.c
-@@ -99,11 +99,14 @@ static unsigned char ipmi_version;
-    allocate them, since we may be in a panic situation.  The whole
-    thing is single-threaded, anyway, so multiple messages are not
-    required. */
-+static atomic_t dummy_count = ATOMIC_INIT(0);
- static void dummy_smi_free(struct ipmi_smi_msg *msg)
- {
-+	atomic_dec(&dummy_count);
- }
- static void dummy_recv_free(struct ipmi_recv_msg *msg)
- {
-+	atomic_dec(&dummy_count);
- }
- static struct ipmi_smi_msg halt_smi_msg =
- {
-@@ -152,17 +155,28 @@ static int ipmi_request_wait_for_respons
- 	return halt_recv_msg.msg.data[0];
- }
+--- linux-2.6.24.orig/drivers/char/ipmi/ipmi_msghandler.c
++++ linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
+@@ -351,8 +351,16 @@ struct ipmi_smi
  
--/* We are in run-to-completion mode, no completion is desired. */
-+/* Wait for message to complete, spinning. */
- static int ipmi_request_in_rc_mode(ipmi_user_t            user,
- 				   struct ipmi_addr       *addr,
- 				   struct kernel_ipmi_msg *send_msg)
- {
- 	int rv;
- 
-+	atomic_set(&dummy_count, 2);
- 	rv = ipmi_request_supply_msgs(user, addr, 0, send_msg, NULL,
- 				      &halt_smi_msg, &halt_recv_msg, 0);
--	if (rv)
-+	if (rv) {
-+		atomic_set(&dummy_count, 0);
- 		return rv;
-+	}
+ 	/* Invalid data in an event. */
+ 	unsigned int invalid_events;
++
+ 	/* Events that were received with the proper format. */
+ 	unsigned int events;
 +
 +	/*
-+	 * Spin until our message is done.
++	 * run_to_completion duplicate of smb_info, smi_info
++	 * and ipmi_serial_info structures. Used to decrease numbers of
++	 * parameters passed by "low" level IPMI code.
 +	 */
-+	while (atomic_read(&dummy_count) > 0) {
-+		ipmi_poll_interface(user);
-+		barrier();
-+	}
++	int run_to_completion;
+ };
+ #define to_si_intf_from_dev(device) container_of(device, struct ipmi_smi, dev)
  
- 	return halt_recv_msg.msg.data[0];
- }
-@@ -531,9 +545,7 @@ static void ipmi_poweroff_function (void
- 		return;
- 
- 	/* Use run-to-completion mode, since interrupts may be off. */
--	ipmi_user_set_run_to_completion(ipmi_user, 1);
- 	specific_poweroff_func(ipmi_user);
--	ipmi_user_set_run_to_completion(ipmi_user, 0);
- }
- 
- /* Wait for an IPMI interface to be installed, the first one installed
-Index: linux-2.6.21/drivers/char/ipmi/ipmi_si_intf.c
-===================================================================
---- linux-2.6.21.orig/drivers/char/ipmi/ipmi_si_intf.c
-+++ linux-2.6.21/drivers/char/ipmi/ipmi_si_intf.c
-@@ -809,56 +809,54 @@ static void sender(void                *
- 		return;
- 	}
- 
--	spin_lock_irqsave(&(smi_info->msg_lock), flags);
- #ifdef DEBUG_TIMING
- 	do_gettimeofday(&t);
- 	printk("**Enqueue: %d.%9.9d\n", t.tv_sec, t.tv_usec);
- #endif
- 
- 	if (smi_info->run_to_completion) {
--		/* If we are running to completion, then throw it in
--		   the list and run transactions until everything is
--		   clear.  Priority doesn't matter here. */
-+		/*
-+		 * If we are running to completion, then throw it in
-+		 * the list and run transactions until everything is
-+		 * clear.  Priority doesn't matter here.
-+		 */
-+
-+		/*
-+		 * Run to completion means we are single-threaded, no
-+		 * need for locks.
-+		 */
- 		list_add_tail(&(msg->link), &(smi_info->xmit_msgs));
- 
--		/* We have to release the msg lock and claim the smi
--		   lock in this case, because of race conditions. */
--		spin_unlock_irqrestore(&(smi_info->msg_lock), flags);
--
--		spin_lock_irqsave(&(smi_info->si_lock), flags);
- 		result = smi_event_handler(smi_info, 0);
- 		while (result != SI_SM_IDLE) {
- 			udelay(SI_SHORT_TIMEOUT_USEC);
- 			result = smi_event_handler(smi_info,
- 						   SI_SHORT_TIMEOUT_USEC);
- 		}
--		spin_unlock_irqrestore(&(smi_info->si_lock), flags);
- 		return;
-+	}
-+
-+	spin_lock_irqsave(&smi_info->msg_lock, flags);
-+	if (priority > 0) {
-+		list_add_tail(&msg->link, &smi_info->hp_xmit_msgs);
- 	} else {
--		if (priority > 0) {
--			list_add_tail(&(msg->link), &(smi_info->hp_xmit_msgs));
--		} else {
--			list_add_tail(&(msg->link), &(smi_info->xmit_msgs));
--		}
-+		list_add_tail(&msg->link, &smi_info->xmit_msgs);
- 	}
--	spin_unlock_irqrestore(&(smi_info->msg_lock), flags);
-+	spin_unlock_irqrestore(&smi_info->msg_lock, flags);
- 
--	spin_lock_irqsave(&(smi_info->si_lock), flags);
-+	spin_lock_irqsave(&smi_info->si_lock, flags);
- 	if ((smi_info->si_state == SI_NORMAL)
- 	    && (smi_info->curr_msg == NULL))
- 	{
- 		start_next_msg(smi_info);
- 	}
--	spin_unlock_irqrestore(&(smi_info->si_lock), flags);
-+	spin_unlock_irqrestore(&smi_info->si_lock, flags);
- }
- 
- static void set_run_to_completion(void *send_info, int i_run_to_completion)
+@@ -3451,8 +3459,9 @@ static int handle_new_recv_msg(ipmi_smi_
+ void ipmi_smi_msg_received(ipmi_smi_t          intf,
+ 			   struct ipmi_smi_msg *msg)
  {
- 	struct smi_info   *smi_info = send_info;
- 	enum si_sm_result result;
--	unsigned long     flags;
--
--	spin_lock_irqsave(&(smi_info->si_lock), flags);
+-	unsigned long flags;
++	unsigned long flags = 0; /* keep us warning-free. */
+ 	int           rv;
++	int           run_to_completion;
  
- 	smi_info->run_to_completion = i_run_to_completion;
- 	if (i_run_to_completion) {
-@@ -869,8 +867,6 @@ static void set_run_to_completion(void *
- 						   SI_SHORT_TIMEOUT_USEC);
- 		}
+ 
+ 	if ((msg->data_size >= 2)
+@@ -3501,21 +3510,30 @@ void ipmi_smi_msg_received(ipmi_smi_t   
+ 
+ 	/* To preserve message order, if the list is not empty, we
+            tack this message onto the end of the list. */
+-	spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
++	run_to_completion = intf->run_to_completion;
++	barrier();
++	if (!run_to_completion)
++		spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
+ 	if (!list_empty(&intf->waiting_msgs)) {
+ 		list_add_tail(&msg->link, &intf->waiting_msgs);
+-		spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
++		if (!run_to_completion)
++			spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
+ 		goto out;
  	}
--
--	spin_unlock_irqrestore(&(smi_info->si_lock), flags);
- }
+-	spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
++	if (!run_to_completion)
++		spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
+ 		
+ 	rv = handle_new_recv_msg(intf, msg);
+ 	if (rv > 0) {
+ 		/* Could not handle the message now, just add it to a
+                    list to handle later. */
+-		spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
++		run_to_completion = intf->run_to_completion;
++		barrier();
++		if (!run_to_completion)
++			spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
+ 		list_add_tail(&msg->link, &intf->waiting_msgs);
+-		spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
++		if (!run_to_completion)
++			spin_unlock_irqrestore(&intf->waiting_msgs_lock, flags);
+ 	} else if (rv == 0) {
+ 		ipmi_free_smi_msg(msg);
+ 	}
+@@ -3884,6 +3902,7 @@ static void send_panic_events(char *str)
+ 			/* Interface is not ready. */
+ 			continue;
  
- static int ipmi_thread(void *data)
-Index: linux-2.6.21/include/linux/ipmi.h
-===================================================================
---- linux-2.6.21.orig/include/linux/ipmi.h
-+++ linux-2.6.21/include/linux/ipmi.h
-@@ -368,9 +368,8 @@ int ipmi_request_supply_msgs(ipmi_user_t
-  * Poll the IPMI interface for the user.  This causes the IPMI code to
-  * do an immediate check for information from the driver and handle
-  * anything that is immediately pending.  This will not block in any
-- * way.  This is useful if you need to implement polling from the user
-- * for things like modifying the watchdog timeout when a panic occurs
-- * or disabling the watchdog timer on a reboot.
-+ * way.  This is useful if you need to spin waiting for something to
-+ * happen in the IPMI driver.
-  */
- void ipmi_poll_interface(ipmi_user_t user);
++		intf->run_to_completion = 1;
+ 		/* Send the event announcing the panic. */
+ 		intf->handlers->set_run_to_completion(intf->send_info, 1);
+ 		i_ipmi_request(NULL,
+@@ -4059,6 +4078,7 @@ static int panic_event(struct notifier_b
+ 			/* Interface is not ready. */
+ 			continue;
  
-@@ -422,12 +421,6 @@ int ipmi_get_maintenance_mode(ipmi_user_
- int ipmi_set_maintenance_mode(ipmi_user_t user, int mode);
++		intf->run_to_completion = 1;
+ 		intf->handlers->set_run_to_completion(intf->send_info, 1);
+ 	}
  
- /*
-- * Allow run-to-completion mode to be set for the interface of
-- * a specific user.
-- */
--void ipmi_user_set_run_to_completion(ipmi_user_t user, int val);
--
--/*
-  * When the user is created, it will not receive IPMI events by
-  * default.  The user must set this to TRUE to get incoming events.
-  * The first user that sets this to TRUE will receive all events that
