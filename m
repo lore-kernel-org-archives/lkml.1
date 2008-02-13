@@ -1,101 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934034AbYBMXt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933406AbYBMXwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934034AbYBMXt0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763185AbYBMXtK
+	id S933406AbYBMXwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:52:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759818AbYBMXwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:49:10 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:27938 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759871AbYBMXtH (ORCPT
+	Wed, 13 Feb 2008 18:52:10 -0500
+Received: from mail.vyatta.com ([216.93.170.194]:37830 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753137AbYBMXwI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:49:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=B2Ypmq7TA2AkF6xNm2OWA6pXGLcz5RRcPxQlhTXGEvnoekKYjofpBi/Y1mgfPQDt1ypTrSYA+spBUgOpJDh/EjdZ0CYdK6OgF/zCQhzFSvOoJWsDKv43VKQV67zPtv5WlVYF8AwlNIq9vetia3zIagf+lSxCy3BjKlVdUML/Mjs=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Date: Thu, 14 Feb 2008 01:02:55 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-References: <20080213001506.GA13933@kroah.com> <200802132320.37172.bzolnier@gmail.com> <20080213234140.GA5169@kroah.com>
-In-Reply-To: <20080213234140.GA5169@kroah.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802140102.55805.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 18:52:08 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -1.786
+Date: Wed, 13 Feb 2008 15:51:58 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: Stephen Hemminger 
+	<"stephen.hemminger@vyatta.com"@mail.vyatta.com>,
+       linux-kernel@vger.kernel.org, davem@davemloft.net,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
+ type/macro safety
+Message-ID: <20080213155158.1b621359@extreme>
+In-Reply-To: <20080213233744.GO12393@linux.vnet.ibm.com>
+References: <20080213220024.GA30729@linux.vnet.ibm.com>
+	<20080213143537.1b806790@extreme>
+	<20080213224134.GK12393@linux.vnet.ibm.com>
+	<20080213144233.05e860cb@extreme>
+	<20080213233744.GO12393@linux.vnet.ibm.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008, Greg KH wrote:
-> On Wed, Feb 13, 2008 at 11:20:36PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > On Wednesday 13 February 2008, Greg KH wrote:
-> > > On Wed, Feb 13, 2008 at 09:28:24AM -0800, Greg KH wrote:
-> > > > On Wed, Feb 13, 2008 at 01:34:12PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > > On Wednesday 13 February 2008, Greg KH wrote:
-> > > > > > On Wed, Feb 13, 2008 at 02:17:37AM +0000, Alan Cox wrote:
-> > > > > > > > Why does the calgary driver need this?  Can we just use pci_get_device()
-> > > > > > > > instead?  Why do you need to walk the device list backwards?  Do you get
-> > > > > > > > false positives going forward?
-> > > > > > > 
-> > > > > > > It doesn't look to be performance critical so the driver can
-> > > > > > > pci_get_device until the end and use the final hit anyway.
-> > > > > > 
-> > > > > > That would make more sense.
-> > > > > > 
-> > > > > > > IDE reverse is more problematic but nobody seems to use it.
-> > > > > > 
-> > > > > > I've seen two posters say they use it.  I'm wondering what it is really
-> > > > > > solving if they use it, and why if it's really needed, scsi never had to
-> > > > > > implement such a hack...
-> > > > > 
-> > > > > It is no longer solving anything, just adds more pain. ;)
-> > > > > 
-> > > > > [ The option comes from 2.2.x (so long before LABEL=/ and /dev/disk/by-id/
-> > > > >   became popular).  Some "off-board" controllers integrated on motherboards
-> > > > >   used to appear before "on-board" IDE on PCI bus so this option was meant
-> > > > >   to preserve the legacy ordering. ]
-> > > > > 
-> > > > > Since it is valid only when "Probe IDE PCI devices in the PCI bus order
-> > > > > (DEPRECATED)" config option is used it is already on its way out (though
-> > > > > marking it as obsoleted would make it more explicit).
-> > > > > 
-> > > > > I think that removing "ide=reverse" in 2.6.26 would be OK...
+On Wed, 13 Feb 2008 15:37:44 -0800
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+
+> On Wed, Feb 13, 2008 at 02:42:33PM -0800, Stephen Hemminger wrote:
+> > On Wed, 13 Feb 2008 14:41:34 -0800
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Wed, Feb 13, 2008 at 02:35:37PM -0800, Stephen Hemminger wrote:
+> > > > On Wed, 13 Feb 2008 14:00:24 -0800
+> > > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > > > > 
-> > > > Great, thanks for your blessing.  I'll make up a patch and send it to
-> > > > you for approval.
+> > > > > Hello!
+> > > > > 
+> > > > > This is an updated version of the patch posted last November:
+> > > > > 
+> > > > > 	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
+> > > > > 
+> > > > > This new version permits arguments with side effects, for example:
+> > > > > 
+> > > > > 	rcu_assign_pointer(global_p, p++);
+> > > > > 
+> > > > > and also verifies that the arguments are pointers, while still avoiding
+> > > > > the unnecessary memory barrier when assigning NULL to a pointer.
+> > > > > This memory-barrier avoidance means that rcu_assign_pointer() is now only
+> > > > > permitted for pointers (not array indexes), and so this version emits a
+> > > > > compiler warning if the first argument is not a pointer.  I built a "make
+> > > > > allyesconfig" version on an x86 system, and received no such warnings.
+> > > > > If RCU is ever applied to array indexes, then the second patch in this
+> > > > > series should be applied, and the resulting rcu_assign_index() be used.
+> > > > > 
+> > > > > Given the rather surprising history of subtlely broken implementations of
+> > > > > rcu_assign_pointer(), I took the precaution of generating a full set of
+> > > > > test cases and verified that memory barriers and compiler warnings were
+> > > > > emitted when required.  I guess it is the simple things that get you...
+> > > > > 
+> > > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > > ---
+> > > > > 
+> > > > >  rcupdate.h |   16 ++++++++++++----
+> > > > >  1 file changed, 12 insertions(+), 4 deletions(-)
+> > > > > 
+> > > > > diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
+> > > > > --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
+> > > > > +++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+> > > > > @@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
+> > > > >   * structure after the pointer assignment.  More importantly, this
+> > > > >   * call documents which pointers will be dereferenced by RCU read-side
+> > > > >   * code.
+> > > > > + *
+> > > > > + * Throws a compiler warning for non-pointer arguments.
+> > > > > + *
+> > > > > + * Does not insert a memory barrier for a NULL pointer.
+> > > > >   */
+> > > > >  
+> > > > > -#define rcu_assign_pointer(p, v)	({ \
+> > > > > -						smp_wmb(); \
+> > > > > -						(p) = (v); \
+> > > > > -					})
+> > > > > +#define rcu_assign_pointer(p, v)	\
+> > > > > +	({ \
+> > > > > +		typeof(*p) *_________p1 = (v); \
+> > > > > +		\
+> > > > > +		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
+> > > > > +			smp_wmb(); \
+> > > > > +		(p) = _________p1; \
+> > > > > +	})
+> > > > >  
+> > > > >  /**
+> > > > >   * synchronize_sched - block until all CPUs have exited any non-preemptive
+> > > > 
+> > > > Will this still work if p is unsigned long?
 > > > 
-> > > How does the patch below look?  I didn't want to remove the whole config
-> > > option, as there is more to the logic than just the "reverse order"
-> > > stuff there.
+> > > Hello, Steve,
+> > > 
+> > > If p is unsigned long, then use rcu_assign_index() from the next patch in
+> > > the set.  Looks like Andrew has applied it to -mm -- so please make sure
+> > > that he is aware if you do use it.
 > > 
-> > looks fine,
-> > 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Make sure fib_trie still works and doesn't get warnings.
 > 
-> Thanks.
+> Ah.  It does take a bit to get fib_trie into one's build -- allyesconfig
+> doesn't cut it.  Please accept my apologies for my confusion!!!
 > 
-> > > If you don't mind, can I take this through the PCI tree so as to allow
-> > > the removal of this pci function afterwards?
-> > 
-> > [...]
-> > 
-> > great, could you also:
-> > - rebase it on top of the patch below
-> > - forward the patch below to Linus for 2.6.25
+> Once fib_trie is configured, I do indeed get:
 > 
-> Sure, you want this to go in for .25, but not the one I just posted
-> removing this option, correct?  That should wait for .26?
+>     net/ipv4/fib_trie.c: In function ‘node_set_parent’:
+>     net/ipv4/fib_trie.c:182: warning: comparison between pointer and integer
+> 
+> So, given that node->parent is an unsigned long, I changed node_set_parent()
+> to the following:
+> 
+> static inline void node_set_parent(struct node *node, struct tnode *ptr)
+> {
+> 	rcu_assign_index(node->parent, (unsigned long)ptr | NODE_TYPE(node));
+> }
+> 
+> This removes the warnings.  I am a little ambivalent about this, as
+> this is really a pointer in disguise rather than an array index, but
+> patch below.  I suppose that another option would be to make node->parent
+> be a void* and provide appropriate accessor functions/macros.
+> 
+> Thoughts?
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Yes, lets give people the final call before actually removing this option
-(unless of course there is some urgent reason for removing it in .25).
+Maybe cast both sides to void * in this case:
 
-Thanks,
-Bart
+static inline void node_set_parent(struct node *node, struct tnode *ptr)
+{
+ 	rcu_assign_pointer((void *) node->parent, (void *)((unsigned long)ptr | NODE_TYPE(node)));
+}
+
+-- 
+Stephen Hemminger <stephen.hemminger@vyatta.com>
