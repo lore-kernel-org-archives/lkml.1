@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbYBMQ6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933698AbYBMQ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933608AbYBMQ6m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759292AbYBMQ6e
+	id S933698AbYBMQ7A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764447AbYBMQ6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:58:34 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:58936
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757838AbYBMQ6d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 11:58:35 -0500
+Received: from rtr.ca ([76.10.145.34]:4359 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757492AbYBMQ6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Feb 2008 11:58:33 -0500
-Message-ID: <47B3217D.7040903@qumranet.com>
-Date: Wed, 13 Feb 2008 18:57:33 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+Message-ID: <47B321B7.4080608@rtr.ca>
+Date: Wed, 13 Feb 2008 11:58:31 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Marcelo Tosatti <marcelo@kvack.org>
-CC: Jiri Kosina <jkosina@suse.cz>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Qemu & KVM bug
-References: <c4e36d110802130638i5057b49by280ab0b2c415064a@mail.gmail.com> <Pine.LNX.4.64.0802131621440.7699@twin.jikos.cz> <20080213160905.GA8559@dmt>
-In-Reply-To: <20080213160905.GA8559@dmt>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alon Bar-Lev <alon.barlev@gmail.com>,
+       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       marcel@holtmann.org, bluez-devel@lists.sourceforge.net
+Subject: Re: [BUG] rfcomm
+References: <200710231950.31313.alon.barlev@gmail.com>	<a8e1da0711051849ma591d4k6a816e2de7390347@mail.gmail.com>	<9e0cf0bf0711052149t5c9fe50j19d13e368690efb@mail.gmail.com>	<200802111757.56537.alon.barlev@gmail.com> <20080212235814.b4a2e565.akpm@linux-foundation.org>
+In-Reply-To: <20080212235814.b4a2e565.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcelo Tosatti wrote:
-> On Wed, Feb 13, 2008 at 04:24:53PM +0100, Jiri Kosina wrote:
->   
->> On Wed, 13 Feb 2008, Zdenek Kabelac wrote:
->>
->>     
->>> I get this bug in my log whenever I start qemu-kvm - I do not use kqemu 
->>> module - so it's with plain kernel modules. If more details are needed - 
->>> just ask. (Cpu; C2D)
->>> BUG: sleeping function called from invalid context at kernel/rwsem.c:48
->>> in_atomic():1, irqs_disabled():0
->>> INFO: lockdep is turned off.
->>> Pid: 26600, comm: qemu-kvm Not tainted 2.6.25-rc1 #29
->>>       
->> This has been obviously caused by Marcelo's (added to CC) commit 
->> 10589a4699b, which added down_write(mmap_sem) to alloc_apic_access_page(), 
->> which is called with preempt disabled from vmx_create_vcpu().
->>     
->
-> alloc_apic_access_page() called mutex_lock, so the warning would trigger
-> before that change.
->
-> I think it's fine to allocate the APIC page after put_cpu(), since no vcpu 
-> state is required.
->
->   
+Andrew Morton wrote:
+> On Mon, 11 Feb 2008 17:57:54 +0200 Alon Bar-Lev <alon.barlev@gmail.com> wrote:
+> 
+>> On Tuesday 06 November 2007, Alon Bar-Lev wrote:
+>>> On 11/6/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+>>>> Hi,
+>>>> sorry for reply again, this seems a diffrent issue ...
+>>> All that I do is running pppd over the rfcomm, suspending the system and resume.
+>>> I don't load any binary module.
+..
+>> Tried 2.6.24.1...
+..
+>> Feb 11 17:46:05 alon1 usb 3-1: new full speed USB device using uhci_hcd and address 8
+>> Feb 11 17:46:05 alon1 usb 3-1: configuration #1 chosen from 1 choice
+>> Feb 11 17:46:05 alon1 BUG: unable to handle kernel NULL pointer dereference at virtual address 00000008
+>> Feb 11 17:46:05 alon1 printing eip: c01b2da6 *pde = 00000000 
+>> Feb 11 17:46:05 alon1 Oops: 0000 [#1] PREEMPT 
+>> Feb 11 17:46:05 alon1 Modules linked in: aes_generic crypto_algapi ieee80211_crypt_ccmp ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async thinkpad_acpi hwmon nvram vmnet(P) vmmon(P) tun radeon drm autofs4 ipv6 nf_nat_irc nf_nat_ftp nf_conntrack_irc nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat ipt_REJECT xt_tcpudp ipt_LOG xt_limit xt_state nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables x_tables rfcomm l2cap snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device ppp_generic slhc ioatdma dca cfq_iosched cpufreq_powersave cpufreq_ondemand cpufreq_conservative acpi_cpufreq freq_table uinput fan af_packet nls_cp1255 nls_iso8859_1 nls_utf8 nls_base hci_usb bluetooth pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm ipw2200 nsc_ircc snd_timer irda ieee80211 snd psmouse yenta_socket ehci_hcd pcspkr ieee80211_crypt e1000 rsrc_nonstatic uhci_hcd soundcore i2c_i801 intel_agp crc_ccitt thermal sr_mod pcmcia_core snd_page_al
+!
+>  lo!
+>>  c battery rtc firmware_class agpgart ac processor cdrom sg button unix usbcore evdev ext3 jbd ext2 mbcache loop ata_piix libata sd_mod scsi_mod
+>> Feb 11 17:46:05 alon1 
+>> Feb 11 17:46:05 alon1 Pid: 4, comm: events/0 Tainted: P        (2.6.24-gentoo-r1 #1)
+>> Feb 11 17:46:05 alon1 EIP: 0060:[<c01b2da6>] EFLAGS: 00010286 CPU: 0
+>> Feb 11 17:46:05 alon1 EIP is at sysfs_get_dentry+0x26/0x80
+>> Feb 11 17:46:05 alon1 EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: ebf21000
+>> Feb 11 17:46:05 alon1 ESI: eab4e880 EDI: f713bb40 EBP: f713bb40 ESP: f7c49f00
+>> Feb 11 17:46:05 alon1 DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+>> Feb 11 17:46:05 alon1 Process events/0 (pid: 4, ti=f7c48000 task=f7c3efc0 task.ti=f7c48000)
+>> Feb 11 17:46:05 alon1 Stack: f7c97120 f7135a68 f7e71e10 c01b303d ffffffff ffffffff fffffffe c030ba9c 
+>> Feb 11 17:46:05 alon1 f7c97120 f7135a68 f2fefb40 f7c97120 f7135a68 f2fefb40 c030ba8e c01ce1fb 
+>> Feb 11 17:46:05 alon1 f75f1b00 c030ba8e f2fefb40 f75f1b00 f75f1b00 00000000 f7135a00 00000000 
+>> Feb 11 17:46:05 alon1 Call Trace:
+>> Feb 11 17:46:05 alon1 [<c01b303d>] sysfs_move_dir+0x3d/0x1f0
+>> Feb 11 17:46:05 alon1 [<c01ce1fb>] kobject_move+0x9b/0x120
+>> Feb 11 17:46:05 alon1 [<c0241701>] device_move+0x51/0x110
+>> Feb 11 17:46:05 alon1 [<f9a8adb0>] del_conn+0x0/0x40 [bluetooth]
+>> Feb 11 17:46:05 alon1 [<f9a8adc0>] del_conn+0x10/0x40 [bluetooth]
+>> Feb 11 17:46:05 alon1 [<c012c1a1>] run_workqueue+0x81/0x140
+>> Feb 11 17:46:05 alon1 [<c02c0c78>] schedule+0x168/0x2e0
+>> Feb 11 17:46:05 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
+>> Feb 11 17:46:05 alon1 [<c012c9cb>] worker_thread+0x9b/0xf0
+>> Feb 11 17:46:05 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
+>> Feb 11 17:46:05 alon1 [<c012c930>] worker_thread+0x0/0xf0
+>> Feb 11 17:46:05 alon1 [<c012f962>] kthread+0x42/0x70
+>> Feb 11 17:46:05 alon1 [<c012f920>] kthread+0x0/0x70
+>> Feb 11 17:46:05 alon1 [<c0104c2f>] kernel_thread_helper+0x7/0x18
+>> Feb 11 17:46:05 alon1 =======================
+>> Feb 11 17:46:05 alon1 Code: 26 00 00 00 00 57 89 c7 a1 50 1b 3a c0 56 53 8b 70 38 85 f6 74 08 8b 0e 85 c9 74 58 ff 06 8b 56 50 39 fa 74 47 89 fb eb 02 89 c3 <8b> 43 08 39 c2 75 f7 8b 46 08 83 c0 68 e8 98 e7 10 00 8b 43 10 
+>> Feb 11 17:46:05 alon1 EIP: [<c01b2da6>] sysfs_get_dentry+0x26/0x80 SS:ESP 0068:f7c49f00
+> 
+> A number of bluetooth fixes went into 2.6.25-rc1.  It would be interestig
+> to see if we fixed this.
+..
 
+I had a strange thing happen with 2.6.24[.0] the other day.
+My bluetooth serial dongles stopped working.
+Unloading/reloading modules and daemons had no effect.
+A system reboot cured it (for now).
 
-Looks right, but wants a changelog and signoff, of course.
+That's the first time I've had unfixable bluetooth trouble, well, ever I suppose.
+Just another useless data tidbit on 2.6.24.
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
-
+-ml
