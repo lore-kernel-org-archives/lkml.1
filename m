@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764622AbYBMEt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764278AbYBMEwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764622AbYBMEt3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 23:49:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755319AbYBMEtT
+	id S1764278AbYBMEwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 23:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755445AbYBMEwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 23:49:19 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:59704 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754983AbYBMEtT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 23:49:19 -0500
-Date: Tue, 12 Feb 2008 20:43:48 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Mulyadi Santosa" <mulyadi.santosa@gmail.com>
-Cc: "Scott Lovenberg" <scott.lovenberg@gmail.com>,
-       "Peter Teoh" <htmldeveloper@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       "Rik van Riel" <riel@redhat.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Message-Id: <20080212204348.4a858650.randy.dunlap@oracle.com>
-In-Reply-To: <f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com>
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
-	<b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
-	<804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
-	<47B15DD2.3090706@gmail.com>
-	<f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 12 Feb 2008 23:52:39 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:45121 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753435AbYBMEwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 23:52:37 -0500
+Date: Tue, 12 Feb 2008 23:52:19 -0500
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, jeff@garzik.org, arjan@infradead.org,
+       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080213045219.GC9766@fieldses.org>
+References: <47B1CB08.4020101@garzik.org> <20080212.155853.193190548.davem@davemloft.net> <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org> <20080212.172051.58554658.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212.172051.58554658.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 09:08:12 +0700 Mulyadi Santosa wrote:
-
-> Hi all...
+On Tue, Feb 12, 2008 at 05:20:51PM -0800, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Tue, 12 Feb 2008 16:44:47 -0800 (PST)
 > 
-> Here's my idea: what if we collaborate to extend and make the kernel
-> documentation better? I have done (slow) start by editing profile=
-> kernel param. It's not accepted by Adrian Bunk, but at least I did it.
-> Feedback?
+> > 	gitk --merge
+>  ...
+> > This is something where I actually think git could and should do better: 
+> > git has the capability to act as more of a "quilt replacement", but 
+> > because it wasn't part of the original design, we never actualy exposed 
+> > the simple queue management commands to do this (stgit does things like 
+> > that, though).
+> > 
+> > So if you haven't pushed out, right now you'd have to do this stupid 
+> > thing:
+> 
+> Thanks for all the useful info.
+> 
+> But as soon as I've applied any patches to my tree I've "pushed out".
+> So this scheme doesn't work for me.  The first thing I do when I have
+> changes to apply is clone a tree locally and on master.kernel.org,
+> then I apply that first patch locally and push it out to master.
+> 
+> What would be really cool is if you could do the rebase thing, push
+> that to a remote tree you were already pushing into and others could
+> pull from that and all the right things happen.
+> 
+> A rebase is just a series of events, and those could propagate to
+> people who are pulling from the tree.  I'm pretty sure GIT could
+> support this.
 
-Adrian is no longer the trivial patch maintainer.
-Did you send the patch to trivial@kernel.org ?
+	git checkout -b new-tree old-tree
+	# hack on new-tree: rebase, drop bad commits, whatever
+	git merge -s ours old-tree
+	git push your-public-repo new-tree:public-tree
 
-Any doc additions or improvements would be appreciated.
-I'll be glad to help get them merged...
+Now public-tree has a merge commit on the top with two parents,
+public-tree^1 and public-tree^2.  public-tree^1 is the tip of the new
+cleaned-up history, and public-tree^2 points to the old stuff.
 
----
-~Randy
+I sometimes use that privately as a way to keep track of the history of
+a patch-series, but I assume Linus would shoot anyone that tried to
+submit such a monstrosity upstream....
+
+--b.
