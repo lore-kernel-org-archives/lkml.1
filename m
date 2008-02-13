@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbYBMVYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbYBMV00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbYBMVYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:24:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYBMVY3
+	id S1758304AbYBMV00 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752738AbYBMV0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:24:29 -0500
-Received: from jurassic.park.msu.ru ([195.208.223.243]:54009 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758217AbYBMVYR (ORCPT
+	Wed, 13 Feb 2008 16:26:18 -0500
+Received: from wr-out-0506.google.com ([64.233.184.230]:47750 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752707AbYBMV0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:24:17 -0500
-Date: Thu, 14 Feb 2008 00:24:22 +0300
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Bob Tracy <rct@frus.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
-Message-ID: <20080213212422.GB2853@jurassic.park.msu.ru>
-References: <20080213155713.GA376@jurassic.park.msu.ru> <20080213171443.80C8BDBA2@gherkin.frus.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213171443.80C8BDBA2@gherkin.frus.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 13 Feb 2008 16:26:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=TA1srjELk3uuvGd+WvVQr7IRtYXISDq3zPzbqu37+qCaBPt0Mce2h8qHV580dfMUUsfwEK+F4TfqF6+iWQvIwa2t6PKXQs27jZts/GkVIWt99WGCcAt8BANreUtD3PWGTjRm1oi1gZapBcDHVxfxWuvGGCu1jlxcgSnLC/x0wls=
+Subject: [PATCH 1/2] x86: sparse warning in efi.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 13:26:13 -0800
+Message-Id: <1202937973.18204.6.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 11:14:43AM -0600, Bob Tracy wrote:
-> Ivan Kokshaysky wrote:
-> > No SMP, no PRINTK_TIMESTAMPS in my case. Looks like it dies trying to
-> > to switch to vga console, but I had no time to debug this yet...
-> 
-> Same basic configuration as Ivan.  Concur with the observation that
-> death seems to happen during the console switch.  Using the radeonfb
-> driver (built-in, default graphics mode 80x30).
+arch/x86/kernel/efi.c:57:12: warning: symbol 'efi_phys' was not declared. Should it be static?
 
-As Peter pointed out in other mail, this is fixed by
+Yes, it should.
 
-http://lkml.org/lkml/2008/1/28/100
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ arch/x86/kernel/efi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Ivan.
+diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
+index cbdf9ba..0de0cf5 100644
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -54,7 +54,7 @@ EXPORT_SYMBOL(efi);
+ 
+ struct efi_memory_map memmap;
+ 
+-struct efi efi_phys __initdata;
++static struct efi efi_phys __initdata;
+ static efi_system_table_t efi_systab __initdata;
+ 
+ static int __init setup_noefi(char *arg)
+-- 
+1.5.4.1.1278.gc75be
+
+
