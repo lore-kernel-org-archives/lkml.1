@@ -1,62 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933037AbYBMSUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933315AbYBMSU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933037AbYBMSUp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYBMSUc
+	id S933315AbYBMSU7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:20:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYBMSUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:20:32 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52394 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753522AbYBMSUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 13:20:34 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:63722 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751926AbYBMSUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 Feb 2008 13:20:31 -0500
-Date: Wed, 13 Feb 2008 10:19:25 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-cc: Greg KH <gregkh@suse.de>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
-In-Reply-To: <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802131014240.2920@woody.linux-foundation.org>
-References: <20080213070215.GA11969@kroah.com>  <20080212.230423.172781444.davem@davemloft.net>  <1202887323.3129.10.camel@localhost>  <20080213165924.GB10129@suse.de> <1202923995.3129.26.camel@localhost>
- <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 13 Feb 2008 19:19:40 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Ben Nizette <bn@niasdigital.com>, netfilter-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: BUG: 2.6.25-rc1: iptables postrouting setup causes oops
+Message-ID: <20080213191940.7e0aa018@siona>
+In-Reply-To: <47B31DE7.9060400@kernel.org>
+References: <1202816761.3299.19.camel@moss.renham>
+	<20080213004829.fd8afdc7.akpm@linux-foundation.org>
+	<20080213101024.39347322@dhcp-252-066.norway.atmel.com>
+	<20080213012231.46865608.akpm@linux-foundation.org>
+	<47B31DE7.9060400@kernel.org>
+Organization: Atmel
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Feb 2008 08:42:15 -0800
+"Andrew G. Morgan" <morgan@kernel.org> wrote:
 
+> However, it is a warning and, for any existing app that doesn't care
+> about newly added capabilities, the warning is benign.
 
-On Wed, 13 Feb 2008, Linus Torvalds wrote:
-> 
-> So in that sense, I think both MAINTAINERS and the deprecation schedule 
-> are totally uninteresting. Yes, they have merge conflicts. But those merge 
-> conflicts are really really easy to handle.
+Ok, I see. Thanks for explaining.
 
-That, btw, includes "automatic merges" for something like a Linux-next 
-tree. It's easy to just make something that says: if the merge fails, try 
-to fix up these xyz files by just committing them with merge error markers 
-and all".
-
-That's fine for testing, exactly because it has no coding impact (and then 
-when a _real_ merge happens, you have a human that actually resolves it).
-
-The git script would be something like
-
-	UNIMPORTANT_LIST=MAINTAINERS \
-		Documentation/feature-removal-schedule.txt \
-		...
-
-	git pull ... ||
-		git add $UNIMPORTANT_LIST &&
-		git commit -m "Trivially conflicting merge"
-
-which basically says: if the pull fails (leaving a conflicted tree), try 
-to just "git add" the files on the unimportant list as-is, and then try to 
-commit the merge that way instead.
-
-Git if nothing if not scriptable, and things like this are *trivial*.
-
-		Linus
+Haavard
