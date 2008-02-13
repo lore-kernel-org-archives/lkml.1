@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932269AbYBMQEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932705AbYBMQFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932269AbYBMQEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYBMQED
+	id S932705AbYBMQFS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:05:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756485AbYBMQE5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:04:03 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:53886 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755793AbYBMQEA (ORCPT
+	Wed, 13 Feb 2008 11:04:57 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:49999 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757430AbYBMQEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:04:00 -0500
-Message-ID: <47B314C4.2080905@opengridcomputing.com>
-Date: Wed, 13 Feb 2008 10:03:16 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org
-Subject: Re: [ofa-general] [PATCH 2.6.25] RDMA/cxgb3: Fail loopbackconnections.
-References: <20080212220929.24442.76874.stgit@dell3.ogc.int>	<adafxvxvgz3.fsf@cisco.com> <015c01c86e21$75317210$05c8a8c0@DIEGO>	<adaskzwuaeu.fsf@cisco.com> <adaodakua9v.fsf@cisco.com> <47B3120B.3040409@opengridcomputing.com>
-In-Reply-To: <47B3120B.3040409@opengridcomputing.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 13 Feb 2008 11:04:55 -0500
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: James.Smart@Emulex.Com
+Cc: ltuikov@yahoo.com, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+In-Reply-To: <47B2F9C3.8070207@emulex.com>
+References: <875344.96222.qm@web31808.mail.mud.yahoo.com>
+	 <47B2F9C3.8070207@emulex.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 10:04:51 -0600
+Message-Id: <1202918691.3109.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steve Wise wrote:
-> Roland Dreier wrote:
->> Steve, I had to update the patch adding an include and fixing the
->> function declaration (as below)... but how much testing have you done
->> with this??
->>
-> 
-> Now I understand.  I thought I'd fixed these!  I fixed them locally in 
-> the test tree on my victim and then tested, but forgot to update my git 
-> tree.
-> 
-> Sorry for this.
-> 
-> You want me to resubmit?
-> 
+On Wed, 2008-02-13 at 09:08 -0500, James Smart wrote:
+> The keep-it-in-user-space arguments seem fairly compelling to me.
+> Especially as we've pushed whole i/o subsystems out to user space
+> (iscsi, stgt, talked about fcoe, a lot of dm control, etc).
 
-BTW: Testing:  I cloned my git tree, resolved the two compile issues 
-(void + include), then built and installed the kernel (2.6.25-rc1 + the 
-fixed patch).  I then ensured that a connection to the local address 
-caused the ENOSYS error.
+And to me too.
 
-I just forgot to pull the updated file back into my stg managed git tree.
+> The functionality seems to align with Doug's sg/lsscsi utility chain
+> as well.  Granted, the new utility would have to be designed in such
+> as way that it can incorporate vendor "hardware handlers".  But, if
+> James has a somewhat common implementation already for a kernel
+> implementation, I'm sure that can be the starting point for lsscsi.
+> 
+> So, the main question I believe is being asked is:
+> - Do we need to represent this via the object/sysfs tree or can an
+>    outside utility be depended upon to show it ?
+> 
+> Note that I am not supporting:
+> "Vendors may choose to distribute their own applications".
+> For this to become truly useful, there needs to be a common tool/method
+> that presents common features in a common manner, regardless of whether
+> it is in kernel or not.
 
-:(
+I don't disagree with that, but the fact is that there isn't such a
+tool.   It's also a fact that the enterprise is reasonably unhappy with
+the lack of an enclosure management infrastructure, since it's something
+they got on all the other unix systems.
+
+I think a minimal infrastructure in-kernel does just about everything
+the enterprise wants ... and since it's stateless, they can always use
+direct connect tools in addition.
+
+However, I'm happy to be proven wrong ... anyone on this thread is
+welcome to come up with a userland enclosure infrastructure.  Once it
+does everything the in-kernel one does (which is really about the
+minimal possible set), I'll be glad to erase the in-kernel one.
+
+James
+
+
