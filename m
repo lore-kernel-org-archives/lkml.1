@@ -1,178 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933476AbYBMQg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933495AbYBMQhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933476AbYBMQg4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbYBMQgl
+	id S933495AbYBMQhf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbYBMQhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:36:41 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:59345 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760700AbYBMQgj (ORCPT
+	Wed, 13 Feb 2008 11:37:22 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:34042 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764311AbYBMQhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:36:39 -0500
-Message-ID: <47B31C3B.3060008@panasas.com>
-Date: Wed, 13 Feb 2008 18:35:07 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 13 Feb 2008 11:37:20 -0500
+Date: Wed, 13 Feb 2008 22:07:15 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: vatsa@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Regression in latest sched-git
+Message-ID: <20080213163715.GB19570@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080212185355.GA6320@linux.vnet.ibm.com> <1202845208.6247.82.camel@lappy> <20080213030035.GA3402@linux.vnet.ibm.com> <1202907078.20209.3.camel@lappy> <20080213163444.GA19570@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: [PATCH ver2] gdth: bugfix for the at-exit problems
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com> <1202917468.3109.5.camel@localhost.localdomain> <47B312B3.3010200@panasas.com> <47B31BDE.2030408@panasas.com>
-In-Reply-To: <47B31BDE.2030408@panasas.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213163444.GA19570@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Feb 13, 2008 at 10:04:44PM +0530, Dhaval Giani wrote:
+> > > On the same lines, I cant understand how we can be seeing 700ms latency
+> > > (below) unless we had: large number of active groups/users and large number of 
+> > > tasks within each group/user.
+> > 
+> > All I can say it that its trivial to reproduce these horrid latencies.
+> > 
+> 
+> Hi Peter,
+> 
+> I've been trying to reproduce the latencies, and the worst I have
+> managed only 80ms. At an average I am getting around 60 ms. This is with
+> a make -j4 as root, and dhaval running other programs. (with maxcpus=1).
+> 
 
-gdth_exit would first remove all cards then stop the timer
-and would not sync with the timer function. This caused a crash
-in gdth_timer() when module was unloaded.
-So del_timer_sync the timer before we delete the cards.
+Totally missed here. Any more hints to reproduce?
 
-also a reboot notifier function was registered but is
-not needed anymore. And would crash. So remove gdth_halt
-and the reboot notifier registration.
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/gdth.c |   64 +++++++-------------------------------------------
- 1 files changed, 9 insertions(+), 55 deletions(-)
-
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index 8eb78be..8469fe6 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -183,7 +183,6 @@ static int gdth_ioctl(struct inode *inode, struct file *filep,
-                       unsigned int cmd, unsigned long arg);
- 
- static void gdth_flush(gdth_ha_str *ha);
--static int gdth_halt(struct notifier_block *nb, ulong event, void *buf);
- static int gdth_queuecommand(Scsi_Cmnd *scp,void (*done)(Scsi_Cmnd *));
- static int __gdth_queuecommand(gdth_ha_str *ha, struct scsi_cmnd *scp,
- 				struct gdth_cmndinfo *cmndinfo);
-@@ -418,12 +417,6 @@ static inline void gdth_set_sglist(struct scsi_cmnd *cmd,
- #include "gdth_proc.h"
- #include "gdth_proc.c"
- 
--/* notifier block to get a notify on system shutdown/halt/reboot */
--static struct notifier_block gdth_notifier = {
--    gdth_halt, NULL, 0
--};
--static int notifier_disabled = 0;
--
- static gdth_ha_str *gdth_find_ha(int hanum)
- {
- 	gdth_ha_str *ha;
-@@ -3793,6 +3786,8 @@ static void gdth_timeout(ulong data)
-     gdth_ha_str *ha;
-     ulong flags;
- 
-+    BUG_ON(list_empty(&gdth_instances));
-+
-     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
-     spin_lock_irqsave(&ha->smp_lock, flags);
- 
-@@ -4668,45 +4663,6 @@ static void gdth_flush(gdth_ha_str *ha)
-     }
- }
- 
--/* shutdown routine */
--static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
--{
--    gdth_ha_str *ha;
--#ifndef __alpha__
--    gdth_cmd_str    gdtcmd;
--    char            cmnd[MAX_COMMAND_SIZE];   
--#endif
--
--    if (notifier_disabled)
--        return NOTIFY_OK;
--
--    TRACE2(("gdth_halt() event %d\n",(int)event));
--    if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
--        return NOTIFY_DONE;
--
--    notifier_disabled = 1;
--    printk("GDT-HA: Flushing all host drives .. ");
--    list_for_each_entry(ha, &gdth_instances, list) {
--        gdth_flush(ha);
--
--#ifndef __alpha__
--        /* controller reset */
--        memset(cmnd, 0xff, MAX_COMMAND_SIZE);
--        gdtcmd.BoardNode = LOCALBOARD;
--        gdtcmd.Service = CACHESERVICE;
--        gdtcmd.OpCode = GDT_RESET;
--        TRACE2(("gdth_halt(): reset controller %d\n", ha->hanum));
--        gdth_execute(ha->shost, &gdtcmd, cmnd, 10, NULL);
--#endif
--    }
--    printk("Done.\n");
--
--#ifdef GDTH_STATISTICS
--    del_timer(&gdth_timer);
--#endif
--    return NOTIFY_OK;
--}
--
- /* configure lun */
- static int gdth_slave_configure(struct scsi_device *sdev)
- {
-@@ -5141,13 +5097,13 @@ static void gdth_remove_one(gdth_ha_str *ha)
- 
- 	scsi_remove_host(shp);
- 
-+	gdth_flush(ha);
-+
- 	if (ha->sdev) {
- 		scsi_free_host_dev(ha->sdev);
- 		ha->sdev = NULL;
- 	}
- 
--	gdth_flush(ha);
--
- 	if (shp->irq)
- 		free_irq(shp->irq,ha);
- 
-@@ -5235,8 +5191,6 @@ static int __init gdth_init(void)
- 	add_timer(&gdth_timer);
- #endif
- 	major = register_chrdev(0,"gdth", &gdth_fops);
--	notifier_disabled = 0;
--	register_reboot_notifier(&gdth_notifier);
- 	gdth_polling = FALSE;
- 	return 0;
- }
-@@ -5245,14 +5199,14 @@ static void __exit gdth_exit(void)
- {
- 	gdth_ha_str *ha;
- 
--	list_for_each_entry(ha, &gdth_instances, list)
--		gdth_remove_one(ha);
-+	unregister_chrdev(major,"gdth");
- 
- #ifdef GDTH_STATISTICS
--	del_timer(&gdth_timer);
-+	del_timer_sync(&gdth_timer);
- #endif
--	unregister_chrdev(major,"gdth");
--	unregister_reboot_notifier(&gdth_notifier);
-+
-+	list_for_each_entry(ha, &gdth_instances, list)
-+		gdth_remove_one(ha);
- }
- 
- module_init(gdth_init);
 -- 
-1.5.3.3
-
-
+regards,
+Dhaval
