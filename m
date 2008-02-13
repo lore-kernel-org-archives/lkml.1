@@ -1,81 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbYBMRkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933091AbYBMRnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933383AbYBMRkt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755966AbYBMRkl
+	id S933091AbYBMRnX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:43:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbYBMRnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:40:41 -0500
-Received: from mail.parknet.ad.jp ([210.171.162.6]:56741 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755725AbYBMRkk (ORCPT
+	Wed, 13 Feb 2008 12:43:15 -0500
+Received: from frankvm.xs4all.nl ([80.126.170.174]:35901 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753450AbYBMRnO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:40:40 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Bart Dopheide <dopheide@fmf.nl>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Bartlomiej Zolnierkiewicz <mzolnier@gmail.com>
-Subject: Re: Kernel BUG at fs/mpage.c:489
-References: <20080212194546.GA2174@fmf.nl> <20080212215006.170ade88@core>
-	<200802131205.45493.nickpiggin@yahoo.com.au>
-	<20080213072627.GB2174@fmf.nl>
-	<20080213010145.76ee9714.akpm@linux-foundation.org>
-Date: Thu, 14 Feb 2008 02:40:20 +0900
-In-Reply-To: <20080213010145.76ee9714.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Wed, 13 Feb 2008 01:01:45 -0800")
-Message-ID: <87zlu492m3.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
-MIME-Version: 1.0
+	Wed, 13 Feb 2008 12:43:14 -0500
+X-Greylist: delayed 4664 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 12:43:14 EST
+Date: Wed, 13 Feb 2008 17:25:28 +0100
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: linux-kernel@vger.kernel.org
+Subject: Machine check exception with a kernel dependency
+Message-ID: <20080213162528.GA32635@janus>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On at least two Dell optiplex 755 systems with a Core 2 Duo I get
 
-> On Wed, 13 Feb 2008 08:26:27 +0100 Bart Dopheide <dopheide@fmf.nl> wrote:
->
->> On Wed, Feb 13, 2008 at 12:05:45PM +1100, Nick Piggin wrote:
->> :)On Wednesday 13 February 2008 08:50, Alan Cox wrote:
->> :)> Almost certainly a hardware fail of some sort.
->> :)
->> :)Right, but the kernel shouldn't go bug...
->> 
->> Indeed, that's why I'm reporting.
->> 
->> 
->> :)I don't have a copy of your exact source code... which condition in
->> :)__mpage_writepage went BUG?
->> 
->> BUG_ON(buffer_locked(bh));
->> 
->> In a bit of context:
->> 482:    if (page_has_buffers(page)) {
->> 483:            struct buffer_head *head = page_buffers(page);
->> 484:            struct buffer_head *bh = head;
->> 485:
->> 486:            /* If they're all mapped and dirty, do it */
->> 487:            page_block = 0;
->> 488:            do {
->> 489:                    BUG_ON(buffer_locked(bh));
->> 490:                    if (!buffer_mapped(bh)) {
->> 491:                            /*
->> 492:                             * unmapped dirty buffers are created by
->> 493:                             * __set_page_dirty_buffers -> mmapped data
->> 494:                             */
->> 495:                            if (buffer_dirty(bh))
->> 496:                                    goto confused;
->> 497:                            if (first_unmapped == blocks_per_page)
->> 498:                                    first_unmapped = page_block;
->> 499:                            continue;
->> 500:                    }
->> 
->
-> Probably means that either fat, IDE, block or fs/buffer.c failed to unlock a buffer_head
-> when the IO error happened.  It's unlikely to be fat.
+Feb 13 15:14:01 inari CPU 1: Machine Check Exception: 0000000000000004 
+Feb 13 15:14:01 inari CPU 0: Machine Check Exception: 0000000000000005 
+Feb 13 15:14:01 inari Bank 0: b200004000000800 
+Feb 13 15:14:01 inari Bank 5: b200221024080400 
 
-Yes. FAT does almost nothing on this path. Um...
+2.6.22.10 shows the problem, 2.6.24.2 ditto but I'm unable to reproduce
+it with 2.6.24-rc8. BIOS upgrade didn't help. Removing all PCI[e] cards
+didn't help either.
+
+Does it make sense to try to pinpoint the problem to a particular
+changeset (using git bisect I guess but I've never used it) or is the
+hardware just broken?
+
 -- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Frank
