@@ -1,56 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760625AbYBMSZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYBMSby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760625AbYBMSZa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 13:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751883AbYBMSZV
+	id S1758223AbYBMSby (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 13:31:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbYBMSbq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 13:25:21 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:63137 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751847AbYBMSZU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 13:25:20 -0500
-Message-ID: <47B335A6.3080806@oracle.com>
-Date: Wed, 13 Feb 2008 10:23:34 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: mgross@linux.intel.com
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH]intel-iommu batched iotlb flushes
-References: <20080211224105.GB24412@linux.intel.com> <20080211152716.65f5a753.randy.dunlap@oracle.com> <20080212160553.GD27490@linux.intel.com> <47B1CA9F.80004@oracle.com> <20080212195532.GA29132@linux.intel.com> <47B1FFB4.7010904@oracle.com> <20080213181029.GA1162@linux.intel.com>
-In-Reply-To: <20080213181029.GA1162@linux.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 13 Feb 2008 13:31:46 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:56972 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751806AbYBMSbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 13:31:45 -0500
+Date: Wed, 13 Feb 2008 19:30:51 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Dan Williams <dan.j.williams@intel.com>, linux-kernel@vger.kernel.org,
+       Shannon Nelson <shannon.nelson@intel.com>,
+       David Brownell <david-b@pacbell.net>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: [RFC v2 5/5] Atmel MCI: Driver for Atmel on-chip MMC
+ controllers
+Message-ID: <20080213193051.1a7e3b29@poseidon.drzeus.cx>
+In-Reply-To: <1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
+References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
+	<1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Index: linux-2.6.24-mm1/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/Documentation/kernel-parameters.txt	2008-02-12 07:12:06.000000000 -0800
-> +++ linux-2.6.24-mm1/Documentation/kernel-parameters.txt	2008-02-12 11:36:07.000000000 -0800
-> @@ -822,6 +822,10 @@
->  			than 32 bit addressing. The default is to look
->  			for translation below 32 bit and if not available
->  			then look in the higher range.
-> +		strict [Default Off]
-> +			With this option on every umap_single operation will
+On Tue, 29 Jan 2008 19:10:13 +0100
+Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-so I'll ask one more time :(
-Shouldn't this be "unmap_single" ?
+> +
+> +/* Those printks take an awful lot of time... */
+> +#ifndef DEBUG
+> +static unsigned int fmax = 15000000U;
+> +#else
+> +static unsigned int fmax = 1000000U;
+> +#endif
+> +module_param(fmax, uint, 0444);
+> +MODULE_PARM_DESC(fmax, "Max frequency in Hz of the MMC bus clock");
+> +
 
-> +			result in a hardware IOTLB flush operation as opposed
-> +			to batching them for performance.
->  
->  	io_delay=	[X86-32,X86-64] I/O delay method
->  		0x80
+I think this was meant to go away.
 
+> +
+> +static int req_dbg_open(struct inode *inode, struct file *file)
+> +{
+
+And this should go into the core.
+
+> +
+> +static int __exit atmci_remove(struct platform_device *pdev)
+> +{
+> +	struct atmel_mci *host = platform_get_drvdata(pdev);
+> +
+> +	platform_set_drvdata(pdev, NULL);
+> +
+> +	if (host) {
+> +		atmci_cleanup_debugfs(host);
+> +
+> +		if (host->detect_pin >= 0) {
+> +			free_irq(gpio_to_irq(host->detect_pin),host->mmc);
+> +			cancel_delayed_work(&host->mmc->detect);
+
+I also pointed this out. mmc_remove_host() will synchronize this for
+you.
 
 -- 
-~Randy
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
