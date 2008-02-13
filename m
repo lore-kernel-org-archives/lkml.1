@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932323AbYBMJG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbYBMJHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932323AbYBMJG1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:06:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932251AbYBMJF1
+	id S1760077AbYBMJHJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:07:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932090AbYBMJFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:05:27 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:16503 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932238AbYBMJFR (ORCPT
+	Wed, 13 Feb 2008 04:05:31 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60648
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932242AbYBMJFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:05:17 -0500
-Message-ID: <47B2B268.1070702@panasas.com>
-Date: Wed, 13 Feb 2008 11:03:36 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>
-CC: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com> <47B1DA2A.1060904@panasas.com> <47B29702.7050503@allied-internet.ag>
-In-Reply-To: <47B29702.7050503@allied-internet.ag>
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 13 Feb 2008 04:05:19 -0500
+Date: Wed, 13 Feb 2008 01:05:50 -0800 (PST)
+Message-Id: <20080213.010550.211671868.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT]: Make LMB code sharable with sparc64.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080213085735.GB8091@uranus.ravnborg.org>
+References: <20080213.004120.22092044.davem@davemloft.net>
+	<20080213085735.GB8091@uranus.ravnborg.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Feb 2008 09:03:49.0494 (UTC) FILETIME=[58EBA960:01C86E1F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13 2008 at 9:06 +0200, Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag> wrote:
-> Hello!
-> 
-> I've tested this patch now - and it works fine. Now rmmod, halt and 
-> reboot also works.
-> 
-> Stefan Priebe
-> 
-This is grate news Stefan. Thank you very much for all your time
-and effort, with out we could not have fixed all this.
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Wed, 13 Feb 2008 09:57:35 +0100
 
-Boaz
+> Review had been easier if the patch was inlined.
+
+Sorry :)
+
+> Can we plase have this changed to use:
+> 
+>  config SPARC64
+> +	select HAVE_LMB
+> 
+> And then in lib/Kconfig have
+> +config HAVE_LMB
+> +	bool
+> 
+> So we avoid creating a new variable each time we introdce LMB support.
+> You would need to update powerpc Kconfig too of course.
+
+Sure, I'll rework this in the next day or so to do things
+that way.
+
+Thanks for the review.
