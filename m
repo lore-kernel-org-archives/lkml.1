@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759163AbYBMMbr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758771AbYBMMf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759163AbYBMMbr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:31:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYBMMbk
+	id S1758771AbYBMMf3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:35:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbYBMMfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:31:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48742 "EHLO mx3.mail.elte.hu"
+	Wed, 13 Feb 2008 07:35:20 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:37197 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752513AbYBMMbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:31:39 -0500
-Date: Wed, 13 Feb 2008 13:31:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jody Belka <lists-lkml@pimb.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Miguel Boton <mboton@gmail.com>
-Subject: Re: [PATCH] x86: fixup machine_ops reboot_{32|64}.c unification
-	fallout
-Message-ID: <20080213123126.GB5722@elte.hu>
-References: <20080212233748.GX7980@pimb.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212233748.GX7980@pimb.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1752040AbYBMMfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 07:35:19 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20080212154749.de96c277.akpm@linux-foundation.org>
+References: <20080212154749.de96c277.akpm@linux-foundation.org> <20080208160424.14436.6965.stgit@warthog.procyon.org.uk> <20080208160429.14436.88582.stgit@warthog.procyon.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dhowells@redhat.com, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] KEYS: Check starting keyring as part of search
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Wed, 13 Feb 2008 12:35:14 +0000
+Message-ID: <7988.1202906114@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-* Jody Belka <lists-lkml@pimb.org> wrote:
+> > +	    (keyring->expiry && now.tv_sec >= keyring->expiry))
+> 
+> time_after()?
 
-> Please cc on any replies, thanks.
-> ---
-> When reboot_32.c and reboot_64.c were unified (commit 4d022e35fd...),
-> the machine_ops code was broken, leading to xen pvops kernels failing
-> to properly halt/poweroff/reboot etc. This fixes that up.
+Possibly.  tv_sec oughtn't to wrap, though.  I thought time_after() is really
+for comparing jiffies which might wrap.
 
-thanks Jody, applied.
-
-	Ingo
+David
