@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935541AbYBMWH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935601AbYBMWId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935541AbYBMWH7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:07:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932401AbYBMWF0
+	id S935601AbYBMWId (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935237AbYBMWFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:05:26 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:44649 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933786AbYBMWFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:05:23 -0500
-Date: Wed, 13 Feb 2008 14:05:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: shemminger@vyatta.com, davem@davemloft.net, netdev@vger.kernel.org,
-       dipankar@in.ibm.com, ego@in.ibm.com, herbert@gondor.apana.org.au,
-       akpm@linux-foundation.org
-Subject: [PATCH 2/2] add rcu_assign_index() if ever needed
-Message-ID: <20080213220515.GA10642@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080213220024.GA30729@linux.vnet.ibm.com>
+	Wed, 13 Feb 2008 17:05:54 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:57434 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934466AbYBMWFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:05:52 -0500
+Date: Thu, 14 Feb 2008 00:05:37 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: "Ed L. Cashin" <ecashin@coraid.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] #if 0 aoedev_isbusy()
+Message-ID: <20080213220537.GA24319@cs181133002.pp.htv.fi>
+References: <20080213213002.GT3383@cs181133002.pp.htv.fi> <Pine.LNX.4.64.0802132303150.29154@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080213220024.GA30729@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0802132303150.29154@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello again!
+On Wed, Feb 13, 2008 at 11:03:35PM +0100, Jan Engelhardt wrote:
+> 
+> On Feb 13 2008 23:30, Adrian Bunk wrote:
+> >
+> >This patch #if 0's the no longer used aoedev_isbusy().
+> 
+> Why not just remove it? (It can be resurrected from earlier
+> revisions should it be needed again.)
 
-This is a speculative patch that as far as I can tell is not yet required.
-If anyone applies RCU to a data structure allocated out of an array, using
-array indexes in place of pointers to link the array elements together,
-then the rcu_assign_index() function in this patch will be needed to
-assign a given element's array index to the RCU-traversed index.  The
-implementation is exactly that of the old rcu_assign_pointer(), so is
-extremely well tested.
+I've switched to doing #if 0 instead since this addresses the
+"It might be needed in the future." answer I otherwise sometimes
+got.
 
-The existing rcu_assign_pointer() will emit a compiler warning in cases
-where rcu_assign_index() is required.
+But if a maintainer wants to have such a function deleted instead that's 
+fine with me.
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
+cu
+Adrian
 
- rcupdate.h |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+-- 
 
-diff -urpNa -X dontdiff linux-2.6.24-rap/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
---- linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
-+++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-13 10:55:40.000000000 -0800
-@@ -286,6 +286,24 @@ extern struct lockdep_map rcu_lock_map;
- 	})
- 
- /**
-+ * rcu_assign_index - assign (publicize) a index of a newly
-+ * initialized array elementg that will be dereferenced by RCU
-+ * read-side critical sections.  Returns the value assigned.
-+ *
-+ * Inserts memory barriers on architectures that require them
-+ * (pretty much all of them other than x86), and also prevents
-+ * the compiler from reordering the code that initializes the
-+ * structure after the index assignment.  More importantly, this
-+ * call documents which indexes will be dereferenced by RCU read-side
-+ * code.
-+ */
-+
-+#define rcu_assign_index(p, v)	({ \
-+					smp_wmb(); \
-+					(p) = (v); \
-+				})
-+
-+/**
-  * synchronize_sched - block until all CPUs have exited any non-preemptive
-  * kernel code sequences.
-  *
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
