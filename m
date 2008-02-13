@@ -1,124 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763175AbYBMPzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbYBMP5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763175AbYBMPzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756533AbYBMPzn
+	id S932308AbYBMP5Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYBMP5B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:55:43 -0500
-Received: from spirit.analogic.com ([204.178.40.4]:2356 "EHLO
-	spirit.analogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754896AbYBMPzm convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 10:57:01 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:36319 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756533AbYBMP5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:55:42 -0500
+	Wed, 13 Feb 2008 10:57:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type;
+        b=Iqu2hcC+pvKmcuqPMUCVyu8SbzaOBvjoN3ureyFJcCeTlMjGhVFAt9zpeTGpVhznRz2PyBuhDiDDH1Ugz28GPMQedG7+viHjdsNYOk0MiD0KAn0xSnzm04yxUOAdmrialDpjX43NQb1v8fzxFsRX5IDt3zW12hPgvSeKE+FdbvA=
+Date: Wed, 13 Feb 2008 10:56:40 -0500 (EST)
+From: Parag Warudkar <parag.warudkar@gmail.com>
+X-X-Sender: parag@mini.warudkars.net
+Reply-To: parag.warudkar@gmail.com
+To: Marc Perkel <mperkel@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux Compatible USB Adapter Recommendations? [OT]
+In-Reply-To: <644725.69797.qm@web52504.mail.re2.yahoo.com>
+Message-ID: <alpine.LRH.1.00.0802131050050.4526@mini.warudkars.net>
+References: <644725.69797.qm@web52504.mail.re2.yahoo.com>
+User-Agent: Alpine 1.00 (LRH 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-X-OriginalArrivalTime: 13 Feb 2008 15:55:36.0615 (UTC) FILETIME=[DF832370:01C86E58]
-Content-class: urn:content-classes:message
-Subject: Re: [PATCH] fs/coda: remove static inline forward declarations
-Date: Wed, 13 Feb 2008 10:55:35 -0500
-Message-ID: <Pine.LNX.4.61.0802131052520.4866@chaos.analogic.com>
-In-Reply-To: <Pine.LNX.4.64.0802131554180.31652@kivilampi-30.cs.helsinki.fi>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] fs/coda: remove static inline forward declarations
-Thread-Index: AchuWN+PI18z/TP3SxWl+ulL3BagXQ==
-References: <Pine.LNX.4.64.0802131417460.31652@kivilampi-30.cs.helsinki.fi> <Pine.LNX.4.61.0802130838100.4463@chaos.analogic.com> <Pine.LNX.4.64.0802131554180.31652@kivilampi-30.cs.helsinki.fi>
-From: "linux-os (Dick Johnson)" <linux-os@analogic.com>
-To: =?iso-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: <jaharkes@cs.cmu.edu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-Reply-To: "linux-os (Dick Johnson)" <linux-os@analogic.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 13 Feb 2008, [iso-8859-1] Ilpo Järvinen wrote:
 
-> On Wed, 13 Feb 2008, linux-os (Dick Johnson) wrote:
->>
->> On Wed, 13 Feb 2008, [iso-8859-1] Ilpo Järvinen wrote:
->>
->>> They're defined later on in the same file with bodies and
->>> nothingin between needs them.
->>>
->>> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
->>> ---
->>> include/linux/coda_linux.h |    3 ---
->>> 1 files changed, 0 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/include/linux/coda_linux.h b/include/linux/coda_linux.h
->>> index 1c47a34..31b7531 100644
->>> --- a/include/linux/coda_linux.h
->>> +++ b/include/linux/coda_linux.h
->>> @@ -43,9 +43,6 @@ int coda_getattr(struct vfsmount *, struct dentry *, struct kstat *);
->>> int coda_setattr(struct dentry *, struct iattr *);
->>>
->>> /* this file:  heloers */
->>> -static __inline__ struct CodaFid *coda_i2f(struct inode *);
->>> -static __inline__ char *coda_i2s(struct inode *);
->>> -static __inline__ void coda_flag_inode(struct inode *, int flag);
->>> char *coda_f2s(struct CodaFid *f);
->>> int coda_isroot(struct inode *i);
->>> int coda_iscontrol(const char *name, size_t length);
->>> --
->>> 1.5.2.2
->>>
->>
->> I was taught formally that all procedures must be declared
->> before they are encountered in a file. This constitutes what
->> is generally known as "good standards of engineering practice."
->> It also guarantees a compiler diagnostic if the declaration and
->> the function doesn't match.
->
-> They still are declared before they are used (the other two functions are
-> similar to this randomly picked example):
->
-> $ grep "coda_i2f" include/linux/coda_linux.h
-> static __inline__ struct CodaFid *coda_i2f(struct inode *);
-> static __inline__ struct CodaFid *coda_i2f(struct inode *inode)
->
-> I removed the first one of these. The latter is followed by the body of
-> the function.
->
-> By using some fuzzy word like "encountered" you just make your point
-> obscure enough so that I cannot follow what you're trying to say. If you
-> refer to use of the function by "encountering", then that property is
-> still maintained and we still get all the type-checking and so on (even
-> after this removal).
->
->> You should not remove things just because you don't think they
->> are necessary. They do no harm and removing them can cause
->> code checking tools to issue diagnostic messages.
->
-> Do you really think so? I mean in this specific case, did you even
-> bothered to check the file before hitting the send button? ...I just fail
-> to see what is your point in keeping these three because they're declared
-> later on in the same file, though with the body at that time. Do you also
-> claim that all the other ~5000+ static inlines with body in kernel headers
-> (but not forward declared) are not following those "good standards" you're
-> asking for (they certainly won't issue extra diagnostic messages)?
->
->
-> -- 
-> i.
->
+On Wed, 13 Feb 2008, Marc Perkel wrote:
 
-Have you EVER seen the diagnostic message, "function is not a prototype?"
+> I'm looking to buy a wireless USB adapter that I can
+> plug into a Fedora 8 box. The main feature I want it
+> to be able to stick it in and have it just work. No
+> custom kernel compiles. If it had 802.11n that would
+> be a plus. 
+> 
+> So - what "just works" with Linux?
+> 
 
-It's rhetorical. You don't have to answer. Furthermore "encountered" is
-not fuzzy.
+I use this Belkin one which has a RaLink chipset -
+http://catalog.belkin.com/IWCatProductPage.process?Product_Id=179211 
 
-Cheers,
-Dick Johnson
-Penguin : Linux version 2.6.22.1 on an i686 machine (5588.28 BogoMips).
-My book : http://www.AbominableFirebug.com/
-_
+It is not .11n but I never had any problems with Fedora 8 or Ubuntu 7.10 - 
+well apart from fiddling with module blacklists that is. (This card is 
+claimed by two drivers in the kernel and the one that gets loaded does not 
+work - so I have to blacklist it.) But apart from that it just works - 
+even with NetWorkManager.
 
-****************************************************************
-The information transmitted in this message is confidential and may be privileged.  Any review, retransmission, dissemination, or other use of this information by persons or entities other than the intended recipient is prohibited.  If you are not the intended recipient, please notify Analogic Corporation immediately - by replying to this message or by sending an email to DeliveryErrors@analogic.com - and destroy all copies of this information, including any attachments, without reading or disclosing them.
+Recently I was hunting for a .11n USB card that works with Linux without 
+the ndiswrapper crap but wasn't able to find one.
 
-Thank you.
+You want to make sure though that you get the Ralink chipset with the card 
+revision you buy - similarly named different version cards having totally 
+different chipsets is not considered weird in that world. 
+
+Parag 
