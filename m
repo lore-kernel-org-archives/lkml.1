@@ -1,124 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763507AbYBMD0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758342AbYBMDc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763507AbYBMD0A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 22:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752170AbYBMDZw
+	id S1758342AbYBMDc3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 22:32:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbYBMDcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 22:25:52 -0500
-Received: from quartz.orcorp.ca ([142.179.161.236]:57013 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752073AbYBMDZv (ORCPT
+	Tue, 12 Feb 2008 22:32:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57912 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752078AbYBMDcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 22:25:51 -0500
-Date: Tue, 12 Feb 2008 20:25:33 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Rik van Riel <riel@redhat.com>,
-       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-Message-ID: <20080213032533.GC32047@obsidianresearch.com>
-References: <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com> <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com> <20080213012638.GD31435@obsidianresearch.com> <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 12 Feb 2008 22:32:16 -0500
+Date: Tue, 12 Feb 2008 19:31:43 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
+       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: <1202871616.3137.197.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.1.00.0802121904270.2920@woody.linux-foundation.org>
+References: <47B1CB08.4020101@garzik.org>  <20080212.155853.193190548.davem@davemloft.net>  <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>  <20080212.172051.58554658.davem@davemloft.net>  <1202869550.3137.182.camel@localhost.localdomain> 
+ <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org> <1202871616.3137.197.camel@localhost.localdomain>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 06:35:09PM -0800, Christoph Lameter wrote:
-> On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
+
+
+On Tue, 12 Feb 2008, James Bottomley wrote:
 > 
-> > The problem is that the existing wire protocols do not have a
-> > provision for doing an 'are you ready' or 'I am not ready' exchange
-> > and they are not designed to store page tables on both sides as you
-> > propose. The remote side can send RDMA WRITE traffic at any time after
-> > the RDMA region is established. The local side must be able to handle
-> > it. There is no way to signal that a page is not ready and the remote
-> > should not send.
-> > 
-> > This means the only possible implementation is to stall/discard at the
-> > local adaptor when a RDMA WRITE is recieved for a page that has been
-> > reclaimed. This is what leads to deadlock/poor performance..
-> 
-> You would only use the wire protocols *after* having established the RDMA 
-> region. The notifier chains allows a RDMA region (or parts thereof) to be 
-> down on demand by the VM. The region can be reestablished if one of 
-> the side accesses it. I hope I got that right. Not much exposure to 
-> Infiniband so far.
+> Right at the moment, I maintain a <branch> and a <branch>-base and
+> simply cherry pick the commits between the two to do the right thing
+> when I know my volatile base has changed.  It would be very helpful to
+> have a version of rebase that new my base had been rebased.
 
-[clip explaination]
+Hey, I know, you could use.. drumroll..
 
-But this isn't how IB or iwarp work at all. What you describe is a
-significant change to the general RDMA operation and requires changes to
-both sides of the connection and the wire protocol.
+	"git rebase"
 
-A few comments on RDMA operation that might clarify things a little
-bit more:
- - In RDMA (iwarp and IB versions) the hardware page tables exist to
-   linearize the local memory so the remote does not need to be aware
-   of non-linearities in the physical address space. The main
-   motivation for this is kernel bypass where the user space app wants
-   to instruct the remote side to DMA into memory using user space
-   addresses. Hardware provides the page tables to switch from
-   incoming user space virtual addresses to physical addresess.
+I know that's a big leap of faith, to use git rebase for rebasing, but 
+there you have it. Us git people are kind of odd that way.
 
-   This greatly simplifies the user space programming model since you
-   don't need to pass around or create s/g lists for memory that is
-   already virtually continuous.
+IOW, if you know the old broken base, and the new base, just do
 
-   Many kernel RDMA drivers (SCSI, NFS) only use the HW page tables
-   for access control and enforcing the liftime of the mapping.
+	git rebase --onto newbase oldbase
 
-   The page tables in the RDMA hardware exist primarily to support
-   this, and not for other reasons. The pinning of pages is one part
-   to support the HW page tables and one part to support the RDMA
-   lifetime rules, the liftime rules are what cause problems for
-   the VM.
- - The wire protocol consists of packets that say 'Write XXX bytes to
-   offset YY in Region RRR'. Creating a region produces the RRR label
-   and currently pins the pages. So long as the RRR label is valid the
-   remote side can issue write packets at any time without any
-   further synchronization. There is no wire level events associated
-   with creating RRR. You can pass RRR to the other machine in any
-   fashion, even using carrier pigeons :)
- - The RDMA layer is very general (ala TCP), useful protocols (like SCSI)
-   are built on top of it and they specify the lifetime rules and
-   protocol for exchanging RRR.
+and it should do exactly that (basically lots of automated cherry-picks).
 
-   Every protocol is different. In kernel protocols like SRP and NFS
-   RDMA seem to have very short lifetimes for RRR and work more like
-   pci_map_* in real SCSI hardware.
- - HPC userspace apps, like MPI apps, have different lifetime rules
-   and tend to be really long lived. These people will not want
-   anything that makes their OPs more expensive and also probably
-   don't care too much about the VM problems you are looking at (?)
- - There is no protocol support to exchange RRR. This is all done
-   by upper level protocols (ala HTTP vs TCP). You cannot assert
-   and revoke RRR in a general way. Every protocol is different
-   and optimized.
+[ But the fact is, if you did anything fancy (like pulled in other peoples 
+  work), you cannot sanely rebase _those_ peoples work. They didn't screw 
+  up to begin with! You can play with "git rebase -i --preserve-merges", 
+  of course, but I really think you're doing something wrong if you start 
+  pulling other peoples work into an unstable thing, so while it may work, 
+  I'd strongly suggest against even trying, because the problem is your 
+  workflow ]
 
-   This is your step 'A will then send a message to B notifying..'.
-   It simply does not exist in the protocol specifications
+So let's say that you have a remote branch that you track that goes 
+rebasing (let's call it "origin/pu" to match the real-life git behaviour), 
+then you should literally be able to do
 
-I don't know much about Quadrics, but I would be hesitant to lump it
-in too much with these RDMA semantics. Christian's comments sound like
-they operate closer to what you described and that is why the have an
-existing patch set. I don't know :)
+	old=$(git rev-parse origin/pu)	&&
+	git fetch			&&
+	new=$(git rev-parse origin/pu)	&&
+	git rebase --onto $new $old
 
-What it boils down to is that to implement true removal of pages in a
-general way the kernel and HCA must either drop packets or stall
-incoming packets, both are big performance problems - and I can't see
-many users wanting this. Enterprise style people using SCSI, NFS, etc
-already have short pin periods and HPC MPI users probably won't care
-about the VM issues enough to warrent the performance overhead.
+and no, I didn't actually test it, but hey, it really should be that 
+simple.
 
-Regards,
-Jason
+[ And no, you don't really need to do those "old=" and "new=" things, they 
+  are there to make it explicit - you could easily just have done
+
+	git fetch
+	.. oh, noticed that origin/pu changed ..
+	git rebase --onto origin/pu origin/pu@{1}
+
+  where we just let git take care of the old/new itself using the reflog, 
+  so that "origin/pu@{1}" assumes that you just know that the only thing 
+  that has changed origin/pu was that previous "git fetch", and that 
+  really *did* change it. ]
+
+In other words, git does give you exactly what you want, but nothing 
+really changes the fact that you should only rebase like this only if:
+
+ - you haven't already exported the result (or only exported it as those 
+   unstables branches that people know to avoid)
+
+ - your changes on top are just your own linear series of commits (where 
+   "applying a patch from somebody else" is still _your_ commit, of 
+   course, just with authorship attributed to somebody else)
+
+so that part really is very fundamental.
+
+			Linus
