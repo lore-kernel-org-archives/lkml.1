@@ -1,112 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765021AbYBMHM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765512AbYBMHOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765021AbYBMHM1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754176AbYBMHMS
+	id S1765512AbYBMHOW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYBMHOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:12:18 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:37162 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYBMHMR (ORCPT
+	Wed, 13 Feb 2008 02:14:12 -0500
+Received: from server077.de-nserver.de ([62.27.12.245]:57929 "EHLO
+	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754306AbYBMHOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:12:17 -0500
-To: Gregor Radtke <mail@g-radtke.name>
-Cc: "Martin K. Petersen" <martin.petersen@oracle.com>,
-       linux-kernel@vger.kernel.org, Tim Kunschke <beatmeistah@web.de>
-Subject: Re: [PATCH] pata_cs5536 Fix secondary port configuration
-From: "Martin K. Petersen" <martin.petersen@oracle.com>
-Organization: Oracle
-References: <1202158828.6229.22.camel@desktop.ein-elch.local>
-	<yq163x47wsy.fsf@sermon.lab.mkp.net>
-	<1202662829.6418.8.camel@desktop.ein-elch.local>
-	<yq1myq6p7fe.fsf_-_@sermon.lab.mkp.net>
-	<1202858221.6419.33.camel@desktop.ein-elch.local>
-Date: Wed, 13 Feb 2008 02:12:06 -0500
-In-Reply-To: <1202858221.6419.33.camel@desktop.ein-elch.local> (Gregor Radtke's message of "Wed\, 13 Feb 2008 00\:17\:01 +0100")
-Message-ID: <yq163wtpby1.fsf@sermon.lab.mkp.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Wed, 13 Feb 2008 02:14:11 -0500
+Message-ID: <47B29702.7050503@allied-internet.ag>
+Date: Wed, 13 Feb 2008 08:06:42 +0100
+From: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>
+Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com> <47B1DA2A.1060904@panasas.com>
+In-Reply-To: <47B1DA2A.1060904@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-User-Auth: Auth by hostmaster@profihost.com through 85.158.179.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Gregor" == Gregor Radtke <mail@g-radtke.name> writes:
+Hello!
 
-Gregor> boots! 
+I've tested this patch now - and it works fine. Now rmmod, halt and 
+reboot also works.
 
-Excellent.  Thanks for testing this!  I have sent the patch upstream.
-
-
-Gregor> Anyway, the patch fits perfectly and now UDMA/33 (due to
-Gregor> 40wire-cable, vendor says UDMA/100 should work either) on a
-Gregor> HDD using pata_cs5536 just works =)
-
-pata_amd.c happens to ignore the 40/80 wire configuration bit on
-CS5536 and a couple of other chips.  That's why it negotiates
-UDMA/100 regardless of cable type.
-
-pata_cs5536.c relies on the BIOS telling it whether an 80-wire cable
-is connected or not.
-
-I have attached a patch that dumps the 5536 IDE configuration
-registers during boot. If you like you can apply that and mail me the
-resulting register dump.  That'll tell us how your BIOS initialized
-the chip.
-
--- 
-Martin K. Petersen	Oracle Linux Engineering
+Stefan Priebe
 
 
-diff -r b0dc16d276be drivers/ata/pata_cs5536.c
---- a/drivers/ata/pata_cs5536.c	Tue Feb 12 08:52:44 2008 -0500
-+++ b/drivers/ata/pata_cs5536.c	Wed Feb 13 01:51:00 2008 -0500
-@@ -73,6 +73,11 @@ enum {
- 	IDE_CAST_CMD_SHIFT	= 24,
- 
- 	IDE_ETC_NODMA		= 0x03,
-+
-+	CFG_REG_MASK		= 0x34002,
-+	DTC_REG_MASK		= 0xffff0000,
-+	CAST_REG_MASK		= 0xff0000f0,
-+	ETC_REG_MASK		= 0xc7c70000,
- };
- 
- static int use_msr;
-@@ -84,6 +89,23 @@ static const u8 pci_reg[4] = {
- static const u8 pci_reg[4] = {
- 	PCI_IDE_CFG, PCI_IDE_DTC, PCI_IDE_CAST, PCI_IDE_ETC,
- };
-+
-+static void cs5536_regs(void)
-+{
-+        u32 reg, dummy;
-+
-+        rdmsr(MSR_IDE_CFG, reg, dummy);
-+        printk(KERN_ERR " CFG  = 0x%08x\n", reg & CFG_REG_MASK);
-+
-+        rdmsr(MSR_IDE_DTC, reg, dummy);
-+        printk(KERN_ERR " DTC  = 0x%08x\n", reg & DTC_REG_MASK);
-+
-+        rdmsr(MSR_IDE_CAST, reg, dummy);
-+        printk(KERN_ERR " CAST = 0x%08x\n", reg & CAST_REG_MASK);
-+
-+        rdmsr(MSR_IDE_ETC, reg, dummy);
-+        printk(KERN_ERR " ETC  = 0x%08x\n", reg & ETC_REG_MASK);
-+}
- 
- static inline int cs5536_read(struct pci_dev *pdev, int reg, int *val)
- {
-@@ -303,6 +325,8 @@ static int cs5536_init_one(struct pci_de
- 		return -ENODEV;
- 	}
- 
-+	cs5536_regs();
-+
- 	return ata_pci_init_one(dev, ppi);
- }
- 
+Boaz Harrosh schrieb:
+> gdth _exit would first remove all cards then stop the timer
+> and would not sync with the timer function. This caused a crash
+> in gdth_timer() when module was unloaded.
+> 
+> del_timer_sync the timer before we delete the cards.
+> 
+> NOT YET TESTED
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  drivers/scsi/gdth.c |   15 ++++++++-------
+>  1 files changed, 8 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+> index 8eb78be..103280e 100644
+> --- a/drivers/scsi/gdth.c
+> +++ b/drivers/scsi/gdth.c
+> @@ -3793,6 +3793,8 @@ static void gdth_timeout(ulong data)
+>      gdth_ha_str *ha;
+>      ulong flags;
+>  
+> +    BUG_ON(list_empty(&gdth_instances));
+> +
+>      ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+>      spin_lock_irqsave(&ha->smp_lock, flags);
+>  
+> @@ -5146,8 +5148,6 @@ static void gdth_remove_one(gdth_ha_str *ha)
+>  		ha->sdev = NULL;
+>  	}
+>  
+> -	gdth_flush(ha);
+> -
+>  	if (shp->irq)
+>  		free_irq(shp->irq,ha);
+>  
+> @@ -5245,14 +5245,15 @@ static void __exit gdth_exit(void)
+>  {
+>  	gdth_ha_str *ha;
+>  
+> -	list_for_each_entry(ha, &gdth_instances, list)
+> -		gdth_remove_one(ha);
+> +	unregister_chrdev(major,"gdth");
+> +	unregister_reboot_notifier(&gdth_notifier);
+>  
+>  #ifdef GDTH_STATISTICS
+> -	del_timer(&gdth_timer);
+> +	del_timer_sync(&gdth_timer);
+>  #endif
+> -	unregister_chrdev(major,"gdth");
+> -	unregister_reboot_notifier(&gdth_notifier);
+> +
+> +	list_for_each_entry(ha, &gdth_instances, list)
+> +		gdth_remove_one(ha);
+>  }
+>  
+>  module_init(gdth_init);
