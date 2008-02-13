@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933013AbYBMW2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbYBMW3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933013AbYBMW2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754380AbYBMW2k
+	id S1754419AbYBMW3W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:29:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbYBMW26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:28:40 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:58427 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752738AbYBMW2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:28:38 -0500
-Date: Thu, 14 Feb 2008 00:28:22 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Miklos Szeredi <mszeredi@suse.cz>, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: uml compile error
-Message-ID: <20080213222822.GA12383@cs181133002.pp.htv.fi>
-References: <20080208223228.GD6505@cs181133002.pp.htv.fi> <200802132324.32114.rjw@sisk.pl>
+	Wed, 13 Feb 2008 17:28:58 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:3110 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764375AbYBMW24 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:28:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=NF2Uq8NbPCBoRq7wEx0Dit7NFGO5JiJsExCFYnAP+Wen0ihNTVA4qjTCeQuXXPYONwjn51qBOJctz4PhsgB+zK7HenVrXvtrVqjVJzWrO1q3rcIq3Aby6iyZBi3/l8irCFdjLGWKEysRLrXleTSvqDVB+9eA/1YAHx+ozX0EWqI=
+From: Alessandro Guido <alessandro.guido@gmail.com>
+To: hjk@linutronix.de
+Subject: [PATCH] Use menuconfig for CONFIG_UIO
+Date: Wed, 13 Feb 2008 23:28:19 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200802132324.32114.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200802132328.19310.alessandro.guido@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 11:24:31PM +0100, Rafael J. Wysocki wrote:
-> On Friday, 8 of February 2008, Adrian Bunk wrote:
-> > Commit dd2cc4dff3b08ab54c4c177a080046bcc84ac41d broke uml:
-> > 
-> > <-- snip  -->
-> > 
-> > ...
-> >   CC      fs/hostfs/hostfs_kern.o
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/fs/hostfs/hostfs_kern.c: In function ‘hostfs_show_options’:
-> > /home/bunk/linux/kernel-2.6/git/linux-2.6/fs/hostfs/hostfs_kern.c:328: error: dereferencing pointer to incomplete type
-> > make[3]: *** [fs/hostfs/hostfs_kern.o] Error 1
-> > 
-> > <--  snip  -->
-> 
-> Has it been fixed in the mainline?
+Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
 
-Yes.
+---
 
-> Rafael
+ drivers/uio/Kconfig |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index b778ed7..dce4cae 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -1,8 +1,6 @@
+-menu "Userspace I/O"
+-	depends on !S390
+-
+-config UIO
++menuconfig UIO
+ 	tristate "Userspace I/O drivers"
++	depends on !S390
+ 	default n
+ 	help
+ 	  Enable this to allow the userspace driver core code to be
+@@ -25,5 +23,3 @@ config UIO_CIF
+ 
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called uio_cif.
+-
+-endmenu
