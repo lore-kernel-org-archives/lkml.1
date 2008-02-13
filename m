@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYBMUPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761470AbYBMUSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYBMUPu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 15:15:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYBMUP2
+	id S1761470AbYBMUSc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 15:18:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754816AbYBMUSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 15:15:28 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:46862 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756075AbYBMUP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 15:15:27 -0500
-Date: Wed, 13 Feb 2008 21:15:33 +0100
-From: Matthias Kaehlcke <matthias@kaehlcke.net>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Adaptec AACRAID: convert fibctx->wait_sem to completion
-Message-ID: <20080213201533.GC27068@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	aacraid@adaptec.com, linux-scsi@vger.kernel.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20080213183444.GA27068@traven> <1202929740.3109.79.camel@localhost.localdomain>
+	Wed, 13 Feb 2008 15:18:24 -0500
+Received: from wx-out-0506.google.com ([66.249.82.227]:7814 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754382AbYBMUSX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 15:18:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FhdKJcSefUEPmuO01RN1NNLvoVV3Aja/beeuWdH8aYKDs09uxvJs0J0nEyyqR/V6le07i58gJXHq/eesrbfzxTSkbcqH1C/UqkR24pdmFYNGs7W79FntIx7ZBjWl9hvKqb9YxxPIN65K9qQTLjM/fgc8Y9+Vl35/6moR0skIF9U=
+Message-ID: <c4e36d110802131218i7bcc873bub5c8df96192b9563@mail.gmail.com>
+Date: Wed, 13 Feb 2008 21:18:21 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: print_vma_addr possible deadlock (was Re: Jeste jeden bug)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0802132039240.30955@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1202929740.3109.79.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com>
+	 <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz>
+	 <Pine.LNX.4.64.0802131757360.7699@twin.jikos.cz>
+	 <20080213193538.GA16402@elte.hu>
+	 <Pine.LNX.4.64.0802132039240.30955@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, Feb 13, 2008 at 01:09:00PM -0600 James Bottomley ha dit:
+2008/2/13, Jiri Kosina <jkosina@suse.cz>:
+> On Wed, 13 Feb 2008, Ingo Molnar wrote:
+>
+> > The longer-term fix will be to not run int3 exception handlers in a
+> > non-preemptible context (like 32-bit does) - but that will need more
+> > testing.
+>
+> Yup, exactly.
+>
+> > Jiri Kosina reported the following deadlock scenario with
+> > show_unhandled_signals enabled:
+>
+> Actually the kernel error message was reported to me by Zdenek. Zdenek,
+> could you please try the fix?
 
-> On Wed, 2008-02-13 at 19:34 +0100, Matthias Kaehlcke wrote:
-> > Adaptec AACRAID driver: The semaphore fibctx->wait_sem is used for
-> > signalling an event. Convert it to a completion.
-> 
-> What's the purpose of doing this?  The aacraid implementation seems to
-> be a classic PV semaphore, so why does it need to become a completion?
 
-i had another look at the code and i agree with you. i didn't realize that
-the semaphore is used as counting semaphore
+Ok - great I do not get this BUG log
+So this has fixed 2 problems a 3 other remains :)
 
-please redirect the patch to /dev/null
+I'll open them tomorrow I guess :) at my two were fixed pretty quickly.
 
-thanks for reviewing the patch and pointing out my mistake
+PS: Ingo did you have a chance to check my kernel IPI problem ?
 
--- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
-
-      In itself, homosexuality is as limiting as heterosexuality: the
-     ideal should be to be capable of loving a woman or a man; either,
-      a human being, without  feeling fear, restraint, or obligation
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Zdenek
