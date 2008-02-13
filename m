@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758658AbYBMBsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbYBMB6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758658AbYBMBsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbYBMBsa
+	id S1756692AbYBMB6w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:58:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbYBMB6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:48:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:47316 "EHLO
+	Tue, 12 Feb 2008 20:58:42 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39957 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753365AbYBMBs2 (ORCPT
+	by vger.kernel.org with ESMTP id S1753013AbYBMB6l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:48:28 -0500
-Date: Tue, 12 Feb 2008 17:46:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Tue, 12 Feb 2008 20:58:41 -0500
+Date: Tue, 12 Feb 2008 17:57:19 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
 To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org
+cc: bfields@fieldses.org, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, linville@tuxdriver.com
 Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-Id: <20080212174645.09db0e6b.akpm@linux-foundation.org>
-In-Reply-To: <20080212.171603.14132226.davem@davemloft.net>
-References: <47B1CB08.4020101@garzik.org>
-	<20080212.155853.193190548.davem@davemloft.net>
-	<20080212163742.c9e778e6.akpm@linux-foundation.org>
-	<20080212.171603.14132226.davem@davemloft.net>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080212.173817.111913348.davem@davemloft.net>
+Message-ID: <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org>
+References: <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org> <20080212.165014.01238510.davem@davemloft.net> <alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org> <20080212.173817.111913348.davem@davemloft.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 17:16:03 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> Date: Tue, 12 Feb 2008 16:37:42 -0800
+
+On Tue, 12 Feb 2008, David Miller wrote:
 > 
-> > Well there's a case in point.  rcupdate.h is not a part of networking, and
-> > it is random tree-wandering like this which causes me problems and which
-> > will cause Stephen problems.
-> > 
-> > Now, I don't know which tree "owns" rcupdate.h but it ain't networking. 
-> > Probably git-sched.
-> > 
-> > Nothing in networking depends upon that change (which has a typo in the
-> > comment, btw) hence it can and should have gone through
-> > whichever-tree-owns-that-file.
-> > 
-> > For Stephen's sake: please.
-> 
-> At least thie time I did make sure that change got posted to
-> linux-kernel and got properly reviewed by the de-facto maintainer
-> (Paul McKenney). :-)
+> Now how do I remove a bogus commit for a tree that I've already pushed
+> out and published for other people, without any record of it appearing
+> in the GIT tree any more?
 
-Ah, thanks for that - I'm behind in my lkml reading.  Again.
+So, the answer is: if others have actually pulled, it's simply not 
+possible.
 
-> I'll toss it.
+There simply is no way to undo history that isn't local any more. You just 
+*have* to revert, or you need to find every single person that pulled 
+(directly or indirectly) and ask them to undo all the work they did on top 
+of your bad commit.
 
-While I was there I spotted a howling bug in rcu_assign_pointer(): a
-double-touch of the second arg.  Nobody has done
+This is not git-related, btw. That's just how the world works. It's a bit 
+like the internet - if you said something stupid on #IRC and it made it to 
+bash.org, there's not a whole lot you can do to "undo" your stupidity. You 
+can only hope to do better in the future and assume people forget. 
 
-	rcu_assign_pointer(p, something_with_side_effects);
+> How do I insert build fixes into existing changesets so that the tree
+> is more bisectable?
 
-before?  That would be surpising...
+Just delay pushing out. There really is _zero_ downside to this. None at 
+all. There are only upsides.
 
-Paul has been informed ;)
+> If Jeff merged in a tree that introduced a ton of whitespace errors
+> git is complaing about, is there a way I can fixup that changeset
+> in-place? (or should I tell Jeff to start adhering to GIT's whitespace
+> warning messages when he applies patches?)
 
-> But how do I do that using GIT without rebasing and without
-> having this ugly changeset and revert in there?
+Umm. Git doesn't complain about whitespace _except_ when applying patches. 
+So if you don't rebase his work, you'll never see the whitespace warnings 
+either!
 
-Who, me?  umm, get git changed?  It seems pretty clear that it isn't
-matching legitimate kernel development workflow.  And it is a tool's job to
-do that, rather than forcing humans to change there practices.
+Of course, we'd probably wish that Jeff cared about the whitespace 
+warnings and pushed back on them, but the fact is, that warning isn't 
+meant for you - because by the time you pull Jeff's tree, it's simply not 
+your issue any more. Jeff already applied it. Either he's your trusted 
+lietenant or he's not.
 
-> That's the thing I want answered, and although Al claims it does,
-> git cherry-pick does not seem to do what I want either.
+Quite frankly, to me it sounds like you're not ready to "let go" and trust 
+the people under you. Trust me, it's worth it. It's why your life is easy: 
+I have let go and I trust you. 
+
+Also, I'd *much* rather have a few problems in the tree than have people 
+screw up history in order to hide them. Sure, we want to keep things 
+bisectable, but quite frankly, if you do a reasonable job and compile the 
+kernel before you push out, it will be "mostly bisectable".
+
+And yes, mistakes happen. Mistakes will *always* happen. It's ok. Relax. 
+
+Let me put it another way: You're _both_ going to be *much* better off 
+pushing back on Jeff, telling him that "I can't pull from you because your 
+tree is ugly and doesn't compile", than taking his tree and rebasing it.
+
+Remember? I used to do that all the time. I berated the ACPI people for 
+creating monster trees that were horrible and contained fifteen merges and 
+two real commits. I didn't try to clean it up for them, I just told them 
+what the problem was, and you know what? The ACPI tree is one of the 
+cleanest ones out there now!
+
+So in short:
+
+ - clean trees and bisectability are all wonderful things. No doubt about 
+   that at all.
+
+ - but if getting there means that you lose a lot of _other_ wonderful 
+   things (like being able to trust history, and the people being under 
+   your watchful eyes havign to deal with you re-writing their trees), 
+   we'd be much better off taking the occasional commit that fixes things 
+   up _after_ the fact rather than before!
+
+ - and you actually can help fix your issues by doing some simple things 
+   *before* pushing out, rather than push out immediately. IOW, do your 
+   whitespace sanity fixes, your compile checks etc early, and don't push 
+   out until after you've done them.
+
+Hmm?
+
+			Linus
