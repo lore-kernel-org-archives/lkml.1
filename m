@@ -1,87 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932952AbYBMJ36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbYBMJaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932952AbYBMJ36 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932761AbYBMJ3g
+	id S932973AbYBMJaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:30:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbYBMJah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:29:36 -0500
-Received: from styx.suse.cz ([82.119.242.94]:36982 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932711AbYBMJ3c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:29:32 -0500
-Date: Wed, 13 Feb 2008 10:29:30 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: [PATCH] udf: Fix readdir on UDF
-Message-ID: <20080213092930.GA6451@duck.suse.cz>
+	Wed, 13 Feb 2008 04:30:37 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32840 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760440AbYBMJae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:30:34 -0500
+Date: Wed, 13 Feb 2008 10:29:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
+       Matt Mackall <mpm@selenic.com>, Linux-tiny@selenic.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] x86: Configure out compilation of Simple Boot
+	Flag support
+Message-ID: <20080213092958.GB25258@elte.hu>
+References: <20080213094400.6b7f3446@crazy>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080213094400.6b7f3446@crazy>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch cleaning up UDF directory offset handling missed modifications in dir.c
-(because I've submitted an old version of the patch :() leading to broken
-readdir. Fix it.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-CC: Marcin Slusarz <marcin.slusarz@gmail.com>
+* Thomas Petazzoni <thomas.petazzoni@free-electrons.com> wrote:
 
-diff --git a/fs/udf/dir.c b/fs/udf/dir.c
-index 4b44e23..8d8643a 100644
---- a/fs/udf/dir.c
-+++ b/fs/udf/dir.c
-@@ -43,13 +43,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 	struct fileIdentDesc *fi = NULL;
- 	struct fileIdentDesc cfi;
- 	int block, iblock;
--	loff_t nf_pos = filp->f_pos - 1;
-+	loff_t nf_pos = (filp->f_pos - 1) << 2;
- 	int flen;
- 	char fname[UDF_NAME_LEN];
- 	char *nameptr;
- 	uint16_t liu;
- 	uint8_t lfi;
--	loff_t size = (udf_ext0_offset(dir) + dir->i_size) >> 2;
-+	loff_t size = udf_ext0_offset(dir) + dir->i_size;
- 	struct buffer_head *tmp, *bha[16];
- 	kernel_lb_addr eloc;
- 	uint32_t elen;
-@@ -63,13 +63,13 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		return 0;
- 
- 	if (nf_pos == 0)
--		nf_pos = (udf_ext0_offset(dir) >> 2);
-+		nf_pos = udf_ext0_offset(dir);
- 
--	fibh.soffset = fibh.eoffset = (nf_pos & ((dir->i_sb->s_blocksize - 1) >> 2)) << 2;
-+	fibh.soffset = fibh.eoffset = nf_pos & (dir->i_sb->s_blocksize - 1);
- 	iinfo = UDF_I(dir);
- 	if (iinfo->i_alloc_type == ICBTAG_FLAG_AD_IN_ICB) {
- 		fibh.sbh = fibh.ebh = NULL;
--	} else if (inode_bmap(dir, nf_pos >> (dir->i_sb->s_blocksize_bits - 2),
-+	} else if (inode_bmap(dir, nf_pos >> dir->i_sb->s_blocksize_bits,
- 			      &epos, &eloc, &elen, &offset) == (EXT_RECORDED_ALLOCATED >> 30)) {
- 		block = udf_get_lb_pblock(dir->i_sb, eloc, offset);
- 		if ((++offset << dir->i_sb->s_blocksize_bits) < elen) {
-@@ -111,7 +111,7 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 	}
- 
- 	while (nf_pos < size) {
--		filp->f_pos = nf_pos + 1;
-+		filp->f_pos = (nf_pos >> 2) + 1;
- 
- 		fi = udf_fileident_read(dir, &nf_pos, &fibh, &cfi, &epos, &eloc,
- 					&elen, &offset);
-@@ -178,7 +178,7 @@ static int do_udf_readdir(struct inode *dir, struct file *filp,
- 		}
- 	} /* end while */
- 
--	filp->f_pos = nf_pos + 1;
-+	filp->f_pos = (nf_pos >> 2) + 1;
- 
- 	if (fibh.sbh != fibh.ebh)
- 		brelse(fibh.ebh);
+> -	acpi_table_parse(ACPI_SIG_BOOT, acpi_parse_sbf);
+> +	acpi_table_parse(ACPI_SIG_BOOT, sbf_acpi_parse);
+
+no strong feelings if the ACPI guys ack it - but i suspect the renaming 
+of the function from acpi_parse_sbf to sbf_acpi_parse was unnecessary?
+
+	Ingo
