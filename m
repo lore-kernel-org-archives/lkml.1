@@ -1,93 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765967AbYBMGDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765346AbYBMGH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765967AbYBMGDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 01:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYBMGDc
+	id S1765346AbYBMGH1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 01:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbYBMGHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 01:03:32 -0500
-Received: from wx-out-0506.google.com ([66.249.82.235]:64416 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752859AbYBMGDa (ORCPT
+	Wed, 13 Feb 2008 01:07:14 -0500
+Received: from numenor.qualcomm.com ([129.46.51.58]:47863 "EHLO
+	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752346AbYBMGHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 01:03:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ezu3oR+yUIhj7orUkRhHOMq0jTJ8H4xRQo9zBBNQYZ8t74ryyFdMCvQnu0m2gmMRw+vvO9v/sAyRyOTE+ajDToXXT3CxM24ppcZ5ytlJJyh6u5V0sUF3hTqOZ0NDmxf51DjdtZjEpVVSZ+DpAw1nqyttJqmM8zMAWY35ZaNlmp8=
-Message-ID: <ea11fea30802122203j7a0db37bwcd2d8d06bc392c33@mail.gmail.com>
-Date: Wed, 13 Feb 2008 11:33:28 +0530
-From: "Manish Katiyar" <mkatiyar@gmail.com>
-To: "Scott Lovenberg" <scott.lovenberg@gmail.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Mulyadi Santosa" <mulyadi.santosa@gmail.com>,
-       "Peter Teoh" <htmldeveloper@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <47B2874F.5000805@gmail.com>
+	Wed, 13 Feb 2008 01:07:12 -0500
+Message-ID: <47B288E4.2080403@qualcomm.com>
+Date: Tue, 12 Feb 2008 22:06:28 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl, gregkh@suse.de,
+       rusty@rustcorp.com.au
+Subject: Re: [git pull for -mm] CPU isolation extensions (updated2)
+References: <47B11C45.6060408@qualcomm.com> <20080211.224436.174153780.davem@davemloft.net> <47B264E3.4090605@qualcomm.com> <200802131511.28643.nickpiggin@yahoo.com.au>
+In-Reply-To: <200802131511.28643.nickpiggin@yahoo.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
-	 <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
-	 <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
-	 <47B15DD2.3090706@gmail.com>
-	 <f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com>
-	 <20080212204348.4a858650.randy.dunlap@oracle.com>
-	 <47B2874F.5000805@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 13, 2008 11:29 AM, Scott Lovenberg <scott.lovenberg@gmail.com> wrote:
->
->  Randy Dunlap wrote:
->  On Wed, 13 Feb 2008 09:08:12 +0700 Mulyadi Santosa wrote:
->
->
->
->  Hi all...
->
-> Here's my idea: what if we collaborate to extend and make the kernel
-> documentation better? I have done (slow) start by editing profile=
-> kernel param. It's not accepted by Adrian Bunk, but at least I did it.
-> Feedback?
->
->  Adrian is no longer the trivial patch maintainer.
-> Did you send the patch to trivial@kernel.org ?
->
-> Any doc additions or improvements would be appreciated.
-> I'll be glad to help get them merged...
->
-> ---
-> ~Randy
->
->
->  I'd love to help, but I'm a bit of a newbie; what's protocol for
-> documentation updates, standard diffs?
->
+Nick Piggin wrote:
+> On Wednesday 13 February 2008 14:32, Max Krasnyansky wrote:
+>> David Miller wrote:
+>>> From: Nick Piggin <nickpiggin@yahoo.com.au>
+>>> Date: Tue, 12 Feb 2008 17:41:21 +1100
+>>>
+>>>> stop machine is used for more than just module loading and unloading.
+>>>> I don't think you can just disable it.
+>>> Right, in particular it is used for CPU hotplug.
+>> Ooops. Totally missed that. And a bunch of other places.
+>>
+>> [maxk@duo2 cpuisol-2.6.git]$ git grep -l stop_machine_run
+>> Documentation/cpu-hotplug.txt
+>> arch/s390/kernel/kprobes.c
+>> drivers/char/hw_random/intel-rng.c
+>> include/linux/stop_machine.h
+>> kernel/cpu.c
+>> kernel/module.c
+>> kernel/stop_machine.c
+>> mm/page_alloc.c
+>>
+>> I wonder why I did not see any issues when I disabled stop machine
+>> completely. I mentioned in the other thread that I commented out the part
+>> that actually halts the machine and ran it for several hours on my dual
+>> core laptop and on the quad core server. Tried all kinds of workloads,
+>> which include constant module removal and insertion, and cpu hotplug as
+>> well. It cannot be just luck :).
+> 
+> It really is. With subtle races, it can take a lot more than a few
+> hours. Consider that we have subtle races still in the kernel now,
+> which are almost never or rarely hit in maybe 10,000 hours * every
+> single person who has been using the current kernel for the past
+> year.
+> 
+> For a less theoretical example -- when I was writing the RCU radix
+> tree code, I tried to run directed stress tests on a 64 CPU Altix
+> machine (which found no bugs). Then I ran it on a dedicated test
+> harness that could actually do a lot more than the existing kernel
+> users are able to, and promptly found a couple more bugs (on a 2
+> CPU system).
+> 
+> But your primary defence against concurrency bugs _has_ to be
+> knowing the code and all its interactions.
+100% agree. 
+btw For modules though it does not seem like luck (ie that it worked fine for me). 
+I mean subsystems are supposed to cleanly register/unregister anyway. But I can of
+course be wrong. We'll see what Rusty says.    
 
-Me too... like scott i am also a newbie :-)
+>> Clearly though, you guys are right. It cannot be simply disabled. Based on
+>> the above grep it's needed for CPU hotplug, mem hotplug, kprobes on s390
+>> and intel rng driver. Hopefully we can avoid it at least in module
+>> insertion/removal.
+> 
+> Yes, reducing the number of users by going through their code and
+> showing that it is safe, is the right way to do this. Also, you
+> could avoid module insertion/removal?
+I could. But it'd be nice if I did not have to :)
 
->  How are we going to attack this thing, cleaning up and updating existing
-> documentation first and then adding undocumented items, or file by file
-> updating and adding in one fell swoop?
->
->  At any rate, I'm in.
->  Hopefully this will turn out better than the last time I said those words
-> and woke up in Mexico with a new tattoo and without my pants.  :)
->
+> FWIW, I think the idea of trying to turn Linux into giving hard
+> realtime guarantees is just insane. If that is what you want, you
+> would IMO be much better off to spend effort with something like
+> improving adeos and communicatoin/administration between Linux and
+> the hard-rt kernel.
+> 
+> But don't let me dissuade you from making these good improvements
+> to Linux as well :) Just that it isn't really going to be hard-rt
+> in general.
+Actually that's the cool thing about CPU isolation. Get rid of all latency sources
+from the CPU(s) and you get youself as hard-RT as it gets. 
+I mean I _already_ have multi-core hard-RT systems that show ~1.2 usec worst case and 
+~200nsec average latency. I do not even need Adeos/Xenomai or Preemp-RT just a few
+very small patches. And it can be used for non RT stuff too.
+ 
+Max
 
 
 
--- 
-Thanks & Regards,
-********************************************
-Manish Katiyar  ( http://mkatiyar.googlepages.com )
-3rd Floor, Fair Winds Block
-EGL Software Park
-Off Intermediate Ring Road
-Bangalore 560071, India
-***********************************************
