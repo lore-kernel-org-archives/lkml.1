@@ -1,108 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933058AbYBMRg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765398AbYBMRhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933058AbYBMRg0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:36:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764634AbYBMRfq
+	id S1765398AbYBMRhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:37:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbYBMRgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:35:46 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:14772 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934048AbYBMRfo (ORCPT
+	Wed, 13 Feb 2008 12:36:45 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47464 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757360AbYBMRgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:35:44 -0500
-Date: Wed, 13 Feb 2008 18:35:06 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-Message-ID: <20080213183506.7f3e3145@de.ibm.com>
-In-Reply-To: <20080213182800.5c6940a8@de.ibm.com>
-References: <20080213182800.5c6940a8@de.ibm.com>
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.12.1; x86_64-pc-linux-gnu)
+	Wed, 13 Feb 2008 12:36:42 -0500
+Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Sven =?ISO-8859-1?Q?K=F6hler?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+In-Reply-To: <47B324E7.9040502@panasas.com>
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>
+	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>
+	 <1202917468.3109.5.camel@localhost.localdomain>
+	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>
+	 <1202921122.3109.31.camel@localhost.localdomain>
+	 <47B31FC2.4040206@panasas.com>
+	 <1202922226.3109.36.camel@localhost.localdomain>
+	 <47B324E7.9040502@panasas.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 11:36:38 -0600
+Message-Id: <1202924198.3109.52.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/_wYLmS1NbLHChwWL=X7NGlm";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/_wYLmS1NbLHChwWL=X7NGlm
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2008-02-13 at 19:12 +0200, Boaz Harrosh wrote:
+> On Wed, Feb 13 2008 at 19:03 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > On Wed, 2008-02-13 at 18:50 +0200, Boaz Harrosh wrote:
+> >> On Wed, Feb 13 2008 at 18:45 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> >>> On Wed, 2008-02-13 at 18:33 +0200, Boaz Harrosh wrote:
+> >>>> On Wed, Feb 13 2008 at 17:54 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+> >>>>> On Wed, Feb 13 2008 at 17:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> >>>>>> On Tue, 2008-02-12 at 19:40 +0200, Boaz Harrosh wrote:
+> >>>>>>> -	gdth_flush(ha);
+> >>>>>>> -
+> >>>>>> This piece doesn't look right.  gdth_flush() forces the internal cache
+> >>>>>> to disk backing.  If you remove it, you're taking the chance that the
+> >>>>>> machine will be powered off without a writeback which can cause data
+> >>>>>> corruption.
+> >>>>>>
+> >>>>>> James
+> >>>>>>
+> >>>>> Yes. 
+> >>>>> I have more problems reported, with exit, and am just sending one more patch that puts
+> >>>>> this back in. Which was tested.
+> >>>>>
+> >>>>> So I will resend this one plus one new one.
+> >>>>>
+> >>>>> Boaz
+> >>>>>
+> >>>> The gdth driver would do a register_reboot_notifier(&gdth_notifier);
+> >>>> to a gdth_halt() function, which would then redo half of what gdth_exit
+> >>>> does, and wrongly so, and crash.  
+> >>>>
+> >>>> Are we guaranteed in todays kernel that modules .exit function be called
+> >>>> on an halt or reboot? If so then there is no need for duplications and
+> >>>> the gdth_halt() should go.
+> >>> No.  The __exit section is actually discardable if you promise never to
+> >>> remove the module.
+> >>>
+> >> I don't understand please explain. 
+> >> What does a driver need to do if it needs a consistent shutdown retine?
+> >> module or built in? unload or shutdown?
+> > 
+> > It needs to register a reboot notifier, which gdth does.
+> > 
+> > However, the notifier is only called on reboot, so it also needs to
+> > clean up correctly on module exit as well.
+> > 
+> > The alternative for GDTH would be to process the SCSI SYNCHRONIZE CACHE
+> > command.  That's done by a shutdown notifier from sd, so the correct
+> > thing would always get done; however it does mean the driver has to be
+> > in a condition to process the last sync cache command.
+> > 
+> > For the quick fix, just keep the current infrastructure and put back the
+> > gdth_flush() command where it can be effective.
+> > 
+> > James
+> > 
+> > 
+> Totally untested.
+> 
+> ---
+> From: Boaz Harrosh <bharrosh@panasas.com>
+> Subject: [PATCH] gdth: bugfix for the at-exit problems
+> 
+> gdth_exit would first remove all cards then stop the timer
+> and would not sync with the timer function. This caused a crash
+> in gdth_timer() when module was unloaded.
+> So del_timer_sync the timer before we delete the cards.
+> 
+> also the reboot notifier function would crash. So unify
+> the exit and halt functions with a gdth_shutdown() that's
+> called by both.
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> ---
+>  drivers/scsi/gdth.c |   99 ++++++++++++++++++++------------------------------
+>  1 files changed, 40 insertions(+), 59 deletions(-)
+> 
+> diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+> index 8eb78be..7bb9b45 100644
+> --- a/drivers/scsi/gdth.c
+> +++ b/drivers/scsi/gdth.c
+> @@ -183,7 +183,6 @@ static int gdth_ioctl(struct inode *inode, struct file *filep,
+>                        unsigned int cmd, unsigned long arg);
+>  
+>  static void gdth_flush(gdth_ha_str *ha);
+> -static int gdth_halt(struct notifier_block *nb, ulong event, void *buf);
+>  static int gdth_queuecommand(Scsi_Cmnd *scp,void (*done)(Scsi_Cmnd *));
+>  static int __gdth_queuecommand(gdth_ha_str *ha, struct scsi_cmnd *scp,
+>  				struct gdth_cmndinfo *cmndinfo);
+> @@ -418,12 +417,6 @@ static inline void gdth_set_sglist(struct scsi_cmnd *cmd,
+>  #include "gdth_proc.h"
+>  #include "gdth_proc.c"
+>  
+> -/* notifier block to get a notify on system shutdown/halt/reboot */
+> -static struct notifier_block gdth_notifier = {
+> -    gdth_halt, NULL, 0
+> -};
+> -static int notifier_disabled = 0;
+> -
+>  static gdth_ha_str *gdth_find_ha(int hanum)
+>  {
+>  	gdth_ha_str *ha;
+> @@ -3793,6 +3786,8 @@ static void gdth_timeout(ulong data)
+>      gdth_ha_str *ha;
+>      ulong flags;
+>  
+> +    BUG_ON(list_empty(&gdth_instances));
+> +
+>      ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+>      spin_lock_irqsave(&ha->smp_lock, flags);
+>  
+> @@ -4668,45 +4663,6 @@ static void gdth_flush(gdth_ha_str *ha)
+>      }
+>  }
+>  
+> -/* shutdown routine */
+> -static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
+> -{
+> -    gdth_ha_str *ha;
+> -#ifndef __alpha__
+> -    gdth_cmd_str    gdtcmd;
+> -    char            cmnd[MAX_COMMAND_SIZE];   
+> -#endif
+> -
+> -    if (notifier_disabled)
+> -        return NOTIFY_OK;
+> -
+> -    TRACE2(("gdth_halt() event %d\n",(int)event));
+> -    if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
+> -        return NOTIFY_DONE;
+> -
+> -    notifier_disabled = 1;
+> -    printk("GDT-HA: Flushing all host drives .. ");
+> -    list_for_each_entry(ha, &gdth_instances, list) {
+> -        gdth_flush(ha);
+> -
+> -#ifndef __alpha__
+> -        /* controller reset */
+> -        memset(cmnd, 0xff, MAX_COMMAND_SIZE);
+> -        gdtcmd.BoardNode = LOCALBOARD;
+> -        gdtcmd.Service = CACHESERVICE;
+> -        gdtcmd.OpCode = GDT_RESET;
+> -        TRACE2(("gdth_halt(): reset controller %d\n", ha->hanum));
+> -        gdth_execute(ha->shost, &gdtcmd, cmnd, 10, NULL);
+> -#endif
+> -    }
+> -    printk("Done.\n");
+> -
+> -#ifdef GDTH_STATISTICS
+> -    del_timer(&gdth_timer);
+> -#endif
+> -    return NOTIFY_OK;
+> -}
+> -
+>  /* configure lun */
+>  static int gdth_slave_configure(struct scsi_device *sdev)
+>  {
+> @@ -5141,13 +5097,13 @@ static void gdth_remove_one(gdth_ha_str *ha)
+>  
+>  	scsi_remove_host(shp);
+>  
+> +	gdth_flush(ha);
+> +
+>  	if (ha->sdev) {
+>  		scsi_free_host_dev(ha->sdev);
+>  		ha->sdev = NULL;
+>  	}
+>  
+> -	gdth_flush(ha);
+> -
+>  	if (shp->irq)
+>  		free_irq(shp->irq,ha);
+>  
+> @@ -5173,6 +5129,40 @@ static void gdth_remove_one(gdth_ha_str *ha)
+>  	scsi_host_put(shp);
+>  }
+>  
+> +static void gdth_shutdown(void);
+> +static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
+> +{
+> +	TRACE2(("gdth_halt() event %d\n",(int)event));
+> +	if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
+> +		return NOTIFY_DONE;
+> +
+> +	gdth_shutdown();
+> +	return NOTIFY_OK;
+> +}
+> +
+> +static struct notifier_block gdth_notifier = {
+> +    gdth_halt, NULL, 0
+> +};
+> +
+> +bool gdth_shutdown_done;
 
-sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
-This patch adds a check_legacy_ioports to read_port and write_port.
-It will now return ENXIO, instead of oopsing.
+Static police alert!  Just make it static and move it into
+gdth_shutdown()
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> +static void gdth_shutdown()
+> +{
+> +	gdth_ha_str *ha;
+> +	if (gdth_shutdown_done)
+> +		return;
+> +
+> +	gdth_shutdown_done = true;
+> +	unregister_chrdev(major,"gdth");
+> +	unregister_reboot_notifier(&gdth_notifier);
 
-Index: linux.git/drivers/char/mem.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.git.orig/drivers/char/mem.c
-+++ linux.git/drivers/char/mem.c
-@@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
- 	char __user *tmp =3D buf;
-=20
- 	if (!access_ok(VERIFY_WRITE, buf, count))
--		return -EFAULT;=20
-+		return -EFAULT;
-+
- 	while (count-- > 0 && i < 65536) {
-+#ifdef CONFIG_PPC_MERGE
-+		if (check_legacy_ioport(i))
-+			return -ENXIO;
-+#endif
- 		if (__put_user(inb(i),tmp) < 0)=20
- 			return -EFAULT; =20
- 		i++;
-@@ -585,6 +590,7 @@ static ssize_t write_port(struct file *=20
-=20
- 	if (!access_ok(VERIFY_READ,buf,count))
- 		return -EFAULT;
-+
- 	while (count-- > 0 && i < 65536) {
- 		char c;
- 		if (__get_user(c, tmp)) {
-@@ -592,6 +598,10 @@ static ssize_t write_port(struct file *=20
- 				break;
- 			return -EFAULT;=20
- 		}
-+#ifdef CONFIG_PPC_MERGE
-+		if (check_legacy_ioport(i))
-+			return -ENXIO;
-+#endif
- 		outb(c,i);
- 		i++;
- 		tmp++;
+I'm not sure you can do this, aren't reboot notifiers called with the
+rwsem held?  In which case the unregister which also takes the rwsem
+will hang the system.
+
+James
 
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
-
-
-Vorsitzender des Aufsichtsrats:	Martin Jetter
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
---Sig_/_wYLmS1NbLHChwWL=X7NGlm
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD8DBQFHsypM6rqK4qDx+dcRAlT5AJ9MxPye669npMZstG3636Hho1K2QgCcDl4e
-US7ZWRXGItZIEv/zPYV1PdA=
-=crdG
------END PGP SIGNATURE-----
-
---Sig_/_wYLmS1NbLHChwWL=X7NGlm--
