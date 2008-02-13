@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbYBMP5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932595AbYBMP5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbYBMP5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbYBMP5B
+	id S932595AbYBMP5e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:57:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764105AbYBMP5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:57:01 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:36319 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756533AbYBMP5A (ORCPT
+	Wed, 13 Feb 2008 10:57:11 -0500
+Received: from jurassic.park.msu.ru ([195.208.223.243]:51193 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761213AbYBMP5K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:57:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:reply-to:to:cc:subject:in-reply-to:message-id:references:user-agent:mime-version:content-type;
-        b=Iqu2hcC+pvKmcuqPMUCVyu8SbzaOBvjoN3ureyFJcCeTlMjGhVFAt9zpeTGpVhznRz2PyBuhDiDDH1Ugz28GPMQedG7+viHjdsNYOk0MiD0KAn0xSnzm04yxUOAdmrialDpjX43NQb1v8fzxFsRX5IDt3zW12hPgvSeKE+FdbvA=
-Date: Wed, 13 Feb 2008 10:56:40 -0500 (EST)
-From: Parag Warudkar <parag.warudkar@gmail.com>
-X-X-Sender: parag@mini.warudkars.net
-Reply-To: parag.warudkar@gmail.com
-To: Marc Perkel <mperkel@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux Compatible USB Adapter Recommendations? [OT]
-In-Reply-To: <644725.69797.qm@web52504.mail.re2.yahoo.com>
-Message-ID: <alpine.LRH.1.00.0802131050050.4526@mini.warudkars.net>
-References: <644725.69797.qm@web52504.mail.re2.yahoo.com>
-User-Agent: Alpine 1.00 (LRH 882 2007-12-20)
+	Wed, 13 Feb 2008 10:57:10 -0500
+Date: Wed, 13 Feb 2008 18:57:13 +0300
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Bob Tracy <rct@frus.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [REGRESSION] 2.6.25-rc1 does not boot on Alpha
+Message-ID: <20080213155713.GA376@jurassic.park.msu.ru>
+References: <20080213052903.B1F1CDBA2@gherkin.frus.com> <20080213092208.GC21614@elte.hu> <20080213130432.GE6344@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213130432.GE6344@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 13 Feb 2008, Marc Perkel wrote:
-
-> I'm looking to buy a wireless USB adapter that I can
-> plug into a Fedora 8 box. The main feature I want it
-> to be able to stick it in and have it just work. No
-> custom kernel compiles. If it had 802.11n that would
-> be a plus. 
+On Wed, Feb 13, 2008 at 02:04:32PM +0100, Ingo Molnar wrote:
+> > > Unless someone has a good idea what's causing this, I see a massive 
+> > > "git bisect" project in my future.  Won't be able to spend any time 
+> > > with this until at least the weekend :-(.
+> > 
+> > hm, is this SMP? Alpha uses asm-generic/percpu.h. One "early bootup" 
+> > effect on Alpha that i can think of could have been this family of 
+> > commits:
 > 
-> So - what "just works" with Linux?
-> 
+> another possibility would be to turn off PRINTK_TIMESTAMPS [if they are 
+> on in your .config].
 
-I use this Belkin one which has a RaLink chipset -
-http://catalog.belkin.com/IWCatProductPage.process?Product_Id=179211 
+No SMP, no PRINTK_TIMESTAMPS in my case. Looks like it dies trying to
+to switch to vga console, but I had no time to debug this yet...
 
-It is not .11n but I never had any problems with Fedora 8 or Ubuntu 7.10 - 
-well apart from fiddling with module blacklists that is. (This card is 
-claimed by two drivers in the kernel and the one that gets loaded does not 
-work - so I have to blacklist it.) But apart from that it just works - 
-even with NetWorkManager.
-
-Recently I was hunting for a .11n USB card that works with Linux without 
-the ndiswrapper crap but wasn't able to find one.
-
-You want to make sure though that you get the Ralink chipset with the card 
-revision you buy - similarly named different version cards having totally 
-different chipsets is not considered weird in that world. 
-
-Parag 
+Ivan.
