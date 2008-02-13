@@ -1,136 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763901AbYBMEJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765124AbYBMEKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763901AbYBMEJT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 23:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbYBMEJI
+	id S1765124AbYBMEKw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 23:10:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754921AbYBMEKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 23:09:08 -0500
-Received: from nat-0.pathscale.com ([198.186.3.72]:51537 "EHLO
-	mx.mv.qlogic.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754417AbYBMEJH (ORCPT
+	Tue, 12 Feb 2008 23:10:44 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50648 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754584AbYBMEKm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 23:09:07 -0500
-Date: Tue, 12 Feb 2008 20:09:05 -0800
-From: Christian Bell <christian.bell@qlogic.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com,
-       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-Message-ID: <20080213040905.GQ29340@mv.qlogic.com>
-References: <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com> <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com> <20080213012638.GD31435@obsidianresearch.com> <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
+	Tue, 12 Feb 2008 23:10:42 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, jeff@garzik.org, arjan@infradead.org,
+       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <alpine.LFD.1.00.0802121904270.2920@woody.linux-foundation.org>
+References: <47B1CB08.4020101@garzik.org>
+	 <20080212.155853.193190548.davem@davemloft.net>
+	 <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
+	 <20080212.172051.58554658.davem@davemloft.net>
+	 <1202869550.3137.182.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org>
+	 <1202871616.3137.197.camel@localhost.localdomain>
+	 <alpine.LFD.1.00.0802121904270.2920@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 22:10:34 -0600
+Message-Id: <1202875834.3137.201.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Christoph Lameter wrote:
 
-> On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
+On Tue, 2008-02-12 at 19:31 -0800, Linus Torvalds wrote:
 > 
-> > The problem is that the existing wire protocols do not have a
-> > provision for doing an 'are you ready' or 'I am not ready' exchange
-> > and they are not designed to store page tables on both sides as you
-> > propose. The remote side can send RDMA WRITE traffic at any time after
-> > the RDMA region is established. The local side must be able to handle
-> > it. There is no way to signal that a page is not ready and the remote
-> > should not send.
+> On Tue, 12 Feb 2008, James Bottomley wrote:
 > > 
-> > This means the only possible implementation is to stall/discard at the
-> > local adaptor when a RDMA WRITE is recieved for a page that has been
-> > reclaimed. This is what leads to deadlock/poor performance..
-
-You're arguing that a HW page table is not needed by describing a use
-case that is essentially what all RDMA solutions already do above the
-wire protocols (all solutions except Quadrics, of course).
-
-> You would only use the wire protocols *after* having established the RDMA 
-> region. The notifier chains allows a RDMA region (or parts thereof) to be 
-> down on demand by the VM. The region can be reestablished if one of 
-> the side accesses it. I hope I got that right. Not much exposure to 
-> Infiniband so far.
-
-RDMA is already always used *after* memory regions are set up --
-they are set up out-of-band w.r.t RDMA but essentially this is the
-"before" part.
-
-> Lets say you have a two systems A and B. Each has their memory region MemA 
-> and MemB. Each side also has page tables for this region PtA and PtB.
+> > Right at the moment, I maintain a <branch> and a <branch>-base and
+> > simply cherry pick the commits between the two to do the right thing
+> > when I know my volatile base has changed.  It would be very helpful to
+> > have a version of rebase that new my base had been rebased.
 > 
-> Now you establish a RDMA connection between both side. The pages in both
-> MemB and MemA are present and so are entries in PtA and PtB. RDMA 
-> traffic can proceed.
+> Hey, I know, you could use.. drumroll..
 > 
-> The VM on system A now gets into a situation in which memory becomes 
-> heavily used by another (maybe non RDMA process) and after checking that 
-> there was no recent reference to MemA and MemB (via a notifier aging 
-> callback) decides to reclaim the memory from MemA.
+> 	"git rebase"
 > 
-> In that case it will notify the RDMA subsystem on A that it is trying to
-> reclaim a certain page.
+> I know that's a big leap of faith, to use git rebase for rebasing, but 
+> there you have it. Us git people are kind of odd that way.
 > 
-> The RDMA subsystem on A will then send a message to B notifying it that 
-> the memory will be going away. B now has to remove its corresponding page 
-> from memory (and drop the entry in PtB) and confirm to A that this has 
-> happened. RDMA traffic is then stopped for this page. Then A can also 
-> remove its page, the corresponding entry in PtA and the page is reclaimed 
-> or pushed out to swap completing the page reclaim.
+> IOW, if you know the old broken base, and the new base, just do
 > 
-> If either side then accesses the page again then the reverse process 
-> happens. If B accesses the page then it wil first of all incur a page 
-> fault because the entry in PtB is missing. The fault will then cause a 
-> message to be send to A to establish the page again. A will create an 
-> entry in PtA and will then confirm to B that the page was established. At 
-> that point RDMA operations can occur again.
-
-The notifier-reclaim cycle you describe is akin to the out-of-band
-pin-unpin control messages used by existing communication libraries.
-Also, I think what you are proposing can have problems at scale -- A
-must keep track of all of the (potentially many systems) of memA and
-cooperatively get an agreement from all these systems before reclaiming
-the page.
-
-When messages are sufficiently large, the control messaging necessary
-to setup/teardown the regions is relatively small.  This is not
-always the case however -- in programming models that employ smaller
-messages, the one-sided nature of RDMA is the most attractive part of
-it.  
-
-> So the whole scheme does not really need a hardware page table in the RDMA 
-> hardware. The page tables of the two systems A and B are sufficient.
+> 	git rebase --onto newbase oldbase
 > 
-> The scheme can also be applied to a larger range than only a single page. 
-> The RDMA subsystem could tear down a large section when reclaim is 
-> pushing on it and then reestablish it as needed.
+> and it should do exactly that (basically lots of automated cherry-picks).
 
-Nothing any communication/runtime system can't already do today.  The
-point of RDMA demand paging is enabling the possibility of using RDMA
-without the implied synchronization -- the optimistic part.  Using
-the notifiers to duplicate existing memory region handling for RDMA
-hardware that doesn't have HW page tables is possible but undermines
-the more important consumer of your patches in my opinion.
+OK, smarty-pants ... that works nicely, thanks!
 
-One other area that has not been brought up yet (I think) is the
-applicability of notifiers in letting users know when pinned memory
-is reclaimed by the kernel.  This is useful when a lower-level
-library employs lazy deregistration strategies on memory regions that
-are subsequently released to the kernel via the application's use of
-munmap or sbrk.  Ohio Supercomputing Center has work in this area but
-a generalized approach in the kernel would certainly be welcome.
+I'm used to maintaining <branch> and <branch>-base, so this probably
+suits my workflow better than getting the information from the reflog.
+
+It wasn't clear from the git rebase man page that it would work like
+that.
+
+James
 
 
-    . . christian
-
--- 
-christian.bell@qlogic.com
-(QLogic Host Solutions Group, formerly Pathscale)
