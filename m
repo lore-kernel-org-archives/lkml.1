@@ -1,99 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbYBMPfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765133AbYBMPgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344AbYBMPfS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:35:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764949AbYBMPev
+	id S1765133AbYBMPgX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbYBMPgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:34:51 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:56105 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763744AbYBMPeu (ORCPT
+	Wed, 13 Feb 2008 10:36:11 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:17488 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbYBMPgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:34:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=SH6v1+sNH/NLlQMyyIfKRInafvqk1zveGEvH2ZC85fATxS3vzg/jNlIajSAndgK275AcprhW1zWQ+4x0cE8qQ7Ttcn30NbMoUNtXppjX8cxcXkRrhjh8q2fBEVUqd/AaKxsh6ItAULnEtCHC26WPR+untTPbJPLFtq97i96VpUM=
-Date: Wed, 13 Feb 2008 09:33:14 -0600
-From: Josh Boyer <jwboyer@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       viro@zeniv.linux.org.uk
-Subject: Re: latest list of unused Kconfig variables
-Message-ID: <20080213093314.3220e29d@zod.rchland.ibm.com>
-In-Reply-To: <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain>
-References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain>
-	<20080213073242.5c069c25@zod.rchland.ibm.com>
-	<alpine.LFD.1.00.0802131002310.28617@localhost.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 Feb 2008 10:36:09 -0500
+Message-ID: <47B30E5F.2060008@hp.com>
+Date: Wed, 13 Feb 2008 10:35:59 -0500
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: Jens Axboe <jens.axboe@oracle.com>, npiggin@suse.de, dgc@sgi.com,
+       arjan@linux.intel.com
+Subject: Re: IO queueing and complete affinity w/ threads: Some results
+References: <47B0B69B.1050807@hp.com>
+In-Reply-To: <47B0B69B.1050807@hp.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 10:07:27 -0500 (EST)
-"Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+Comparative results between the original affinity patch and the kthreads-based patch on the 32-way running the kernel make sequence. 
 
-> On Wed, 13 Feb 2008, Josh Boyer wrote:
-> 
-> > On Wed, 13 Feb 2008 03:56:34 -0500 (EST)
-> > "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
-> 
-> > >   now that 2.6.25-rc1 is out, i can start updating the output from
-> > > my scanning scripts.  the first updated output is the list of
-> > > currently unused Kconfig variables -- variables that are defined
-> > > in some Kconfig file somewhere but appear to be entirely unused
-> > > throughout the source tree.
-> > >
-> > >   latest output here, sorted by architecture:
-> > >
-> > > http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
-> > >
-> > > as always, there will probably be some false positives for one
-> > > reason or another.
-> > >
-> > >   output from the other scanning scripts will be up in short order.
-> >
-> > You have lots of false positives (or something) for arch/powerpc.
-> > Seems your script picked up #define names and comments that happen
-> > to match a Kconfig variable?
-> 
-> it always will, given the proclivity of some folks to define their own
-> variables with a "CONFIG_" prefix.  as i point out on the wiki page, i
-> make no attempt to cull that list, i just print it as is, and readers
-> will have to peruse the list carefully to see what's meaningful and
-> what isn't.
+It may be easier to compare/contrast with the graphs provided at http://free.linux.hp.com/~adb/jens/kernmk.png (kernmk.agr also provided, if you want to run xmgrace by hand). 
 
-OK.  Well all of your hits for 405EX, 440GRX, 440SPe, and
-WANT_DEVICE_TREE in arch/powerpc seem bogus.  I dunno if you prune
-those when reported or not.
+Tests are:
 
-> > And you have false positives on several CPU variables, as they are
-> > used within Kconfig files themselves to select different sets of
-> > options.
-> 
-> yes, i know ... perhaps there's a simple way to filter those out but,
-> at the moment, it's pure brute force.  i'm guessing i could make that
-> script a bit smarter but it probably isn't worth the investment in
-> time.  law of diminishing returns and all that.
+1. Make Ext2 FS on each of 12 64GB devices in parallel, times include: mkfs, mount & unmount
+2. Untar a full Linux source code tree onto the devices in parallel, times include: mount, untar, unmount
+3. Make (-j4) of the full source code tree, times include: mount, make -j4, unmount
+4. Clean full source code tree, times include: mount, make clean, unmount
 
-Maybe.  If the same false positives keep showing up people might ignore
-it.  I won't, but others might.
+The results are so close amongst all the runs (given the large-ish standard deviations), that we probably can't deduce much from this. A bit of a concern on the top two graphs - mkfs & untar - it certainly appears that the kthreads version is a little slower (about 2.9% difference across the values for the mkfs runs, and 3.5% for the untar operations). On the make runs, however, we didn't see hardly any difference between the runs at all...
 
-> > For arch/ppc, the WANT_EARLY_SERIAL stuff was added by Al to fix those
-> > boards that unconditionally called early_serial_setup by selecting
-> > SERIAL_8250 in commit f08243a491f3e21feabbb04476a03fb0cbc975ff.  Al,
-> > couldn't we just select SERIAL_8250 right in the board config
-> > instead?
-> >
-> > Of course, arch/ppc is dying soon-ish anyway so we might not even
-> > bother.
-> 
-> if that's the case, i can just stop scanning that entire directory.
+We are trying to setup to do some AIM7 tests on a different system over the weekend (15 February - 18 February 2008), I'll post those results on the 18th or 19th if we can pull it off. [I'll also try to steal time on the 32-way to run a straight 2.6.24 kernel, do these runs again, and post those results.]
 
-It's going away in June, per feature-removal-schedule.  I will still fix
-actual bugs until then, but not much else.
+For the tables below:
 
-josh
+ q0 == queue_affinity set to -1
+ q1 == queue_affinity set to the CPU managing the IRQ for each device
+ c0 == completion_affinity set to -1
+ c1 == completion_affinity set to CPU managing the IRQ for each device
+rq0 == rq_affinity set to 0
+rq1 == rq_affinity set to 1
+
+This 4-test sequence was run 10 times (for each kernel), and results averaged. As posted yesterday, here's the original patch sequence results:
+
+mkfs        Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  17.814  30.322  33.263   4.551 
+q0.c0.rq1  17.540  30.058  32.885   4.321 
+q0.c1.rq0  17.770  31.328  32.958   3.121 
+q1.c0.rq0  17.907  31.032  32.767   3.515 
+q1.c1.rq0  16.891  30.319  33.097   4.624 
+
+untar       Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  19.747  21.971  26.292   1.215 
+q0.c0.rq1  19.680  22.365  36.395   2.010 
+q0.c1.rq0  18.823  21.390  24.455   0.976 
+q1.c0.rq0  18.433  21.500  23.371   1.009 
+q1.c1.rq0  19.414  21.761  34.115   1.378 
+
+make        Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0 527.418 543.296 552.030   5.384 
+q0.c0.rq1 526.265 542.312 549.477   5.467 
+q0.c1.rq0 528.935 544.940 553.823   4.746 
+q1.c0.rq0 529.432 544.399 553.212   5.166 
+q1.c1.rq0 527.638 543.577 551.323   5.478 
+
+clean       Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  16.962  20.308  33.775   3.179 
+q0.c0.rq1  17.436  20.156  29.370   3.097 
+q0.c1.rq0  17.061  20.111  31.504   2.791 
+q1.c0.rq0  16.745  20.247  29.327   2.953 
+q1.c1.rq0  17.346  20.316  31.178   3.283 
+
+And for the kthreads-based kernel:
+
+mkfs        Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  16.686  31.069  33.361   3.452 
+q0.c0.rq1  16.976  31.719  32.869   2.395 
+q0.c1.rq0  16.857  31.345  33.410   3.209 
+q1.c0.rq0  17.317  31.997  34.444   3.099 
+q1.c1.rq0  16.791  32.266  33.378   2.035 
+
+untar       Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  19.769  22.398  25.196   1.076 
+q0.c0.rq1  19.742  22.517  38.498   1.733 
+q0.c1.rq0  20.071  22.698  36.160   2.259 
+q1.c0.rq0  19.910  22.377  35.640   1.528 
+q1.c1.rq0  19.448  22.339  24.887   0.926 
+
+make        Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0 526.971 542.820 550.591   4.607 
+q0.c0.rq1 527.320 544.422 550.504   3.798 
+q0.c1.rq0 527.367 543.856 550.331   4.152 
+q1.c0.rq0 527.406 543.636 552.947   4.315 
+q1.c1.rq0 528.921 544.594 550.832   3.786 
+
+clean       Min     Avg     Max   Std Dev 
+--------- ------- ------- ------- -------
+q0.c0.rq0  16.644  20.242  29.524   2.991 
+q0.c0.rq1  16.942  20.008  29.729   2.845 
+q0.c1.rq0  17.205  20.117  29.851   2.661 
+q1.c0.rq0  17.400  20.147  32.581   2.862 
+q1.c1.rq0  16.799  20.072  31.883   2.872 
+
+
