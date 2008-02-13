@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765512AbYBMHOW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765762AbYBMHPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765512AbYBMHOW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:14:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYBMHOM
+	id S1765762AbYBMHPK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:15:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbYBMHO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:14:12 -0500
-Received: from server077.de-nserver.de ([62.27.12.245]:57929 "EHLO
-	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754306AbYBMHOL (ORCPT
+	Wed, 13 Feb 2008 02:14:58 -0500
+Received: from phoenix.slamd64.com ([217.10.145.2]:39497 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754698AbYBMHO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:14:11 -0500
-Message-ID: <47B29702.7050503@allied-internet.ag>
-Date: Wed, 13 Feb 2008 08:06:42 +0100
-From: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 13 Feb 2008 02:14:57 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH] wmi: (!x & y) strikes again
+Date: Wed, 13 Feb 2008 07:14:50 +0000
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+References: <20080213040325.GS27894@ZenIV.linux.org.uk>
+In-Reply-To: <20080213040325.GS27894@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: =?ISO-8859-15?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com> <47B1DA2A.1060904@panasas.com>
-In-Reply-To: <47B1DA2A.1060904@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-User-Auth: Auth by hostmaster@profihost.com through 85.158.179.66
+Content-Disposition: inline
+Message-Id: <200802130714.50961.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Wed, 13 Feb 2008 07:15:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Wednesday 13 February 2008 04:03:25 Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-I've tested this patch now - and it works fine. Now rmmod, halt and 
-reboot also works.
+Acked-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-Stefan Priebe
-
-
-Boaz Harrosh schrieb:
-> gdth _exit would first remove all cards then stop the timer
-> and would not sync with the timer function. This caused a crash
-> in gdth_timer() when module was unloaded.
-> 
-> del_timer_sync the timer before we delete the cards.
-> 
-> NOT YET TESTED
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 > ---
->  drivers/scsi/gdth.c |   15 ++++++++-------
->  1 files changed, 8 insertions(+), 7 deletions(-)
+> d2d6f5b9eb315a53043a722d952bb21ed5ca1229
+> diff --git a/drivers/acpi/wmi.c b/drivers/acpi/wmi.c
+> index 457ed3d..efacc9f 100644
+> --- a/drivers/acpi/wmi.c
+> +++ b/drivers/acpi/wmi.c
+> @@ -247,7 +247,7 @@ u32 method_id, const struct acpi_buffer *in, struct acpi_buffer *out)
+>  	block = &wblock->gblock;
+>  	handle = wblock->handle;
+>  
+> -	if (!block->flags & ACPI_WMI_METHOD)
+> +	if (!(block->flags & ACPI_WMI_METHOD))
+>  		return AE_BAD_DATA;
+>  
+>  	if (block->instance_count < instance)
 > 
-> diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-> index 8eb78be..103280e 100644
-> --- a/drivers/scsi/gdth.c
-> +++ b/drivers/scsi/gdth.c
-> @@ -3793,6 +3793,8 @@ static void gdth_timeout(ulong data)
->      gdth_ha_str *ha;
->      ulong flags;
->  
-> +    BUG_ON(list_empty(&gdth_instances));
-> +
->      ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
->      spin_lock_irqsave(&ha->smp_lock, flags);
->  
-> @@ -5146,8 +5148,6 @@ static void gdth_remove_one(gdth_ha_str *ha)
->  		ha->sdev = NULL;
->  	}
->  
-> -	gdth_flush(ha);
-> -
->  	if (shp->irq)
->  		free_irq(shp->irq,ha);
->  
-> @@ -5245,14 +5245,15 @@ static void __exit gdth_exit(void)
->  {
->  	gdth_ha_str *ha;
->  
-> -	list_for_each_entry(ha, &gdth_instances, list)
-> -		gdth_remove_one(ha);
-> +	unregister_chrdev(major,"gdth");
-> +	unregister_reboot_notifier(&gdth_notifier);
->  
->  #ifdef GDTH_STATISTICS
-> -	del_timer(&gdth_timer);
-> +	del_timer_sync(&gdth_timer);
->  #endif
-> -	unregister_chrdev(major,"gdth");
-> -	unregister_reboot_notifier(&gdth_notifier);
-> +
-> +	list_for_each_entry(ha, &gdth_instances, list)
-> +		gdth_remove_one(ha);
->  }
->  
->  module_init(gdth_init);
+-- 
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
