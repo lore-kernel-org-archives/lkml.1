@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbYBMME7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbYBMMGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbYBMME7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:04:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751967AbYBMMEu
+	id S1757360AbYBMMGK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYBMMF5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:04:50 -0500
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:43444 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751457AbYBMMEt (ORCPT
+	Wed, 13 Feb 2008 07:05:57 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:23816 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbYBMMF4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:04:49 -0500
-Message-ID: <47B2DD45.7080709@keyaccess.nl>
-Date: Wed, 13 Feb 2008 13:06:29 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 13 Feb 2008 07:05:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=EdDO8sUIkMKHyt1IoWF3bLAg4B/lsABSEj19tgYkq1v29CzSqWDwLEGM7qJG8RHz5y2JJYsnQ4KA2SbaEmeaJxlmdhV4PyRleS5RYJIfPd84wD9CWjyYMIVHEk7RX6bGZyVsJ0DT+Xl9i25TyiWBTho4HLJJwDGWwKFcx8AWqPc=
+From: Matej Laitl <strohel@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Subject: Re: [ALSA] HDA: no sound in headphone-out caused by commit f889fa91ad47e (2.6.25-rc1 regression)
+Date: Wed, 13 Feb 2008 13:05:48 +0100
+User-Agent: KMail/1.9.7
+Cc: alsa-devel <alsa-devel@alsa-project.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200802112158.41989.strohel@gmail.com> <200802122357.46309.strohel@gmail.com> <s5hejbht93l.wl%tiwai@suse.de>
+In-Reply-To: <s5hejbht93l.wl%tiwai@suse.de>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: bzolnier@gmail.com, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: "ide=reverse" do we still need this?
-References: <20080213001506.GA13933@kroah.com> <47B24AB3.3040009@keyaccess.nl> <20080213044436.GB10101@kroah.com>
-In-Reply-To: <20080213044436.GB10101@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Disposition: inline
+Message-Id: <200802131305.48471.strohel@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13-02-08 05:44, Greg KH wrote:
+On Wednesday 13 of February 2008 11:59:58 Takashi Iwai wrote:
+> > Now I just found that the new "Speaker" switch forgets it's value from
+> > time to time, ie. it's muted, you go and have lunch, and when you get
+> > back and start the music, it's unmuted. It is probably related to
+> > aggressive hda-codec powersaving, which I have enabled and set to 20
+> > secs.
+>
+> Hm, does the patch below have any influence?
+> If the problem still persists, please take alsa-info.sh snapshots
+> before and after power-saving.
 
->> While details escape me somewhat again at the monment, a few months ago
->> I was playing around with a PCI Promise IDE controller and needed
->> ide=reverse to save me from having to switch disks around to still have
->> a bootable system.
->> 
->> Or some such. Not too clear anymore, but I remember it saved the day.
-> 
-> You couldn't just change the boot disk in grub?
-> 
-> Or use an initramfs and /dev/disk/by-id/ to keep any future moves stable?
+This patch did not have any effect. (i haven't tested suspend-to-ram)
 
-No. The thing is that you need these kinds of hacks while messing with old 
-systems, building and stripping them, often in recovery type of situations.
+alsa-info before powersaving (speaker silent, mixer says: Speaker=MM):
+http://pastebin.ca/902330
 
-As said (same as the other person I saw reacting) details of what was most 
-decidedly needed last time around escape me at the moment, but ide=reverse 
-is the kind of hack that saves one hours of unscrewing computer cases and 
-switching disks around while building stuff, making quick tests, doing 
-recovery...
-
-If it must go for the greater architectural good, so be it, but it's the 
-type of thing that's used specifically in the situations where you don't 
-have stable, well arranged (or known!) setups to begin with.
-
-Rene.
+alsa-info after powersaving (speaker loud, mixer says: Speaker=MM):
+http://pastebin.ca/902332
