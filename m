@@ -1,57 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933362AbYBMXbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764960AbYBMXiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933362AbYBMXbl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760632AbYBMXb3
+	id S1764960AbYBMXiW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:38:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757900AbYBMXh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:31:29 -0500
-Received: from moutng.kundenserver.de ([212.227.126.174]:64448 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757003AbYBMXb1 (ORCPT
+	Wed, 13 Feb 2008 18:37:58 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56795 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756175AbYBMXh4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:31:27 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org, benh@kernel.crashing.org
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-Date: Thu, 14 Feb 2008 00:07:37 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20080118.763038)
-Cc: Christian Krafft <krafft@de.ibm.com>, parabelboi@bopserverein.de,
-       linux-kernel@vger.kernel.org
-References: <20080213182800.5c6940a8@de.ibm.com> <20080213183506.7f3e3145@de.ibm.com> <1202935374.7296.44.camel@pasglop>
-In-Reply-To: <1202935374.7296.44.camel@pasglop>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 13 Feb 2008 18:37:56 -0500
+Date: Wed, 13 Feb 2008 15:37:44 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Stephen Hemminger <"stephen.hemminger@vyatta.com"@mail.vyatta.com>
+Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with type/macro safety
+Message-ID: <20080213233744.GO12393@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080213220024.GA30729@linux.vnet.ibm.com> <20080213143537.1b806790@extreme> <20080213224134.GK12393@linux.vnet.ibm.com> <20080213144233.05e860cb@extreme>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200802140007.38407.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18YQmZ+ZSTzTZFOa02/mdBaKWH6cDhMCzwrHue
- XC3o+zT7TSgCBN2/rkXCO2+D+g50DwyhroUKlurjslIez0OQ/Z
- YI7PCXyUXw81YymIv+svQ==
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20080213144233.05e860cb@extreme>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008, Benjamin Herrenschmidt wrote:
-> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
-> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
-> > This patch adds a check_legacy_ioports to read_port and write_port.
-> > It will now return ENXIO, instead of oopsing.
+On Wed, Feb 13, 2008 at 02:42:33PM -0800, Stephen Hemminger wrote:
+> On Wed, 13 Feb 2008 14:41:34 -0800
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> 
+> > On Wed, Feb 13, 2008 at 02:35:37PM -0800, Stephen Hemminger wrote:
+> > > On Wed, 13 Feb 2008 14:00:24 -0800
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > Hello!
+> > > > 
+> > > > This is an updated version of the patch posted last November:
+> > > > 
+> > > > 	http://archives.free.net.ph/message/20071201.003721.cd6ff17c.en.html
+> > > > 
+> > > > This new version permits arguments with side effects, for example:
+> > > > 
+> > > > 	rcu_assign_pointer(global_p, p++);
+> > > > 
+> > > > and also verifies that the arguments are pointers, while still avoiding
+> > > > the unnecessary memory barrier when assigning NULL to a pointer.
+> > > > This memory-barrier avoidance means that rcu_assign_pointer() is now only
+> > > > permitted for pointers (not array indexes), and so this version emits a
+> > > > compiler warning if the first argument is not a pointer.  I built a "make
+> > > > allyesconfig" version on an x86 system, and received no such warnings.
+> > > > If RCU is ever applied to array indexes, then the second patch in this
+> > > > series should be applied, and the resulting rcu_assign_index() be used.
+> > > > 
+> > > > Given the rather surprising history of subtlely broken implementations of
+> > > > rcu_assign_pointer(), I took the precaution of generating a full set of
+> > > > test cases and verified that memory barriers and compiler warnings were
+> > > > emitted when required.  I guess it is the simple things that get you...
+> > > > 
+> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > > ---
+> > > > 
+> > > >  rcupdate.h |   16 ++++++++++++----
+> > > >  1 file changed, 12 insertions(+), 4 deletions(-)
+> > > > 
+> > > > diff -urpNa -X dontdiff linux-2.6.24/include/linux/rcupdate.h linux-2.6.24-rap/include/linux/rcupdate.h
+> > > > --- linux-2.6.24/include/linux/rcupdate.h	2008-01-24 14:58:37.000000000 -0800
+> > > > +++ linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+> > > > @@ -270,12 +270,20 @@ extern struct lockdep_map rcu_lock_map;
+> > > >   * structure after the pointer assignment.  More importantly, this
+> > > >   * call documents which pointers will be dereferenced by RCU read-side
+> > > >   * code.
+> > > > + *
+> > > > + * Throws a compiler warning for non-pointer arguments.
+> > > > + *
+> > > > + * Does not insert a memory barrier for a NULL pointer.
+> > > >   */
+> > > >  
+> > > > -#define rcu_assign_pointer(p, v)	({ \
+> > > > -						smp_wmb(); \
+> > > > -						(p) = (v); \
+> > > > -					})
+> > > > +#define rcu_assign_pointer(p, v)	\
+> > > > +	({ \
+> > > > +		typeof(*p) *_________p1 = (v); \
+> > > > +		\
+> > > > +		if (!__builtin_constant_p(v) || (_________p1 != NULL)) \
+> > > > +			smp_wmb(); \
+> > > > +		(p) = _________p1; \
+> > > > +	})
+> > > >  
+> > > >  /**
+> > > >   * synchronize_sched - block until all CPUs have exited any non-preemptive
+> > > 
+> > > Will this still work if p is unsigned long?
 > > 
-> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> > Hello, Steve,
+> > 
+> > If p is unsigned long, then use rcu_assign_index() from the next patch in
+> > the set.  Looks like Andrew has applied it to -mm -- so please make sure
+> > that he is aware if you do use it.
 > 
-> The problem is that this prevents using /proc/ioports to access PCI
-> IO space, which might be useful.
-> 
-> I hate that sensors_detect.. or for that matter any other userland code
-> that pokes random ports like that. It should die.
+> Make sure fib_trie still works and doesn't get warnings.
 
-What kind of Oops do you get? Is it because the ioport area is not
-ioremapped at all or do you get a machine check? If there is no
-mapping, we could possibly change inb and outb do deal with that.
+Ah.  It does take a bit to get fib_trie into one's build -- allyesconfig
+doesn't cut it.  Please accept my apologies for my confusion!!!
 
-	Arnd <><
+Once fib_trie is configured, I do indeed get:
+
+    net/ipv4/fib_trie.c: In function ‘node_set_parent’:
+    net/ipv4/fib_trie.c:182: warning: comparison between pointer and integer
+
+So, given that node->parent is an unsigned long, I changed node_set_parent()
+to the following:
+
+static inline void node_set_parent(struct node *node, struct tnode *ptr)
+{
+	rcu_assign_index(node->parent, (unsigned long)ptr | NODE_TYPE(node));
+}
+
+This removes the warnings.  I am a little ambivalent about this, as
+this is really a pointer in disguise rather than an array index, but
+patch below.  I suppose that another option would be to make node->parent
+be a void* and provide appropriate accessor functions/macros.
+
+Thoughts?
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+
+ fib_trie.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff -urpNa -X dontdiff linux-2.6.25-rc1/net/ipv4/fib_trie.c linux-2.6.25-rc1-fib_trie-warn.compile/net/ipv4/fib_trie.c
+--- linux-2.6.25-rc1/net/ipv4/fib_trie.c	2008-02-13 14:38:12.000000000 -0800
++++ linux-2.6.25-rc1-fib_trie-warn.compile/net/ipv4/fib_trie.c	2008-02-13 15:22:02.000000000 -0800
+@@ -179,8 +179,7 @@ static inline struct tnode *node_parent_
+ 
+ static inline void node_set_parent(struct node *node, struct tnode *ptr)
+ {
+-	rcu_assign_pointer(node->parent,
+-			   (unsigned long)ptr | NODE_TYPE(node));
++	rcu_assign_index(node->parent, (unsigned long)ptr | NODE_TYPE(node));
+ }
+ 
+ static inline struct node *tnode_get_child(struct tnode *tn, unsigned int i)
