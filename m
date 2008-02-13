@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbYBMQv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbYBMQxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933450AbYBMQv4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758887AbYBMQvo
+	id S933154AbYBMQxP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:53:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760527AbYBMQxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:51:44 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:46665 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760558AbYBMQvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:51:42 -0500
-Message-ID: <47B31FC2.4040206@panasas.com>
-Date: Wed, 13 Feb 2008 18:50:10 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 13 Feb 2008 11:53:00 -0500
+Received: from styx.suse.cz ([82.119.242.94]:47947 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756736AbYBMQw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 11:52:59 -0500
+Date: Wed, 13 Feb 2008 17:52:58 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Jeste jeden bug
+In-Reply-To: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802131749460.30955@jikos.suse.cz>
+References: <c4e36d110802130841l591f20a4j32759821543b554c@mail.gmail.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com> <1202921122.3109.31.camel@localhost.localdomain>
-In-Reply-To: <1202921122.3109.31.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13 2008 at 18:45 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> On Wed, 2008-02-13 at 18:33 +0200, Boaz Harrosh wrote:
->> On Wed, Feb 13 2008 at 17:54 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
->>> On Wed, Feb 13 2008 at 17:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
->>>> On Tue, 2008-02-12 at 19:40 +0200, Boaz Harrosh wrote:
->>>>> -	gdth_flush(ha);
->>>>> -
->>>> This piece doesn't look right.  gdth_flush() forces the internal cache
->>>> to disk backing.  If you remove it, you're taking the chance that the
->>>> machine will be powered off without a writeback which can cause data
->>>> corruption.
->>>>
->>>> James
->>>>
->>> Yes. 
->>> I have more problems reported, with exit, and am just sending one more patch that puts
->>> this back in. Which was tested.
->>>
->>> So I will resend this one plus one new one.
->>>
->>> Boaz
->>>
->> The gdth driver would do a register_reboot_notifier(&gdth_notifier);
->> to a gdth_halt() function, which would then redo half of what gdth_exit
->> does, and wrongly so, and crash.  
->>
->> Are we guaranteed in todays kernel that modules .exit function be called
->> on an halt or reboot? If so then there is no need for duplications and
->> the gdth_halt() should go.
-> 
-> No.  The __exit section is actually discardable if you promise never to
-> remove the module.
-> 
-I don't understand please explain. 
-What does a driver need to do if it needs a consistent shutdown retine?
-module or built in? unload or shutdown?
+[ the original mail was sent by Zdenek to me offlist ]
 
+On Wed, 13 Feb 2008, Zdenek Kabelac wrote:
 
-> James
-> 
-> 
+> [   68.379022] gnome-settings-[2941] trap int3 ip:3d2c840f34
+> sp:7fff36f5d100 error:0<3>BUG: sleeping function called from invalid
+> context at kernel/rwsem.c:21
+> [   68.379039] in_atomic():1, irqs_disabled():0
+> [   68.379044] no locks held by gnome-settings-/2941.
+> [   68.379050] Pid: 2941, comm: gnome-settings- Not tainted 2.6.25-rc1 #30
+> [   68.379054]
+> [   68.379056] Call Trace:
+> [   68.379061]  <#DB>  [<ffffffff81064883>] ? __debug_show_held_locks+0x13/0x30
+> [   68.379109]  [<ffffffff81036765>] __might_sleep+0xe5/0x110
+> [   68.379123]  [<ffffffff812f2240>] down_read+0x20/0x70
+> [   68.379137]  [<ffffffff8109cdca>] print_vma_addr+0x3a/0x110
+> [   68.379152]  [<ffffffff8100f435>] do_trap+0xf5/0x170
+> [   68.379168]  [<ffffffff8100f52b>] do_int3+0x7b/0xe0
+> [   68.379180]  [<ffffffff812f4a6f>] int3+0x9f/0xd0
+> [   68.379203]  <<EOE>>
+> [   68.379229]  in libglib-2.0.so.0.1505.0[3d2c800000+dc000]
 
+Andi,
+
+in commit 03252919 you introduced print_vma_addr(), but this funcion for 
+obvious reasons takes mmap_sem, so it is not safe to call it from atomic 
+context (i.e. do_trap(), for example), which is behavior your patch 
+introduced.
+
+-- 
+Jiri Kosina
+SUSE Labs
