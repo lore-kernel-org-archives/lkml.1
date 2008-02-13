@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934262AbYBMX5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934356AbYBMX5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934262AbYBMX5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:57:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763507AbYBMX5L
+	id S934356AbYBMX5v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:57:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764491AbYBMX5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:57:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58237
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760704AbYBMX5J (ORCPT
+	Wed, 13 Feb 2008 18:57:34 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58514 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765005AbYBMX5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:57:09 -0500
-Date: Wed, 13 Feb 2008 15:57:38 -0800 (PST)
-Message-Id: <20080213.155738.71849437.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: paulmck@linux.vnet.ibm.com, "stephen.hemminger@vyatta.com"@mail.vyatta.com,
-       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
-       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       herbert@gondor.apana.org.au
-Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
- type/macro safety
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080213155245.455944f8.akpm@linux-foundation.org>
-References: <20080213144233.05e860cb@extreme>
-	<20080213233744.GO12393@linux.vnet.ibm.com>
-	<20080213155245.455944f8.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 13 Feb 2008 18:57:32 -0500
+Date: Wed, 13 Feb 2008 15:57:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
+       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging
+ printk, take #3
+Message-Id: <20080213155701.48871761.akpm@linux-foundation.org>
+In-Reply-To: <12028937731333-git-send-email-htejun@gmail.com>
+References: <12028937731333-git-send-email-htejun@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 13 Feb 2008 15:52:45 -0800
+On Wed, 13 Feb 2008 18:09:28 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
-> On Wed, 13 Feb 2008 15:37:44 -0800
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> This is the third take of implement-printk_header-and-mprintk
+> patchset.
 > 
-> > Ah.  It does take a bit to get fib_trie into one's build -- allyesconfig
-> > doesn't cut it.
+> Changes from the last take[L] are...
 > 
-> This is not good.  The sole purpose of allmodconfig and allyesconfig is for
-> compilation and linkage coverage testing.  Hence we should aim to get as
-> much code as possible included in those cases.
+> * Now header is printed on every line of a multiline message.  If the
+>   header ends with ':' followed by spaces.  The colon is replaced with
+>   space from the second line.
+> 
+> * s/mprintk/mprintk_flush/ and s/mprintk_add/mprintk/ as suggested.
+> 
+> * mprintk_init_alloc() and mprintk_free() added to ease malloc'd
+>   buffer handling.  No need to specify buffer size.  Sizing is left to
+>   mprintk.
+> 
+> This patchset aims to make printing multiline messages and assembling
+> message piece-by-piece easier.
+> 
+> In a nutshell, printk_header() lets you do the following atomically
+> (against other messages).
+> 
+>  code:
+>   printk(KERN_INFO "ata1.00: ", "line0\nline1\nline2\n");
+> 
+>  output:
+>   <6>ata1.00: line0
+>   <6>ata1.00  line1
+>   <6>ata1.00  line2
 
-Well, in this case there is a choice, either you use one routing
-lookup datastructure or the other.  It's not purposefully being hidden
-from the everything builds :-)
+That seems sensible.
+
+> And mprintk the following.
+> 
+>  code:
+>   DEFINE_MPRINTK(mp, 2 * 80);
+> 
+>   mprintk_set_header(&mp, KERN_INFO "ata%u.%2u: ", 1, 0);
+>   mprintk_push(&mp, "ATA %d", 7);
+>   mprintk_push(&mp, ", %u sectors\n", 1024);
+>   mprintk(&mp, "everything seems dandy\n");
+> 
+>  output:
+>   <6>ata1.00: ATA 7, 1024 sectors
+>   <6>ata1.00  everything seems dandy
+> 
+
+And that looks like an awful lot of fuss.  Is it really worth doing?
