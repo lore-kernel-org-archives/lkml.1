@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932722AbYBMJ0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbYBMJ0p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932722AbYBMJ0U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:26:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbYBMJZJ
+	id S1756740AbYBMJ0p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:26:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932576AbYBMJZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:25:09 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38568 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932507AbYBMJZF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:25:05 -0500
-Date: Wed, 13 Feb 2008 10:24:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Lord <mlord@pobox.com>, Jeff Garzik <jeff@garzik.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [libata-dev #upstream-fixes] pata_legacy: don't call
-	ata_host_detach() after initialization failure
-Message-ID: <20080213092430.GA25258@elte.hu>
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080212081816.GA17820@elte.hu> <20080212071452.5c58ae6d@laptopd505.fenrus.org> <20080213090159.GA21614@elte.hu> <47B2B653.7020408@gmail.com>
+	Wed, 13 Feb 2008 04:25:13 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:51889 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766014AbYBMJZI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:25:08 -0500
+X-Greylist: delayed 1617 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 04:25:07 EST
+To: linux-kernel@vger.kernel.org
+Subject: Upgrade to 2.6.24 breaks NFS service
+From: Nix <nix@esperi.org.uk>
+Emacs: (setq software-quality (/ 1 number-of-authors))
+Date: Wed, 13 Feb 2008 08:58:03 +0000
+Message-ID: <87lk5pjkro.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B2B653.7020408@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-DCC-dcc1-Metrics: hades 1182; Body=1 Fuz1=1 Fuz2=1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I upgraded from 2.6.23.10 to 2.6.24.2 yesterday, and found NFS service
+failing.
 
-* Tejun Heo <htejun@gmail.com> wrote:
+To be specific, all locks were blocking forever, with an endless flood
+of
 
-> ata_host_detach() detaches an attached port and shouldn't be called on 
-> a port which hasn't been attached yet.  pata_legacy incorrectly calls 
-> ata_host_detach() on unattached port after initialization failure 
-> causing oops.  Fix it.
+Feb 12 22:53:10 loki notice: kernel: statd: server localhost not responding, timed out
+Feb 12 22:53:10 loki notice: kernel: lockd: cannot monitor esperi
+Feb 12 22:53:45 loki notice: kernel: statd: server localhost not responding, timed out
+Feb 12 22:53:45 loki notice: kernel: lockd: cannot monitor esperi
+Feb 12 22:54:20 loki notice: kernel: statd: server localhost not responding, timed out
+Feb 12 22:54:20 loki notice: kernel: lockd: cannot monitor esperi
+Feb 12 22:54:55 loki notice: kernel: statd: server localhost not responding, timed out
+Feb 12 22:54:55 loki notice: kernel: lockd: cannot monitor esperi
+Feb 12 22:55:20 esperi notice: kernel: lockd: server loki.wkstn.nix not responding, still trying
 
-thanks, i'll try this!
+(esperi is a UML instance on the same machine, connected via a bridged
+TUN/TAP interface: the bridge, and network service to esperi and to the
+rest of the local net across that bridge, was fine.)
 
-	Ingo
+I'm currently using NFSv3 atop nfs-utils 1.1.0.33-gdd08789, with daemons
+being started in the suggested order (portmap, mountd, statd
+--no-notify, nfsd). This evening I'm going to try to upgrade to
+nfs-utils HEAD and see if this continues.
+
+-- 
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
