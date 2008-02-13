@@ -1,66 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761968AbYBMC36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761253AbYBMCf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761968AbYBMC36 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:29:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753582AbYBMC3r
+	id S1761253AbYBMCf0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbYBMCfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:29:47 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36451 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753552AbYBMC3q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:29:46 -0500
-Date: Tue, 12 Feb 2008 18:28:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/4] fib_trie: improve output format for
- /proc/net/fib_trie
-Message-Id: <20080212182823.6f8a3a12.akpm@linux-foundation.org>
-In-Reply-To: <20080213005122.727447010@vyatta.com>
-References: <20080213005042.150212716@vyatta.com>
-	<20080213005122.727447010@vyatta.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 Feb 2008 21:35:14 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:42674 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751030AbYBMCfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 21:35:12 -0500
+Date: Tue, 12 Feb 2008 18:35:09 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+cc: Roland Dreier <rdreier@cisco.com>, Rik van Riel <riel@redhat.com>,
+       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <20080213012638.GD31435@obsidianresearch.com>
+Message-ID: <Pine.LNX.4.64.0802121819530.12328@schroedinger.engr.sgi.com>
+References: <20080209015659.GC7051@v2.random>
+ <Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com>
+ <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com>
+ <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com>
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>
+ <adazlu5vlub.fsf@cisco.com> <20080212232329.GC31435@obsidianresearch.com>
+ <Pine.LNX.4.64.0802121657430.11628@schroedinger.engr.sgi.com>
+ <20080213012638.GD31435@obsidianresearch.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 16:50:44 -0800 Stephen Hemminger <shemminger@vyatta.com> wrote:
+On Tue, 12 Feb 2008, Jason Gunthorpe wrote:
 
-> Make output format prettier (more tree like).
+> The problem is that the existing wire protocols do not have a
+> provision for doing an 'are you ready' or 'I am not ready' exchange
+> and they are not designed to store page tables on both sides as you
+> propose. The remote side can send RDMA WRITE traffic at any time after
+> the RDMA region is established. The local side must be able to handle
+> it. There is no way to signal that a page is not ready and the remote
+> should not send.
 > 
->    <local>:
->    --- 0.0.0.0/0
->      |--- 10.111.111.0/24
->      |  +-- 10.111.111.0/32 link broadcast
->      |  |--- 10.111.111.254/31
->      |  |  +-- 10.111.111.254/32 host local
->      |  |  +-- 10.111.111.255/32 link broadcast
->      |--- 127.0.0.0/8
->      |  |--- 127.0.0.0/31
->      |  |  +-- 127.0.0.0/32 link broadcast
->      |  |  +-- 127.0.0.0/8 host local
->      |  |  +-- 127.0.0.1/32 host local
->      |  +-- 127.255.255.255/32 link broadcast
->      |--- 192.168.1.0/24
->      |  |--- 192.168.1.0/28
->      |  |  +-- 192.168.1.0/32 link broadcast
->      |  |  +-- 192.168.1.9/32 host local
->      |  +-- 192.168.1.255/32 link broadcast
->    <main>:
->    --- 0.0.0.0/0
->      |--- 0.0.0.0/4
->      |  +-- 0.0.0.0/0 universe unicast
->      |  +-- 10.111.111.0/24 link unicast
->      +-- 169.254.0.0/16 link unicast
->      +-- 192.168.1.0/24 link unicast
+> This means the only possible implementation is to stall/discard at the
+> local adaptor when a RDMA WRITE is recieved for a page that has been
+> reclaimed. This is what leads to deadlock/poor performance..
 
-isn't that a non-back-compatible kernel ABI change?  It might
-break pre-existing parsers?
+You would only use the wire protocols *after* having established the RDMA 
+region. The notifier chains allows a RDMA region (or parts thereof) to be 
+down on demand by the VM. The region can be reestablished if one of 
+the side accesses it. I hope I got that right. Not much exposure to 
+Infiniband so far.
 
-aside: how lame are we to put pretty-printers in the kernel?
-English-only ones, at that?  Root cause: kernel developers still
-don't have a sufficiently easy way of shipping userspace tools.
+Lets say you have a two systems A and B. Each has their memory region MemA 
+and MemB. Each side also has page tables for this region PtA and PtB.
+
+Now you establish a RDMA connection between both side. The pages in both
+MemB and MemA are present and so are entries in PtA and PtB. RDMA 
+traffic can proceed.
+
+The VM on system A now gets into a situation in which memory becomes 
+heavily used by another (maybe non RDMA process) and after checking that 
+there was no recent reference to MemA and MemB (via a notifier aging 
+callback) decides to reclaim the memory from MemA.
+
+In that case it will notify the RDMA subsystem on A that it is trying to
+reclaim a certain page.
+
+The RDMA subsystem on A will then send a message to B notifying it that 
+the memory will be going away. B now has to remove its corresponding page 
+from memory (and drop the entry in PtB) and confirm to A that this has 
+happened. RDMA traffic is then stopped for this page. Then A can also 
+remove its page, the corresponding entry in PtA and the page is reclaimed 
+or pushed out to swap completing the page reclaim.
+
+If either side then accesses the page again then the reverse process 
+happens. If B accesses the page then it wil first of all incur a page 
+fault because the entry in PtB is missing. The fault will then cause a 
+message to be send to A to establish the page again. A will create an 
+entry in PtA and will then confirm to B that the page was established. At 
+that point RDMA operations can occur again.
+
+So the whole scheme does not really need a hardware page table in the RDMA 
+hardware. The page tables of the two systems A and B are sufficient.
+
+The scheme can also be applied to a larger range than only a single page. 
+The RDMA subsystem could tear down a large section when reclaim is 
+pushing on it and then reestablish it as needed.
+
+Swapping and page reclaim is certainly not something that improves the 
+speed of the application affected by swapping and page reclaim but it 
+allows the VM to manage memory effectively if multiple loads are runing on 
+a system.
+
