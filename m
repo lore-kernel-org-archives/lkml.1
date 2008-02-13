@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763503AbYBMVrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934764AbYBMVsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763503AbYBMVrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764263AbYBMVbR
+	id S934764AbYBMVsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759443AbYBMVbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:31:17 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47547 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Feb 2008 16:31:19 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50859 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759621AbYBMVbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:31:12 -0500
-Date: Wed, 13 Feb 2008 23:30:55 +0200
+	id S1764238AbYBMVbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:31:13 -0500
+Date: Wed, 13 Feb 2008 23:30:57 +0200
 From: Adrian Bunk <bunk@kernel.org>
 To: paulus@samba.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [2.6 patch] powerpc: free_property() mustn't be __init
-Message-ID: <20080213213055.GP3383@cs181133002.pp.htv.fi>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] hvc_rtas_init() must be __init
+Message-ID: <20080213213057.GQ3383@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -29,31 +28,30 @@ This patch fixes the following section mismatch:
 <--  snip  -->
 
 ...
-WARNING: vmlinux.o(.text+0x55648): Section mismatch in reference from the function .free_node() to the function .init.text:.free_property()
+WARNING: vmlinux.o(.text+0x2fbca8): Section mismatch in reference from the function .hvc_rtas_init() to the function .devinit.text:.hvc_alloc()
 ...
 
 <--  snip  -->
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 ---
 
 This patch has been sent on:
 - 30 Jan 2008
 
-99e9b48d8f5aba059916540fc69815db2b60b08d 
-diff --git a/arch/powerpc/platforms/iseries/vio.c b/arch/powerpc/platforms/iseries/vio.c
-index be06cfd..657b72f 100644
---- a/arch/powerpc/platforms/iseries/vio.c
-+++ b/arch/powerpc/platforms/iseries/vio.c
-@@ -75,7 +75,7 @@ static struct property *new_property(const char *name, int length,
- 	return np;
- }
+1cc00c4ad5c881db2fc256ced43f3b5ce5c76e1c 
+diff --git a/drivers/char/hvc_rtas.c b/drivers/char/hvc_rtas.c
+index bb09413..88590d0 100644
+--- a/drivers/char/hvc_rtas.c
++++ b/drivers/char/hvc_rtas.c
+@@ -76,7 +76,7 @@ static struct hv_ops hvc_rtas_get_put_ops = {
+ 	.put_chars = hvc_rtas_write_console,
+ };
  
--static void __init free_property(struct property *np)
-+static void free_property(struct property *np)
+-static int hvc_rtas_init(void)
++static int __init hvc_rtas_init(void)
  {
- 	kfree(np);
- }
+ 	struct hvc_struct *hp;
+ 
 
