@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765450AbYBMBGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbYBMBHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765450AbYBMBGR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 20:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbYBMBGD
+	id S1765229AbYBMBHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 20:07:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbYBMBHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 20:06:03 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:21066 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752537AbYBMBGA (ORCPT
+	Tue, 12 Feb 2008 20:07:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59845
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752562AbYBMBHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 20:06:00 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=tLq6CuYxdovvYyF+zrRZcLxJsDUtdo/NAm/ldx8GBJYcSyaDXKKY7CkjDOOl26C/3wNDG14bh2WQZ2eypfRXVv3iGijLaloDvGGvSyEXEvEBUikhsh4A5+tHMkEVdF5goYVC+RQ7mwW5uxCcAkDJuJlz+6Nj2jGpbBUDysJ+Viw=  ;
-X-YMail-OSG: nB0BsuEVM1lTz.YZOu8voFSXOjnvUYMS18CEh_KsIa51zTGrQRiBC9Cz5Zg7X8ZBpE73GsSSmA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Kernel BUG at fs/mpage.c:489
-Date: Wed, 13 Feb 2008 12:05:45 +1100
-User-Agent: KMail/1.9.5
-Cc: Bart Dopheide <dopheide@fmf.nl>, linux-kernel@vger.kernel.org
-References: <20080212194546.GA2174@fmf.nl> <20080212215006.170ade88@core>
-In-Reply-To: <20080212215006.170ade88@core>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 12 Feb 2008 20:07:31 -0500
+Date: Tue, 12 Feb 2008 17:08:03 -0800 (PST)
+Message-Id: <20080212.170803.205678080.davem@davemloft.net>
+To: jengelh@computergmbh.de
+Cc: chris.mason@oracle.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, btrfs-devel@oss.oracle.com
+Subject: Re: BTRFS partition usage...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0802130032190.14275@fbirervta.pbzchgretzou.qr>
+References: <Pine.LNX.4.64.0802121458420.21102@fbirervta.pbzchgretzou.qr>
+	<20080212.152652.217936905.davem@davemloft.net>
+	<Pine.LNX.4.64.0802130032190.14275@fbirervta.pbzchgretzou.qr>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131205.45493.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008 08:50, Alan Cox wrote:
-> > Feb 12 19:55:08 butterfly kernel: hde: dma timeout error: status=0xd0 {
-> > Busy } Feb 12 19:55:08 butterfly kernel: ide: failed opcode was: unknown
->
-> Your drive stopped responding.
->
-> > Feb 12 19:55:08 butterfly kernel: hde: DMA disabled
-> > Feb 12 19:55:08 butterfly kernel: PDC202XX: Primary channel reset.
-> > Feb 12 19:55:08 butterfly kernel: PDC202XX: Secondary channel reset.
->
-> We gave it a good kicking and it stayed offline
->
-> > Feb 12 19:55:08 butterfly kernel: hde: set_drive_speed_status:
-> > status=0xd0 { Busy } Feb 12 19:55:08 butterfly kernel: ide: failed opcode
-> > was: unknown Feb 12 19:55:47 butterfly kernel: ide2: reset timed-out,
-> > status=0xd0 Feb 12 19:55:47 butterfly kernel: hde: status timeout:
-> > status=0xd0 { Busy }
->
-> And we gave up.
->
-> Almost certainly a hardware fail of some sort.
+From: Jan Engelhardt <jengelh@computergmbh.de>
+Date: Wed, 13 Feb 2008 00:39:16 +0100 (CET)
 
-Right, but the kernel shouldn't go bug...
+> On the other hand, the H and S of CHS could be lowered and S increased,
+> e.g. divide H by 2, divide S by 2, multiply S by 4. This gives a finer
+> bytes/cylinder granularity.
 
-I don't have a copy of your exact source code... which condition in
-__mpage_writepage went BUG?
+That's really not an option when you only have 16-bits in the disk
+label for some of these values, which is the case for Sun disk
+labels and some others (f.e. BSD).
+
+Jan, please get past this, it's a real issue and we therefore have to
+skip the initial 1K or so in order to provide something even
+approaching sane.
+
+No modern filesystem should put it's superblock at position zero.
+
