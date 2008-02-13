@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbYBMVGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbYBMVHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757618AbYBMVGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:06:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752440AbYBMVGo
+	id S1758789AbYBMVHa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbYBMVHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:06:44 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:58583 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752287AbYBMVGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:06:43 -0500
-Date: Wed, 13 Feb 2008 22:06:46 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Dan Williams" <dan.j.williams@intel.com>
-Cc: linux-kernel@vger.kernel.org, "Shannon Nelson" <shannon.nelson@intel.com>,
-       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
-       "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: [RFC v2 5/5] Atmel MCI: Driver for Atmel on-chip MMC
- controllers
-Message-ID: <20080213220646.081583d6@siona>
-In-Reply-To: <e9c3a7c20802131111l86bf853y9173e23526aeb84c@mail.gmail.com>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
-	<e9c3a7c20802131111l86bf853y9173e23526aeb84c@mail.gmail.com>
-Organization: Atmel
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+	Wed, 13 Feb 2008 16:07:20 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:58696 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752440AbYBMVHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:07:19 -0500
+Date: Wed, 13 Feb 2008 22:07:26 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Roland McGrath <roland@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.25-rc1, weird build error
+Message-ID: <20080213210726.GA13773@uranus.ravnborg.org>
+References: <20080212070448.GA20033@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212070448.GA20033@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 12:11:58 -0700
-"Dan Williams" <dan.j.williams@intel.com> wrote:
-
-> > +               desc = chan->device->device_prep_slave(chan,
-> > +                               sg_dma_address(sg), direction,
-> > +                               DMA_SLAVE_WIDTH_32BIT,
-> > +                               sg_dma_len(sg), dma_flags);
-> > +               desc->txd.callback = NULL;
-> > +               list_add_tail(&desc->client_node,
-> > +                               &host->dma.data_descs);
-> > +       }  
+On Tue, Feb 12, 2008 at 08:04:48AM +0100, Ingo Molnar wrote:
 > 
-> Need to handle device_prep_slave returning NULL?
+> i've got a build log from a weird build error below:
+> 
+>   LD      init/built-in.o
+> distcc[12023] ERROR: compile (null) on localhost failed
+> make: *** [vmlinux.o] Error 1
+> make: *** Waiting for unfinished jobs....
+>   LD      .tmp_vmlinux1
+> 
+> but there's no actual error visible in the logs. On a second attempt, it 
+> built just fine. (unfortunately erasing most evidence of the previous 
+> failure.) This happened after a rather long randconfig build series so i 
+> doubt it's readily reprodicible.
+> 
+> any ideas? Is this something benign? Or should i start doing all builds 
+> with V=1, in the hope of catching more information?
 
-You're right, we definitely need to handle that. Which probably means
-we need to prepare an interrupt descriptor first that we can throw in
-when we're unable to obtain more descriptors, and submit the rest from
-the callback.
+building vmlinux.o were moved up in the dependency chain so we started
+to build it before the kallsym stuff. This was done to let modpost
+report section mismatch bugs even when the final link failed.
 
-Except we're not allowed to submit anything from the callback. Ouch.
+Originally I had expected the dependency of $(kallsyms.o) to
+cover this but it turns out that we need to be even more explicit.
+With attached patch this is addressed and I now get the desired
+behaviour.
+The drawback is that the final steps are serialized and we seems
+to be pretty CPU bound doing all the linking stuff.
 
-How can we solve that? Set up a work queue and submit it from there?
-Trigger a different tasklet?
+I assume the patch is safe but a bit testing from your side
+is appreciated.
+That randconfig qa thing is excellent to find these subtle things.
 
-In any case, I guess I need to implement support for interrupt
-descriptors in the dw_dmac driver.
+	Sam
 
-Haavard
+diff --git a/Makefile b/Makefile
+index c162370..bec8da3 100644
+--- a/Makefile
++++ b/Makefile
+@@ -810,7 +810,9 @@ endif
+ 	$(Q)rm -f .old_version
+ 
+ # build vmlinux.o first to catch section mismatch errors early
+-$(kallsyms.o): vmlinux.o
++ifdef CONFIG_KALLSYMS
++.tmp_vmlinux1: vmlinux.o
++endif
+ vmlinux.o: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) FORCE
+ 	$(call if_changed_rule,vmlinux-modpost)
+ 
