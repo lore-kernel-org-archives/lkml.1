@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbYBMDXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755095AbYBMDYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbYBMDXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 22:23:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbYBMDXD
+	id S1755095AbYBMDYV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 22:24:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYBMDYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 22:23:03 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47495 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752092AbYBMDXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 22:23:01 -0500
-Date: Tue, 12 Feb 2008 21:22:58 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: clameter@sgi.com, Lee.Schermerhorn@hp.com, akpm@linux-foundation.org,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/4] mempolicy: convert MPOL constants to enum
-Message-Id: <20080212212258.7170bc10.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802121911040.3418@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<1202861432.4974.29.camel@localhost>
-	<20080212183158.3ff4ccd5.pj@sgi.com>
-	<Pine.LNX.4.64.0802121702431.11628@schroedinger.engr.sgi.com>
-	<20080212193229.edbff05a.pj@sgi.com>
-	<alpine.DEB.1.00.0802121755400.23110@chino.kir.corp.google.com>
-	<20080212202201.a534cef8.pj@sgi.com>
-	<alpine.DEB.1.00.0802121832520.29792@chino.kir.corp.google.com>
-	<20080212205944.86ab2dc7.pj@sgi.com>
-	<alpine.DEB.1.00.0802121911040.3418@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 Feb 2008 22:24:05 -0500
+Received: from mail.vyatta.com ([216.93.170.194]:42675 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbYBMDYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 22:24:03 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -2.325
+Message-ID: <47B262CF.9040407@vyatta.com>
+Date: Tue, 12 Feb 2008 19:23:59 -0800
+From: Stephen Hemminger <stephen.hemminger@vyatta.com>
+Organization: Vyatta
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2/4] fib_trie: improve output format for /proc/net/fib_trie
+References: <20080213005042.150212716@vyatta.com>	<20080213005122.727447010@vyatta.com> <20080212182823.6f8a3a12.akpm@linux-foundation.org>
+In-Reply-To: <20080212182823.6f8a3a12.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> That doesn't logically follow because the aggregate of the mode and the 
-> optional flags _are_ the policy itself.
-
-I give up ... I still don't agree, but that's ok.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Andrew Morton wrote:
+> On Tue, 12 Feb 2008 16:50:44 -0800 Stephen Hemminger <shemminger@vyatta.com> wrote:
+>
+>   
+>> Make output format prettier (more tree like).
+>>
+>>    <local>:
+>>    --- 0.0.0.0/0
+>>      |--- 10.111.111.0/24
+>>      |  +-- 10.111.111.0/32 link broadcast
+>>      |  |--- 10.111.111.254/31
+>>      |  |  +-- 10.111.111.254/32 host local
+>>      |  |  +-- 10.111.111.255/32 link broadcast
+>>      |--- 127.0.0.0/8
+>>      |  |--- 127.0.0.0/31
+>>      |  |  +-- 127.0.0.0/32 link broadcast
+>>      |  |  +-- 127.0.0.0/8 host local
+>>      |  |  +-- 127.0.0.1/32 host local
+>>      |  +-- 127.255.255.255/32 link broadcast
+>>      |--- 192.168.1.0/24
+>>      |  |--- 192.168.1.0/28
+>>      |  |  +-- 192.168.1.0/32 link broadcast
+>>      |  |  +-- 192.168.1.9/32 host local
+>>      |  +-- 192.168.1.255/32 link broadcast
+>>    <main>:
+>>    --- 0.0.0.0/0
+>>      |--- 0.0.0.0/4
+>>      |  +-- 0.0.0.0/0 universe unicast
+>>      |  +-- 10.111.111.0/24 link unicast
+>>      +-- 169.254.0.0/16 link unicast
+>>      +-- 192.168.1.0/24 link unicast
+>>     
+>
+> isn't that a non-back-compatible kernel ABI change?  It might
+> break pre-existing parsers?
+>
+>   
+Fib trie was always experimental and the output format was intended to 
+be tree like
+but was broken. There are no known parsers of fib trie, and I think 
+Vyatta will probably
+be the first distro to ship with it enabled.
+> aside: how lame are we to put pretty-printers in the kernel?
+> English-only ones, at that?  Root cause: kernel developers still
+> don't have a sufficiently easy way of shipping userspace tools.
+Agreed, the structure of the trie doesn't come out via netlink (only the 
+addresses).
