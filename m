@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932799AbYBMQ34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933125AbYBMQab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932799AbYBMQ34 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbYBMQ3t
+	id S933125AbYBMQab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:30:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761358AbYBMQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:29:49 -0500
-Received: from xenotime.net ([66.160.160.81]:35886 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758159AbYBMQ3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:29:48 -0500
-Date: Wed, 13 Feb 2008 08:29:43 -0800
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: pageexec@freemail.hu, Sam Ravnborg <sam@ravnborg.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Message-Id: <20080213082943.26d24d10.rdunlap@xenotime.net>
-In-Reply-To: <20080213152900.GA28959@elte.hu>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org>
-	<47B30F05.29637.9A21F9B@pageexec.freemail.hu>
-	<20080213152900.GA28959@elte.hu>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 11:30:13 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:34600 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761304AbYBMQaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 11:30:11 -0500
+Date: Wed, 13 Feb 2008 10:29:24 -0600
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH 5/8] IPMI: Don't print event queue full on every event
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Reply-to: minyard@acm.org
+Message-id: <20080213162924.GE9830@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 16:29:00 +0100 Ingo Molnar wrote:
+From: Corey Minyard <cminyard@mvista.com>
 
-> 
-> * pageexec@freemail.hu <pageexec@freemail.hu> wrote:
-> 
-> > patches to get CONFIG_CC_STACKPROTECTOR_ALL actually to work (it 
-> > includes the Makefile patch proposed in this thread already).
-> > 
-> > note that the fix to ACPI is an actual stack corruption bug (caught by 
-> > ssp thanks to a lucky stack layout), due to the misuse of the pci 
-> > accessor functions, probably a whole-tree audit is in order for 
-> > similar bugs.
-> > 
-> > note also that the vsyscall functions (more precisely, all the code 
-> > that goes into .vsyscall* sections) had better be separated into their 
-> > own .c files so that they can be compiled without -mcmodel=kernel and 
-> > use %fs for getting the ssp cookie, if ssp is desired at all there).
-> 
-> thanks, i've picked up your patch into x86.git#mm and also made 
-> stackprotector-all default-enabled so that we get more test coverage of 
-> this critical security feature. x86.git#mm can be picked up via:
-> 
->   http://people.redhat.com/mingo/x86.git/README
-> 
-> head of the tree:
-> 
->   ---------------->
->   commit e1d96d3e489d02b12984fb3c755b0f9a9ae0fe5f
->   Author: Ingo Molnar <mingo@elte.hu>
->   Date:   Wed Feb 13 16:15:34 2008 +0100
-> 
->       x86: enable stack-protector by default
-> 
->       also enable the rodata and nx tests.
->   <----------------
-> 
-> your patch booted fine here with stackprotector-all enabled.
+Don't print out that the event queue is full on every event, only
+print something out when it becomes full or becomes not full.
 
-Is it signed-off-by: pageexec ?
-
-Couldn't that be a problem?
-
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
 ---
-~Randy
+
+Index: linux-2.6.23/drivers/char/ipmi/ipmi_msghandler.c
+===================================================================
+--- linux-2.6.23.orig/drivers/char/ipmi/ipmi_msghandler.c
++++ linux-2.6.23/drivers/char/ipmi/ipmi_msghandler.c
+@@ -253,7 +253,8 @@ struct ipmi_smi
+ 	spinlock_t       events_lock; /* For dealing with event stuff. */
+ 	struct list_head waiting_events;
+ 	unsigned int     waiting_events_count; /* How many events in queue? */
+-	int              delivering_events;
++	char             delivering_events;
++	char             event_msg_printed;
+ 
+ 	/* The event receiver for my BMC, only really used at panic
+ 	   shutdown as a place to store this. */
+@@ -1075,6 +1076,11 @@ int ipmi_set_gets_events(ipmi_user_t use
+ 		list_for_each_entry_safe(msg, msg2, &intf->waiting_events, link)
+ 			list_move_tail(&msg->link, &msgs);
+ 		intf->waiting_events_count = 0;
++		if (intf->event_msg_printed) {
++			printk(KERN_WARNING PFX "Event queue no longer"
++			       " full\n");
++			intf->event_msg_printed = 0;
++		}
+ 
+ 		intf->delivering_events = 1;
+ 		spin_unlock_irqrestore(&intf->events_lock, flags);
+@@ -3253,11 +3259,12 @@ static int handle_read_event_rsp(ipmi_sm
+ 		copy_event_into_recv_msg(recv_msg, msg);
+ 		list_add_tail(&(recv_msg->link), &(intf->waiting_events));
+ 		intf->waiting_events_count++;
+-	} else {
++	} else if (!intf->event_msg_printed) {
+ 		/* There's too many things in the queue, discard this
+ 		   message. */
+-		printk(KERN_WARNING PFX "Event queue full, discarding an"
+-		       " incoming event\n");
++		printk(KERN_WARNING PFX "Event queue full, discarding"
++		       " incoming events\n");
++		intf->event_msg_printed = 1;
+ 	}
+ 
+  out:
