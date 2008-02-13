@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYBMKSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765235AbYBMKSk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbYBMKSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 05:18:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbYBMKSM
+	id S1765235AbYBMKSk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 05:18:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755492AbYBMKSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 05:18:12 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58431 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753089AbYBMKSL (ORCPT
+	Wed, 13 Feb 2008 05:18:18 -0500
+Received: from hpsmtp-eml19.kpnxchange.com ([213.75.38.84]:18651 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755022AbYBMKSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 05:18:11 -0500
-Date: Wed, 13 Feb 2008 10:07:01 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Al Viro <viro@ZenIV.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080213100700.GB21694@flint.arm.linux.org.uk>
-Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Al Viro <viro@ZenIV.linux.org.uk>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	James Bottomley <James.Bottomley@HansenPartnership.com>,
-	Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-	arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	linux-arch@vger.kernel.org, akpm@linux-foundation.org
-References: <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain> <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org> <20080212194100.GH27894@ZenIV.linux.org.uk> <20080212215152.1470fe7f@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 Feb 2008 05:18:16 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] kbuild: allow to specify a custom revision for .deb packages
+Date: Wed, 13 Feb 2008 11:18:11 +0100
+User-Agent: KMail/1.9.7
+Cc: sam@ravnborg.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080212215152.1470fe7f@core>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802131118.11413.elendil@planet.nl>
+X-OriginalArrivalTime: 13 Feb 2008 10:18:13.0562 (UTC) FILETIME=[BDB661A0:01C86E29]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 09:51:52PM +0000, Alan Cox wrote:
-> > We could simply decide that API changes affecting more than one subsystem
-> > Must Be Serialized(tm).  Explicitly.  As in "any such change is posted
-> 
-> Welcome to dreamland. The only way I can get serial changes done is to
-> wait months and eventually simply persuade Andrew to ignore the
-> "maintainers" who are basically not responding.
+From: Frans Pop <elendil@planet.nl>
 
-... because we didn't realise that the pre-requisits for those patches
-had already gone in.  If that had been the case, I'd have applied the
-ARM changes for the new tty ioctls immediately.
+Allow to specify a custom revision for the generated .deb package
+by exporting the environment variable KERNELDEBREVISION.
 
-It was a communication problem, not a process problem.
+Signed-off-by: Frans Pop <elendil@planet.nl>
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index ba6bf5d..2577dec 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -14,6 +14,11 @@ set -e
+ # Some variables and settings used throughout the script
+ version=$KERNELRELEASE
+ revision=`cat .version`
++if [ x"$KERNELDEBREVISION" = x ]; then
++	debrevision=$version-$revision
++else
++	debrevision=$KERNELDEBREVISION
++fi
+ tmpdir="$objtree/debian/tmp"
+ packagename=linux-$version
+ 
+@@ -66,7 +71,7 @@ done
+ name="Kernel Compiler <$(id -nu)@$(hostname -f)>"
+ # Generate a simple changelog template
+ cat <<EOF > debian/changelog
+-linux ($version-$revision) unstable; urgency=low
++linux ($debrevision) unstable; urgency=low
+ 
+   * A standard release
+ 
