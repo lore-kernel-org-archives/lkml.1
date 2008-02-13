@@ -1,41 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbYBMCZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763476AbYBMC0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbYBMCZe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 21:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754268AbYBMCZZ
+	id S1763476AbYBMC0O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 21:26:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbYBMCZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 21:25:25 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:40999 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753345AbYBMCZY (ORCPT
+	Tue, 12 Feb 2008 21:25:57 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:54679 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754268AbYBMCZ4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 21:25:24 -0500
-Date: Wed, 13 Feb 2008 02:17:37 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Greg KH <greg@kroah.com>
-Cc: muli@il.ibm.com, jdmason@kudzu.us, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080213021737.72b9815d@core>
-In-Reply-To: <20080213001638.GB13933@kroah.com>
-References: <20080213001506.GA13933@kroah.com>
-	<20080213001638.GB13933@kroah.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 12 Feb 2008 21:25:56 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, jeff@garzik.org, arjan@infradead.org,
+       greg@kroah.com, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+In-Reply-To: <20080212.172051.58554658.davem@davemloft.net>
+References: <47B1CB08.4020101@garzik.org>
+	 <20080212.155853.193190548.davem@davemloft.net>
+	 <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org>
+	 <20080212.172051.58554658.davem@davemloft.net>
+Content-Type: text/plain
+Date: Tue, 12 Feb 2008 20:25:50 -0600
+Message-Id: <1202869550.3137.182.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why does the calgary driver need this?  Can we just use pci_get_device()
-> instead?  Why do you need to walk the device list backwards?  Do you get
-> false positives going forward?
+On Tue, 2008-02-12 at 17:20 -0800, David Miller wrote:
+> What would be really cool is if you could do the rebase thing, push
+> that to a remote tree you were already pushing into and others could
+> pull from that and all the right things happen.
+> 
+> A rebase is just a series of events, and those could propagate to
+> people who are pulling from the tree.  I'm pretty sure GIT could
+> support this.
 
-It doesn't look to be performance critical so the driver can
-pci_get_device until the end and use the final hit anyway. IDE reverse is
-more problematic but nobody seems to use it.
+Yes, this is exactly the feature I'm looking for.  It would allow the
+downstream users of a rebased tree to rebase themselves correctly.
+
+All the information about the rebase is in the reflog ... it can't be
+too difficult to pass it through on a pull and allow the downstream tree
+to do the right thing.
+
+James
+
+
