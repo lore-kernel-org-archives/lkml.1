@@ -1,89 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933867AbYBMR6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765889AbYBMR7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933867AbYBMR6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbYBMR6c
+	id S1765889AbYBMR7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:59:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbYBMR6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:58:32 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:50259 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755662AbYBMR6b (ORCPT
+	Wed, 13 Feb 2008 12:58:46 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42659 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755935AbYBMR6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:58:31 -0500
-Date: Wed, 13 Feb 2008 12:58:23 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Josh Boyer <jwboyer@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexander Viro <viro@zeniv.linux.org.uk>
-Subject: Re: latest list of unused Kconfig variables
-In-Reply-To: <20080213174636.GB12259@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.1.00.0802131250120.25604@localhost.localdomain>
-References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain> <20080213073242.5c069c25@zod.rchland.ibm.com> <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain> <20080213093314.3220e29d@zod.rchland.ibm.com> <alpine.LFD.1.00.0802131038130.30959@localhost.localdomain>
- <20080213174636.GB12259@uranus.ravnborg.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Wed, 13 Feb 2008 12:58:44 -0500
+Date: Wed, 13 Feb 2008 15:58:28 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Robert Fitzsimons <robfitz@273k.net>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Michael Schimek <mschimek@gmx.at>
+Subject: Re: [PATCH] bttv: Fix overlay divide error.
+Message-ID: <20080213155828.4140b36c@gaivota>
+In-Reply-To: <20080213163634.GA2798@localhost>
+References: <20080213163634.GA2798@localhost>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Sam Ravnborg wrote:
+On Wed, 13 Feb 2008 16:38:11 +0000
+Robert Fitzsimons <robfitz@273k.net> wrote:
 
-> On Wed, Feb 13, 2008 at 10:44:27AM -0500, Robert P. J. Day wrote:
-> > On Wed, 13 Feb 2008, Josh Boyer wrote:
-> >
-> > > OK.  Well all of your hits for 405EX, 440GRX, 440SPe, and
-> > > WANT_DEVICE_TREE in arch/powerpc seem bogus.  I dunno if you prune
-> > > those when reported or not.
-> >
-> > not normally, but i don't know what you mean by "bogus":
-> >
-> >   $ grep -r "config 405EX" *
-> >   arch/powerpc/platforms/40x/Kconfig:config 405EX
-> >   $
-> >
-> >   $ grep -r CONFIG_405EX *
-> >   arch/powerpc/configs/makalu_defconfig:CONFIG_405EX=y
-> >   arch/powerpc/configs/kilauea_defconfig:CONFIG_405EX=y
-> >   $
->
-> $ git grep 405EX | grep select
-> arch/powerpc/platforms/40x/Kconfig:     select 405EX
-> arch/powerpc/platforms/40x/Kconfig:     select 405EX
->
-> So it is used.
+> The initial work to convert the bttv driver to V4L2 "Partial conversion
+> from V4L1 to V4L2" (e84619b17440ccca4e4db7583d126c4189b987e5), missed
+> the line which set the appropriate overlay crop structure in the newly
+> allocated bttv_buffer.  This then causes a divide error in the
+> bttv_calc_geo function.
+> 
+> Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
 
-ok, i see the flaw in my logic.  the Kconfig variable 405EX isn't
-tested *directly* by anyone, it's simply used to further "select"
-other variables, which my script doesn't take into account.
+Applied, thanks.
 
-  config 405EX
-        bool
-        select IBM_NEW_EMAC_EMAC4
-        select IBM_NEW_EMAC_RGMII
+> ---
+>  drivers/media/video/bt8xx/bttv-driver.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> Hi Mauro
+> 
+> This patch against Linus's git tree fixes an overlay regression in the
+> bttv driver in 2.6.25-rc1.
+> 
+> Robert
+> 
+>  divide error: 0000 [#1]
+>  Modules linked in: usbhid hid ipt_MASQUERADE iptable_nat nf_nat ipt_LOG xt_limit xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables pppoe pppox ppp_generic slhc ipv6 tuner tea5767 tda8290 tda18271 tda827x tuner_xc2028 xc5000 tda9887 tuner_simple mt20xx tea5761 tvaudio msp3400 bttv videodev v4l1_compat ir_common compat_ioctl32 i2c_algo_bit v4l2_common videobuf_dma_sg videobuf_core btcx_risc tveeprom pcspkr i2c_core snd_bt87x ehci_hcd uhci_hcd sg usbcore sr_mod
+> 
+>  Pid: 8691, comm: xawtv.bin Not tainted (2.6.25-rc1-00051-g96b5a46 #9)
+>  EIP: 0060:[<e0addeb5>] EFLAGS: 00210246 CPU: 0
+>  EIP is at bttv_calc_geo+0x1a5/0x287 [bttv]
+>  EAX: 00000000 EBX: 00000180 ECX: 00000000 EDX: 00000000
+>  ESI: 00000000 EDI: cbcc12a0 EBP: b8239dd8 ESP: b8239d98
+>   DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+>  Process xawtv.bin (pid: 8691, ti=b8239000 task=b71c5000 task.ti=b8239000)
+>  Stack: 00000000 cbcc107c 00000000 e0af708c 81979820 0000002a 00200297 b8239de0
+>         00000000 00000004 000000d0 00000054 803c028c 9a6ee4d8 00000000 e0ae3b90
+>         b8239e04 e0ade946 00000120 00000000 e0ae3708 cbcc12d4 e0af708c 00000000
+>  Call Trace:
+>   [<e0ade946>] ? bttv_overlay_risc+0x98/0x12d [bttv]
+>   [<e0adb60b>] ? bttv_overlay+0xa6/0xcd [bttv]
+>   [<e09914af>] ? __video_do_ioctl+0x1076/0x2b48 [videodev]
+>   [<80143e1d>] ? slob_page_alloc+0x144/0x19e
+>   [<e099320e>] ? video_ioctl2+0x19f/0x24b [videodev]
+>   [<80120a3a>] ? autoremove_wake_function+0x0/0x30
+>   [<801230b4>] ? ktime_get+0x13/0x2f
+>   [<802bc933>] ? unix_ioctl+0x83/0x8c
+>   [<8027c46a>] ? sock_ioctl+0x1aa/0x1cb
+>   [<e099306f>] ? video_ioctl2+0x0/0x24b [videodev]
+>   [<8014eaa4>] ? vfs_ioctl+0x3c/0x4f
+>   [<8014ecae>] ? do_vfs_ioctl+0x1f7/0x205
+>   [<8019dae6>] ? copy_to_user+0x2a/0x34
+>   [<8014ece8>] ? sys_ioctl+0x2c/0x48
+>   [<801029b2>] ? syscall_call+0x7/0xb
+>   =======================
+>  Code: 5f 04 0f 46 45 e0 d1 ea 89 45 e0 89 c8 c1 e0 0c 01 d0 31 d2 f7 f3 8b 55 14 66 2d 00 10 66 89 47 06 89 d8 0f af 02 31 d2 8d 04 01 <f7> f1 8b 4d e0 8b 55 10 66 89 4f 0a 83 e0 fe 66 89 45 ca 66 89
+>  EIP: [<e0addeb5>] bttv_calc_geo+0x1a5/0x287 [bttv] SS:ESP 0068:b8239d98
+>  ---[ end trace 588d2506a3db8987 ]---
+> 
+> 
+> diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+> index 907dc62..c152b81 100644
+> --- a/drivers/media/video/bt8xx/bttv-driver.c
+> +++ b/drivers/media/video/bt8xx/bttv-driver.c
+> @@ -2760,6 +2760,7 @@ static int bttv_overlay(struct file *file, void *f, unsigned int on)
+>  	if (on) {
+>  		fh->ov.tvnorm = btv->tvnorm;
+>  		new = videobuf_pci_alloc(sizeof(*new));
+> +		new->crop = btv->crop[!!fh->do_crop].rect;
+>  		bttv_overlay_risc(btv, &fh->ov, fh->ovfmt, new);
+>  	} else {
+>  		new = NULL;
 
-i don't think i'm quite ready to add that logic to a simple scanning
-script.
 
-oh, well.
 
-rday
---
 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+Cheers,
+Mauro
