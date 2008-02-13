@@ -1,586 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932950AbYBMVt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765826AbYBMVup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932950AbYBMVt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 16:49:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764600AbYBMVbr
+	id S1765826AbYBMVup (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 16:50:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764300AbYBMVbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 16:31:47 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:47576 "EHLO smtp5.pp.htv.fi"
+	Wed, 13 Feb 2008 16:31:49 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:50888 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764300AbYBMVbZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 16:31:25 -0500
-Date: Wed, 13 Feb 2008 23:31:09 +0200
+	id S1762545AbYBMVb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 16:31:28 -0500
+Date: Wed, 13 Feb 2008 23:31:12 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Stefano Brivio <stefano.brivio@polimi.it>, linville@tuxdriver.com
-Cc: linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6.26 patch] the scheduled rc80211-simple.c removal
-Message-ID: <20080213213109.GT3383@cs181133002.pp.htv.fi>
+To: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Christoph Hellwig <hch@lst.de>, cluster-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: gfs2_fh_to_parent() array overflow
+Message-ID: <20080213213112.GU3383@cs181133002.pp.htv.fi>
+References: <20071024162626.GJ30533@stusta.de> <20071027210039.GA2688@lst.de> <1193649081.1068.462.camel@quoit>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <1193649081.1068.462.camel@quoit>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch contains the scheduled rc80211-simple.c removal.
+On Mon, Oct 29, 2007 at 09:11:21AM +0000, Steven Whitehouse wrote:
+> Hi,
+> 
+> On Sat, 2007-10-27 at 23:00 +0200, Christoph Hellwig wrote:
+> > On Wed, Oct 24, 2007 at 06:26:26PM +0200, Adrian Bunk wrote:
+> > > The Coverity checker spotted the following array overflow caused by
+> > > commit 34c0d154243dd913c5690ae6ceb9557017429b9c:
+> > 
+> > The line is a left-over from times when gfs stored the mode of the
+> > inode in the file handle.  It can simply be deleted.  Steve, do you
+> > want a patch for that or could you commit that one-liner directly?
+> > 
+> 
+> I'm just back from holiday this morning and this is looking a bit more
+> complicated than that... give me a day or two and I'll try and come up
+> with a solution,
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+This issue is still present in 2.6.25-rc1.
 
----
+> Steve.
+> 
+> > > fs/gfs2/ops_export.c contains:
+> > > 
+> > > <--  snip  -->
+> > > 
+> > > ...
+> > > static struct dentry *gfs2_fh_to_parent(struct super_block *sb, struct fid *fid,
+> > >                 int fh_len, int fh_type)
+> > > {
+> > >         struct gfs2_inum_host parent;
+> > >         __be32 *fh = (__force __be32 *)fid->raw;  <------------
+> > > 
+> > >         switch (fh_type) {
+> > >         case GFS2_LARGE_FH_SIZE:
+> > >         case GFS2_OLD_FH_SIZE:
+> > >                 parent.no_formal_ino = ((u64)be32_to_cpu(fh[4])) << 32;
+> > >                 parent.no_formal_ino |= be32_to_cpu(fh[5]);
+> > >                 parent.no_addr = ((u64)be32_to_cpu(fh[6])) << 32;
+> > >                                                    ^^^^^
+> > >                 parent.no_addr |= be32_to_cpu(fh[7]);
+> > > ...                                           ^^^^^
+> > > 
+> > > <--  snip  -->
+> > > 
+> > > 
+> > > cu
+> > > Adrian
+> > > 
 
- Documentation/feature-removal-schedule.txt |   10 
- net/mac80211/Kconfig                       |   19 
- net/mac80211/Makefile                      |    2 
- net/mac80211/ieee80211.c                   |    9 
- net/mac80211/ieee80211_rate.h              |   15 
- net/mac80211/rc80211_simple.c              |  400 ---------------------
- 6 files changed, 1 insertion(+), 454 deletions(-)
+cu
+Adrian
 
-6eac234ac1cccc7ae61acbd5fefac574b070e2e9 diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
-index 2cf4d7a..7279595 100644
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -230,16 +230,6 @@ Who:	Jean Delvare <khali@linux-fr.org>
- 
- ---------------------------
- 
--What:	rc80211-simple rate control algorithm for mac80211
--When:	2.6.26
--Files:	net/mac80211/rc80211-simple.c
--Why:	This algorithm was provided for reference but always exhibited bad
--	responsiveness and performance and has some serious flaws. It has been
--	replaced by rc80211-pid.
--Who:	Stefano Brivio <stefano.brivio@polimi.it>
--
-----------------------------
--
- What (Why):
- 	- include/linux/netfilter_ipv4/ipt_TOS.h ipt_tos.h header files
- 	  (superseded by xt_TOS/xt_tos target & match)
-diff --git a/net/mac80211/Kconfig b/net/mac80211/Kconfig
-index 45c7c0c..8b4fa1c 100644
---- a/net/mac80211/Kconfig
-+++ b/net/mac80211/Kconfig
-@@ -32,15 +32,6 @@ config MAC80211_RC_DEFAULT_PID
- 	  default rate control algorithm. You should choose
- 	  this unless you know what you are doing.
- 
--config MAC80211_RC_DEFAULT_SIMPLE
--	bool "Simple rate control algorithm"
--	select MAC80211_RC_SIMPLE
--	---help---
--	  Select the simple rate control as the default rate
--	  control algorithm. Note that this is a non-responsive,
--	  dumb algorithm. You should choose the PID rate control
--	  instead.
--
- config MAC80211_RC_DEFAULT_NONE
- 	bool "No default algorithm"
- 	depends on EMBEDDED
-@@ -57,7 +48,6 @@ comment "build the algorithm into mac80211."
- config MAC80211_RC_DEFAULT
- 	string
- 	default "pid" if MAC80211_RC_DEFAULT_PID
--	default "simple" if MAC80211_RC_DEFAULT_SIMPLE
- 	default ""
- 
- config MAC80211_RC_PID
-@@ -70,15 +60,6 @@ config MAC80211_RC_PID
- 	  Say Y or M unless you're sure you want to use a
- 	  different rate control algorithm.
- 
--config MAC80211_RC_SIMPLE
--	tristate "Simple rate control algorithm (DEPRECATED)"
--	---help---
--	  This option enables a very simple, non-responsive TX
--	  rate control algorithm. This algorithm is deprecated
--	  and will be removed from the kernel in the near future.
--	  It has been replaced by the PID algorithm.
--
--	  Say N unless you know what you are doing.
- endmenu
- 
- config MAC80211_LEDS
-diff --git a/net/mac80211/Makefile b/net/mac80211/Makefile
-index 54f46bc..3488535 100644
---- a/net/mac80211/Makefile
-+++ b/net/mac80211/Makefile
-@@ -39,9 +39,7 @@ mac80211-$(CONFIG_MAC80211_DEBUGFS) += \
- 
- 
- # Build rate control algorithm(s)
--CFLAGS_rc80211_simple.o += -DRC80211_SIMPLE_COMPILE
- CFLAGS_rc80211_pid_algo.o += -DRC80211_PID_COMPILE
--mac80211-$(CONFIG_MAC80211_RC_SIMPLE) += rc80211_simple.o
- mac80211-$(CONFIG_MAC80211_RC_PID) += $(rc-pid-$(CONFIG_MAC80211_RC_PID))
- 
- # Modular rate algorithms are assigned to mac80211-m - make separate modules
-diff --git a/net/mac80211/ieee80211.c b/net/mac80211/ieee80211.c
-index 67b7c75..9275ede 100644
---- a/net/mac80211/ieee80211.c
-+++ b/net/mac80211/ieee80211.c
-@@ -1342,13 +1342,9 @@ static int __init ieee80211_init(void)
- 
- 	BUILD_BUG_ON(sizeof(struct ieee80211_tx_packet_data) > sizeof(skb->cb));
- 
--	ret = rc80211_simple_init();
--	if (ret)
--		goto out;
--
- 	ret = rc80211_pid_init();
- 	if (ret)
--		goto out_cleanup_simple;
-+		goto out;
- 
- 	ret = ieee80211_wme_register();
- 	if (ret) {
-@@ -1364,15 +1360,12 @@ static int __init ieee80211_init(void)
- 
-  out_cleanup_pid:
- 	rc80211_pid_exit();
-- out_cleanup_simple:
--	rc80211_simple_exit();
-  out:
- 	return ret;
- }
- 
- static void __exit ieee80211_exit(void)
- {
--	rc80211_simple_exit();
- 	rc80211_pid_exit();
- 
- 	ieee80211_wme_unregister();
-diff --git a/net/mac80211/ieee80211_rate.h b/net/mac80211/ieee80211_rate.h
-index 73f19e8..a749336 100644
---- a/net/mac80211/ieee80211_rate.h
-+++ b/net/mac80211/ieee80211_rate.h
-@@ -166,21 +166,6 @@ void rate_control_deinitialize(struct ieee80211_local *local);
- 
- 
- /* Rate control algorithms */
--#if defined(RC80211_SIMPLE_COMPILE) || \
--	(defined(CONFIG_MAC80211_RC_SIMPLE) && \
--	 !defined(CONFIG_MAC80211_RC_SIMPLE_MODULE))
--extern int rc80211_simple_init(void);
--extern void rc80211_simple_exit(void);
--#else
--static inline int rc80211_simple_init(void)
--{
--	return 0;
--}
--static inline void rc80211_simple_exit(void)
--{
--}
--#endif
--
- #if defined(RC80211_PID_COMPILE) || \
- 	(defined(CONFIG_MAC80211_RC_PID) && \
- 	 !defined(CONFIG_MAC80211_RC_PID_MODULE))
-diff --git a/net/mac80211/rc80211_simple.c b/net/mac80211/rc80211_simple.c
-deleted file mode 100644
-index 9a78b11..0000000
---- a/net/mac80211/rc80211_simple.c
-+++ /dev/null
-@@ -1,400 +0,0 @@
--/*
-- * Copyright 2002-2005, Instant802 Networks, Inc.
-- * Copyright 2005, Devicescape Software, Inc.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License version 2 as
-- * published by the Free Software Foundation.
-- */
--
--#include <linux/init.h>
--#include <linux/netdevice.h>
--#include <linux/types.h>
--#include <linux/slab.h>
--#include <linux/skbuff.h>
--#include <linux/compiler.h>
--#include <linux/module.h>
--
--#include <net/mac80211.h>
--#include "ieee80211_i.h"
--#include "ieee80211_rate.h"
--#include "debugfs.h"
--
--
--/* This is a minimal implementation of TX rate controlling that can be used
-- * as the default when no improved mechanisms are available. */
--
--#define RATE_CONTROL_NUM_DOWN 20
--#define RATE_CONTROL_NUM_UP   15
--
--#define RATE_CONTROL_EMERG_DEC 2
--#define RATE_CONTROL_INTERVAL (HZ / 20)
--#define RATE_CONTROL_MIN_TX 10
--
--static void rate_control_rate_inc(struct ieee80211_local *local,
--				  struct sta_info *sta)
--{
--	struct ieee80211_sub_if_data *sdata;
--	struct ieee80211_hw_mode *mode;
--	int i = sta->txrate;
--	int maxrate;
--
--	sdata = IEEE80211_DEV_TO_SUB_IF(sta->dev);
--	if (sdata->bss && sdata->bss->force_unicast_rateidx > -1) {
--		/* forced unicast rate - do not change STA rate */
--		return;
--	}
--
--	mode = local->oper_hw_mode;
--	maxrate = sdata->bss ? sdata->bss->max_ratectrl_rateidx : -1;
--
--	if (i > mode->num_rates)
--		i = mode->num_rates - 2;
--
--	while (i + 1 < mode->num_rates) {
--		i++;
--		if (sta->supp_rates & BIT(i) &&
--		    mode->rates[i].flags & IEEE80211_RATE_SUPPORTED &&
--		    (maxrate < 0 || i <= maxrate)) {
--			sta->txrate = i;
--			break;
--		}
--	}
--}
--
--
--static void rate_control_rate_dec(struct ieee80211_local *local,
--				  struct sta_info *sta)
--{
--	struct ieee80211_sub_if_data *sdata;
--	struct ieee80211_hw_mode *mode;
--	int i = sta->txrate;
--
--	sdata = IEEE80211_DEV_TO_SUB_IF(sta->dev);
--	if (sdata->bss && sdata->bss->force_unicast_rateidx > -1) {
--		/* forced unicast rate - do not change STA rate */
--		return;
--	}
--
--	mode = local->oper_hw_mode;
--	if (i > mode->num_rates)
--		i = mode->num_rates;
--
--	while (i > 0) {
--		i--;
--		if (sta->supp_rates & BIT(i) &&
--		    mode->rates[i].flags & IEEE80211_RATE_SUPPORTED) {
--			sta->txrate = i;
--			break;
--		}
--	}
--}
--
--struct global_rate_control {
--	int dummy;
--};
--
--struct sta_rate_control {
--	unsigned long last_rate_change;
--	u32 tx_num_failures;
--	u32 tx_num_xmit;
--
--	unsigned long avg_rate_update;
--	u32 tx_avg_rate_sum;
--	u32 tx_avg_rate_num;
--
--#ifdef CONFIG_MAC80211_DEBUGFS
--	struct dentry *tx_avg_rate_sum_dentry;
--	struct dentry *tx_avg_rate_num_dentry;
--#endif
--};
--
--
--static void rate_control_simple_tx_status(void *priv, struct net_device *dev,
--					  struct sk_buff *skb,
--					  struct ieee80211_tx_status *status)
--{
--	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
--	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
--	struct sta_info *sta;
--	struct sta_rate_control *srctrl;
--
--	sta = sta_info_get(local, hdr->addr1);
--
--	if (!sta)
--	    return;
--
--	srctrl = sta->rate_ctrl_priv;
--	srctrl->tx_num_xmit++;
--	if (status->excessive_retries) {
--		srctrl->tx_num_failures++;
--		sta->tx_retry_failed++;
--		sta->tx_num_consecutive_failures++;
--		sta->tx_num_mpdu_fail++;
--	} else {
--		sta->last_ack_rssi[0] = sta->last_ack_rssi[1];
--		sta->last_ack_rssi[1] = sta->last_ack_rssi[2];
--		sta->last_ack_rssi[2] = status->ack_signal;
--		sta->tx_num_consecutive_failures = 0;
--		sta->tx_num_mpdu_ok++;
--	}
--	sta->tx_retry_count += status->retry_count;
--	sta->tx_num_mpdu_fail += status->retry_count;
--
--	if (time_after(jiffies,
--		       srctrl->last_rate_change + RATE_CONTROL_INTERVAL) &&
--		srctrl->tx_num_xmit > RATE_CONTROL_MIN_TX) {
--		u32 per_failed;
--		srctrl->last_rate_change = jiffies;
--
--		per_failed = (100 * sta->tx_num_mpdu_fail) /
--			(sta->tx_num_mpdu_fail + sta->tx_num_mpdu_ok);
--		/* TODO: calculate average per_failed to make adjusting
--		 * parameters easier */
--#if 0
--		if (net_ratelimit()) {
--			printk(KERN_DEBUG "MPDU fail=%d ok=%d per_failed=%d\n",
--			       sta->tx_num_mpdu_fail, sta->tx_num_mpdu_ok,
--			       per_failed);
--		}
--#endif
--
--		/*
--		 * XXX: Make these configurable once we have an
--		 * interface to the rate control algorithms
--		 */
--		if (per_failed > RATE_CONTROL_NUM_DOWN) {
--			rate_control_rate_dec(local, sta);
--		} else if (per_failed < RATE_CONTROL_NUM_UP) {
--			rate_control_rate_inc(local, sta);
--		}
--		srctrl->tx_avg_rate_sum += status->control.rate->rate;
--		srctrl->tx_avg_rate_num++;
--		srctrl->tx_num_failures = 0;
--		srctrl->tx_num_xmit = 0;
--	} else if (sta->tx_num_consecutive_failures >=
--		   RATE_CONTROL_EMERG_DEC) {
--		rate_control_rate_dec(local, sta);
--	}
--
--	if (srctrl->avg_rate_update + 60 * HZ < jiffies) {
--		srctrl->avg_rate_update = jiffies;
--		if (srctrl->tx_avg_rate_num > 0) {
--#ifdef CONFIG_MAC80211_VERBOSE_DEBUG
--			DECLARE_MAC_BUF(mac);
--			printk(KERN_DEBUG "%s: STA %s Average rate: "
--			       "%d (%d/%d)\n",
--			       dev->name, print_mac(mac, sta->addr),
--			       srctrl->tx_avg_rate_sum /
--			       srctrl->tx_avg_rate_num,
--			       srctrl->tx_avg_rate_sum,
--			       srctrl->tx_avg_rate_num);
--#endif /* CONFIG_MAC80211_VERBOSE_DEBUG */
--			srctrl->tx_avg_rate_sum = 0;
--			srctrl->tx_avg_rate_num = 0;
--		}
--	}
--
--	sta_info_put(sta);
--}
--
--
--static void
--rate_control_simple_get_rate(void *priv, struct net_device *dev,
--			     struct ieee80211_hw_mode *mode,
--			     struct sk_buff *skb,
--			     struct rate_selection *sel)
--{
--	struct ieee80211_local *local = wdev_priv(dev->ieee80211_ptr);
--	struct ieee80211_hdr *hdr = (struct ieee80211_hdr *) skb->data;
--	struct ieee80211_sub_if_data *sdata;
--	struct sta_info *sta;
--	int rateidx;
--	u16 fc;
--
--	sta = sta_info_get(local, hdr->addr1);
--
--	/* Send management frames and broadcast/multicast data using lowest
--	 * rate. */
--	fc = le16_to_cpu(hdr->frame_control);
--	if ((fc & IEEE80211_FCTL_FTYPE) != IEEE80211_FTYPE_DATA ||
--	    is_multicast_ether_addr(hdr->addr1) || !sta) {
--		sel->rate = rate_lowest(local, mode, sta);
--		if (sta)
--			sta_info_put(sta);
--		return;
--	}
--
--	/* If a forced rate is in effect, select it. */
--	sdata = IEEE80211_DEV_TO_SUB_IF(dev);
--	if (sdata->bss && sdata->bss->force_unicast_rateidx > -1)
--		sta->txrate = sdata->bss->force_unicast_rateidx;
--
--	rateidx = sta->txrate;
--
--	if (rateidx >= mode->num_rates)
--		rateidx = mode->num_rates - 1;
--
--	sta->last_txrate = rateidx;
--
--	sta_info_put(sta);
--
--	sel->rate = &mode->rates[rateidx];
--}
--
--
--static void rate_control_simple_rate_init(void *priv, void *priv_sta,
--					  struct ieee80211_local *local,
--					  struct sta_info *sta)
--{
--	struct ieee80211_hw_mode *mode;
--	int i;
--	sta->txrate = 0;
--	mode = local->oper_hw_mode;
--	/* TODO: This routine should consider using RSSI from previous packets
--	 * as we need to have IEEE 802.1X auth succeed immediately after assoc..
--	 * Until that method is implemented, we will use the lowest supported rate
--	 * as a workaround, */
--	for (i = 0; i < mode->num_rates; i++) {
--		if ((sta->supp_rates & BIT(i)) &&
--		    (mode->rates[i].flags & IEEE80211_RATE_SUPPORTED)) {
--			sta->txrate = i;
--			break;
--		}
--	}
--}
--
--
--static void * rate_control_simple_alloc(struct ieee80211_local *local)
--{
--	struct global_rate_control *rctrl;
--
--	rctrl = kzalloc(sizeof(*rctrl), GFP_ATOMIC);
--
--	return rctrl;
--}
--
--
--static void rate_control_simple_free(void *priv)
--{
--	struct global_rate_control *rctrl = priv;
--	kfree(rctrl);
--}
--
--
--static void rate_control_simple_clear(void *priv)
--{
--}
--
--
--static void * rate_control_simple_alloc_sta(void *priv, gfp_t gfp)
--{
--	struct sta_rate_control *rctrl;
--
--	rctrl = kzalloc(sizeof(*rctrl), gfp);
--
--	return rctrl;
--}
--
--
--static void rate_control_simple_free_sta(void *priv, void *priv_sta)
--{
--	struct sta_rate_control *rctrl = priv_sta;
--	kfree(rctrl);
--}
--
--#ifdef CONFIG_MAC80211_DEBUGFS
--
--static int open_file_generic(struct inode *inode, struct file *file)
--{
--	file->private_data = inode->i_private;
--	return 0;
--}
--
--static ssize_t sta_tx_avg_rate_sum_read(struct file *file,
--					char __user *userbuf,
--					size_t count, loff_t *ppos)
--{
--	struct sta_rate_control *srctrl = file->private_data;
--	char buf[20];
--
--	sprintf(buf, "%d\n", srctrl->tx_avg_rate_sum);
--	return simple_read_from_buffer(userbuf, count, ppos, buf, strlen(buf));
--}
--
--static const struct file_operations sta_tx_avg_rate_sum_ops = {
--	.read = sta_tx_avg_rate_sum_read,
--	.open = open_file_generic,
--};
--
--static ssize_t sta_tx_avg_rate_num_read(struct file *file,
--					char __user *userbuf,
--					size_t count, loff_t *ppos)
--{
--	struct sta_rate_control *srctrl = file->private_data;
--	char buf[20];
--
--	sprintf(buf, "%d\n", srctrl->tx_avg_rate_num);
--	return simple_read_from_buffer(userbuf, count, ppos, buf, strlen(buf));
--}
--
--static const struct file_operations sta_tx_avg_rate_num_ops = {
--	.read = sta_tx_avg_rate_num_read,
--	.open = open_file_generic,
--};
--
--static void rate_control_simple_add_sta_debugfs(void *priv, void *priv_sta,
--						struct dentry *dir)
--{
--	struct sta_rate_control *srctrl = priv_sta;
--
--	srctrl->tx_avg_rate_num_dentry =
--		debugfs_create_file("rc_simple_sta_tx_avg_rate_num", 0400,
--				    dir, srctrl, &sta_tx_avg_rate_num_ops);
--	srctrl->tx_avg_rate_sum_dentry =
--		debugfs_create_file("rc_simple_sta_tx_avg_rate_sum", 0400,
--				    dir, srctrl, &sta_tx_avg_rate_sum_ops);
--}
--
--static void rate_control_simple_remove_sta_debugfs(void *priv, void *priv_sta)
--{
--	struct sta_rate_control *srctrl = priv_sta;
--
--	debugfs_remove(srctrl->tx_avg_rate_sum_dentry);
--	debugfs_remove(srctrl->tx_avg_rate_num_dentry);
--}
--#endif
--
--static struct rate_control_ops mac80211_rcsimple = {
--	.name = "simple",
--	.tx_status = rate_control_simple_tx_status,
--	.get_rate = rate_control_simple_get_rate,
--	.rate_init = rate_control_simple_rate_init,
--	.clear = rate_control_simple_clear,
--	.alloc = rate_control_simple_alloc,
--	.free = rate_control_simple_free,
--	.alloc_sta = rate_control_simple_alloc_sta,
--	.free_sta = rate_control_simple_free_sta,
--#ifdef CONFIG_MAC80211_DEBUGFS
--	.add_sta_debugfs = rate_control_simple_add_sta_debugfs,
--	.remove_sta_debugfs = rate_control_simple_remove_sta_debugfs,
--#endif
--};
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("Simple rate control algorithm");
--
--int __init rc80211_simple_init(void)
--{
--	return ieee80211_rate_control_register(&mac80211_rcsimple);
--}
--
--void rc80211_simple_exit(void)
--{
--	ieee80211_rate_control_unregister(&mac80211_rcsimple);
--}
--
--#ifdef CONFIG_MAC80211_RC_SIMPLE_MODULE
--module_init(rc80211_simple_init);
--module_exit(rc80211_simple_exit);
--#endif
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
