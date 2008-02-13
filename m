@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbYBMMGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758959AbYBMMGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbYBMMGK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:06:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbYBMMF5
+	id S1758959AbYBMMGt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:06:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbYBMMGi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:05:57 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:23816 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751967AbYBMMF4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:05:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=EdDO8sUIkMKHyt1IoWF3bLAg4B/lsABSEj19tgYkq1v29CzSqWDwLEGM7qJG8RHz5y2JJYsnQ4KA2SbaEmeaJxlmdhV4PyRleS5RYJIfPd84wD9CWjyYMIVHEk7RX6bGZyVsJ0DT+Xl9i25TyiWBTho4HLJJwDGWwKFcx8AWqPc=
-From: Matej Laitl <strohel@gmail.com>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [ALSA] HDA: no sound in headphone-out caused by commit f889fa91ad47e (2.6.25-rc1 regression)
-Date: Wed, 13 Feb 2008 13:05:48 +0100
-User-Agent: KMail/1.9.7
-Cc: alsa-devel <alsa-devel@alsa-project.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200802112158.41989.strohel@gmail.com> <200802122357.46309.strohel@gmail.com> <s5hejbht93l.wl%tiwai@suse.de>
-In-Reply-To: <s5hejbht93l.wl%tiwai@suse.de>
+	Wed, 13 Feb 2008 07:06:38 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36117 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755305AbYBMMGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 07:06:36 -0500
+Message-ID: <47B2DD40.70106@garzik.org>
+Date: Wed, 13 Feb 2008 07:06:24 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Miller <davem@davemloft.net>, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+References: <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <1202838082.3137.54.camel@localhost.localdomain> <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org> <1202840682.3137.83.camel@localhost.localdomain> <alpine.LFD.1.00.0802121037340.2920@woody.linux-foundation.org> <alpine.LFD.1.00.0802121051341.2920@woody.linux-foundation.org> <20080212191914.GB20883@kroah.com> <20080213100503.GA21694@flint.arm.linux.org.uk>
+In-Reply-To: <20080213100503.GA21694@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131305.48471.strohel@gmail.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 of February 2008 11:59:58 Takashi Iwai wrote:
-> > Now I just found that the new "Speaker" switch forgets it's value from
-> > time to time, ie. it's muted, you go and have lunch, and when you get
-> > back and start the music, it's unmuted. It is probably related to
-> > aggressive hda-codec powersaving, which I have enabled and set to 20
-> > secs.
->
-> Hm, does the patch below have any influence?
-> If the problem still persists, please take alsa-info.sh snapshots
-> before and after power-saving.
+Russell King wrote:
+> We know that the -mm tree is pretty much useless in terms of code
+> coverage for ARM, and it's getting increasingly unlikely that anything
+> short of a build of all ARM defconfigs will pick up on merge issues -
+> which is a lot of CPU cycles, and I'm not going to insist its something
+> that should be done.
 
-This patch did not have any effect. (i haven't tested suspend-to-ram)
 
-alsa-info before powersaving (speaker silent, mixer says: Speaker=MM):
-http://pastebin.ca/902330
+If you need help in that area (build-testing ARM), surely we can find 
+some fast machines that can do builds for you.  Any interest?
 
-alsa-info after powersaving (speaker loud, mixer says: Speaker=MM):
-http://pastebin.ca/902332
+	Jeff
+
+
+
