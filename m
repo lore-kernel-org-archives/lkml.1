@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbYBML0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932142AbYBML0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755143AbYBML0R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 06:26:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755594AbYBML0D
+	id S932142AbYBML0e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 06:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757629AbYBML0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 06:26:03 -0500
-Received: from smtp2.sssup.it ([193.205.80.100]:60228 "EHLO smpt.sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755492AbYBML0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 06:26:01 -0500
-Message-ID: <47B2CF76.6050704@gandalf.sssup.it>
-Date: Wed, 13 Feb 2008 12:07:34 +0100
-From: michael <trimarchi@gandalf.sssup.it>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Wed, 13 Feb 2008 06:26:11 -0500
+Received: from mail.suse.de ([195.135.220.2]:50952 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757283AbYBML0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 06:26:09 -0500
+Message-ID: <47B2D41E.6040908@suse.de>
+Date: Wed, 13 Feb 2008 12:27:26 +0100
+From: Andi Kleen <ak@suse.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Remy Bohmer <linux@bohmer.net>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>, fabio@gandalf.sssup.it,
-       Andrew Victor <linux@maxim.org.za>, Chip Coldwell <coldwell@redhat.com>,
-       Marc Pignat <marc.pignat@hevs.ch>, David Brownell <david-b@pacbell.net>,
-       linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH -mm v4 6/9] atmel_serial: Split the interrupt handler
-References: <20080129224316.GA23155@gandalf.sssup.it>	 <20080130133659.55ebd828@dhcp-252-066.norway.atmel.com>	 <47A09723.7020000@gandalf.sssup.it>	 <20080130164631.7de4f6bd@dhcp-252-066.norway.atmel.com>	 <47A12A2E.5040309@gandalf.sssup.it>	 <20080131160721.6dddf30e@dhcp-252-066.norway.atmel.com>	 <3efb10970801311136y12670f12x6e4fdd44de3677b9@mail.gmail.com>	 <20080204133925.73733f5f@dhcp-252-066.norway.atmel.com>	 <3efb10970802041144j6b4e6893j293819238b5b82e8@mail.gmail.com>	 <47A9A5B5.3060800@gandalf.sssup.it> <3efb10970802061141x5fdecefao8f617265aed7cb6f@mail.gmail.com>
-In-Reply-To: <3efb10970802061141x5fdecefao8f617265aed7cb6f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: ying.huang@intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [1/2] CPA: Fix set_memory_x for ioremap v2
+References: <20080212153.888987414@suse.de> <alpine.LFD.1.00.0802122318090.12988@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802122318090.12988@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-All works now for me with preempt-rt. The problem is using hrtimer.
 
-I think that hrtimer are executed with interrupts disabled so, if
-this happen when I must receive a char, i have an overrun. The only
-solution was the dma support to serial device.
+> The so-called "significant restructuring" took a mere 2 hours,
+> which is probably less than the time consumed in this thread.
 
-Regards Michael
+Hmm, it doesn't do what I meant and I don't think you solved
+the problem. You still check against the vaddrs
+which won't work for ioremaps or fixmap (and thus not
+fix the EFI cases)
 
+What I meant with restructuring is calling lookup_address() early,
+get the physical address from the PTE, then check that against
+the alias ranges in physical. That would actually work for fixmaps
+and ioremaps and all other mappings too.
+
+I'm sure it can be all done, but for me it to submit such
+a change would likely require weeks of thread like this so
+I'm not trying.
+
+-Andi
