@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933827AbYBMW4Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbYBMW4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933827AbYBMW4Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:56:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbYBMWz6
+	id S1763122AbYBMW4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 17:56:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761942AbYBMW4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:55:58 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:47022 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbYBMWz4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:55:56 -0500
-Date: Wed, 13 Feb 2008 14:55:55 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fib_trie: rcu_assign_pointer warning fix
-Message-ID: <20080213225555.GN12393@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20080211.171645.74019568.davem@davemloft.net> <20080212085714.GB2582@ff.dom.local> <20080212160729.GA9157@linux.vnet.ibm.com> <20080212193218.GA2803@ami.dom.local> <20080212194630.GB2803@ami.dom.local>
+	Wed, 13 Feb 2008 17:56:00 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59436 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753001AbYBMWz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 17:55:59 -0500
+Date: Thu, 14 Feb 2008 00:55:43 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Pavel Emelyanov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
+	symbols going away
+Message-ID: <20080213225543.GE12383@cs181133002.pp.htv.fi>
+References: <1202941327.18204.11.camel@brick> <20080213223455.GB12383@cs181133002.pp.htv.fi> <1202942550.18204.18.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080212194630.GB2803@ami.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1202942550.18204.18.camel@brick>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 08:46:30PM +0100, Jarek Poplawski wrote:
-> On Tue, Feb 12, 2008 at 08:32:18PM +0100, Jarek Poplawski wrote:
-> ...
-> > It seems the above version of this macro uses the barrier for 0, but
-> > if I miss something, or for these other: documenting reasons,
+On Wed, Feb 13, 2008 at 02:42:30PM -0800, Harvey Harrison wrote:
+> On Thu, 2008-02-14 at 00:34 +0200, Adrian Bunk wrote:
+> > On Wed, Feb 13, 2008 at 02:22:06PM -0800, Harvey Harrison wrote:
+> > > +
+> > > +What:	__inet_hash_connect
+> > > +Where:	net/ipv4/inet_hashtables.c
+> > > +When:	2.6.28
+> > > +Why:	No in tree users
+> > > +
+> > > +---------------------------
+> > > +
+> > > +What:	io_delay_type
+> > > +Where:	arch/x86/kernel/io_delay.c
+> > > +When:	2.6.28
+> > > +Why:	No in tree users
+> > > +
+> > > +---------------------------
+> > >...
+> > 
+> > NAK.
+> > 
+> > It's a well-known and documented fact that we not have a stable API for 
+> > modules.
+> > 
+> > And as long as we anyway break the modules API in so many other cases 
+> > with each kernel release there's simply no point in not removing exports 
+> > immediately.
+> > 
+> > Oh, and for increasing the amount of nonsense even further, you should 
+> > explain why unused exports that just sneaked into 2.6.25-rc1 must be 
+> > shipped in 4 stable kernels before they can be removed.
 > 
-> ...or __builtin_constants could be used for indexing (?!),
+> Without comment on the validity of the exports themselves, I was more
+> interested in the principle of announcing these removals, and if it
+> was wanted.
 
-Yep.  For example:
+Sorry again for being too harsh (see my other email).
 
-	elem[0].next = 1;
-	rcu_assign_index(global_index, 0);
+Every kernel release has a big amount of API changes that have not been 
+announced previously, and that's a fact that is rooted in the kernel
+development model.
 
-							Thanx, Paul
+Otherwise everyone also had to announce now if he wanted to e.g. change 
+a function prototype or a struct in 2.6.28.
 
-> > then of
-> > course you are right.
+> Cheers,
 > 
-> Jarek P.
+> Harvey
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
