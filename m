@@ -1,64 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbYBMJUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765247AbYBMJVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbYBMJUu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbYBMJUb
+	id S1765247AbYBMJVs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYBMJV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:20:31 -0500
-Received: from wr-out-0506.google.com ([64.233.184.239]:37961 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751545AbYBMJU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:20:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=yHXNGuAUllLNcR+PatDWjpbMTlegoBMJsPJBnuEg7kUx7NxHHRK40UkYq/ncn3mJ55eoulF5M/OfiKBHav34+M3Id4TeiGvfQboZIiFI+drCOMEpK8Tg7YK4OEdU3BQsix5DCbhPUbvwFt+GDj43Gbw7QbZ6TXirSWtGRbXRcSc=
-Message-ID: <47B2B653.7020408@gmail.com>
-Date: Wed, 13 Feb 2008 18:20:19 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 13 Feb 2008 04:21:28 -0500
+Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:60405 "EHLO
+	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751669AbYBMJV0 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:21:26 -0500
+From: Fabio Coatti <cova@ferrara.linux.it>
+Organization: FerraraLUG
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Date: Wed, 13 Feb 2008 10:21:23 +0100
+User-Agent: KMail/1.9.7
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+References: <200802121503.41328.cova@ferrara.linux.it> <200802121847.19991.cova@ferrara.linux.it> <200802122155.13959.rjw@sisk.pl>
+In-Reply-To: <200802122155.13959.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Lord <mlord@pobox.com>, Jeff Garzik <jeff@garzik.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: [libata-dev #upstream-fixes] pata_legacy: don't call ata_host_detach()
- after initialization failure
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080212081816.GA17820@elte.hu> <20080212071452.5c58ae6d@laptopd505.fenrus.org> <20080213090159.GA21614@elte.hu>
-In-Reply-To: <20080213090159.GA21614@elte.hu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200802131021.23974.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ata_host_detach() detaches an attached port and shouldn't be called on
-a port which hasn't been attached yet.  pata_legacy incorrectly calls
-ata_host_detach() on unattached port after initialization failure
-causing oops.  Fix it.
+Alle martedì 12 febbraio 2008, Rafael J. Wysocki ha scritto:
+> On Tuesday, 12 of February 2008, Fabio Coatti wrote:
+> > Alle martedì 12 febbraio 2008, Randy Dunlap ha scritto:
+> > > On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
+> > > > Hi all,
+> > > > I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so
+> > > > to fix the splice bug I've had to apply by hand the patch. (x86_64)
+> > > >
+> > > > Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine
+> > > > won't boot due to a problem with cciss driver, that prevents to find
+> > > > the / partition. (bug described here: Kernel Bug Tracker Bug 9859
+> > > > http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
+> > > >
+> > > > With kernels 2.6.23, the lastest that I can compile is 2.6.23.14;
+> > > > starting from .15 (and .16) I get this message:
+> > > >
+> > > > ======================
+> > > >   UPD     include/linux/compile.h
+> > > >   CC      init/version.o
+> > > >   LD      init/built-in.o
+> > > >   LD      .tmp_vmlinux1
+> > > > drivers/built-in.o: In function `acpi_init':
+> > > > bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
+> > > > bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
+> > > > ======================
+> > > >
+> > > > All .config are the same, (make oldconfig) beside the obvious
+> > > > differences between .23 and .24
+> > > >
+> > > > Hardware: x86_64 AMD 2216HE
+> > > > SCSI controller: HP Smart Array E200i Controller
+> > > > Compiler: gcc (GCC) 4.1.1
+> > > > binutils: 2.16.1
+> > > >
+> > > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
+> > > > with a cciss0: HP Smart Array 6i Controller,
+> > > > the 2.6.24.2 compiles just fine and works, so the cciss problems
+> > > > seems related only to E200i controller.
+> > > >
+> > > > Right now, on AMD64 machines, I'm forced to patch by hand the kernel,
+> > > > that's quite uncomfortable :)
+> > > >
+> > > > Can someone point me in the right direction to get out of this
+> > > > situation? Of course I can provide any further information. (.config
+> > > > not inlcuded now to avoid cluttering  )
+> > > >
+> > > > Thanks for any answer.
+> > >
+> > > a/ send .config file for the build problem above
+> > > b/ How do you download and/or apply 2.6.23.{15,16} ?
+> > > 	Full tarball or base tarball + patches?
+> > > 	If patches, what base tree are they applied to?
+> >
+> > full tarball from kernel.org (.16), tried also applying patches to 2.6.23
+> > vanilla.(.15,.16) Same process leads to successful compilation for .14
+>
+> You're not supposed to have CONFIG_PM unset and CONFIG_ACPI set at the same
+> time.  The oldconfig generation must have gone wrong at one point.
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@infradead.org>
----
- drivers/ata/pata_legacy.c |    2 --
- 1 file changed, 2 deletions(-)
+Maybe it's not supposed to have this situation, but maybe you should tell this 
+to the kernel itself :)
 
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 333dc15..7383f19 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -1278,8 +1278,6 @@ static __init int legacy_init_one(struct legacy_probe *probe)
- 		}
- 	}
- fail:
--	if (host)
--		ata_host_detach(host);
- 	platform_device_unregister(pdev);
- 	return ret;
- }
+# zcat /proc/config.gz | egrep "PM|ACPI"
+CONFIG_X86_64_ACPI_NUMA=y
+# CONFIG_PM is not set
+CONFIG_ACPI=y
+# CONFIG_ACPI_PROCFS is not set
+
+# uname -rv
+2.6.23.12 #3 SMP Tue Feb 12 11:22:16 CET 2008
+
+And you can easily get this situation from menuconfig: just fire up make 
+menuconfig without any .config, go to power management options and turn 
+off "Power Management support". exit and look at .config:
+
+# CONFIG_PM is not set
+CONFIG_SUSPEND_SMP_POSSIBLE=y
+CONFIG_HIBERNATION_SMP_POSSIBLE=y
+CONFIG_ACPI=y
+
+Maybe if this is not supposed to be the right situation, some dependencies are 
+not respected... (tested on .16)
+
+Anyway, with .16 and CONFIG_PM set, I get this :
+===================
+WARNING: vmlinux.o(.text+0x1f6395): Section mismatch: reference 
+to .init.data.14:pxm_to_node_map (between 'pxm_to_node' and 'node_to_pxm')
+WARNING: vmlinux.o(.text+0x1f63a7): Section mismatch: reference 
+to .init.data.14:node_to_pxm_map (between 'node_to_pxm' 
+and '__acpi_map_pxm_to_node')
+WARNING: vmlinux.o(.text+0x1f63b2): Section mismatch: reference 
+to .init.data.14:pxm_to_node_map (between '__acpi_map_pxm_to_node' 
+and 'acpi_get_pxm')
+WARNING: vmlinux.o(.text+0x1f63bc): Section mismatch: reference 
+to .init.data.14:node_to_pxm_map (between '__acpi_map_pxm_to_node' 
+and 'acpi_get_pxm')
+WARNING: vmlinux.o(.text+0x1f6412): Section mismatch: reference 
+to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
+and 'acpi_get_node')
+WARNING: vmlinux.o(.text+0x1f6458): Section mismatch: reference 
+to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
+and 'acpi_get_node')
+WARNING: vmlinux.o(.text+0x1f645f): Section mismatch: reference 
+to .init.data.14:node_to_pxm_map (between 'acpi_map_pxm_to_node' 
+and 'acpi_get_node')
+=========================
+
+Anyway, it booted and so far it runs without "splice" problem, thanks.
+
+
+-- 
+Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova     
+Ferrara Linux Users Group           http://ferrara.linux.it
+GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
+Old SysOps never die... they simply forget their password.
