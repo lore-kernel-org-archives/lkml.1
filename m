@@ -1,122 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbYBMGSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763025AbYBMGXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbYBMGSq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 01:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBMGSe
+	id S1763025AbYBMGXT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 01:23:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBMGXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 01:18:34 -0500
-Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:37807 "HELO
-	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752531AbYBMGSc (ORCPT
+	Wed, 13 Feb 2008 01:23:09 -0500
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:48536 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752600AbYBMGXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 01:18:32 -0500
-X-YMail-OSG: 79vOLX8VM1mA9O74_Yg4Q2Nkk2.eVsIT9NQWOAm30FHT.9UmtnLVm.NbpNE.9gjIXxJlZA5.nlU3R9aIi2diIGB4cxlDN14QxYFNNrjX2CUDElfBuTQpLHT1SnuBUA--
+	Wed, 13 Feb 2008 01:23:08 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=lK8uxOHZBH9PIpRL9w8vChZXmVkQV/dPnbAjf+KBdcA3+UX6ZBT9Tf/w/ydl50n/guXJ1RRUmqpnP1/6Z+aMmsaFipCyMdiFxJVPa3pdHzTfA6EDRY1latLp/eUriptPgEuM+twQsFZ7PgworxwFYMOSaHA5y5Fcbx6hNDxiOxc=  ;
+X-YMail-OSG: h_mt79IVM1nbCfesTPQX6MfgDZPL5nNhh2pfuqxXRTKqdbH94PpIVbs6VS6Ifg8uyBTYJmb6Kw--
 X-Yahoo-Newman-Property: ymail-3
-Subject: CONFIG_SLUB and reproducable general protection faults on 2.6.2x
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Rik van Riel <riel@redhat.com>,
-       Chris Weiss <cweiss@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1202874275.14647.52.camel@haakon2.linux-iscsi.org>
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <alpine.LFD.1.00.0802041018390.3034@hp.linux-foundation.org>
-	 <1202151989.11265.576.camel@haakon2.linux-iscsi.org>
-	 <alpine.LFD.1.00.0802041130140.3034@hp.linux-foundation.org>
-	 <20080204224314.113afe7b@core> <47A79A10.4070706@garzik.org>
-	 <47A8B29B.8050406@vlnb.net> <47A8B510.8000807@garzik.org>
-	 <47A8B757.10101@vlnb.net>
-	 <1202256667.2220.83.camel@haakon2.linux-iscsi.org>
-	 <e2e108260802120805v4c8e07d6if59c881213c4ae97@mail.gmail.com>
-	 <1202874275.14647.52.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Tue, 12 Feb 2008 22:18:27 -0800
-Message-Id: <1202883507.21178.1.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Max Krasnyansky <maxk@qualcomm.com>
+Subject: Re: [git pull for -mm] CPU isolation extensions (updated2)
+Date: Wed, 13 Feb 2008 17:22:50 +1100
+User-Agent: KMail/1.9.5
+Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, pj@sgi.com, a.p.zijlstra@chello.nl, gregkh@suse.de,
+       rusty@rustcorp.com.au
+References: <47B11C45.6060408@qualcomm.com> <200802131511.28643.nickpiggin@yahoo.com.au> <47B288E4.2080403@qualcomm.com>
+In-Reply-To: <47B288E4.2080403@qualcomm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802131722.51117.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 19:57 -0800, Nicholas A. Bellinger wrote:
-> Greetings all,
-> 
-> On Tue, 2008-02-12 at 17:05 +0100, Bart Van Assche wrote:
-> > On Feb 6, 2008 1:11 AM, Nicholas A. Bellinger <nab@linux-iscsi.org> wrote:
-> > > I have always observed the case with LIO SE/iSCSI target mode ...
-> > 
-> > Hello Nicholas,
-> > 
-> > Are you sure that the LIO-SE kernel module source code is ready for
-> > inclusion in the mainstream Linux kernel ? As you know I tried to test
-> > the LIO-SE iSCSI target. Already while configuring the target I
-> > encountered a kernel crash that froze the whole system. I can
-> > reproduce this kernel crash easily, and I reported it 11 days ago on
-> > the LIO-SE mailing list (February 4, 2008). One of the call stacks I
-> > posted shows a crash in mempool_alloc() called from jbd. Or: the crash
-> > is most likely the result of memory corruption caused by LIO-SE.
-> > 
-> 
-> So I was able to FINALLY track this down to:
-> 
-> -# CONFIG_SLUB_DEBUG is not set
-> -# CONFIG_SLAB is not set
-> -CONFIG_SLUB=y
-> +CONFIG_SLAB=y
-> 
-> in both your and Chris Weiss's configs that was causing the
-> reproduceable general protection faults.  I also disabled
-> CONFIG_RELOCATABLE and crash dump because I was debugging using kdb in
-> x86_64 VM on 2.6.24 with your config.  I am pretty sure you can leave
-> this (crash dump) in your config for testing.
-> 
-> This can take a while to compile and take up alot of space, esp. with
-> all of the kernel debug options enabled, which on 2.6.24, really amounts
-> to alot of CPU time when building.  Also with your original config, I
-> was seeing some strange undefined module objects after Stage 2 Link with
-> iscsi_target_mod with modpost with the SLUB the lockups (which are not
-> random btw, and are tracked back to __kmalloc())..  Also, at module load
-> time with the original config, there where some warning about symbol
-> objects (I believe it was SCSI related, same as the ones with modpost).
-> 
-> In any event, the dozen 1000 loop discovery test is now working fine (as
-> well as IPoIB) with the above config change, and you should be ready to
-> go for your testing.
-> 
-> Tomo, Vlad, Andrew and Co:
-> 
-> Do you have any ideas why this would be the case with LIO-Target..?  Is
-> anyone else seeing something similar to this with their target mode
-> (mabye its all out of tree code..?) that is having an issue..? I am
-> using Debian x86_64 and Bart and Chris are using Ubuntu x86_64 and we
-> both have this problem with CONFIG_SLUB on >= 2.6.22 kernel.org
-> kernels. 
-> 
-> Also, I will recompile some of my non x86 machines with the above
-> enabled and see if I can reproduce..  Here the Bart's config again:
-> 
-> http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/30835aede1028188
-> 
+On Wednesday 13 February 2008 17:06, Max Krasnyansky wrote:
+> Nick Piggin wrote:
 
-This is also failing on CONFIG_SLUB on 2.6.24 ppc64.  Since the rest of
-the system seems to work fine, my only guess it may be related to the
-fact that the module is being compiled out of tree.  I took a quick
-glance at what kbuild was using for compiler and linker parameters, but
-nothing looked out of the ordinary.
+> > But don't let me dissuade you from making these good improvements
+> > to Linux as well :) Just that it isn't really going to be hard-rt
+> > in general.
+>
+> Actually that's the cool thing about CPU isolation. Get rid of all latency
+> sources from the CPU(s) and you get youself as hard-RT as it gets.
 
-I will take a look with kdb and SLUB re-enabled on x86_64 and see if this
-helps shed any light on the issue.  Is anyone else seeing an issue with CONFIG_SLUB..?
+Hmm, maybe. Removing all sources of latency from the CPU kind of
+implies that you have to audit the whole kernel for source of
+latency.
 
-Also, I wonder who else aside from Ubuntu is using this by default in
-their .config..?
+> I mean I _already_ have multi-core hard-RT systems that show ~1.2 usec
+> worst case and ~200nsec average latency. I do not even need Adeos/Xenomai
+> or Preemp-RT just a few very small patches. And it can be used for non RT
+> stuff too.
 
+OK, but you then are very restricted in what you can do, and easily
+can break it especially if you run any userspace on that CPU. If
+you just run a kernel module that, after setup, doesn't use any
+other kernel resources except interrupt handling, then you might be
+OK (depending on whether even interrupt handling can run into
+contended locks)...
 
---nab
-
+If you started doing very much more, then you can easily run into
+trouble.
