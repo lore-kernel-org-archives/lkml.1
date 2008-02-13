@@ -1,91 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbYBMW4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762598AbYBMXCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763122AbYBMW4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 17:56:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761942AbYBMW4A
+	id S1762598AbYBMXCg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:02:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbYBMXC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 17:56:00 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:59436 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753001AbYBMWz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 17:55:59 -0500
-Date: Thu, 14 Feb 2008 00:55:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Pavel Emelyanov <xemul@openvz.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
-	symbols going away
-Message-ID: <20080213225543.GE12383@cs181133002.pp.htv.fi>
-References: <1202941327.18204.11.camel@brick> <20080213223455.GB12383@cs181133002.pp.htv.fi> <1202942550.18204.18.camel@brick>
+	Wed, 13 Feb 2008 18:02:27 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49728 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753172AbYBMXC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 18:02:26 -0500
+Date: Wed, 13 Feb 2008 15:02:24 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Kanoj Sarcar <kanojsarcar@yahoo.com>
+cc: Christian Bell <christian.bell@qlogic.com>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <320000.75105.qm@web32509.mail.mud.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0802131452410.22542@schroedinger.engr.sgi.com>
+References: <320000.75105.qm@web32509.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1202942550.18204.18.camel@brick>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 02:42:30PM -0800, Harvey Harrison wrote:
-> On Thu, 2008-02-14 at 00:34 +0200, Adrian Bunk wrote:
-> > On Wed, Feb 13, 2008 at 02:22:06PM -0800, Harvey Harrison wrote:
-> > > +
-> > > +What:	__inet_hash_connect
-> > > +Where:	net/ipv4/inet_hashtables.c
-> > > +When:	2.6.28
-> > > +Why:	No in tree users
-> > > +
-> > > +---------------------------
-> > > +
-> > > +What:	io_delay_type
-> > > +Where:	arch/x86/kernel/io_delay.c
-> > > +When:	2.6.28
-> > > +Why:	No in tree users
-> > > +
-> > > +---------------------------
-> > >...
-> > 
-> > NAK.
-> > 
-> > It's a well-known and documented fact that we not have a stable API for 
-> > modules.
-> > 
-> > And as long as we anyway break the modules API in so many other cases 
-> > with each kernel release there's simply no point in not removing exports 
-> > immediately.
-> > 
-> > Oh, and for increasing the amount of nonsense even further, you should 
-> > explain why unused exports that just sneaked into 2.6.25-rc1 must be 
-> > shipped in 4 stable kernels before they can be removed.
-> 
-> Without comment on the validity of the exports themselves, I was more
-> interested in the principle of announcing these removals, and if it
-> was wanted.
+On Wed, 13 Feb 2008, Kanoj Sarcar wrote:
 
-Sorry again for being too harsh (see my other email).
+> It seems that the need is to solve potential memory
+> shortage and overcommit issues by being able to
+> reclaim pages pinned by rdma driver/hardware. Is my
+> understanding correct?
 
-Every kernel release has a big amount of API changes that have not been 
-announced previously, and that's a fact that is rooted in the kernel
-development model.
+Correct.
 
-Otherwise everyone also had to announce now if he wanted to e.g. change 
-a function prototype or a struct in 2.6.28.
+> If I do understand correctly, then why is rdma page
+> pinning any different than eg mlock pinning? I imagine
+> Oracle pins lots of memory (using mlock), how come
+> they do not run into vm overcommit issues?
 
-> Cheers,
-> 
-> Harvey
+Mlocked pages are not pinned. They are movable by f.e. page migration and 
+will be potentially be moved by future memory defrag approaches. Currently 
+we have the same issues with mlocked pages as with pinned pages. There is 
+work in progress to put mlocked pages onto a different lru so that reclaim 
+exempts these pages and more work on limiting the percentage of memory 
+that can be mlocked.
 
-cu
-Adrian
+> Are we up against some kind of breaking c-o-w issue
+> here that is different between mlock and rdma pinning?
 
--- 
+Not that I know.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> Asked another way, why should effort be spent on a
+> notifier scheme, and rather not on fixing any memory
+> accounting problems and unifying how pin pages are
+> accounted for that get pinned via mlock() or rdma
+> drivers?
 
+There are efforts underway to account for and limit mlocked pages as 
+described above. Page pinning the way it is done by Infiniband through
+increasing the page refcount is treated by the VM as a temporary 
+condition not as a permanent pin. The VM will continually try to reclaim 
+these pages thinking that the temporary usage of the page must cease 
+soon. This is why the use of large amounts of pinned pages can lead to 
+livelock situations.
+
+If we want to have pinning behavior then we could mark pinned pages 
+specially so that the VM will not continually try to evict these pages. We 
+could manage them similar to mlocked pages but just not allow page 
+migration, memory unplug and defrag to occur on pinned memory. All of 
+theses would have to fail. With the notifier scheme the device driver 
+could be told to get rid of the pinned memory. This would make these 3 
+techniques work despite having an RDMA memory section.
+
+> Startup benefits are well understood with the notifier
+> scheme (ie, not all pages need to be faulted in at
+> memory region creation time), specially when most of
+> the memory region is not accessed at all. I would
+> imagine most of HPC does not work this way though.
+
+No for optimal performance  you would want to prefault all pages like 
+it is now. The notifier scheme would only become relevant in memory 
+shortage situations.
+
+> Then again, as rdma hardware is applied (increasingly?) towards apps 
+> with short lived connections, the notifier scheme will help with startup 
+> times.
+
+The main use of the notifier scheme is for stability and reliability. The 
+"pinned" pages become unpinnable on request by the VM. So the VM can work 
+itself out of memory shortage situations in cooperation with the 
+RDMA logic instead of simply failing.
