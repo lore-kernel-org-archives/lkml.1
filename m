@@ -1,143 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbYBMJff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932718AbYBMJhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932447AbYBMJff (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 04:35:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765531AbYBMJez
+	id S932718AbYBMJhN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 04:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbYBMJgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 04:34:55 -0500
-Received: from mga03.intel.com ([143.182.124.21]:3447 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763435AbYBMJev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 04:34:51 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,345,1199692800"; 
-   d="scan'208";a="378434916"
-Subject: [PATCH] x86: EFI runtime code mapping enhancement
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Ingo Molnar <mingo@redhat.com>, ThomasGleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Wed, 13 Feb 2008 17:22:41 +0800
-Message-Id: <1202894561.5026.14.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 13 Feb 2008 09:21:44.0845 (UTC) FILETIME=[D9E133D0:01C86E21]
+	Wed, 13 Feb 2008 04:36:54 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:62534 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbYBMJgv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 04:36:51 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=pk4reYm+dhKCLjQ2920g9uk8OXzVDCHhH+uU+qgm/r+VI1K5mZ11sdmeWQNGOS/MD
+	twTlPD2/jJF+j++xhxkqw==
+Date: Wed, 13 Feb 2008 01:36:25 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Paul Jackson <pj@sgi.com>
+cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, clameter@sgi.com,
+       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
+Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
+In-Reply-To: <20080213020344.45c9d924.pj@sgi.com>
+Message-ID: <alpine.DEB.1.00.0802130113020.3936@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com> <1202862136.4974.41.camel@localhost>
+ <20080212215242.0342fa25.pj@sgi.com> <alpine.DEB.1.00.0802121955040.11889@chino.kir.corp.google.com> <20080212221354.a33799f2.pj@sgi.com> <alpine.DEB.1.00.0802122018550.11889@chino.kir.corp.google.com> <20080213020344.45c9d924.pj@sgi.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enhances EFI runtime code memory mapping as following:
+On Wed, 13 Feb 2008, Paul Jackson wrote:
 
-- Move __supported_pte_mask & _PAGE_NX checking before invoking
-  runtime_code_page_mkexec(). This makes it possible for compiler to
-  eliminate runtime_code_page_mkexec() on machine without NX support.
+> The infamous unpublished (except to a few) patch I drafted on Christmas
+> (Dec 25, 2007) basically added two new modes for how mempolicy
+> nodemasks were to be resolved:
+>  1) a static, no remap, mode, such as in this present patchset, and
+>  2) a cpuset relative mode that correctly handled the case of cpusets
+>     growing larger (increased numbers of nodes.)
+> 
+> I'd like to persuade you to add case (2) as well.  But I suspect,
+> given that case (2) was never as compelling to you as it was to me
+> in our December discussions, that I'll have little luck doing that.
+> 
 
-- Use set_memory_x/nx in early_mapping_set_exec(). This eliminates the
-  duplicated implementation.
+MPOL_F_STATIC_NODES already handles the second case because you can 
+specify nodes that aren't currently accessible because of your cpuset in 
+the hopes that eventually they will become accessible.  It's possible to 
+pass a nodemask with all bits set so that when the cpuset's set of nodes 
+expand, the mempolicy is effected over the intersection of the two on 
+rebind.
 
-This patch has been tested on Intel x86_64 platform with EFI64/32
-firmware.
+Other than that, perhaps if you can elaborate more on what you imagined 
+supporting as far as cpusets growing larger (or supporting node hotplug, 
+which is the same type of problem), we can discuss that further before I 
+resend my patches.
 
-Signed-off-by: Huang Ying <ying.huang@intel.com>
+> Notes and questions on your current patchset:
+> 
+>  1) It looks like you -add- a second nodemask to struct mempolicy:
+> 	    nodemask_t cpuset_mems_allowed; /* mempolicy relative to these nodes */
+> 	    nodemask_t user_nodemask;       /* nodemask passed by user */
+> 
+>     I believe you can overlay these two nodemasks using a union, and avoid making
+>     struct mempolicy bigger.
+> 
 
----
- arch/x86/kernel/efi.c    |    6 ++----
- arch/x86/kernel/efi_64.c |   30 ++++++++++++------------------
- 2 files changed, 14 insertions(+), 22 deletions(-)
+Ahh, since policy->cpuset_mems_allowed is only meaningful in the 
+non-MPOL_F_STATIC_NODES case, that probably will work.  For the purposes 
+of this patchset, we can certainly do that.  I'm wondering whether future 
+expansions will require them to be separated again, however.
 
---- a/arch/x86/kernel/efi.c
-+++ b/arch/x86/kernel/efi.c
-@@ -384,9 +384,6 @@ static void __init runtime_code_page_mke
- 	efi_memory_desc_t *md;
- 	void *p;
- 
--	if (!(__supported_pte_mask & _PAGE_NX))
--		return;
--
- 	/* Make EFI runtime service code area executable */
- 	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
- 		md = p;
-@@ -476,7 +473,8 @@ void __init efi_enter_virtual_mode(void)
- 	efi.get_next_high_mono_count = virt_efi_get_next_high_mono_count;
- 	efi.reset_system = virt_efi_reset_system;
- 	efi.set_virtual_address_map = virt_efi_set_virtual_address_map;
--	runtime_code_page_mkexec();
-+	if (__supported_pte_mask & _PAGE_NX)
-+		runtime_code_page_mkexec();
- 	early_iounmap(memmap.map, memmap.nr_map * memmap.desc_size);
- 	memmap.map = NULL;
- }
---- a/arch/x86/kernel/efi_64.c
-+++ b/arch/x86/kernel/efi_64.c
-@@ -35,6 +35,7 @@
- #include <asm/tlbflush.h>
- #include <asm/proto.h>
- #include <asm/efi.h>
-+#include <asm/cacheflush.h>
- 
- static pgd_t save_pgd __initdata;
- static unsigned long efi_flags __initdata;
-@@ -43,22 +44,15 @@ static void __init early_mapping_set_exe
- 					  unsigned long end,
- 					  int executable)
- {
--	pte_t *kpte;
--	unsigned int level;
-+	unsigned long num_pages;
- 
--	while (start < end) {
--		kpte = lookup_address((unsigned long)__va(start), &level);
--		BUG_ON(!kpte);
--		if (executable)
--			set_pte(kpte, pte_mkexec(*kpte));
--		else
--			set_pte(kpte, __pte((pte_val(*kpte) | _PAGE_NX) & \
--					    __supported_pte_mask));
--		if (level == PG_LEVEL_4K)
--			start = (start + PAGE_SIZE) & PAGE_MASK;
--		else
--			start = (start + PMD_SIZE) & PMD_MASK;
--	}
-+	start &= PMD_MASK;
-+	end = (end + PMD_SIZE - 1) & PMD_MASK;
-+	num_pages = (end - start) >> PAGE_SHIFT;
-+	if (executable)
-+		set_memory_x((unsigned long)__va(start), num_pages);
-+	else
-+		set_memory_nx((unsigned long)__va(start), num_pages);
- }
- 
- static void __init early_runtime_code_mapping_set_exec(int executable)
-@@ -74,7 +68,7 @@ static void __init early_runtime_code_ma
- 		md = p;
- 		if (md->type == EFI_RUNTIME_SERVICES_CODE) {
- 			unsigned long end;
--			end = md->phys_addr + (md->num_pages << PAGE_SHIFT);
-+			end = md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT);
- 			early_mapping_set_exec(md->phys_addr, end, executable);
- 		}
- 	}
-@@ -84,8 +78,8 @@ void __init efi_call_phys_prelog(void)
- {
- 	unsigned long vaddress;
- 
--	local_irq_save(efi_flags);
- 	early_runtime_code_mapping_set_exec(1);
-+	local_irq_save(efi_flags);
- 	vaddress = (unsigned long)__va(0x0UL);
- 	save_pgd = *pgd_offset_k(0x0UL);
- 	set_pgd(pgd_offset_k(0x0UL), *pgd_offset_k(vaddress));
-@@ -98,9 +92,9 @@ void __init efi_call_phys_epilog(void)
- 	 * After the lock is released, the original page table is restored.
- 	 */
- 	set_pgd(pgd_offset_k(0x0UL), save_pgd);
--	early_runtime_code_mapping_set_exec(0);
- 	__flush_tlb_all();
- 	local_irq_restore(efi_flags);
-+	early_runtime_code_mapping_set_exec(0);
- }
- 
- void __init efi_reserve_bootmem(void)
+>  2) Those 'mpol_mode()' wrappers on all those mempolicy->policy
+>     evaluations look dangerous to me.  It looks like a code bug
+>     waiting to happen.  Unless I miss my guess, if you forget one of
+>     those wrappers (or someone making a future change misses one), no
+>     one will notice until sometime at runtime, someone makes use of the
+>     new fangled MPOL_F_STATIC_NODES mode in some new situation, and we
+>     end up executing code that we didn't expect to execute just then.
+> 
+>     I urge you to reconsider, and keep it so that the 'policy' field of struct
+>     mempolicy naturally evaluates to just the policy.  There should be just one
+>     pair of places, on entry to, and exit from, the kernel, where the code is
+>     aware of the need to pack the mode and the policy into a single word.
+> 
 
+Ok.
+
+>  3) Does your patchset allow the user to specify a nodemask that includes nodes
+>     outside of the current cpuset with a MPOL_F_STATIC_NODES mode?  At first
+>     glance, I didn't see that it did, but I should have looked closer.  This
+>     strikes me as an essential aspect of this mode.
+> 
+
+It does, and that's why I was a little curious about your second case at 
+the beginning of this email.
+
+The user's nodemask is always stored unaltered in policy->user_nodemask.  
+In mpol_new(), we intersect the current accessible nodes with that 
+nodemask to determine if there's even a mempolicy to effect.  If not, 
+mpol_new() returns ERR_PTR(-EINVAL) and we fall back to the existing 
+policy (if any) for the VMA or task.  Otherwise, we use the intersection 
+of those two nodemasks.
+
+In mpol_rebind_policy() with MPOL_F_STATIC_NODES, we always intersect 
+policy->user_nodemask with the set of accessible nodes (nodemask_t 
+*newmask).  So if we can now access nodes that we previously couldn't, 
+they are now part of the interleave nodemask.  A similiar situation occurs 
+when building the zonelist for the MPOL_BIND case and you can see the 
+change I made to MPOL_PREFERRED in the incremental patch I sent you.
+
+The only way that newly-accessible nodes will not become a part of the 
+mempolicy nodemask is when the user's nodemask and the set of accessible 
+nodes is disjoint when the policy was created.
+
+It is arguable whether we want to support that behavior as well (and we 
+definitely could do it, it's not out of the scope of mempolicies).  Lee 
+had specific requirements of rejecting nodemasks that had no nodes in the 
+intersection based on the current implementation, but we could continue 
+discussing the possibility of setting up mempolicies that are uneffected 
+when they are created and only become policy when they are rebound later.
+
+		David
