@@ -1,91 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757527AbYBMUne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbYBMUns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757527AbYBMUne (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 15:43:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751653AbYBMUnZ
+	id S1761425AbYBMUns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 15:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbYBMUn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 15:43:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:58732 "EHLO gate.crashing.org"
+	Wed, 13 Feb 2008 15:43:29 -0500
+Received: from onyx.ip.pt ([195.23.92.252]:57100 "EHLO mail.isp.novis.pt"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbYBMUnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 15:43:25 -0500
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, parabelboi@bopserverein.de,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20080213183506.7f3e3145@de.ibm.com>
-References: <20080213182800.5c6940a8@de.ibm.com>
-	 <20080213183506.7f3e3145@de.ibm.com>
+	id S1752524AbYBMUn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 15:43:28 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 15:43:27 EST
+Subject: Re: [v4l-dvb-maintainer] [GIT PATCHES] V4L/DVB fixes
+From: Ricardo Cerqueira <v4l@cerqueira.org>
+To: linux-dvb-maintainer@linuxtv.org
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.58.0802131025440.6264@shell2.speakeasy.net>
+References: <20080212190235.4e86baf8@gaivota>
+	 <Pine.LNX.4.58.0802122120530.7642@shell2.speakeasy.net>
+	 <20080213155352.06d966cd@gaivota>
+	 <Pine.LNX.4.58.0802131025440.6264@shell2.speakeasy.net>
 Content-Type: text/plain
-Date: Thu, 14 Feb 2008 07:42:54 +1100
-Message-Id: <1202935374.7296.44.camel@pasglop>
+Date: Wed, 13 Feb 2008 20:36:44 +0000
+Message-Id: <1202935004.17260.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
-> sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
-> This patch adds a check_legacy_ioports to read_port and write_port.
-> It will now return ENXIO, instead of oopsing.
+On Wed, 2008-02-13 at 10:45 -0800, Trent Piepho wrote:
+> On Wed, 13 Feb 2008, Mauro Carvalho Chehab wrote:
+> > On Tue, 12 Feb 2008 21:21:43 -0800 (PST)
+> > Trent Piepho <xyzzy@speakeasy.org> wrote:
+> >
+> > The version with problems is the one dated by Jan, 16:
+> > http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-January/006119.html
+> >
+> > As Ricardo stated on Feb, 5, he fixed the lock issues, that were present on
+> > your first revision:
+> >
+> > http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-February/006292.html
 > 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> I don't see what you are saying in that message.  Ricardo agreed it had a
+> race condition and said he would, at some future point, redo it, but I
+> never saw a new patch.
 
-The problem is that this prevents using /proc/ioports to access PCI
-IO space, which might be useful.
+You missed it, then:
 
-I hate that sensors_detect.. or for that matter any other userland code
-that pokes random ports like that. It should die.
+http://linuxtv.org/pipermail/v4l-dvb-maintainer/2008-February/006293.html
 
-Ben.
+was sent in 25 minutes after the message Mauro mentioned.
 
-> Index: linux.git/drivers/char/mem.c
-> ===================================================================
-> --- linux.git.orig/drivers/char/mem.c
-> +++ linux.git/drivers/char/mem.c
-> @@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
->  	char __user *tmp = buf;
->  
->  	if (!access_ok(VERIFY_WRITE, buf, count))
-> -		return -EFAULT; 
-> +		return -EFAULT;
-> +
->  	while (count-- > 0 && i < 65536) {
-> +#ifdef CONFIG_PPC_MERGE
-> +		if (check_legacy_ioport(i))
-> +			return -ENXIO;
-> +#endif
->  		if (__put_user(inb(i),tmp) < 0) 
->  			return -EFAULT;  
->  		i++;
-> @@ -585,6 +590,7 @@ static ssize_t write_port(struct file * 
->  
->  	if (!access_ok(VERIFY_READ,buf,count))
->  		return -EFAULT;
-> +
->  	while (count-- > 0 && i < 65536) {
->  		char c;
->  		if (__get_user(c, tmp)) {
-> @@ -592,6 +598,10 @@ static ssize_t write_port(struct file * 
->  				break;
->  			return -EFAULT; 
->  		}
-> +#ifdef CONFIG_PPC_MERGE
-> +		if (check_legacy_ioport(i))
-> +			return -ENXIO;
-> +#endif
->  		outb(c,i);
->  		i++;
->  		tmp++;
+
+> Nobody points to any issues, ever, when this happens.  Look at how broken
+> the v4l2 only bttv driver was.  You still can't unload and load cx88-dvb
+> since Markus's patch for hotplug, no one's fixed that regression.  Now
+> there's yet another race in the cx88 subdriver code.  Maybe the original
+> author who added that code should feel some motiviation to fix the
+> regressions it caused....
+
+Read the code that was actually committed: here's a helpful link:
+
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=41a93616082af630e7242cba766a161d7847560b
+
+
 > 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> I don't have the time or the desire to be the janitor who cleans up after
+> sloppy coders' bugs.
+
+You properly raised a red flag, and got a fix in return.
+Don't expect fixes to be accompanied by a "are you happy now?"
+follow-up; if you took the time to check the first commit, take the time
+to read the rest.
+
+Now... it looks as if you simply missed the second patch; it happens.
+But next time you feel like sending this kind of message(s) to 3
+separate lists, at least check your mail history (or read the code
+you're commenting).
+
+--
+RC
 
