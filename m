@@ -1,46 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbYBMRQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934042AbYBMRQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933929AbYBMRQf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933226AbYBMRQK
+	id S934042AbYBMRQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:16:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933870AbYBMRQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:16:10 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57374 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932821AbYBMRQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:16:08 -0500
-Date: Wed, 13 Feb 2008 18:16:14 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
-       Arjan van de Ven <arjan@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Message-ID: <20080213171614.GA12259@uranus.ravnborg.org>
-References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <47B30F05.29637.9A21F9B@pageexec.freemail.hu> <alpine.LFD.1.00.0802130749210.2920@woody.linux-foundation.org> <20080213160148.GA20241@elte.hu>
+	Wed, 13 Feb 2008 12:16:29 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:15921 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933862AbYBMRQ1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:16:27 -0500
+Date: Wed, 13 Feb 2008 09:15:45 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Fabio Coatti <cova@ferrara.linux.it>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Message-Id: <20080213091545.a9dcc5b9.randy.dunlap@oracle.com>
+In-Reply-To: <200802131021.23974.cova@ferrara.linux.it>
+References: <200802121503.41328.cova@ferrara.linux.it>
+	<200802121847.19991.cova@ferrara.linux.it>
+	<200802122155.13959.rjw@sisk.pl>
+	<200802131021.23974.cova@ferrara.linux.it>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213160148.GA20241@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 05:01:48PM +0100, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > if you're merging this, please do the independent parts really 
-> > independenrly. For example, the above is a patch in its own right, and 
-> > probably worth doing regardless of anything else.
-> 
-> yes. I wanted to have it tested for a bit, because the lack of use of 
-> the gcc flag means complete lack of testing coverage. The obligatory 
-> "please add a stackprotector self-test" debug feature request went to 
-> Arjan two days ago already.
+On Wed, 13 Feb 2008 10:21:23 +0100 Fabio Coatti wrote:
 
-Do you think that the top-lvel Makefile change is OK to merge?
-I would like to merge it separatly to have maximum bisectability.
+> Alle martedì 12 febbraio 2008, Rafael J. Wysocki ha scritto:
+> > On Tuesday, 12 of February 2008, Fabio Coatti wrote:
+> > > Alle martedì 12 febbraio 2008, Randy Dunlap ha scritto:
+> > > > On Tue, 12 Feb 2008 15:03:41 +0100 Fabio Coatti wrote:
+> > > > > Hi all,
+> > > > > I'm stuck in a weird situation: I'm unable to go beyond 2.6.23.14, so
+> > > > > to fix the splice bug I've had to apply by hand the patch. (x86_64)
+> > > > >
+> > > > > Basically, with 2.6.24.2 (the same with 2.6.24 and .1), tha machine
+> > > > > won't boot due to a problem with cciss driver, that prevents to find
+> > > > > the / partition. (bug described here: Kernel Bug Tracker Bug 9859
+> > > > > http://bugzilla.kernel.org/show_bug.cgi?id=9859 );
+> > > > >
+> > > > > With kernels 2.6.23, the lastest that I can compile is 2.6.23.14;
+> > > > > starting from .15 (and .16) I get this message:
+> > > > >
+> > > > > ======================
+> > > > >   UPD     include/linux/compile.h
+> > > > >   CC      init/version.o
+> > > > >   LD      init/built-in.o
+> > > > >   LD      .tmp_vmlinux1
+> > > > > drivers/built-in.o: In function `acpi_init':
+> > > > > bus.c:(.init.text+0x1713): undefined reference to `pm_flags'
+> > > > > bus.c:(.init.text+0x1756): undefined reference to `pm_flags'
+> > > > > ======================
+> > > > >
+> > > > > All .config are the same, (make oldconfig) beside the obvious
+> > > > > differences between .23 and .24
+> > > > >
+> > > > > Hardware: x86_64 AMD 2216HE
+> > > > > SCSI controller: HP Smart Array E200i Controller
+> > > > > Compiler: gcc (GCC) 4.1.1
+> > > > > binutils: 2.16.1
+> > > > >
+> > > > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
+> > > > > with a cciss0: HP Smart Array 6i Controller,
+> > > > > the 2.6.24.2 compiles just fine and works, so the cciss problems
+> > > > > seems related only to E200i controller.
+> > > > >
+> > > > > Right now, on AMD64 machines, I'm forced to patch by hand the kernel,
+> > > > > that's quite uncomfortable :)
+> > > > >
+> > > > > Can someone point me in the right direction to get out of this
+> > > > > situation? Of course I can provide any further information. (.config
+> > > > > not inlcuded now to avoid cluttering  )
+> > > > >
+> > > > > Thanks for any answer.
+> > > >
+> > > > a/ send .config file for the build problem above
+> > > > b/ How do you download and/or apply 2.6.23.{15,16} ?
+> > > > 	Full tarball or base tarball + patches?
+> > > > 	If patches, what base tree are they applied to?
+> > >
+> > > full tarball from kernel.org (.16), tried also applying patches to 2.6.23
+> > > vanilla.(.15,.16) Same process leads to successful compilation for .14
+> >
+> > You're not supposed to have CONFIG_PM unset and CONFIG_ACPI set at the same
+> > time.  The oldconfig generation must have gone wrong at one point.
+> 
+> Maybe it's not supposed to have this situation, but maybe you should tell this 
+> to the kernel itself :)
+> 
+> # zcat /proc/config.gz | egrep "PM|ACPI"
+> CONFIG_X86_64_ACPI_NUMA=y
+> # CONFIG_PM is not set
+> CONFIG_ACPI=y
+> # CONFIG_ACPI_PROCFS is not set
+> 
+> # uname -rv
+> 2.6.23.12 #3 SMP Tue Feb 12 11:22:16 CET 2008
+> 
+> And you can easily get this situation from menuconfig: just fire up make 
+> menuconfig without any .config, go to power management options and turn 
+> off "Power Management support". exit and look at .config:
+> 
+> # CONFIG_PM is not set
+> CONFIG_SUSPEND_SMP_POSSIBLE=y
+> CONFIG_HIBERNATION_SMP_POSSIBLE=y
+> CONFIG_ACPI=y
+> 
+> Maybe if this is not supposed to be the right situation, some dependencies are 
+> not respected... (tested on .16)
 
-	Sam
+
+Yes, this is yet another select problem.  X86_64_NUMA_ACPI
+selects ACPI, even though PM is not enabled.  :(
+
+So you have a manual fix:  just enable CONFIG_PM.
+
+Is this specific config important to you?  I.e., do you want/need
+NUMA support?  If so, you'll just need to continue enabling CONFIG_PM.
+
+I made a patch that prevents the select problem (see below).
+
+The "select PCI" in the X86_64_ACPI_NUMA config option is evil.  :(
+
+
+> Anyway, with .16 and CONFIG_PM set, I get this :
+> ===================
+> WARNING: vmlinux.o(.text+0x1f6395): Section mismatch: reference 
+> to .init.data.14:pxm_to_node_map (between 'pxm_to_node' and 'node_to_pxm')
+> WARNING: vmlinux.o(.text+0x1f63a7): Section mismatch: reference 
+> to .init.data.14:node_to_pxm_map (between 'node_to_pxm' 
+> and '__acpi_map_pxm_to_node')
+> WARNING: vmlinux.o(.text+0x1f63b2): Section mismatch: reference 
+> to .init.data.14:pxm_to_node_map (between '__acpi_map_pxm_to_node' 
+> and 'acpi_get_pxm')
+> WARNING: vmlinux.o(.text+0x1f63bc): Section mismatch: reference 
+> to .init.data.14:node_to_pxm_map (between '__acpi_map_pxm_to_node' 
+> and 'acpi_get_pxm')
+> WARNING: vmlinux.o(.text+0x1f6412): Section mismatch: reference 
+> to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
+> and 'acpi_get_node')
+> WARNING: vmlinux.o(.text+0x1f6458): Section mismatch: reference 
+> to .init.data.14:pxm_to_node_map (between 'acpi_map_pxm_to_node' 
+> and 'acpi_get_node')
+> WARNING: vmlinux.o(.text+0x1f645f): Section mismatch: reference 
+> to .init.data.14:node_to_pxm_map (between 'acpi_map_pxm_to_node' 
+> and 'acpi_get_node')
+> =========================
+> 
+> Anyway, it booted and so far it runs without "splice" problem, thanks.
+
+
+---
+~Randy
