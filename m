@@ -1,69 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932280AbYBMH2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932385AbYBMH3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932280AbYBMH2s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 02:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765660AbYBMH2P
+	id S932385AbYBMH3y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 02:29:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758671AbYBMH3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 02:28:15 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:40553 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756577AbYBMH2M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 02:28:12 -0500
-Date: Wed, 13 Feb 2008 08:28:07 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Greg KH <greg@kroah.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeff@garzik.org,
-       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: <20080213061653.GA10784@kroah.com>
-Message-ID: <Pine.LNX.4.64.0802130824500.8857@anakin>
-References: <20080211211751.3e265754@laptopd505.fenrus.org>
- <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org>
- <20080212.155853.193190548.davem@davemloft.net> <20080213002948.GA8899@kroah.com>
- <alpine.LFD.1.00.0802121645320.2920@woody.linux-foundation.org>
- <20080213061653.GA10784@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 Feb 2008 02:29:39 -0500
+Received: from ozlabs.org ([203.10.76.45]:55628 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755041AbYBMH3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 02:29:37 -0500
+Subject: Re: [PATCH 09/18] ide: rework PowerMac media-bay support
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+References: <20080208004421.17746.32557.sendpatchset@localhost.localdomain>
+	 <20080208004523.17746.24578.sendpatchset@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-rcWHPrY1cbcdMlpZJp3I"
+Date: Wed, 13 Feb 2008 18:29:36 +1100
+Message-Id: <1202887776.7971.19.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Greg KH wrote:
-> On Tue, Feb 12, 2008 at 04:49:46PM -0800, Linus Torvalds wrote:
-> > On Tue, 12 Feb 2008, Greg KH wrote:
-> > > Perhaps you need to switch to using quilt.  This is the main reason why
-> > > I use it.
-> > 
-> > Btw, on that note: if some quilt user can send an "annotated history file" 
-> > of their quilt usage, it's something that git really can do, and I'll see 
-> > if I can merge (or rather, coax Junio to merge) the relevant part of stgit 
-> > to make it possible to just basically get "quilt behaviour" for the parts 
-> > of a git tree that you haven't pushed out yet.
-> 
-> Ted's description matches mine (keep quilt tree in git, edit changelog
-> entries, rebase on newer kernel versions, etc.)  I can go into details
-> if needed.
 
-Ack. Same for PS3 and m68k (except I don't have the m68k patches in git (yet)).
+--=-rcWHPrY1cbcdMlpZJp3I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Two issues with using quilt:
-  1. Sometimes a patch still applies after it was integrated upstream,
-  2. Sometimes it's a lot of work to fixup the patches after an upstream
-     change. I wrote a script to do a tree-way-merge in case of a
-     conflict, but I haven't really tested it yet (not suitable big
-     conflict has happened since ;-)
+On Fri, 2008-02-08 at 01:45 +0100, Bartlomiej Zolnierkiewicz wrote:
+> Rework PowerMac media-bay support in such way that instead of
+> un/registering the IDE interface we un/register IDE devices:
+>=20
+> * Add ide_port_scan() helper for probing+registerering devices on a port.
+>=20
+> * Rename ide_port_unregister_devices() to __ide_port_unregister_devices()=
+.
+>=20
+> * Add ide_port_unregister_devices() helper for unregistering devices on a=
+ port.
+>=20
+> * Add 'ide_hwif_t *cd_port' to 'struct media_bay_info', pass 'hwif' inste=
+ad
+>   of hwif->index to media_bay_set_ide_infos() and use it to setup 'cd_por=
+t'.
+>=20
+> * Use ide_port_unregister_devices() instead of ide_unregister()
+>   and ide_port_scan() instead of ide_register_hw() in media_bay_step().
+>=20
+> * Unexport ide_register_hw() and make it static.
+>=20
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/ide-probe.c        |   18 ++++++++++++++++++
+>  drivers/ide/ide.c              |   22 ++++++++++++++++------
+>  drivers/ide/ppc/pmac.c         |    3 ++-
+>  drivers/macintosh/mediabay.c   |   17 +++++++----------
+>  include/asm-powerpc/mediabay.h |    4 +++-
+>  include/linux/ide.h            |    6 ++----
+>  6 files changed, 48 insertions(+), 22 deletions(-)
 
-Gr{oetje,eeting}s,
+> Index: b/include/asm-powerpc/mediabay.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- a/include/asm-powerpc/mediabay.h
+> +++ b/include/asm-powerpc/mediabay.h
+> @@ -22,10 +22,12 @@ int check_media_bay(struct device_node *
+>  /* Number of bays in the machine or 0 */
+>  extern int media_bay_count;
+> =20
+> +#ifdef CONFIG_BLK_DEV_IDE_PMAC
+>  int check_media_bay_by_base(unsigned long base, int what);
+>  /* called by IDE PMAC host driver to register IDE controller for media b=
+ay */
+>  int media_bay_set_ide_infos(struct device_node *which_bay, unsigned long=
+ base,
+> -			    int irq, int index);
+> +			    int irq, ide_hwif_t *hwif);
+> +#endif
+> =20
+>  #endif /* __KERNEL__ */
+>  #endif /* _PPC_MEDIABAY_H */
 
-						Geert
+This hunk breaks pmac32_defconfig for me.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+include2/asm/mediabay.h:29: error: syntax error before 'ide_hwif_t'
+make[3]: *** [arch/powerpc/platforms/powermac/setup.o] Error 1
+make[2]: *** [arch/powerpc/platforms/powermac] Error 2
+make[1]: *** [arch/powerpc/platforms] Error 2
+make: *** [sub-make] Error 2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-rcWHPrY1cbcdMlpZJp3I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHspxgdSjSd0sB4dIRAibPAJ0dcGD1H6r7zo8Pb8j3YsG+884OSgCeNItN
+zwItoANm8Lo9B2HVBkp3mLg=
+=FdoT
+-----END PGP SIGNATURE-----
+
+--=-rcWHPrY1cbcdMlpZJp3I--
+
