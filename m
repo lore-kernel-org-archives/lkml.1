@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762192AbYBMEmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762104AbYBMEry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762192AbYBMEmZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 23:42:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbYBMEmQ
+	id S1762104AbYBMEry (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 23:47:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbYBMErq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 23:42:16 -0500
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:39862 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753188AbYBMEmP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 23:42:15 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bhRTzPRBpmQ6/JE2Vv1cEARgtyRkyWwRSkzp2WAqPQBqb1uAF6FlpA5O52d74Gof7PgqrJwumJ2iQuKJT+qR0wwtD0ziowua4Eb4L/0b2ZhR/+KhpzBW6yqSE4LsnyVXbEqIRuC50V+z7hC/sTuM+vLjEVUiII3blJsOTiQODJg=  ;
-X-YMail-OSG: .qHqlwEVM1ki66ovBrTvecPtQu2jq8OYTB4CrMhp1xd8yqoxZp60N.zdXoZ5OrqimyzVDG..KA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: 2.6.24-sha1: RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
-Date: Wed, 13 Feb 2008 15:42:02 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20080210140031.GA1754@martell.zuzino.mipt.ru> <20080212222704.GC2144@martell.zuzino.mipt.ru> <200802131117.37389.nickpiggin@yahoo.com.au>
-In-Reply-To: <200802131117.37389.nickpiggin@yahoo.com.au>
+	Tue, 12 Feb 2008 23:47:46 -0500
+Received: from mailbox2.myri.com ([64.172.73.26]:1847 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754305AbYBMErp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 23:47:45 -0500
+Message-ID: <47B2765A.2070901@myri.com>
+Date: Tue, 12 Feb 2008 23:47:22 -0500
+From: Patrick Geoffray <patrick@myri.com>
+Organization: Myricom, Inc
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+CC: Christoph Lameter <clameter@sgi.com>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+References: <20080209075556.63062452@bree.surriel.com> <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> <ada3arzxgkz.fsf_-_@cisco.com> <47B2174E.5000708@opengridcomputing.com> <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <20080213032533.GC32047@obsidianresearch.com> <47B26A6A.4000209@myri.com> <20080213042600.GA32449@obsidianresearch.com>
+In-Reply-To: <20080213042600.GA32449@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802131542.03026.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 February 2008 11:17, Nick Piggin wrote:
-> On Wednesday 13 February 2008 09:27, Alexey Dobriyan wrote:
+Jason Gunthorpe wrote:
+> [mangled CC list trimmed]
+Thanks, noticed that afterwards.
 
-> > It's a trivial dumb module which does nothing but loads and unloads.
-> > I redid ftest03 later without any suspicious activity and it oopsed the
-> > same way.
->
-> Ah crap. Hmm, maybe I didn't consider all cases with my last patch to
-> that code... is there an easy way to get the ftest03 source and run
-> it?
+> This wasn't ment as a slight against Quadrics, only to point out that
+> the specific wire protcols used by IB and iwarp are what cause this
+> limitation, it would be easy to imagine that Quadrics has some
+> additional twist that can make this easier..
 
-OK I didn't realise it is a test from ltp.
+The wire protocols are similar, nothing fancy. The specificity of 
+Quadrics (and many others) is that they can change the behavior of the 
+NIC in firmware, so they adapt to what the OS offers. They had the VM 
+notifier support in Tru64 back in the days, they just ported the 
+functionality to Linux.
 
-But I can't reproduce it for the life of me with the latest git kernel
-and latest ltp tarball.
+> I ment that HPC users are unlikely to want to swap active RDMA pages
+> if this causes a performance cost on normal operations. None of my
 
-Is it easy to reproduce? Are you reproducing it simply by running the
-ftest03 binary directly from the shell? How many times between oopses?
-It is multi-process but no threads, so races should be minimal down
-this path -- can you get an strace of the failing process?
+Swapping to disk is not a normal operations in HPC, it's going to be 
+slow anyway. The main problem for HPC users is not swapping, it's that 
+they do not know when a registered page is released to the OS through 
+free(), sbrk() or munmap(). Like swapping, they don't expect that it 
+will happen often, but they have to handle it gracefully.
 
-Thanks,
-Nick
+Patrick
+-- 
+Patrick Geoffray
+Myricom, Inc.
+http://www.myri.com
