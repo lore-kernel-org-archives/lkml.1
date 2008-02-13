@@ -1,251 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbYBMETq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbYBMEVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764277AbYBMETq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 Feb 2008 23:19:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbYBMETi
+	id S1765096AbYBMEVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 Feb 2008 23:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbYBMEVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 Feb 2008 23:19:38 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:51840 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbYBMETh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 Feb 2008 23:19:37 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=e//drAHV3+kZre4YzEHklTesknqUlNSaW0bYXUl/GOUvREv7Nwp2Ikoyog2tNhL5p
-	tJhCJgyFLPCA776ek+4Rw==
-Date: Tue, 12 Feb 2008 20:18:36 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Paul Jackson <pj@sgi.com>,
-       Christoph Lameter <clameter@sgi.com>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-In-Reply-To: <1202862136.4974.41.camel@localhost>
-Message-ID: <alpine.DEB.1.00.0802122004190.11889@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>  <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com> <1202862136.4974.41.camel@localhost>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 12 Feb 2008 23:21:04 -0500
+Received: from pip23.gyao.ne.jp ([125.63.38.249]:25629 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753635AbYBMEVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 Feb 2008 23:21:01 -0500
+Date: Wed, 13 Feb 2008 13:19:21 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080213041921.GA9639@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	James Bottomley <James.Bottomley@HansenPartnership.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>, jeff@garzik.org,
+	arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
+	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+	linux-arch@vger.kernel.org, akpm@linux-foundation.org
+References: <47B1CB08.4020101@garzik.org> <20080212.155853.193190548.davem@davemloft.net> <alpine.LFD.1.00.0802121610220.2920@woody.linux-foundation.org> <20080212.172051.58554658.davem@davemloft.net> <1202869550.3137.182.camel@localhost.localdomain> <alpine.LFD.1.00.0802121832000.2920@woody.linux-foundation.org> <1202871616.3137.197.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202871616.3137.197.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008, Lee Schermerhorn wrote:
-
-> > Adds another member to struct mempolicy,
+On Tue, Feb 12, 2008 at 09:00:16PM -0600, James Bottomley wrote:
+> On Tue, 2008-02-12 at 18:35 -0800, Linus Torvalds wrote:
 > > 
-> > 	nodemask_t user_nodemask
+> > On Tue, 12 Feb 2008, James Bottomley wrote:
+> > > 
+> > > Yes, this is exactly the feature I'm looking for.  It would allow the
+> > > downstream users of a rebased tree to rebase themselves correctly.
+> > > 
+> > > All the information about the rebase is in the reflog ... it can't be
+> > > too difficult to pass it through on a pull and allow the downstream tree
+> > > to do the right thing.
 > > 
-> > that stores the the nodemask that the user passed when he or she created
-> > the mempolicy via set_mempolicy() or mbind().  When using
-> > MPOL_F_STATIC_NODES, which is passed with any mempolicy mode, the user's
-> > passed nodemask is always used when determining the preferred node,
-> > building the MPOL_BIND zonelist, or creating the interleave nodemask.
-> > This happens whenever the policy is rebound, including when a task's
-> > cpuset assignment changes or the cpuset's mems are changed.
-> 
-> When you say that the user's nodemask is "always used" you mean "after
-> cpuset contextualization", right?  I.e., after masking with mems_allowed
-> [which also restricts to nodes with memory].  That is what the code
-> still does.  
-> 
-
-Yeah, I'm not introducing a loophole so that tasks can access memory to 
-which they don't have access.  I've clarified that for the next version.
-
-> > It is also possible to mount tmpfs with the static nodemask behavior when
-> > specifying a node or nodemask.  To do this, simply add "=static"
-> > immediately following the mempolicy mode at mount time:
+> > Guys, you simply have no idea what you're talking about.
 > > 
-> > 	mount -o remount mpol=interleave=static:1-3
+> > Those downstream trees can have done things themselves. They *depended* on 
+> > the state you gave them.
 > > 
-> > Also removes mpol_check_policy() and folds some of its logic into
-> > mpol_new() since it is now mostly obsoleted.
+> > You can't just say "oops, I lied, this is the state you should have used, 
+> > now it's _your_ mess to sort out".
+> > 
+> > OF COURSE it's what you'd like to use - it absolves you of any and all 
+> > actual responsibility. But dammit, that's not what anybody else wants than 
+> > the irresponsible person who cannot be bothered to stand up for his work!
+> > 
+> > If you're not confident enough about your work, don't push it out! It's 
+> > that simple. Pushing out to a public branch is a small "release".
+> > 
+> > Have the f*cking back-bone to be able to stand behind what you did!
 > 
-> Couple of comments here:
+> Erm, I would like this feature as a downstream user.
 > 
-> 1) we've discussed the issue of returning EINVAL for non-empty nodemasks
-> with MPOL_DEFAULT.  By removing this restriction, we run the risk of
-> breaking applications if we should ever want to define a semantic to
-> non-empty node mask for MPOL_DEFAULT.   I think this is probably
-> unlikely, but consider the new mode flags part of the mode/policy
-> parameter:  by not rejecting undefined flags, we may break applications
-> by later defining additional flags.  I'd argue for fairly strict
-> argument checking.
+> I'm not asking for this to be the default or even easily available.
+> However, when you know you've based a downstream tree on what you know
+> to be a volatile base, it would be very useful information to have.
 > 
-
-As I've mentioned in a parallel thread, I've folded the entire logic of 
-mpol_check_policy() as it stands this minute in Linus' tree into 
-mpol_new().
-
-> 2) Before this patch, policy_nodemask from the shmem_sb_info was NOT
-> masked with allowed nodes because we passed this mask directly to
-> mpol_new() without "contextualization".  We DO guarantee that this
-> policy nodemask contains only nodes with memory [see
-> shmem_parse_mpol()].  Now that you've moved the contextualization to
-> mpol_new(), we are masking this policy with the cpuset mems allowed.
-> This is a change in behavior.  Do we want this?  I.e., are we preserving
-> the "intent" of the system administrator in setting the tmpfs policy?
-> Maybe they wanted to shared interleaved shmem areas between cpusets with
-> disjoint mems allowed.  Nothing prevents this...
+> Right at the moment, I maintain a <branch> and a <branch>-base and
+> simply cherry pick the commits between the two to do the right thing
+> when I know my volatile base has changed.  It would be very helpful to
+> have a version of rebase that new my base had been rebased.
 > 
-
-We're still saving the intent in the new policy->user_nodemask field so 
-any future rebinds will still allow unaccessible nodes be effected by the 
-mempolicy if the permissions are changed later.
-
-> If we just want to preserve existing behavior, we can define an
-> additional mode flag that we set in the sbinfo policy in
-> shmem_parse_mpol() and test in mpol_new().  If we want to be able to
-> specify existing or new behavior, we can use the same flag, but set it
-> or not based on an additional qualifier specified via the mount option.
+> Basing on a tree I know to be volatile is sometimes a development
+> decision I make as a downstream user ... I'm just wishing the tools
+> could help me handle the problems better.
 > 
+There's also a difference between a downstream user and a downstream
+developer. While rebasing does cause trouble for folks doing downstream
+development off of the tree in question, there's no reason why this
+should be the case for users that are simply trying to follow the tree.
 
-Shmem areas between cpusets with disjoint mems_allowed seems like an error 
-in userspace to me and I would prefer that mpol_new() reject it outright.
+I push changes out to my tree so people have a chance to poke through it
+and to see what's going on, though I do not generally encourage people to
+fork off of it given that I end up rebasing periodically. At the moment
+the options seem to be down to the following:
 
-> > @@ -218,21 +167,27 @@ static struct mempolicy *mpol_new(enum mempolicy_mode mode,
-> >  		return ERR_PTR(-ENOMEM);
-> >  	flags &= MPOL_MODE_FLAGS;
-> >  	atomic_set(&policy->refcnt, 1);
-> > +	cpuset_update_task_memory_state();
-> > +	nodes_and(cpuset_context_nmask, *nodes, cpuset_current_mems_allowed);
-> >  	switch (mode) {
-> >  	case MPOL_INTERLEAVE:
-> > -		policy->v.nodes = *nodes;
-> > +		if (nodes_empty(*nodes))
-> > +			return ERR_PTR(-EINVAL);
-> > +		policy->v.nodes = cpuset_context_nmask;
-> >  		if (nodes_weight(policy->v.nodes) == 0) {
-> >  			kmem_cache_free(policy_cache, policy);
-> >  			return ERR_PTR(-EINVAL);
-> >  		}
-> >  		break;
-> >  	case MPOL_PREFERRED:
-> > -		policy->v.preferred_node = first_node(*nodes);
-> > +		policy->v.preferred_node = first_node(cpuset_context_nmask);
-> >  		if (policy->v.preferred_node >= MAX_NUMNODES)
-> >  			policy->v.preferred_node = -1;
-> >  		break;
-> >  	case MPOL_BIND:
-> > -		policy->v.zonelist = bind_zonelist(nodes);
-> > +		if (nodes_empty(*nodes))
-> 
-> Kosaki-san already pointed out the need to free the policy struct
-> here.  
-> 
+	1 - Push changes out without rebasing
+	2 - Push changes out periodically rebased
+	3 - Hide the tree away in my home directory on hera
+	4 - Force people to get at the current tree through -mm
 
-I folded your fix to have only one
+4) generally isn't very realistic, given that -mm releases have far too
+many other changes and the releases are quite spread out. 3) is doable,
+but I publish the tree as a convenience to the folks wanting to see
+what's going on in the tree, and I would rather continue doing so.
 
-	kmem_cache_free(policy_cache, policy); 
-	return ERR_PTR(error_code);
+This leaves 2) my current workflow, and 1) which ends up creating a
+lot of extra metadata. The common cases thelre are patches + reversions
+and merge points. Holding on to a patch for some period of time before
+pushing it out to ensure that there won't be a reversion later rarely
+tends to work in practice. Most of the time I end up having to revert
+something it's because someone else found a problem with a given change
+_after_ the it was pushed out, and which was not caught with my local
+tree or testing.
 
-point in mpol_new().
+On the other hand, perhaps it's also useful to see the reversions in the
+history, particularly to see what the rationale for the change not
+working out was (which could be helpful for people working on the same
+stuff later on).
 
-> > @@ -1780,51 +1737,67 @@ static void mpol_rebind_policy(struct mempolicy *pol,
-> >  	if (nodes_equal(*mpolmask, *newmask))
-> >  		return;
-> >  
-> > +	remap = !(mpol_flags(pol->policy) & MPOL_F_STATIC_NODES);
-> >  	switch (mpol_mode(pol->policy)) {
-> >  	case MPOL_DEFAULT:
-> >  		break;
-> >  	case MPOL_INTERLEAVE:
-> > -		nodes_remap(tmp, pol->v.nodes, *mpolmask, *newmask);
-> > +		if (!remap)
-> > +			nodes_and(tmp, pol->user_nodemask, *newmask);
-> > +		else
-> > +			nodes_remap(tmp, pol->v.nodes, *mpolmask, *newmask);
-> >  		pol->v.nodes = tmp;
-> > -		*mpolmask = *newmask;
-> > -		current->il_next = node_remap(current->il_next,
-> > -						*mpolmask, *newmask);
-> > +		if (!node_isset(current->il_next, tmp)) {
-> > +			current->il_next = next_node(current->il_next, tmp);
-> > +			if (current->il_next >= MAX_NUMNODES)
-> > +				current->il_next = first_node(tmp);
-> > +			if (current->il_next >= MAX_NUMNODES)
-> > +				current->il_next = numa_node_id();
-> > +		}
-> >  		break;
-> >  	case MPOL_PREFERRED:
-> > -		pol->v.preferred_node = node_remap(pol->v.preferred_node,
-> > -						*mpolmask, *newmask);
-> > -		*mpolmask = *newmask;
-> > +		if (!remap && !node_isset(pol->v.preferred_node, *newmask))
-> > +			pol->v.preferred_node = -1;
-> > +		else
-> > +			pol->v.preferred_node = node_remap(pol->v.preferred_node,
-> > +							*mpolmask, *newmask);
-> 
-> Note:  "local allocation" [MPOL_PREFERRED with preferred_node == -1]
-> does not need and, IMO, should not be remapped.  Current code doesn't
-> check for this, but I think that it will do the right thing because
-> node_remap() will not remap an invalid node id.  However, I think it's
-> cleaner to explicitly check in the code.  I have a pending
-> MPOL_PREFERRED cleanup patch that address this.
-> 
-> That being said, I don't understand what you're trying to do with the
-> "then" clause, or rather, why.  Looks like you're explicitly dropping
-> back to local allocation?  Would you/could you add a comment explaining
-> the "intent"?
-> 
+This then leaves merge points. During merge window time people are
+pulling on a pretty frequent basis, which also breaks down to a few
+fairly common cases:
 
-Since we're allowed to remap the node to a different node than the user 
-specified with either syscall, the current behavior is that "one node is 
-as good as another."  In other words, we're trying to accomodate the mode 
-first by setting pol->v.preferred_node to some accessible node and only 
-setting that to the user-supplied node if it is available.
+	1 - Bringing in new stuff to be supported (ie, system calls).
+	2 - Infrastructure support bits that have gone in through a
+	    subsystem tree, when you have local patches blocked until the
+	    subsystem tree has merge.
+	3 - Catching and resolving conflicts before bisect gets broken.
+	4 - Trying to make sure that it all merges cleanly.
 
-If the node isn't available and the user specifically asked that it is not 
-remapped (with MPOL_F_STATIC_NODES), then I felt local allocation was best 
-compared to remapping to a node that may be unrelated to the VMA or task.  
-This preserves a sense of the current behavior that "one node is as good 
-as another," but the user specifically asked for no remap.
+I've generally worked around 2) by doing multiple merges during the merge
+window, but it's also appealing to just rebase and throw in the rest of
+the outstanding bits before sending out the initial merge request.
 
-> >  		break;
-> >  	case MPOL_BIND: {
-> > -		nodemask_t nodes;
-> > -		struct zone **z;
-> > -		struct zonelist *zonelist;
-> > -
-> > -		nodes_clear(nodes);
-> > -		for (z = pol->v.zonelist->zones; *z; z++)
-> > -			node_set(zone_to_nid(*z), nodes);
-> > -		nodes_remap(tmp, nodes, *mpolmask, *newmask);
-> > -		nodes = tmp;
-> > +		struct zonelist *zonelist = NULL;
-> > +
-> > +		if (!remap)
-> > +			nodes_and(tmp, pol->user_nodemask, *newmask);
-> > +		else {
-> > +			nodemask_t nodes;
-> > +			struct zone **z;
-> > +
-> > +			nodes_clear(nodes);
-> > +			for (z = pol->v.zonelist->zones; *z; z++)
-> > +				node_set(zone_to_nid(*z), nodes);
-> > +			nodes_remap(tmp, nodes, *mpolmask, *newmask);
-> > +		}
-> >  
-> > -		zonelist = bind_zonelist(&nodes);
-> > +		if (nodes_weight(tmp))
-> > +			zonelist = bind_zonelist(&tmp);
-> 
-> Not sure I understand what's going on here [nor with the comment below
-> about "falling thru'" to MPOL_DEFAULT means].  However, this area is
-> vastly simplified by Mel Gorman's "two zonelist" patch series.  He
-> replaces the zonelist with a nodemask, so _BIND can share the
-> _INTERLEAVE case code.
-> 
-> Suggest you consider basing atop those.  
-> 
+1) and 3) often tend to have dependencies on each other, and tend to be
+the area where the most troubles arise. 3) and 4) are really the places
+where rebasing appeals the most, and is also where we see the highest
+concentration of merge points.
 
-We'll have to see what the merge order turns out to be, because the 
-patchset you're referring to that modifies this in mm/mempolicy.c is not 
-currently in -mm.
-
-		David
+If there's a nice way to resolve this without a rebase that would be
+nice. For users in general, I suspect most people are just interested in
+a pull that can traverse a rebase without having them wipe the tree. Most
+users that are tracking a tree of interest seem to understand that a
+development tree is highly volatile during merge window time, and that
+they track the tree knowing that they will occasionally have to toss it
+and start over when it's rebased. Having a way to simplify this that
+doesn't create an additional maintenance burden would be ideal. I suspect
+that if people are never rebasing in publicly visible trees, we will
+simply see a shift to unpublished trees instead, which doesn't seem to be
+what anyone wants either.
