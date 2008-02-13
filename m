@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbYBMQWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932888AbYBMQXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932470AbYBMQWZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbYBMQWQ
+	id S932888AbYBMQXU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:23:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbYBMQW5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:22:16 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:60593 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755245AbYBMQWP (ORCPT
+	Wed, 13 Feb 2008 11:22:57 -0500
+Received: from emulex.emulex.com ([138.239.112.1]:33647 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755249AbYBMQWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:22:15 -0500
-Date: Wed, 13 Feb 2008 10:22:12 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 2/8] IPMI: Change device node ordering to reflect probe order
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, Carol Hebert <cah@us.ibm.com>,
-       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
-Reply-to: minyard@acm.org
-Message-id: <20080213162212.GB9830@minyard.local>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 13 Feb 2008 11:22:55 -0500
+Message-ID: <47B3194C.7070809@emulex.com>
+Date: Wed, 13 Feb 2008 11:22:36 -0500
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: ltuikov@yahoo.com, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
+Subject: Re: [PATCH] enclosure: add support for enclosure services
+References: <875344.96222.qm@web31808.mail.mud.yahoo.com>	 <47B2F9C3.8070207@emulex.com> <1202918691.3109.18.camel@localhost.localdomain>
+In-Reply-To: <1202918691.3109.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Feb 2008 16:22:37.0750 (UTC) FILETIME=[A5C8B560:01C86E5C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carol Hebert <cah@us.ibm.com>
+James Bottomley wrote:
+> I don't disagree with that, but the fact is that there isn't such a
+> tool.   It's also a fact that the enterprise is reasonably unhappy with
+> the lack of an enclosure management infrastructure, since it's something
+> they got on all the other unix systems.
 
-Currently, on systems with multiple BMC interfaces, the ipmi device
-names are being created in reverse order relative to how they are
-discovered on the system (e.g. on an IBM x3950 multinode server with N
-nodes, the device name for the BMC in the first node is /dev/ipmiN-1 and
-the device name for the BMC in the last node is /dev/ipmi0, etc.). The
-problem is caused by the list handling routines chosen in dmi_scan.c.
-Using list_add() causes the multiple ipmi devices to be added to the
-device list using a stack-paradigm and so the ipmi driver subsequently
-pulls them off during initialization in LIFO order.  This patch changes
-the dmi_save_ipmi_device() list handling paradigm to a queue, thereby
-allowing the ipmi driver to build the ipmi device names in the order in
-which they are found on the system.
+I don't disagree.
 
-Signed-off-by: Carol Hebert <cah@us.ibm.com>
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
----
+> I think a minimal infrastructure in-kernel does just about everything
+> the enterprise wants ... and since it's stateless, they can always use
+> direct connect tools in addition.
+> 
+> However, I'm happy to be proven wrong ... anyone on this thread is
+> welcome to come up with a userland enclosure infrastructure.  Once it
+> does everything the in-kernel one does (which is really about the
+> minimal possible set), I'll be glad to erase the in-kernel one.
 
---- linux-2.6.24.orig/drivers/firmware/dmi_scan.c	2008-01-30 11:21:55.000000000 -0800
-+++ linux-2.6.24/drivers/firmware/dmi_scan.c	2008-01-30 11:18:05.000000000 -0800
-@@ -219,7 +219,7 @@ static void __init dmi_save_ipmi_device(
- 	dev->name = "IPMI controller";
- 	dev->device_data = data;
- 
--	list_add(&dev->list, &dmi_devices);
-+	list_add_tail(&dev->list, &dmi_devices);
- }
- 
- /*
+yeah, but...  putting something new in, only to pull it later, is a bad
+paradigm for adding new mgmt interfaces. Believe me, I've felt users pain in
+the reverse flow : driver-specific stuff that then has to migrate to upstream
+interfaces, complicated by different pull points by different distros. You can
+migrate a management interface, but can you really remove/pull one out ?
 
+Isn't it better to let the lack of an interface give motivation to create
+the "right" interface, once the "right way" is determined - which is what I
+thought we were discussing ?    or is this simply that there is no motivation
+until something exists, that people don't like, thus they become motivated ?
+
+-- james s
