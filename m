@@ -1,121 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbYBMG4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYBMG56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbYBMG4s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 01:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbYBMG4h
+	id S1757530AbYBMG56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 01:57:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbYBMG5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 01:56:37 -0500
-Received: from sif.is.scarlet.be ([193.74.71.28]:45062 "EHLO sif.is.scarlet.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752037AbYBMG4g convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 01:57:47 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60344 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751913AbYBMG5q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 01:56:36 -0500
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 01:56:36 EST
-Date: Wed, 13 Feb 2008 07:49:12 +0100
-Message-Id: <JW60A0$CF80A6CA85E28806A3D1EDDACE158868@scarlet.be>
-Subject: Re: parisc compile error
+	Wed, 13 Feb 2008 01:57:46 -0500
+Date: Tue, 12 Feb 2008 23:02:15 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] split up feature-removal-schedule.txt
+Message-ID: <20080213070215.GA11969@kroah.com>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: "rubisher" <rubi.sher@scarlet.be>
-To: "kyle" <kyle@mcmartin.ca>
-Cc: "clameter" <clameter@sgi.com>, "kyle" <kyle@mcmartin.ca>,
-       "bunk" <bunk@kernel.org>, "kyle" <kyle@parisc-linux.org>,
-       "matthew" <matthew@wil.cx>, "grundler" <grundler@parisc-linux.org>,
-       "linux-parisc" <linux-parisc@vger.kernel.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "rubisher" <rubisher@scarlet.be>
-X-XaM3-API-Version: 4.1 (B54)
-X-type: 0
-X-SenderIP: 57.67.177.33
-X-DCC-scarlet.be-Metrics: sif; whitelist
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, Feb 07, 2008 at 03:33:07PM -0800, Christoph Lameter wrote:
-> > On Thu, 7 Feb 2008, Kyle McMartin wrote:
-> > 
-> > > yes, it's in my batch of fixes.
-> > 
-> > <big sigh of relief> So I do not have to worry about it?
-> > 
-> 
-> haha no. i don't expect people to have to untangle the mess of includes
-> that is <asm-parisc/*.h> :)
-> 
-> cheers, kyle
-> -
-This move to define those symbol before including linux/mm.h seems to make the
-drill:
---- include/asm-parisc/pgtable.h.Orig	2007-10-22 08:19:20.000000000 +0000
-+++ include/asm-parisc/pgtable.h	2008-02-12 16:28:36.000000000 +0000
-@@ -10,6 +10,12 @@
-  * we simulate an x86-style page table for the linux mm code
-  */
- 
-+extern  void *vmalloc_start;
-+#define PCXL_DMA_MAP_SIZE   (8*1024*1024)
-+#define VMALLOC_START   ((unsigned long)vmalloc_start)
-+/* this is a fixmap remnant, see fixmap.h */
-+#define VMALLOC_END	(KERNEL_MAP_END)
-+
- #include <linux/mm.h>		/* for vm_area_struct */
- #include <linux/bitops.h>
- #include <asm/processor.h>
-@@ -116,14 +122,6 @@
- 
- #define FIRST_USER_ADDRESS	0
- 
--#ifndef __ASSEMBLY__
--extern  void *vmalloc_start;
--#define PCXL_DMA_MAP_SIZE   (8*1024*1024)
--#define VMALLOC_START   ((unsigned long)vmalloc_start)
--/* this is a fixmap remnant, see fixmap.h */
--#define VMALLOC_END	(KERNEL_MAP_END)
--#endif
--
- /* NB: The tlb miss handlers make certain assumptions about the order */
- /*     of the following bits, so be careful (One example, bits 25-31  */
- /*     are moved together in one instruction).                        */
-=== <> ====
+In the big "linux-next" series of emails, David Miller suggested that
+the feature-removal-schedule file be broken up into little pieces, as it
+is causing merge problems for different trees.
 
-But next compile error appears there:
+This changeset does just that.  Turns out that this makes things more
+readable, as it's easier to look at a list of filenames for things than
+picking through a 300 line text file.
 
-In file included from
-/CAD/linux-2.6.25-rc1-pa-git-20080212/arch/parisc/mm/init.c:26:
-include2/asm/pgalloc.h:142: error: conflicting types for 'pte_free_kernel'
-include2/asm/pgalloc.h:137: error: previous definition of 'pte_free_kernel'
-was here
-include2/asm/pgalloc.h: In function 'pte_free_kernel':
-include2/asm/pgalloc.h:144: error: expected ')' before ';' token
-include2/asm/pgalloc.h:145: error: too few arguments to function 'pte_free_kernel'
-include2/asm/pgalloc.h:145: error: expected ';' before '}' token
-make[2]: *** [arch/parisc/mm/init.o] Error 1
-make[1]: *** [arch/parisc/mm] Error 2
-make: *** [sub-make] Error 2
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
 
+thanks,
 
-and in include/asm-parisc/pgalloc.h we can read:
+greg k-h
 
-static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
-{
-        free_page((unsigned long)pte);
-}
+--------
 
-static inline void pte_free_kernel(struct mm_struct *mm, struct page *pte)
-{
-        pgtable_page_dtor(pte);
-        pte_free_kernel(page_address((pte));
-}
+ Documentation/feature-removal-schedule.txt                                        |  308 ----------
+ Documentation/feature-removal-schedule/README                                     |   16 
+ Documentation/feature-removal-schedule/acpi-procfs                                |    6 
+ Documentation/feature-removal-schedule/b43_support_for_old_firmware               |    6 
+ Documentation/feature-removal-schedule/bcm43xx-wireless-driver                    |    6 
+ Documentation/feature-removal-schedule/dev-power.power_state                      |   10 
+ Documentation/feature-removal-schedule/eepro100-driver                            |    4 
+ Documentation/feature-removal-schedule/i2c-i810_i2c-prosavage_i2c-savage4_drivers |    4 
+ Documentation/feature-removal-schedule/i386-x86_65-bzImage-symlinks               |    7 
+ Documentation/feature-removal-schedule/ieee80211-softmac                          |    5 
+ Documentation/feature-removal-schedule/kernel_thread_EXPORT_SYMBOL                |    9 
+ Documentation/feature-removal-schedule/libata-spindown-warning                    |   15 
+ Documentation/feature-removal-schedule/netfilter-rules                            |   29 
+ Documentation/feature-removal-schedule/old_ncr54c9_driver                         |    6 
+ Documentation/feature-removal-schedule/pcmcia-control-ioctl                       |   14 
+ Documentation/feature-removal-schedule/ppc-arch-include-directories               |   10 
+ Documentation/feature-removal-schedule/proc-acpi-button                           |    5 
+ Documentation/feature-removal-schedule/proc-acpi-event                            |    5 
+ Documentation/feature-removal-schedule/rc80211-simple-rate-control-for-mac80211   |    7 
+ Documentation/feature-removal-schedule/sk98lin-driver                             |    5 
+ Documentation/feature-removal-schedule/solaris_syscall_support                    |    8 
+ Documentation/feature-removal-schedule/sys_sysctl                                 |   32 +
+ Documentation/feature-removal-schedule/uevent_PHYSDEV                             |    7 
+ Documentation/feature-removal-schedule/unused_EXPORT_SYMBOL_exports               |    7 
+ Documentation/feature-removal-schedule/vfl1-ioctls                                |   16 
+ Documentation/feature-removal-schedule/vm_ops.nopage                              |    6 
+ 26 files changed, 245 insertions(+), 308 deletions(-)
 
-i.e. 2 time the definition of the same function: which is the right definition?
+---------------
 
-Cheers,
-    r.
-
----
-Scarlet One, ADSL 6 Mbps + Telephone, from EUR 29,95...
-http://www.scarlet.be/
+Greg Kroah-Hartman (1):
+      Split up feature-removal-schedule.txt into individual files.
 
