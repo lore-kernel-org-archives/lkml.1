@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933445AbYBMQuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933450AbYBMQv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933445AbYBMQuj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 11:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbYBMQt4
+	id S933450AbYBMQv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 11:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758887AbYBMQvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 11:49:56 -0500
-Received: from emulex.emulex.com ([138.239.112.1]:36365 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933154AbYBMQtt (ORCPT
+	Wed, 13 Feb 2008 11:51:44 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:46665 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760558AbYBMQvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 11:49:49 -0500
-Message-ID: <47B31F9F.7020009@emulex.com>
-Date: Wed, 13 Feb 2008 11:49:35 -0500
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 13 Feb 2008 11:51:42 -0500
+Message-ID: <47B31FC2.4040206@panasas.com>
+Date: Wed, 13 Feb 2008 18:50:10 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
 To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: ltuikov@yahoo.com, Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>, jeff@garzik.org
-Subject: Re: [PATCH] enclosure: add support for enclosure services
-References: <875344.96222.qm@web31808.mail.mud.yahoo.com>	 <47B2F9C3.8070207@emulex.com>	 <1202918691.3109.18.camel@localhost.localdomain>	 <47B3194C.7070809@emulex.com> <1202921006.3109.29.camel@localhost.localdomain>
-In-Reply-To: <1202921006.3109.29.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com> <1202921122.3109.31.camel@localhost.localdomain>
+In-Reply-To: <1202921122.3109.31.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Feb 2008 16:49:36.0781 (UTC) FILETIME=[6ACD3BD0:01C86E60]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> ...  I wouldn't have bothered except that I could see ad-hoc
-> in-kernel sysfs solutions beginning to appear.
+On Wed, Feb 13 2008 at 18:45 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Wed, 2008-02-13 at 18:33 +0200, Boaz Harrosh wrote:
+>> On Wed, Feb 13 2008 at 17:54 +0200, Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>> On Wed, Feb 13 2008 at 17:44 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+>>>> On Tue, 2008-02-12 at 19:40 +0200, Boaz Harrosh wrote:
+>>>>> -	gdth_flush(ha);
+>>>>> -
+>>>> This piece doesn't look right.  gdth_flush() forces the internal cache
+>>>> to disk backing.  If you remove it, you're taking the chance that the
+>>>> machine will be powered off without a writeback which can cause data
+>>>> corruption.
+>>>>
+>>>> James
+>>>>
+>>> Yes. 
+>>> I have more problems reported, with exit, and am just sending one more patch that puts
+>>> this back in. Which was tested.
+>>>
+>>> So I will resend this one plus one new one.
+>>>
+>>> Boaz
+>>>
+>> The gdth driver would do a register_reboot_notifier(&gdth_notifier);
+>> to a gdth_halt() function, which would then redo half of what gdth_exit
+>> does, and wrongly so, and crash.  
+>>
+>> Are we guaranteed in todays kernel that modules .exit function be called
+>> on an halt or reboot? If so then there is no need for duplications and
+>> the gdth_halt() should go.
+> 
+> No.  The __exit section is actually discardable if you promise never to
+> remove the module.
+> 
+I don't understand please explain. 
+What does a driver need to do if it needs a consistent shutdown retine?
+module or built in? unload or shutdown?
 
-If this is true, and if no one quickly volunteers to do the utility, then
-I agree with what you are doing.
 
--- james s
+> James
+> 
+> 
 
