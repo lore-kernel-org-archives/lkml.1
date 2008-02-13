@@ -1,58 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbYBMPbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765625AbYBMPcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763390AbYBMPbz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 10:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbYBMPbr
+	id S1765625AbYBMPcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 10:32:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbYBMPco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 10:31:47 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:4682 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432AbYBMPbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 10:31:46 -0500
-Date: Wed, 13 Feb 2008 10:06:16 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, bfields@fieldses.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080213150616.GB31839@tuxdriver.com>
-References: <20080212.173817.111913348.davem@davemloft.net> <alpine.LFD.1.00.0802121743400.2920@woody.linux-foundation.org> <20080212180613.a1a07264.akpm@linux-foundation.org> <20080212.182012.153642549.davem@davemloft.net> <20080213024730.GA8798@mail.oracle.com>
+	Wed, 13 Feb 2008 10:32:44 -0500
+Received: from astoria.ccjclearline.com ([64.235.106.9]:45556 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752384AbYBMPcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 10:32:43 -0500
+Date: Wed, 13 Feb 2008 10:32:35 -0500 (EST)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Josh Boyer <jwboyer@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       viro@zeniv.linux.org.uk
+Subject: Re: latest list of unused Kconfig variables
+In-Reply-To: <20080213151628.GA10915@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.1.00.0802131031040.30876@localhost.localdomain>
+References: <alpine.LFD.1.00.0802130353530.31183@localhost.localdomain> <20080213073242.5c069c25@zod.rchland.ibm.com> <alpine.LFD.1.00.0802131002310.28617@localhost.localdomain> <20080213151628.GA10915@uranus.ravnborg.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213024730.GA8798@mail.oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 06:47:30PM -0800, Joel Becker wrote:
+On Wed, 13 Feb 2008, Sam Ravnborg wrote:
 
-> 	Make the distinction earlier.  With ocfs2 and configfs (we got
-> this scheme from Jeff), we keep the topic branches as "unsafe" - that
-> is, officially rebaseable .  We merge them all into a big "ALL" branch,
-> which is also "unsafe".  Andrew pulls this for -mm, and it gets tested 
-> here.  If there is a brown-paper-bag problem, we can tell the original
-> author to fix it.  Then we re-pull the topic - effectively a rebase.
-> The ALL is also rebased.  But that's Ok, it will never go towards Linus.
-> 	When a topic is considered worthy of going upstream, we pull it
-> to a branch called "upstream-linus".  This branch is *NEVER* rebased.
-> Now that the topic is in upstream-linus, the original topic branch can't
-> be rebased either.  So any fixes to that topic going forward will stay
-> in the history.  Since that topic was pulled into ALL for testing, we
-> are using the identical commits that got tested.
+> On Wed, Feb 13, 2008 at 10:07:27AM -0500, Robert P. J. Day wrote:
+> > On Wed, 13 Feb 2008, Josh Boyer wrote:
+> >
+> > > On Wed, 13 Feb 2008 03:56:34 -0500 (EST)
+> > > "Robert P. J. Day" <rpjday@crashcourse.ca> wrote:
+> >
+> > > >   now that 2.6.25-rc1 is out, i can start updating the output from
+> > > > my scanning scripts.  the first updated output is the list of
+> > > > currently unused Kconfig variables -- variables that are defined
+> > > > in some Kconfig file somewhere but appear to be entirely unused
+> > > > throughout the source tree.
+> > > >
+> > > >   latest output here, sorted by architecture:
+> > > >
+> > > > http://www.crashcourse.ca/wiki/index.php/Unused_CONFIG_variables
+> > > >
+> > > > as always, there will probably be some false positives for one
+> > > > reason or another.
+> > > >
+> > > >   output from the other scanning scripts will be up in short order.
+> > >
+> > > You have lots of false positives (or something) for arch/powerpc.
+> > > Seems your script picked up #define names and comments that happen
+> > > to match a Kconfig variable?
+> >
+> > it always will, given the proclivity of some folks to define their own
+> > variables with a "CONFIG_" prefix.  as i point out on the wiki page, i
+> > make no attempt to cull that list, i just print it as is, and readers
+> > will have to peruse the list carefully to see what's meaningful and
+> > what isn't.
+>
+> CONFIG_* should in the kernel be assumed a reserved namespace for
+> kconifg. So any use of variables/defines named CONFIG_* which is not
+> a kconfig symbol is a bug.
 
-This is essentially the same process I've been using in wireless-2.6
-with the (regularly rebased) 'everything' branch.  Still I find
-that it causes lots of confusion and complaining.  Perhaps I am not
-communicating clearly enough... :-)
+heh ... good luck with *that*:
 
-Do you find that people are happy with that process?  Forgive me for
-not knowing, but how many developers are actively (or occasionaly)
-involved in ocfs2 and configfs?  How many 'normal' users pull your
-tree looking for 'latest and greatest' code?
+$ grep -r "^#define CONFIG_" * | wc -l
+752
+$
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+rday
+--
+
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry:
+    Have classroom, will lecture.
+
+http://crashcourse.ca                          Waterloo, Ontario, CANADA
+========================================================================
