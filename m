@@ -1,105 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933722AbYBMRG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933661AbYBMRGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933722AbYBMRG0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 12:06:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933922AbYBMRFI
+	id S933661AbYBMRGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 12:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933089AbYBMRFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 12:05:08 -0500
-Received: from igraine.blacknight.ie ([81.17.252.25]:60058 "EHLO
-	igraine.blacknight.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933165AbYBMRFD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 12:05:03 -0500
-X-Greylist: delayed 1520 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 12:05:01 EST
-Date: Wed, 13 Feb 2008 16:38:11 +0000
-From: Robert Fitzsimons <robfitz@273k.net>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] bttv: Fix overlay divide error.
-Message-ID: <20080213163634.GA2798@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-blacknight-igraine-MailScanner-Information: Please contact the ISP for more information
-X-MailScanner-ID: 1JPKcX-00021c-0L
-X-blacknight-igraine-MailScanner: Found to be clean
-X-blacknight-igraine-MailScanner-SpamCheck: not spam,
-	SpamAssassin (not cached, score=3.699, required 7,
-	autolearn=disabled, HELO_LOCALHOST 4.50, RCVD_IN_NERDS_IE -3.50,
-	RDNS_NONE 0.10, SARE_BAYES_5x8 0.80, SARE_BAYES_6x8 0.80,
-	SARE_BAYES_7x8 1.00)
-X-blacknight-igraine-MailScanner-SpamScore: sss
-X-MailScanner-From: robfitz@273k.net
+	Wed, 13 Feb 2008 12:05:10 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:57031 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933346AbYBMRFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 12:05:05 -0500
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Thomas Klein <tklein@de.ibm.com>,
+       "Themann, Jan-Bernd" <themann@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, apw <apw@uk.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Klein <osstklei@de.ibm.com>,
+       Christoph Raisch <RAISCH@de.ibm.com>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Greg KH <greg@kroah.com>
+In-Reply-To: <200802131617.58646.ossthema@de.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+	 <1202748429.8276.21.camel@nimitz.home.sr71.net>
+	 <200802131617.58646.ossthema@de.ibm.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 09:05:00 -0800
+Message-Id: <1202922300.25500.37.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The initial work to convert the bttv driver to V4L2 "Partial conversion
-from V4L1 to V4L2" (e84619b17440ccca4e4db7583d126c4189b987e5), missed
-the line which set the appropriate overlay crop structure in the newly
-allocated bttv_buffer.  This then causes a divide error in the
-bttv_calc_geo function.
+On Wed, 2008-02-13 at 16:17 +0100, Jan-Bernd Themann wrote:
+> Constraints imposed by HW / FW:
+> - eHEA has own MMU
+> - eHEA  Memory Regions (MRs) are used by the eHEA MMU  to translate virtual
+>   addresses to absolute addresses (like DMA mapped memory on a PCI bus)
+> - The number of MRs is limited (not enough to have one MR per packet)
 
-Signed-off-by: Robert Fitzsimons <robfitz@273k.net>
----
- drivers/media/video/bt8xx/bttv-driver.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Are there enough to have one per 16MB section?
 
-Hi Mauro
+> Our current understanding about the current Memory Hotplug System are
+> (please correct me if I'm wrong):
+> 
+> - depends on sparse mem
 
-This patch against Linus's git tree fixes an overlay regression in the
-bttv driver in 2.6.25-rc1.
+You're wrong ;).  In mainline, this is true.  There was a version of the
+SUSE kernel that did otherwise.  But you can not and should not depend
+on this never changing.  But, someone is perfectly free to go out an
+implement something better than sparsemem for memory hotplug.  If they
+go and do this, your driver may get left behind. 
 
-Robert
+> - only whole memory sections are added / removed
+> - for each section a memory resource is registered
 
- divide error: 0000 [#1]
- Modules linked in: usbhid hid ipt_MASQUERADE iptable_nat nf_nat ipt_LOG xt_limit xt_tcpudp nf_conntrack_ipv4 xt_state nf_conntrack iptable_filter ip_tables x_tables pppoe pppox ppp_generic slhc ipv6 tuner tea5767 tda8290 tda18271 tda827x tuner_xc2028 xc5000 tda9887 tuner_simple mt20xx tea5761 tvaudio msp3400 bttv videodev v4l1_compat ir_common compat_ioctl32 i2c_algo_bit v4l2_common videobuf_dma_sg videobuf_core btcx_risc tveeprom pcspkr i2c_core snd_bt87x ehci_hcd uhci_hcd sg usbcore sr_mod
+True, and true. (There might be exceptions to the whole sections one,
+but that's blatant abuse and should be fixed. :)
 
- Pid: 8691, comm: xawtv.bin Not tainted (2.6.25-rc1-00051-g96b5a46 #9)
- EIP: 0060:[<e0addeb5>] EFLAGS: 00210246 CPU: 0
- EIP is at bttv_calc_geo+0x1a5/0x287 [bttv]
- EAX: 00000000 EBX: 00000180 ECX: 00000000 EDX: 00000000
- ESI: 00000000 EDI: cbcc12a0 EBP: b8239dd8 ESP: b8239d98
-  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
- Process xawtv.bin (pid: 8691, ti=b8239000 task=b71c5000 task.ti=b8239000)
- Stack: 00000000 cbcc107c 00000000 e0af708c 81979820 0000002a 00200297 b8239de0
-        00000000 00000004 000000d0 00000054 803c028c 9a6ee4d8 00000000 e0ae3b90
-        b8239e04 e0ade946 00000120 00000000 e0ae3708 cbcc12d4 e0af708c 00000000
- Call Trace:
-  [<e0ade946>] ? bttv_overlay_risc+0x98/0x12d [bttv]
-  [<e0adb60b>] ? bttv_overlay+0xa6/0xcd [bttv]
-  [<e09914af>] ? __video_do_ioctl+0x1076/0x2b48 [videodev]
-  [<80143e1d>] ? slob_page_alloc+0x144/0x19e
-  [<e099320e>] ? video_ioctl2+0x19f/0x24b [videodev]
-  [<80120a3a>] ? autoremove_wake_function+0x0/0x30
-  [<801230b4>] ? ktime_get+0x13/0x2f
-  [<802bc933>] ? unix_ioctl+0x83/0x8c
-  [<8027c46a>] ? sock_ioctl+0x1aa/0x1cb
-  [<e099306f>] ? video_ioctl2+0x0/0x24b [videodev]
-  [<8014eaa4>] ? vfs_ioctl+0x3c/0x4f
-  [<8014ecae>] ? do_vfs_ioctl+0x1f7/0x205
-  [<8019dae6>] ? copy_to_user+0x2a/0x34
-  [<8014ece8>] ? sys_ioctl+0x2c/0x48
-  [<801029b2>] ? syscall_call+0x7/0xb
-  =======================
- Code: 5f 04 0f 46 45 e0 d1 ea 89 45 e0 89 c8 c1 e0 0c 01 d0 31 d2 f7 f3 8b 55 14 66 2d 00 10 66 89 47 06 89 d8 0f af 02 31 d2 8d 04 01 <f7> f1 8b 4d e0 8b 55 10 66 89 4f 0a 83 e0 fe 66 89 45 ca 66 89
- EIP: [<e0addeb5>] bttv_calc_geo+0x1a5/0x287 [bttv] SS:ESP 0068:b8239d98
- ---[ end trace 588d2506a3db8987 ]---
+> From the driver side we need:
+> - some kind of memory notification mechanism.
+>   For memory add we can live without any external memory notification
+>   event. For memory remove we do need an external trigger (see explanation
+>   above).
 
+You can export and use (un)register_memory_notifier.  You just need to
+do it in a reasonable way that compiles for randconfig on your
+architecture.  Believe me, we don't want to start teaching drivers about
+sparsemem.  
 
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index 907dc62..c152b81 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -2760,6 +2760,7 @@ static int bttv_overlay(struct file *file, void *f, unsigned int on)
- 	if (on) {
- 		fh->ov.tvnorm = btv->tvnorm;
- 		new = videobuf_pci_alloc(sizeof(*new));
-+		new->crop = btv->crop[!!fh->do_crop].rect;
- 		bttv_overlay_risc(btv, &fh->ov, fh->ovfmt, new);
- 	} else {
- 		new = NULL;
--- 
-1.5.4.34.g053d9
+> - a way to iterate over all kernel pages and a way to detect holes in the
+>   kernel memory layout in order to build up our own ehea_bmap.
+
+Look at kernel/resource.c
+
+But, I'm really not convinced that you can actually keep this map
+yourselves.  It's not as simple as you think.  What happens if you get
+on an LPAR with two sections, one 256MB@0x0 and another
+16MB@0x1000000000000000.  That's quite possible.  I think your vmalloc'd
+array will eat all of memory.  
+
+That's why we have SPARSEMEM_EXTREME and SPARSEMEM_VMEMMAP implemented
+in the core, so that we can deal with these kinds of problems, once and
+*NOT* in every single little driver out there.  
+
+> Functions to use while building ehea_bmap + MRs:
+> - Use either the functions that are used by the memory hotplug system as
+>   well, that means using the section defines + functions (section_nr_to_pfn,
+>   pfn_valid)
+
+Basically, you can't use anything related to sections outside of the
+core code.  You can use things like pfn_valid(), or you can create new
+interfaces that are properly abstracted.  
+
+> - Use currently other not exported functions in kernel/resource.c, like
+>   walk_memory_resource (where we would still need the maximum possible number
+>   of pages NR_MEM_SECTIONS)
+
+It isn't the act of exporting that's the problem.  It's making sure that
+the exports won't be prone to abuse and that people are using them
+properly.  You should assume that you can export and use
+walk_memory_resource().
+
+Do you know what other operating systems do with this hardware?
+
+In the future, please make an effort to get review from knowledgeable
+people about these kinds of things before using them in your driver.
+Your company has many, many resources available, and all you need to do
+is ask.  All that you have to do is look to the tops of the files of the
+functions you are calling.
+
+-- Dave
 
