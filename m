@@ -1,54 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbYBMMtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbYBMMvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759439AbYBMMtv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 07:49:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753304AbYBMMtm
+	id S1760261AbYBMMvq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 07:51:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755227AbYBMMvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 07:49:42 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39247 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753157AbYBMMtl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 07:49:41 -0500
-Date: Wed, 13 Feb 2008 07:49:27 -0500
-From: Jakub Jelinek <jakub@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: asm-x86/sigcontext.h changes break userland
-Message-ID: <20080213124926.GM24887@devserv.devel.redhat.com>
-Reply-To: Jakub Jelinek <jakub@redhat.com>
-References: <20080213001532.GJ24887@devserv.devel.redhat.com> <20080213072650.GA4363@elte.hu>
+	Wed, 13 Feb 2008 07:51:38 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33795 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756111AbYBMMvh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 07:51:37 -0500
+Subject: Re: Regression in latest sched-git
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: vatsa@linux.vnet.ibm.com
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080213030035.GA3402@linux.vnet.ibm.com>
+References: <20080212185355.GA6320@linux.vnet.ibm.com>
+	 <1202845208.6247.82.camel@lappy> <20080213030035.GA3402@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 13:51:18 +0100
+Message-Id: <1202907078.20209.3.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080213072650.GA4363@elte.hu>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 08:26:50AM +0100, Ingo Molnar wrote:
+
+On Wed, 2008-02-13 at 08:30 +0530, Srivatsa Vaddagiri wrote:
+> On Tue, Feb 12, 2008 at 08:40:08PM +0100, Peter Zijlstra wrote:
+> > Yes, latency isolation is the one thing I had to sacrifice in order to
+> > get the normal latencies under control.
 > 
-> * Jakub Jelinek <jakub@redhat.com> wrote:
+> Hi Peter,
+> 	I don't have easy solution in mind either to meet both fairness
+> and latency goals in a acceptable way.
+
+Ah, do be careful with 'fairness' here. The single RQ is fair wrt cpu
+time, just not quite as 'fair' wrt to latency.
+
+> But I am puzzled at the max latency numbers you have provided below:
 > 
-> > x86: use generic register names in struct sigcontext 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=742fa54a62be6a263df14a553bf832724471dfbe
+> > The problem with the old code is that under light load: a kernel make
+> > -j2 as root, under an otherwise idle X session, generates latencies up
+> > to 120ms on my UP laptop. (uid grouping; two active users: peter, root).
+> 
+> If it was just two active users, then max latency should be:
+> 
+> 	latency to schedule user entity (~10ms?) +
+> 	latency to schedule task within that user 
+> 
+> 20-30 ms seems more reaonable max latency to expect in this scenario.
+> 120ms seems abnormal, unless the user had large number of tasks.
+> 
+> On the same lines, I cant understand how we can be seeing 700ms latency
+> (below) unless we had: large number of active groups/users and large number of 
+> tasks within each group/user.
+
+All I can say it that its trivial to reproduce these horrid latencies.
+
+As for Ingo's setup, the worst that he does is run distcc with (32?)
+instances on that machine - and I assume he has that user niced waay
+down.
+
+> > Others have reported latencies up to 300ms, and Ingo found a 700ms
+> > latency on his machine.
 > > 
-> > changeset breaks userland, e.g. it is not possible to compile gcc 
-> > anymore (both 32-bit and 64-bit libgcc), and I expect any other 
-> > program which pokes into struct sigcontext.  The register names with e 
-> > resp. r have been in use for years, what's the point breaking it now?
+> > The source for this problem is I think the vruntime driven wakeup
+> > preemption (but I'm not quite sure). The other things that rely on
+> > global vruntime are sleeper fairness and yield. Now while I can't
+> > possibly care less about yield, the loss of sleeper fairness is somewhat
+> > sad (NB. turning it off with the old group scheduling does improve life
+> > somewhat).
+> > 
+> > So my first attempt at getting a global vruntime was flattening the
+> > whole RQ structure, you can see that patch in sched.git (I really ought
+> > to have posted that, will do so tomorrow).
 > 
-> ok - does the patch below solve the problem for you?
+> We will do some exhaustive testing with this approach. My main concern
+> with this is that it may compromise the level of isolation between two
+> groups (imagine one group does a fork-bomb and how it would affect
+> fairness for other groups).
 
-Yes, this fixes it.  Thanks.
+Again, be careful with the fairness issue. CPU time should still be
+fair, but yes, other groups might experience some latencies.
 
-FYI, gcc uses glibc headers to get at struct sigcontext, but
-on i386 (and many other arches) glibc's <bits/sigcontext.h> just includes
-<asm/sigcontext.h>.  On x86_64, ia64 and sparc* glibc doesn't include
-asm/sigcontext.h, but provides its own definitions, so for gcc itself
-only changing 32-bit parts woiuld be enough.  That said, there are certainly
-programs which include asm/sigcontext.h directly (plus there are other c
-libraries, some of which may use asm/sigcontext.h).
 
-	Jakub
+
