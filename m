@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYBMFsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbYBMFsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYBMFsk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 00:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYBMFsb
+	id S1764853AbYBMFsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 00:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752167AbYBMFsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 00:48:31 -0500
-Received: from wr-out-0506.google.com ([64.233.184.238]:20109 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbYBMFsa (ORCPT
+	Wed, 13 Feb 2008 00:48:32 -0500
+Received: from numenor.qualcomm.com ([129.46.51.58]:47326 "EHLO
+	numenor.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751807AbYBMFsb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 00:48:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FTTGSBEbaEUUcA4k0nHUXEDAo0fWEEY+ufvdBcbKJwy2n0YxDQU95G6lBKCDF/FCuc7Qv/ajmv7zFaek9VF+0dMu6NpOIYg1buvb7EIZfr1XMmaIKa4etvNSqvCqJ56B/NwdH3mlxWGakggA30igKt68ta1FQA7WgynfOcnrKaA=
-Message-ID: <804dabb00802122148l6ee5b3au62367a8422b878cc@mail.gmail.com>
-Date: Wed, 13 Feb 2008 13:48:28 +0800
-From: "Peter Teoh" <htmldeveloper@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: Documentation about sysfs/procfs entries
-Cc: "Mulyadi Santosa" <mulyadi.santosa@gmail.com>,
-       "Scott Lovenberg" <scott.lovenberg@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       kernelnewbies <kernelnewbies@nl.linux.org>,
-       "Rik van Riel" <riel@redhat.com>
-In-Reply-To: <20080212204348.4a858650.randy.dunlap@oracle.com>
+	Wed, 13 Feb 2008 00:48:31 -0500
+Message-ID: <47B28473.9070605@qualcomm.com>
+Date: Tue, 12 Feb 2008 21:47:31 -0800
+From: Max Krasnyansky <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>, gregkh@suse.de,
+       Rusty Russell <rusty@rustcorp.com.au>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull for -mm] CPU isolation extensions (updated2)
+References: <47B11C45.6060408@qualcomm.com> <1202842788.6247.58.camel@lappy> <Pine.LNX.4.58.0802122335530.30573@gandalf.stny.rr.com>
+In-Reply-To: <Pine.LNX.4.58.0802122335530.30573@gandalf.stny.rr.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <804dabb00802112123t774623b2n3e1e0a4addde1512@mail.gmail.com>
-	 <b1fc6a560802112217j57ab3fa1h611864a6a2423943@mail.gmail.com>
-	 <804dabb00802112346q240745abm93b6257f2cd64e60@mail.gmail.com>
-	 <47B15DD2.3090706@gmail.com>
-	 <f284c33d0802121808v2e41b648u83070ac1f6f1bb2a@mail.gmail.com>
-	 <20080212204348.4a858650.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/13/08, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Wed, 13 Feb 2008 09:08:12 +0700 Mulyadi Santosa wrote:
->
-> > Hi all...
-> >
-> > Here's my idea: what if we collaborate to extend and make the kernel
-> > documentation better? I have done (slow) start by editing profile=
-> > kernel param. It's not accepted by Adrian Bunk, but at least I did it.
-> > Feedback?
->
-> Adrian is no longer the trivial patch maintainer.
-> Did you send the patch to trivial@kernel.org ?
->
-> Any doc additions or improvements would be appreciated.
-> I'll be glad to help get them merged...
->
-> ---
-> ~Randy
->
 
-Ok, I will do something.....thanks for the info.
+
+Steven Rostedt wrote:
+> On Tue, 12 Feb 2008, Peter Zijlstra wrote:
+>>> Rusty - Stop machine.
+>>>    After doing a bunch of testing last three days I actually downgraded stop machine
+>>>    changes from [highly experimental] to simply [experimental]. Pleas see this thread
+>>>    for more info: http://marc.info/?l=linux-kernel&m=120243837206248&w=2
+>>>    Short story is that I ran several insmod/rmmod workloads on live multi-core boxes
+>>>    with stop machine _completely_ disabled and did no see any issues. Rusty did not get
+>>>    a chance to reply yet, I hopping that we'll be able to make "stop machine" completely
+>>>    optional for some configurations.
+> 
+> This part really scares me. The comment that you say you have run several
+> insmod/rmmod workloads without kstop_machine doesn't mean that it is still
+> safe. A lot of races that things like this protect may only happen under
+> load once a month. But the fact that it happens at all is reason to have
+> the protection.
+> 
+> Before taking out any protection, please analyze it in detail and report
+> your findings why something is not needed. Not just some general hand
+> waving and "it doesn't crash on my box".
+Sure. I did not say lets disable it. I was hopping we could and I wanted to see what Rusty 
+Russell has to say about this.
+
+> Besides that, kstop_machine may be used by other features that can have an
+> impact.
+Yes it is. I missed a few. Nick and Dave already pointed out CPU hotplug. 
+I looked around and found more users. So disabling stop machine completely is definitely out.
+
+> Again, if you have a system that cant handle things like kstop_machine,
+> than don't do things that require a kstop_machine run. All modules should
+> be loaded, and no new modules should be added when the system is
+> performing critical work. I see no reason for disabling kstop_machine.
+I'm considering that option. So far it does not seem practical. At least the way we use those
+machines at this point. If we can prove that at least not halting isolation CPUs is safe that'd
+be better.
+
+Max
