@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933675AbYBNPKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbYBNPKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933675AbYBNPKV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbYBNPJ4
+	id S933924AbYBNPKn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933785AbYBNPK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:09:56 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:33617 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751422AbYBNPJz (ORCPT
+	Thu, 14 Feb 2008 10:10:26 -0500
+Received: from py-out-1112.google.com ([64.233.166.181]:14367 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933727AbYBNPKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:09:55 -0500
-Message-ID: <47B45994.7010805@opengridcomputing.com>
-Date: Thu, 14 Feb 2008 09:09:08 -0600
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Thu, 14 Feb 2008 10:10:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=O8o18ZrUqFSzQ5DBwbDXX4vmeP4hymCWA13jjFsfmGIPf/s/NLeSP5w8G3AwAV0Wd/aHJKWM3tg3va4kmhyqrJoBcywMqWk/0sTszjcsu5ns7H6B3GFDO76Zr92v2yQfSjHejhIx3Tazd5vxrfuiLur7bwCOo8eFb1oPAp/d85k=
+Message-ID: <bc64b4640802140710n697ce2f4l23832bba073169c8@mail.gmail.com>
+Date: Thu, 14 Feb 2008 18:10:19 +0300
+From: Dmitry <dbaryshkov@gmail.com>
+To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
+Cc: "Dmitry Torokhov" <dtor@mail.ru>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       "Liam Girdwood" <liam.girdwood@wolfsonmicro.com>,
+       "Graeme Gregory" <gg@opensource.wolfsonmicro.com>,
+       "Mike Arthur" <mike.arthur@wolfsonmicro.com>,
+       "Stanley Cai" <stanley.cai@intel.com>,
+       "Rodolfo Giometti" <giometti@enneenne.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Pete MacKay" <linux01@architechnical.net>,
+       "Marc Kleine-Budde" <mkl@pengutronix.de>, "Ian Molton" <spyro@f2s.com>,
+       "Vincent Sanders" <vince@kyllikki.org>,
+       "Andrew Zabolotny" <zap@homelink.ru>
+In-Reply-To: <1202912042-2631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 MIME-Version: 1.0
-To: Felix Marti <felix@chelsio.com>
-CC: Roland Dreier <rdreier@cisco.com>, Christoph Lameter <clameter@sgi.com>,
-       Rik van Riel <riel@redhat.com>, steiner@sgi.com,
-       Andrea Arcangeli <andrea@qumranet.com>, a.p.zijlstra@chello.nl,
-       izike@qumranet.com, linux-kernel@vger.kernel.org, avi@qumranet.com,
-       linux-mm@kvack.org, daniel.blueman@quadrics.com,
-       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com><20080208234302.GH26564@sgi.com><20080208155641.2258ad2c.akpm@linux-foundation.org><Pine.LNX.4.64.0802081603430.4543@schroedinger.engr.sgi.com><adaprv70yyt.fsf@cisco.com><Pine.LNX.4.64.0802081614030.5115@schroedinger.engr.sgi.com><adalk5v0yi6.fsf@cisco.com><Pine.LNX.4.64.0802081634070.5298@schroedinger.engr.sgi.com><20080209012446.GB7051@v2.random><Pine.LNX.4.64.0802081725200.5445@schroedinger.engr.sgi.com><20080209015659.GC7051@v2.random><Pine.LNX.4.64.0802081813300.5602@schroedinger.engr.sgi.com><20080209075556.63062452@bree.surriel.com><Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com><ada3arzxgkz.fsf_-_@cisco.com><47B2174E.5000708@opengridcomputing.com><Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> <adazlu5vlub.fsf@cisco.com> <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>
-In-Reply-To: <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080213140648.GD31617@rakim.wolfsonmicro.main>
+	 <1202912042-2631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Felix Marti wrote:
+Hi,
 
-> 
-> That is correct, not a change we can make for T3. We could, in theory,
-> deal with changing mappings though. The change would need to be
-> synchronized though: the VM would need to tell us which mapping were
-> about to change and the driver would then need to disable DMA to/from
-> it, do the change and resume DMA.
-> 
+2008/2/13, Mark Brown <broonie@opensource.wolfsonmicro.com>:
+>  diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
+>  new file mode 100644
+>  index 0000000..f0d9fc0
+>  --- /dev/null
+>  +++ b/include/linux/wm97xx.h
+>  @@ -0,0 +1,308 @@
 
-Note that for T3, this involves suspending _all_ rdma connections that 
-are in the same PD as the MR being remapped.  This is because the driver 
-doesn't know who the application advertised the rkey/stag to.  So 
-without that knowledge, all connections that _might_ rdma into the MR 
-must be suspended.  If the MR was only setup for local access, then the 
-driver could track the connections with references to the MR and only 
-quiesce those connections.
+...
 
-Point being, it will stop probably all connections that an application 
-is using (assuming the application uses a single PD).
+>  +#define WM97XX_POLL            0x8000  /* initiate a polling measurement */
+>  +#define WM97XX_ADCSEL_X                0x1000  /* x coord measurement */
+>  +#define WM97XX_ADCSEL_Y                0x2000  /* y coord measurement */
+>  +#define WM97XX_ADCSEL_PRES     0x3000  /* pressure measurement */
 
+shouldn't this be 0x4000 ?
 
-Steve.
+>  +#define WM97XX_ADCSEL_MASK     0x7000
+>  +#define WM97XX_COO             0x0800  /* enable coordinate mode */
+>  +#define WM97XX_CTC             0x0400  /* enable continuous mode */
+
+-- 
+With best wishes
+Dmitry
