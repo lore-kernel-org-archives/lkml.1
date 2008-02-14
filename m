@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763818AbYBNU7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbYBNU76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763818AbYBNU7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:59:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932532AbYBNU6k
+	id S933234AbYBNU76 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbYBNU7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:58:40 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59347 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932369AbYBNU6i (ORCPT
+	Thu, 14 Feb 2008 15:59:47 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:8273 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756405AbYBNU7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:58:38 -0500
-Date: Thu, 14 Feb 2008 22:34:17 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [PATCH] Fix direct mapping alias regressin in ioremap v2
-Message-ID: <20080214213417.GA19473@one.firstfloor.org>
-References: <20080214165645.GA26748@basil.nowhere.org> <20080214174237.GA24383@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Feb 2008 15:59:46 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
+Date: Thu, 14 Feb 2008 14:01:24 -0700
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802141307.59120.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802141226010.6110@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802141226010.6110@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080214174237.GA24383@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802141401.24723.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 06:42:37PM +0100, Ingo Molnar wrote:
+On Thursday 14 February 2008 01:26:59 pm Linus Torvalds wrote:
 > 
-> * Andi Kleen <andi@firstfloor.org> wrote:
+> On Thu, 14 Feb 2008, Bjorn Helgaas wrote:
 > 
-> >     Fix bug noticed by Ingo of __va() wrapping on 32bit
+> > On Thursday 14 February 2008 12:42:52 pm Linus Torvalds wrote:
+> > > 
+> > > It *shouldn't* fail.
+> > > 
+> > > Things should fail only when two different drivers have requested the same 
+> > > region. NOT when something tells the system that a region _exists_.
+> > 
+> > The sound driver doesn't fail because two different drivers have
+> > requested the same region; it fails because PNP told us a region
+> > exists, and the sound region crosses the edge of the PNP region.
 > 
-> what you should realize is that had we applied your previous patch in a 
-> rush, it would have introduced a far more serious regression than the 
-> type of problem you are trying to solve. That's one of the reasons why 
-> we disagree with your sense of urgency.
-
-Sense of urgency in this case just means for 2.6.25 which
-is still a few weeks away.
-
-Sorry for not being a perfect being. Yes I did test the patch, but
-no my testing did not catch the problem unfortunately. But I'm grateful
-that your review caught the problem.
-
+> Right, and that was a bug.
 > 
-> We've got the clean fixes queued up and it's all under testing. (going 
-> fine so far)
+> It *shouldn't* fail. The PnP resource should be inserted _after_ the 
+> PCI region has been inserted, and _that_ should fail, since the PnP region 
+> is crap and cannot be inserted "half-way".
 
+That means the PNP system driver has to be registered after the PCI
+driver.  We can't guarantee that, especially if the sound driver is
+a module.
 
-Ok but will you push them to .25?
-
-> 
-> Also, you only appear to have resent your fix with the obvious bug 
-> fixed, but it's still unclean and you do not seem to have replied to my 
-
-First I disagree on you describing my change as unclean. There is nothing
-particularly unclean about it. It's basically back to the same
-code as it was in .24 for this case.
-
-I think fixing this regression is important for 2.6.25
-and I didn't think intrusive changes to pageattr.c are a good idea anymore 
-for .25 at this stage so I did a simple fix.
-
-I chose to fix this in the simplest way I could think of by
-more or less going back to the old .24 code just adapted 
-for the new interfaces.
-
-Now if you decide you want to push the big changes in #mm that
-make cpa work generally for ioremaps to .25 that would probably[1] fix the 
-regression too and I wouldn't complain too loudly about that. 
-
-But at least I personally think a as simple as possible fix is better at 
-this stage.
-
-[1] I reserve judgement at this stage because I have not reviewed the latest
-code there in detail yet.
-
-> > > Please have a look at how we solved the "secondary alias" 64-bit 
-> > > problem in x86.git#mm and please resend against x86.git#mm if you 
-> > > still think something is missing. Thanks,
-
-I can send it against whatever tree contains the fixes going before
-2.6.25 to Linus. Is that #mm now?  I thought it was git-x86#master
-so far that I is why I sent it against mainline which is virtually
-identical to git-x86#master in this area.
-
--Andi
-
+Bjorn
