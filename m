@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765013AbYBNCLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbYBNCZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765013AbYBNCLR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 21:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYBNCLA
+	id S1756129AbYBNCZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 21:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBNCZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 21:11:00 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60445 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751683AbYBNCK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 21:10:59 -0500
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.25-rc1
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: David Miller <davem@davemloft.net>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080213.172251.249294145.davem@davemloft.net>
-References: <1202947364.3109.96.camel@localhost.localdomain>
-	 <20080213161643.65a5a779.akpm@linux-foundation.org>
-	 <1202951513.3109.101.camel@localhost.localdomain>
-	 <20080213.172251.249294145.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 20:10:53 -0600
-Message-Id: <1202955053.3109.104.camel@localhost.localdomain>
+	Wed, 13 Feb 2008 21:25:24 -0500
+Received: from main.gmane.org ([80.91.229.2]:40755 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752083AbYBNCZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 21:25:23 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Driver removals
+Date: Wed, 13 Feb 2008 21:26:26 -0500
+Message-ID: <fp08q7$jv0$1@ger.gmane.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-140-141.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just a general thought on removing drivers in general, when a driver is 
+removed because there's a better one, it would be good to have either a 
+message which shows up at "make oldconfig" time, or a file listing the 
+driver(s) which replace it.
 
-On Wed, 2008-02-13 at 17:22 -0800, David Miller wrote:
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> Date: Wed, 13 Feb 2008 19:11:53 -0600
-> 
-> > 
-> > On Wed, 2008-02-13 at 16:16 -0800, Andrew Morton wrote:
-> > > kill-warnings-in-mptbaseh-on-parisc64.patch
-> > 
-> > >   Warning fixes.
-> > 
-> > Not sure ... LSI is supposed to be processing this.
-> 
-> James, please don't push build warning fixes and the like back to the
-> driver maintainers.
-> 
-> This is your domain as SCSI maintainer, and you should integrate these
-> kinds of things directly and as promptly as possible.
-> 
-> This is doubly true if the "driver maintainer" can't be bothered
-> to ACK or fixup the patch for months.
-> 
-> Otherwise this kind of stuff rots, and diligent people like Andrew
-> (and the patch submitter, whoever that might be) get extremely
-> frustrated.
+Half the resistance to removing drivers is finding what is supposed to 
+replace the driver. For instance a list of all the drivers Adrian Bunk 
+has suggested to replace sk98lin, so users have something better than 
+searching the source code and/or LKML archive to find the next thing to try.
 
-LSI did ask to merge through their patch process, but I agree this one's
-been hanging around for a bit long.
+In general, if a driver works and is being used, until it *needs* 
+attention I see no reason to replace it. I don't agree that "it forces 
+people to try the new driver" is a valid reason, being unmaintained is 
+only a problem if it needs maintenance. I am not going to reopen that 
+topic, I'm simply noting a general opposition to unfunded mandates, and 
+requiring changes to kernel, module and/or rc.local config is just that.
 
-James
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
