@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761828AbYBNNdC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbYBNNdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761828AbYBNNdC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 08:33:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBNNcv
+	id S932975AbYBNNdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 08:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBNNd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 08:32:51 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:54986 "EHLO
+	Thu, 14 Feb 2008 08:33:28 -0500
+Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:54992 "EHLO
 	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751842AbYBNNcu (ORCPT
+	by vger.kernel.org with ESMTP id S1755022AbYBNNcy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 08:32:50 -0500
+	Thu, 14 Feb 2008 08:32:54 -0500
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FABfSs0dMQWYv/2dsb2JhbACBWa0W
-Date: Thu, 14 Feb 2008 08:32:44 -0500
+X-IronPort-Anti-Spam-Result: Ah4FABfSs0dMQWYv/2dsb2JhbACBWZA7nFs
+Date: Thu, 14 Feb 2008 08:27:52 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Adrian Bunk <bunk@kernel.org>
-Subject: Re: [PATCH] markers: Fix build for MODULES=n.
-Message-ID: <20080214133244.GB27478@Krystal>
-References: <20080214072517.GG12436@linux-sh.org>
+To: Sam Ravnborg <sam@ravnborg.org>, Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] samples: build fix
+Message-ID: <20080214132752.GA27478@Krystal>
+References: <20080214034541.EF1BD270192@magilla.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080214072517.GG12436@linux-sh.org>
+In-Reply-To: <20080214034541.EF1BD270192@magilla.localdomain>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:28:37 up 3 days,  9:29,  4 users,  load average: 0.23, 0.27,
-	0.27
+X-Uptime: 08:24:48 up 3 days,  9:25,  3 users,  load average: 0.07, 0.15,
+	0.25
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul Mundt (lethal@linux-sh.org) wrote:
->   CC      kernel/marker.o
-> kernel/marker.c: In function 'marker_update_probes':
-> kernel/marker.c:627: error: too few arguments to function 'module_update_markers'
-> make[1]: *** [kernel/marker.o] Error 1
-> make: *** [kernel] Error 2
+* Roland McGrath (roland@redhat.com) wrote:
 > 
-> module_update_markers() doesn't take any arguments, update the MODULES=n
-> version of it to reflect that.
+> The samples/ subdirectory contains only modules.
+> But the only make run done there is in commands for vmlinux.
+> I can't see why this was ever done in this nonstandard fashion.
+> As things stand, the modules don't get built by 'make modules'.
+> 
+> I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
+> because there is no other conditional like that in the top-level Makefile
+> and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
+> always to be included.
 > 
 
-Hi Paul, thanks for submitting this. Adrian-the-roadrunner has been
-faster than you though. :) He already submitted this fix here :
-
-http://lkml.org/lkml/2008/2/13/714
+Sam, is this ok with the samples intent ? I think as long as we do not
+include them with the kernel image and have a "make samples" to build
+them, it's ok. Having them built upon make modules seems like a good
+idea to me.
 
 Mathieu
 
-
-> Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
+> Signed-off-by: Roland McGrath <roland@redhat.com>
 > ---
+>  Makefile |    5 +----
+>  1 files changed, 1 insertions(+), 4 deletions(-)
 > 
->  include/linux/module.h |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff --git a/include/linux/module.h b/include/linux/module.h
-> index 330bec0..819c4e8 100644
-> --- a/include/linux/module.h
-> +++ b/include/linux/module.h
-> @@ -567,8 +567,7 @@ static inline void print_modules(void)
->  {
->  }
+> diff --git a/Makefile b/Makefile
+> index c162370..9e9ce33 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -602,7 +602,7 @@ export mod_strip_cmd
 >  
-> -static inline void module_update_markers(struct module *probe_module,
-> -		int *refcount)
-> +static inline void module_update_markers(void)
->  {
->  }
 >  
+>  ifeq ($(KBUILD_EXTMOD),)
+> -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
+> +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ samples/
+>  
+>  vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
+>  		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
+> @@ -802,9 +802,6 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o $(kallsyms.o)
+>  ifdef CONFIG_HEADERS_CHECK
+>  	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
+>  endif
+> -ifdef CONFIG_SAMPLES
+> -	$(Q)$(MAKE) $(build)=samples
+> -endif
+>  	$(call vmlinux-modpost)
+>  	$(call if_changed_rule,vmlinux__)
+>  	$(Q)rm -f .old_version
 
 -- 
 Mathieu Desnoyers
