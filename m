@@ -1,100 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbYBNFBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765244AbYBNFCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbYBNFBE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 00:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbYBNFAs
+	id S1765244AbYBNFCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 00:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYBNFCK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 00:00:48 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44193 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758333AbYBNFAa (ORCPT
+	Thu, 14 Feb 2008 00:02:10 -0500
+Received: from ti-out-0910.google.com ([209.85.142.187]:64790 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750717AbYBNFCI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 00:00:30 -0500
-Date: Wed, 13 Feb 2008 20:58:42 -0800
-From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080214045842.GA1432@kroah.com>
-References: <20080213001506.GA13933@kroah.com> <200802132320.37172.bzolnier@gmail.com> <20080213234140.GA5169@kroah.com> <200802140102.55805.bzolnier@gmail.com>
+	Thu, 14 Feb 2008 00:02:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=m2XwYRE8v3UhPVcBArTUo83Ezx97lQz9MWcGHNjKbU6+yY2ALcNcfqUgrDfKMJHKUKWDij7j3MsdnYxe34yJw/S60MyYEjNhUGSYFBUHpOfirMrV4cJ6V5/08e8NjLJLLL8OcDAF6G552cWrI36MV+GhLVy4wmCcRNfG6/jwOV4=
+Message-ID: <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
+Date: Thu, 14 Feb 2008 13:02:06 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "Max Krasnyansky" <maxk@qualcomm.com>
+Subject: Re: Module loading/unloading and "The Stop Machine"
+Cc: rusty@rustcorp.com.au, "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <47ABC08C.8010101@qualcomm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802140102.55805.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <47ABC08C.8010101@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 01:02:55AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 14 February 2008, Greg KH wrote:
-> > On Wed, Feb 13, 2008 at 11:20:36PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > On Wednesday 13 February 2008, Greg KH wrote:
-> > > > On Wed, Feb 13, 2008 at 09:28:24AM -0800, Greg KH wrote:
-> > > > > On Wed, Feb 13, 2008 at 01:34:12PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > > > On Wednesday 13 February 2008, Greg KH wrote:
-> > > > > > > On Wed, Feb 13, 2008 at 02:17:37AM +0000, Alan Cox wrote:
-> > > > > > > > > Why does the calgary driver need this?  Can we just use pci_get_device()
-> > > > > > > > > instead?  Why do you need to walk the device list backwards?  Do you get
-> > > > > > > > > false positives going forward?
-> > > > > > > > 
-> > > > > > > > It doesn't look to be performance critical so the driver can
-> > > > > > > > pci_get_device until the end and use the final hit anyway.
-> > > > > > > 
-> > > > > > > That would make more sense.
-> > > > > > > 
-> > > > > > > > IDE reverse is more problematic but nobody seems to use it.
-> > > > > > > 
-> > > > > > > I've seen two posters say they use it.  I'm wondering what it is really
-> > > > > > > solving if they use it, and why if it's really needed, scsi never had to
-> > > > > > > implement such a hack...
-> > > > > > 
-> > > > > > It is no longer solving anything, just adds more pain. ;)
-> > > > > > 
-> > > > > > [ The option comes from 2.2.x (so long before LABEL=/ and /dev/disk/by-id/
-> > > > > >   became popular).  Some "off-board" controllers integrated on motherboards
-> > > > > >   used to appear before "on-board" IDE on PCI bus so this option was meant
-> > > > > >   to preserve the legacy ordering. ]
-> > > > > > 
-> > > > > > Since it is valid only when "Probe IDE PCI devices in the PCI bus order
-> > > > > > (DEPRECATED)" config option is used it is already on its way out (though
-> > > > > > marking it as obsoleted would make it more explicit).
-> > > > > > 
-> > > > > > I think that removing "ide=reverse" in 2.6.26 would be OK...
-> > > > > 
-> > > > > Great, thanks for your blessing.  I'll make up a patch and send it to
-> > > > > you for approval.
-> > > > 
-> > > > How does the patch below look?  I didn't want to remove the whole config
-> > > > option, as there is more to the logic than just the "reverse order"
-> > > > stuff there.
-> > > 
-> > > looks fine,
-> > > 
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > 
-> > Thanks.
-> > 
-> > > > If you don't mind, can I take this through the PCI tree so as to allow
-> > > > the removal of this pci function afterwards?
-> > > 
-> > > [...]
-> > > 
-> > > great, could you also:
-> > > - rebase it on top of the patch below
-> > > - forward the patch below to Linus for 2.6.25
-> > 
-> > Sure, you want this to go in for .25, but not the one I just posted
-> > removing this option, correct?  That should wait for .26?
-> 
-> Yes, lets give people the final call before actually removing this option
-> (unless of course there is some urgent reason for removing it in .25).
+On 2/8/08, Max Krasnyansky <maxk@qualcomm.com> wrote:
+> Hi Rusty,
+>
+> I was hopping you could answer a couple of questions about module loading/unloading
+> and the stop machine.
 
-No, no rush from me, I'll queue this up and send it to Linus in my next
-batch.
+I'm curious to know why it is called `stop machine', which is a queer
+name without any relationship with its function.
 
-thanks,
-
-greg k-h
+Regards,
+Jike
