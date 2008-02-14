@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762261AbYBNSuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbYBNSyP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762261AbYBNSuX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbYBNSuK
+	id S1760825AbYBNSyP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:54:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbYBNSx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:50:10 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:31943 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbYBNSuI (ORCPT
+	Thu, 14 Feb 2008 13:53:58 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:29099 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756442AbYBNSx5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:50:08 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
-Date: Thu, 14 Feb 2008 11:51:39 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <alpine.LFD.1.00.0802051013110.9374@woody.linux-foundation.org> <200802051312.47074.bjorn.helgaas@hp.com>
-In-Reply-To: <200802051312.47074.bjorn.helgaas@hp.com>
+	Thu, 14 Feb 2008 13:53:57 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IZvSVmwgU9OefqSVy1/DsqOAMw5QQhjn70v7MsRedXwOlzUy9pLjyJtUVGv6Irb9Qaq6UbzZ50AhkGeiuVNxdQMZ2o/IlhWg3oi9Cs9U9Yk3HZ/zo3ZxcVAh4VSMTmBkoZyTODEE+w0Q0exqM40ovQJnUviwtrTAYq3iiJ9fl+I=  ;
+X-YMail-OSG: LOPrBo8VM1n4C4ltLq6v_DwFf4euiT9dtylAbtacuqPyO9cc224p6QuW1dUfklYjfAqEwg39Yw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: David Newall <davidn@davidnewall.com>
+Subject: Re: Handshaking on USB serial devices
+Date: Thu, 14 Feb 2008 10:53:55 -0800
+User-Agent: KMail/1.9.6
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <47B30291.2040905@davidnewall.com> <20080214121026.16a9c510@core> <47B482B4.9010208@davidnewall.com>
+In-Reply-To: <47B482B4.9010208@davidnewall.com>
 MIME-Version: 1.0
-Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802141151.40396.bjorn.helgaas@hp.com>
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200802141053.55914.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 05 February 2008 01:12:46 pm Bjorn Helgaas wrote:
-> On Tuesday 05 February 2008 11:15:12 am Linus Torvalds wrote:
-> > No, you don't need any quirks: you just do an "insert_resource()" and 
-> > ignore the error return. If the (bogus) PnP resource clashes with the 
-> > (correct) hardware PCI resource, the insert will simply fail. No quirks
-> > needed.
+On Thursday 14 February 2008, David Newall wrote:
+> RS232 is (normally) so much slower than USB that, on an extended
+> transmission, the buffer internal to the local hardware can fill well
+> before the remote device has demanded that transmission stop.  In fact,
+> now that you've mentioned it, I can't see that anything to stop the
+> driver from overflowing the internal buffer, which is very perplexing. 
+> Would that be right? 
 
-> I'll play with your insert_resource() idea and see if I can figure
-> something out.
+Only for stupidly designed hardware ... which you might well
+be using, though I happen to never have seen anything that's
+quite *that* stupid.  (There's always a first time though.)
 
-Sorry for the delay.  I did work on this, but I don't see how this
-can work.  pcibios_init() marks its reservations as not busy, so the
-subsequent PNP request doesn't fail, even if it clashes.
+USB has enough control flow to prevent that from happening.
+If the host sends data that the peripheral isn't ready to
+accept, the peripheral just refuses to accept it, and the
+host will retry later.
 
-The PNP system driver is an fs_initcall(), so it already happens after
-pcibios_init():
+- Dave
 
-  1) register ACPI PCI root bridge driver, which enumerates PCI
-       devices behind the bridge
-  2) pcibios_init() -> pcibios_resource_survey() -> request_resource()
-  3) register PNP system driver -> request_region()
-  4) register intel8x0 sound driver and reserve resources
-       (conflict happens here)
-
-We have reservations in this order:
-
-  febf8000-febfbfff : 0000:00:1b.0 -- from pcibios_resource_survey (!busy)
-  febfa000-febfac00 : pnp 00:08    -- from PNP system driver (!busy)
-  febf8000-febfbfff : ICH HD audio -- fails because it spans the PNP region
-
-The PNP reservation succeeds even though the PCI reservation has
-already happened, so I don't see how we can do this without a
-quirk that ignores the bogus PNP resources.
-
-Bjorn
