@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbYBNTqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763135AbYBNTu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765655AbYBNTqu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 14:46:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765529AbYBNTqd
+	id S1763135AbYBNTu5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 14:50:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbYBNTur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 14:46:33 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60346 "EHLO pasmtpA.tele.dk"
+	Thu, 14 Feb 2008 14:50:47 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:52255 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762435AbYBNTqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 14:46:32 -0500
-Date: Thu, 14 Feb 2008 20:46:33 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Roland McGrath <roland@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] samples: build fix
-Message-ID: <20080214194633.GA21894@uranus.ravnborg.org>
-References: <20080214034541.EF1BD270192@magilla.localdomain> <20080214132752.GA27478@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080214132752.GA27478@Krystal>
-User-Agent: Mutt/1.4.2.1i
+	id S1754321AbYBNTuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 14:50:46 -0500
+Date: Thu, 14 Feb 2008 20:50:39 +0100 (CET)
+From: Julia Lawall <julia@diku.dk>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
+In-Reply-To: <84144f020802141018i235d3adfu13a84d124dc3964e@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802142049510.19977@ask.diku.dk>
+References: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk> 
+ <20080214173850.GC14191@us.ibm.com> <84144f020802141018i235d3adfu13a84d124dc3964e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 08:27:52AM -0500, Mathieu Desnoyers wrote:
-> * Roland McGrath (roland@redhat.com) wrote:
-> > 
-> > The samples/ subdirectory contains only modules.
-> > But the only make run done there is in commands for vmlinux.
-> > I can't see why this was ever done in this nonstandard fashion.
-> > As things stand, the modules don't get built by 'make modules'.
-> > 
-> > I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
-> > because there is no other conditional like that in the top-level Makefile
-> > and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
-> > always to be included.
-> > 
+On Thu, 14 Feb 2008, Pekka Enberg wrote:
+
+> Hi Nishanth,
 > 
-> Sam, is this ok with the samples intent ? I think as long as we do not
-> include them with the kernel image and have a "make samples" to build
-> them, it's ok. Having them built upon make modules seems like a good
-> idea to me.
+> On Thu, Feb 14, 2008 at 7:38 PM, Nishanth Aravamudan <nacc@us.ibm.com> wrote:
+> >  Is it just me, or does
+> >
+> >         ((user_addr + iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE - user_addr/PAGE_SIZE)
+> >
+> >  not simplify to
+> >
+> >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE + user_addr/PAGE_SIZE - user_addr/PAGE_SIZE)
+> >
+> >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE)
+> >
+> >         = DIV_ROUND_UP(iov[seg].iov_len, PAGE_SIZE)
+> >
+> >  CMIIW.
+> 
+> I double-checked this and I believe you're correct. It's simpler to
+> see when you do:
+> 
+>   x = user_addr
+>   y = iov[seg].iov_len
+>   z = PAGE_SIZE
+> 
+> So
+> 
+>   (x + y + z - 1)/z - x/z
+> 
+>   = [x + (y + z - 1)]/z - x/z
+> 
+>   = [xz + z(y + z - 1)]/z^2 - x/z
+> 
+>   = x/z + (y + z - 1)/z - x/z
+> 
+> And the rest follows from your simplifications.
 
-The samples code are supposed to be what the name says 'samples'.
-This is not code that are supposed to be part of the built-in kernel.
-This is not modules that are supposed to be installes when 
-installing modules.
+It doesn't work:
 
-Adding it to core-y as Roland does in the patch below is plain
-wrong as it enabled both points above.
-The fact that the present code in samples/ does not do this is
-in this respect irellevant.
+ ((3+4+5-1)/5) - (3/5) = 2
+ ((4+5-1)/5) = 1
 
-Do we have problems when to build the sampls - then lets
-address this issue but not by trying to upgrade the samples
-to first class citizen in the kernel - they are not that
-and should not be handled like that.
+julia
 
-	Sam
