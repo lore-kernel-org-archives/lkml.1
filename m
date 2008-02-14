@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbYBNV6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbYBNV7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761988AbYBNV6u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbYBNV6k
+	id S932992AbYBNV7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbYBNV7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:58:40 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34127 "EHLO smtps.tip.net.au"
+	Thu, 14 Feb 2008 16:59:08 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:58742 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbYBNV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:58:38 -0500
-Date: Fri, 15 Feb 2008 08:58:30 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: first tree
-Message-Id: <20080215085830.946d187b.sfr@canb.auug.org.au>
-In-Reply-To: <20080214154928.GC14777@linux-sh.org>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-	<200802141545.56488.rjw@sisk.pl>
-	<20080215020019.f7cb5895.sfr@canb.auug.org.au>
-	<20080214154928.GC14777@linux-sh.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn"
+	id S1753620AbYBNV7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:59:05 -0500
+Message-ID: <47B4B9A7.4080304@garzik.org>
+Date: Thu, 14 Feb 2008 16:59:03 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gdth: convert to PCI hotplug API
+References: <20080212234928.GA13892@havoc.gtf.org> <47B2CF57.9030308@panasas.com>
+In-Reply-To: <47B2CF57.9030308@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Boaz Harrosh wrote:
+> do you intend this to be pushed into 2.6.25-rcx or this is already
+> for 2.6.26? Should we put this in -mm tree for testing?
 
-Hi Paul,
 
-On Fri, 15 Feb 2008 00:49:28 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
->
-> For SH:
->=20
-> 	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+Not intended for 2.6.25.  I just wanted to get this "in process" 
+somewhere, and keep this issue moving.  I would definitely prefer to 
+have this tested before it goes to Linus.
 
-Added, thanks.
+Its a long term goal to kill pci_find_device(), and this conversion was 
+a side effect of that.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+	Jeff
 
---Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHtLmOTgG2atn1QN8RAgmFAKCSkhKHyhUmFkiz3BzpWuSayqc91gCdHF38
-UHTgBOodvs+8BGnWRDAczjM=
-=tMYk
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn--
