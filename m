@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759430AbYBNPlb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759893AbYBNPlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759430AbYBNPlb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:41:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbYBNPjX
+	id S1759893AbYBNPlu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:41:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755252AbYBNPjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:39:23 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49925 "EHLO uludag.org.tr"
+	Thu, 14 Feb 2008 10:39:24 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49921 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753256AbYBNPjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:39:14 -0500
+	id S1753004AbYBNPjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:39:17 -0500
 From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
 To: linux-kernel@vger.kernel.org
-Cc: linux-wireless@vger.kernel.org,
+Cc: sparclinux@vger.kernel.org,
        =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-Subject: [PATCH 09/14] net/mac80211/: Use time_* macros
-Date: Thu, 14 Feb 2008 17:36:47 +0200
-Message-Id: <1203003412-11594-10-git-send-email-caglar@pardus.org.tr>
+Subject: [PATCH 05/14] arch/sparc64/kernel/unaligned.c: Use time_* macros
+Date: Thu, 14 Feb 2008 17:36:43 +0200
+Message-Id: <1203003412-11594-6-git-send-email-caglar@pardus.org.tr>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: y
 References: y
@@ -30,55 +30,33 @@ The functions time_before, time_before_eq, time_after, and time_after_eq are mor
 
 So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
 
-Cc: linux-wireless@vger.kernel.org
+Cc: sparclinux@vger.kernel.org
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 ---
- net/mac80211/rc80211_simple.c |    3 ++-
- net/mac80211/rx.c             |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
+ arch/sparc64/kernel/unaligned.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/net/mac80211/rc80211_simple.c b/net/mac80211/rc80211_simple.c
-index 9a78b11..91bbff1 100644
---- a/net/mac80211/rc80211_simple.c
-+++ b/net/mac80211/rc80211_simple.c
+diff --git a/arch/sparc64/kernel/unaligned.c b/arch/sparc64/kernel/unaligned.c
+index dc7bf1b..1a511e9 100644
+--- a/arch/sparc64/kernel/unaligned.c
++++ b/arch/sparc64/kernel/unaligned.c
 @@ -7,6 +7,7 @@
-  * published by the Free Software Foundation.
   */
  
-+#include <linux/jiffies.h>
- #include <linux/init.h>
- #include <linux/netdevice.h>
- #include <linux/types.h>
-@@ -177,7 +178,7 @@ static void rate_control_simple_tx_status(void *priv, struct net_device *dev,
- 		rate_control_rate_dec(local, sta);
- 	}
- 
--	if (srctrl->avg_rate_update + 60 * HZ < jiffies) {
-+	if (time_after(jiffies, srctrl->avg_rate_update + 60 * HZ)) {
- 		srctrl->avg_rate_update = jiffies;
- 		if (srctrl->tx_avg_rate_num > 0) {
- #ifdef CONFIG_MAC80211_VERBOSE_DEBUG
-diff --git a/net/mac80211/rx.c b/net/mac80211/rx.c
-index 535407d..592581a 100644
---- a/net/mac80211/rx.c
-+++ b/net/mac80211/rx.c
-@@ -9,6 +9,7 @@
-  * published by the Free Software Foundation.
-  */
  
 +#include <linux/jiffies.h>
  #include <linux/kernel.h>
- #include <linux/skbuff.h>
- #include <linux/netdevice.h>
-@@ -801,7 +802,7 @@ ieee80211_reassemble_find(struct ieee80211_sub_if_data *sdata,
- 		    compare_ether_addr(hdr->addr2, f_hdr->addr2) != 0)
- 			continue;
+ #include <linux/sched.h>
+ #include <linux/mm.h>
+@@ -283,7 +284,7 @@ static void log_unaligned(struct pt_regs *regs)
+ {
+ 	static unsigned long count, last_time;
  
--		if (entry->first_frag_time + 2 * HZ < jiffies) {
-+		if (time_after(jiffies, entry->first_frag_time + 2 * HZ)) {
- 			__skb_queue_purge(&entry->skb_list);
- 			continue;
- 		}
+-	if (jiffies - last_time > 5 * HZ)
++	if (time_after(jiffies, last_time + 5 * HZ))
+ 		count = 0;
+ 	if (count < 5) {
+ 		last_time = jiffies;
 -- 
 1.5.3.7
 
