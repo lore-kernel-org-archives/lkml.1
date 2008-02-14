@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbYBNOcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933412AbYBNOc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094AbYBNOcV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:32:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755470AbYBNOcJ
+	id S933412AbYBNOc6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:32:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755247AbYBNOcs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:32:09 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:38368 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753369AbYBNOcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:32:08 -0500
-Date: Thu, 14 Feb 2008 08:31:53 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [PATCH 6/8] IPMI: Update driver version
-In-reply-to: <20080213152254.c4942331.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net
-Message-id: <47B450D9.2050104@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080213163048.GF9830@minyard.local>
- <20080213152254.c4942331.akpm@linux-foundation.org>
-User-Agent: Icedove 1.5.0.14pre (X11/20071018)
+	Thu, 14 Feb 2008 09:32:48 -0500
+Received: from pip13.gyao.ne.jp ([61.122.117.251]:34345 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755022AbYBNOcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:32:47 -0500
+Date: Thu, 14 Feb 2008 23:31:24 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Adrian Bunk <bunk@kernel.org>
+Subject: Re: [PATCH] markers: Fix build for MODULES=n.
+Message-ID: <20080214143124.GA14777@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, Adrian Bunk <bunk@kernel.org>
+References: <20080214072517.GG12436@linux-sh.org> <20080214133244.GB27478@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214133244.GB27478@Krystal>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 13 Feb 2008 10:30:48 -0600
-> Corey Minyard <minyard@acm.org> wrote:
->
->   
->> Enough bug fixes and changes that we need a new driver version.
->>     
->
-> Are none of them serious enough to warrant a 2.6.24.x backport?
->   
-No, nothing really terribly urgent.  Just minor stuff.
-
--corey
+On Thu, Feb 14, 2008 at 08:32:44AM -0500, Mathieu Desnoyers wrote:
+> * Paul Mundt (lethal@linux-sh.org) wrote:
+> >   CC      kernel/marker.o
+> > kernel/marker.c: In function 'marker_update_probes':
+> > kernel/marker.c:627: error: too few arguments to function 'module_update_markers'
+> > make[1]: *** [kernel/marker.o] Error 1
+> > make: *** [kernel] Error 2
+> > 
+> > module_update_markers() doesn't take any arguments, update the MODULES=n
+> > version of it to reflect that.
+> > 
+> 
+> Hi Paul, thanks for submitting this. Adrian-the-roadrunner has been
+> faster than you though. :) He already submitted this fix here :
+> 
+> http://lkml.org/lkml/2008/2/13/714
+> 
+No worries, I was just tossing out stuff I hit with my randconfigs now
+that things are slowing down. It's difficult to verify your own stuff
+when the rest of the tree keeps breaking. It's good to know there are
+other people doing similar tests ;-)
