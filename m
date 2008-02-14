@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933924AbYBNPKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYBNPOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933924AbYBNPKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:10:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933785AbYBNPK0
+	id S1755206AbYBNPOT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBNPOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:10:26 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:14367 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933727AbYBNPKW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:10:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=O8o18ZrUqFSzQ5DBwbDXX4vmeP4hymCWA13jjFsfmGIPf/s/NLeSP5w8G3AwAV0Wd/aHJKWM3tg3va4kmhyqrJoBcywMqWk/0sTszjcsu5ns7H6B3GFDO76Zr92v2yQfSjHejhIx3Tazd5vxrfuiLur7bwCOo8eFb1oPAp/d85k=
-Message-ID: <bc64b4640802140710n697ce2f4l23832bba073169c8@mail.gmail.com>
-Date: Thu, 14 Feb 2008 18:10:19 +0300
-From: Dmitry <dbaryshkov@gmail.com>
-To: "Mark Brown" <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH 1/6] Core driver for WM97xx touchscreens
-Cc: "Dmitry Torokhov" <dtor@mail.ru>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Liam Girdwood" <liam.girdwood@wolfsonmicro.com>,
-       "Graeme Gregory" <gg@opensource.wolfsonmicro.com>,
-       "Mike Arthur" <mike.arthur@wolfsonmicro.com>,
-       "Stanley Cai" <stanley.cai@intel.com>,
-       "Rodolfo Giometti" <giometti@enneenne.com>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       "Pete MacKay" <linux01@architechnical.net>,
-       "Marc Kleine-Budde" <mkl@pengutronix.de>, "Ian Molton" <spyro@f2s.com>,
-       "Vincent Sanders" <vince@kyllikki.org>,
-       "Andrew Zabolotny" <zap@homelink.ru>
-In-Reply-To: <1202912042-2631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	Thu, 14 Feb 2008 10:14:09 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:46448 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751863AbYBNPOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:14:07 -0500
+Date: Thu, 14 Feb 2008 16:14:04 +0100 (MET)
+From: Julia Lawall <julia@diku.dk>
+To: jeremy@xensource.com, xen-devel@lists.xensource.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 1/6] arch/x86/xen: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.58.0802141613300.1185@pc-041.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080213140648.GD31617@rakim.wolfsonmicro.main>
-	 <1202912042-2631-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Julia Lawall <julia@diku.dk>
 
-2008/2/13, Mark Brown <broonie@opensource.wolfsonmicro.com>:
->  diff --git a/include/linux/wm97xx.h b/include/linux/wm97xx.h
->  new file mode 100644
->  index 0000000..f0d9fc0
->  --- /dev/null
->  +++ b/include/linux/wm97xx.h
->  @@ -0,0 +1,308 @@
+The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
+(d)) but is perhaps more readable.
 
-...
+An extract of the semantic patch that makes this change is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
->  +#define WM97XX_POLL            0x8000  /* initiate a polling measurement */
->  +#define WM97XX_ADCSEL_X                0x1000  /* x coord measurement */
->  +#define WM97XX_ADCSEL_Y                0x2000  /* y coord measurement */
->  +#define WM97XX_ADCSEL_PRES     0x3000  /* pressure measurement */
+// <smpl>
+@haskernel@
+@@
 
-shouldn't this be 0x4000 ?
+#include <linux/kernel.h>
 
->  +#define WM97XX_ADCSEL_MASK     0x7000
->  +#define WM97XX_COO             0x0800  /* enable coordinate mode */
->  +#define WM97XX_CTC             0x0400  /* enable continuous mode */
+@depends on haskernel@
+expression n,d;
+@@
 
--- 
-With best wishes
-Dmitry
+(
+- (n + d - 1) / d
++ DIV_ROUND_UP(n,d)
+|
+- (n + (d - 1)) / d
++ DIV_ROUND_UP(n,d)
+)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP((n),d)
++ DIV_ROUND_UP(n,d)
+
+@depends on haskernel@
+expression n,d;
+@@
+
+- DIV_ROUND_UP(n,(d))
++ DIV_ROUND_UP(n,d)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+
+diff -u -p a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+--- a/arch/x86/xen/enlighten.c 2008-02-02 15:28:17.000000000 +0100
++++ b/arch/x86/xen/enlighten.c 2008-02-13 20:48:15.000000000 +0100
+@@ -293,7 +293,7 @@ static void xen_load_gdt(const struct de
+ 	unsigned long *frames;
+ 	unsigned long va = dtr->address;
+ 	unsigned int size = dtr->size + 1;
+-	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
++	unsigned pages = DIV_ROUND_UP(size, PAGE_SIZE);
+ 	int f;
+ 	struct multicall_space mcs;
+
