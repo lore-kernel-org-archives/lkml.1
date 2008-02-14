@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932808AbYBNU0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbYBNU10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932808AbYBNU0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763057AbYBNU0E
+	id S932997AbYBNU10 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbYBNU1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:26:04 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40490 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762749AbYBNU0C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:26:02 -0500
-Message-ID: <47B4A3D7.7040007@sgi.com>
-Date: Thu, 14 Feb 2008 12:25:59 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 14 Feb 2008 15:27:18 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43549 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756846AbYBNU1R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:27:17 -0500
+Date: Thu, 14 Feb 2008 12:26:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
+ sound card
+In-Reply-To: <200802141307.59120.bjorn.helgaas@hp.com>
+Message-ID: <alpine.LFD.1.00.0802141226010.6110@woody.linux-foundation.org>
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802141151.40396.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802141141470.6110@woody.linux-foundation.org> <200802141307.59120.bjorn.helgaas@hp.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: Andi Kleen <ak@suse.de>, Paul Jackson <pj@sgi.com>,
-       David Rientjes <rientjes@google.com>, Lee.Schermerhorn@hp.com,
-       mel@csn.ul.ie, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
-References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com> <Pine.LNX.4.64.0802141126340.375@schroedinger.engr.sgi.com> <200802142102.41420.ak@suse.de> <Pine.LNX.4.64.0802141206100.1041@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0802141206100.1041@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Thu, 14 Feb 2008, Andi Kleen wrote:
-> 
->> You're saying the kernel should use these relative masks internally?
-> 
-> There is just some thoughts about this. Did not have time to look into the 
-> details. Mike?
 
-There are a few places where the entire cpumask is not needed.  For
-example, in the area of core siblings on a node.  There's a limit
-to how many cores/threads can be on a node and the full 4k cpumask
-is not needed.  How this pertains to this new functionality I'm
-not sure yet.
 
->  
->> That means it would be impossible to run workloads that use the complete
->> machine because you couldn't represent all nodes.
+On Thu, 14 Feb 2008, Bjorn Helgaas wrote:
+
+> On Thursday 14 February 2008 12:42:52 pm Linus Torvalds wrote:
+> > 
+> > It *shouldn't* fail.
+> > 
+> > Things should fail only when two different drivers have requested the same 
+> > region. NOT when something tells the system that a region _exists_.
 > 
-> Not sure how they are addressing this.
+> The sound driver doesn't fail because two different drivers have
+> requested the same region; it fails because PNP told us a region
+> exists, and the sound region crosses the edge of the PNP region.
 
+Right, and that was a bug.
+
+It *shouldn't* fail. The PnP resource should be inserted _after_ the 
+PCI region has been inserted, and _that_ should fail, since the PnP region 
+is crap and cannot be inserted "half-way".
+
+		Linus
