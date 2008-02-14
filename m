@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760086AbYBNPQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbYBNPT5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760086AbYBNPQy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbYBNPQg
+	id S1755922AbYBNPT5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:19:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbYBNPTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:16:36 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:57975 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759469AbYBNPQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:16:33 -0500
-Date: Thu, 14 Feb 2008 16:16:31 +0100 (MET)
-From: Julia Lawall <julia@diku.dk>
-To: jkosina@suse.cz, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 6/6] drivers/hid: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802141616120.1185@pc-041.diku.dk>
+	Thu, 14 Feb 2008 10:19:47 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:31680 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbYBNPTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:19:46 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=qGRX6R0WY5tRo25htBqX+YOk8V79ALu7F3w2IR/prgOESJR6wpSrLQpsiyEp5YorI
+	WApZon1MvXN0TNwMEBL0g==
+Message-ID: <6599ad830802140719l270d6fdfyd6d17806eda12a8d@mail.gmail.com>
+Date: Thu, 14 Feb 2008 07:19:33 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH] Add MS_BIND_FLAGS mount flag
+Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-Reply-To: <E1JPZUb-00013Z-0U@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47B283EB.8070209@google.com>
+	 <E1JPZUb-00013Z-0U@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Thu, Feb 14, 2008 at 12:30 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
+>  > For recursive bind mounts, only the root of the tree being bound
+>  > inherits the per-mount flags from the mount() arguments; sub-mounts
+>  > inherit their per-mount flags from the source tree as usual.
+>
+>  This is rather strange behavior.  I think it would be much better, if
+>  setting mount flags would work for recursive operations as well.  Also
+>  what we really need is not resetting all the mount flags to some
+>  predetermined values, but to be able to set or clear each flag
+>  individually.
 
-The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
-(d)) but is perhaps more readable.
+This is certainly true, but as you observe below it's a fair bit more
+fiddly to specify in the API. I wasn't sure how much people recursive
+bind mounts, so I figured I'd throw out this simpler version first.
 
-An extract of the semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+>
+>  For example, with the per-mount-read-only thing the most useful
+>  application would be to just set the read-only flag and leave the
+>  others alone.
+>
+>  And this is where we usually conclude, that a new userspace mount API
+>  is long overdue.  So for starters, how about a new syscall for bind
+>  mounts:
+>
+>  int mount_bind(const char *src, const char *dst, unsigned flags,
+>                  unsigned mnt_flags);
 
-// <smpl>
-@haskernel@
-@@
+The "flags" argument could be the same as for regular mount, and
+contain the mnt_flags - so the extra argument could maybe usefully be
+a "mnt_flags_mask", to indicate which flags we actually care about
+overriding.
 
-#include <linux/kernel.h>
+What would happen when an existing super-block flag changes to become
+a per-mount flag (e.g. per-mount read-only)? I think that would just
+fit in with the "mask" idea, as long as we complained if any bits in
+mnt_flags_mask weren't actually per-mount settable.
 
-@depends on haskernel@
-expression n,d;
-@@
+Being able to mask/set mount flags might be useful on a remount too,
+since there's no clean way to get the existing mount flags for a mount
+other than by scanning /proc/mounts. So an alternative to a separate
+system call would be a new mnt_flag_mask argument to mount() (whose
+presence would be indicated by a flag bit being set in the main flags)
+which would be used to control which bits were set cleared for
+remount/bind calls. Seems a bit wasteful of bits though. If we turned
+"flags" into an (optionally) 64-bit argument then we'd have plenty of
+bits to be able to specify both a "set" bit and a "mask" bit for each,
+without needing a new syscall.
 
-(
-- (n + d - 1) / d
-+ DIV_ROUND_UP(n,d)
-|
-- (n + (d - 1)) / d
-+ DIV_ROUND_UP(n,d)
-)
-
-@depends on haskernel@
-expression n,d;
-@@
-
-- DIV_ROUND_UP((n),d)
-+ DIV_ROUND_UP(n,d)
-
-@depends on haskernel@
-expression n,d;
-@@
-
-- DIV_ROUND_UP(n,(d))
-+ DIV_ROUND_UP(n,d)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
---- a/drivers/hid/usbhid/hid-core.c 2007-11-08 18:33:32.000000000 +0100
-+++ b/drivers/hid/usbhid/hid-core.c 2008-02-13 20:51:00.000000000 +0100
-@@ -278,7 +278,7 @@ static int hid_submit_ctrl(struct hid_de
- 		usbhid->urbctrl->pipe = usb_rcvctrlpipe(hid_to_usb_dev(hid), 0);
- 		maxpacket = usb_maxpacket(hid_to_usb_dev(hid), usbhid->urbctrl->pipe, 0);
- 		if (maxpacket > 0) {
--			padlen = (len + maxpacket - 1) / maxpacket;
-+			padlen = DIV_ROUND_UP(len, maxpacket);
- 			padlen *= maxpacket;
- 			if (padlen > usbhid->bufsize)
- 				padlen = usbhid->bufsize;
+Paul
