@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933704AbYBNOdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbYBNOeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933704AbYBNOdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757226AbYBNOcz
+	id S933463AbYBNOeV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:34:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYBNOeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:32:55 -0500
-Received: from mail29.messagelabs.com ([216.82.249.147]:23756 "HELO
-	mail29.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933302AbYBNOcy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:32:54 -0500
-X-VirusChecked: Checked
-X-Env-Sender: Uwe.Kleine-Koenig@digi.com
-X-Msg-Ref: server-13.tower-29.messagelabs.com!1202999573!5975943!1
-X-StarScan-Version: 5.5.12.14.2; banners=-,-,-
-X-Originating-IP: [66.77.174.21]
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= <Uwe.Kleine-Koenig@digi.com>
-To: linux-kernel@vger.kernel.org
-Cc: David Brownell <dbrownell@users.sourceforge.net>,
-       Raphael Assenat <raph@8d.com>, Richard Purdie <rpurdie@rpsys.net>
-Subject: [PATCH] call gpio_cansleep only after gpio_request succeeded
-Date: Thu, 14 Feb 2008 15:32:49 +0100
-Message-Id: <1202999569-9022-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-X-Mailer: git-send-email 1.5.4.1
+	Thu, 14 Feb 2008 09:34:06 -0500
+Received: from mail.bmlv.gv.at ([193.171.152.37]:56980 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755897AbYBNOeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:34:05 -0500
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: Jeff Dike <jdike@addtoit.com>
+Subject: Re: 2.6.24.2 won't compile UML
+Date: Thu, 14 Feb 2008 15:33:56 +0100
+User-Agent: KMail/1.9.7
+Cc: user-mode-linux-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200802141213.09859.philipp.marek@bmlv.gv.at> <20080214142439.GA5901@c2.user-mode-linux.org>
+In-Reply-To: <20080214142439.GA5901@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Feb 2008 14:32:49.0798 (UTC) FILETIME=[7978C260:01C86F16]
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.000.1023-15728.003
-X-TM-AS-Result: No--8.875000-8.000000-31
-X-TM-AS-User-Approved-Sender: No
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802141533.56387.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you have GPIO_LIB gpio_cansleep oopses on an invalid
-gpio.  So better gpio_request your pin first.
+On Donnerstag, 14. Februar 2008, Jeff Dike wrote:
+> On Thu, Feb 14, 2008 at 12:13:09PM +0100, Ph. Marek wrote:
+> >   make -C linux-2.6.24.2/ O=output_path/build ARCH=um bzImage
+> >
+> >   make[2]: *** No rule to make target `bzImage'.  Stop.
+>
+> This seems pretty clear, no?
+>
+> bzImage is a x86-ism.  Just leave it off, and you'll get linux and vmlinux.
+Yes ... but the various warnings confused me.
 
-Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Raphael Assenat <raph@8d.com>
-Cc: Richard Purdie <rpurdie@rpsys.net>
----
-Hello,
+Sorry, will try to do better next time.
 
-I currently start using GPIO_LIB and don't have any chips yet.  The Oops will
-vanish after I will have registered the chips for my SoC's gpios, but still
-this way the code is more robust.
 
-Best regards
-Uwe
-
- drivers/leds/leds-gpio.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-index 6c0a9c4..76ddcf3 100644
---- a/drivers/leds/leds-gpio.c
-+++ b/drivers/leds/leds-gpio.c
-@@ -79,6 +79,10 @@ static int gpio_led_probe(struct platform_device *pdev)
- 		cur_led = &pdata->leds[i];
- 		led_dat = &leds_data[i];
- 
-+		ret = gpio_request(led_dat->gpio, cur_led->name);
-+		if (ret < 0)
-+			goto err;
-+
- 		led_dat->cdev.name = cur_led->name;
- 		led_dat->cdev.default_trigger = cur_led->default_trigger;
- 		led_dat->gpio = cur_led->gpio;
-@@ -87,10 +91,6 @@ static int gpio_led_probe(struct platform_device *pdev)
- 		led_dat->cdev.brightness_set = gpio_led_set;
- 		led_dat->cdev.brightness = LED_OFF;
- 
--		ret = gpio_request(led_dat->gpio, led_dat->cdev.name);
--		if (ret < 0)
--			goto err;
--
- 		gpio_direction_output(led_dat->gpio, led_dat->active_low);
- 
- 		INIT_WORK(&led_dat->work, gpio_led_work);
--- 
-1.5.4.1
-
+Thank you!
