@@ -1,596 +1,276 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764829AbYBNLrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765688AbYBNLsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764829AbYBNLrL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 06:47:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbYBNLrC
+	id S1765688AbYBNLsq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 06:48:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYBNLsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 06:47:02 -0500
-Received: from mail.bmlv.gv.at ([193.171.152.37]:41660 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754724AbYBNLrA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 06:47:00 -0500
-X-Greylist: delayed 2018 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 06:46:58 EST
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: user-mode-linux-user@lists.sourceforge.net, jdike@addtoit.com
-Subject: 2.6.24.2 won't compile UML
-Date: Thu, 14 Feb 2008 12:13:09 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
+	Thu, 14 Feb 2008 06:48:35 -0500
+Received: from ug-out-1314.google.com ([66.249.92.169]:36104 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754773AbYBNLsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 06:48:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=DZnDXYMJexsQYTzN9fw8iOuEMOvFh2J756EYmtJSOqolCp9K/Mu3YsxjNBpokYqjSRP/tZ9PFxlZm7xfSb+Wn+c/WsnkL/bVviOHaBzU0XNjOck4BDwYYHIOZMte6feRvV/8ZRx8nP+hIgnDKnv2ivASwRyt5etl5E8nLD+tIQI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: "mount: could not find filesystem" - aacraid? (was: Re: 2.6.26-git0: IDE oops during boot)
+Date: Thu, 14 Feb 2008 13:01:34 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Nish Aravamudan <nish.aravamudan@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       kernel list <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       ananth@in.ibm.com, Andi Kleen <andi@firstfloor.org>,
+       linux-scsi@vger.kernel.org, aacraid@adaptec.com
+References: <20080206105334.GA3664@elf.ucw.cz> <200802140000.10639.bzolnier@gmail.com> <47B40DF2.10009@linux.vnet.ibm.com>
+In-Reply-To: <47B40DF2.10009@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_FJCtHn27j2FM7z/"
-Message-Id: <200802141213.09859.philipp.marek@bmlv.gv.at>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802141301.35032.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_FJCtHn27j2FM7z/
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hello Jeff,
-hello everybody else,
+Hi,
 
+On Thursday 14 February 2008, Kamalesh Babulal wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> > Hi,
+> > 
+> > On Tuesday 12 February 2008, Kamalesh Babulal wrote:
+> >> Bartlomiej Zolnierkiewicz wrote:
+> >>> Hi,
+> >>>
+> >>> On Monday 11 February 2008, Kamalesh Babulal wrote:
+> >>>> Nish Aravamudan wrote:
+> >>>>> On 2/7/08, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> >>>>>> On Thursday 07 February 2008, Kamalesh Babulal wrote:
+> >>>>>>> Bartlomiej Zolnierkiewicz wrote:
+> >>>>>>>> Hi,
+> >>>>>>>>
+> >>>>>>>> On Wednesday 06 February 2008, Pavel Machek wrote:
+> >>>>>>>>> On Wed 2008-02-06 11:53:34, Pavel Machek wrote:
+> >>>>>>>>>> Hi!
+> >>>>>>>>>>
+> >>>>>>>>>> Trying to boot 2.6.25-git0 (few days old), I get
+> >>>>>>>>>>
+> >>>>>>>>>> BUG: unable to handle kernel paging request at ffff..ffb0
+> >>>>>>>>>> IP at init_irq+0x42e
+> >>>>>>>> init_irq? hmm...
+> >>>>>>>>
+> >>>>>>>>>> Call trace:
+> >>>>>>>>>> ide_device_add_all
+> >>>>>>>> this comes from ide-generic
+> >>>>>>>> (Generic IDE host driver)
+> >>>>>>>>
+> >>>>>>>>>> ide_generic_init
+> >>>>>>>>>> kernel_init
+> >>>>>>>>>> child_rip
+> >>>>>>>>>> vgacon_cursor
+> >>>>>>>>>> kernel_init
+> >>>>>>>>>> child_rip
+> >>>>>>>>>>
+> >>>>>>>>>> Excerpt from config:
+> >>>>>>>>>>
+> >>>>>>>>>> CONFIG_IDE=y
+> >>>>>>>>>> CONFIG_BLK_DEV_IDE=y
+> >>>>>>>>> Disabling CONFIG_IDE made my machine boot, as it was using libata
+> >>>>>>>>> anyway.
+> >>>>>>>> Kamalesh/Pavel:
+> >>>>>>>>
+> >>>>>>>> Could you try latest git and see if the OOPS is still there?
+> >>>>>>>>
+> >>>>>>>> [ Yeah, I'm unable to reproduce it. :( ]
+> >>>>>>>>
+> >>>>>>>> Thanks,
+> >>>>>>>> Bart
+> >>>>>>> Hi Bart,
+> >>>>>>>
+> >>>>>>> The panic is reproducible with the 2.6.24-git16 kernel, the call trace is
+> >>>>>>> similar to the previous one
+> >>>>>> Thanks, I again reviewed ide-probe.c changes but nothing seems wrong...
+> >>>>>>
+> >>>>>> Could you please bisect it down to the guilty commit?
+> >>>>> Kamalesh, were you able to bisect this down? I just got hit by the
+> >>>>> same panic on a 4-way x86_64, with 2.6.24-git22.
+> >>>>>
+> >>>>> Thanks,
+> >>>>> Nish
+> >>>> Hi Nish,
+> >>>>
+> >>>> I tried bisecting and the guilty patch seems to be 
+> >>>>
+> >>>> 36501650ec45b1db308c3b51886044863be2d762 is first bad commit
+> >>>> commit 36501650ec45b1db308c3b51886044863be2d762
+> >>>> Author: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >>>> Date:   Fri Feb 1 23:09:31 2008 +0100
+> >>>>
+> >>>>     ide: keep pointer to struct device instead of struct pci_dev in ide_hwif_t
+> >>>>
+> >>>>
+> >>>> the gdb output, also points to the changes made by the guilty patch
+> >>>>
+> >>>> (gdb) p ide_device_add_all
+> >>>> $1 = {int (u8 *, const struct ide_port_info *)} 0xffffffff804176ac <ide_device_add_all>
+> >>>> (gdb) p/x 0xffffffff804176ac+0xb60
+> >>>> $2 = 0xffffffff8041820c
+> >>>> (gdb) l *0xffffffff8041820c
+> >>>> 0xffffffff8041820c is in ide_device_add_all (drivers/ide/ide-probe.c:1249).
+> >>>> 1244                    goto out;
+> >>>> 1245            }
+> >>>> 1246
+> >>>> 1247            sg_init_table(hwif->sg_table, hwif->sg_max_nents);
+> >>>> 1248
+> >>>> 1249            if (init_irq(hwif) == 0)
+> >>>> 1250                    goto done;
+> >>>> 1251
+> >>>> 1252            old_irq = hwif->irq;
+> >>>> 1253            /*
+> >>>> (gdb) 
+> >>>>
+> >>>>
+> >>>> (gdb) p init_irq
+> >>>> $1 = {int (ide_hwif_t *)} 0xffffffff8041721f <init_irq>
+> >>>> (gdb) p/x 0xffffffff8041721f+0x1a4
+> >>>> $2 = 0xffffffff804173c3
+> >>>> (gdb) l *0xffffffff804173c3
+> >>>> 0xffffffff804173c3 is in init_irq (include/asm/pci.h:101).
+> >>>> 96      /* Returns the node based on pci bus */
+> >>>> 97      static inline int __pcibus_to_node(struct pci_bus *bus)
+> >>>> 98      {
+> >>>> 99              struct pci_sysdata *sd = bus->sysdata;
+> >>>> 100
+> >>>> 101             return sd->node;
+> >>>> 102     }
+> >>>> 103
+> >>>> 104     static inline cpumask_t __pcibus_to_cpumask(struct pci_bus *bus)
+> >>>> 105     {
+> >>>> (gdb) 
+> >>> Thanks for the detailed analysis and sorry for the bug.
+> >>>
+> >>> I think that this may has been just fixed by Andi's recent hwif_to_node()
+> >>> fix (patch below, it is in Linus' tree already), could please verify this?
+> >>>
+> >>> commit 1f07e988290fc45932f5028c9e2a862c37a57336
+> >>> Author: Andi Kleen <andi@firstfloor.org>
+> >>> Date:   Mon Feb 11 01:35:20 2008 +0100
+> >>>
+> >>>     Prevent IDE boot ops on NUMA system
+> >>>     
+> >>>     Without this patch a Opteron test system here oopses at boot with
+> >>>     current git.
+> >>>     
+> >>>     Calling to_pci_dev() on a NULL pointer gives a negative value so the
+> >>>     following NULL pointer check never triggers and then an illegal address
+> >>>     is referenced.  Check the unadjusted original device pointer for NULL
+> >>>     instead.
+> >>>     
+> >>>     Signed-off-by: Andi Kleen <ak@suse.de>
+> >>>     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> >>>
+> >>> diff --git a/include/linux/ide.h b/include/linux/ide.h
+> >>> index 23fad89..a3b69c1 100644
+> >>> --- a/include/linux/ide.h
+> >>> +++ b/include/linux/ide.h
+> >>> @@ -1295,7 +1295,7 @@ static inline void ide_dump_identify(u8 *id)
+> >>>  static inline int hwif_to_node(ide_hwif_t *hwif)
+> >>>  {
+> >>>  	struct pci_dev *dev = to_pci_dev(hwif->dev);
+> >>> -	return dev ? pcibus_to_node(dev->bus) : -1;
+> >>> +	return hwif->dev ? pcibus_to_node(dev->bus) : -1;
+> >>>  }
+> >>>
+> >>>  static inline ide_drive_t *ide_get_paired_drive(ide_drive_t *drive)
+> >> Hi Bart,
+> >> Thanks !! the patch solves the kernel panic but when after applying the patch,kernel is not
+> >> able to mount the filesystem and panics, am i not sure what is likely causing the panic.
+> > 
+> > Is
+> > 
+> > - the commit 36501650ec45b1db308c3b51886044863be2d762 with Andi's fix applied
+> > 
+> > or
+> > 
+> > - the commit f6fb786d6dcdd7d730e4fba620b071796f487e1b
+> >   (the one before commit 36501650ec45b1db308c3b51886044863be2d762)
+> > 
+> > working for you?
+> 
+> No, the commit before the commit 36501650ec45b1db308c3b51886044863be2d762 did not either work, i
+> get the same kernel panic.
+> 
+> > 
+> >> Creating root device.
+> >> Mounting root filesystem.
+> >> mount: could not  find filesystem
+> >> Kernel panic - not syncing: Attempted to kill init!
+> > 
+> > Is IDE actually used for the boot device?
+> > 
+> > [ Please send a dmesg output from the working system. ]
 
-I'm trying to compile an UML binary from 2.6.24.
+Hmm, it is not (from dmesg):
 
-  make ARCH=um O=... bzImage 
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+Probing IDE interface ide0...
+hda: HL-DT-STCD-RW/DVD DRIVE GCC-4244N, ATAPI CD/DVD-ROM drive
+Probing IDE interface ide1...
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: ATAPI 24X DVD-ROM CD-R/RW drive, 2048kB Cache
+Uniform CD-ROM driver Revision: 3.20
 
-gives
+[...]
 
-  make -C linux-2.6.24.2/ O=output_path/build ARCH=um bzImage
-  make[1]: Entering directory `output_path/linux-2.6.24.2'
-    GEN     output_path/build/Makefile
-  scripts/kconfig/conf -s arch/um/Kconfig
-  net/bluetooth/hidp/Kconfig:4:warning: 'select' used by config symbol 'BT_HIDP' refers to undefined symbol 'HID'
-  drivers/net/Kconfig:238:warning: 'select' used by config symbol 'AX88796_93CX6' refers to undefined symbol 'EEPROM_93CX6'
-  drivers/net/Kconfig:1346:warning: 'select' used by config symbol 'B44_PCI_AUTOSELECT' refers to undefined symbol 'SSB_PCIHOST'
-  drivers/net/Kconfig:1353:warning: 'select' used by config symbol 'B44_PCICORE_AUTOSELECT' refers to undefined symbol 'SSB_DRIVER_PCICORE'
-  drivers/net/Kconfig:1332:warning: 'select' used by config symbol 'B44' refers to undefined symbol 'SSB'
-  drivers/net/wireless/Kconfig:551:warning: 'select' used by config symbol 'RTL8187' refers to undefined symbol 'EEPROM_93CX6'
-  drivers/net/wireless/Kconfig:564:warning: 'select' used by config symbol 'ADM8211' refers to undefined symbol 'EEPROM_93CX6'
-  drivers/net/wireless/b43/Kconfig:34:warning: 'select' used by config symbol 'B43_PCI_AUTOSELECT' refers to undefined symbol 'SSB_PCIHOST'
-  drivers/net/wireless/b43/Kconfig:41:warning: 'select' used by config symbol 'B43_PCICORE_AUTOSELECT' refers to undefined symbol 'SSB_DRIVER_PCICORE'
-  drivers/net/wireless/b43/Kconfig:47:warning: 'select' used by config symbol 'B43_PCMCIA' refers to undefined symbol 'SSB_PCMCIAHOST'
-  drivers/net/wireless/b43/Kconfig:4:warning: 'select' used by config symbol 'B43' refers to undefined symbol 'SSB'
-  drivers/net/wireless/b43legacy/Kconfig:27:warning: 'select' used by config symbol 'B43LEGACY_PCI_AUTOSELECT' refers to undefined symbol 'SSB_PCIHOST'
-  drivers/net/wireless/b43legacy/Kconfig:34:warning: 'select' used by config symbol 'B43LEGACY_PCICORE_AUTOSELECT' refers to undefined symbol 'SSB_DRIVER_PCICORE'
-  drivers/net/wireless/b43legacy/Kconfig:4:warning: 'select' used by config symbol 'B43LEGACY' refers to undefined symbol 'SSB'
-  drivers/net/wireless/rt2x00/Kconfig:38:warning: 'select' used by config symbol 'RT2X00_LIB_RFKILL' refers to undefined symbol 'INPUT_POLLDEV'
-  drivers/net/wireless/rt2x00/Kconfig:44:warning: 'select' used by config symbol 'RT2400PCI' refers to undefined symbol 'EEPROM_93CX6'
-  drivers/net/wireless/rt2x00/Kconfig:63:warning: 'select' used by config symbol 'RT2500PCI' refers to undefined symbol 'EEPROM_93CX6'
-  drivers/net/wireless/rt2x00/Kconfig:83:warning: 'select' used by config symbol 'RT61PCI' refers to undefined symbol 'EEPROM_93CX6'
-  make[2]: *** No rule to make target `bzImage'.  Stop.
-  make[1]: *** [sub-make] Error 2
-  make[1]: Leaving directory `output_path/linux-2.6.24.2'
-  make: *** [bzImage] Error 2
+Adaptec aacraid driver 1.1-5[2449]-ms
+ACPI: PCI Interrupt 0000:01:02.0[A] -> GSI 25 (level, low) -> IRQ 25
+AAC0: kernel 5.2-0[11835] Jan  9 2007
+AAC0: monitor 5.2-0[11835]
+AAC0: bios 5.2-0[11835]
+AAC0: serial 1625D1
+AAC0: 64bit support enabled.
+AAC0: 64 Bit DAC enabled
+scsi0 : ServeRAID
+scsi 0:0:0:0: Direct-Access     IBM      x366             V1.0 PQ: 0 ANSI: 2
+scsi 0:1:0:0: Direct-Access     IBM-ESXS ST973401SS       B519 PQ: 0 ANSI: 5
+scsi 0:1:1:0: Direct-Access     IBM-ESXS ST973401SS       B519 PQ: 0 ANSI: 5
+scsi 0:1:2:0: Direct-Access     IBM-ESXS ST973401SS       B519 PQ: 0 ANSI: 5
+scsi 0:3:0:0: Enclosure         IBM      SAS SES-2 DEVICE 0.09 PQ: 0 ANSI: 5
+sd 0:0:0:0: [sda] 429459456 512-byte hardware sectors (219883 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 06 00 10 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+sd 0:0:0:0: [sda] 429459456 512-byte hardware sectors (219883 MB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 06 00 10 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, supports DPO and FUA
+ sda: sda1 sda2 sda3 sda4 < sda5 sda6 >
+sd 0:0:0:0: [sda] Attached SCSI removable disk
+sd 0:0:0:0: Attached scsi generic sg0 type 0
+scsi 0:1:0:0: Attached scsi generic sg1 type 0
+scsi 0:1:1:0: Attached scsi generic sg2 type 0
+scsi 0:1:2:0: Attached scsi generic sg3 type 0
+scsi 0:3:0:0: Attached scsi generic sg4 type 13
 
-That's with a "make defconfig ARCH=um O=..." before, too - so it's 
-not the configuration; but to be sure it's attached.
+[...]
 
-I have to admit that's on a 2.4 i686 machine, with gcc 2.95.3 on it - 
-but that should make no difference to the Kconfig warnings, should it?
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
 
-I found similar messages at http://l4x.org/k/?d=37250, so it should be
-reproduceable.
+[...]
 
+EXT3 FS on sda1, internal journal
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda2, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
 
-Help, please?
+I worry that another git-bisect session will be needed unless SCSI
+developers are already aware of the problem source.
 
-
-Regards,
-
-Phil
-
-
---Boundary-00=_FJCtHn27j2FM7z/
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="config"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="config"
-
-#
-# Automatically generated make config: don't edit
-# Linux kernel version: 2.6.24.2
-# Thu Feb 14 12:00:16 2008
-#
-CONFIG_DEFCONFIG_LIST="arch/$ARCH/defconfig"
-CONFIG_GENERIC_HARDIRQS=y
-CONFIG_UML=y
-CONFIG_MMU=y
-CONFIG_NO_IOMEM=y
-# CONFIG_TRACE_IRQFLAGS_SUPPORT is not set
-CONFIG_LOCKDEP_SUPPORT=y
-# CONFIG_STACKTRACE_SUPPORT is not set
-CONFIG_GENERIC_CALIBRATE_DELAY=y
-CONFIG_GENERIC_BUG=y
-CONFIG_GENERIC_TIME=y
-CONFIG_GENERIC_CLOCKEVENTS=y
-CONFIG_IRQ_RELEASE_METHOD=y
-
-#
-# UML-specific options
-#
-CONFIG_STATIC_LINK=y
-
-#
-# Host processor type and features
-#
-# CONFIG_M386 is not set
-# CONFIG_M486 is not set
-# CONFIG_M586 is not set
-# CONFIG_M586TSC is not set
-# CONFIG_M586MMX is not set
-CONFIG_M686=y
-# CONFIG_MPENTIUMII is not set
-# CONFIG_MPENTIUMIII is not set
-# CONFIG_MPENTIUMM is not set
-# CONFIG_MPENTIUM4 is not set
-# CONFIG_MK6 is not set
-# CONFIG_MK7 is not set
-# CONFIG_MK8 is not set
-# CONFIG_MCRUSOE is not set
-# CONFIG_MEFFICEON is not set
-# CONFIG_MWINCHIPC6 is not set
-# CONFIG_MWINCHIP2 is not set
-# CONFIG_MWINCHIP3D is not set
-# CONFIG_MGEODEGX1 is not set
-# CONFIG_MGEODE_LX is not set
-# CONFIG_MCYRIXIII is not set
-# CONFIG_MVIAC3_2 is not set
-# CONFIG_MVIAC7 is not set
-# CONFIG_MPSC is not set
-# CONFIG_MCORE2 is not set
-# CONFIG_GENERIC_CPU is not set
-# CONFIG_X86_GENERIC is not set
-CONFIG_X86_CMPXCHG=y
-CONFIG_X86_L1_CACHE_SHIFT=5
-CONFIG_X86_XADD=y
-CONFIG_X86_PPRO_FENCE=y
-CONFIG_X86_WP_WORKS_OK=y
-CONFIG_X86_INVLPG=y
-CONFIG_X86_BSWAP=y
-CONFIG_X86_POPAD_OK=y
-CONFIG_X86_GOOD_APIC=y
-CONFIG_X86_USE_PPRO_CHECKSUM=y
-CONFIG_X86_TSC=y
-CONFIG_X86_CMOV=y
-CONFIG_X86_MINIMUM_CPU_FAMILY=4
-CONFIG_UML_X86=y
-CONFIG_X86_32=y
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-# CONFIG_64BIT is not set
-CONFIG_SEMAPHORE_SLEEPERS=y
-CONFIG_HOST_VMSPLIT_3G=y
-# CONFIG_HOST_VMSPLIT_3G_OPT is not set
-# CONFIG_HOST_VMSPLIT_2G is not set
-# CONFIG_HOST_VMSPLIT_1G is not set
-CONFIG_TOP_ADDR=0xC0000000
-# CONFIG_3_LEVEL_PGTABLES is not set
-CONFIG_ARCH_HAS_SC_SIGNALS=y
-CONFIG_ARCH_REUSE_HOST_VSYSCALL_AREA=y
-CONFIG_GENERIC_HWEIGHT=y
-CONFIG_SELECT_MEMORY_MODEL=y
-CONFIG_FLATMEM_MANUAL=y
-# CONFIG_DISCONTIGMEM_MANUAL is not set
-# CONFIG_SPARSEMEM_MANUAL is not set
-CONFIG_FLATMEM=y
-CONFIG_FLAT_NODE_MEM_MAP=y
-# CONFIG_SPARSEMEM_STATIC is not set
-# CONFIG_SPARSEMEM_VMEMMAP_ENABLE is not set
-CONFIG_SPLIT_PTLOCK_CPUS=4
-# CONFIG_RESOURCES_64BIT is not set
-CONFIG_ZONE_DMA_FLAG=0
-CONFIG_VIRT_TO_BUS=y
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-CONFIG_GENERIC_CLOCKEVENTS_BUILD=y
-CONFIG_LD_SCRIPT_STATIC=y
-CONFIG_NET=y
-CONFIG_BINFMT_ELF=y
-# CONFIG_BINFMT_AOUT is not set
-# CONFIG_BINFMT_MISC is not set
-CONFIG_HOSTFS=y
-# CONFIG_HPPFS is not set
-CONFIG_MCONSOLE=y
-CONFIG_MAGIC_SYSRQ=y
-# CONFIG_SMP is not set
-CONFIG_NEST_LEVEL=0
-# CONFIG_HIGHMEM is not set
-CONFIG_KERNEL_STACK_ORDER=0
-
-#
-# General setup
-#
-CONFIG_EXPERIMENTAL=y
-CONFIG_BROKEN_ON_SMP=y
-CONFIG_INIT_ENV_ARG_LIMIT=128
-CONFIG_LOCALVERSION=""
-CONFIG_LOCALVERSION_AUTO=y
-CONFIG_SYSVIPC=y
-CONFIG_SYSVIPC_SYSCTL=y
-CONFIG_POSIX_MQUEUE=y
-CONFIG_BSD_PROCESS_ACCT=y
-# CONFIG_BSD_PROCESS_ACCT_V3 is not set
-# CONFIG_TASKSTATS is not set
-# CONFIG_USER_NS is not set
-# CONFIG_PID_NS is not set
-# CONFIG_AUDIT is not set
-CONFIG_IKCONFIG=y
-CONFIG_IKCONFIG_PROC=y
-CONFIG_LOG_BUF_SHIFT=14
-# CONFIG_CGROUPS is not set
-# CONFIG_FAIR_GROUP_SCHED is not set
-CONFIG_SYSFS_DEPRECATED=y
-# CONFIG_RELAY is not set
-# CONFIG_BLK_DEV_INITRD is not set
-CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-CONFIG_SYSCTL=y
-CONFIG_EMBEDDED=y
-CONFIG_UID16=y
-CONFIG_SYSCTL_SYSCALL=y
-CONFIG_KALLSYMS=y
-CONFIG_KALLSYMS_EXTRA_PASS=y
-CONFIG_HOTPLUG=y
-CONFIG_PRINTK=y
-CONFIG_BUG=y
-CONFIG_ELF_CORE=y
-CONFIG_BASE_FULL=y
-CONFIG_FUTEX=y
-CONFIG_ANON_INODES=y
-CONFIG_EPOLL=y
-CONFIG_SIGNALFD=y
-CONFIG_EVENTFD=y
-CONFIG_SHMEM=y
-CONFIG_VM_EVENT_COUNTERS=y
-CONFIG_SLAB=y
-# CONFIG_SLUB is not set
-# CONFIG_SLOB is not set
-CONFIG_SLABINFO=y
-CONFIG_RT_MUTEXES=y
-# CONFIG_TINY_SHMEM is not set
-CONFIG_BASE_SMALL=0
-# CONFIG_MODULES is not set
-# CONFIG_BLOCK is not set
-
-#
-# Character Devices
-#
-CONFIG_STDERR_CONSOLE=y
-CONFIG_STDIO_CONSOLE=y
-CONFIG_SSL=y
-CONFIG_NULL_CHAN=y
-CONFIG_PORT_CHAN=y
-CONFIG_PTY_CHAN=y
-CONFIG_TTY_CHAN=y
-CONFIG_XTERM_CHAN=y
-# CONFIG_NOCONFIG_CHAN is not set
-CONFIG_CON_ZERO_CHAN="fd:0,fd:1"
-CONFIG_CON_CHAN="xterm"
-CONFIG_SSL_CHAN="pts"
-CONFIG_UNIX98_PTYS=y
-CONFIG_LEGACY_PTYS=y
-# CONFIG_RAW_DRIVER is not set
-CONFIG_LEGACY_PTY_COUNT=256
-# CONFIG_WATCHDOG is not set
-# CONFIG_UML_SOUND is not set
-# CONFIG_SOUND is not set
-# CONFIG_HOSTAUDIO is not set
-# CONFIG_HW_RANDOM is not set
-CONFIG_UML_RANDOM=y
-# CONFIG_MMAPPER is not set
-
-#
-# Generic Driver Options
-#
-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
-CONFIG_STANDALONE=y
-CONFIG_PREVENT_FIRMWARE_BUILD=y
-# CONFIG_FW_LOADER is not set
-# CONFIG_SYS_HYPERVISOR is not set
-
-#
-# Networking
-#
-
-#
-# Networking options
-#
-CONFIG_PACKET=y
-CONFIG_PACKET_MMAP=y
-CONFIG_UNIX=y
-CONFIG_XFRM=y
-# CONFIG_XFRM_USER is not set
-# CONFIG_XFRM_SUB_POLICY is not set
-# CONFIG_XFRM_MIGRATE is not set
-# CONFIG_NET_KEY is not set
-CONFIG_INET=y
-# CONFIG_IP_MULTICAST is not set
-# CONFIG_IP_ADVANCED_ROUTER is not set
-CONFIG_IP_FIB_HASH=y
-# CONFIG_IP_PNP is not set
-# CONFIG_NET_IPIP is not set
-# CONFIG_NET_IPGRE is not set
-# CONFIG_ARPD is not set
-# CONFIG_SYN_COOKIES is not set
-# CONFIG_INET_AH is not set
-# CONFIG_INET_ESP is not set
-# CONFIG_INET_IPCOMP is not set
-# CONFIG_INET_XFRM_TUNNEL is not set
-# CONFIG_INET_TUNNEL is not set
-CONFIG_INET_XFRM_MODE_TRANSPORT=y
-CONFIG_INET_XFRM_MODE_TUNNEL=y
-CONFIG_INET_XFRM_MODE_BEET=y
-# CONFIG_INET_LRO is not set
-CONFIG_INET_DIAG=y
-CONFIG_INET_TCP_DIAG=y
-# CONFIG_TCP_CONG_ADVANCED is not set
-CONFIG_TCP_CONG_CUBIC=y
-CONFIG_DEFAULT_TCP_CONG="cubic"
-# CONFIG_TCP_MD5SIG is not set
-# CONFIG_IPV6 is not set
-# CONFIG_INET6_XFRM_TUNNEL is not set
-# CONFIG_INET6_TUNNEL is not set
-# CONFIG_NETWORK_SECMARK is not set
-# CONFIG_NETFILTER is not set
-# CONFIG_IP_DCCP is not set
-# CONFIG_IP_SCTP is not set
-# CONFIG_TIPC is not set
-# CONFIG_ATM is not set
-# CONFIG_BRIDGE is not set
-# CONFIG_VLAN_8021Q is not set
-# CONFIG_DECNET is not set
-# CONFIG_LLC2 is not set
-# CONFIG_IPX is not set
-# CONFIG_ATALK is not set
-# CONFIG_X25 is not set
-# CONFIG_LAPB is not set
-# CONFIG_ECONET is not set
-# CONFIG_WAN_ROUTER is not set
-# CONFIG_NET_SCHED is not set
-
-#
-# Network testing
-#
-# CONFIG_NET_PKTGEN is not set
-# CONFIG_HAMRADIO is not set
-# CONFIG_IRDA is not set
-# CONFIG_BT is not set
-# CONFIG_AF_RXRPC is not set
-
-#
-# Wireless
-#
-# CONFIG_CFG80211 is not set
-# CONFIG_WIRELESS_EXT is not set
-# CONFIG_MAC80211 is not set
-# CONFIG_IEEE80211 is not set
-# CONFIG_RFKILL is not set
-# CONFIG_NET_9P is not set
-
-#
-# UML Network Devices
-#
-CONFIG_UML_NET=y
-CONFIG_UML_NET_ETHERTAP=y
-CONFIG_UML_NET_TUNTAP=y
-# CONFIG_UML_NET_SLIP is not set
-# CONFIG_UML_NET_DAEMON is not set
-# CONFIG_UML_NET_VDE is not set
-# CONFIG_UML_NET_MCAST is not set
-# CONFIG_UML_NET_PCAP is not set
-# CONFIG_UML_NET_SLIRP is not set
-CONFIG_NETDEVICES=y
-# CONFIG_NETDEVICES_MULTIQUEUE is not set
-CONFIG_DUMMY=y
-# CONFIG_BONDING is not set
-# CONFIG_MACVLAN is not set
-# CONFIG_EQUALIZER is not set
-CONFIG_TUN=y
-# CONFIG_VETH is not set
-
-#
-# Wireless LAN
-#
-# CONFIG_WLAN_PRE80211 is not set
-# CONFIG_WLAN_80211 is not set
-# CONFIG_WAN is not set
-CONFIG_PPP=y
-# CONFIG_PPP_MULTILINK is not set
-# CONFIG_PPP_FILTER is not set
-# CONFIG_PPP_ASYNC is not set
-# CONFIG_PPP_SYNC_TTY is not set
-# CONFIG_PPP_DEFLATE is not set
-# CONFIG_PPP_BSDCOMP is not set
-# CONFIG_PPP_MPPE is not set
-# CONFIG_PPPOE is not set
-# CONFIG_PPPOL2TP is not set
-CONFIG_SLIP=y
-# CONFIG_SLIP_COMPRESSED is not set
-CONFIG_SLHC=y
-# CONFIG_SLIP_SMART is not set
-# CONFIG_SLIP_MODE_SLIP6 is not set
-# CONFIG_SHAPER is not set
-# CONFIG_NETCONSOLE is not set
-# CONFIG_NETPOLL is not set
-# CONFIG_NET_POLL_CONTROLLER is not set
-# CONFIG_CONNECTOR is not set
-
-#
-# File systems
-#
-CONFIG_INOTIFY=y
-CONFIG_INOTIFY_USER=y
-# CONFIG_QUOTA is not set
-CONFIG_DNOTIFY=y
-CONFIG_AUTOFS_FS=y
-CONFIG_AUTOFS4_FS=y
-# CONFIG_FUSE_FS is not set
-
-#
-# Pseudo filesystems
-#
-CONFIG_PROC_FS=y
-CONFIG_PROC_KCORE=y
-CONFIG_PROC_SYSCTL=y
-CONFIG_SYSFS=y
-CONFIG_TMPFS=y
-# CONFIG_TMPFS_POSIX_ACL is not set
-# CONFIG_HUGETLB_PAGE is not set
-# CONFIG_CONFIGFS_FS is not set
-
-#
-# Miscellaneous filesystems
-#
-CONFIG_NETWORK_FILESYSTEMS=y
-CONFIG_NFS_FS=y
-CONFIG_NFS_V3=y
-# CONFIG_NFS_V3_ACL is not set
-CONFIG_NFS_V4=y
-CONFIG_NFS_DIRECTIO=y
-# CONFIG_NFSD is not set
-CONFIG_LOCKD=y
-CONFIG_LOCKD_V4=y
-CONFIG_NFS_COMMON=y
-CONFIG_SUNRPC=y
-CONFIG_SUNRPC_GSS=y
-# CONFIG_SUNRPC_BIND34 is not set
-CONFIG_RPCSEC_GSS_KRB5=y
-# CONFIG_RPCSEC_GSS_SPKM3 is not set
-# CONFIG_SMB_FS is not set
-# CONFIG_CIFS is not set
-# CONFIG_NCP_FS is not set
-# CONFIG_CODA_FS is not set
-# CONFIG_AFS_FS is not set
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-# CONFIG_NLS_CODEPAGE_437 is not set
-# CONFIG_NLS_CODEPAGE_737 is not set
-# CONFIG_NLS_CODEPAGE_775 is not set
-# CONFIG_NLS_CODEPAGE_850 is not set
-# CONFIG_NLS_CODEPAGE_852 is not set
-# CONFIG_NLS_CODEPAGE_855 is not set
-# CONFIG_NLS_CODEPAGE_857 is not set
-# CONFIG_NLS_CODEPAGE_860 is not set
-# CONFIG_NLS_CODEPAGE_861 is not set
-# CONFIG_NLS_CODEPAGE_862 is not set
-# CONFIG_NLS_CODEPAGE_863 is not set
-# CONFIG_NLS_CODEPAGE_864 is not set
-# CONFIG_NLS_CODEPAGE_865 is not set
-# CONFIG_NLS_CODEPAGE_866 is not set
-# CONFIG_NLS_CODEPAGE_869 is not set
-# CONFIG_NLS_CODEPAGE_936 is not set
-# CONFIG_NLS_CODEPAGE_950 is not set
-# CONFIG_NLS_CODEPAGE_932 is not set
-# CONFIG_NLS_CODEPAGE_949 is not set
-# CONFIG_NLS_CODEPAGE_874 is not set
-# CONFIG_NLS_ISO8859_8 is not set
-# CONFIG_NLS_CODEPAGE_1250 is not set
-# CONFIG_NLS_CODEPAGE_1251 is not set
-# CONFIG_NLS_ASCII is not set
-# CONFIG_NLS_ISO8859_1 is not set
-# CONFIG_NLS_ISO8859_2 is not set
-# CONFIG_NLS_ISO8859_3 is not set
-# CONFIG_NLS_ISO8859_4 is not set
-# CONFIG_NLS_ISO8859_5 is not set
-# CONFIG_NLS_ISO8859_6 is not set
-# CONFIG_NLS_ISO8859_7 is not set
-# CONFIG_NLS_ISO8859_9 is not set
-# CONFIG_NLS_ISO8859_13 is not set
-# CONFIG_NLS_ISO8859_14 is not set
-# CONFIG_NLS_ISO8859_15 is not set
-# CONFIG_NLS_KOI8_R is not set
-# CONFIG_NLS_KOI8_U is not set
-# CONFIG_NLS_UTF8 is not set
-# CONFIG_DLM is not set
-
-#
-# Security options
-#
-# CONFIG_KEYS is not set
-# CONFIG_SECURITY is not set
-# CONFIG_SECURITY_FILE_CAPABILITIES is not set
-CONFIG_CRYPTO=y
-CONFIG_CRYPTO_ALGAPI=y
-CONFIG_CRYPTO_BLKCIPHER=y
-CONFIG_CRYPTO_HASH=y
-CONFIG_CRYPTO_MANAGER=y
-CONFIG_CRYPTO_HMAC=y
-# CONFIG_CRYPTO_XCBC is not set
-# CONFIG_CRYPTO_NULL is not set
-# CONFIG_CRYPTO_MD4 is not set
-CONFIG_CRYPTO_MD5=y
-CONFIG_CRYPTO_SHA1=y
-CONFIG_CRYPTO_SHA256=y
-# CONFIG_CRYPTO_SHA512 is not set
-# CONFIG_CRYPTO_WP512 is not set
-# CONFIG_CRYPTO_TGR192 is not set
-# CONFIG_CRYPTO_GF128MUL is not set
-# CONFIG_CRYPTO_ECB is not set
-CONFIG_CRYPTO_CBC=y
-# CONFIG_CRYPTO_PCBC is not set
-# CONFIG_CRYPTO_LRW is not set
-# CONFIG_CRYPTO_XTS is not set
-# CONFIG_CRYPTO_CRYPTD is not set
-CONFIG_CRYPTO_DES=y
-# CONFIG_CRYPTO_FCRYPT is not set
-CONFIG_CRYPTO_BLOWFISH=y
-# CONFIG_CRYPTO_TWOFISH is not set
-# CONFIG_CRYPTO_TWOFISH_586 is not set
-# CONFIG_CRYPTO_SERPENT is not set
-# CONFIG_CRYPTO_AES is not set
-# CONFIG_CRYPTO_AES_586 is not set
-# CONFIG_CRYPTO_CAST5 is not set
-# CONFIG_CRYPTO_CAST6 is not set
-# CONFIG_CRYPTO_TEA is not set
-# CONFIG_CRYPTO_ARC4 is not set
-# CONFIG_CRYPTO_KHAZAD is not set
-# CONFIG_CRYPTO_ANUBIS is not set
-# CONFIG_CRYPTO_SEED is not set
-# CONFIG_CRYPTO_DEFLATE is not set
-# CONFIG_CRYPTO_MICHAEL_MIC is not set
-# CONFIG_CRYPTO_CRC32C is not set
-# CONFIG_CRYPTO_CAMELLIA is not set
-# CONFIG_CRYPTO_AUTHENC is not set
-CONFIG_CRYPTO_HW=y
-
-#
-# Library routines
-#
-CONFIG_BITREVERSE=y
-# CONFIG_CRC_CCITT is not set
-# CONFIG_CRC16 is not set
-# CONFIG_CRC_ITU_T is not set
-CONFIG_CRC32=y
-# CONFIG_CRC7 is not set
-CONFIG_LIBCRC32C=y
-CONFIG_PLIST=y
-CONFIG_HAS_DMA=y
-
-#
-# SCSI device support
-#
-# CONFIG_SCSI_DMA is not set
-# CONFIG_SCSI_NETLINK is not set
-# CONFIG_INPUT is not set
-# CONFIG_INSTRUMENTATION is not set
-
-#
-# Kernel hacking
-#
-# CONFIG_PRINTK_TIME is not set
-CONFIG_ENABLE_WARN_DEPRECATED=y
-CONFIG_ENABLE_MUST_CHECK=y
-# CONFIG_UNUSED_SYMBOLS is not set
-# CONFIG_DEBUG_FS is not set
-# CONFIG_DEBUG_KERNEL is not set
-# CONFIG_DEBUG_BUGVERBOSE is not set
-# CONFIG_SAMPLES is not set
-# CONFIG_DEBUG_STACK_USAGE is not set
-
---Boundary-00=_FJCtHn27j2FM7z/--
+Thanks,
+Bart
