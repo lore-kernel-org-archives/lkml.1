@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbYBNPOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbYBNPOy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbYBNPOT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:14:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBNPOJ
+	id S1755239AbYBNPOy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:14:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBNPOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:14:09 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:46448 "EHLO mgw1.diku.dk"
+	Thu, 14 Feb 2008 10:14:43 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:57910 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863AbYBNPOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:14:07 -0500
-Date: Thu, 14 Feb 2008 16:14:04 +0100 (MET)
+	id S1755353AbYBNPOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:14:42 -0500
+Date: Thu, 14 Feb 2008 16:14:33 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: jeremy@xensource.com, xen-devel@lists.xensource.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/6] arch/x86/xen: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802141613300.1185@pc-041.diku.dk>
+To: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,15 +65,24 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c 2008-02-02 15:28:17.000000000 +0100
-+++ b/arch/x86/xen/enlighten.c 2008-02-13 20:48:15.000000000 +0100
-@@ -293,7 +293,7 @@ static void xen_load_gdt(const struct de
- 	unsigned long *frames;
- 	unsigned long va = dtr->address;
- 	unsigned int size = dtr->size + 1;
--	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-+	unsigned pages = DIV_ROUND_UP(size, PAGE_SIZE);
- 	int f;
- 	struct multicall_space mcs;
+diff -u -p a/fs/direct-io.c b/fs/direct-io.c
+--- a/fs/direct-io.c 2008-02-08 08:58:17.000000000 +0100
++++ b/fs/direct-io.c 2008-02-13 20:58:53.000000000 +0100
+@@ -976,7 +976,7 @@ direct_io_worker(int rw, struct kiocb *i
+ 	for (seg = 0; seg < nr_segs; seg++) {
+ 		user_addr = (unsigned long)iov[seg].iov_base;
+ 		dio->pages_in_io +=
+-			((user_addr+iov[seg].iov_len +PAGE_SIZE-1)/PAGE_SIZE
++			(DIV_ROUND_UP(user_addr + iov[seg].iov_len, PAGE_SIZE)
+ 				- user_addr/PAGE_SIZE);
+ 	}
 
+@@ -998,7 +998,7 @@ direct_io_worker(int rw, struct kiocb *i
+ 			dio->total_pages++;
+ 			bytes -= PAGE_SIZE - (user_addr & (PAGE_SIZE - 1));
+ 		}
+-		dio->total_pages += (bytes + PAGE_SIZE - 1) / PAGE_SIZE;
++		dio->total_pages += DIV_ROUND_UP(bytes, PAGE_SIZE);
+ 		dio->curr_user_address = user_addr;
+
+ 		ret = do_direct_IO(dio);
