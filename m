@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765583AbYBNIUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbYBNI0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765583AbYBNIUr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 03:20:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbYBNIUh
+	id S1762825AbYBNI0S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 03:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbYBNI0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 03:20:37 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56727 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751960AbYBNIUg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 03:20:36 -0500
-Date: Thu, 14 Feb 2008 08:14:05 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, Linus <torvalds@linux-foundation.org>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-ID: <20080214081405.GA20791@flint.arm.linux.org.uk>
-Mail-Followup-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Theodore Tso <tytso@mit.edu>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-	linux-arch@vger.kernel.org, Linus <torvalds@linux-foundation.org>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <20080211203146.3d28d1a0@laptopd505.fenrus.org> <1202791555.20739.6.camel@heimdal.trondhjem.org> <20080212051136.GA12802@mit.edu> <20080211221535.bc0dc9cf.akpm@linux-foundation.org> <20080212225716.cf695fe4.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Feb 2008 03:26:07 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:52613 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750787AbYBNI0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 03:26:06 -0500
+Date: Thu, 14 Feb 2008 10:25:47 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Driver removals
+Message-ID: <20080214082547.GJ12383@cs181133002.pp.htv.fi>
+References: <fp08q7$jv0$1@ger.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080212225716.cf695fe4.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <fp08q7$jv0$1@ger.gmane.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 10:57:16PM +1100, Stephen Rothwell wrote:
-> We need to ask Linus to promise that he will pull the stable branch from
-> linux-next first in the merge window.  For that to happen, I would expect
-> that Linus would also review and sign off (or ack) these commits to the
-> linux-next tree.
+On Wed, Feb 13, 2008 at 09:26:26PM -0500, Bill Davidsen wrote:
+>...
+> In general, if a driver works and is being used, until it *needs*  
+> attention I see no reason to replace it. I don't agree that "it forces  
+> people to try the new driver" is a valid reason, being unmaintained is  
+> only a problem if it needs maintenance. I am not going to reopen that  
+> topic, I'm simply noting a general opposition to unfunded mandates, and  
+> requiring changes to kernel, module and/or rc.local config is just that.
 
-Changing the commits in git in anyway changes their ID, which has the
-same effects as a rebase.
+Keeping a working unmaintained driver in the tree is not a big deal - we 
+have hundreds of them.
 
-With this idea, Linus only has two choices:
+But you miss the main point that removal of an obsolete driver with a 
+new replacement driver forces people to finally report their problems 
+with the new driver, thus making the new driver better.
 
-1. pull the entire set of linux-next changes whether he likes them or not,
-   because he's going to get them either from the linux-next tree or someone
-   elses tree which is based upon that.
+After all, the people who scream loudly that the new driver doesn't work 
+for them when the old driver gets removed are the people who should have 
+reported their problems with the new driver many years ago...
 
-2. don't pull the changes, nor anyone elses tree if he hates the changes
-   in linux-next.
-
-So really, Linus needs to ack the changes _before_ they go into linux-next.
+cu
+Adrian
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
