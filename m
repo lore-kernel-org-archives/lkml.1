@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758813AbYBNKZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764179AbYBNK0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758813AbYBNKZi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 05:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbYBNKZa
+	id S1764179AbYBNK0G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 05:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752548AbYBNKZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 05:25:30 -0500
-Received: from mx2.suse.de ([195.135.220.15]:59163 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751471AbYBNKZ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 05:25:29 -0500
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080213155725.GA19523@elte.hu>
-Date: Thu, 14 Feb 2008 11:25:27 +0100
-In-Reply-To: <20080213155725.GA19523@elte.hu> (Ingo Molnar's message of "Wed\, 13 Feb 2008 16\:57\:25 +0100")
-Message-ID: <p73ir0r25t4.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Thu, 14 Feb 2008 05:25:50 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:43885 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbYBNKZt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 05:25:49 -0500
+Date: Thu, 14 Feb 2008 11:22:44 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: mikael.starvik@axis.com, dev-etrax@axis.com, linux-kernel@vger.kernel.org
+Subject: Re: cris/arch-v10/lib/memset.c compile error
+Message-ID: <20080214102244.GZ11007@axis.com>
+References: <20080213185703.GC14269@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213185703.GC14269@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
->
-> Thomas Gleixner (1):
->       x86: EFI: fix use of unitialized variable and the cache logic
+On Wed, Feb 13, 2008 at 08:57:03PM +0200, Adrian Bunk wrote:
+> Trying to compile a cris defconfig with an svn gcc (that will become
+> gcc 4.3) fails with the following error:
 
-Your honor, I would like to register a differing opinion...
+Ah, yes. Cast doesn't return an lvalue. I've also seen this (as a
+warning) when running with sparse with the 3.2.1 gcc.
 
-I submitted that fix originally in a different form, but it
-got finally stripped down to this. However in my opinion
-the full version of the patch is still needed, otherwise
-EFI still does the mapping wrong.
+I'll do something about that and get back to you with a patch.
 
-Even with this patch EFI still passes in ioremap (on 32bit)  and fixmap (on 64bit)
-addresses to cpa which it will mishandle.
+>   CC      arch/cris/arch-v10/lib/memset.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c: In function 'memset':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/cris/arch-v10/lib/memset.c:164: error: lvalue required as increment operand
+> [snip]
 
-On 64bit cpa will still change cache attributes on random low pages and
-cause illegal caching attribute aliases on both 32bit and 64bit.
+Thanks for the heads up.
 
-See http://marc.info/?l=linux-kernel&m=120290071713708&w=2 for details.
+> cu
+> Adrian
 
-git-x86#mm made some attempts to also fix this in pageattr.c which
-fixed some parts of the problem on 64bit (static_protections should be
-ok now),  but not all (alias handling still not good)  
-
-See http://marc.info/?l=linux-kernel&m=120290203315953&w=2
-for details
-
-In particular the direct mapping cache alias handling for
-ioremap/fixmap (and EFI uses that) is not correct on both 32bit and
-64bit. 
-
-Also all ioremaps have this same problem so all uncached mappings are
-broken when the direct mapping happens to overlap them (common on
-64bit with enough RAM).  Right now when you do a uncached ioremap the
-direct mapping will not be changed, which causes illegal
-conflicting caching aliasing.
-
-My original patch above avoided that by not calling set_memory_uc()
-for the EFI case, but I did not fix the general ioremap case for
-other users yet (will send a patch later for this unless someone 
-beats me to it)
-
-Note even with ioremap generally fixed the original patch
-http://marc.info/?l=linux-kernel&m=120284838904660&w=2
-in its full form will be still needed to pass in the correct attribute 
-to ioremap in the first place.
-
-I would recommend to either mark EFI CONFIG_BROKEN for now 
-or apply the complete patch I posted earlier 
-http://marc.info/?l=linux-kernel&m=120284838904660&w=2
-or fix it in some other way in pageattr.c as described in
-http://marc.info/?l=linux-kernel&m=120290203315953&w=2 
-(although that might be intrusive and I don't think such a change
-would be a good idea at this stage of the release) 
-
-And a separate patch fixing ioremap_nocache() will be needed too.
-
--Andi
+/^JN - Jesper Nilsson
+--
+               Jesper Nilsson -- jesper.nilsson@axis.com
