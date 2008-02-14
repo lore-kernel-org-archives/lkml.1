@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762454AbYBNOrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933172AbYBNOr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762454AbYBNOrX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:47:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757249AbYBNOrM
+	id S933172AbYBNOr7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbYBNOrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:47:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:9654 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756645AbYBNOrL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:47:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=H8SUxl4UbhHfvTFIYOH5H54URoyvdgZ23jw8aL9lepqkXlJtd5AHdby0O5SIogaJoUmQTOK91t0VOBtKde3swkUHjEcGW/ZZW8ERwZ4qcp6MstMlGKERznk+2JtPMA/K8nlAzGCQAbhLYeaW4x4uMFfCHpkN3RpsOolyIQdqUEE=
-Message-ID: <47B45469.5070103@gmail.com>
-Date: Thu, 14 Feb 2008 15:47:05 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 14 Feb 2008 09:47:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52542 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755928AbYBNOro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:47:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: first tree
+Date: Thu, 14 Feb 2008 15:45:55 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Sergio Luis <sergio@larces.uece.br>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: "gdth: update deprecated pci_find_device" is incorrect
-References: <47B453D3.5060707@gmail.com>
-In-Reply-To: <47B453D3.5060707@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802141545.56488.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/14/2008 03:44 PM, Jiri Slaby wrote:
-> Hi,
+On Thursday, 14 of February 2008, Stephen Rothwell wrote:
+> Hi all,
 > 
-> commit
-> 99109301d103fbf0de43fc5a580a406c12a501e0
-> in jejb/scsi-rc-fixes-2.6.git is incorrect. You don't decrement pci 
-> refcount on exit. Also you do not so on fail paths... I wonder why these 
-> mistakes happen every second time somebody tries to do such change.
+> I have created the first cut of the linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 > 
-> It leaked into mainline yet after "whole" two days, but what exactly 
-> drives me crazy is, that Jeff commented it in similar way and nobody 
-> reflected it!
+> Things to know about this tree:
+> 
+> It has two branches - master and stable.  Stable is currently just Linus'
+> tree and will never rebase.  Master will rebase on an almost daily basis
+> (maybe slower at the start).
+> 
+> The tree consists of subsystem git and quilt trees.  Currently, the quilt
+> trees are integrated by importing them into appropriately based git
+> branches and then merging those branches.  This has the advantage that
+> any conflict resolution will onlt have to happen once at the merge point
+> rather than, possibly, sevveral times during the series.  However, I am
+> considering just applying the quilt trees on top of the current tree
+> to get a result more like Linus' tree - we will see. The git trees are
+> obviously just merged.
+> 
+> Between each merge, the tree was built with both an allmodconfig for both
+> powerpc and x86_64.
+> 
+> The tree currently contains:
+> 	Greg's driver-core, pci and usb quilt series (in that order)
+> 	Alasdair Kergon's device-mapper quilt tree
+> 	Jiri Kosina's hid git tree
+> 	Jean Delvare's i2c quilt tree
+> 	Randy Dunlap's kernel-doc quilt tree
+> 	Haavard Skinnemoen's avr32 git tree
+> 
+> There was only one unresolved conflict which could have been caused
+> because I was not sure where to base the kernel-doc tree.
+> 
+> So, comments, please.
+> 
+> Also, more trees please ... :-)
 
-BTW if you have more than one card, you protected the driver from no race, since 
-you don't pci_dev_get of successfully grabbed cards.
+Perhaps you can add:
+
+git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6 test
+
+Thanks,
+Rafael
