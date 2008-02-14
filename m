@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbYBNHtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932587AbYBNHwS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932967AbYBNHtn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 02:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759009AbYBNHtf
+	id S932587AbYBNHwS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 02:52:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759621AbYBNHwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 02:49:35 -0500
-Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:43573 "EHLO
-	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758179AbYBNHtd convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 02:49:33 -0500
-From: Fabio Coatti <cova@ferrara.linux.it>
-Organization: FerraraLUG
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: stuck with 2.6.23.14 on x86_64
-Date: Thu, 14 Feb 2008 08:49:30 +0100
-User-Agent: KMail/1.9.7
-Cc: mikem13@sbcglobal.net, linux-kernel@vger.kernel.org
-References: <fa.d3EyknDimPJIlJNA2Y25+wmntNM@ifi.uio.no> <04a37899-eb7b-43ae-a7ab-1928ca1a0e35@s12g2000prg.googlegroups.com> <20080213112713.e028075f.akpm@linux-foundation.org>
-In-Reply-To: <20080213112713.e028075f.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 14 Feb 2008 02:52:09 -0500
+Received: from mail.artecdesign.ee ([62.65.32.9]:39642 "EHLO
+	postikukk.artecdesign.ee" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759415AbYBNHwI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 02:52:08 -0500
+X-Greylist: delayed 2103 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 02:52:08 EST
+Subject: Re: [2.6 patch] make mtd/nand/cs553x_nand.c:part_probes[] static
+From: Mart Raudsepp <mart.raudsepp@artecdesign.ee>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080213213010.GX3383@cs181133002.pp.htv.fi>
+References: <20080213213010.GX3383@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 14 Feb 2008 09:16:47 +0200
+Message-Id: <1202973407.4560.3.camel@martr-gentoo.artec>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802140849.31155.cova@ferrara.linux.it>
+X-ADG-Spam-Score: -5.9 (-----)
+X-ADG-Spam-ScoreInt: -58
+X-ADG-Spam-Report: Content analysis details:   (-5.9 points, 5.5 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-3.3 ALL_TRUSTED            Did not pass through any untrusted hosts
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+X-ADG-ExiScan-Signature: 1e0d58aac167f38cfdbb485f54453400
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alle mercoled� 13 febbraio 2008, Andrew Morton ha scritto:
 
-> > > Hardware: x86_64 AMD 2216HE
-> > > SCSI controller: HP Smart Array E200i Controller
-> > > Compiler: gcc (GCC) 4.1.1
-> > > binutils: 2.16.1
-> > >
-> > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
-> > > with a cciss0: HP Smart Array 6i Controller,
-> > > the 2.6.24.2 compiles just fine and works, so the cciss problems seems
-> > > related only to E200i controller.
+Ühel kenal päeval, K, 2008-02-13 kell 23:30, kirjutas Adrian Bunk:
+> This patch makes the needlessly global part_probes[] static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-> > Fabio, Can you please post your boot messages in bug 9859.
->
-> Let's cc him..
+Acked-by: Mart Raudsepp <mart.raudsepp@artecdesign.ee>
+
+Note that many other drivers in mtd/nand have the same part_probes array
+global instead of static.
 
 
-No problem, I'm subscribed to the list so I've already posted boot messages; 
-thanks anyway :)
-
-
-
-
--- 
-Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova     
-Ferrara Linux Users Group           http://ferrara.linux.it
-GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
-Old SysOps never die... they simply forget their password.
