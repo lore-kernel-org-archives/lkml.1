@@ -1,43 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbYBNAIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932688AbYBNAKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932125AbYBNAIm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:08:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYBNAIa
+	id S932688AbYBNAKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbYBNAKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:08:30 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:48220 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754572AbYBNAI3 convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 19:10:41 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57462 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759153AbYBNAKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:08:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=dsFfbOTM5FWX1YfDeCWMCnqOXoLtfOR2eBZPm3bPBujC4CoZ4z9x+sLcRXLXXPGZ/ENqHcuGewlXiYNUPvy2v+FuRmevIyZz+u66huhM2DDd2CKBJ0czolp5nO4Phh9ZzUtXFVgf0TltoAzdDlGyR7qdKCa5UE2xuQev+efRHCk=
-Message-ID: <9a8e2be0802131608m7eef61efmaee332a661503f39@mail.gmail.com>
-Date: Thu, 14 Feb 2008 01:08:28 +0100
-From: "=?ISO-8859-1?Q?Ricardo_J._Rodr=EDguez?=" <ricardo.rdez@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Semaphores with timeouts
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Wed, 13 Feb 2008 19:10:39 -0500
+Date: Wed, 13 Feb 2008 16:09:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Cc: paulmck@linux.vnet.ibm.com, "stephen.hemminger@vyatta.com"@mail.vyatta.com,
+       linux-kernel@vger.kernel.org, shemminger@vyatta.com,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au
+Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
+ type/macro safety
+Message-Id: <20080213160900.1a84dfe9.akpm@linux-foundation.org>
+In-Reply-To: <20080213.155738.71849437.davem@davemloft.net>
+References: <20080213144233.05e860cb@extreme>
+	<20080213233744.GO12393@linux.vnet.ibm.com>
+	<20080213155245.455944f8.akpm@linux-foundation.org>
+	<20080213.155738.71849437.davem@davemloft.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody,
-I'm developing a driver to support a new protocol on the kernel 2.6.x,
-a real time communication protocol used in robotic fields. Skipping
-the intro: I need to know if there is any function in the kernel to
-get the process sleeping, as down_interruptible(...), but with
-timeouts, I mean, I want the process to wake up if no signal is
-detected in a while...
+On Wed, 13 Feb 2008 15:57:38 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-Thanks anyway,
--- 
-Ricardo J. Rodríguez
-www.deathhc.tk
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Wed, 13 Feb 2008 15:52:45 -0800
+> 
+> > On Wed, 13 Feb 2008 15:37:44 -0800
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > Ah.  It does take a bit to get fib_trie into one's build -- allyesconfig
+> > > doesn't cut it.
+> > 
+> > This is not good.  The sole purpose of allmodconfig and allyesconfig is for
+> > compilation and linkage coverage testing.  Hence we should aim to get as
+> > much code as possible included in those cases.
+> 
+> Well, in this case there is a choice, either you use one routing
+> lookup datastructure or the other.  It's not purposefully being hidden
+> from the everything builds :-)
 
-#329385 | [Registered Linux User]
+oic.  yes, that is a bit of a problem.  Oh well.
+
+`make randconfig' seems to be able to enable CONFIG_IP_FIB_TRIE about one
+time in eight ;)
+
