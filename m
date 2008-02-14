@@ -1,120 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYBNR0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757823AbYBNRcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbYBNR0n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:26:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYBNR0a
+	id S1757823AbYBNRcA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:32:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbYBNRbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:26:30 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:35583 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754276AbYBNR03 (ORCPT
+	Thu, 14 Feb 2008 12:31:50 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:56654 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYBNRbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:26:29 -0500
-Date: Thu, 14 Feb 2008 09:24:27 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
-       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       herbert@gondor.apana.org.au, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] add rcu_assign_index() if ever needed
-Message-Id: <20080214092427.960d1f67.randy.dunlap@oracle.com>
-In-Reply-To: <20080213220515.GA10642@linux.vnet.ibm.com>
-References: <20080213220024.GA30729@linux.vnet.ibm.com>
-	<20080213220515.GA10642@linux.vnet.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 14 Feb 2008 12:31:49 -0500
+To: menage@google.com
+CC: miklos@szeredi.hu, viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+In-reply-to: <6599ad830802140813n71b56dccud33e19642a0d7647@mail.gmail.com>
+	(menage@google.com)
+Subject: Re: [PATCH] Add MS_BIND_FLAGS mount flag
+References: <47B283EB.8070209@google.com>
+	 <E1JPZUb-00013Z-0U@pomaz-ex.szeredi.hu>
+	 <6599ad830802140719l270d6fdfyd6d17806eda12a8d@mail.gmail.com>
+	 <E1JPgYm-0002dm-IX@pomaz-ex.szeredi.hu> <6599ad830802140813n71b56dccud33e19642a0d7647@mail.gmail.com>
+Message-Id: <E1JPhvt-0002qE-Da@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 14 Feb 2008 18:31:37 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 14:05:15 -0800 Paul E. McKenney wrote:
-
-> Hello again!
+> >  Maybe instead of messing with masks, it's better to introduce a
+> >  get_flags() or a more general mount_stat() operation, and let
+> >  userspace deal with setting and clearing flags, just as we do for
+> >  stat/chmod?
+> >
+> >  So we'd have
+> >
+> >   mount_stat(path, stat);
+> >   mount_bind(from, to, flags);
+> >   mount_set_flags(path, flags);
+> >   mount_move(from, to);
+> >
+> >  and perhaps
+> >
+> >   mount_remount(path, opt_string, flags);
 > 
-> This is a speculative patch that as far as I can tell is not yet required.
-> If anyone applies RCU to a data structure allocated out of an array, using
-> array indexes in place of pointers to link the array elements together,
-> then the rcu_assign_index() function in this patch will be needed to
-> assign a given element's array index to the RCU-traversed index.  The
-> implementation is exactly that of the old rcu_assign_pointer(), so is
-> extremely well tested.
-> 
-> The existing rcu_assign_pointer() will emit a compiler warning in cases
-> where rcu_assign_index() is required.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  rcupdate.h |   18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff -urpNa -X dontdiff linux-2.6.24-rap/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
-> --- linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
-> +++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-13 10:55:40.000000000 -0800
-> @@ -286,6 +286,24 @@ extern struct lockdep_map rcu_lock_map;
->  	})
->  
->  /**
-> + * rcu_assign_index - assign (publicize) a index of a newly
-> + * initialized array elementg that will be dereferenced by RCU
-> + * read-side critical sections.  Returns the value assigned.
-> + *
-> + * Inserts memory barriers on architectures that require them
-> + * (pretty much all of them other than x86), and also prevents
-> + * the compiler from reordering the code that initializes the
-> + * structure after the index assignment.  More importantly, this
-> + * call documents which indexes will be dereferenced by RCU read-side
-> + * code.
-> + */
+> Sounds reasonable to me. But it wouldn't directly solve the "do a
+> recursive bind mount setting the MS_READONLY flag on all children"
+> problem, so we'd need some of the earlier suggestions too.
 
-s/a index/index/
+Doh, you're right.
 
-Along with Gautham's typo fix, you could also make this be passable
-kernel-doc notation.  :)
+Let's try the original idea, but a bit cleaner:
 
+/* flags: */
+#define MNT_CTRL_RECURSE (1 << 0)
 
-See Documentation/kernel-doc-nano-HOWTO.txt for details.
+/* mnt_flags: */
+#define MNT_NOSUID	0x01
+#define MNT_NODEV	0x02
+#define MNT_NOEXEC	0x04
+#define MNT_NOATIME	0x08
+#define MNT_NODIRATIME	0x10
+#define MNT_RELATIME	0x20
 
-Summary:
-The function (or macro) name and short description must be on one line.
-This is followed by the parameters, then a "blank" (actually " *") line,
-then any (longer) description, notes, etc.  So basically:
+#define MNT_SHARED	0x1000
+#define MNT_UNBINDABLE	0x2000
+#define MNT_PNODE_MASK	0x3000
 
-/**
- * rcu_assign_index - assign (publicize) index of a newly initialized array element
- * @p: description of @p
- * @v: description of @v
- *
- * This function assigns (publicizes) the index of a newly
- * initialized array element that will be dereferenced by RCU
- * read-side critical sections.  Returns the value assigned.
- *
- * Inserts memory barriers on architectures that require them
- * (pretty much all of them other than x86), and also prevents
- * the compiler from reordering the code that initializes the
- * structure after the index assignment.  More importantly, this
- * call documents which indexes will be dereferenced by RCU read-side
- * code.
- */
+struct mount_param {
+	u64 flags;		/* control flags */
+	u64 mnt_flags;		/* new mount flags */
+	u64 mnt_flags_mask;	/* mask for new mount flags */
+};
 
+int mount_bindat(int fromfd, const char *frompath,
+		int tofd, const char *topath,
+		struct mount_param *param);
 
-> +
-> +#define rcu_assign_index(p, v)	({ \
-> +					smp_wmb(); \
-> +					(p) = (v); \
-> +				})
-> +
-> +/**
->   * synchronize_sched - block until all CPUs have exited any non-preemptive
->   * kernel code sequences.
->   *
+int mount_setflagsat(int fd, const char *path,
+		struct mount_param *param);
 
----
-~Randy
+int mount_moveat(int fromfd, const char *frompath,
+		 int tofd, const char *topath);
+
+...
+
+I deliberately not used the MS_* flags, which is currently a messy mix
+of things with totally different meanings.
+
+Does this solve all the issues?
+
+Miklos
