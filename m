@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766004AbYBNItI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbYBNJDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766004AbYBNItI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 03:49:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbYBNIsz
+	id S1764387AbYBNJDq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 04:03:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758231AbYBNJD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 03:48:55 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:34607 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755989AbYBNIsx (ORCPT
+	Thu, 14 Feb 2008 04:03:29 -0500
+Received: from miranda.se.axis.com ([193.13.178.8]:33784 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758131AbYBNJD0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 03:48:53 -0500
-X-Greylist: delayed 90595 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 03:48:53 EST
-Date: Thu, 14 Feb 2008 09:48:42 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
-       greg@kroah.com, torvalds@linux-foundation.org, jeff@garzik.org,
-       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kbuild <linux-kbuild@vger.kernel.org>
-Subject: Re: distributed module configuration [Was: Announce: Linux-next (Or
- Andrew's dream :-))]
-In-Reply-To: <200802140156.15325.zippel@linux-m68k.org>
-Message-ID: <Pine.LNX.4.64.0802140944100.15629@anakin>
-References: <20080212174824.GA1919@kroah.com> <20080212.164149.209357519.davem@davemloft.net>
- <20080213084541.GA8091@uranus.ravnborg.org> <200802140156.15325.zippel@linux-m68k.org>
+	Thu, 14 Feb 2008 04:03:26 -0500
+Date: Thu, 14 Feb 2008 10:03:23 +0100
+From: "Edgar E. Iglesias" <edgar.iglesias@axis.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Edgar E. Iglesias" <edgar.iglesias@axis.com>, ysato@users.sourceforge.jp,
+       linux-kernel@vger.kernel.org, mikael.starvik@axis.com,
+       Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] Use ELF_CORE_EFLAGS for kcore ELF header flags.
+Message-ID: <20080214090323.GA13450@edgar.se.axis.com>
+References: <20080212133423.GD16389@edgar.se.axis.com> <20080213164045.8700f227.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080213164045.8700f227.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008, Roman Zippel wrote:
-> On Wednesday 13. February 2008, Sam Ravnborg wrote:
-> > config foo
-> > 	tristate "do you want foo?"
-> > 	depends on USB && BAR
-> > 	module
-> > 	  obj-$(CONFIG_FOO) += foo.o
-> > 	  foo-y := file1.o file2.o
-> > 	help
-> > 	  foo will allow you to explode your PC
+On Wed, Feb 13, 2008 at 04:40:45PM -0800, Andrew Morton wrote:
+> On Tue, 12 Feb 2008 14:34:23 +0100
+> "Edgar E. Iglesias" <edgar.iglesias@axis.com> wrote:
 > 
-> I'm more thinking about something like this:
+> > ELF_CORE_EFLAGS is already used by the binfmt_elf coredumper to set correct 
+> > arch specific ELF header flags on coredumps. Use it for kcore aswell.
+> > This corrects kcore files for the CRIS arch and I beleive it corrects 
+> > ordinary coredumps for the H8/300.
+> > 
+> > Signed-off-by: Edgar E. Iglesias <edgar@axis.com>
+> > 
+> > ---
+> > 
+> > diff --git a/fs/proc/kcore.c b/fs/proc/kcore.c
+> > index e78c81f..c2370c7 100644
+> > --- a/fs/proc/kcore.c
+> > +++ b/fs/proc/kcore.c
+> > @@ -23,6 +23,10 @@
+> >  
+> >  #define CORE_STR "CORE"
+> >  
+> > +#ifndef ELF_CORE_EFLAGS
+> > +#define ELF_CORE_EFLAGS	0
+> > +#endif
+> > +
+> >  static int open_kcore(struct inode * inode, struct file * filp)
+> >  {
+> >  	return capable(CAP_SYS_RAWIO) ? 0 : -EPERM;
+> > @@ -164,11 +168,7 @@ static void elf_kcore_store_hdr(char *bufp, int nphdr, int dataoff)
+> >  	elf->e_entry	= 0;
+> >  	elf->e_phoff	= sizeof(struct elfhdr);
+> >  	elf->e_shoff	= 0;
+> > -#if defined(CONFIG_H8300)
+> > -	elf->e_flags	= ELF_FLAGS;
+> > -#else
+> > -	elf->e_flags	= 0;
+> > -#endif
+> > +	elf->e_flags	= ELF_CORE_EFLAGS;
+> >  	elf->e_ehsize	= sizeof(struct elfhdr);
+> >  	elf->e_phentsize= sizeof(struct elf_phdr);
+> >  	elf->e_phnum	= nphdr;
+> > diff --git a/include/asm-h8300/elf.h b/include/asm-h8300/elf.h
+> > index 26bfc7e..806f20b 100644
+> > --- a/include/asm-h8300/elf.h
+> > +++ b/include/asm-h8300/elf.h
+> > @@ -32,6 +32,8 @@ typedef unsigned long elf_fpregset_t;
+> >  #define ELF_FLAGS       0x820000
+> >  #endif
+> >  
+> > +#define ELF_CORE_EFLAGS ELF_FLAGS
+> > +
+> >  #define ELF_PLAT_INIT(_r)	_r->er1 = 0
+> >  
+> >  #define USE_ELF_CORE_DUMP
 > 
-> module foo [FOO]
-> 	tristate "do you want foo?"
-> 	depends on USB && BAR
-> 	source file1.c
-> 	source file2.c if BAZ
+> This will change behaviour on mips, which does
+> 
+> ./arch/mips/kernel/binfmt_elfn32.c:#define ELF_CORE_EFLAGS EF_MIPS_ABI2
 
-And we can finally distinguish between
+IIUC, It will not change anything for MIPS. Please note that kcore.c was changed, not fs/binfmt_elf.c.
+But I think the mips port should be defining ELF_CORE_EFLAGS in it's asm/elf.h to create kcore files that indicate the correct ABI for n32 kernels.
 
-    config bar
-    bool "do you want bar?"
-    
-for boolean options and
+At the moment, I think a mips n32 kernel will dump cores for userspace programs with the correct EF_MIPS_ABI2 flag but the same kernel will create kcore files with zero eflags (o32).
 
-    module baz
-    bool "do you want baz?"
-
-for modules that cannot be modular?
-
-And we can make `depends on' do the right thing for dependencies on modules
-that are modular (cfr. e.g. commit e11a6c236b3070ed05b079f91a9b3defa48b54d3,
-[VIDEO]: XVR500 and XVR2500 require FB=y)?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Best regards
+-- 
+Edgar E. Iglesias
+Axis Communications AB
