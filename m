@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbYBNHs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932967AbYBNHtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932297AbYBNHs0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 02:48:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753743AbYBNHsR
+	id S932967AbYBNHtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 02:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759009AbYBNHtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 02:48:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60185 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758536AbYBNHsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 02:48:17 -0500
-Date: Thu, 14 Feb 2008 08:47:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, ananth@in.ibm.com,
-       linux-kernel@vger.kernel.org, ak@suse.de, arjan@linux.intel.com
-Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel
-	tests
-Message-ID: <20080214074748.GA30754@elte.hu>
-References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org>
+	Thu, 14 Feb 2008 02:49:35 -0500
+Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:43573 "EHLO
+	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758179AbYBNHtd convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 02:49:33 -0500
+From: Fabio Coatti <cova@ferrara.linux.it>
+Organization: FerraraLUG
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: stuck with 2.6.23.14 on x86_64
+Date: Thu, 14 Feb 2008 08:49:30 +0100
+User-Agent: KMail/1.9.7
+Cc: mikem13@sbcglobal.net, linux-kernel@vger.kernel.org
+References: <fa.d3EyknDimPJIlJNA2Y25+wmntNM@ifi.uio.no> <04a37899-eb7b-43ae-a7ab-1928ca1a0e35@s12g2000prg.googlegroups.com> <20080213112713.e028075f.akpm@linux-foundation.org>
+In-Reply-To: <20080213112713.e028075f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080212223918.GA3927@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200802140849.31155.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alle mercoledì 13 febbraio 2008, Andrew Morton ha scritto:
 
-* Sam Ravnborg <sam@ravnborg.org> wrote:
+> > > Hardware: x86_64 AMD 2216HE
+> > > SCSI controller: HP Smart Array E200i Controller
+> > > Compiler: gcc (GCC) 4.1.1
+> > > binutils: 2.16.1
+> > >
+> > > On a x86 machine, Intel(R) Xeon(TM) CPU 3.20GHz
+> > > with a cciss0: HP Smart Array 6i Controller,
+> > > the 2.6.24.2 compiles just fine and works, so the cciss problems seems
+> > > related only to E200i controller.
 
->  {kernel => tests}/backtracetest.c               |    0 
->  {drivers/misc => tests}/lkdtm.c                 |   12 ++--
->  {lib => tests}/locking-selftest-hardirq.h       |    0 
->  {lib => tests}/locking-selftest-mutex.h         |    0 
->  {lib => tests}/locking-selftest-rlock-hardirq.h |    0 
->  {lib => tests}/locking-selftest-rlock-softirq.h |    0 
->  {lib => tests}/locking-selftest-rlock.h         |    0 
->  {lib => tests}/locking-selftest-rsem.h          |    0 
->  {lib => tests}/locking-selftest-softirq.h       |    0 
->  {lib => tests}/locking-selftest-spin-hardirq.h  |    0 
->  {lib => tests}/locking-selftest-spin-softirq.h  |    0 
->  {lib => tests}/locking-selftest-spin.h          |    0 
->  {lib => tests}/locking-selftest-wlock-hardirq.h |    0 
->  {lib => tests}/locking-selftest-wlock-softirq.h |    0 
->  {lib => tests}/locking-selftest-wlock.h         |    0 
->  {lib => tests}/locking-selftest-wsem.h          |    0 
->  {lib => tests}/locking-selftest.c               |    0 
->  {kernel => tests}/rcutorture.c                  |    0 
->  {kernel => tests}/rtmutex-tester.c              |    2 +-
->  {kernel => tests}/test_kprobes.c                |    0 
->  27 files changed, 99 insertions(+), 82 deletions(-)
+> > Fabio, Can you please post your boot messages in bug 9859.
+>
+> Let's cc him..
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+No problem, I'm subscribed to the list so I've already posted boot messages; 
+thanks anyway :)
+
+
+
+
+-- 
+Fabio "Cova" Coatti    http://members.ferrara.linux.it/cova     
+Ferrara Linux Users Group           http://ferrara.linux.it
+GnuPG fp:9765 A5B6 6843 17BC A646  BE8C FA56 373A 5374 C703
+Old SysOps never die... they simply forget their password.
