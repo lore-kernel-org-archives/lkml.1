@@ -1,100 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761830AbYBNQoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbYBNQqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761830AbYBNQoE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 11:44:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756033AbYBNQnl
+	id S1758979AbYBNQqE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 11:46:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbYBNQpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 11:43:41 -0500
-Received: from smtp108.sbc.mail.mud.yahoo.com ([68.142.198.207]:28673 "HELO
-	smtp108.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755586AbYBNQnk (ORCPT
+	Thu, 14 Feb 2008 11:45:54 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:60130 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbYBNQpx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 11:43:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4qoxGZdaUIS7daQ65fCt0ae15P3ORhj4nOKdtdBx9Z7nJuvIZpOD4mt+pLsoG2TfvPlCVswOEWNzbkcO1ptN5IjuZyq3o9A4cVdDOKMJoaY1k1G9jcPUo/iSBhjBztPrs98UUbpKcVoJgMRRDKYEdonGPVZHQiKWe9Hi1t22eJE=  ;
-X-YMail-OSG: 74SyyysVM1nPUsNViRKFzagFUzQ5wzVSqvEHh2bgM4HwVqbmq4ls5GqvlQYI3mzl8Wu30KfGIEEzhyRprKH_U1nD2UznsuY5vAZ6telKwxuA_CAfu0A-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Uwe =?iso-8859-1?q?Kleine-K=F6nig?= <Uwe.Kleine-Koenig@digi.com>
-Subject: Re: [PATCH] call gpio_cansleep only after gpio_request succeeded
-Date: Thu, 14 Feb 2008 08:43:24 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Raphael Assenat <raph@8d.com>,
-       Richard Purdie <rpurdie@rpsys.net>
-References: <1202999569-9022-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
-In-Reply-To: <1202999569-9022-1-git-send-email-Uwe.Kleine-Koenig@digi.com>
+	Thu, 14 Feb 2008 11:45:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NpV30qtLxiE0+syiRPTT2qizbvr5fwo3OcSp1iUI9aUUhO5JkJQAozuJKZ60yuAdjc31D3ZX9RSzWf88SgR7/qLaJJuN9QOfdsZszn/u+inQQj7lrfx4llUkmYV5V83nkBXPYSorq/aP9vHfkPdUY60moqB5BbhDHO5OHPQmJcs=
+Message-ID: <6101e8c40802140845h563f7ceeseea824dee4a1ab77@mail.gmail.com>
+Date: Thu, 14 Feb 2008 17:45:51 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: stable@kernel.org
+Subject: Re: [PATCH] Avoid buffer overflows in get_user_pages()
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, "Jonathan Corbet" <corbet@lwn.net>
+In-Reply-To: <5758.1202771853@vena.lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802140843.25103.david-b@pacbell.net>
+References: <5758.1202771853@vena.lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008, Uwe Kleine-König wrote:
-> If you have GPIO_LIB gpio_cansleep oopses on an invalid
-> gpio.  So better gpio_request your pin first.
-> 
-> Signed-off-by: Uwe Kleine-König <Uwe.Kleine-Koenig@digi.com>
-> Cc: David Brownell <dbrownell@users.sourceforge.net>
+for stable (.22 .23 .24) ?
 
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+git id in mainline: 900cf086fd2fbad07f72f4575449e0d0958f860f
 
-... my bad, sorry.  The "first do gpio_request(), THEN
-you can test gpio_cansleep()" issue got resolved in that
-direction a bit late; this is the only in-tree driver
-that I know would be affected.  My test platforms haven't
-yet been updated to 2.6.25-rc1 ... :(
+--
 
+tested in: http://repo.or.cz/w/linux-2.6.22.y-op.git testing
 
-
-> Cc: Raphael Assenat <raph@8d.com>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> ---
-> Hello,
-> 
-> I currently start using GPIO_LIB and don't have any chips yet.  The Oops will
-> vanish after I will have registered the chips for my SoC's gpios, but still
-> this way the code is more robust.
-> 
-> Best regards
-> Uwe
-> 
->  drivers/leds/leds-gpio.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/leds/leds-gpio.c b/drivers/leds/leds-gpio.c
-> index 6c0a9c4..76ddcf3 100644
-> --- a/drivers/leds/leds-gpio.c
-> +++ b/drivers/leds/leds-gpio.c
-> @@ -79,6 +79,10 @@ static int gpio_led_probe(struct platform_device *pdev)
->  		cur_led = &pdata->leds[i];
->  		led_dat = &leds_data[i];
->  
-> +		ret = gpio_request(led_dat->gpio, cur_led->name);
-> +		if (ret < 0)
-> +			goto err;
-> +
->  		led_dat->cdev.name = cur_led->name;
->  		led_dat->cdev.default_trigger = cur_led->default_trigger;
->  		led_dat->gpio = cur_led->gpio;
-> @@ -87,10 +91,6 @@ static int gpio_led_probe(struct platform_device *pdev)
->  		led_dat->cdev.brightness_set = gpio_led_set;
->  		led_dat->cdev.brightness = LED_OFF;
->  
-> -		ret = gpio_request(led_dat->gpio, led_dat->cdev.name);
-> -		if (ret < 0)
-> -			goto err;
-> -
->  		gpio_direction_output(led_dat->gpio, led_dat->active_low);
->  
->  		INIT_WORK(&led_dat->work, gpio_led_work);
-> -- 
-> 1.5.4.1
-> 
-
-
+On 2/12/08, Jonathan Corbet <corbet@lwn.net> wrote:
+> Avoid buffer overflows in get_user_pages()
+>
+> So I spent a while pounding my head against my monitor trying to figure
+> out the vmsplice() vulnerability - how could a failure to check for
+> *read* access turn into a root exploit? It turns out that it's a buffer
+> overflow problem which is made easy by the way get_user_pages() is
+> coded.
+>
+> In particular, "len" is a signed int, and it is only checked at the
+> *end* of a do {} while() loop. So, if it is passed in as zero, the loop
+> will execute once and decrement len to -1. At that point, the loop will
+> proceed until the next invalid address is found; in the process, it will
+> likely overflow the pages array passed in to get_user_pages().
+>
+> I think that, if get_user_pages() has been asked to grab zero pages,
+> that's what it should do. Thus this patch; it is, among other things,
+> enough to block the (already fixed) root exploit and any others which
+> might be lurking in similar code. I also think that the number of pages
+> should be unsigned, but changing the prototype of this function probably
+> requires some more careful review.
+>
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+>
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e5628a5..7f50fd8 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -989,6 +989,8 @@ int get_user_pages(struct task_struct *tsk, struct
+> mm_struct *mm,
+> int i;
+> unsigned int vm_flags;
+>
+> +	if (len <= 0)
+> +	return 0;
+> /*
+> * Require read or write permissions.
+> * If 'force' is set, we only require the "MAY" flags.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
+--
+Thanks,
+Oliver
