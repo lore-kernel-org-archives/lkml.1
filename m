@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbYBMXol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933161AbYBMXsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934186AbYBMXol (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 18:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934104AbYBMXo0
+	id S933161AbYBMXsW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 18:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758627AbYBMXsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 18:44:26 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:43377 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764428AbYBMXoZ (ORCPT
+	Wed, 13 Feb 2008 18:48:05 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38193 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757043AbYBMXsD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 18:44:25 -0500
-Date: Wed, 13 Feb 2008 15:43:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: harvey.harrison@gmail.com, torvalds@linux-foundation.org,
-       davem@davemloft.net, tglx@linutronix.de, hpa@zytor.com,
-       xemul@openvz.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
- symbols going away
-Message-Id: <20080213154331.f11efc63.akpm@linux-foundation.org>
-In-Reply-To: <20080213232248.GF12383@cs181133002.pp.htv.fi>
-References: <1202941327.18204.11.camel@brick>
-	<20080213223455.GB12383@cs181133002.pp.htv.fi>
-	<20080213224308.GD12383@cs181133002.pp.htv.fi>
-	<20080213145405.35fb5733.akpm@linux-foundation.org>
-	<20080213232248.GF12383@cs181133002.pp.htv.fi>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 18:48:03 -0500
+Date: Wed, 13 Feb 2008 16:07:59 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] SCSI: fix data corruption caused by ses
+In-reply-to: <1202945127.3109.89.camel@localhost.localdomain>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       kristen.c.accardi@intel.com, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Message-id: <200802131608.00493.yinghai.lu@sun.com>
+Organization: SUN
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+References: <200802090413.53275.yinghai.lu@sun.com>
+ <200802122310.23050.yinghai.lu@sun.com>
+ <1202945127.3109.89.camel@localhost.localdomain>
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 01:22:48 +0200
-Adrian Bunk <bunk@kernel.org> wrote:
+On Wednesday 13 February 2008 03:25:27 pm James Bottomley wrote:
+> On Tue, 2008-02-12 at 23:10 -0800, Yinghai Lu wrote:
+> >  			if (type_ptr[0] != ENCLOSURE_COMPONENT_DEVICE &&
+> >  			    type_ptr[0] != ENCLOSURE_COMPONENT_ARRAY_DEVICE)
+> > -				continue;
+> > +				goto next;
+> > +
+> >  			ecomp =	enclosure_component_register(edev,
+> >  							     components++,
+> >  							     type_ptr[0],
+> >  							     name);
+> > +
+> > +			if (desc_ptr && !IS_ERR(ecomp) && addl_desc_ptr)
+> > +				ses_process_descriptor(ecomp,
+> > +						       addl_desc_ptr);
+> > +		next:
+> >  			if (desc_ptr) {
+> >  				desc_ptr += len;
+> > -				if (!IS_ERR(ecomp))
+> > -					ses_process_descriptor(ecomp,
+> > -							       addl_desc_ptr);
+> >  
+> >  				if (addl_desc_ptr)
+> >  					addl_desc_ptr += addl_desc_ptr[1] + 2;
+> 
+> Everything looks fine, thanks, except this piece.
+> 
+> That 
+> 
+> if (x)
+>      goto next;
+> ...
+> next:
+> 
+> Needs to be
+> 
+> if (!x) {
+>    ...
+> }
+> 
 
-> I don't get your point why bigger API changes should still be allowed 
-> without any advance warning while removing an export should require 
-> deprecation periods.
+find other problems about sub_enclosure...
 
-Because the cost to us of giving people a few months warning is miniscule,
-and doing so a) is courteous to our users and b) possibly avoids driving
-away testers.
+will send you updated one.
 
-otoh the cost to us of avoiding large API changes is much much higher, so
-the tradeoff has a different outcome.
-
-> If you want to offer a stable API for external modules then please do 
-> it completely and with all consequences.
-
-Sorry, but you have this belief that if we do X in one case then we should
-rigorously do X in all cases.  That everything we do sets precedents which
-must be forever and in all cases followed.  That it is all about rules and
-sticking to them.  That if you can catch person A taking action B then you
-can trap that person into doing B in all cases for ever more.
-
-Well it doesn't work like that.  Each case is different and each case has
-pros and cons and each one needs to be weighed according to those pros and
-cons.
+YH
