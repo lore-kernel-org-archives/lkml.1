@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765402AbYBNHZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932139AbYBNH0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765402AbYBNHZn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 02:25:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYBNHZf
+	id S932139AbYBNH0U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 02:26:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764993AbYBNH0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 02:25:35 -0500
-Received: from pip12.gyao.ne.jp ([61.122.117.250]:40916 "EHLO mx.gate01.com"
+	Thu, 14 Feb 2008 02:26:07 -0500
+Received: from pip23.gyao.ne.jp ([125.63.38.249]:27689 "EHLO mx.gate01.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756873AbYBNHZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 02:25:35 -0500
-Date: Thu, 14 Feb 2008 16:24:22 +0900
+	id S1756897AbYBNH0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 02:26:05 -0500
+Date: Thu, 14 Feb 2008 16:24:52 +0900
 From: Paul Mundt <lethal@linux-sh.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "David S. Miller" <davem@davemloft.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] media: tuner-xc2028 depends on FW_LOADER.
-Message-ID: <20080214072422.GE12436@linux-sh.org>
+Subject: [PATCH] net: xfrm statistics depend on INET.
+Message-ID: <20080214072452.GF12436@linux-sh.org>
 Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	"David S. Miller" <davem@davemloft.net>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -27,26 +27,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ERROR: "release_firmware" [drivers/media/video/tuner-xc2028.ko] undefined!
-ERROR: "request_firmware" [drivers/media/video/tuner-xc2028.ko] undefined!
+net/built-in.o: In function `xfrm_policy_init':
+/home/pmundt/devel/git/sh-2.6.25/net/xfrm/xfrm_policy.c:2338: undefined reference to `snmp_mib_init'
+
+snmp_mib_init() is only built in if CONFIG_INET is set.
 
 Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
 ---
 
- drivers/media/Kconfig |    2 +-
+ net/xfrm/Kconfig |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/media/Kconfig b/drivers/media/Kconfig
-index 8f4a453..cb0b3fb 100644
---- a/drivers/media/Kconfig
-+++ b/drivers/media/Kconfig
-@@ -93,7 +93,7 @@ if VIDEO_TUNER_CUSTOMIZE
+diff --git a/net/xfrm/Kconfig b/net/xfrm/Kconfig
+index 8f9dbec..9201ef8 100644
+--- a/net/xfrm/Kconfig
++++ b/net/xfrm/Kconfig
+@@ -38,7 +38,7 @@ config XFRM_MIGRATE
  
- config TUNER_XC2028
- 	tristate "XCeive xc2028/xc3028 tuners"
--	depends on I2C
-+	depends on I2C && FW_LOADER
- 	default m if VIDEO_TUNER_CUSTOMIZE
- 	help
- 	  Say Y here to include support for the xc2028/xc3028 tuners.
+ config XFRM_STATISTICS
+ 	bool "Transformation statistics (EXPERIMENTAL)"
+-	depends on XFRM && PROC_FS && EXPERIMENTAL
++	depends on INET && XFRM && PROC_FS && EXPERIMENTAL
+ 	---help---
+ 	  This statistics is not a SNMP/MIB specification but shows
+ 	  statistics about transformation error (or almost error) factor
