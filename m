@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934684AbYBNBWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932731AbYBNB0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934684AbYBNBWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 20:22:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758708AbYBNBWV
+	id S932731AbYBNB0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 20:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYBNB0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 20:22:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41359
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757036AbYBNBWT (ORCPT
+	Wed, 13 Feb 2008 20:26:20 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:47955 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757447AbYBNB0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 20:22:19 -0500
-Date: Wed, 13 Feb 2008 17:22:51 -0800 (PST)
-Message-Id: <20080213.172251.249294145.davem@davemloft.net>
-To: James.Bottomley@HansenPartnership.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.25-rc1
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1202951513.3109.101.camel@localhost.localdomain>
-References: <1202947364.3109.96.camel@localhost.localdomain>
-	<20080213161643.65a5a779.akpm@linux-foundation.org>
-	<1202951513.3109.101.camel@localhost.localdomain>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 13 Feb 2008 20:26:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=QKgzI53y9aXP2HbiKBy+64hBcuTVqu2lqfKdrVtPp1+9wSPipTdVkWSxnUowbenhz+OxAcXpTHaB2TA7/vAzkpzZNG/DhFN8rGU12ZDVe5zfvEhufnHT+Xkmi2msrVT1I8BG4xQvdZma/ztGHzkdIGKCKsXk6s+CgifKqpe9/iI=
+Message-ID: <47B398B3.40308@gmail.com>
+Date: Thu, 14 Feb 2008 10:26:11 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
+       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
+ take #3
+References: <12028937731333-git-send-email-htejun@gmail.com>	<20080213155701.48871761.akpm@linux-foundation.org>	<47B38E13.1060503@gmail.com> <20080213170950.86945835.akpm@linux-foundation.org>
+In-Reply-To: <20080213170950.86945835.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-Date: Wed, 13 Feb 2008 19:11:53 -0600
+Hello,
 
+Andrew Morton wrote:
+> On Thu, 14 Feb 2008 09:40:51 +0900
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> On Wed, 2008-02-13 at 16:16 -0800, Andrew Morton wrote:
-> > kill-warnings-in-mptbaseh-on-parisc64.patch
+>> Can you please take a look at ata_eh_link_report() in
+>> drivers/ata/libata-eh.c?
 > 
-> >   Warning fixes.
+> I did.  Punishment?
+
+Heh.. :-)
+
+>>  Currently, it has some problems.
 > 
-> Not sure ... LSI is supposed to be processing this.
+> Yes, and the patches do clean that up.
 
-James, please don't push build warning fixes and the like back to the
-driver maintainers.
+Yeap, it does.
 
-This is your domain as SCSI maintainer, and you should integrate these
-kinds of things directly and as promptly as possible.
+> ho hum.  What tends to happen with this sort of thing is that fi we merge
+> it, it ends up getting used more often than one expected...
 
-This is doubly true if the "driver maintainer" can't be bothered
-to ACK or fixup the patch for months.
+Hmmm... Okay.  mprintk being printk, I'm not too sure how it can go over
+usual expectations but well, yeah, that actually is my expectation.
 
-Otherwise this kind of stuff rots, and diligent people like Andrew
-(and the patch submitter, whoever that might be) get extremely
-frustrated.
+> If you stand back and squint at it, there are quite a few places where we
+> do this sort of thing: allocate a buffer, squirt characters into it,
+> reallocating and/or flushing as we proceed.  All sysfs and procfs read-side
+> code, for a start...
+
+printk is a special case, I think.  It's the primary logging/debugging
+method which can't fail and as it's mostly interpreted by human beings
+(and developers in problematic cases), it has different maneuvering room
+on errors - ie. it's far better to print messages w/o header or proper
+log level than failing to print, which is quite different requirements
+from other components.
+
+Thanks.
+
+-- 
+tejun
