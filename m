@@ -1,126 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757100AbYBNWve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbYBNW6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757100AbYBNWve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 17:51:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbYBNWvX
+	id S1758837AbYBNW6f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 17:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbYBNW6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 17:51:23 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:31283 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbYBNWvW (ORCPT
+	Thu, 14 Feb 2008 17:58:25 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50423 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753480AbYBNW6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 17:51:22 -0500
-Message-ID: <47B4C5E7.5000802@ct.jp.nec.com>
-Date: Thu, 14 Feb 2008 14:51:19 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 14 Feb 2008 17:58:24 -0500
+Date: Thu, 14 Feb 2008 14:57:15 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+cc: Robert Hancock <hancockr@shaw.ca>,
+       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
+       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       alsa-devel@alsa-project.org
+Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0
+ sound card
+In-Reply-To: <200802141528.53446.bjorn.helgaas@hp.com>
+Message-ID: <alpine.LFD.1.00.0802141456370.6110@woody.linux-foundation.org>
+References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <200802141401.24723.bjorn.helgaas@hp.com> <alpine.LFD.1.00.0802141323130.6110@woody.linux-foundation.org> <200802141528.53446.bjorn.helgaas@hp.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] latencytop: fix kernel panic and memory leak on proc
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I posted 2 patches to fix kernel panic and memory leak.
-http://lkml.org/lkml/2008/2/14/282
-http://lkml.org/lkml/2008/2/14/283
 
-But, I think this patch is better than old ones.
+On Thu, 14 Feb 2008, Bjorn Helgaas wrote:
+> > 
+> > [   22.906610] system 00:08: iomem range 0xfebfe000-0xfebfec00 has been reserved
+> > [   22.906654] system 00:08: iomem range 0xfebfa000-0xfebfac00 has been reserved
+> 
+> The PNP resource fits entirely inside the PCI bus resource, so the PNP
+> insertion will only fail if the sound driver has already been loaded.
 
----
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Ok, it does indeed fit entirely in (and the discussion about "clashing" 
+misled me - the PCI resource doesn't actually clash, it's just a subset). 
+And the problem then ends up that the PnP thing adds resources to inside 
+the PCI resource. It shouldn't. It's crap.
 
-Reading /proc/<pid>/latency or /proc/<pid>/task/<tid>/latency could cause
-NULL pointer dereference.
+It should insert the resource to the root resource (or a bridge resource), 
+or not at all. If somebody else has already inserted a real device 
+resource, we already know about it, and the PnP information is going to be 
+just making things worse.
 
-In lstats_open(), get_proc_task() can return NULL, in which case the kernel
-will oops at lstats_show_proc() because m->private is NULL.
+The *really* basic issue is that PnP and ACPI generally report utter crap. 
+We should always totally ignore them EXCEPT AS A WAY TO AVOID _NEW_ 
+ALLOCATIONS.
 
-This can be reproduced by the follwoing script.
-while :
-do
-	bash -c 'ls > ls.$$' &
-	pid=$!
-	cat /proc/$pid/latency &
-	cat /proc/$pid/latency &
-	cat /proc/$pid/latency &
-	cat /proc/$pid/latency
-done
+That's the only valid reason to believe in ACPI: we don't know what the 
+hell it's talking about, but we _do_ know that we shouldn't be allocating 
+new resources over it (because if it actually happens to be correct, it is 
+some random scary stuff that we obviously didn't find out about).
 
-And the task struct which gotten by get_proc_task() is never put.
-put_task_struct() should be called.
+But the moment we have better information (where "we actually scanned the 
+hardware" is the very definition of better information), we should always 
+totally discard any ACPI crud. It's guaranteed to be worse than what we 
+already know about.
 
-This patch changes the private is used to store inode, and the task struct
-will be gotten and putted in read or write function.
+That's all I ever wanted. To have ACPI realize that it should never ever 
+mess with something we know better about.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- fs/proc/base.c |   27 +++++++++++----------------
- 1 files changed, 11 insertions(+), 16 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 7c6b4ec..5de8dd5 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -314,9 +314,12 @@ static int proc_pid_schedstat(struct task_struct *task, char *buffer)
- static int lstats_show_proc(struct seq_file *m, void *v)
- {
- 	int i;
--	struct task_struct *task = m->private;
--	seq_puts(m, "Latency Top version : v0.1\n");
-+	struct inode *inode = m->private;
-+	struct task_struct *task = get_proc_task(inode);
- 
-+	if (!task)
-+		return -ESRCH;
-+	seq_puts(m, "Latency Top version : v0.1\n");
- 	for (i = 0; i < 32; i++) {
- 		if (task->latency_record[i].backtrace[0]) {
- 			int q;
-@@ -341,32 +344,24 @@ static int lstats_show_proc(struct seq_file *m, void *v)
- 		}
- 
- 	}
-+	put_task_struct(task);
- 	return 0;
- }
- 
- static int lstats_open(struct inode *inode, struct file *file)
- {
--	int ret;
--	struct seq_file *m;
--	struct task_struct *task = get_proc_task(inode);
--
--	ret = single_open(file, lstats_show_proc, NULL);
--	if (!ret) {
--		m = file->private_data;
--		m->private = task;
--	}
--	return ret;
-+	return single_open(file, lstats_show_proc, inode);
- }
- 
- static ssize_t lstats_write(struct file *file, const char __user *buf,
- 			    size_t count, loff_t *offs)
- {
--	struct seq_file *m;
--	struct task_struct *task;
-+	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
- 
--	m = file->private_data;
--	task = m->private;
-+	if (!task)
-+		return -ESRCH;
- 	clear_all_latency_tracing(task);
-+	put_task_struct(task);
- 
- 	return count;
- }
--- 
-1.5.3.8
-
+			Linus
