@@ -1,54 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756101AbYBNP7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756111AbYBNQDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756101AbYBNP7z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbYBNP7p
+	id S1756111AbYBNQDv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 11:03:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbYBNQDl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:59:45 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:27459 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753011AbYBNP7o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:59:44 -0500
-Message-ID: <47B46513.8020206@panasas.com>
-Date: Thu, 14 Feb 2008 17:58:11 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 14 Feb 2008 11:03:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37698 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751339AbYBNQDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 11:03:40 -0500
+Date: Thu, 14 Feb 2008 17:03:23 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: torvalds@osdl.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Fix direct mapping correctly in ioremap
+Message-ID: <20080214160322.GA27530@elte.hu>
+References: <20080214115905.GA18573@basil.nowhere.org>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Stefan Priebe - allied internet ag <s.priebe@allied-internet.ag>,
-       =?ISO-8859-1?Q?Sven_K=F6hler?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>
-Subject: Re: [BUGFIX 2/2] gdth: bugfix for the Timer at exit crash
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com> <47B1D7A8.8010108@panasas.com> <47B1DA2A.1060904@panasas.com> <47B29702.7050503@allied-internet.ag> <47B2B268.1070702@panasas.com> <Pine.LNX.4.64.0802132038320.29154@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802132038320.29154@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Feb 2008 15:58:52.0079 (UTC) FILETIME=[7E6E53F0:01C86F22]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214115905.GA18573@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13 2008 at 21:38 +0200, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> On Feb 13 2008 11:03, Boaz Harrosh wrote:
->>> I've tested this patch now - and it works fine. Now rmmod, halt and 
->>> reboot also works.
->>>
->>> Stefan Priebe
->>>
->> This is grate news Stefan. Thank you very much for all your time
->> and effort, with out we could not have fixed all this.
-> 
-> Do you have a git tree with the latest pieces?
-No, scsi-misc I guess ;)
 
-I could put it here:
-git://git.bhalevy.com/open-osd gdth
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-branch give me an hours
+> -	if (ioremap_change_attr(vaddr, size, mode) < 0) {
+> +	/* Fix up the direct mapping for the new cache attributes */
+> +	err = ioremap_change_attr((unsigned long)__va(phys_addr),
+> +				size + offset, mode);
 
-Boaz
+Ugh. This would break the 32-bit kernel - if any phys_addr larger than 
+1GB is passed in (which is the common case on 32-bit) then we'll start 
+changing the attributes of random (most likely user-space) pages!
+
+That is because on 32-bit __va() does this:
+
+  #define __va(x)                  ((void *)((unsigned long)(x)+PAGE_OFFSET))
+
+where on 32-bit 3GB:1GB split PAGE_OFFSET is defined to 0xc0000000.
+
+So if a driver passes in the physical address of a PCI device with a BAR 
+at 0xe1000000 somewhere in the PCI aperture, we'll get 
+0xe1000000+0xc0000000 == 0x91000000 - right in the middle of user-space.
+
+Changing attributes there is very wrong. (it could even crash the kernel 
+in certain circumstances.)
+
+Have you tried to boot this patch on 32-bit? There are a couple of new 
+safety nets in the cpa code that would/should trigger very visibly - 
+such as the warning here:
+
+                if (!pte_val(old_pte)) {
+                        printk(KERN_WARNING "CPA: called for zero pte. "
+                               "vaddr = %lx cpa->vaddr = %lx\n", address,
+                                cpa->vaddr);
+                        WARN_ON(1);
+                        return -EINVAL;
+                }
+
+(these are already there in -git)
+
+Please have a look at how we solved the "secondary alias" 64-bit problem 
+in x86.git#mm and please resend against x86.git#mm if you still think 
+something is missing. Thanks,
+
+	Ingo
