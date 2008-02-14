@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbYBNKGE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757524AbYBNKIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932222AbYBNKGE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 05:06:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbYBNKFw
+	id S1757524AbYBNKIX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 05:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbYBNKIL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 05:05:52 -0500
-Received: from os.eurotux.com ([216.75.63.6]:48934 "EHLO os.eurotux.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759183AbYBNKFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 05:05:51 -0500
-Date: Thu, 14 Feb 2008 10:05:44 +0000
-From: Luciano Rocha <luciano@eurotux.com>
-To: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: sysfs: duplicate filename 'card0' can not be created
-Message-ID: <20080214100544.GA7075@bit.office.eurotux.com>
-Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
-	Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
-References: <20080213140527.GA31014@bit.office.eurotux.com> <s5hzlu5rl71.wl%tiwai@suse.de> <20080213150921.GA4139@bit.office.eurotux.com>
+	Thu, 14 Feb 2008 05:08:11 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:53066 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750894AbYBNKIJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 05:08:09 -0500
+From: Hans-Peter Jansen <hpj@urpla.net>
+To: petkovbb@gmail.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, bzolnier@gmail.com
+Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+Date: Thu, 14 Feb 2008 11:08:01 +0100
+User-Agent: KMail/1.9.6 (enterprise 20071221.751182)
+References: <200802121026.17420.hpj@urpla.net> <200802140037.51450.hpj@urpla.net> <20080214062652.GE13446@gollum.tnic>
+In-Reply-To: <20080214062652.GE13446@gollum.tnic>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080213150921.GA4139@bit.office.eurotux.com>
-User-Agent: Mutt/1.5.14 (2007-03-31)
+Message-Id: <200802141108.02285.hpj@urpla.net>
+X-Provags-ID: V01U2FsdGVkX18hfONU6/NoiUJ8bNnlcE0rVuMaoS0t42WFJOx
+ iAGfnKbtEpVIoAGwmHyAcbEHkS7MnPtl+6gIZ0O7CPNWTHtRzX
+ E+U2q1pBzxQ8YkZ2ydrCQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Donnerstag, 14. Februar 2008 schrieb Borislav Petkov:
+> On Thu, Feb 14, 2008 at 12:37:50AM +0100, Hans-Peter Jansen wrote:
+>
+> [Added Bart to CC]
+>
+> > Am Dienstag, 12. Februar 2008 schrieb Borislav Petkov:
+> > > On Tue, Feb 12, 2008 at 10:26:17AM +0100, Hans-Peter Jansen wrote:
+> > > > Hi,
+> > > >
+> > > > I suffer from unreliable cdrom operations (failing DAE and burn
+> > > > sessions) with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
+> > >
+> > > 			^^^^
+> > > Hi,
+> > >
+> > > can please you test this with a more recent kernel. Yours is almost
+> > > ancient - from Sep. 2006.
+> >
+> > Sure, sorry. Here we go:
+> >
+> > Feb 14 00:18:18 kernel: hde: cdrom_pc_intr: The drive appears confused
+> > (ireason = 0x01). Trying to recover by ending request.
+> > Feb 14 00:27:27 kernel: hdc: cdrom_pc_intr: The drive appears confused
+> > (ireason = 0x01). Trying to recover by ending request.
+> >
+> > ~> uname -a
+> > Linux xrated 2.6.24.1-35-pae #1 SMP 2008/02/12 01:00:18 UTC i686 athlon
+> > i386 GNU/Linux
+>
+> Actually the interrupt handler in ide-cd got rewritten and you're still
+> using the old one (cdrom_pc_intr vs cdrom_newpc_intr). Those changes went
+> into mainline before the 2.6.25-rc1 so we'll be able to test the new one
+> only when you try out 2.6.25-rc1 or wait until 2.6.25 is released in case
+> you don't want to try hazardous materials such as an -rc kernel[*] :).
 
---2fHTh5uZTiUOsy+g
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hrm, I highly depend on that system being reliable¹, thus I would prefer a 
+diff, if feasible at all. That way, any breakage may be embanked to PATA.
 
-On Wed, Feb 13, 2008 at 03:09:21PM +0000, Luciano Rocha wrote:
-> On Wed, Feb 13, 2008 at 03:21:38PM +0100, Takashi Iwai wrote:
-> > At Wed, 13 Feb 2008 14:05:27 +0000,
-> > Luciano Rocha wrote:
-> > >=20
-> > > Hello,
-> > >=20
-> > > Is this known? I got the error while connecting usb headphones, runni=
-ng
-> > > vanilla 2.6.24.
-> >=20
-> > Not known.  In which situation does it happen and is reproducible?
-> >=20
->=20
-> Disconnecting and reconnecting doesn't result in error. I'll try a
-> reboot later.
+OTOH, I'm willing to help to get down to the issue (knowing that this is the 
+only way to finally get rid of it).
 
-After a reboot I still don't get the error (tryed connecting and
-reconnecting the headset). Do you have any tests you want me to make?
+Thanks,
+Pete
 
-
---=20
-Luciano Rocha <luciano@eurotux.com>
-Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
-
---2fHTh5uZTiUOsy+g
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFHtBJ4inSul6a7oB8RAtWPAJ9dRMw67y9/6bMJ4kTI6m3k8M4OHACfU4wU
-l5e1UWdyjfVKts/U+Z1AC0w=
-=DLAV
------END PGP SIGNATURE-----
-
---2fHTh5uZTiUOsy+g--
+¹) As a matter of fact, I suffered from way to many regressions in essential
+   subsystems (kernel, X, nss_ldap) lately, not to speak from the usual
+   calamities in peripheral areas of such complex beasts.
