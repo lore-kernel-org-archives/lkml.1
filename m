@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935110AbYBNAa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935173AbYBNAav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935110AbYBNAa1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:30:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934572AbYBNAX0
+	id S935173AbYBNAav (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:30:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934152AbYBNA0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:23:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:64981 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934356AbYBNAXX (ORCPT
+	Wed, 13 Feb 2008 19:26:33 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60762 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934822AbYBNA0b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:23:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=ERHMk8z/fVF4QPrGphbJwlPc6BUrlSVU7z0AbqOtnnnDxirvmPgLP5H3XGMdhblmtUB9+gc69wEe4i3LJuosNikibPs5nkfKmUaBMTFQOKthMY/PpfYfZe0SxClGfkaYmQDvpORx1TWh3qN4ujlfIKB37aCfSaNPUzuE+tKnvAc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Date: Thu, 14 Feb 2008 01:37:43 +0100
-Message-Id: <20080214003743.12879.33797.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080214003621.12879.33868.sendpatchset@localhost.localdomain>
-References: <20080214003621.12879.33868.sendpatchset@localhost.localdomain>
-Subject: [PATCH 11/11] ppc/pmac: remove no longer needed IDE quirk
+	Wed, 13 Feb 2008 19:26:31 -0500
+Date: Thu, 14 Feb 2008 00:18:36 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, harvey.harrison@gmail.com,
+       torvalds@linux-foundation.org, davem@davemloft.net, tglx@linutronix.de,
+       hpa@zytor.com, xemul@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] feature-removal: add documentation for exported
+ symbols going away
+Message-ID: <20080214001836.687f03f7@core>
+In-Reply-To: <20080213235843.GG12383@cs181133002.pp.htv.fi>
+References: <1202941327.18204.11.camel@brick>
+	<20080213223455.GB12383@cs181133002.pp.htv.fi>
+	<20080213224308.GD12383@cs181133002.pp.htv.fi>
+	<20080213145405.35fb5733.akpm@linux-foundation.org>
+	<20080213232248.GF12383@cs181133002.pp.htv.fi>
+	<20080213154331.f11efc63.akpm@linux-foundation.org>
+	<20080213235843.GG12383@cs181133002.pp.htv.fi>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-IDE PMAC host driver and all IDE PCI host drivers use pci_enable_device()
-nowadays so the following quirk in pmac_pcibios_after_init() can be removed.
+> Unexports are done immediately when there's a subsystem maintainer 
+> taking a patch and deprecation periods are required when a patch has to 
+> go through you...
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- arch/powerpc/platforms/powermac/pci.c |   22 ----------------------
- 1 file changed, 22 deletions(-)
+Agreed - with the expect of stuff which is used in tree or forms part of
+a logical exported API we should just throw them out without messing. The
+only exceptions I can see that make sense are
 
-Index: b/arch/powerpc/platforms/powermac/pci.c
-===================================================================
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -1144,28 +1144,6 @@ void __init pmac_pcibios_after_init(void
- {
- 	struct device_node* nd;
- 
--#ifdef CONFIG_BLK_DEV_IDE
--	struct pci_dev *dev = NULL;
--
--	/* OF fails to initialize IDE controllers on macs
--	 * (and maybe other machines)
--	 *
--	 * Ideally, this should be moved to the IDE layer, but we need
--	 * to check specifically with Andre Hedrick how to do it cleanly
--	 * since the common IDE code seem to care about the fact that the
--	 * BIOS may have disabled a controller.
--	 *
--	 * -- BenH
--	 */
--	for_each_pci_dev(dev) {
--		if ((dev->class >> 16) != PCI_BASE_CLASS_STORAGE)
--			continue;
--		if (pci_enable_device(dev))
--			printk(KERN_WARNING
--			       "pci: Failed to enable %s\n", pci_name(dev));
--	}
--#endif /* CONFIG_BLK_DEV_IDE */
--
- 	for_each_node_by_name(nd, "firewire") {
- 		if (nd->parent && (of_device_is_compatible(nd, "pci106b,18") ||
- 				   of_device_is_compatible(nd, "pci106b,30") ||
+- Where a subsystem maintainer says not to
+- Where we know that a commonly used out of tree module needs it
+
+Most of the excess symbols should thus just go away. Its pretty unlikely
+that they are being used.
+
+Alan
