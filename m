@@ -1,105 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbYBNXir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935349AbYBNXsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933832AbYBNXir (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 18:38:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760289AbYBNXiQ
+	id S935349AbYBNXsB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 18:48:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934769AbYBNXn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 18:38:16 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:58738 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759453AbYBNXiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 18:38:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dXk4r2AMRmIUB+2p+uH1eUvzhfUcKx6LfsfYsujfssKzlMMbj6mWq33IzZM9T4CDtMUPPLrqMCPpW2k28HnNdKJVCAizBwYnvGDCulLPRS9ROaqe/DvnkNRNbGx4toP/3PKiIoine5sRwLqnjDzVNVTxDOVCY+G6hhXtB5YwjSc=
-Message-ID: <86802c440802141538m44d64b6as827426174874979d@mail.gmail.com>
-Date: Thu, 14 Feb 2008 15:38:13 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Greg KH" <gregkh@suse.de>, "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Cc: "Frans Pop" <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20080213165837.GA10129@suse.de>
+	Thu, 14 Feb 2008 18:43:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:60538 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933930AbYBNXnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 18:43:25 -0500
+Date: Thu, 14 Feb 2008 15:47:48 -0800
+From: Greg KH <gregkh@suse.de>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: problem with starting 2.5.25-rc1 and latest git
+Message-ID: <20080214234748.GA6061@suse.de>
+References: <200802132316.03155.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200802111623.38478.elendil@planet.nl>
-	 <200802122139.14840.elendil@planet.nl>
-	 <20080212205622.GA21986@suse.de>
-	 <200802131239.14305.elendil@planet.nl>
-	 <20080213165837.GA10129@suse.de>
+In-Reply-To: <200802132316.03155.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 8:58 AM, Greg KH <gregkh@suse.de> wrote:
->
-> On Wed, Feb 13, 2008 at 12:39:13PM +0100, Frans Pop wrote:
->  > On Tuesday 12 February 2008, Greg KH wrote:
->  > > On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
->  > > > On Monday 11 February 2008, Frans Pop wrote:
->  > > > > In general 2.6.25 if looking quite good on my desktop, but there's
->  > > > > one important issue: the system no longer powers off after shutdown.
->  > > > > This works fine with 2.6.24.
->  > > >
->  > > > Don't ask me why, but bisection shows this commit to be the cause of
->  > > > the failure to power off:
->  > > > commit c10997f6575f476ff38442fa18fd4a0d80345f9d
->  > > > Author: Greg Kroah-Hartman <gregkh@suse.de>
->  > > > Date:   Thu Dec 20 08:13:05 2007 -0800
->  > > >
->  > > >     Kobject: convert drivers/* from kobject_unregister() to
->  > > > kobject_put()
->  > > >
->  > > > Because it seemed somewhat unlikely, I have double checked this by
->  > > > doing an extra compilation for this commit and its predecessor.
->  > >
->  > > What is the symptom of not powering off?
->  >
->  > I already noticed yesterday that there's one hunk in that commit that's not
->  > a straight replacement:
->  > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
->  > index 9e102af..5efd555 100644
->  > --- a/drivers/cpufreq/cpufreq.c
->  > +++ b/drivers/cpufreq/cpufreq.c
->  > @@ -1030,8 +1030,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
->  >
->  >         unlock_policy_rwsem_write(cpu);
->  >
->  > -       kobject_unregister(&data->kobj);
->  > -
->  >         kobject_put(&data->kobj);
->  >
->  >         /* we need to make sure that the underlying kobj is actually
->  >
->  >
->  > So, just on the off chance, I applied the patch below and bingo, the system
->  > powers off again. I doubt this will be the correct solution, but just in
->  > case it is, here's my signed off. A comment why the double put is needed
->  > would probably be good though.
->
->  There is a bug in the cpufreq kref logic that makes this "double put"
->  necessary.  A real fix has already been posted to solve this issue, and
->  I think it should be on it's way to Linus for -rc2 already.
->
->  Please let me know if -rc2 comes out without this needed fix.
+On Wed, Feb 13, 2008 at 11:16:02PM +0100, Mariusz Kozlowski wrote:
+> Hello,
+> 
+> 	I tried 2.6.25-rc1 and latest git on my laptop (x86 32bit) and have a problem.
+> Linux boots but with huge delay due to some issue with loading usb modules.
+> Udev complains:
+> 
+> 'Could not lock modprobe uhci_hcd'
+> 'Could not lock modprobe yenta_socket'
+> 'Unknown symbol usb_*'
+> 'Gave up waiting for init of module usbcore'
+> 
+> at the same time I can see these messages in syslog (look at timing - grep by usb):
+> 
+> Feb 13 21:34:22 laptop kernel: usbcore: registered new interface driver usbfs
+> Feb 13 21:34:22 laptop kernel: usbcore: registered new interface driver hub
+> Feb 13 21:34:22 laptop kernel: usbcore: registered new device driver usb
+> Feb 13 21:34:22 laptop kernel: ehci_hcd: gave up waiting for init of module usbcore.
 
-after disable cpufreq, i got
+I don't see how this is a usb issue, it looks to be a module loading
+issue, which is in the module core and module-init-tools.
 
-ACPI: Preparing to enter system sleep state S5
-Disabling non-boot CPUs ...
-kvm: disabling virtualization on CPU1
-CPU 1 is now offline
-CPU1 is down
-kvm: disabling virtualization on CPU2
-CPU 2 is now offline
-================> hang here.
+What version of module-init-tools do you have, and are you using an
+initramfs that loads these modules?  If so, what distro and version are
+you using?
 
-but x86.git/mm could go through down all the cpus....
+thanks,
 
-interesting...
-
-YH
+greg k-h
