@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYBNPjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbYBNPkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbYBNPjx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYBNPjQ
+	id S1754130AbYBNPkQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:40:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbYBNPjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:39:16 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49911 "EHLO uludag.org.tr"
+	Thu, 14 Feb 2008 10:39:17 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49910 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752788AbYBNPjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:39:11 -0500
+	id S1753004AbYBNPjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:39:12 -0500
 From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
 To: linux-kernel@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org,
+Cc: linux-ia64@vger.kernel.org,
        =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-Subject: [PATCH 03/14] arch/parisc/kernel/unaligned.c: Use time_* macros
-Date: Thu, 14 Feb 2008 17:36:41 +0200
-Message-Id: <1203003412-11594-4-git-send-email-caglar@pardus.org.tr>
+Subject: [PATCH 02/14] arch/ia64/kernel/: Use time_* macros
+Date: Thu, 14 Feb 2008 17:36:40 +0200
+Message-Id: <1203003412-11594-3-git-send-email-caglar@pardus.org.tr>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: y
 References: y
@@ -28,27 +28,71 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 The functions time_before, time_before_eq, time_after, and time_after_eq are more robust for comparing jiffies against other values.
 
-So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
+So following patch implements usage of the time_after() & time_before() macros, defined at linux/jiffies.h, which deals with wrapping correctly
 
-Cc: linux-parisc@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 ---
- arch/parisc/kernel/unaligned.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/ia64/kernel/irq_ia64.c  |    2 +-
+ arch/ia64/kernel/mca.c       |    3 ++-
+ arch/ia64/kernel/unaligned.c |    3 ++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/arch/parisc/kernel/unaligned.c b/arch/parisc/kernel/unaligned.c
-index aebf3c1..19b8a79 100644
---- a/arch/parisc/kernel/unaligned.c
-+++ b/arch/parisc/kernel/unaligned.c
-@@ -460,7 +460,7 @@ void handle_unaligned(struct pt_regs *regs)
- 			goto force_sigbus;
- 		}
+diff --git a/arch/ia64/kernel/irq_ia64.c b/arch/ia64/kernel/irq_ia64.c
+index 0b52f19..5017a2d 100644
+--- a/arch/ia64/kernel/irq_ia64.c
++++ b/arch/ia64/kernel/irq_ia64.c
+@@ -405,7 +405,7 @@ ia64_handle_irq (ia64_vector vector, struct pt_regs *regs)
+ 			static unsigned char count;
+ 			static long last_time;
  
--		if (unaligned_count > 5 && jiffies - last_time > 5*HZ) {
-+		if (unaligned_count > 5 && time_after(jiffies, last_time + 5 * HZ)) {
- 			unaligned_count = 0;
- 			last_time = jiffies;
- 		}
+-			if (jiffies - last_time > 5*HZ)
++			if (time_after(jiffies, last_time + 5 * HZ))
+ 				count = 0;
+ 			if (++count < 5) {
+ 				last_time = jiffies;
+diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
+index 6e17aed..9b03e32 100644
+--- a/arch/ia64/kernel/mca.c
++++ b/arch/ia64/kernel/mca.c
+@@ -69,6 +69,7 @@
+  * 2007-04-27 Russ Anderson <rja@sgi.com>
+  *	      Support multiple cpus going through OS_MCA in the same event.
+  */
++#include <linux/jiffies.h>
+ #include <linux/types.h>
+ #include <linux/init.h>
+ #include <linux/sched.h>
+@@ -293,7 +294,7 @@ static void ia64_mlogbuf_dump_from_init(void)
+ 	if (mlogbuf_finished)
+ 		return;
+ 
+-	if (mlogbuf_timestamp && (mlogbuf_timestamp + 30*HZ > jiffies)) {
++	if (mlogbuf_timestamp && time_before(jiffies, mlogbuf_timestamp + 30 * HZ)) {
+ 		printk(KERN_ERR "INIT: mlogbuf_dump is interrupted by INIT "
+ 			" and the system seems to be messed up.\n");
+ 		ia64_mlogbuf_finish(0);
+diff --git a/arch/ia64/kernel/unaligned.c b/arch/ia64/kernel/unaligned.c
+index 52f70bb..0bd0f46 100644
+--- a/arch/ia64/kernel/unaligned.c
++++ b/arch/ia64/kernel/unaligned.c
+@@ -13,6 +13,7 @@
+  * 2001/08/13	Correct size of extended floats (float_fsz) from 16 to 10 bytes.
+  * 2001/01/17	Add support emulation of unaligned kernel accesses.
+  */
++#include <linux/jiffies.h>
+ #include <linux/kernel.h>
+ #include <linux/sched.h>
+ #include <linux/tty.h>
+@@ -1290,7 +1291,7 @@ within_logging_rate_limit (void)
+ {
+ 	static unsigned long count, last_time;
+ 
+-	if (jiffies - last_time > 5*HZ)
++	if (time_after(jiffies, last_time + 5 * HZ))
+ 		count = 0;
+ 	if (count < 5) {
+ 		last_time = jiffies;
 -- 
 1.5.3.7
 
