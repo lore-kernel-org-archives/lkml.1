@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbYBNPr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757130AbYBNPvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbYBNPr5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:47:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYBNPro
+	id S1757130AbYBNPvJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:51:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYBNPuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:47:44 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42706 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751634AbYBNPrm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:47:42 -0500
-Subject: Re: "mount: could not find filesystem" - aacraid? (was: Re:
-	2.6.26-git0: IDE oops during boot)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, ananth@in.ibm.com,
-       Andi Kleen <andi@firstfloor.org>, linux-scsi@vger.kernel.org,
-       aacraid@adaptec.com
-In-Reply-To: <200802141307.42169.bzolnier@gmail.com>
-References: <20080206105334.GA3664@elf.ucw.cz>
-	 <47B40DF2.10009@linux.vnet.ibm.com> <200802141301.35032.bzolnier@gmail.com>
-	 <200802141307.42169.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 09:47:32 -0600
-Message-Id: <1203004052.3189.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 10:50:55 -0500
+Received: from pip23.gyao.ne.jp ([125.63.38.249]:42933 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752298AbYBNPuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:50:50 -0500
+Date: Fri, 15 Feb 2008 00:49:28 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: first tree
+Message-ID: <20080214154928.GC14777@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
+	LKML <linux-kernel@vger.kernel.org>,
+	ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+	Len Brown <lenb@kernel.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au> <200802141545.56488.rjw@sisk.pl> <20080215020019.f7cb5895.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080215020019.f7cb5895.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 13:07 +0100, Bartlomiej Zolnierkiewicz wrote:
-> > I worry that another git-bisect session will be needed unless SCSI
-> > developers are already aware of the problem source.
+On Fri, Feb 15, 2008 at 02:00:19AM +1100, Stephen Rothwell wrote:
+> Hi Rafael,
 > 
-> Yinghai Lu noticed that it may be actually a SES problem:
+> On Thu, 14 Feb 2008 15:45:55 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> >
+> > Perhaps you can add:
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6 test
 > 
-> http://lkml.org/lkml/2008/2/14/88
+> I would prefer that the trees be added by the subsystem maintainers and
+> they can tell me which branch represents their expectations for the next
+> kernel release (in this case 2.6.26). But thanks, hopefully you will have
+> prodded them along. :-)
 > 
-> [ I overlooked the above mail, sorry ]
+For SH:
 
-Only if SES is enabled, is it (CONFIG_SCSI_ENCLOSURE)? ... is there
-actually a dmesg of the failing system somewhere, I couldn't find it in
-the (somewhat long) thread?
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-James
-
-
-
-
+This is also what goes in to -mm.
