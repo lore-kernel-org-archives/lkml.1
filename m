@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbYBNW2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764849AbYBNWas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934029AbYBNW2R (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 17:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbYBNW2E
+	id S1764849AbYBNWas (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 17:30:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbYBNWah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 17:28:04 -0500
-Received: from pat.uio.no ([129.240.10.15]:50101 "EHLO pat.uio.no"
+	Thu, 14 Feb 2008 17:30:37 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59952 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755680AbYBNW2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 17:28:01 -0500
-Subject: Re: linux-next: first tree
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 17:27:57 -0500
-Message-Id: <1203028077.18860.29.camel@heimdal.trondhjem.org>
+	id S1756390AbYBNWag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 17:30:36 -0500
+Date: Thu, 14 Feb 2008 23:30:45 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: David Nicol <davidnicol@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: warning with 2.6.24.2 linking
+Message-ID: <20080214223045.GJ21894@uranus.ravnborg.org>
+References: <934f64a20802141415o6d2aee9au187a3d3afb15cd53@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=0.0, required=5.0, autolearn=disabled, none)
-X-UiO-Scanned: FDD76B18E0F4BE1019A7FCBB4E8D80707203827E
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 240 total 6891667 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <934f64a20802141415o6d2aee9au187a3d3afb15cd53@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-15 at 00:35 +1100, Stephen Rothwell wrote:
+On Thu, Feb 14, 2008 at 04:15:41PM -0600, David Nicol wrote:
+> Do we care?
 > 
-> Also, more trees please ... :-)
+> 
+>   AS      .tmp_kallsyms2.o
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: vmlinux.o(.text+0xe51ac): Section mismatch: reference to
+> .init.text:pcibios_fixup_bus (between 'pci_scan_child_bus' and
+> 'pci_scan_bus_parented')
+>   LD      vmlinux
+>   SYSMAP  System.map
+>   SYSMAP  .tmp_System.map
 
-Please add the 'linux-next' branch of
+I plan to fix this - so yes.
 
-  git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git
-
-Cheers
-  Trond
-
+	Sam
