@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbYBNMGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765620AbYBNMI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbYBNMGe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 07:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757239AbYBNMG1
+	id S1765620AbYBNMI4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 07:08:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbYBNMIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 07:06:27 -0500
-Received: from ns.suse.de ([195.135.220.2]:40829 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756833AbYBNMG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 07:06:26 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH] x86: EFI runtime code mapping enhancement
-Date: Thu, 14 Feb 2008 13:06:17 +0100
-User-Agent: KMail/1.9.6
-Cc: Ingo Molnar <mingo@redhat.com>, ThomasGleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-References: <1202894561.5026.14.camel@caritas-dev.intel.com> <47B2D54F.1000302@suse.de> <1202953580.5026.39.camel@caritas-dev.intel.com>
-In-Reply-To: <1202953580.5026.39.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 14 Feb 2008 07:08:48 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:41677 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754556AbYBNMIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 07:08:46 -0500
+Date: Thu, 14 Feb 2008 12:01:01 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 05/11] ata: replace macro with static inline in libata.h
+Message-ID: <20080214120101.150a3284@core>
+In-Reply-To: <1202966058.2748.19.camel@brick>
+References: <3ad7c41048d88a3f8aad098570b9fac9ff719aff.1202965399.git.harvey.harrison@gmail.com>
+	<1202966058.2748.19.camel@brick>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802141306.17642.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Feb 2008 21:14:18 -0800
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> For EFI runtime service in virtual mode, using direct mapping is mainly
-> for kexec, where EFI runtime memory area need to be mapped at same
-> virtual address across kexec. 
+> Avoid a metric ton of sparse warnings like:
+> drivers/ata/pata_ali.c:176:14: warning: symbol '__x' shadows an earlier one
+> drivers/ata/pata_ali.c:176:14: originally declared here
 
-I see. I didn't consider this aspect.
+NAK that appears to be a sparse bug.
 
-> - Use direct mapping of kernel, clean NX bit from kernel page table
-> temporarily before/after EFI calling. This needs not split 2M page into
-> 4K pages, because the region changed is aligned with 2M. And, because
-> the changing is temporary, a little larger region is not a big issue.
+1-4/6-10 Acked-by: Alan Cox <alan@redhat.com>
 
-I would just do it permanently. 
-
-> Aligning 
-> EFI runtime code region with 1G seems not a good idea too. I think a
-> better method is adding a non-split mode to c_p_a(), where the region
-> changed is enlarged if necessary to avoid page allocation. This can be
-> used to implement early_set_memory_xx(). The early_set_memory_xx()
-> instead of duplicated c_p_a() variant can be used by EFI code.
-
-I attempted something like this with my advisory vs required static
-protections last week, but it was rejected.
-
-But yes having such a mode would make sense agreed. 
-
-The easiest way (as in least amount of code) to implement it actually 
-is to just bypass set_memory_*() and just do the lookup_address() yourself 
-and clear NX and do a global TLB flush. For the special case of NX
-that is fine because you don't need to worry about fixing up any aliases.
-
--Andi
- 
+Alan
