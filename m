@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbYBNHVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765402AbYBNHZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765229AbYBNHVe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 02:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYBNHV0
+	id S1765402AbYBNHZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 02:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYBNHZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 02:21:26 -0500
-Received: from www.tglx.de ([62.245.132.106]:34936 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756354AbYBNHVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 02:21:25 -0500
-Date: Thu, 14 Feb 2008 08:21:14 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Alessandro Guido <alessandro.guido@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] Use menuconfig for CONFIG_UIO
-Message-ID: <20080214082114.2c6117e3@dilbert.local>
-In-Reply-To: <200802132328.19310.alessandro.guido@gmail.com>
-References: <200802132328.19310.alessandro.guido@gmail.com>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 02:25:35 -0500
+Received: from pip12.gyao.ne.jp ([61.122.117.250]:40916 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756873AbYBNHZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 02:25:35 -0500
+Date: Thu, 14 Feb 2008 16:24:22 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] media: tuner-xc2028 depends on FW_LOADER.
+Message-ID: <20080214072422.GE12436@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mauro Carvalho Chehab <mchehab@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wed, 13 Feb 2008 23:28:19 +0100
-schrieb Alessandro Guido <alessandro.guido@gmail.com>:
+ERROR: "release_firmware" [drivers/media/video/tuner-xc2028.ko] undefined!
+ERROR: "request_firmware" [drivers/media/video/tuner-xc2028.ko] undefined!
 
-> Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-Hi Alessandro,
-thanks, but this was already done by Denis Cheng:
+---
 
-http://lkml.org/lkml/2008/2/2/60
+ drivers/media/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I signed-off his patch, but AFAICS it hasn't been applied yet.
-BTW, please CC Greg Kroah-Hartman as well if you send patches for UIO.
-
-Thanks,
-Hans
-
-> 
-> ---
-> 
->  drivers/uio/Kconfig |    8 ++------
->  1 files changed, 2 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index b778ed7..dce4cae 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -1,8 +1,6 @@
-> -menu "Userspace I/O"
-> -	depends on !S390
-> -
-> -config UIO
-> +menuconfig UIO
->  	tristate "Userspace I/O drivers"
-> +	depends on !S390
->  	default n
->  	help
->  	  Enable this to allow the userspace driver core code to be
-> @@ -25,5 +23,3 @@ config UIO_CIF
->  
->  	  To compile this driver as a module, choose M here: the
-> module will be called uio_cif.
-> -
-> -endmenu
+diff --git a/drivers/media/Kconfig b/drivers/media/Kconfig
+index 8f4a453..cb0b3fb 100644
+--- a/drivers/media/Kconfig
++++ b/drivers/media/Kconfig
+@@ -93,7 +93,7 @@ if VIDEO_TUNER_CUSTOMIZE
+ 
+ config TUNER_XC2028
+ 	tristate "XCeive xc2028/xc3028 tuners"
+-	depends on I2C
++	depends on I2C && FW_LOADER
+ 	default m if VIDEO_TUNER_CUSTOMIZE
+ 	help
+ 	  Say Y here to include support for the xc2028/xc3028 tuners.
