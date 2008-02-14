@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933632AbYBNWpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934332AbYBNWpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933632AbYBNWpA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 17:45:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbYBNWos
+	id S934332AbYBNWpb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 17:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933525AbYBNWo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 17:44:48 -0500
-Received: from r00tworld.com ([212.85.137.21]:50389 "EHLO r00tworld.com"
+	Thu, 14 Feb 2008 17:44:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43648 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757508AbYBNWor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 17:44:47 -0500
-From: pageexec@freemail.hu
-To: Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
-Date: Thu, 14 Feb 2008 23:43:47 +0200
-MIME-Version: 1.0
-Subject: Re: [x86.git#mm] stack protector fixes, vmsplice exploit
-Reply-to: pageexec@freemail.hu
-CC: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+	id S933268AbYBNWo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 17:44:57 -0500
+Date: Thu, 14 Feb 2008 23:44:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Message-ID: <47B4D233.23110.5E1523@pageexec.freemail.hu>
-In-reply-to: <20080214223553.GW24887@devserv.devel.redhat.com>
-References: <20080214190050.GA32258@elte.hu>, <20080214202535.GA25316@elte.hu>, <20080214223553.GW24887@devserv.devel.redhat.com>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 14 Feb 2008 23:42:01 +0100 (CET)
+Subject: [git pull] x86.git fixes
+Message-ID: <20080214224438.GA22139@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14 Feb 2008 at 17:35, Jakub Jelinek wrote:
 
-> Where do you see a mispredicted branch?
+Linus, please pull the latest x86 git tree from:
 
-try it with -Os (gentoo gcc 4.2.2):
+   git://git.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git
 
-0000000000000000 <foo>:
-   0:   48 83 ec 58             sub    $0x58,%rsp
-   4:   65 48 8b 04 25 28 00 00 00      mov    %gs:0x28,%rax
-   d:   48 89 44 24 48          mov    %rax,0x48(%rsp)
-  12:   31 c0                   xor    %eax,%eax
-  14:   48 89 e7                mov    %rsp,%rdi
-  17:   e8 00 00 00 00          callq  1c <foo+0x1c>    18: R_X86_64_PC32       
-bar+0xfffffffffffffffc
-  1c:   48 8b 54 24 48          mov    0x48(%rsp),%rdx
-  21:   65 48 33 14 25 28 00 00 00      xor    %gs:0x28,%rdx
-  2a:   b8 06 00 00 00          mov    $0x6,%eax
-  2f:   74 05                   je     36 <foo+0x36>
-  31:   e8 00 00 00 00          callq  36 <foo+0x36>    32: R_X86_64_PC32       
-__stack_chk_fail+0xfffffffffffffffc
-  36:   48 83 c4 58             add    $0x58,%rsp
-  3a:   c3                      retq
+Find the shortlog and diffstat below.
 
+Small fixes only. One generic file modified: we touch mm/memory.c's 
+print_vma_addr() to fix a bug on 64-bit x86 that was found yesterday.
+
+	Ingo
+
+------------------>
+Adrian Bunk (1):
+      x86: make dump_pagetable() static
+
+Balbir Singh (1):
+      KVM is not seen under X86 config with latest git (32 bit compile)
+
+Harvey Harrison (1):
+      x86: include proper prototypes for rodata_test
+
+Ingo Molnar (4):
+      x86: fix "BUG: sleeping function called from invalid context" in print_vma_addr()
+      x86: EFI set_memory_x()/set_memory_uc() fixes
+      x86: fix gart_iommu_init()
+      x86: cpa, fix out of date comment
+
+Thomas Gleixner (1):
+      x86: cpa: ensure page alignment
+
+ arch/x86/Kconfig              |    4 ++--
+ arch/x86/kernel/efi.c         |    4 ++--
+ arch/x86/kernel/pci-gart_64.c |    9 +++++++++
+ arch/x86/kernel/test_rodata.c |    2 +-
+ arch/x86/kernel/traps_64.c    |    4 ++--
+ arch/x86/mm/fault.c           |    2 +-
+ arch/x86/mm/init_32.c         |    1 +
+ arch/x86/mm/init_64.c         |    1 +
+ arch/x86/mm/pageattr.c        |   17 +++++++++++++++--
+ include/asm-x86/cacheflush.h  |    7 +++++--
+ include/asm-x86/kdebug.h      |    1 -
+ mm/memory.c                   |    7 +++++++
+ 12 files changed, 46 insertions(+), 13 deletions(-)
