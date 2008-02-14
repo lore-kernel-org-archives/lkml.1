@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763108AbYBNCHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYBNCIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763108AbYBNCHG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 21:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYBNCGz
+	id S1752955AbYBNCIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 21:08:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYBNCHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 21:06:55 -0500
-Received: from mga02.intel.com ([134.134.136.20]:13052 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751490AbYBNCGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 21:06:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,349,1199692800"; 
-   d="scan'208";a="339628881"
-Subject: Re: [2.6 patch] x86: make struct efi_phys static
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Chandramouli Narayanan <mouli@linux.intel.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080213212936.GF3383@cs181133002.pp.htv.fi>
-References: <20080213212936.GF3383@cs181133002.pp.htv.fi>
+	Wed, 13 Feb 2008 21:07:55 -0500
+Received: from wx-out-0506.google.com ([66.249.82.230]:32779 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751616AbYBNCHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 21:07:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=w49ddR+5s0plykiogBHQkH56OBImwBdBCQEFhZiCcEYtYGuaqeS5LCj2U02i3gQetXc3sRWYS5m/ynki8VMkNQQ0ydCItsuBloTl9CoqiIiYoqZ6Gu2PyY8xgiJbZwO8uSW9ziQEEsCM3jxhnx4pQXv9hBB+6CY6lfX9LYHnRJw=
+Subject: [PATCH] adfs: trivial sparse fix
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Russell King <rmk@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 14 Feb 2008 10:07:22 +0800
-Message-Id: <1202954842.5026.45.camel@caritas-dev.intel.com>
+Date: Wed, 13 Feb 2008 18:07:48 -0800
+Message-Id: <1202954868.18204.47.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 14 Feb 2008 02:06:23.0936 (UTC) FILETIME=[33048C00:01C86EAE]
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+fs/adfs/dir_f.c:126:4: warning: do-while statement is not a compound statement
 
-On Wed, 2008-02-13 at 23:29 +0200, Adrian Bunk wrote:
-> Thuis patch makes the needlessly global struct efi_phys static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> 
-> ---
-> 3002c1d384e748f2928823ff4b10ed4d6082dceb 
-> diff --git a/arch/x86/kernel/efi.c b/arch/x86/kernel/efi.c
-> index 1411324..1211ab2 100644
-> --- a/arch/x86/kernel/efi.c
-> +++ b/arch/x86/kernel/efi.c
-> @@ -54,7 +54,7 @@ EXPORT_SYMBOL(efi);
->  
->  struct efi_memory_map memmap;
->  
-> -struct efi efi_phys __initdata;
-> +static struct efi efi_phys __initdata;
->  static efi_system_table_t efi_systab __initdata;
->  
->  static int __init setup_noefi(char *arg)
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/adfs/dir_f.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Reviewed-by: Huang Ying <ying.huang@intel.com>
+diff --git a/fs/adfs/dir_f.c b/fs/adfs/dir_f.c
+index b9b2b27..ea7df21 100644
+--- a/fs/adfs/dir_f.c
++++ b/fs/adfs/dir_f.c
+@@ -122,9 +122,9 @@ adfs_dir_checkbyte(const struct adfs_dir *dir)
+ 		ptr.ptr8 = bufoff(bh, i);
+ 		end.ptr8 = ptr.ptr8 + last - i;
+ 
+-		do
++		do {
+ 			dircheck = *ptr.ptr8++ ^ ror13(dircheck);
+-		while (ptr.ptr8 < end.ptr8);
++		} while (ptr.ptr8 < end.ptr8);
+ 	}
+ 
+ 	/*
+-- 
+1.5.4.1.1278.gc75be
 
-Best Regards,
-Huang Ying
+
 
