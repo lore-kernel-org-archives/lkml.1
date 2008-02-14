@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765689AbYBNUDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766011AbYBNUE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765689AbYBNUDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765075AbYBNUDI
+	id S1766011AbYBNUE0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:04:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758643AbYBNUEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:03:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60732 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765004AbYBNUDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:03:04 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
+	Thu, 14 Feb 2008 15:04:14 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:57239 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758345AbYBNUEM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:04:12 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAIAttEdMQWYv/2dsb2JhbACSFZ0n
+Date: Thu, 14 Feb 2008 15:04:04 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: Sam Ravnborg <sam@ravnborg.org>
-X-Fcc: ~/Mail/linus
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+Cc: Roland McGrath <roland@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] samples: build fix
-In-Reply-To: Sam Ravnborg's message of  Thursday, 14 February 2008 20:46:33 +0100 <20080214194633.GA21894@uranus.ravnborg.org>
-References: <20080214034541.EF1BD270192@magilla.localdomain>
-	<20080214132752.GA27478@Krystal>
-	<20080214194633.GA21894@uranus.ravnborg.org>
-Emacs: there's a reason it comes with a built-in psychotherapist.
-Message-Id: <20080214200257.42815270195@magilla.localdomain>
-Date: Thu, 14 Feb 2008 12:02:57 -0800 (PST)
+Message-ID: <20080214200404.GA11166@Krystal>
+References: <20080214034541.EF1BD270192@magilla.localdomain> <20080214132752.GA27478@Krystal> <20080214194633.GA21894@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080214194633.GA21894@uranus.ravnborg.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:02:57 up 3 days, 16:03,  6 users,  load average: 0.58, 0.32,
+	0.38
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't have any axe to grind here, I just could not figure out how to get
-the samples/ modules built (without resorting to make M=.../samples/foo and
-clobbering my source directory).  If there is another plan, point me to its
-documentation.  I can't see the point of the Kconfig option for samples at all.
-What does it do?
+* Sam Ravnborg (sam@ravnborg.org) wrote:
+> On Thu, Feb 14, 2008 at 08:27:52AM -0500, Mathieu Desnoyers wrote:
+> > * Roland McGrath (roland@redhat.com) wrote:
+> > > 
+> > > The samples/ subdirectory contains only modules.
+> > > But the only make run done there is in commands for vmlinux.
+> > > I can't see why this was ever done in this nonstandard fashion.
+> > > As things stand, the modules don't get built by 'make modules'.
+> > > 
+> > > I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
+> > > because there is no other conditional like that in the top-level Makefile
+> > > and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
+> > > always to be included.
+> > > 
+> > 
+> > Sam, is this ok with the samples intent ? I think as long as we do not
+> > include them with the kernel image and have a "make samples" to build
+> > them, it's ok. Having them built upon make modules seems like a good
+> > idea to me.
+> 
+> The samples code are supposed to be what the name says 'samples'.
+> This is not code that are supposed to be part of the built-in kernel.
+> This is not modules that are supposed to be installes when 
+> installing modules.
+> 
+> Adding it to core-y as Roland does in the patch below is plain
+> wrong as it enabled both points above.
+> The fact that the present code in samples/ does not do this is
+> in this respect irellevant.
+> 
+> Do we have problems when to build the sampls - then lets
+> address this issue but not by trying to upgrade the samples
+> to first class citizen in the kernel - they are not that
+> and should not be handled like that.
+> 
 
-Because they are only ever modules, the samples are never built in.  I
-honestly don't see why the modules shouldn't be installed like any others.
-People who are really going to install the kernel for production are not
-going to set this Kconfig option.
+Then is there some other way to have the samples built upon "make
+modules" that would not install them with other modules ?
 
+Mathieu
 
-Thanks,
-Roland
+> 	Sam
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
