@@ -1,110 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756650AbYBNSBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbYBNSDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756650AbYBNSBq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbYBNSBi
+	id S1759503AbYBNSDU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:03:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbYBNSDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:01:38 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:11638 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751971AbYBNSBh (ORCPT
+	Thu, 14 Feb 2008 13:03:07 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60810 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753368AbYBNSDE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:01:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oXt+ftSSMRaCxmrVnVKO6SDTquwBjpFYpZoBT8whUvkGERfp99XhHNg11U1UUegQC8x2Ya8CZy7qHE0DEMvWK06NcTWYGaFE3etaaImJqpK2KuOyPCsS+rPcD8OKtyEPRiRPU5WkPEevNuDx3Pw6rBQ0WcaS7J7DJU4wgTz+NOM=
-Subject: Re: [PATCH] kprobes: remove sparse warnings from x86
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-In-Reply-To: <47B4595D.6030900@redhat.com>
-References: <1202945433.18204.28.camel@brick>  <47B4595D.6030900@redhat.com>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 10:01:34 -0800
-Message-Id: <1203012094.2748.51.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 13:03:04 -0500
+Date: Thu, 14 Feb 2008 10:01:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+In-Reply-To: <20080214232229.f7bdc6ac.sfr@canb.auug.org.au>
+Message-ID: <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212042133.GA4625@kroah.com> <20080211203146.3d28d1a0@laptopd505.fenrus.org> <1202791555.20739.6.camel@heimdal.trondhjem.org> <20080212051136.GA12802@mit.edu> <20080211221535.bc0dc9cf.akpm@linux-foundation.org>
+ <20080212225716.cf695fe4.sfr@canb.auug.org.au> <20080214081405.GA20791@flint.arm.linux.org.uk> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 10:08 -0500, Masami Hiramatsu wrote:
-> Harvey Harrison :
-> > arch/x86/kernel/kprobes.c:584:16: warning: symbol 'kretprobe_trampoline_holder' was not declared. Should it be static?
-> > arch/x86/kernel/kprobes.c:676:6: warning: symbol 'trampoline_handler' was not declared. Should it be static?
-> > 
-> > Make them static and add the __used attribute, approach taken from the
-> > arm kprobes implementation.
-> > 
-> > kretprobe_trampoline_holder uses inline assemly to define the global
-> > symbol kretprobe_trampoline, but nothing ever calls the holder explicitly.
-> > 
-> > trampoline handler is only called from inline assembly in the same file,
-> > mark it used and static.
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+
+
+On Thu, 14 Feb 2008, Stephen Rothwell wrote:
 > 
-> It looks good to me.
-> 
-> Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-> 
-> Thank you,
-> 
+> Originally, I assumed the stable branch would be for our "usual" API
+> changes, but it appears we are not having any more of those. :-)
 
-Ingo, could you take this in x86.git?
+It's not that we should _never_ have them, it's that they shouldn't be 
+"business as usual".
 
-Harvey
+I'm happy with them being a "a couple of times a year". I'm not happy with 
+them being "once or twice for every release cycle". That's the big deal 
+for me.
 
+If we have a big flag-day that affects a lot of drivers (or architectures) 
+once or twice a year, I think everybody involved will be happy to stand up 
+and say "ok, that fixes problem X, and the new thing really is better, so 
+let's do it, it's worth it".
 
-From: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: [PATCH] kprobes: remove sparse warnings from x86
+But if it's something that happens essentially every single release, that 
+is somethign else altogether. Then it's not a "ok, let's bite the bullet 
+and make the kernel better" thing any more, but instead it devolves into 
+"f*ck, the merge window is open again, now I have to fix up all the crap 
+people pushed on me".
 
-arch/x86/kernel/kprobes.c:584:16: warning: symbol 'kretprobe_trampoline_holder' was not declared. Should it be static?
-arch/x86/kernel/kprobes.c:676:6: warning: symbol 'trampoline_handler' was not declared. Should it be static?
+See? That's a *huge* difference, even if it is "only" a mental one (and 
+clearly it isn't - there's the actual real work of the "I have to fix 
+things up" part too).
 
-Make them static and add the __used attribute, approach taken from the
-arm kprobes implementation.
+So to recap: I have absolutely nothing against fixing up bad internal 
+API's and breaking things. But 99% of the time that should be something we 
+can do incrementally (ie introduce the new API, and simply accept the 
+fact that removing the old API will take a few months). And the case when 
+that _really_ doesn't work should be rare enough that it doesn't wear 
+people down.
 
-kretprobe_trampoline_holder uses inline assemly to define the global
-symbol kretprobe_trampoline, but nothing ever calls the holder explicitly.
+Because if you listen to the tone of people in this discussion, much of it 
+is about people being _tired_ of having to fix things up. It's not exactly 
+been a "wow, the end result sure was nice!" kind of discussion, is it?
 
-trampoline handler is only called from inline assembly in the same file,
-mark it used and static.
+And this is where "process" really matters. Making sure people don't get 
+too frustrated about the constant grind.
 
-Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kernel/kprobes.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+>							  However,
+> I see an argument for attempting to stabilise possible conflicting
+> changes get Linus' review/ack and add them to the stable branch.
+>
+> Linus suggested that such changes should go into an independent tree that
+> everyone could pull into their trees with the full confidence that that
+> tree would be merged into Linus' tree when the merge window opens.  I am
+> suggesting that that tree be the stable branch of linux-next.
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index a99e764..34a5912 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -581,7 +581,7 @@ static int __kprobes kprobe_handler(struct pt_regs *regs)
-  * When a retprobed function returns, this code saves registers and
-  * calls trampoline_handler() runs, which calls the kretprobe's handler.
-  */
--void __kprobes kretprobe_trampoline_holder(void)
-+static void __used __kprobes kretprobe_trampoline_holder(void)
- {
- 	asm volatile (
- 			".global kretprobe_trampoline\n"
-@@ -673,7 +673,7 @@ void __kprobes kretprobe_trampoline_holder(void)
- /*
-  * Called from kretprobe_trampoline
-  */
--void * __kprobes trampoline_handler(struct pt_regs *regs)
-+static __used __kprobes void *trampoline_handler(struct pt_regs *regs)
- {
- 	struct kretprobe_instance *ri = NULL;
- 	struct hlist_head *head, empty_rp;
--- 
-1.5.4.1.1278.gc75be
+I absolutely have no problem with having a "this is the infrastrcture 
+changes that will go into the next release". In fact, I can even 
+*maintain* such a branch. 
 
+I've not wanted to open up a second branch for "this is for next release", 
+because quite frankly, one of the other problems we have is that people 
+already spend way too much time on the next release compared to just 
+looking at regressions in the current one. But especially if we're talking 
+about _purely_ API changes etc infrastructure, I could certainly do a 
+"next" branch. 
 
-
+			Linus
