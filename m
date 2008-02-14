@@ -1,79 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933513AbYBNNd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933011AbYBNNev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933513AbYBNNd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 08:33:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBNNdp
+	id S933011AbYBNNev (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 08:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYBNNel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 08:33:45 -0500
-Received: from mail.bmlv.gv.at ([193.171.152.37]:49885 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933139AbYBNNdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 08:33:43 -0500
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: user-mode-linux-user@lists.sourceforge.net
-Subject: Re: 2.6.24.2 won't compile UML
-Date: Thu, 14 Feb 2008 14:33:29 +0100
-User-Agent: KMail/1.9.7
-Cc: jdike@addtoit.com, linux-kernel@vger.kernel.org
-References: <200802141213.09859.philipp.marek@bmlv.gv.at>
-In-Reply-To: <200802141213.09859.philipp.marek@bmlv.gv.at>
+	Thu, 14 Feb 2008 08:34:41 -0500
+Received: from wr-out-0506.google.com ([64.233.184.232]:31918 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751859AbYBNNek convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 08:34:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nEgTr3/wuoMVN0s6HrIatk0CqeHEhzjCPTcNAzbCZCDkIOhOkf+XqWiPYm7QbUrNN/odiXW75ynX/alz9f0yttFYHF5ZYpR2NWvQb9dlP+uCgH4xEVPBB14y3qu7W7cZRODm5M5d2lPiO4fPE6WOjB6PQ3hJmvk/qtZsJiE2538=
+Message-ID: <9a8e2be0802140534y6e013d89k908154456e5d20b4@mail.gmail.com>
+Date: Thu, 14 Feb 2008 14:34:37 +0100
+From: "=?ISO-8859-1?Q?Ricardo_J._Rodr=EDguez?=" <ricardo.rdez@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Semaphores with timeouts
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20080214001454.4e8cb0eb@core>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200802141433.29839.philipp.marek@bmlv.gv.at>
+References: <9a8e2be0802131608m7eef61efmaee332a661503f39@mail.gmail.com>
+	 <20080214001454.4e8cb0eb@core>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everybody,
+Hi Alan,
 
-On Donnerstag, 14. Februar 2008, Ph. Marek wrote:
-> I'm trying to compile an UML binary from 2.6.24.
+> It's certainly possible to add one but the first question would be "why
+> do you need it - what sort of API are you trying to build"
 >
->   make ARCH=um O=... bzImage
->
-> gives
->
->   make -C linux-2.6.24.2/ O=output_path/build ARCH=um bzImage
->   make[1]: Entering directory `output_path/linux-2.6.24.2'
->     GEN     output_path/build/Makefile
->   scripts/kconfig/conf -s arch/um/Kconfig
->   net/bluetooth/hidp/Kconfig:4:warning: 'select' used by config symbol 'BT_HIDP' refers to undefined symbol 'HID'
 
-I now made a patch based on the spirit of 
-  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0263603a01e802f79e369ac489793e5320031560
-- although that's surely the wrong way to go, because it'll break
-the other options. I just attach it in case other people have the same problem.
+The protocol works in adhoc wireless mode, so when I send a packet,
+I've to wait a  while before I send it again, like TCP timeout
+retransmistions work.
 
+Anyway, I've though maybe I can use SIGALRM to know when it expired
+and do whatever...
 
-Now I get other errors ...
-	$ make
-	  CHK     include/linux/version.h
-	  CHK     include/linux/utsrelease.h
-	  CC      arch/x86/kernel/asm-offsets.s
-	In file included from include/linux/sched.h:54,
-	                 from arch/x86/kernel/asm-offsets_32.c:8,
-	                 from arch/x86/kernel/asm-offsets.c:2:
-	include/linux/jiffies.h:18:5: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:20:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:22:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:24:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:26:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:28:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:30:7: warning: "CONFIG_HZ" is not defined
-	include/linux/jiffies.h:33:3: error: #error You lose.
-and so on, and so on ...
+-- 
+Ricardo J. Rodríguez
+www.deathhc.tk
 
-I'm currently trying to use the pre-build binary from 
-http://user-mode-linux.sourceforge.net - but I'd prefer to build
-the kernel myself.
-
-
-Help, please? Anyone?
-
-
-Regards,
-
-Phil
+#329385 | [Registered Linux User]
