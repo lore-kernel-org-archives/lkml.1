@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764654AbYBNTcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbYBNTfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764654AbYBNTcw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 14:32:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756090AbYBNTco
+	id S1764032AbYBNTfs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 14:35:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYBNTfk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 14:32:44 -0500
-Received: from mail.trixing.net ([87.230.125.58]:38750 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084AbYBNTcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 14:32:43 -0500
-X-Greylist: delayed 1678 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 14:32:43 EST
-Message-ID: <47B490A8.3050500@gmail.com>
-Date: Thu, 14 Feb 2008 20:04:08 +0100
-From: Jan Dittmer <jan.dittmer@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Thu, 14 Feb 2008 14:35:40 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:56907 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755517AbYBNTfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 14:35:39 -0500
+Date: Thu, 14 Feb 2008 11:35:37 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Kanoj Sarcar <kanojsarcar@yahoo.com>
+cc: Christian Bell <christian.bell@qlogic.com>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <866658.37093.qm@web32510.mail.mud.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0802141133430.477@schroedinger.engr.sgi.com>
+References: <866658.37093.qm@web32510.mail.mud.yahoo.com>
 MIME-Version: 1.0
-To: linux-am33-list@redhat.com
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Cross-Compiling mn10300: Assembler messages: junk at end of line:
- 0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 13 Feb 2008, Kanoj Sarcar wrote:
 
-defconfig build:
+> Oh ok, yes, I did see the discussion on this; sorry I
+> missed it. I do see what notifiers bring to the table
+> now (without endorsing it :-)).
+> 
+> An orthogonal question is this: is IB/rdma the only
+> "culprit" that elevates page refcounts? Are there no
+> other subsystems which do a similar thing?
 
-+ make ARCH=mn10300 HOSTCC=gcc-4.0 CROSS_COMPILE=mn10300-elf- 
-CROSS32_COMPILE= O=../2.6.25-rc1-mn10300/
-   Using /usr/src/xtest/linux-2.6 as source for kernel
-   GEN     /usr/src/xtest/2.6.25-rc1-mn10300/Makefile
-   CHK     include/linux/version.h
-   CHK     include/linux/utsrelease.h
-   CALL    /usr/src/xtest/linux-2.6/scripts/checksyscalls.sh
-   CHK     include/linux/compile.h
-   AS      arch/mn10300/kernel/kernel_execve.o
-/usr/src/xtest/linux-2.6/arch/mn10300/kernel/kernel_execve.S: Assembler 
-messages:
-/usr/src/xtest/linux-2.6/arch/mn10300/kernel/kernel_execve.S:33: Error: 
-junk at end of line: `0'
-/usr/src/xtest/linux-2.6/arch/mn10300/kernel/kernel_execve.S:34: Error: 
-junk at end of line, first unrecognized character is `m'
-make[2]: *** [arch/mn10300/kernel/kernel_execve.o] Error 1
-make[1]: *** [arch/mn10300/kernel] Error 2
-make: *** [sub-make] Error 2
-
-
-Expected? Toolchain problem? Tools from ftp.redhat.com,
-Version 3.4-am33-04r2-5. Host is x86.
-
-Thanks,
-
-Jan Dittmer
+Yes there are actually two projects by SGI that also ran into the same 
+issue that motivated the work on this. One is XPmem which allows 
+sharing of process memory between different Linux instances and then 
+there is the GRU which is a kind of DMA engine. Then there is KVM and 
+probably multiple other drivers.
