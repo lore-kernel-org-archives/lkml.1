@@ -1,71 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764605AbYBNSmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759962AbYBNSt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764605AbYBNSmW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:42:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756331AbYBNSmL
+	id S1759962AbYBNSt1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbYBNStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:42:11 -0500
-Received: from vms046pub.verizon.net ([206.46.252.46]:47626 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755177AbYBNSmJ (ORCPT
+	Thu, 14 Feb 2008 13:49:13 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:39186 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754796AbYBNStL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:42:09 -0500
-Date: Thu, 14 Feb 2008 13:32:02 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-In-reply-to: <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Message-id: <200802141332.03315.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
- <20080214232229.f7bdc6ac.sfr@canb.auug.org.au>
- <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Thu, 14 Feb 2008 13:49:11 -0500
+Date: Thu, 14 Feb 2008 10:48:42 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] add rcu_assign_index() if ever needed
+Message-ID: <20080214184842.GD8910@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080213220024.GA30729@linux.vnet.ibm.com> <20080213220515.GA10642@linux.vnet.ibm.com> <20080214092427.960d1f67.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214092427.960d1f67.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008, Linus Torvalds wrote:
-[...]
->And this is where "process" really matters. Making sure people don't get
->too frustrated about the constant grind.
+On Thu, Feb 14, 2008 at 09:24:27AM -0800, Randy Dunlap wrote:
+> On Wed, 13 Feb 2008 14:05:15 -0800 Paul E. McKenney wrote:
+> 
+> > Hello again!
+> > 
+> > This is a speculative patch that as far as I can tell is not yet required.
+> > If anyone applies RCU to a data structure allocated out of an array, using
+> > array indexes in place of pointers to link the array elements together,
+> > then the rcu_assign_index() function in this patch will be needed to
+> > assign a given element's array index to the RCU-traversed index.  The
+> > implementation is exactly that of the old rcu_assign_pointer(), so is
+> > extremely well tested.
+> > 
+> > The existing rcu_assign_pointer() will emit a compiler warning in cases
+> > where rcu_assign_index() is required.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  rcupdate.h |   18 ++++++++++++++++++
+> >  1 file changed, 18 insertions(+)
+> > 
+> > diff -urpNa -X dontdiff linux-2.6.24-rap/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
+> > --- linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+> > +++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-13 10:55:40.000000000 -0800
+> > @@ -286,6 +286,24 @@ extern struct lockdep_map rcu_lock_map;
+> >  	})
+> >  
+> >  /**
+> > + * rcu_assign_index - assign (publicize) a index of a newly
+> > + * initialized array elementg that will be dereferenced by RCU
+> > + * read-side critical sections.  Returns the value assigned.
+> > + *
+> > + * Inserts memory barriers on architectures that require them
+> > + * (pretty much all of them other than x86), and also prevents
+> > + * the compiler from reordering the code that initializes the
+> > + * structure after the index assignment.  More importantly, this
+> > + * call documents which indexes will be dereferenced by RCU read-side
+> > + * code.
+> > + */
+> 
+> s/a index/index/
+> 
+> Along with Gautham's typo fix, you could also make this be passable
+> kernel-doc notation.  :)
 
-One of the problems caused by this 'grind' is being locked out of using 3rd 
-party closed drivers until the vendor decides its stable enough to make the 
-effort to update their binary blobs to match the newer functions.
+Guess I should do the same for rcu_assign_pointer() and probably several
+others as well...  Good catch!!!
 
-Nvidia vs 2.6.25-rc1 being a case in point, and they (nvidia) are appearing to 
-indicate its not a problem until some distro actually ships a kernel with the 
-changes that broke it.  That could be months or even a year plus.
+							Thanx, Paul
 
-So you've lost one 'canary in the coal mine' tester at least until that 
-happens as I don't have a spare box I can setup to run the nv driver, which 
-itself seems to be suffering from bit rot recently and cannot run this screen 
-at its native 1680x1050 resolution, reverting to something that resembles 
-what I used to get from a timex 1000 in 1978 but with a few colors.  I just 
-recently had to install the nvidia driver on my milling machines kubuntu 6.06 
-box cuz an xorg update put it back to 640x400 if the nv driver was used.  
-This is the real world, where politics aside, it just has to work... :-(
-
-But I'll still be lurking and building to test anyway even if I don't boot it 
-for more than 10 minutes. :)
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-I'm not a lawyer. I don't even play one on TV.
-
-	- Linus Torvalds on the gcc mailing list
+> See Documentation/kernel-doc-nano-HOWTO.txt for details.
+> 
+> Summary:
+> The function (or macro) name and short description must be on one line.
+> This is followed by the parameters, then a "blank" (actually " *") line,
+> then any (longer) description, notes, etc.  So basically:
+> 
+> /**
+>  * rcu_assign_index - assign (publicize) index of a newly initialized array element
+>  * @p: description of @p
+>  * @v: description of @v
+>  *
+>  * This function assigns (publicizes) the index of a newly
+>  * initialized array element that will be dereferenced by RCU
+>  * read-side critical sections.  Returns the value assigned.
+>  *
+>  * Inserts memory barriers on architectures that require them
+>  * (pretty much all of them other than x86), and also prevents
+>  * the compiler from reordering the code that initializes the
+>  * structure after the index assignment.  More importantly, this
+>  * call documents which indexes will be dereferenced by RCU read-side
+>  * code.
+>  */
+> 
+> 
+> > +
+> > +#define rcu_assign_index(p, v)	({ \
+> > +					smp_wmb(); \
+> > +					(p) = (v); \
+> > +				})
+> > +
+> > +/**
+> >   * synchronize_sched - block until all CPUs have exited any non-preemptive
+> >   * kernel code sequences.
+> >   *
+> 
+> ---
+> ~Randy
