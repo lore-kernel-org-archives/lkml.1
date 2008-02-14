@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYBNU4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765152AbYBNU5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753680AbYBNU4J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:56:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763808AbYBNUzw
+	id S1765152AbYBNU5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYBNU5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:55:52 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:25348 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbYBNUzv (ORCPT
+	Thu, 14 Feb 2008 15:57:47 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:10334 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbYBNU5q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:55:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=DoBMLfXq0iPQaVLF41NnXymdCbXNmPH0wIwod0apTR0i4u5S/jzmUt6qGUCKA0MUXDkX4Kk3C4Xw8Vl14331H5VnNjdaXU7Qe4OUVVpCmO96Fqs58sR2vuDOCQO1UBUMuPHID0ku1Rt7XPItmECxuloy2utypEXpSJGgGEUMAOo=
-Message-ID: <2c0942db0802141255o5d18c6bfxe052ba9512a18817@mail.gmail.com>
-Date: Thu, 14 Feb 2008 12:55:49 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, rientjes@google.com,
-       Lee.Schermerhorn@hp.com, mel@csn.ul.ie, ak@suse.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       clameter@sgi.com
-In-Reply-To: <20080214103541.10943567.pj@sgi.com>
+	Thu, 14 Feb 2008 15:57:46 -0500
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] unhide CONFIG_DEBUG_SECTION_MISMATCH
+X-Message-Flag: Warning: May contain useful information
+References: <200802142054.m1EKs49x023091@agora.fsl.cs.sunysb.edu>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 14 Feb 2008 12:57:41 -0800
+In-Reply-To: <200802142054.m1EKs49x023091@agora.fsl.cs.sunysb.edu> (Erez Zadok's message of "Thu, 14 Feb 2008 15:54:04 -0500")
+Message-ID: <adabq6jqmre.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
-	 <2f11576a0802140611h261b9df2qd13406e562f52864@mail.gmail.com>
-	 <20080214103541.10943567.pj@sgi.com>
-X-Google-Sender-Auth: 7b219c3a515af7c0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Feb 2008 20:57:42.0138 (UTC) FILETIME=[3D9435A0:01C86F4C]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 8:35 AM, Paul Jackson <pj@sgi.com> wrote:
-> Kosaki-san wrote:
->  > i prefer another name [!relative].
->
->  Any suggestions?
->
->  I'll give the name some thought myself.
->  I like good names, and this is the right
->  time to get this one right.
+ > I can indeed try to re-make, passing CONFIG_DEBUG_SECTION_MISMATCH=y on the
+ > command line, but I can't turn on the option in my .config.  That's because
+ > the option depends on "UNDEFINED".  (Was that an attempt to "hide" the
+ > option?  Why?)  The following small patch allows me to set the option in my
+ > .config.
 
-'Relative map' implies a constant offset. What you have there is just
-a map as relmap could be sparse (which, btw, would have been nice to
-have in the example).
+It seems this was intentional, see the log for e5f95c8b:
 
-map_bitmap violates your naming convention, bitmap_map isn't all that
-clear, bitmap_remap is taken, and while it is one-to-one and onto, I
-think calling it bitmap_bijection would lose everyone except the
-mathematicians. bitmap_onto? bitmap_map_onto? bitmap_map_bitmap_onto?
-
-bitmap_read_my_kernel_doc?
-
-Minor suggestion:
-+ * and the n-th bit of @relmap is the m-th set bit of @relmap.
-
-Perhaps s/is the/is also the/, so that the reader doesn't try to
-second guess if you accidentally wrote @relmap twice instead of one of
-them being @orig.
+    kbuild: print only total number of section mismatces found
+    
+    We have too many section mismatches detected at the moment.
+    So silence modpost and prevent the option from being
+    set in a typical allyesconfig build.
+    
+    Tell the user how to see all the deteils in the summary
+    message from modpost.
+    
+    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
