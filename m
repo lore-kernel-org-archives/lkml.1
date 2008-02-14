@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbYBNNm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbYBNNnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765395AbYBNNm3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 08:42:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYBNNmT
+	id S933233AbYBNNnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 08:43:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932250AbYBNNnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 08:42:19 -0500
-Received: from tomts43.bellnexxia.net ([209.226.175.110]:41775 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752759AbYBNNmS (ORCPT
+	Thu, 14 Feb 2008 08:43:03 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:38134 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753914AbYBNNnA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 08:42:18 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAG7Us0dMQWYv/2dsb2JhbACBWa0l
-Date: Thu, 14 Feb 2008 08:37:17 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] spufs support multiple probes markers
-Message-ID: <20080214133717.GC27478@Krystal>
-References: <20080212152245.2d816143.akpm@linux-foundation.org> <20080212233914.GA22966@Krystal> <20080212235650.GA23693@Krystal> <20080214071908.GA8866@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Feb 2008 08:43:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NbRZ9hahzhjaIGI0h0wcy8VAgApXRtaZCXGKkZTL0JIJCf7an83ve6+FHHXohM1mh3mFuyTCa8ouhMyI0jRsivtEgiO+wSDd6gGbfYmoSSULPOmkN0hveReGRpyTnQjeHk9GWaK5r4AGphoO0NwqlMAa1uPJpQfjv05sq3rjtL4=
+Message-ID: <9ea470500802140542m325f05bdq256d3578950e4240@mail.gmail.com>
+Date: Thu, 14 Feb 2008 14:42:58 +0100
+From: "Boris Petkov" <petkovbb@googlemail.com>
+To: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
+Cc: petkovbb@gmail.com, "Hans-Peter Jansen" <hpj@urpla.net>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <200802141324.06731.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080214071908.GA8866@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:33:32 up 3 days,  9:34,  4 users,  load average: 0.06, 0.20,
-	0.25
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <200802121026.17420.hpj@urpla.net>
+	 <200802140037.51450.hpj@urpla.net>
+	 <20080214062652.GE13446@gollum.tnic>
+	 <200802141324.06731.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Tue, Feb 12, 2008 at 06:56:50PM -0500, Mathieu Desnoyers wrote:
-> > Update spufs to the new linux kernel markers API, which supports connecting
-> > more than one probe to a single marker.
-> 
-> Compiles and works for me.  But saying I like the odd API would be lying.
-> 
+On 2/14/08, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> On Thursday 14 February 2008, Borislav Petkov wrote:
+> > On Thu, Feb 14, 2008 at 12:37:50AM +0100, Hans-Peter Jansen wrote:
+> >
+> > [Added Bart to CC]
+> >
+> > > Am Dienstag, 12. Februar 2008 schrieb Borislav Petkov:
+> > > > On Tue, Feb 12, 2008 at 10:26:17AM +0100, Hans-Peter Jansen wrote:
+> > > > > Hi,
+> > > > >
+> > > > > I suffer from unreliable cdrom operations (failing DAE and burn
+> > > > > sessions) with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
+> > > >
+> > > >                   ^^^^
+> > > > Hi,
+> > > >
+> > > > can please you test this with a more recent kernel. Yours is almost
+> > > > ancient - from Sep. 2006.
+> > >
+> > > Sure, sorry. Here we go:
+> > >
+> > > Feb 14 00:18:18 kernel: hde: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+> > >  Trying to recover by ending request.
+> > > Feb 14 00:27:27 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
+> > >  Trying to recover by ending request.
+> > >
+> > > ~> uname -a
+> > > Linux xrated 2.6.24.1-35-pae #1 SMP 2008/02/12 01:00:18 UTC i686 athlon i386 GNU/Linux
+> >
+> > Actually the interrupt handler in ide-cd got rewritten and you're still using the
+> > old one (cdrom_pc_intr vs cdrom_newpc_intr). Those changes went into mainline before
+> > the 2.6.25-rc1 so we'll be able to test the new one only when you try out 2.6.25-rc1
+> > or wait until 2.6.25 is released in case you don't want to try hazardous materials
+> > such as an -rc kernel[*] :).
+> >
+> > Bart?
+> >
+> > *. As a matter of fact it runs quite smoothly on my machines.
+>
+> 2.6.25-rc1-git1 if you are using IDE.
+>
+> however it may still have this problem
+>
+>        if (ireason == 0) {
+>                write = 1;
+>                xferfunc = HWIF(drive)->atapi_output_bytes;
+>        } else if (ireason == 2 || (ireason == 1 &&
+>                   (blk_fs_request(rq) || blk_pc_request(rq)))) {
+>
+> we problably need to call ide_cd_check_ireason() also for REQ_TYPE_ATA_PC
+> requests and remove (blk_fs_request(rq) || blk_pc_request(rq) here
+>
+>                write = 0;
+>                xferfunc = HWIF(drive)->atapi_input_bytes;
+>        } else {
+>                printk(KERN_ERR "%s: %s: The drive "
+>                                "appears confused (ireason = 0x%02x). "
+>                                "Trying to recover by ending request.\n",
+>                                drive->name, __FUNCTION__, ireason);
+>                goto end_request;
+>        }
+>
+> Bart
+>
+Hans-Peter,
 
-Are there any concerns of yours that I should address then ? The changes
-I made to the probe function prototype appeared to be technically
-required and caused by variadic argument limitations when it comes to
-support multiple probes.
+i will prepare a patch against 2.6.24 for you to try later.
 
-I think that the marker arm/disarm removal gets rid of an unnecessary
-redundancy.
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Thanks,
+Boris.
