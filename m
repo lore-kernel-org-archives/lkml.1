@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761110AbYBNRml@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbYBNRnD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761110AbYBNRml (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:42:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbYBNRmd
+	id S1755810AbYBNRnD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:43:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758595AbYBNRmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:42:33 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:46384
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754367AbYBNRmc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:42:32 -0500
-Message-ID: <47B47D85.9070504@qumranet.com>
-Date: Thu, 14 Feb 2008 19:42:29 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 14 Feb 2008 12:42:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43577 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754660AbYBNRmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 12:42:50 -0500
+Date: Thu, 14 Feb 2008 18:42:37 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [PATCH] Fix direct mapping alias regressin in ioremap v2
+Message-ID: <20080214174237.GA24383@elte.hu>
+References: <20080214165645.GA26748@basil.nowhere.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-References: <20080213155725.GA19523@elte.hu> <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com> <20080214162510.GA29570@elte.hu>
-In-Reply-To: <20080214162510.GA29570@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214165645.GA26748@basil.nowhere.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->   
->> Ingo, could you also please consider the KVM build fix at 
->> http://marc.info/?l=linux-kernel&m=120262794315024&w=2 which has been 
->> acked by Avi. I suspect this patch should be route through git-x86 
->> since it affects arch/x86/Kconfig.
->>     
->
-> thanks, applied - this first looked like a KVM item, that's why i havent 
-> added it. [Btw., feel free to push it via kvm.git as well - as long as 
-> you are sure it does not break the build ;-) ]	
 
-Yeah, I'm queuing it as well, it will get there one way or the other.
+* Andi Kleen <andi@firstfloor.org> wrote:
 
--- 
-error compiling committee.c: too many arguments to function
+>     Fix bug noticed by Ingo of __va() wrapping on 32bit
 
+what you should realize is that had we applied your previous patch in a 
+rush, it would have introduced a far more serious regression than the 
+type of problem you are trying to solve. That's one of the reasons why 
+we disagree with your sense of urgency.
+
+We've got the clean fixes queued up and it's all under testing. (going 
+fine so far)
+
+Also, you only appear to have resent your fix with the obvious bug 
+fixed, but it's still unclean and you do not seem to have replied to my 
+main structural argument:
+
+> > Please have a look at how we solved the "secondary alias" 64-bit 
+> > problem in x86.git#mm and please resend against x86.git#mm if you 
+> > still think something is missing. Thanks,
+
+Thanks,
+
+	Ingo
