@@ -1,62 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759093AbYBNJ3C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762625AbYBNJbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759093AbYBNJ3C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 04:29:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbYBNJ2r
+	id S1762625AbYBNJbj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 04:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYBNJbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 04:28:47 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:44716
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751289AbYBNJ2q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 04:28:46 -0500
-Message-ID: <47B4098C.3060301@qumranet.com>
-Date: Thu, 14 Feb 2008 11:27:40 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Olaf Hering <olaf@aepfle.de>, linux-kernel@vger.kernel.org
-Subject: Re: KVM: Export include/linux/kvm.h only if $ARCH actually supports
- KVM
-References: <20080210111525.GA28522@aepfle.de> <47B29FB5.40205@qumranet.com> <20080213203450.GB13536@uranus.ravnborg.org>
-In-Reply-To: <20080213203450.GB13536@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 04:31:21 -0500
+Received: from trashmail.net ([213.155.82.90]:35821 "EHLO trashmail.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752209AbYBNJbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 04:31:20 -0500
+To: linux-kernel@vger.kernel.org
+From: rzryyvzy <rzryyvzy@trashmail.net>
+Subject: Is there a "blackhole" /dev/null directory?
+Message-Id: <20080214093051.7240852AB0E31@trashmail.net>
+Date: Thu, 14 Feb 2008 10:30:51 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Wed, Feb 13, 2008 at 09:43:49AM +0200, Avi Kivity wrote:
->   
->> Olaf Hering wrote:
->>     
->>>> Currently, make headers_check barfs due to <asm/kvm.h>, which 
->>>> <linux/kvm.h>
->>>> includes, not existing.  Rather than add a zillion <asm/kvm.h>s, export 
->>>> kvm.h
->>>> only if the arch actually supports it.
->>>>    
->>>>         
->>> This makes headers_install_all unreliable.
->>> linux/kvm.h will not be exported, depending on what system the libc
->>> headers will be generated. 
->>>       
->> I see.  Any suggestions besides adding lots of asm-*/kvm.h?
->>     
->
-> Do not include asm/kvm.h from linux/kvm.h.
-> And in the few places where it is needed explicit include asm/kvm.h before
-> linux/kvm.h.
->
-> Alternatively inlcude asm/kvm.h inside #ifdef KERNEL"
-> so only userspace has to do explicit include of asm before linux variant.
->   
+Hello Linux Kernel Hackers,
 
-That's not very nice for userspace, which needs asm/kvm.h for the arch 
-specific parts of the interface.  I'll add asm-*/kvm.h.
+/dev/null is often very useful, specially if programs force to save data in some file. But some programs like to creates different temporary file names, so /dev/null could no more work.
+
+What is with a "/dev/null"-directory?
+I mean a "blackhole pseudo directory" which eats every write to null.
+
+Here is how it could work:
+mount -t nulldir nulldir /dev/nulldir
+
+Now if a program does a create(2),
+it creates in the memory the file with its fd.
+Then if a program does a write(2) to the fd, it eats the writes and give out fakely it has written the number of bytes.
+When the program calls does a close(2) of the fd, then the complete inode is deleted in the memory.
+
+The directory should  be permanently empty except for the inodes with open file descriptors. So only inode information would be temporary saved in this "nulldir tmpfs" directory.
+
+Is there already existing a possibility to create a null directory?
+-- 
+Best regards,
+Mika Lawando
 
 -- 
-Any sufficiently difficult bug is indistinguishable from a feature.
-
+E-Mail sent with anti-spam site TrashMail.net!
+Free disposable email addresses: http://www.trashmail.net/
