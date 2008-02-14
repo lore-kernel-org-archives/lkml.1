@@ -1,103 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933758AbYBNAyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934403AbYBNAys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933758AbYBNAyW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762236AbYBNAyF
+	id S934403AbYBNAys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:54:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765095AbYBNAyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:54:05 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:39355 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755295AbYBNAyD convert rfc822-to-8bit (ORCPT
+	Wed, 13 Feb 2008 19:54:13 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:37515 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763834AbYBNAyI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:54:03 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -1.82
-Date: Wed, 13 Feb 2008 16:53:56 -0800
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: paulmck@linux.vnet.ibm.com
-Cc: Stephen Hemminger 
-	<"stephen.hemminger@vyatta.com"@mail.vyatta.com>,
-       linux-kernel@vger.kernel.org, davem@davemloft.net,
-       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
-       herbert@gondor.apana.org.au, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/2] remove rcu_assign_pointer(NULL) penalty with
- type/macro safety
-Message-ID: <20080213165356.11d02092@extreme>
-In-Reply-To: <20080214004253.GR12393@linux.vnet.ibm.com>
-References: <20080213220024.GA30729@linux.vnet.ibm.com>
-	<20080213143537.1b806790@extreme>
-	<20080213224134.GK12393@linux.vnet.ibm.com>
-	<20080213144233.05e860cb@extreme>
-	<20080213233744.GO12393@linux.vnet.ibm.com>
-	<20080213155158.1b621359@extreme>
-	<20080214001404.GQ12393@linux.vnet.ibm.com>
-	<20080213162700.0a32000d@extreme>
-	<20080214004253.GR12393@linux.vnet.ibm.com>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 Feb 2008 19:54:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DSOBulcNw8BODyBOAYre3oKckYSri7aKyqcZGjgeK+2uPRrQP0+Mox2ydzbrQxPN+i3opRhF2LG3t4eYbG8H5FAKVpauKcjl5N4iSOM8FhnVY7bl6jCrwGMgchUuBVLhrqOWkESCXOD3qzkuwJVXWNCfVf4KyS/KvWGnUIj1d3A=
+Message-ID: <a8e1da0802131654s630a870bu1bc578b936940250@mail.gmail.com>
+Date: Thu, 14 Feb 2008 08:54:04 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: Barnaby <diannibd@gmail.com>
+Subject: Re: 2.6.24-git16 Oops @ sysfs_move_dir w/ btdelconn
+Cc: "Marcel Holtmann" <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, bluez-devel@lists.sourceforge.net,
+       "David Miller" <davem@davemloft.net>
+In-Reply-To: <a8cd38e00802070857q61c29144s62ccb50183b4a037@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8cd38e00802070857q61c29144s62ccb50183b4a037@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 16:42:53 -0800
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Feb 8, 2008 12:57 AM, Barnaby <diannibd@gmail.com> wrote:
+> Hello Dave,
 
-> On Wed, Feb 13, 2008 at 04:27:00PM -0800, Stephen Hemminger wrote:
-> > On Wed, 13 Feb 2008 16:14:04 -0800
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > On Wed, Feb 13, 2008 at 03:51:58PM -0800, Stephen Hemminger wrote:
-> 
-> [ . . . ]
-> 
-> > > > Maybe cast both sides to void * in this case:
-> > > > 
-> > > > static inline void node_set_parent(struct node *node, struct tnode *ptr)
-> > > > {
-> > > >  	rcu_assign_pointer((void *) node->parent, (void *)((unsigned long)ptr | NODE_TYPE(node)));
-> > > > }
-> > > 
-> > > That gets me the following:
-> > > 
-> > > 	net/ipv4/fib_trie.c: In function ‘node_set_parent’:
-> > > 	net/ipv4/fib_trie.c:182: error: invalid lvalue in assignment
-> > > 
-> > > However, as with much in computing, an extra level of indirection fixes
-> > > things.  Your call as to whether or not the cure is preferable to the
-> > > disease.  ;-)
-> > > 
-> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > ---
-> > > 
-> > >  fib_trie.c |    4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > > 
-> > > diff -urpNa -X dontdiff linux-2.6.25-rc1/net/ipv4/fib_trie.c linux-2.6.25-rc1-fib_trie-warn.compile/net/ipv4/fib_trie.c
-> > > --- linux-2.6.25-rc1/net/ipv4/fib_trie.c	2008-02-13 14:38:12.000000000 -0800
-> > > +++ linux-2.6.25-rc1-fib_trie-warn.compile/net/ipv4/fib_trie.c	2008-02-13 16:10:07.000000000 -0800
-> > > @@ -179,8 +179,8 @@ static inline struct tnode *node_parent_
-> > >  
-> > >  static inline void node_set_parent(struct node *node, struct tnode *ptr)
-> > >  {
-> > > -	rcu_assign_pointer(node->parent,
-> > > -			   (unsigned long)ptr | NODE_TYPE(node));
-> > > +	rcu_assign_pointer((*(void **)&node->parent),
-> > > +			   (void *)((unsigned long)ptr | NODE_TYPE(node)));
-> > >  }
-> > 
-> > That is heading towards ugly...  Maybe not using the macro at all (for this case) would be best:
-> > 
-> > static inline void node_set_parent(struct node *node, struct tnode *ptr)
-> > {
-> > 	smp_wmb();
-> > 	node->parent = (unsigned long)ptr | NODE_TYPE(node);
-> > }
-> 
-> Or, alternatively, the rcu_assign_index() patch sent earlier to avoid
-> the bare memory barrier?
-> 
-> 							Thanx, Paul
+Add someone to cc-list
 
-I am fine with rcu_assign_index(), and add a comment in node_set_parent.
+>
+> Got your name and email from the 2.6.24-git16 changelog.
+>
+> I get these Oops when suspending or doing..
+>
+>  echo disable > /proc/acpi/ibm/bluetooth
+> or
+>  echo 0 > /sys/devices/platform/thinkpad_acpi/bluetooth_enable
+>
+> # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+>
+> Feb  7 09:19:47  BUG: unable to handle kernel NULL pointer dereference
+> at 00000008
+> Feb  7 09:19:47  IP: [<c0183188>] sysfs_move_dir+0x16/0x1ab
+> Feb  7 09:19:47  *pde = 00000000
+> Feb  7 09:19:47  Oops: 0000 [#1] PREEMPT
+> Feb  7 09:19:47  Modules linked in: xt_tcpudp hidp l2cap snd_seq
+> snd_seq_device snd_pcm_oss snd_mixer_oss sr_mod cdrom iptable_filter
+> iptable_nat nf_conntrack_ipv4 iptable_mangle ipt_LOG xt_state ipt_ttl
+> ipt_MASQUERADE nf_nat   nf_conntrack xt_DSCP ip_tables x_tables usbhid
+> ipw2200 ieee80211 ieee80211_crypt thinkpad_acpi backlight acpi_cpufreq
+> radeon drm intel_agp agpgart snd_intel8x0 snd_ac97_codec ac97_bus
+> snd_pcm snd_timer snd soundcore             snd_page_alloc button
+> thermal processor hci_usb bluetooth
+> Feb  7 09:19:47
+> Feb  7 09:19:47  Pid: 1412, comm: btdelconn Not tainted (2.6.24-git16 #1)
+> Feb  7 09:19:47  EIP: 0060:[<c0183188>] EFLAGS: 00010246 CPU: 0
+> Feb  7 09:19:47  EIP is at sysfs_move_dir+0x16/0x1ab
+> Feb  7 09:19:47  EAX: c039476c EBX: f7dd0480 ECX: f6da9f58 EDX: f7dd0480
+> Feb  7 09:19:47  ESI: 00000000 EDI: f5ea0c40 EBP: fffffff4 ESP: f6da9f30
+> Feb  7 09:19:47  DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> Feb  7 09:19:47  Process btdelconn (pid: 1412, ti=f6da8000
+> task=f6fd1550 task.ti=f6da8000)
+> Feb  7 09:19:47  Stack: f56f4ea4 f7dd0480 f5ea0c40 f56f4ea4 f7dd0480
+> f5ea0c40 fffffff4 c01c71a0
+> Feb  7 09:19:47  f5ea0800 c034a793 f5ea0c40 f5ea0800 f5ea0800 00000000
+> f56f4e3c 00000000
+> Feb  7 09:19:47  00000000 f7dd0480 c0219d48 f56f4ea4 ffffffea f56f4e3c
+> f5fc7c88 f5fc7c00
+> Feb  7 09:19:47  Call Trace:
+> Feb  7 09:19:47  [<c01c71a0>] kobject_move+0x9e/0xeb
+> Feb  7 09:19:47  [<c0219d48>] device_move+0x41/0xdf
+> Feb  7 09:19:47  [<f88657f6>] del_conn+0x0/0x43 [bluetooth]
+> Feb  7 09:19:47  [<f8865807>] del_conn+0x11/0x43 [bluetooth]
+> Feb  7 09:19:47  [<c012339b>] run_workqueue+0x83/0x10e
+> Feb  7 09:19:47  [<c0123996>] worker_thread+0x0/0xb5
+> Feb  7 09:19:47  [<c0123a41>] worker_thread+0xab/0xb5
+> Feb  7 09:19:47  [<c0125d5e>] autoremove_wake_function+0x0/0x2d
+> Feb  7 09:19:47  [<c0125caa>] kthread+0x36/0x5c
+> Feb  7 09:19:47  [<c0125c74>] kthread+0x0/0x5c
+> Feb  7 09:19:47  [<c01047cb>] kernel_thread_helper+0x7/0x10
+> Feb  7 09:19:47  =======================
+> Feb  7 09:19:47  Code: ff b8 6c 47 39 c0 e8 64 f1 15 00 89 f0 83 c4 10
+> 5b 5e 5f 5d c3 55 57 56 53 89 d3 83 ec 0c 8b 70 1c b8 6c 47 39 c0 e8
+> 3a f1 15 00 <8b> 56 08 85 d2 75 04 0f 0b eb fe 8b 5b 1c b8 a0 47 39 c0
+> 85 db
+> Feb  7 09:19:47  EIP: [<c0183188>] sysfs_move_dir+0x16/0x1ab SS:ESP
+> 0068:f6da9f30
+> Feb  7 09:19:47  ---[ end trace e0c3df2b167f1367 ]---
+> Feb  7 09:27:44  usb 4-1: new full speed USB device using uhci_hcd and address 4
+> Feb  7 09:27:44  usb 4-1: configuration #1 chosen from 1 choice
+> Feb  7 09:28:06  BUG: unable to handle kernel NULL pointer dereference
+> at 00000020
+> Feb  7 09:28:06  IP: [<c0182a99>] sysfs_addrm_start+0x1e/0x7a
+> Feb  7 09:28:06  *pde = 00000000
+> Feb  7 09:28:06  Oops: 0000 [#2] PREEMPT
+> Feb  7 09:28:06  Modules linked in: xt_tcpudp hidp l2cap snd_seq
+> snd_seq_device snd_pcm_oss snd_mixer_oss sr_mod cdrom iptable_filter
+> iptable_nat nf_conntrack_ipv4 iptable_mangle ipt_LOG xt_state ipt_ttl
+> ipt_MASQUERADE nf_nat   nf_conntrack xt_DSCP ip_tables x_tables usbhid
+> ipw2200 ieee80211 ieee80211_crypt thinkpad_acpi backlight acpi_cpufreq
+> radeon drm intel_agp agpgart snd_intel8x0 snd_ac97_codec ac97_bus
+> snd_pcm snd_timer snd soundcore             snd_page_alloc button
+> thermal processor hci_usb bluetooth
+> Feb  7 09:28:06
+> Feb  7 09:28:06  Pid: 11774, comm: hidd Tainted: G      D (2.6.24-git16 #1)
+> Feb  7 09:28:06  EIP: 0060:[<c0182a99>] EFLAGS: 00010246 CPU: 0
+> Feb  7 09:28:06  EIP is at sysfs_addrm_start+0x1e/0x7a
+> Feb  7 09:28:06  EAX: c0394760 EBX: 00000000 ECX: 00000000 EDX: 00000000
+> Feb  7 09:28:06  ESI: f3733cb4 EDI: f3733cc4 EBP: 00000000 ESP: f3733ca4
+> Feb  7 09:28:06  DS: 007b ES: 007b FS: 0000 GS: 0033 SS: 0068
+> Feb  7 09:28:06  Process hidd (pid: 11774, ti=f3732000 task=f3673550
+> task.ti=f3732000)
+> Feb  7 09:28:06  Stack: f6c14680 f7f9d6ec fffffff4 c0182e80 00000000
+> 00000000 00000000 00000000
+> Feb  7 09:28:06  f6c14680 f6c14680 fffffffe f56d563c c0182ee1 f3733cdc
+> c01c6daa f5fa4c48
+> Feb  7 09:28:06  c01c6eb9 f6e660f0 00000000 f6c14680 f6e660f0 f56d563c
+> c01c6fe9 f3733d30
+> Feb  7 09:28:06  Call Trace:
+> Feb  7 09:28:06  [<c0182e80>] create_dir+0x33/0x6b
+> Feb  7 09:28:06  [<c0182ee1>] sysfs_create_dir+0x29/0x3b
+> Feb  7 09:28:06  [<c01c6daa>] kobject_get+0xf/0x13
+> Feb  7 09:28:06  [<c01c6eb9>] kobject_add_internal+0xab/0x144
+> Feb  7 09:28:06  [<c01c6fe9>] kobject_add_varg+0x39/0x42
+> Feb  7 09:28:06  [<c01c723c>] kobject_add+0x4a/0x4e
+> Feb  7 09:28:06  [<c0219c62>] get_device_parent+0xd7/0xfb
+> Feb  7 09:28:06  [<c021a2e1>] device_add+0x79/0x418
+> Feb  7 09:28:06  [<c01ca789>] snprintf+0x1c/0x1f
+> Feb  7 09:28:06  [<c026c0e3>] input_register_device+0xb2/0x188
+> Feb  7 09:28:06  [<c027b9a7>] hidinput_connect+0x24ff/0x2530
+> Feb  7 09:28:06  [<f895d726>] hidp_send_report+0x143/0x14f [hidp]
+> Feb  7 09:28:06  [<f895e486>] hidp_sock_ioctl+0xe2/0x1fa [hidp]
+> Feb  7 09:28:06  [<c0128259>] enqueue_hrtimer+0xd7/0xe2
+> Feb  7 09:28:06  [<c011375e>] hrtick_set+0x6a/0xc3
+> Feb  7 09:28:06  [<c0103948>] do_notify_resume+0x5e3/0x644
+> Feb  7 09:28:06  [<c027f217>] sock_ioctl+0x1ab/0x1cd
+> Feb  7 09:28:06  [<c027f06c>] sock_ioctl+0x0/0x1cd
+> Feb  7 09:28:06  [<c015aaa4>] do_ioctl+0x1c/0x5d
+> Feb  7 09:28:06  [<c015ad11>] vfs_ioctl+0x22c/0x23f
+> Feb  7 09:28:06  [<c02808b3>] sys_socketcall+0xd2/0x181
+> Feb  7 09:28:06  [<c015ad50>] sys_ioctl+0x2c/0x44
+> Feb  7 09:28:06  [<c0103c3a>] sysenter_past_esp+0x5f/0x85
+> Feb  7 09:28:06  [<c02e0000>] piix_init_one+0x1a7/0x525
+> Feb  7 09:28:06  =======================
+> Feb  7 09:28:06  Code: 89 f8 e8 3d ff ff ff 31 c0 5b 5e 5f c3 57 b9 04
+> 00 00 00 56 89 c6 53 31 c0 89 d3 89 f7 f3 ab b8 60 47 39 c0 89 16 e8
+> 29 f8 15 00 <8b> 53 20 b9 e3 27 18 c0 a1 fc 19 40 c0 53 e8 0c e0 fd ff
+> 5b 85
+> Feb  7 09:28:06  EIP: [<c0182a99>] sysfs_addrm_start+0x1e/0x7a SS:ESP
+> 0068:f3733ca4
+> Feb  7 09:28:06  ---[ end trace e0c3df2b167f1367 ]---
+>
+> # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+>
+> This does not happen in 2.6.22
+>
+> Please let me know if you need more info, or need me to report this elsewhere.
+
+Does 2.6.24 work? How do you use bluetooth, just as hid devices?
+Could you post full dmesg?
+
+Regards
+dave
