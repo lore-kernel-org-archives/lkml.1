@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760082AbYBNOA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbYBNOBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760082AbYBNOA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753158AbYBNOAM
+	id S1763926AbYBNOBW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYBNOBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:00:12 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:61164 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752496AbYBNOAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:00:10 -0500
-Date: Thu, 14 Feb 2008 15:00:05 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: MMC core debugfs support (was Re: [RFC v2 5/5] Atmel MCI: Driver
- for Atmel on-chip MMC controllers)
-Message-ID: <20080214150005.2c46a991@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080213193051.1a7e3b29@poseidon.drzeus.cx>
-References: <1201630213-31900-1-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-2-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-3-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-4-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-5-git-send-email-hskinnemoen@atmel.com>
-	<1201630213-31900-6-git-send-email-hskinnemoen@atmel.com>
-	<20080213193051.1a7e3b29@poseidon.drzeus.cx>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 Feb 2008 09:01:14 -0500
+Received: from ti-out-0910.google.com ([209.85.142.188]:61487 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750741AbYBNOBN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:01:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nwqI5FGxtn9/+Iz6IQHUa/8o6sm03Dtfn0syW3T9LJrmLrB0vmUap2Ks93eLh1Jc2JWWRyZU4qXAZ5UFnVHv7xMmhzSgqmLmMTOrAIMKBhhUbDUBfc1WLo6xJcknXfoS9DoKyQtUxpteIL90hTLOJ6IeVWcDYv3uGY8Di0ellM4=
+Message-ID: <df9815e70802140601i610574c7t782a618db414c7c9@mail.gmail.com>
+Date: Thu, 14 Feb 2008 22:01:11 +0800
+From: "Jike Song" <albcamus@gmail.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: nmi_watchdog on x86_64
+Cc: "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[removing lots of people from Cc]
+On Tue, Oct 16, 2007 at 10:12 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> just found my on hand ck804, and mcp55 based AMD servers:
+>  nmi_watchdog=1 doesn't work
+>  but nmi_watchdog=2 does work
+>
+>  =1, it say: IOAPIC 8259A virtual wire mode...
+>
+>  Did nmi_watchdog=1 work on any other amd64 platform?
+>
 
-On Wed, 13 Feb 2008 19:30:51 +0100
-Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+I booted 2.6.23 on a HP NX6325 laptop with nmi_watchdog=1, and dmesg says,
 
-> > +static int req_dbg_open(struct inode *inode, struct file *file)
-> > +{  
-> 
-> And this should go into the core.
+...
+..MP-BIOS bug: 8254 timer not connected to IO-APIC
+timer doesn't work through the IO-APIC - disabling NMI Watchdog!
 
-I've started working on this, but I've run into a problem: The mmc core
-structures don't seem to keep any references to the current request. So
-I don't really have any information to put into the 'req' file after
-moving it into the core.
+nmi_watchdog remains to be 0, as I read by a simple kernel module.
 
-Any ideas on how to solve this?
-
-Haavard
+Regards,
+Jike
