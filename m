@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932559AbYBNVj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYBNVqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932559AbYBNVj2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:39:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754238AbYBNVjU
+	id S1758100AbYBNVqL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbYBNVp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:39:20 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:56745 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752985AbYBNVjT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:39:19 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=QOXpr5huYaSk2AYHF5SsL41cGkn6Uh2UqMcz6YjGubsIHuaoviIW7I3CruxXHp7Go
-	OUfHMnS5R+r7XhoKQDnOw==
-Date: Thu, 14 Feb 2008 13:38:57 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Paul Jackson <pj@sgi.com>
-cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-In-Reply-To: <20080214040918.d735e920.pj@sgi.com>
-Message-ID: <alpine.DEB.1.00.0802141336590.6067@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com> <alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com> <20080214040918.d735e920.pj@sgi.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Thu, 14 Feb 2008 16:45:58 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:53604 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751387AbYBNVp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:45:57 -0500
+Message-ID: <47B4B68D.7080805@garzik.org>
+Date: Thu, 14 Feb 2008 16:45:49 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: linux-next: first tree
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>	 <47B4AC97.3040001@garzik.org> <1203024381.3158.26.camel@localhost.localdomain>
+In-Reply-To: <1203024381.3158.26.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008, Paul Jackson wrote:
+James Bottomley wrote:
+> So does this indicate the meaning of upstream and upstream-fixes is
+> still the same?  I always took upstream-fixes to be bug fixes for this
+> -rc and upstream as queued for the next merge window, in which case NEXT
+> would be the union of those two sets?
 
-> In mempolicy.h, the lines:
-> 
->     /*
->      * The lower MPOL_FLAG_SHIFT bits of the policy mode represent the MPOL_*
->      * constants defined in enum mempolicy_mode.  The upper bits represent
->      * optional set_mempolicy() MPOL_F_* mode flags.
->      */
->     #define MPOL_FLAG_SHIFT (8)
->     #define MPOL_MODE_MASK  ((1 << MPOL_FLAG_SHIFT) - 1)
-> 
->     /* Flags for set_mempolicy */
->     #define MPOL_F_STATIC_NODES     (1 << MPOL_FLAG_SHIFT)
->     #define MPOL_MODE_FLAGS (MPOL_F_STATIC_NODES)   /* legal set_mempolicy() MPOL_* mode flags */
-> 
-> could be simplified, to:
-> 
->     /*
->      * Optional flags that modify nodemask numbering.
->      */
->     #define MPOL_F_RELATIVE_NODES (1<<14)	/* remapped relative to cpuset */
->     #define MPOL_F_STATIC_NODES (1<<15)		/* unremapped physical masks */
->     #define MPOL_MODE_FLAGS (MPOL_F_RELATIVE_NODES|MPOL_F_STATIC_NODES)
->     						/* combined MPOL_F_* mask flags */
-> 
-> (really, that MPOL_FLAG_SHIFT is just unnecessary distracting detail.)
-> 
 
-It would be easy to define mpol_mode() and mpol_flags() in terms of 
-MPOL_MODE_FLAGS as well, yes.  But without MPOL_FLAG_SHIFT it becomes 
-impossible to determine whether a user passed an invalid flag.
+In practice, #upstream-fixes isn't very useful, because I send its 
+contents to Linus very very rapidly once they are committed to that 
+branch.  I then locally delete that branch once Linus merges it, and 
+re-create it [again, locally] the next time I have some bug fixes to apply.
 
-I think we're all in agreement that passing an invalid flag bit should be 
-rejected with -EINVAL.  So to do that we need MPOL_MODE_MASK to expicitly 
-define the parts of the int *policy passed from set_mempolicy() that 
-represent the mode.
+So it is a "somewhat throwaway" branch.
 
-		David
+The main utility of #upstream-fixes is so that I can do
+	git branch upstream-linus upstream-fixes
+and then continue making commits in parallel with a Linus pull+push cycle.
+
+The #upstream branch is much more useful, because that is where things 
+for the next kernel are stored, during a bug-fix-only cycle.  This is 
+largely equivalent to NEXT, though I plan to be more stringent in my 
+requirements for NEXT commits than #upstream commits.
+
+One thing to note is that "pure" rebases are somewhat rare; I much 
+prefer to wait until the batch of commits lands in 
+torvalds/linux-2.6.git, before I blow away and recreate (with a new 
+torvalds HEAD) the branch in question.
+
+
+So, to answer your question...  Fixes should go upstream fast enough 
+that they should hit NEXT implicitly via a Linus pull+push.  It should 
+be the union of two sets, yes, if a Linus cycle takes a long time.  When 
+both #upstream and #upstream-fixes are active, I tend to always branch 
+#upstream off of #upstream-fixes and/or do a "git pull . upstream-fixes" 
+when updating #upstream.
+
+	Jeff
+
+
+
