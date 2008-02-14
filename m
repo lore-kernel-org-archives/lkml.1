@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761419AbYBNRi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbYBNRi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761419AbYBNRi1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:38:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYBNRiS
+	id S1762007AbYBNRi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:38:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbYBNRiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:38:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47733 "EHLO mx1.redhat.com"
+	Thu, 14 Feb 2008 12:38:46 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:44920 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755505AbYBNRiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:38:17 -0500
-Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
-From: Mark McLoughlin <markmc@redhat.com>
-Reply-To: Mark McLoughlin <markmc@redhat.com>
-To: Ian Campbell <ijc@hellion.org.uk>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization@lists.linux-foundation.org
-In-Reply-To: <1203008490.30818.69.camel@localhost.localdomain>
-References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>
-	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk>
-	 <1202988844.26435.4.camel@muff>
-	 <1203008490.30818.69.camel@localhost.localdomain>
+	id S1755033AbYBNRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 12:38:44 -0500
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Christoph Raisch <RAISCH@de.ibm.com>, ossthema@linux.vnet.ibm.com,
+       apw <apw@uk.ibm.com>, Greg KH <greg@kroah.com>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       netdev <netdev@vger.kernel.org>, Thomas Q Klein <TKLEIN@de.ibm.com>,
+       tklein@linux.ibm.com
+In-Reply-To: <1203010575.12312.6.camel@dyn9047017100.beaverton.ibm.com>
+References: <200802111724.12416.ossthema@de.ibm.com>
+	 <1202748429.8276.21.camel@nimitz.home.sr71.net>
+	 <200802131617.58646.ossthema@de.ibm.com>
+	 <OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
+	 <1203009163.19205.42.camel@nimitz.home.sr71.net>
+	 <1203010575.12312.6.camel@dyn9047017100.beaverton.ibm.com>
 Content-Type: text/plain
-Date: Thu, 14 Feb 2008 17:37:55 +0000
-Message-Id: <1203010675.16280.15.camel@muff>
+Date: Thu, 14 Feb 2008 09:38:45 -0800
+Message-Id: <1203010725.19205.44.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 17:01 +0000, Ian Campbell wrote:
-> On Thu, 2008-02-14 at 11:34 +0000, Mark McLoughlin wrote:
-> > On Wed, 2008-02-13 at 20:54 +0000, Ian Campbell wrote:
-> > > This allows other boot loaders such as the Xen domain builder the
-> > > opportunity to extract the ELF file.
-> > 
-> > 	Right, Xen currently can't boot bzImage (it needs the ELF image) so you
-> > still can't use the same kernel image on Xen as bare-metal.
+
+On Thu, 2008-02-14 at 09:36 -0800, Badari Pulavarty wrote:
 > 
-> I have a xen domain builder patch as well. I was waiting for the Linux
-> side to gain some traction before putting it forward (I'd attach it now
-> but it's at home on a laptop which is sleeping).
+> I am not sure what you are trying to do with walk_memory_resource().
+> The
+> behavior is different on ppc64. Hotplug memory usage assumes that all
+> the memory resources (all system memory, not just IOMEM) are
+> represented
+> in /proc/iomem. Its the case with i386 and ia64. But on ppc64 is
+> contains ONLY iomem related. Paulus didn't want to export all the
+> system
+> memory into /proc/iomem on ppc64. So I had to workaround by providing
+> arch-specific walk_memory_resource() function for ppc64.
 
-Yep, just want to highlight to people that your patches (or an
-alternative) are needed before the same pv_ops kernel truly can be used
-on bare-metal and Xen.
+OK, let's use that one.
 
-> > 	How about this?
-> > 
-> > +sed-offsets := -e 's/^00*/0/' \
-> > +        -e 's/^\([0-9a-fA-F]*\) . \(input_data\|input_data_end\)$$/-D\2=0x\1 /p'
-> > +
-> > +$(obj)/header.o: AFLAGS_header.o += $(shell $(NM) $(obj)/compressed/vmlinux | sed -n $(sed-offsets))
-> > +$(obj)/header.o: $(obj)/compressed/vmlinux FORCE
-> 
-> That's probably a neater way of doing it. Although the ".../header.o:
-> AFLAGS_header.o" is redundant, either 
-> 	header.o: AFLAGS += foo
-
-With this, AFLAGS would apply to building when building the
-prerequisites of header.o too, which you don't want
-
-The make manual says:
-
-  "when you define a target-specific variable that variable value is
-   also in effect for all prerequisites of this target, and all their
-   prerequisites"
-
-> or
-> 	AFLAGS_header.o += foo
-> with the second being preferred in Linux Makefiles I think.
-
-And with this, it would try and read vmlinux before it is built.
-
-But, hmm, given the fact that the variable is defined when building
-prerequisites, you'd think that even in my version AFLAGS would be
-evaluated before building vmlinux.
-
-Cheers,
-Mark.
+-- Dave
 
