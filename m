@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbYBNSFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758551AbYBNSLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760389AbYBNSFf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:05:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbYBNSFS
+	id S1758551AbYBNSLu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753608AbYBNSLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:05:18 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:45117 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755831AbYBNSFQ (ORCPT
+	Thu, 14 Feb 2008 13:11:40 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:26880 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753157AbYBNSLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:05:16 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=iN6Da5qEUAGHutF7hsvyN2mF6C4Z27/cENl4F6V92fDaZUS5gR+B1lCHJwDVnI0Kz
-	SrsbA7doK49f+LKGwZhzw==
-Message-ID: <6599ad830802141005i52236f7ak337ffffb915ea8ce@mail.gmail.com>
-Date: Thu, 14 Feb 2008 10:05:04 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH] Add MS_BIND_FLAGS mount flag
-Cc: viro@zeniv.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <E1JPhvt-0002qE-Da@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Feb 2008 13:11:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=I6xA+7uLSQ+UFQV+lBBT/lzxfBLe0rZGmRKLsDUbuxW8GR1nAxtOrXD09OrP0wcyGevduApRWn6BcvI+egEbs6HOMftBIQBffRcNxu30G7T7CChD5sqs/Fn+C+me9SwzUMsmJfqukVEIcUFKVTMwpIG1mSGHsvK9xrjZP1XHrBE=
+Subject: [PATCH 05/11v2] ata: replace macro with static inline in libata.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+In-Reply-To: <20080214120101.150a3284@core>
+References: <3ad7c41048d88a3f8aad098570b9fac9ff719aff.1202965399.git.harvey.harrison@gmail.com>
+	 <1202966058.2748.19.camel@brick>  <20080214120101.150a3284@core>
+Content-Type: text/plain
+Date: Thu, 14 Feb 2008 10:11:37 -0800
+Message-Id: <1203012697.2748.55.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B283EB.8070209@google.com>
-	 <E1JPZUb-00013Z-0U@pomaz-ex.szeredi.hu>
-	 <6599ad830802140719l270d6fdfyd6d17806eda12a8d@mail.gmail.com>
-	 <E1JPgYm-0002dm-IX@pomaz-ex.szeredi.hu>
-	 <6599ad830802140813n71b56dccud33e19642a0d7647@mail.gmail.com>
-	 <E1JPhvt-0002qE-Da@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 9:31 AM, Miklos Szeredi <miklos@szeredi.hu> wrote:
->
->  I deliberately not used the MS_* flags, which is currently a messy mix
->  of things with totally different meanings.
->
->  Does this solve all the issues?
+Instead of using min/max_t(short... use a static inline to get
+typechecking.
 
-We should add a size parameter either in the mount_params or as a
-final argument, for future extensibility.
+As a bonus, avoid a metric ton of sparse warnings like:
+drivers/ata/pata_ali.c:176:14: warning: symbol '__x' shadows an earlier one
+drivers/ata/pata_ali.c:176:14: originally declared here
 
-And we might as well include MNT_READONLY in the API on the assumption
-that per-mount readonly will be available soon.
+Due to nesting min_t macro inside max_t macro which both use a __x
+identifier internally.
 
-Paul
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Alan, is this more to your liking?
+
+ include/linux/libata.h |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index bc5a8d0..b5590fb 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -764,7 +764,14 @@ struct ata_timing {
+ 	unsigned short udma;		/* t2CYCTYP/2 */
+ };
+ 
+-#define FIT(v, vmin, vmax)	max_t(short, min_t(short, v, vmax), vmin)
++static inline short FIT(short v, short vmin, short vmax)
++{
++	if (v >= vmax)
++		return vmax;
++	if (v <= vmin)
++		return vmin;
++	return v;
++}
+ 
+ extern const unsigned long sata_deb_timing_normal[];
+ extern const unsigned long sata_deb_timing_hotplug[];
+-- 
+1.5.4.1.1278.gc75be
+
+
+
