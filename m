@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934029AbYBNWhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934274AbYBNWih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934029AbYBNWhl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 17:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYBNWhd
+	id S934274AbYBNWih (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 17:38:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbYBNWi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 17:37:33 -0500
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:50212 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753222AbYBNWhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 17:37:32 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FANJRtEdMQWYv/2dsb2JhbACBWa10
-Date: Thu, 14 Feb 2008 17:37:28 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] make marker_debug static
-Message-ID: <20080214223728.GA18772@Krystal>
-References: <20080214212349.GD23227@cs181133002.pp.htv.fi>
+	Thu, 14 Feb 2008 17:38:28 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42364 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754259AbYBNWi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 17:38:26 -0500
+Date: Thu, 14 Feb 2008 23:38:32 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: David Miller <davem@davemloft.net>, greg@kroah.com,
+       torvalds@linux-foundation.org, jeff@garzik.org, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: distributed module configuration [Was: Announce: Linux-next (Or Andrew's dream :-))]
+Message-ID: <20080214223832.GA23149@uranus.ravnborg.org>
+References: <20080212174824.GA1919@kroah.com> <20080212.164149.209357519.davem@davemloft.net> <20080213084541.GA8091@uranus.ravnborg.org> <200802140156.15325.zippel@linux-m68k.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080214212349.GD23227@cs181133002.pp.htv.fi>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:37:06 up 3 days, 18:37,  2 users,  load average: 0.12, 0.23,
-	0.41
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <200802140156.15325.zippel@linux-m68k.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@kernel.org) wrote:
-> With the needlessly global marker_debug being static gcc can optimize 
-> the unused code away.
+On Thu, Feb 14, 2008 at 01:56:13AM +0100, Roman Zippel wrote:
+> Hi,
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> On Wednesday 13. February 2008, Sam Ravnborg wrote:
 > 
-
-Thanks,
-
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> ---
-> 91577cc8ac60bf9003d0dd037a231db363003740 diff --git a/kernel/marker.c b/kernel/marker.c
-> index c4c2cd8..133bdbb 100644
-> --- a/kernel/marker.c
-> +++ b/kernel/marker.c
-> @@ -28,7 +28,7 @@ extern struct marker __start___markers[];
->  extern struct marker __stop___markers[];
->  
->  /* Set to 1 to enable marker debug output */
-> -const int marker_debug;
-> +static const int marker_debug;
->  
->  /*
->   * markers_mutex nests inside module_mutex. Markers mutex protects the builtin
+> > config foo
+> > 	tristate "do you want foo?"
+> > 	depends on USB && BAR
+> > 	module
+> > 	  obj-$(CONFIG_FOO) += foo.o
+> > 	  foo-y := file1.o file2.o
+> > 	help
+> > 	  foo will allow you to explode your PC
 > 
+> I'm more thinking about something like this:
+> 
+> module foo [FOO]
+> 	tristate "do you want foo?"
+> 	depends on USB && BAR
+> 	source file1.c
+> 	source file2.c if BAZ
+> 
+> Avoiding direct Makefile fragments would give us far more flexibility in the 
+> final Makefile output.
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Much better and now I see it I recall you posted something
+along these lines before.
+Is this something that you plan to look into implementing?
+
+I can do the kbuild bits but I need you to do the kconfig
+stuff (which is by far the biggest effort too).
+
+It would be much appreciated to get this.
+
+	Sam
