@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbYBNPAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757437AbYBNPA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754922AbYBNPAV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:00:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbYBNPAJ
+	id S1757437AbYBNPA4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYBNPAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:00:09 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:35599 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYBNPAH (ORCPT
+	Thu, 14 Feb 2008 10:00:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:33297 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbYBNPAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:00:07 -0500
-Date: Thu, 14 Feb 2008 16:00:06 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Jasper Bryant-Greene <jasper@unix.geek.nz>,
-       rzryyvzy <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
-Subject: Re: Is there a "blackhole" /dev/null directory?
-In-Reply-To: <p73pruz27mk.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0802141553400.694@fbirervta.pbzchgretzou.qr>
-References: <20080214093051.7240852AB0E31@trashmail.net>
- <1202981957.10928.17.camel@phobos.jasper.bg> <p73pruz27mk.fsf@bingen.suse.de>
+	Thu, 14 Feb 2008 10:00:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=KDIWdymrjJ7EDy92RGHVNT/iCH7704CySFYtl2j2ZKmXO5inkB2zf3TSNoFmimrjAmOBNRRUOlp9moZ+PA0tm4h0sbIGcRjfe868hZUtBoBfw7SbNMVssgfWuS/tSI83RBHrgLl/6fgDqltpJSpoKu8tmLqTteY7IRIJyhnsXb4=
+Message-ID: <47B45773.3090203@gmail.com>
+Date: Thu, 14 Feb 2008 16:00:03 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: Sergio Luis <sergio@larces.uece.br>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: "gdth: update deprecated pci_find_device" is incorrect
+References: <47B453D3.5060707@gmail.com> <47B45469.5070103@gmail.com>
+In-Reply-To: <47B45469.5070103@gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 14 2008 10:46, Andi Kleen wrote:
->Jasper Bryant-Greene <jasper@unix.geek.nz> writes:
+On 02/14/2008 03:47 PM, Jiri Slaby wrote:
+> On 02/14/2008 03:44 PM, Jiri Slaby wrote:
+>> Hi,
 >>
->> This could be done fairly trivially with FUSE, and IMHO is a good use
->> for FUSE because since you're just throwing most data away, performance
->> is not a concern.
+>> commit
+>> 99109301d103fbf0de43fc5a580a406c12a501e0
+>> in jejb/scsi-rc-fixes-2.6.git is incorrect. You don't decrement pci 
+>> refcount on exit. Also you do not so on fail paths... I wonder why 
+>> these mistakes happen every second time somebody tries to do such change.
+>>
+>> It leaked into mainline yet after "whole" two days, but what exactly 
+>> drives me crazy is, that Jeff commented it in similar way and nobody 
+>> reflected it!
 
-There is a much more interesting 'problem' with a "/dev/null directory".
-
-Q: Why would you need such a directory?
-A: To temporarily fool a program into believing it wrote something.
-
-Q: Should all files disappear? (e.g. "unlink after open")
-A: Maybe not, programs may stat() the file right afterwards and
-   get confused by the "inexistence".
-
-Q: What if a program attempts to mkdir /dev/nullmnt/foo to just
-   create a file /dev/nullmnt/foo/barfile?
-A: /dev/nullmnt/foo must continue to exist or be accepted for a while,
-   or perhaps for eternity.
-
-Been there, done that, -
-http://dev.computergmbh.de/wsvn/misc_kernel/nullfs/trunk/nullfs.c -
-and hit that wall of unanswerable questions.
+Yeah, you did (I read the thread on wrong server obviusly), sorry...
