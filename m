@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932820AbYBNMPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933620AbYBNMQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932820AbYBNMPn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 07:15:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762245AbYBNMPC
+	id S933620AbYBNMQB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 07:16:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759455AbYBNMPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 07:15:02 -0500
-Received: from trashmail.net ([213.155.82.90]:40671 "EHLO trashmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759579AbYBNMO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 07:15:07 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:14652 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758840AbYBNMO7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Feb 2008 07:14:59 -0500
-Message-ID: <47B43138.40206@trashmail.net>
-Date: Thu, 14 Feb 2008 13:16:56 +0100
-From: Mika Lawando <rzryyvzy@trashmail.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=PhKHjp/I6kimFurJT5lzAmlnjXflzi3qsE3Vsm0ZRevpc7ZAqtFV4wjNqu0L2JwwEv4XxoO6YLdjPmjHgY5dHVPWGuJqSRn+N/3yIQxGweSx+K/Dyh4HvSbQfJ6yGMeIU9tldUi7Fu1ixPzBkdRsRcSN1fOiDzzYkfFQ1aE88Y8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Andreas Jaeger <aj@suse.de>
+Subject: Re: [discuss] pci_get_device_reverse(), why does Calgary need this?
+Date: Thu, 14 Feb 2008 13:11:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Greg KH <greg@kroah.com>, muli@il.ibm.com, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       jdmason@kudzu.us, linux-pci@atrey.karlin.mff.cuni.cz,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20080213001506.GA13933@kroah.com> <20080213181655.GB8960@kroah.com> <ho3arwq8w7.fsf@reger.suse.de>
+In-Reply-To: <ho3arwq8w7.fsf@reger.suse.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Is there a "blackhole" /dev/null directory?
-References: <20080214093051.7240852AB0E31@trashmail.net> <1202981957.10928.17.camel@phobos.jasper.bg>
-In-Reply-To: <1202981957.10928.17.camel@phobos.jasper.bg>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Disposition: inline
+Message-Id: <200802141311.43103.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jasper Bryant-Greene schrieb:
-> On Thu, 2008-02-14 at 10:30 +0100, rzryyvzy wrote:
->   
->> /dev/null is often very useful, specially if programs force to save data in some file. But some programs like to creates different temporary file names, so /dev/null could no more work.
->>
->> What is with a "/dev/null"-directory?
->> I mean a "blackhole pseudo directory" which eats every write to null.
->>
->> Here is how it could work:
->> mount -t nulldir nulldir /dev/nulldir
->>
->> Now if a program does a create(2),
->> it creates in the memory the file with its fd.
->> Then if a program does a write(2) to the fd, it eats the writes and give out fakely it has written the number of bytes.
->> When the program calls does a close(2) of the fd, then the complete inode is deleted in the memory.
->>
->> The directory should  be permanently empty except for the inodes with open file descriptors. So only inode information would be temporary saved in this "nulldir tmpfs" directory.
->>
->> Is there already existing a possibility to create a null directory?
->>     
->
-> This could be done fairly trivially with FUSE, and IMHO is a good use
-> for FUSE because since you're just throwing most data away, performance
-> is not a concern.
->   
-Unfortunately performance is a concern because if not I would write on 
-the hard disk the files, and then remove them with a cronjob.
-But from the point of view of the time of developpment, FUSE is a good 
-idea, because its possible to write a filesystem quickly in Perl.
+On Thursday 14 February 2008, Andreas Jaeger wrote:
+> Greg KH <greg@kroah.com> writes:
+> 
+> > How does the patch below look?  I didn't want to remove the whole config
+> > option, as there is more to the logic than just the "reverse order"
+> > stuff there.
+> 
+> I think you miss Documentation - it's mentioned in ide.txt and
+> kernel-parameters.txt,
 
--- 
-Best regards,
-Mika
++ drivers/ide/Kconfig
+
+Greg, please update the patch (and add my S-o-B while at it).
+
+Thanks,
+Bart
