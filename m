@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752955AbYBNCIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765013AbYBNCLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752955AbYBNCIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 21:08:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYBNCHz
+	id S1765013AbYBNCLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 21:11:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbYBNCLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 21:07:55 -0500
-Received: from wx-out-0506.google.com ([66.249.82.230]:32779 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751616AbYBNCHx (ORCPT
+	Wed, 13 Feb 2008 21:11:00 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:60445 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751683AbYBNCK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 21:07:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=w49ddR+5s0plykiogBHQkH56OBImwBdBCQEFhZiCcEYtYGuaqeS5LCj2U02i3gQetXc3sRWYS5m/ynki8VMkNQQ0ydCItsuBloTl9CoqiIiYoqZ6Gu2PyY8xgiJbZwO8uSW9ziQEEsCM3jxhnx4pQXv9hBB+6CY6lfX9LYHnRJw=
-Subject: [PATCH] adfs: trivial sparse fix
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Russell King <rmk@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+	Wed, 13 Feb 2008 21:10:59 -0500
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.25-rc1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080213.172251.249294145.davem@davemloft.net>
+References: <1202947364.3109.96.camel@localhost.localdomain>
+	 <20080213161643.65a5a779.akpm@linux-foundation.org>
+	 <1202951513.3109.101.camel@localhost.localdomain>
+	 <20080213.172251.249294145.davem@davemloft.net>
 Content-Type: text/plain
-Date: Wed, 13 Feb 2008 18:07:48 -0800
-Message-Id: <1202954868.18204.47.camel@brick>
+Date: Wed, 13 Feb 2008 20:10:53 -0600
+Message-Id: <1202955053.3109.104.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/adfs/dir_f.c:126:4: warning: do-while statement is not a compound statement
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/adfs/dir_f.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+On Wed, 2008-02-13 at 17:22 -0800, David Miller wrote:
+> From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date: Wed, 13 Feb 2008 19:11:53 -0600
+> 
+> > 
+> > On Wed, 2008-02-13 at 16:16 -0800, Andrew Morton wrote:
+> > > kill-warnings-in-mptbaseh-on-parisc64.patch
+> > 
+> > >   Warning fixes.
+> > 
+> > Not sure ... LSI is supposed to be processing this.
+> 
+> James, please don't push build warning fixes and the like back to the
+> driver maintainers.
+> 
+> This is your domain as SCSI maintainer, and you should integrate these
+> kinds of things directly and as promptly as possible.
+> 
+> This is doubly true if the "driver maintainer" can't be bothered
+> to ACK or fixup the patch for months.
+> 
+> Otherwise this kind of stuff rots, and diligent people like Andrew
+> (and the patch submitter, whoever that might be) get extremely
+> frustrated.
 
-diff --git a/fs/adfs/dir_f.c b/fs/adfs/dir_f.c
-index b9b2b27..ea7df21 100644
---- a/fs/adfs/dir_f.c
-+++ b/fs/adfs/dir_f.c
-@@ -122,9 +122,9 @@ adfs_dir_checkbyte(const struct adfs_dir *dir)
- 		ptr.ptr8 = bufoff(bh, i);
- 		end.ptr8 = ptr.ptr8 + last - i;
- 
--		do
-+		do {
- 			dircheck = *ptr.ptr8++ ^ ror13(dircheck);
--		while (ptr.ptr8 < end.ptr8);
-+		} while (ptr.ptr8 < end.ptr8);
- 	}
- 
- 	/*
--- 
-1.5.4.1.1278.gc75be
+LSI did ask to merge through their patch process, but I agree this one's
+been hanging around for a bit long.
 
+James
 
 
