@@ -1,75 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbYBNRRq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbYBNRTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708AbYBNRRq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:17:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYBNRRg
+	id S1757419AbYBNRTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbYBNRT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:17:36 -0500
-Received: from mail.tmr.com ([64.65.253.246]:39658 "EHLO gaimboi.tmr.com"
+	Thu, 14 Feb 2008 12:19:29 -0500
+Received: from smtp1-g19.free.fr ([212.27.42.27]:47352 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752435AbYBNRRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:17:35 -0500
-Message-ID: <47B4777A.70400@tmr.com>
-Date: Thu, 14 Feb 2008 12:16:42 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Rene Herman <rene.herman@keyaccess.nl>, bzolnier@gmail.com,
-       muli@il.ibm.com, jdmason@kudzu.us, linux-ide@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-Subject: Re: "ide=reverse" do we still need this?
-References: <20080213001506.GA13933@kroah.com> <47B24AB3.3040009@keyaccess.nl> <20080213044436.GB10101@kroah.com>
-In-Reply-To: <20080213044436.GB10101@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753353AbYBNRT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 12:19:27 -0500
+Subject: Re: One minute delay when booting 2.6.24.1
+From: =?ISO-8859-1?Q?Beno=EEt?= Dejean <benoit@placenet.org>
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <200802120833.37955.tvrtko@ursulin.net>
+References: <200802091329.35851.tvrtko@ursulin.net>
+	 <Pine.LNX.4.64.0802092301180.6917@fbirervta.pbzchgretzou.qr>
+	 <200802120833.37955.tvrtko@ursulin.net>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-30otdthRDcXof+3XVWhN"
+Date: Thu, 14 Feb 2008 18:19:21 +0100
+Message-Id: <1203009561.3170.17.camel@ibook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Feb 13, 2008 at 02:41:07AM +0100, Rene Herman wrote:
->> On 13-02-08 01:15, Greg KH wrote:
->>
->>> I'm reworking the pci device list logic (we currently keep all PCI
->>> devices in 2 lists, which isn't the nicest, we should be able to get
->>> away with only 1 list.)
->>> The only bother I've found so far is the pci_get_device_reverse()
->>> function, it's used in 2 places, IDE and the calgary driver.
->>> I'm curious if we really still support the ide=reverse option?  It's a
->>> config option that I don't think the distros still enable (SuSE does
->>> not).  Is this still needed these days?
->>> In digging, we changed this option in 2.2.x from being called
->>> "pci=reverse" and no one else seems to miss it.
->>> Any thoughts?
->> While details escape me somewhat again at the monment, a few months ago I 
->> was playing around with a PCI Promise IDE controller and needed ide=reverse 
->> to save me from having to switch disks around to still have a bootable 
->> system.
->>
->> Or some such. Not too clear anymore, but I remember it saved the day.
-> 
-> You couldn't just change the boot disk in grub?
-> 
-> Or use an initramfs and /dev/disk/by-id/ to keep any future moves
-> stable?
-> 
-There are any number of things you can do when the system is booted, but 
-the only thing you can do when the system won't boot is use kernel boot 
-options.
 
-This is primarily useful for old systems running modern software, such 
-as old PC redeployed to network, external device control, or system 
-monitoring. Upgrading the BIOS is no longer going to happen, and 
-upgrading the hardware isn't cost effective, but keeping old systems out 
-of the landfill is ecologically and financially sound.
+--=-30otdthRDcXof+3XVWhN
+Content-Type: multipart/mixed; boundary="=-Jym2l9P+BLZNtlEwXdEE"
 
-The option is a holdover from the past, but so arm some of my clients 
-and their hardware. ;-)
-And *my* hardware, I might add, I am as cheap as anyone.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+--=-Jym2l9P+BLZNtlEwXdEE
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+
+Le mardi 12 f=C3=A9vrier 2008 =C3=A0 08:33 +0000, Tvrtko A. Ursulin a =C3=
+=A9crit :
+> On Saturday 09 February 2008 22:01:44 Jan Engelhardt wrote:
+> > On Feb 9 2008 13:29, Tvrtko A. Ursulin wrote:
+> > >Hi all,
+> > >
+> > >As the subject says I get ~1 minute delay when booting 2.6.24.1
+> > >pretty reliably. It is possible it is not new to 2.6.24.1 but I
+> > >can't tell due recent hardware changes.
+
+I've upgraded from vanilla 2.6.23 to 2.6.24 and get a 34s delay on boot
+
+[   14.680874] input: HID 05ac:1000
+as /devices/pci0001:10/0001:10:1a.0/usb2/2-1/2-1:1.0/input/input5
+[   14.716702] input,hidraw0: USB HID v1.11 Keyboard [HID 05ac:1000] on
+usb-0001:10:1a.0-1
+[   14.742128] input: HID 05ac:1000
+as /devices/pci0001:10/0001:10:1a.0/usb2/2-1/2-1:1.1/input/input6
+[   14.780009] input,hidraw1: USB HID v1.11 Mouse [HID 05ac:1000] on
+usb-0001:10:1a.0-1
+[   14.786938] usbcore: registered new interface driver usbhid
+[   14.793692] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+[   48.279840] hda: UDMA/100 mode selected
+[   49.471289] Adding 1506444k swap on /dev/hda4.  Priority:-1 extents:1
+across:1506444k
+[   50.955529] [drm] Initialized drm 1.1.0 20060810
+[   51.006960] [drm] Initialized radeon 1.28.0 20060524 on minor 0
+[   51.057858] adt746x: version 1 (supported)
+[   51.064397] adt746x: Thermostat bus: 1, address: 0x2e, limit_adjust:
+0, fan_speed: -1
+[   51.070993] sensor 0: PWR/MEMORY BOTTOMSIDE
+[   51.077649] sensor 1: CPU BOTTOMSIDE
+[   51.084210] sensor 2: GPU ON DIE
+
+--=20
+Beno=C3=AEt Dejean
+GNOME http://www.gnomefr.org/
+LibGTop http://directory.fsf.org/libgtop.html
+
+--=-Jym2l9P+BLZNtlEwXdEE
+Content-Disposition: attachment; filename=config.gz
+Content-Type: application/x-gzip; name=config.gz
+Content-Transfer-Encoding: base64
+
+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
+
+
+--=-Jym2l9P+BLZNtlEwXdEE--
+
+--=-30otdthRDcXof+3XVWhN
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBHtHgZliyxJIUSPQoRAtrZAJ0e+CUmpIkWNjmpjPfSQ3KaKqDtaQCfeNUm
+4Sil42OlMZ4AKfMqhIYjCHY=
+=deW1
+-----END PGP SIGNATURE-----
+
+--=-30otdthRDcXof+3XVWhN--
+
