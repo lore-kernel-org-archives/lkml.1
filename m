@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759588AbYBNTFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763170AbYBNTGp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759588AbYBNTFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 14:05:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbYBNTFA
+	id S1763170AbYBNTGp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 14:06:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbYBNTGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 14:05:00 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:44584 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756650AbYBNTE7 (ORCPT
+	Thu, 14 Feb 2008 14:06:37 -0500
+Received: from hu-out-0506.google.com ([72.14.214.239]:44637 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757093AbYBNTGg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 14:04:59 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-Date: Thu, 14 Feb 2008 12:06:37 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Andi Kleen <andi@firstfloor.org>, Jike Song <albcamus@gmail.com>,
-       Rijndael Cosque <rijcos@gmail.com>, linux-kernel@vger.kernel.org
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de> <20080201180822.GA376@linux-os.sc.intel.com>
-In-Reply-To: <20080201180822.GA376@linux-os.sc.intel.com>
+	Thu, 14 Feb 2008 14:06:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ldECMHRHmAROgWaekb2+6XGE6y/LngXM+rX6aPkr8Dsfre+RNUzMIG+w6xhejDFK9ugQb7A16VMmeMH18yI/mGbUGanOkadVE0CHhDQl8LFi/Wzi672WkivN+PBOP8d94GUvmp6iDIxT79r6IGd3KQpFa2s5VprICm7JziWJsMk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: quilt series
+Date: Thu, 14 Feb 2008 20:20:39 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Alasdair G Kergon <agk@redhat.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+References: <20080215014210.73c71078.sfr@canb.auug.org.au>
+In-Reply-To: <20080215014210.73c71078.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802141206.37542.bjorn.helgaas@hp.com>
+Message-Id: <200802142020.40218.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 01 February 2008 11:08:23 am Siddha, Suresh B wrote:
-> On Fri, Feb 01, 2008 at 01:17:14PM +0100, Andi Kleen wrote:
-> > "Jike Song" <albcamus@gmail.com> writes:
-> > 
-> > > On 2/1/08, Rijndael Cosque <rijcos@gmail.com> wrote:
-> > >> Hi all,
-> > >>
-> > >> I found the x2APIC spec via http://www.intel.com/products/processor/manuals/.
-> > >>
-> > >> Looks at present there is no x2APIC support in Linux kernel 2.6.24?
-> > >>
-> > >> Is there any experimental patch available for Linux kernel? -- I
-> > >> googled "x2APIC Linux";  looks no patch for now?
-> > 
-> > There are right no CPUs shipping which implement x2apic.
+On Thursday 14 February 2008, Stephen Rothwell wrote:
+> Hi all,
 > 
-> That's correct. None of the released CPU's support it.
+> To make my life easier, can I ask that the series file for any quilt trees in the linux-next tree have a comment at the top to identify their base (either a SHA1 or some other ref in Linus' tree).  Like this:
 > 
-> I am working on a patch enabling these future x2apic extensions and the plan 
-> is to post this kernel patch shortly.
+> # BASE <SHA1 or ref>
 
-Are you adding x2apic support for both x86 and ia64, or only for x86?
+done:
 
-Bjorn
+	# BASE commit 96b5a46e2a72dc1829370c87053e0cd558d58bc0
+
+Please add
+
+	http://kernel.org/pub/linux/kernel/people/bart/pata-2.6/patches/
+
+to linux-next.
+
+Thanks,
+Bart
