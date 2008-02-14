@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934701AbYBNV2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934707AbYBNV3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934701AbYBNV2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbYBNV2E
+	id S934707AbYBNV3R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:29:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764579AbYBNV27
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:28:04 -0500
-Received: from ug-out-1314.google.com ([66.249.92.168]:19771 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752897AbYBNV2B (ORCPT
+	Thu, 14 Feb 2008 16:28:59 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:59500 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755006AbYBNV27 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:28:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=TNtciLZHGRWu1W6BZTS8BQ5B1urv5WbzEmIGaWxMQE893Ik0lQ3hZWosWiqMAmcVU1r4it+qrtllVdcRgVh7l/jHKJoJjkcYa0fjwPujgQiPEPpVAVYrT3T7oEV2IjNdtNlbj1PJDNJnwLcEbfuI1CWo25PsFdK1DOEMKVd/KVo=
-Message-ID: <12c511ca0802141327j6e31e8c2tee1d679053b604fc@mail.gmail.com>
-Date: Thu, 14 Feb 2008 13:27:58 -0800
-From: "Tony Luck" <tony.luck@intel.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <adaprv0rygh.fsf@cisco.com>
+	Thu, 14 Feb 2008 16:28:59 -0500
+Date: Thu, 14 Feb 2008 13:26:43 -0800
+From: Greg KH <greg@kroah.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
+Subject: Re: [stable] [GIT pull] hrtimer fixes
+Message-ID: <20080214212643.GA18521@kroah.com>
+References: <alpine.LFD.1.00.0802142120200.12988@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080213125725.GC6344@elte.hu>
-	 <20080213.050340.64342037.davem@davemloft.net>
-	 <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
-	 <20080213.170452.68851396.davem@davemloft.net>
-	 <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
-	 <adaprv0rygh.fsf@cisco.com>
-X-Google-Sender-Auth: 993f924b553edda5
+In-Reply-To: <alpine.LFD.1.00.0802142120200.12988@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 7:47 PM, Roland Dreier <rdreier@cisco.com> wrote:
->  The strange thing is that Ingo's patch to make cpu_clock() a NOP until
->  after sched_init() didn't fix things for me...
+On Thu, Feb 14, 2008 at 10:19:23PM +0100, Thomas Gleixner wrote:
+> Linus,
+> 
+> please pull hrtimer fixes from:
+> 
+>   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
+> 
+> The first patch fixes an overflow problem, which is caused by missing
+> checks in the relative to absolute time conversion in the futex
+> code. It got caught by the WARN_ON() in clockevents_program_event().
+> 
+> The second patch prevents a false positive of the same WARN_ON().
+> 
+> Fixes are confirmed to solve http://lkml.org/lkml/2008/2/10/137
 
-Very strange.  I threw in an output line counter into the printk code() ... if I
-disable the timestamps for the first 30 lines, then everything is good (so the
-basic timestamping code does still work on ia64). But I would have thought
-that Ingo's delay until sched_init() ought to be long enough too. Clearly I
-need to figure out exactly what needs to be initialized to prevent the
-hang/crash.
+Are one of these needed in the stable tree?
 
--Tony
+If so, you can just add a:
+	Cc: stable <stable@kernel.org>
+to the signed-off-by area, and we (the stable tree developers) will get
+an automated email when it goes into Linus's tree, with the git
+changelog entry.
+
+thanks,
+
+greg k-h
