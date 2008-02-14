@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765008AbYBNVx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbYBNV5A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765008AbYBNVx1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYBNVxS
+	id S1761133AbYBNV5A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:57:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYBNV4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:53:18 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:42633 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbYBNVxR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:53:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NQtPpIxTg3yWnhdftTgN/6c6SiNI84wVwAPqLC+RD6i5VP6AxgPj3HqhzmDGdx1Qn9aPfI4fFuR7ykZ0uiGkPNUZzMM+dJspokGNxfYJFjvDSG63kV9UhX4zTforbjFITg0KaEnOQc06+LwwLZvZQDvoNjg94UCxqkSJEAbPPck=
-Subject: [PATCH] ubi: fix sparse errors in ubi.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 13:53:15 -0800
-Message-Id: <1203025995.5601.0.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 16:56:51 -0500
+Received: from www.tglx.de ([62.245.132.106]:41621 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753931AbYBNV4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:56:50 -0500
+Date: Thu, 14 Feb 2008 22:56:19 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Greg KH <greg@kroah.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
+Subject: Re: [stable] [GIT pull] hrtimer fixes
+In-Reply-To: <20080214214542.GA19445@kroah.com>
+Message-ID: <alpine.LFD.1.00.0802142255540.12988@apollo.tec.linutronix.de>
+References: <alpine.LFD.1.00.0802142120200.12988@apollo.tec.linutronix.de> <20080214212643.GA18521@kroah.com> <alpine.LFD.1.00.0802142236440.12988@apollo.tec.linutronix.de> <20080214214542.GA19445@kroah.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In C, signed 1-bit bitfields can only take the values 0 and -1, only
-0 and 1 are ever assigned in current code.  Make them unsigned
-bitfields.
+On Thu, 14 Feb 2008, Greg KH wrote:
 
-Fixes the (repeated) sparse errors:
-drivers/mtd/ubi/ubi.h:220:15: error: dubious one-bit signed bitfield
-drivers/mtd/ubi/ubi.h:221:17: error: dubious one-bit signed bitfield
-drivers/mtd/ubi/ubi.h:222:18: error: dubious one-bit signed bitfield
-drivers/mtd/ubi/ubi.h:223:16: error: dubious one-bit signed bitfield
-drivers/mtd/ubi/ubi.h:224:20: error: dubious one-bit signed bitfield
+> On Thu, Feb 14, 2008 at 10:37:49PM +0100, Thomas Gleixner wrote:
+> > On Thu, 14 Feb 2008, Greg KH wrote:
+> > 
+> > > On Thu, Feb 14, 2008 at 10:19:23PM +0100, Thomas Gleixner wrote:
+> > > > Linus,
+> > > > 
+> > > > please pull hrtimer fixes from:
+> > > > 
+> > > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
+> > > > 
+> > > > The first patch fixes an overflow problem, which is caused by missing
+> > > > checks in the relative to absolute time conversion in the futex
+> > > > code. It got caught by the WARN_ON() in clockevents_program_event().
+> > > > 
+> > > > The second patch prevents a false positive of the same WARN_ON().
+> > > > 
+> > > > Fixes are confirmed to solve http://lkml.org/lkml/2008/2/10/137
+> > > 
+> > > Are one of these needed in the stable tree?
+> > 
+> > Yes, both are for stable as well. The report was against 2.6.24 stable
+> 
+> Cool.  But the stable team deals with individual patches, not git pulls.
+> Can you send us the individual patches when they hit Linus's tree?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Sorry, not sure who to CC on this.
+Sure, will do.
 
- drivers/mtd/ubi/ubi.h |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Thanks,
 
-diff --git a/drivers/mtd/ubi/ubi.h b/drivers/mtd/ubi/ubi.h
-index 4577106..a548c1d 100644
---- a/drivers/mtd/ubi/ubi.h
-+++ b/drivers/mtd/ubi/ubi.h
-@@ -217,11 +217,11 @@ struct ubi_volume {
- 	void *upd_buf;
- 
- 	int *eba_tbl;
--	int checked:1;
--	int corrupted:1;
--	int upd_marker:1;
--	int updating:1;
--	int changing_leb:1;
-+	unsigned int checked:1;
-+	unsigned int corrupted:1;
-+	unsigned int upd_marker:1;
-+	unsigned int updating:1;
-+	unsigned int changing_leb:1;
- 
- #ifdef CONFIG_MTD_UBI_GLUEBI
- 	/*
--- 
-1.5.4.1.1278.gc75be
-
-
-
+	tglx
