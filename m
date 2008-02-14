@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYBNVtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762364AbYBNVv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbYBNVtu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:49:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbYBNVth
+	id S1762364AbYBNVv4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBNVvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:49:37 -0500
-Received: from mga02.intel.com ([134.134.136.20]:41633 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756059AbYBNVtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:49:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,354,1199692800"; 
-   d="scan'208";a="257974597"
-Date: Thu, 14 Feb 2008 13:48:07 -0800
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Jike Song <albcamus@gmail.com>,
-       Rijndael Cosque <rijcos@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: What's the status of x2APIC support in Linux kernel?
-Message-ID: <20080214214807.GA27194@linux-os.sc.intel.com>
-References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de> <20080201180822.GA376@linux-os.sc.intel.com> <200802141206.37542.bjorn.helgaas@hp.com>
+	Thu, 14 Feb 2008 16:51:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46683 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752728AbYBNVvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:51:47 -0500
+Date: Thu, 14 Feb 2008 13:50:59 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andrew Paprocki" <andrew@ishiboo.com>
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be
+Subject: Re: [PATCH] [WATCHDOG] it8712f_wdt support for 16-bit timeout
+ values, WDIOC_GETSTATUS
+Message-Id: <20080214135059.b72570f0.akpm@linux-foundation.org>
+In-Reply-To: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
+References: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802141206.37542.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 12:06:37PM -0700, Bjorn Helgaas wrote:
+On Sun, 10 Feb 2008 22:11:15 -0500
+"Andrew Paprocki" <andrew@ishiboo.com> wrote:
+
+> This patch adds support for 16-bit watchdog timeout values which are
+> available in chip revisions >= 0x08. Values <= 65535 are seconds precision,
+> otherwise minutes precision is used up to a maximum value of 3932100. Added
+> implementation for WDIOC_GETSTATUS which checks the WDT status bit in the
+> WDT control register.
 > 
-> Are you adding x2apic support for both x86 and ia64, or only for x86?
+> Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
+> ---
+>   drivers/watchdog/it8712f_wdt.c |   82
+> ++++++++++++++++++++++++++++++++--------
+>   1 files changed, 66 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
+> index 1b6d7d1..803c699 100644
+> --- a/drivers/watchdog/it8712f_wdt.c
+> +++ b/drivers/watchdog/it8712f_wdt.c
 
-x2apic extension is specific to x86. ia64 already has an advanced lsapic,
-isn't it..
+The patch is wordwrapped, space-stuffed and has tabs replaced with spaces. 
+You hit the trifecta!
 
-thanks,
-suresh
+Please resend.  If you'd prefer to use an attachment rather than spending
+half an hour wrestling your email client, feel free to do so ;)
+
