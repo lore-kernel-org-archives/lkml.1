@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbYBNPPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbYBNPQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758275AbYBNPPq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYBNPP1
+	id S1757080AbYBNPQM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:16:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbYBNPPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:15:27 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:57935 "EHLO mgw1.diku.dk"
+	Thu, 14 Feb 2008 10:15:53 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:36055 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbYBNPPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:15:23 -0500
-Date: Thu, 14 Feb 2008 16:15:17 +0100 (MET)
+	id S1756194AbYBNPPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:15:51 -0500
+Date: Thu, 14 Feb 2008 16:15:45 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: mark.fasheh@oracle.com, kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/6] fs/ocfs2: Use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802141614400.1185@pc-041.diku.dk>
+To: jack@suse.cz, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 4/6] fs/udf: Use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.58.0802141615240.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,15 +66,20 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
---- a/fs/ocfs2/cluster/heartbeat.c 2007-12-31 08:43:31.000000000 +0100
-+++ b/fs/ocfs2/cluster/heartbeat.c 2008-02-13 20:59:54.000000000 +0100
-@@ -1149,7 +1149,7 @@ static int o2hb_map_slot_data(struct o2h
- 		slot->ds_raw_block = NULL;
- 	}
+diff -u -p a/fs/udf/super.c b/fs/udf/super.c
+--- a/fs/udf/super.c	2008-02-10 17:13:55.000000000 +0100
++++ b/fs/udf/super.c	2008-02-14 07:32:31.000000000 +0100
+@@ -1025,10 +1025,9 @@ static void udf_load_fileset(struct supe
+ int udf_compute_nr_groups(struct super_block *sb, u32 partition)
+ {
+ 	struct udf_part_map *map = &UDF_SB(sb)->s_partmaps[partition];
+-	return (map->s_partition_len +
+-		(sizeof(struct spaceBitmapDesc) << 3) +
+-		(sb->s_blocksize * 8) - 1) /
+-		(sb->s_blocksize * 8);
++	return DIV_ROUND_UP(map->s_partition_len +
++			    (sizeof(struct spaceBitmapDesc) << 3),
++			    sb->s_blocksize * 8);
+ }
 
--	reg->hr_num_pages = (reg->hr_blocks + spp - 1) / spp;
-+	reg->hr_num_pages = DIV_ROUND_UP(reg->hr_blocks, spp);
- 	mlog(ML_HEARTBEAT, "Going to require %u pages to cover %u blocks "
- 			   "at %u blocks per page\n",
- 	     reg->hr_num_pages, reg->hr_blocks, spp);
+ static struct udf_bitmap *udf_sb_alloc_bitmap(struct super_block *sb, u32 index)
