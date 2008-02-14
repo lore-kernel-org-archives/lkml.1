@@ -1,88 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758979AbYBNQqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761668AbYBNQq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758979AbYBNQqE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 11:46:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbYBNQpy
+	id S1761668AbYBNQq1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 11:46:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759530AbYBNQqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 11:45:54 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:60130 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbYBNQpx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 11:45:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NpV30qtLxiE0+syiRPTT2qizbvr5fwo3OcSp1iUI9aUUhO5JkJQAozuJKZ60yuAdjc31D3ZX9RSzWf88SgR7/qLaJJuN9QOfdsZszn/u+inQQj7lrfx4llUkmYV5V83nkBXPYSorq/aP9vHfkPdUY60moqB5BbhDHO5OHPQmJcs=
-Message-ID: <6101e8c40802140845h563f7ceeseea824dee4a1ab77@mail.gmail.com>
-Date: Thu, 14 Feb 2008 17:45:51 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: stable@kernel.org
-Subject: Re: [PATCH] Avoid buffer overflows in get_user_pages()
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, "Jonathan Corbet" <corbet@lwn.net>
-In-Reply-To: <5758.1202771853@vena.lwn.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 11:46:14 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:32797 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754835AbYBNQqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 11:46:12 -0500
+Date: Thu, 14 Feb 2008 22:25:51 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, aneesh.kumar@in.ibm.com, efault@gmx.de
+Subject: Re: 2.6.24-git4+ regression
+Message-ID: <20080214165551.GA21963@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20080130135609.GA5100@ics.muni.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5758.1202771853@vena.lwn.net>
+In-Reply-To: <20080130135609.GA5100@ics.muni.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-for stable (.22 .23 .24) ?
+On Wed, Jan 30, 2008 at 02:56:09PM +0100, Lukas Hejtmanek wrote:
+> Hello,
+> 
+> I noticed short thread in LKM regarding "sched: add vslice" causes horrible
+> interactivity under load.
+> 
+> I can see similar behavior. If I stress both CPU cores, even typing on
+> keyboard suffers from huge latencies, I can see letters appearing with delay
+> (typing into xterm). No swap is used at all, having 1GB free RAM.
+> 
+> I noticed this bad behavior with 2.6.24-git[46], 2.6.24-rc8-git was OK.
 
-git id in mainline: 900cf086fd2fbad07f72f4575449e0d0958f860f
+Hi Lukas,
+	Can you check if the patch below helps improve interactivity for you?
 
---
+The patch is against 2.6.25-rc1. I would request you to check for
+difference it makes with CONFIG_FAIR_GROUP_SCHED and
+CONFIG_FAIR_USER_SCHED turned on.
 
-tested in: http://repo.or.cz/w/linux-2.6.22.y-op.git testing
+---
+ kernel/sched.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-On 2/12/08, Jonathan Corbet <corbet@lwn.net> wrote:
-> Avoid buffer overflows in get_user_pages()
->
-> So I spent a while pounding my head against my monitor trying to figure
-> out the vmsplice() vulnerability - how could a failure to check for
-> *read* access turn into a root exploit? It turns out that it's a buffer
-> overflow problem which is made easy by the way get_user_pages() is
-> coded.
->
-> In particular, "len" is a signed int, and it is only checked at the
-> *end* of a do {} while() loop. So, if it is passed in as zero, the loop
-> will execute once and decrement len to -1. At that point, the loop will
-> proceed until the next invalid address is found; in the process, it will
-> likely overflow the pages array passed in to get_user_pages().
->
-> I think that, if get_user_pages() has been asked to grab zero pages,
-> that's what it should do. Thus this patch; it is, among other things,
-> enough to block the (already fixed) root exploit and any others which
-> might be lurking in similar code. I also think that the number of pages
-> should be unsigned, but changing the prototype of this function probably
-> requires some more careful review.
->
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
->
-> diff --git a/mm/memory.c b/mm/memory.c
-> index e5628a5..7f50fd8 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -989,6 +989,8 @@ int get_user_pages(struct task_struct *tsk, struct
-> mm_struct *mm,
-> int i;
-> unsigned int vm_flags;
->
-> +	if (len <= 0)
-> +	return 0;
-> /*
-> * Require read or write permissions.
-> * If 'force' is set, we only require the "MAY" flags.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at http://www.tux.org/lkml/
->
---
-Thanks,
-Oliver
+Index: current/kernel/sched.c
+===================================================================
+--- current.orig/kernel/sched.c
++++ current/kernel/sched.c
+@@ -7431,8 +7431,8 @@
+ 
+ 			local_load = tg->cfs_rq[i]->load.weight;
+ 			local_shares = (local_load * total_shares) / total_load;
+-			if (!local_shares)
+-				local_shares = MIN_GROUP_SHARES;
++			if (!local_load)
++				local_shares = tg->shares;
+ 			if (local_shares == tg->se[i]->load.weight)
+ 				continue;
+ 
+@@ -7710,7 +7710,7 @@
+ 	struct rq *rq = cfs_rq->rq;
+ 	int on_rq;
+ 
+-	if (!shares)
++	if (shares < MIN_GROUP_SHARES)
+ 		shares = MIN_GROUP_SHARES;
+ 
+ 	on_rq = se->on_rq;
+
+-- 
+Regards,
+vatsa
