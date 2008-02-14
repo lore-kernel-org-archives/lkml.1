@@ -1,51 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934517AbYBNA4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934621AbYBNA5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934517AbYBNA4U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764379AbYBNA4K
+	id S934621AbYBNA5Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:57:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761575AbYBNA5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:56:10 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:23494 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759729AbYBNA4H (ORCPT
+	Wed, 13 Feb 2008 19:57:10 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:43407
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764379AbYBNA5I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:56:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=pSWRbxXhDKVv99kSato9MXsKWTlIUo14i1YX/paknjTnDgFRhbrlQ8ceJjDIQ9z4x5OZbjHWesf16UVZHdlSuneapgLcif6NG5yXe2TwEi9NapdS4WwPQmJ0fBU+RVr2xiqxbrR/4Qe6fWaYy4KEF6aobVTFTK4ynCvb2qgq1fo=
-Subject: Re: [PATCH-resend] jbd/jbd2: sparse warnings in revoke.c, journal.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sct@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080213165041.05955133.akpm@linux-foundation.org>
-References: <1202949217.18204.32.camel@brick>
-	 <20080213165041.05955133.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 16:55:56 -0800
-Message-Id: <1202950564.18204.37.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 Feb 2008 19:57:08 -0500
+Date: Thu, 14 Feb 2008 01:56:54 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Kanoj Sarcar <kanojsarcar@yahoo.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Christian Bell <christian.bell@qlogic.com>,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       Rik van Riel <riel@redhat.com>, a.p.zijlstra@chello.nl,
+       izike@qumranet.com, Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+Message-ID: <20080214005653.GE14146@v2.random>
+References: <Pine.LNX.4.64.0802131452410.22542@schroedinger.engr.sgi.com> <866658.37093.qm@web32510.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <866658.37093.qm@web32510.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-13 at 16:50 -0800, Andrew Morton wrote:
-> On Wed, 13 Feb 2008 16:33:37 -0800
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Subject: [PATCH-resend] jbd/jbd2: sparse warnings in revoke.c, journal.c
-> 
-> ext3/jbd and ext4/jbd2 patches usually find their way into the tree
-> via different routes, so bundling these two fixes was inappropriate.
-> 
-> General guidelines: one patch per subsystem and one patch per concept.
-> 
-> Sometimes those guidelines get bent, but only occasionally.  Usually
-> to avoid the silliness of handling a huge stream of one-line patches.
+Hi Kanoj,
 
-Sorry, should have known better.  Do you want a resend separately?
+On Wed, Feb 13, 2008 at 03:43:17PM -0800, Kanoj Sarcar wrote:
+> Oh ok, yes, I did see the discussion on this; sorry I
+> missed it. I do see what notifiers bring to the table
+> now (without endorsing it :-)).
 
-Harvey
+I'm not really livelocks are really the big issue here.
 
+I'm running N 1G VM on a 1G ram system, with N-1G swapped
+out. Combining this with auto-ballooning, rss limiting, and ksm ram
+sharing, provides really advanced and lowlevel virtualization VM
+capabilities to the linux kernel while at the same time guaranteeing
+no oom failures as long as the guest pages are lower than ram+swap
+(just slower runtime if too many pages are unshared or if the balloons
+are deflated etc..).
+
+Swapping the virtual machine in the host may be more efficient than
+having the guest swapping over a virtual swap paravirt storage for
+example. As more management features are added admins will gain more
+experience in handling those new features and they'll find what's best
+for them. mmu notifiers and real reliable swapping are the enabler for
+those more advanced VM features.
+
+oom livelocks wouldn't happen anyway with KVM as long as the maximimal
+number of guest physical is lower than RAM.
+
+> An orthogonal question is this: is IB/rdma the only
+> "culprit" that elevates page refcounts? Are there no
+> other subsystems which do a similar thing?
+> 
+> The example I am thinking about is rawio (Oracle's
+> mlock'ed SHM regions are handed to rawio, isn't it?).
+> My understanding of how rawio works in Linux is quite
+> dated though ...
+
+rawio in flight I/O shall be limited. As long as each task can't pin
+more than X ram, and the ram is released when the task is oom killed,
+and the first get_user_pages/alloc_pages/slab_alloc that returns
+-ENOMEM takes an oom fail path that returns failure to userland,
+everything is ok.
+
+Even with IB deadlock could only happen if IB would allow unlimited
+memory to be pinned down by unprivileged users.
+
+If IB is insecure and DoSable without mmu notifiers, then I'm not sure
+how enabling swapping of the IB memory could be enough to fix the
+DoS. Keep in mind that even tmpfs can't be safe allowing all ram+swap
+to be allocated in a tmpfs file (despite the tmpfs file storage
+includes swap and not only ram). Pinning the whole ram+swap with tmpfs
+livelocks the same way of pinning the whole ram with ramfs. So if you
+add mmu notifier support to IB, you only need to RDMA an area as large
+as ram+swap to livelock again as before... no difference at all.
+
+I don't think livelocks have anything to do with mmu notifiers (other
+than to deferring the livelock to the "swap+ram" point of no return
+instead of the current "ram" point of no return). Livelocks have to be
+solved the usual way: handling alloc_pages/get_user_pages/slab
+allocation failures with a fail path that returns to userland and
+allows the ram to be released if the task was selected for
+oom-killage.
+
+The real benefit of the mmu notifiers for IB would be to allow the
+rdma region to be larger than RAM without triggering the oom
+killer (or without triggering a livelock if it's DoSable but then the
+livelock would need fixing to be converted in a regular oom-killing by
+some other mean not related to the mmu-notifier, it's really an
+orthogonal problem).
+
+So suppose you've a MPI simulation that requires a 10G array and
+you've only 1G of ram, then you can rdma over 10G like if you had 10G
+of ram. Things will preform ok only if there's some huge locality of
+the computations. For virtualization it's orders of magnitude more
+useful than for computer clusters but certain simulations really swaps
+so I don't exclude certain RDMA apps will also need this (dunno about
+IB).
