@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbYBNPwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYBNPxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758046AbYBNPwh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:52:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbYBNPw2
+	id S1758765AbYBNPxr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYBNPxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:52:28 -0500
-Received: from mail16c2.megamailservers.com ([216.251.41.136]:45937 "EHLO
-	mail16c2.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753705AbYBNPw2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:52:28 -0500
-X-Greylist: delayed 3283 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 10:52:27 EST
-X-Authenticated-User: stephan.eciinternational.de
-Subject: PL2303 Driver missing support for USB to Serial Cable
-From: Stephan Rose <stephan@eciinternational.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 09:57:40 -0500
-Message-Id: <1203001060.8420.11.camel@software>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 10:53:39 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:50609 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753042AbYBNPxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 10:53:38 -0500
+Date: Thu, 14 Feb 2008 09:53:33 -0600
+From: Robin Holt <holt@sgi.com>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: Felix Marti <felix@chelsio.com>, Roland Dreier <rdreier@cisco.com>,
+       Christoph Lameter <clameter@sgi.com>, Rik van Riel <riel@redhat.com>,
+       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+Message-ID: <20080214155333.GA1029@sgi.com>
+References: <adazlu5vlub.fsf@cisco.com> <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com> <47B45994.7010805@opengridcomputing.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B45994.7010805@opengridcomputing.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I recently purchased a USB->Com Port serial cable from Radio Shack
-(Model number 26-183) which did no seem to want to work. After looking
-into it I discovered that it is based on the Prolific chipset using the
-PL2303 driver. 
+On Thu, Feb 14, 2008 at 09:09:08AM -0600, Steve Wise wrote:
+> Note that for T3, this involves suspending _all_ rdma connections that are 
+> in the same PD as the MR being remapped.  This is because the driver 
+> doesn't know who the application advertised the rkey/stag to.  So without 
 
-I then checked the Vendor and Product ID against the list in the drive
-and sure enough, the IDs were missing in the driver.
+Is there a reason the driver can not track these.
 
-So here are my modifications to the PL2303 driver which have been
-working flawlessly on my system the whole week:
+> Point being, it will stop probably all connections that an application is 
+> using (assuming the application uses a single PD).
 
-drivers/usb/serial/pl2303.h
---------
+It seems like the need to not stop all would be a compelling enough reason
+to modify the driver to track which processes have received the rkey/stag.
 
-/* Radio Shack 26-183 */
-#define RADIOSHACK26183_VENDOR_ID 0x05ad
-#define RADIOSHACK26183_PRODUCT_ID 0x0fba
-
-drivers/usb/serial/pl2303.c
---------
-
-Added to struct usb_device_id id_table
-
-{ USB_DEVICE(RADIOSHACK26183_VENDOR_ID RADIOSHACK26183_PRODUCT_ID) }
-
-I still have to manually modprobe the module as the kernel won't
-automatically load it when I connect the device, no idea what I would
-need to change where for that to happen.
-
-The above though does successfully add support for that serial cable so
-I thought I'd share it with the kernel list so that it can possibly be
-added to the kernel and I can stop having to re-compile the driver every
-kernel update. :)
-
-Please feel free to contact me if needed.
-
-Thanks!
-
-Stephan
-
-
-
+Thanks,
+Robin
