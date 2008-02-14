@@ -1,74 +1,221 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765771AbYBNL7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYBNMA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765771AbYBNL7W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 06:59:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbYBNL7O
+	id S932509AbYBNMA2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 07:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYBNMAO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 06:59:14 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:28267 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbYBNL7N (ORCPT
+	Thu, 14 Feb 2008 07:00:14 -0500
+Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:54498 "EHLO
+	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754995AbYBNMAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 06:59:13 -0500
-Date: Thu, 14 Feb 2008 12:59:05 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: torvalds@osdl.org, Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix direct mapping correctly in ioremap 
-Message-ID: <20080214115905.GA18573@basil.nowhere.org>
+	Thu, 14 Feb 2008 07:00:11 -0500
+Message-ID: <47B42CF4.2050008@panasas.com>
+Date: Thu, 14 Feb 2008 13:58:44 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 14 Feb 2008 11:52:48.0381 (UTC) FILETIME=[1E94CAD0:01C86F00]
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: [PATCH] gdth: bugfix for the at-exit problems
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>	 <1202921122.3109.31.camel@localhost.localdomain>	 <47B31FC2.4040206@panasas.com>	 <1202922226.3109.36.camel@localhost.localdomain>	 <47B324E7.9040502@panasas.com> <1202924198.3109.52.camel@localhost.localdomain> <47B41CBD.8040701@panasas.com>
+In-Reply-To: <47B41CBD.8040701@panasas.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix direct mapping correctly in ioremap
+This is a bugfix for the 2.6.24.x stable releases.
 
-[This fixes the general ioremap bug I mentioned earlier. It was
-fortunately easier to fix that I thought first.]
+gdth_exit would first remove all cards then stop the timer
+and would not sync with the timer function. This caused a crash
+in gdth_timer() when module was unloaded.
+So del_timer_sync the timer before we delete the cards.
 
-set_memory_*/cpa is not currently able to resolve ioremap addresses to
-their direct mapping aliases.
+also the reboot notifier function would crash. So unify
+the exit and halt functions with a gdth_shutdown() that's
+called by both.
 
-However uncached ioremap still needs to fix up the direct mapping
-to be uncached when the direct mapping happens to overlap
-the remapped area. Otherwise there would be a cached mapping
-to the uncached ioremap area and that is not allowed in the x86
-architecture.
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/gdth.c |   90 ++++++++++++++++++++------------------------------
+ 1 files changed, 36 insertions(+), 54 deletions(-)
 
-Do this explicitely in ioremap() by passing the direct mapping
-address to cpa and ignoring the error if the address wasn't
-in the direct mapping.
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/x86/mm/ioremap.c
-===================================================================
---- linux.orig/arch/x86/mm/ioremap.c
-+++ linux/arch/x86/mm/ioremap.c
-@@ -104,6 +104,7 @@ static void __iomem *__ioremap(unsigned 
- 	unsigned long pfn, offset, last_addr, vaddr;
- 	struct vm_struct *area;
- 	pgprot_t prot;
-+	int err;
+diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
+index 8eb78be..3828b23 100644
+--- a/drivers/scsi/gdth.c
++++ b/drivers/scsi/gdth.c
+@@ -183,7 +183,6 @@ static int gdth_ioctl(struct inode *inode, struct file *filep,
+                       unsigned int cmd, unsigned long arg);
  
- 	/* Don't allow wraparound or zero size */
- 	last_addr = phys_addr + size - 1;
-@@ -156,7 +157,12 @@ static void __iomem *__ioremap(unsigned 
- 		return NULL;
+ static void gdth_flush(gdth_ha_str *ha);
+-static int gdth_halt(struct notifier_block *nb, ulong event, void *buf);
+ static int gdth_queuecommand(Scsi_Cmnd *scp,void (*done)(Scsi_Cmnd *));
+ static int __gdth_queuecommand(gdth_ha_str *ha, struct scsi_cmnd *scp,
+ 				struct gdth_cmndinfo *cmndinfo);
+@@ -418,12 +417,6 @@ static inline void gdth_set_sglist(struct scsi_cmnd *cmd,
+ #include "gdth_proc.h"
+ #include "gdth_proc.c"
+ 
+-/* notifier block to get a notify on system shutdown/halt/reboot */
+-static struct notifier_block gdth_notifier = {
+-    gdth_halt, NULL, 0
+-};
+-static int notifier_disabled = 0;
+-
+ static gdth_ha_str *gdth_find_ha(int hanum)
+ {
+ 	gdth_ha_str *ha;
+@@ -3793,6 +3786,8 @@ static void gdth_timeout(ulong data)
+     gdth_ha_str *ha;
+     ulong flags;
+ 
++    BUG_ON(list_empty(&gdth_instances));
++
+     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
+     spin_lock_irqsave(&ha->smp_lock, flags);
+ 
+@@ -4668,45 +4663,6 @@ static void gdth_flush(gdth_ha_str *ha)
+     }
+ }
+ 
+-/* shutdown routine */
+-static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
+-{
+-    gdth_ha_str *ha;
+-#ifndef __alpha__
+-    gdth_cmd_str    gdtcmd;
+-    char            cmnd[MAX_COMMAND_SIZE];   
+-#endif
+-
+-    if (notifier_disabled)
+-        return NOTIFY_OK;
+-
+-    TRACE2(("gdth_halt() event %d\n",(int)event));
+-    if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
+-        return NOTIFY_DONE;
+-
+-    notifier_disabled = 1;
+-    printk("GDT-HA: Flushing all host drives .. ");
+-    list_for_each_entry(ha, &gdth_instances, list) {
+-        gdth_flush(ha);
+-
+-#ifndef __alpha__
+-        /* controller reset */
+-        memset(cmnd, 0xff, MAX_COMMAND_SIZE);
+-        gdtcmd.BoardNode = LOCALBOARD;
+-        gdtcmd.Service = CACHESERVICE;
+-        gdtcmd.OpCode = GDT_RESET;
+-        TRACE2(("gdth_halt(): reset controller %d\n", ha->hanum));
+-        gdth_execute(ha->shost, &gdtcmd, cmnd, 10, NULL);
+-#endif
+-    }
+-    printk("Done.\n");
+-
+-#ifdef GDTH_STATISTICS
+-    del_timer(&gdth_timer);
+-#endif
+-    return NOTIFY_OK;
+-}
+-
+ /* configure lun */
+ static int gdth_slave_configure(struct scsi_device *sdev)
+ {
+@@ -5141,13 +5097,13 @@ static void gdth_remove_one(gdth_ha_str *ha)
+ 
+ 	scsi_remove_host(shp);
+ 
++	gdth_flush(ha);
++
+ 	if (ha->sdev) {
+ 		scsi_free_host_dev(ha->sdev);
+ 		ha->sdev = NULL;
  	}
  
--	if (ioremap_change_attr(vaddr, size, mode) < 0) {
-+	/* Fix up the direct mapping for the new cache attributes */
-+	err = ioremap_change_attr((unsigned long)__va(phys_addr),
-+				size + offset, mode);
-+	if (err == -EINVAL) {
-+		/* Original address was partly unmapped. Valid condition; ignore. */
-+	} else if (err < 0) {
- 		vunmap(area->addr);
- 		return NULL;
- 	}
+-	gdth_flush(ha);
+-
+ 	if (shp->irq)
+ 		free_irq(shp->irq,ha);
+ 
+@@ -5173,6 +5129,22 @@ static void gdth_remove_one(gdth_ha_str *ha)
+ 	scsi_host_put(shp);
+ }
+ 
++static void gdth_shutdown(void);
++static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
++{
++	TRACE2(("gdth_halt() event %d\n", (int)event));
++	if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
++		return NOTIFY_DONE;
++
++	gdth_shutdown();
++	return NOTIFY_OK;
++}
++
++static struct notifier_block gdth_notifier = {
++    gdth_halt, NULL, 0
++};
++static bool gdth_shutdown_done;
++
+ static int __init gdth_init(void)
+ {
+ 	if (disable) {
+@@ -5185,6 +5157,7 @@ static int __init gdth_init(void)
+ 	       GDTH_VERSION_STR);
+ 
+ 	/* initializations */
++	gdth_shutdown_done = false;
+ 	gdth_polling = TRUE;
+ 	gdth_clear_events();
+ 
+@@ -5235,23 +5208,32 @@ static int __init gdth_init(void)
+ 	add_timer(&gdth_timer);
+ #endif
+ 	major = register_chrdev(0,"gdth", &gdth_fops);
+-	notifier_disabled = 0;
+ 	register_reboot_notifier(&gdth_notifier);
+ 	gdth_polling = FALSE;
+ 	return 0;
+ }
+ 
+-static void __exit gdth_exit(void)
++static void gdth_shutdown()
+ {
+ 	gdth_ha_str *ha;
+ 
+-	list_for_each_entry(ha, &gdth_instances, list)
+-		gdth_remove_one(ha);
++	if (gdth_shutdown_done)
++		return;
++
++	gdth_shutdown_done = true;
++	unregister_chrdev(major, "gdth");
+ 
+ #ifdef GDTH_STATISTICS
+-	del_timer(&gdth_timer);
++	del_timer_sync(&gdth_timer);
+ #endif
+-	unregister_chrdev(major,"gdth");
++
++	list_for_each_entry(ha, &gdth_instances, list)
++		gdth_remove_one(ha);
++}
++
++static void __exit gdth_exit(void)
++{
++	gdth_shutdown();
+ 	unregister_reboot_notifier(&gdth_notifier);
+ }
+ 
+-- 
+1.5.3.3
+
+
