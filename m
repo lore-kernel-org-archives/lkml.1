@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763724AbYBNLYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762851AbYBNLa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763724AbYBNLYk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 06:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYBNLYc
+	id S1762851AbYBNLa0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 06:30:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbYBNLaU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 06:24:32 -0500
-Received: from r00tworld.com ([212.85.137.21]:50944 "EHLO r00tworld.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753495AbYBNLYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 06:24:31 -0500
-From: pageexec@freemail.hu
-To: Ingo Molnar <mingo@elte.hu>
-Date: Thu, 14 Feb 2008 12:23:38 +0200
+	Thu, 14 Feb 2008 06:30:20 -0500
+Received: from hpsmtp-eml14.KPNXCHANGE.COM ([213.75.38.114]:25741 "EHLO
+	hpsmtp-eml14.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753919AbYBNLaT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 06:30:19 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [stable 2.6.24] WARNING: at kernel/time/clockevents.c
+Date: Thu, 14 Feb 2008 12:30:13 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john stultz <johnstul@us.ibm.com>
+References: <200802101440.22118.elendil@planet.nl> <200802132240.04357.elendil@planet.nl> <alpine.LFD.1.00.0802140029550.12988@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802140029550.12988@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Subject: Re: vmsplice exploits, stack protector and Makefiles
-Reply-to: pageexec@freemail.hu
-CC: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Message-ID: <47B432CA.28524.E15DB6A@pageexec.freemail.hu>
-In-reply-to: <20080214073003.GA25699@elte.hu>
-References: <20080213164853.GA25476@elte.hu>, <20080214061648.GB31327@elte.hu>, <20080214073003.GA25699@elte.hu>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 14 Feb 2008 12:21:52 +0100 (CET)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802141230.14625.elendil@planet.nl>
+X-OriginalArrivalTime: 14 Feb 2008 11:30:15.0586 (UTC) FILETIME=[F840A820:01C86EFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14 Feb 2008 at 8:30, Ingo Molnar wrote:
+On Thursday 14 February 2008, Thomas Gleixner wrote:
+> futex_lock_pi is called with an absolute timeout, which is based on
+> CLOCK_REALTIME. Nothing wrong with that, but the clockevents WARN_ON
+> might trap over a false positive, when the expiry value is less than
+> base->offset. This was intentional before we put the WARN_ON into the
+> clockevents code.
+>
+> The patch below should fix this issue.
 
-> --- linux-x86.q.orig/arch/x86/kernel/process_64.c
-> +++ linux-x86.q/arch/x86/kernel/process_64.c
-> @@ -166,6 +166,15 @@ static inline void play_dead(void)
->  void cpu_idle(void)
->  {
->  	current_thread_info()->status |= TS_POLLING;
-> +
-> +#ifdef CONFIG_CC_STACKPROTECTOR
-> +	/*
-> +	 * If we're the non-boot CPU, nothing set the PDA stack
-> +	 * canary up for us. This is as good a place as any for
-> +	 * doing that.
-> +	 */
-> +	write_pda(stack_canary, current->stack_canary);
-> +#endif
+With these two patches on top of 2.6.24.2 I no longer get any warnings 
+during a glibc compile:
+- hrtimer: check relative timeouts for overflow
+- hrtimer: fix abs clock realtime
 
-i wonder if these #ifdef's are really needed at all, even if one doesn't
-use -fstack-protector, having the code set up the canary has like 0
-performance impact. not to mention that i think the change in switch_to
-means that it won't compile without CONFIG_CC_STACKPROTECTOR enabled and
-instead of making that macro conditional it's just a lot easier to enable
-the canary all the time.
+Thanks Thomas.
 
+Cheers,
+FJP
