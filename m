@@ -1,73 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbYBNPX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756073AbYBNPZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758581AbYBNPX6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYBNPXi
+	id S1756073AbYBNPZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbYBNPZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:23:38 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33527 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754783AbYBNPXh (ORCPT
+	Thu, 14 Feb 2008 10:25:18 -0500
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:63611 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752069AbYBNPZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:23:37 -0500
-Date: Thu, 14 Feb 2008 16:23:37 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-cc: Andi Kleen <andi@firstfloor.org>,
-       Jasper Bryant-Greene <jasper@unix.geek.nz>,
-       rzryyvzy <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
-Subject: Re: Is there a "blackhole" /dev/null directory?
-In-Reply-To: <20080214161942.55ce5089@dilbert.local>
-Message-ID: <Pine.LNX.4.64.0802141620330.694@fbirervta.pbzchgretzou.qr>
-References: <20080214093051.7240852AB0E31@trashmail.net>
- <1202981957.10928.17.camel@phobos.jasper.bg> <p73pruz27mk.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0802141553400.694@fbirervta.pbzchgretzou.qr>
- <20080214161942.55ce5089@dilbert.local>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 Feb 2008 10:25:15 -0500
+Subject: Re: linux-next: first tree
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <20080215020019.f7cb5895.sfr@canb.auug.org.au>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	 <200802141545.56488.rjw@sisk.pl>
+	 <20080215020019.f7cb5895.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 14 Feb 2008 16:25:09 +0100
+Message-Id: <1203002709.1044.5.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-15 at 02:00 +1100, Stephen Rothwell wrote:
+> I would prefer that the trees be added by the subsystem maintainers and
+> they can tell me which branch represents their expectations for the next
+> kernel release (in this case 2.6.26). But thanks, hopefully you will have
+> prodded them along. :-)
 
-On Feb 14 2008 16:19, Hans-Jürgen Koch wrote:
->> 
->> Q: What if a program attempts to mkdir /dev/nullmnt/foo to just
->>    create a file /dev/nullmnt/foo/barfile?
->> A: /dev/nullmnt/foo must continue to exist or be accepted for a while,
->>    or perhaps for eternity.
->
->Well, the problem seems to be that a "directory" is not just data but
->also contains metadata. While it's easy to write data to /dev/null, you
->cannot simply discard metadata associated with a directory. So, such a
->"/dev/null-directory" would have to remember metadata (at least all
->created filenames including subdirectories) in the same way as other
->filesystems do. Only file _content_ can be discarded.
+For the s390 architecture please use the "features" branch of git390:
 
-Not even that. Suppose a userspace program (whose output you'd like
-to discard) does:
+git://git390.osdl.marist.edu/pub/scm/linux-2.6.git features
 
-int main(void)
-{
-	int fd = open("/nullmnt/foo.txt", O_WRONLY | O_CREAT | O_EXCL);
+-- 
+blue skies,
+  Martin.
 
-	/* write lots of nonsensical data that we don't need anyway */
-	write(fd, "Hello Wor(l)d", 13);
+"Reality continues to ruin my life." - Calvin.
 
-	if (lseek(fd, 0, SEEK_SET) < 0) {
-		/* should not happen */
-		fprintf(stderr, "Huh, did we write to a pipe or cdev?\n");
-		abort();
-	}
 
-	/* verify */
-	char buf[13];
-	read(fd, buf, 13);
-	if (memcmp(buf, "Hello Wor(l)d", 13) != 0)
-		fprintf(stderr, "Aïe, disk corruption!\n");
-}
-
->To be honest, I still cannot see many sensible usecases for that...
-
-I agree.
