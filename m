@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932614AbYBNJpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbYBNJq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932614AbYBNJpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 04:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765448AbYBNJpk
+	id S1764387AbYBNJq3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 04:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbYBNJqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 04:45:40 -0500
-Received: from yergi.telenet-ops.be ([195.130.132.36]:41607 "EHLO
-	yergi.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbYBNJpi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 04:45:38 -0500
-From: "Tom Van Looy" <assarix@pandora.be>
-To: "rzryyvzy" <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
-Importance: Normal
-Sensitivity: Normal
-Message-ID: <W8217824349298681202982295@nocme1bl6.telenet-ops.be>
-X-Originating-IP: [81.83.46.237]
-X-Forwarded-For: [10.10.1.191]
-Date: Thu, 14 Feb 2008 09:44:55 +0000
-Subject: Re: Is there a 
-Reply-To: assarix@pandora.be
+	Thu, 14 Feb 2008 04:46:15 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48393 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753134AbYBNJqO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 04:46:14 -0500
+To: Jasper Bryant-Greene <jasper@unix.geek.nz>
+Cc: rzryyvzy <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
+Subject: Re: Is there a "blackhole" /dev/null directory?
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080214093051.7240852AB0E31@trashmail.net>
+	<1202981957.10928.17.camel@phobos.jasper.bg>
+Date: Thu, 14 Feb 2008 10:46:11 +0100
+In-Reply-To: <1202981957.10928.17.camel@phobos.jasper.bg> (Jasper Bryant-Greene's message of "Thu\, 14 Feb 2008 22\:39\:17 +1300")
+Message-ID: <p73pruz27mk.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You can create a symlink to /dev/null and name it whatever you want?
+Jasper Bryant-Greene <jasper@unix.geek.nz> writes:
+>
+> This could be done fairly trivially with FUSE, and IMHO is a good use
+> for FUSE because since you're just throwing most data away, performance
+> is not a concern.
 
-$ ln -s /dev/null tempfile
-$ echo blablabla > tempfile
-$ wc tempfile
-0 tempfile
+Q.: how much work would fuse have to do until the user file system
+server could decide to ignore the data? 
+A.: pretty much all of a cached write including all the copies and
+context switches.
 
+That is because FUSE has to first hand all the data to the server
+until it can decide to do nothing and that's pretty much all (and then
+some more) of the cost of a cached write.
 
+So if you want any performance benefit from this (I'm a little sceptical) you 
+should exactly not use FUSE.
 
+The basic problem with the idea is that programs who create temporary
+files usually want to read them back at some point too. So if you
+throw everything away things break.
 
->----- Oorspronkelijk bericht -----
->Van: rzryyvzy [mailto:rzryyvzy@trashmail.net]
->Verzonden: donderdag, februari 14, 2008 10:30 AM
->Aan: linux-kernel@vger.kernel.org
->Onderwerp: Is there a "blackhole" /dev/null directory?
->
->Hello Linux Kernel Hackers,
->
->/dev/null is often very useful, specially if programs force to save data in some file. But some programs like to creates different temporary file names, so /dev/null could no more work.
->
->What is with a "/dev/null"-directory?
->I mean a "blackhole pseudo directory" which eats every write to null.
->
->Here is how it could work:
->mount -t nulldir nulldir /dev/nulldir
->
->Now if a program does a create(2),
->it creates in the memory the file with its fd.
->Then if a program does a write(2) to the fd, it eats the writes and give out fakely it has written the number of bytes.
->When the program calls does a close(2) of the fd, then the complete inode is deleted in the memory.
->
->The directory should  be permanently empty except for the inodes with open file descriptors. So only inode information would be temporary saved in this "nulldir tmpfs" directory.
->
->Is there already existing a possibility to create a null directory?
->-- 
->Best regards,
->Mika Lawando
->
->-- 
->E-Mail sent with anti-spam site TrashMail.net!
->Free disposable email addresses: http://www.trashmail.net/
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
+If you just don't want the write to not (usually) hit disk you
+can use tmpfs, although I believe at least ext2 (not ext3 unfortunately) 
+is also reasonably good at not writing out very short lived files.
 
-
+-Andi
