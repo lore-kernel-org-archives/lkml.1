@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933578AbYBNNgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765395AbYBNNm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933578AbYBNNgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 08:36:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbYBNNfv
+	id S1765395AbYBNNm3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 08:42:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbYBNNmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 08:35:51 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:48931 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751859AbYBNNfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 08:35:50 -0500
-Date: Fri, 15 Feb 2008 00:35:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: first tree
-Message-Id: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+	Thu, 14 Feb 2008 08:42:19 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:41775 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752759AbYBNNmS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 08:42:18 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAG7Us0dMQWYv/2dsb2JhbACBWa0l
+Date: Thu, 14 Feb 2008 08:37:17 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] spufs support multiple probes markers
+Message-ID: <20080214133717.GC27478@Krystal>
+References: <20080212152245.2d816143.akpm@linux-foundation.org> <20080212233914.GA22966@Krystal> <20080212235650.GA23693@Krystal> <20080214071908.GA8866@infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__15_Feb_2008_00_35_37_+1100_is6UIlaZmveSoy+h"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080214071908.GA8866@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:33:32 up 3 days,  9:34,  4 users,  load average: 0.06, 0.20,
+	0.25
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__15_Feb_2008_00_35_37_+1100_is6UIlaZmveSoy+h
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Tue, Feb 12, 2008 at 06:56:50PM -0500, Mathieu Desnoyers wrote:
+> > Update spufs to the new linux kernel markers API, which supports connecting
+> > more than one probe to a single marker.
+> 
+> Compiles and works for me.  But saying I like the odd API would be lying.
+> 
 
-Hi all,
+Are there any concerns of yours that I should address then ? The changes
+I made to the probe function prototype appeared to be technically
+required and caused by variadic argument limitations when it comes to
+support multiple probes.
 
-I have created the first cut of the linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+I think that the marker arm/disarm removal gets rid of an unnecessary
+redundancy.
 
-Things to know about this tree:
+Mathieu
 
-It has two branches - master and stable.  Stable is currently just Linus'
-tree and will never rebase.  Master will rebase on an almost daily basis
-(maybe slower at the start).
-
-The tree consists of subsystem git and quilt trees.  Currently, the quilt
-trees are integrated by importing them into appropriately based git
-branches and then merging those branches.  This has the advantage that
-any conflict resolution will onlt have to happen once at the merge point
-rather than, possibly, sevveral times during the series.  However, I am
-considering just applying the quilt trees on top of the current tree
-to get a result more like Linus' tree - we will see. The git trees are
-obviously just merged.
-
-Between each merge, the tree was built with both an allmodconfig for both
-powerpc and x86_64.
-
-The tree currently contains:
-	Greg's driver-core, pci and usb quilt series (in that order)
-	Alasdair Kergon's device-mapper quilt tree
-	Jiri Kosina's hid git tree
-	Jean Delvare's i2c quilt tree
-	Randy Dunlap's kernel-doc quilt tree
-	Haavard Skinnemoen's avr32 git tree
-
-There was only one unresolved conflict which could have been caused
-because I was not sure where to base the kernel-doc tree.
-
-So, comments, please.
-
-Also, more trees please ... :-)
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__15_Feb_2008_00_35_37_+1100_is6UIlaZmveSoy+h
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHtEOxTgG2atn1QN8RAnz0AKCRvnzfyTKmzwJPw+vWjQnuBra00gCfS866
-xSMCnr2ltRt2A9N8RytT6Ls=
-=nCpB
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Feb_2008_00_35_37_+1100_is6UIlaZmveSoy+h--
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
