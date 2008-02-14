@@ -1,264 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbYBNQTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbYBNQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758261AbYBNQTr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 11:19:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753520AbYBNQTj
+	id S1753951AbYBNQUS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 11:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbYBNQT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 11:19:39 -0500
-Received: from viefep28-int.chello.at ([62.179.121.48]:3978 "EHLO
-	viefep28-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752909AbYBNQTi (ORCPT
+	Thu, 14 Feb 2008 11:19:58 -0500
+Received: from gw-colo-pa.panasas.com ([66.238.117.130]:6240 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753520AbYBNQT5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 11:19:38 -0500
-X-Greylist: delayed 946 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 11:19:37 EST
-Message-Id: <20080214160234.681387000@chello.nl>
-References: <20080214155724.772744000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Thu, 14 Feb 2008 16:57:26 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, Paul Jackson <pj@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Gregory Haskins <gregory.haskins.ml@gmail.com>
-Subject: [RFC][PATCH 2/2] sched: fair-group: per root-domain load balancing
-Content-Disposition: inline; filename=sched-fair-dyn-balance-more.patch
+	Thu, 14 Feb 2008 11:19:57 -0500
+Message-ID: <47B469E3.4080403@panasas.com>
+Date: Thu, 14 Feb 2008 18:18:43 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
+       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       Joerg Dorchain <joerg@dorchain.net>,
+       Jon Chelton <jchelton@ffpglobal.com>,
+       Stefan Priebe - allied internet ag 
+	<s.priebe@allied-internet.ag>
+Subject: Re: [PATCH] gdth: bugfix for the at-exit problems
+References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>	 <1202921122.3109.31.camel@localhost.localdomain>	 <47B31FC2.4040206@panasas.com>	 <1202922226.3109.36.camel@localhost.localdomain>	 <47B324E7.9040502@panasas.com>	 <1202924198.3109.52.camel@localhost.localdomain>	 <47B41CBD.8040701@panasas.com>  <47B42CF4.2050008@panasas.com> <1203005443.3189.23.camel@localhost.localdomain>
+In-Reply-To: <1203005443.3189.23.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Feb 2008 16:19:19.0360 (UTC) FILETIME=[59F28C00:01C86F25]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the lb_monitor will walk all the domains/cpus from a single
-cpu's timer interrupt. This will cause massive cache-trashing and cache-line
-bouncing on larger machines.
+On Thu, Feb 14 2008 at 18:10 +0200, James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> On Thu, 2008-02-14 at 13:58 +0200, Boaz Harrosh wrote:
+>> This is a bugfix for the 2.6.24.x stable releases.
+>>
+>> gdth_exit would first remove all cards then stop the timer
+>> and would not sync with the timer function. This caused a crash
+>> in gdth_timer() when module was unloaded.
+>> So del_timer_sync the timer before we delete the cards.
+>>
+>> also the reboot notifier function would crash. So unify
+>> the exit and halt functions with a gdth_shutdown() that's
+>> called by both.
+> 
+> The patch looks fine now, thanks.  Can we actually get a tester just to
+> make sure there's nothing I missed.
+> 
+> James
+> 
+> 
 
-Split the lb_monitor into root_domain (disjoint sched-domains).
+Yes, and the tester reported, a breakage. We are on it.
+Apparently, you cannot do a full deallocation of resources
+at reboot notifier, nor would you want to I guess.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Gregory Haskins <gregory.haskins.ml@gmail.com>
----
- kernel/sched.c      |  106 ++++++++++++++++++++++++++++------------------------
- kernel/sched_fair.c |    2 
- 2 files changed, 59 insertions(+), 49 deletions(-)
+But you can do the flush. The exit call is never called
+on a reboot and the card access is valid to the end.
 
-Index: linux-2.6/kernel/sched.c
-===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -357,8 +357,6 @@ struct lb_monitor {
- 	spinlock_t lock;
- };
- 
--static struct lb_monitor lb_monitor;
--
- /*
-  * How frequently should we rebalance_shares() across cpus?
-  *
-@@ -417,6 +415,9 @@ static void lb_monitor_wake(struct lb_mo
- 	if (hrtimer_active(&lb_monitor->timer))
- 		return;
- 
-+	/*
-+	 * XXX: rd->load_balance && weight(rd->span) > 1
-+	 */
- 	if (nr_cpu_ids == 1)
- 		return;
- 
-@@ -444,6 +445,11 @@ static void lb_monitor_init(struct lb_mo
- 
- 	spin_lock_init(&lb_monitor->lock);
- }
-+
-+static int lb_monitor_destroy(struct lb_monitor *lb_monitor)
-+{
-+	return hrtimer_cancel(&lb_monitor->timer);
-+}
- #endif
- 
- static void set_se_shares(struct sched_entity *se, unsigned long shares);
-@@ -607,6 +613,8 @@ struct root_domain {
- 	 */
- 	cpumask_t rto_mask;
- 	atomic_t rto_count;
-+
-+	struct lb_monitor lb_monitor;
- };
- 
- /*
-@@ -6328,6 +6336,7 @@ static void rq_attach_root(struct rq *rq
- {
- 	unsigned long flags;
- 	const struct sched_class *class;
-+	int active = 0;
- 
- 	spin_lock_irqsave(&rq->lock, flags);
- 
-@@ -6342,8 +6351,14 @@ static void rq_attach_root(struct rq *rq
- 		cpu_clear(rq->cpu, old_rd->span);
- 		cpu_clear(rq->cpu, old_rd->online);
- 
--		if (atomic_dec_and_test(&old_rd->refcount))
-+		if (atomic_dec_and_test(&old_rd->refcount)) {
-+			/*
-+			 * sync with active timers.
-+			 */
-+			active = lb_monitor_destroy(&old_rd->lb_monitor);
-+
- 			kfree(old_rd);
-+		}
- 	}
- 
- 	atomic_inc(&rd->refcount);
-@@ -6358,6 +6373,9 @@ static void rq_attach_root(struct rq *rq
- 			class->join_domain(rq);
- 	}
- 
-+	if (active)
-+		lb_monitor_wake(&rd->lb_monitor);
-+
- 	spin_unlock_irqrestore(&rq->lock, flags);
- }
- 
-@@ -6367,6 +6385,8 @@ static void init_rootdomain(struct root_
- 
- 	cpus_clear(rd->span);
- 	cpus_clear(rd->online);
-+
-+	lb_monitor_init(&rd->lb_monitor);
- }
- 
- static void init_defrootdomain(void)
-@@ -7398,10 +7418,6 @@ void __init sched_init(void)
- 
- #ifdef CONFIG_SMP
- 	init_defrootdomain();
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--	lb_monitor_init(&lb_monitor);
--#endif
- #endif
- 	init_rt_bandwidth(&def_rt_bandwidth,
- 			global_rt_period(), global_rt_runtime());
-@@ -7631,11 +7647,11 @@ void set_curr_task(int cpu, struct task_
-  * distribute shares of all task groups among their schedulable entities,
-  * to reflect load distribution across cpus.
-  */
--static int rebalance_shares(struct sched_domain *sd, int this_cpu)
-+static int rebalance_shares(struct root_domain *rd, int this_cpu)
- {
- 	struct cfs_rq *cfs_rq;
- 	struct rq *rq = cpu_rq(this_cpu);
--	cpumask_t sdspan = sd->span;
-+	cpumask_t sdspan = rd->span;
- 	int state = shares_idle;
- 
- 	/* Walk thr' all the task groups that we have */
-@@ -7685,50 +7701,12 @@ static int rebalance_shares(struct sched
- 	return state;
- }
- 
--static int load_balance_shares(struct lb_monitor *lb_monitor)
-+static void set_lb_monitor_timeout(struct lb_monitor *lb_monitor, int state)
- {
--	int i, cpu, state = shares_idle;
- 	u64 max_timeout = (u64)sysctl_sched_max_bal_int_shares * NSEC_PER_MSEC;
- 	u64 min_timeout = (u64)sysctl_sched_min_bal_int_shares * NSEC_PER_MSEC;
- 	u64 timeout;
- 
--	/* Prevent cpus going down or coming up */
--	/* get_online_cpus(); */
--	/* lockout changes to doms_cur[] array */
--	/* lock_doms_cur(); */
--	/*
--	 * Enter a rcu read-side critical section to safely walk rq->sd
--	 * chain on various cpus and to walk task group list
--	 * (rq->leaf_cfs_rq_list) in rebalance_shares().
--	 */
--	rcu_read_lock();
--
--	for (i = 0; i < ndoms_cur; i++) {
--		cpumask_t cpumap = doms_cur[i];
--		struct sched_domain *sd = NULL, *sd_prev = NULL;
--
--		cpu = first_cpu(cpumap);
--
--		/* Find the highest domain at which to balance shares */
--		for_each_domain(cpu, sd) {
--			if (!(sd->flags & SD_LOAD_BALANCE))
--				continue;
--			sd_prev = sd;
--		}
--
--		sd = sd_prev;
--		/* sd == NULL? No load balance reqd in this domain */
--		if (!sd)
--			continue;
--
--		state = max(state, rebalance_shares(sd, cpu));
--	}
--
--	rcu_read_unlock();
--
--	/* unlock_doms_cur(); */
--	/* put_online_cpus(); */
--
- 	timeout = ktime_to_ns(lb_monitor->timeout);
- 	switch (state) {
- 	case shares_balanced:
-@@ -7741,6 +7719,38 @@ static int load_balance_shares(struct lb
- 		break;
- 	}
- 	lb_monitor->timeout = ns_to_ktime(timeout);
-+}
-+
-+static int load_balance_shares(struct lb_monitor *lb_monitor)
-+{
-+	int cpu = smp_processor_id();
-+	struct rq *rq = cpu_rq(cpu);
-+	struct root_domain *rd;
-+	struct sched_domain *sd, *sd_prev = NULL;
-+	int state = shares_idle;
-+
-+	spin_lock(&rq->lock);
-+	/*
-+	 * root_domain will stay valid until timer exits - synchronized by
-+	 * hrtimer_cancel().
-+	 */
-+	rd = rq->rd;
-+	spin_unlock(&rq->lock);
-+
-+	/*
-+	 * complicated way to find rd->load_balance
-+	 */
-+	rcu_read_lock();
-+	for_each_domain(cpu, sd) {
-+		if (!(sd->flags & SD_LOAD_BALANCE))
-+			continue;
-+		sd_prev = sd;
-+	}
-+	if (sd_prev)
-+		state = max(state, rebalance_shares(rd, cpu));
-+	rcu_read_unlock();
-+
-+	set_lb_monitor_timeout(lb_monitor, state);
- 
- 	return state;
- }
-Index: linux-2.6/kernel/sched_fair.c
-===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -553,7 +553,7 @@ account_entity_enqueue(struct cfs_rq *cf
- 	se->on_rq = 1;
- 	list_add(&se->group_node, &cfs_rq->tasks);
- #if defined(CONFIG_FAIR_GROUP_SCHED) && defined(CONFIG_SMP)
--	lb_monitor_wake(&lb_monitor);
-+	lb_monitor_wake(&rq_of(cfs_rq)->rd->lb_monitor);
- #endif
- }
- 
+Please comment?
 
---
+So I pretty much reverted that patch, but did leave some
+cleanups.
+
+Also we found the other problems reported with user-mode tools
+and cat /proc/sys/gdth/0
+
+so 2 patches on the way above reverted. Give us a few ours to test
+every thing.
+
+Thanks
+Boaz
 
