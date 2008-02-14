@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765152AbYBNU5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbYBNU6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765152AbYBNU5z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYBNU5r
+	id S932853AbYBNU6o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbYBNU6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:57:47 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:10334 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbYBNU5q (ORCPT
+	Thu, 14 Feb 2008 15:58:32 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:45198 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbYBNU6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:57:46 -0500
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] unhide CONFIG_DEBUG_SECTION_MISMATCH
-X-Message-Flag: Warning: May contain useful information
-References: <200802142054.m1EKs49x023091@agora.fsl.cs.sunysb.edu>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 14 Feb 2008 12:57:41 -0800
-In-Reply-To: <200802142054.m1EKs49x023091@agora.fsl.cs.sunysb.edu> (Erez Zadok's message of "Thu, 14 Feb 2008 15:54:04 -0500")
-Message-ID: <adabq6jqmre.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 14 Feb 2008 20:57:42.0138 (UTC) FILETIME=[3D9435A0:01C86F4C]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Thu, 14 Feb 2008 15:58:31 -0500
+In-Reply-To: <20080213.170938.34536425.davem@davemloft.net>
+References: <20080213.170938.34536425.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, sparclinux@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+From: Becky Bruce <becky.bruce@freescale.com>
+Subject: Re: [PATCH 0/4]: Respun LMB patches.
+Date: Thu, 14 Feb 2008 14:58:22 -0600
+To: David Miller <davem@davemloft.net>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > I can indeed try to re-make, passing CONFIG_DEBUG_SECTION_MISMATCH=y on the
- > command line, but I can't turn on the option in my .config.  That's because
- > the option depends on "UNDEFINED".  (Was that an attempt to "hide" the
- > option?  Why?)  The following small patch allows me to set the option in my
- > .config.
 
-It seems this was intentional, see the log for e5f95c8b:
+On Feb 13, 2008, at 7:09 PM, David Miller wrote:
 
-    kbuild: print only total number of section mismatces found
-    
-    We have too many section mismatches detected at the moment.
-    So silence modpost and prevent the option from being
-    set in a typical allyesconfig build.
-    
-    Tell the user how to see all the deteils in the summary
-    message from modpost.
-    
-    Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+>
+> I've taken into consideration the various feedback, and
+> ported the bug fix and other LMB patches posted recently
+> in an effort to keep the patch churn by others down wrt.
+> my moving of these files.
+>
+> 1) Use HAVE_LMB as suggested by Sam.
+>
+> 2) Fix potential build errors wrt. asm/prom.h dependencies.
+>
+>    My algorithm was:
+>
+>    a) If the file only included asm/lmb.h I added an include
+>       of both linux/lmb.c and asm/prom.h
+>
+>    b) If the file already includes asm/prom.h, I merely
+>       changed the asm/lmb.h to linux/lmb.h
+>
+>    Header include mimimizations can be done as followon patches.
+>
+> 3) Integrate Kumar Gala's initial region fix.
+>
+> 4) Integrate Becky Bruce's large physical addressing change,
+>    but using u64 instead of phys_addr_t.
+>
+> It's all at:
+>
+> 	master.kernel.org:/pub/scm/linux/kernel/git/davem/lmb-2.6.git
+>
+> like before.
+
+
+Thanks for picking up the patches from Kumar and myself and fitting  
+them into your series - this is much appreciated.  FYI, I applied the  
+entire patch series to my local tree and test-booted both mpc8641 and  
+mpc8568mds and both build and boot cleanly. I also built pasemi and  
+ebony, those build cleanly as well.
+
+Cheers,
+Becky
+
