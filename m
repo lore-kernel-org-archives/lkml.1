@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbYBNPmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760803AbYBNPm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbYBNPmk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbYBNPj1
+	id S1760803AbYBNPm5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:42:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754389AbYBNPjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:39:27 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49929 "EHLO uludag.org.tr"
+	Thu, 14 Feb 2008 10:39:32 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49930 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753464AbYBNPjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753384AbYBNPjO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Feb 2008 10:39:14 -0500
 From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
 To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+Cc: bluez-devel@lists.sourceforge.net,
        =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-Subject: [PATCH 13/14] kernel/irq/spurious.c: Use time_* macros
-Date: Thu, 14 Feb 2008 17:36:51 +0200
-Message-Id: <1203003412-11594-14-git-send-email-caglar@pardus.org.tr>
+Subject: [PATCH 14/14] net/bluetooth/hci_core.c: Use time_* macros
+Date: Thu, 14 Feb 2008 17:36:52 +0200
+Message-Id: <1203003412-11594-15-git-send-email-caglar@pardus.org.tr>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: y
 References: y
@@ -30,34 +30,42 @@ The functions time_before, time_before_eq, time_after, and time_after_eq are mor
 
 So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
 
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: bluez-devel@lists.sf.net
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 ---
- kernel/irq/spurious.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ net/bluetooth/hci_core.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index a6b2bc8..088dabb 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -6,6 +6,7 @@
-  * This file contains spurious interrupt handling.
-  */
+diff --git a/net/bluetooth/hci_core.c b/net/bluetooth/hci_core.c
+index 372b0d3..930b58e 100644
+--- a/net/bluetooth/hci_core.c
++++ b/net/bluetooth/hci_core.c
+@@ -24,6 +24,7 @@
+ 
+ /* Bluetooth HCI core. */
  
 +#include <linux/jiffies.h>
- #include <linux/irq.h>
  #include <linux/module.h>
- #include <linux/kallsyms.h>
-@@ -179,7 +180,7 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 		 * otherwise the couter becomes a doomsday timer for otherwise
- 		 * working systems
- 		 */
--		if (jiffies - desc->last_unhandled > HZ/10)
-+		if (time_after(jiffies, desc->last_unhandled + HZ/10))
- 			desc->irqs_unhandled = 1;
- 		else
- 			desc->irqs_unhandled++;
+ #include <linux/kmod.h>
+ 
+@@ -1321,7 +1322,7 @@ static inline void hci_sched_acl(struct hci_dev *hdev)
+ 	if (!test_bit(HCI_RAW, &hdev->flags)) {
+ 		/* ACL tx timeout must be longer than maximum
+ 		 * link supervision timeout (40.9 seconds) */
+-		if (!hdev->acl_cnt && (jiffies - hdev->acl_last_tx) > (HZ * 45))
++		if (!hdev->acl_cnt && time_after(jiffies, hdev->acl_last_tx + HZ * 45))
+ 			hci_acl_tx_to(hdev);
+ 	}
+ 
+@@ -1543,7 +1544,7 @@ static void hci_cmd_task(unsigned long arg)
+ 
+ 	BT_DBG("%s cmd %d", hdev->name, atomic_read(&hdev->cmd_cnt));
+ 
+-	if (!atomic_read(&hdev->cmd_cnt) && (jiffies - hdev->cmd_last_tx) > HZ) {
++	if (!atomic_read(&hdev->cmd_cnt) && time_after(jiffies, hdev->cmd_last_tx + HZ)) {
+ 		BT_ERR("%s command tx timeout", hdev->name);
+ 		atomic_set(&hdev->cmd_cnt, 1);
+ 	}
 -- 
 1.5.3.7
 
