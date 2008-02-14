@@ -1,355 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbYBNUk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762685AbYBNUlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbYBNUk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYBNUkT
+	id S1762685AbYBNUlj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751386AbYBNUl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:40:19 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:10376 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750874AbYBNUkQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:40:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kS7+y1bMNVSuN/lzMJdI/GgsLKCQ+9n4YAeo4J5cbcZire2efly44WG6FvaI7udoUhZshTpLuRO6DWwa3fiM6pbb8Y0lPtupKJ0D7vFG+vvH1iV7WybzuJcAO2+eMf1b3e3yjczvOX32SswCR/3ZPUt3qgOxVPCY5Z6VEacZIIc=
-Message-ID: <6278d2220802141240g6ee2421ew94e57669ef930be6@mail.gmail.com>
-Date: Thu, 14 Feb 2008 20:40:14 +0000
-From: "Daniel J Blueman" <daniel.blueman@gmail.com>
-To: "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: [2.6.24-rc8] page allocation failure...
+	Thu, 14 Feb 2008 15:41:29 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:34661 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751168AbYBNUl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:41:28 -0500
+Message-ID: <47B4A774.7050509@sgi.com>
+Date: Thu, 14 Feb 2008 12:41:24 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing
+ boot failure
+References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie>
+In-Reply-To: <20080214201727.GC30841@csn.ul.ie>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of my x86-64 (1GB) systems experienced order 1 page alloc failure
-after ~4 days of uptime and 9 times again in the hours since.
+Mel Gorman wrote:
+> On (13/02/08 10:45), Mike Travis didst pronounce:
+>> Mel Gorman wrote:
+>>> On (03/02/08 17:16), Andrew Morton didst pronounce:
+>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24/2.6.24-mm1/
+>>>>
+>>> bl6-13 (4-way x86_64 machine) from test.kernel.org is failing to boot recent
+>>> -mm and mainline trees. I noticed it when testing -mm before rebasing other
+>>> patches but the oops on mainline looks the same. The full console log is
+>>> below but the important difference between a working and non-working kernel
+>>> is the following
+>>>
+>>> -PERCPU: Allocating 62512 bytes of per cpu data
+>>> -Built 1 zonelists in Node order, mobility grouping on.  Total pages: 255875
+>>> +PERCPU: Allocating 65560 bytes of per cpu data
+>>> +cpu with no node 2, num_online_nodes 1
+>>> +cpu with no node 3, num_online_nodes 1
+>>> +Built 1 zonelists in Node order, mobility grouping on.  Total pages:
+>>> 251257
+>>>
+>>> "cpu with no node 2" is actually saying that cpu 2 has no node and the
+>>> message is a just misleading. The number of online nodes and cpu mappings
+>>> are not adding up as I got this from a debugging patch
+>> I'll take a closer look though I've not been able to duplicate your
+>> error yet.  It does appear from the message text that the code is
+>> out-of-date.  The latest "setup_per_cpu_areas()" should say:
+>>
+>>        "cpu %d has no node, num_online_nodes %d\n",
+>>         i, num_online_nodes());
+>>
+>> There are a number of backed up patches in the queue.  I'm resubmitting
+>> the whole set re-based on 2.6.25-rc1 shortly.  (I don't know though, that
+>> any will address this problem.)
+>>
+> 
+> According to git-bisect, the problem patch is below. It doesn't back out
+> cleanly so I haven't verified for sure the bisect is correct yet.
 
-I understand the behaviour is that the reclaim kthread should have had
-a couple of free pages around for this type allocation, but obviously
-didn't (a number of times).
+This might make sense.  This code is in preparation for the extended
+apic's available on the new processors.  I've tested the code with
+our simulator (with no errors) and I'm setting up to test on a real
+machine that has multiple numa nodes.  I wonder if maybe BIOS is not
+providing correct node data, or the ACPI parsing is in error?  You
+might try adding "apic=debug" to the boot command line.
 
-What other information may help with this?
+For the short term, we can remove this patch if it's causing the
+problem.  A more complete patch will be available soon that contains
+the entire set of x2apic changes.
 
-Daniel
+Thanks,
+Mike
+ 
+> 
+> commit ef97001f3d869d7cc1956e0cc0d89e514e3f7db0
+> Author: travis@sgi.com <travis@sgi.com>
+> Date:   Wed Jan 30 13:33:10 2008 +0100
+> 
+>     x86: change size of APICIDs from u8 to u16
+>     
+>     Change the size of APICIDs from u8 to u16.  This partially
+>     supports the new x2apic mode that will be present on future
+>     processor chips. (Chips actually support 32-bit APICIDs, but that
+>     change is more intrusive. Supporting 16-bit is sufficient for now).
+>     
+>     Signed-off-by: Jack Steiner <steiner@sgi.com>
+>     
+>     I've included just the partial change from u8 to u16 apicids.  The
+>     remaining x2apic changes will be in a separate patch.
+>     
+>     In addition, the fake_node_to_pxm_map[] and fake_apicid_to_node[]
+>     tables have been moved from local data to the __initdata section
+>     reducing stack pressure when MAX_NUMNODES and MAX_LOCAL_APIC are
+>     increased in size.
+>     
+>     Signed-off-by: Mike Travis <travis@sgi.com>
+>     Reviewed-by: Christoph Lameter <clameter@sgi.com>
+>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>     Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> 
+> diff --git a/arch/x86/kernel/genapic_64.c b/arch/x86/kernel/genapic_64.c
+> index ce703e2..ac2b78f 100644
+> --- a/arch/x86/kernel/genapic_64.c
+> +++ b/arch/x86/kernel/genapic_64.c
+> @@ -32,10 +32,10 @@
+>   * array during this time.  Is it zeroed when the per_cpu
+>   * data area is removed.
+>   */
+> -u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata
+> +u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
+>  					= { [0 ... NR_CPUS-1] = BAD_APICID };
+>  void *x86_cpu_to_apicid_ptr;
+> -DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
+> +DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
+>  EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
+>  
+>  struct genapic __read_mostly *genapic = &apic_flat;
+> diff --git a/arch/x86/kernel/mpparse_64.c b/arch/x86/kernel/mpparse_64.c
+> index ef4aab1..17d21e5 100644
+> --- a/arch/x86/kernel/mpparse_64.c
+> +++ b/arch/x86/kernel/mpparse_64.c
+> @@ -67,7 +67,7 @@ unsigned disabled_cpus __cpuinitdata;
+>  /* Bitmask of physically existing CPUs */
+>  physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
+>  
+> -u8 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
+> +u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
+>  
+>  
+>  /*
+> @@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
+>  	 * area is created.
+>  	 */
+>  	if (x86_cpu_to_apicid_ptr) {
+> -		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
+> +		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
+>  		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
+>  	} else {
+>  		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
+> diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+> index 5bd42ce..1fea185 100644
+> --- a/arch/x86/kernel/smpboot_64.c
+> +++ b/arch/x86/kernel/smpboot_64.c
+> @@ -65,7 +65,7 @@ int smp_num_siblings = 1;
+>  EXPORT_SYMBOL(smp_num_siblings);
+>  
+>  /* Last level cache ID of each logical CPU */
+> -DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
+> +DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
+>  
+>  /* Bitmask of currently online CPUs */
+>  cpumask_t cpu_online_map __read_mostly;
+> diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+> index 551e359..650001a 100644
+> --- a/arch/x86/mm/numa_64.c
+> +++ b/arch/x86/mm/numa_64.c
+> @@ -626,7 +626,7 @@ void __init init_cpu_to_node(void)
+>  	int i;
+>  
+>  	for (i = 0; i < NR_CPUS; i++) {
+> -		u8 apicid = x86_cpu_to_apicid_init[i];
+> +		u16 apicid = x86_cpu_to_apicid_init[i];
+>  
+>  		if (apicid == BAD_APICID)
+>  			continue;
+> diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+> index 5c0637e..b367bc3 100644
+> --- a/arch/x86/mm/srat_64.c
+> +++ b/arch/x86/mm/srat_64.c
+> @@ -130,6 +130,9 @@ void __init
+>  acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+>  {
+>  	int pxm, node;
+> +	int apic_id;
+> +
+> +	apic_id = pa->apic_id;
+>  	if (srat_disabled())
+>  		return;
+>  	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
+> @@ -145,10 +148,10 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+>  		bad_srat();
+>  		return;
+>  	}
+> -	apicid_to_node[pa->apic_id] = node;
+> +	apicid_to_node[apic_id] = node;
+>  	acpi_numa = 1;
+>  	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
+> -	       pxm, pa->apic_id, node);
+> +	       pxm, apic_id, node);
+>  }
+>  
+>  int update_end_of_memory(unsigned long end) {return -1;}
+> @@ -343,7 +346,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+>  	/* First clean up the node list */
+>  	for (i = 0; i < MAX_NUMNODES; i++) {
+>  		cutoff_node(i, start, end);
+> -		if ((nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
+> +		/* ZZZ why was this needed. At least add a comment */
+> +		if (nodes[i].end && (nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
+>  			unparse_node(i);
+>  			node_set_offline(i);
+>  		}
+> @@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+>  }
+>  
+>  #ifdef CONFIG_NUMA_EMU
+> +static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
+> +	[0 ... MAX_NUMNODES-1] = PXM_INVAL
+> +};
+> +static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
+> +	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+> +};
+>  static int __init find_node_by_addr(unsigned long addr)
+>  {
+>  	int ret = NUMA_NO_NODE;
+> @@ -414,12 +424,6 @@ static int __init find_node_by_addr(unsigned long addr)
+>  void __init acpi_fake_nodes(const struct bootnode *fake_nodes, int num_nodes)
+>  {
+>  	int i, j;
+> -	int fake_node_to_pxm_map[MAX_NUMNODES] = {
+> -		[0 ... MAX_NUMNODES-1] = PXM_INVAL
+> -	};
+> -	unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] = {
+> -		[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+> -	};
+>  
+>  	printk(KERN_INFO "Faking PXM affinity for fake nodes on real "
+>  			 "topology.\n");
+> diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
+> index e701ac5..81ecfed 100644
+> --- a/include/asm-x86/processor.h
+> +++ b/include/asm-x86/processor.h
+> @@ -90,14 +90,14 @@ struct cpuinfo_x86 {
+>  #ifdef CONFIG_SMP
+>  	cpumask_t llc_shared_map;	/* cpus sharing the last level cache */
+>  #endif
+> -	unsigned char x86_max_cores;	/* cpuid returned max cores value */
+> -	unsigned char apicid;
+> -	unsigned short x86_clflush_size;
+> +	u16 x86_max_cores;		/* cpuid returned max cores value */
+> +	u16 apicid;
+> +	u16 x86_clflush_size;
+>  #ifdef CONFIG_SMP
+> -	unsigned char booted_cores;	/* number of cores as seen by OS */
+> -	__u8 phys_proc_id; 		/* Physical processor id. */
+> -	__u8 cpu_core_id;  		/* Core id */
+> -	__u8 cpu_index;			/* index into per_cpu list */
+> +	u16 booted_cores;		/* number of cores as seen by OS */
+> +	u16 phys_proc_id; 		/* Physical processor id. */
+> +	u16 cpu_core_id;  		/* Core id */
+> +	u16 cpu_index;			/* index into per_cpu list */
+>  #endif
+>  } __attribute__((__aligned__(SMP_CACHE_BYTES)));
+>  
+> diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
+> index 2feddda..b1d5381 100644
+> --- a/include/asm-x86/smp_64.h
+> +++ b/include/asm-x86/smp_64.h
+> @@ -26,14 +26,14 @@ extern void unlock_ipi_call_lock(void);
+>  extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
+>  				  void *info, int wait);
+>  
+> -extern u8 __initdata x86_cpu_to_apicid_init[];
+> +extern u16 __initdata x86_cpu_to_apicid_init[];
+>  extern void *x86_cpu_to_apicid_ptr;
+> -extern u8 bios_cpu_apicid[];
+> +extern u16 bios_cpu_apicid[];
+>  
+>  DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
+>  DECLARE_PER_CPU(cpumask_t, cpu_core_map);
+> -DECLARE_PER_CPU(u8, cpu_llc_id);
+> -DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
+> +DECLARE_PER_CPU(u16, cpu_llc_id);
+> +DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
+>  
+>  static inline int cpu_present_to_apicid(int mps_cpu)
+>  {
 
---- dmesg
-swapper: page allocation failure. order:1, mode:0x4020
-Pid: 0, comm: swapper Not tainted 2.6.24-rc8-117 #1
-
-Call Trace:
-<IRQ>  [<ffffffff80258696>] __alloc_pages+0x336/0x390
-[<ffffffff8047e677>] __netdev_alloc_skb+0x17/0x40
-[<ffffffff80272825>] __slab_alloc+0x145/0x3d0
-[<ffffffff8047e677>] __netdev_alloc_skb+0x17/0x40
-[<ffffffff80273526>] __kmalloc_track_caller+0xf6/0x100
-[<ffffffff8047d8cf>] __alloc_skb+0x6f/0x150
-[<ffffffff8047e677>] __netdev_alloc_skb+0x17/0x40
-[<ffffffff8040b3aa>] e1000_alloc_rx_buffers+0x17a/0x3a0
-[<ffffffff804b2643>] ip_local_deliver_finish+0x83/0x1a0
-[<ffffffff8040c00d>] e1000_clean_rx_irq+0x34d/0x550
-[<ffffffff8040b031>] e1000_intr_msi+0x81/0x110
-[<ffffffff8024e5f4>] handle_IRQ_event+0x34/0x70
-[<ffffffff80250229>] handle_edge_irq+0xc9/0x150
-[<ffffffff8020eeab>] do_IRQ+0x7b/0x100
-[<ffffffff8020ad80>] mwait_idle+0x0/0x50
-[<ffffffff8020c011>] ret_from_intr+0x0/0xa
-<EOI>  [<ffffffff802197a0>] lapic_next_event+0x0/0x10
-[<ffffffff8020adc2>] mwait_idle+0x42/0x50
-[<ffffffff8020ad05>] cpu_idle+0x75/0xa0
-[<ffffffff806a8b3a>] start_kernel+0x25a/0x2e0
-[<ffffffff806a8117>] _sinittext+0x117/0x120
-
-Mem-info:
-DMA per-cpu:
-CPU    0: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-CPU    1: Hot: hi:    0, btch:   1 usd:   0   Cold: hi:    0, btch:   1 usd:   0
-DMA32 per-cpu:
-CPU    0: Hot: hi:  186, btch:  31 usd: 155   Cold: hi:   62, btch:  15 usd:  60
-CPU    1: Hot: hi:  186, btch:  31 usd:  14   Cold: hi:   62, btch:  15 usd:  42
-Active:114794 inactive:53917 dirty:8137 writeback:5025 unstable:0
- free:3549 slab:79629 mapped:4643 pagetables:1017 bounce:0
-DMA free:3968kB min:40kB low:48kB high:60kB active:72kB inactive:120kB
-present:10236kB pages_scanned:0 all_unreclaimable? no
-lowmem_reserve[]: 0 992 992 992
-DMA32 free:10228kB min:4008kB low:5008kB high:6012kB active:459104kB
-inactive:215548kB present:1015936kB pages_scanned:0 all_unreclaimable?
-no
-lowmem_reserve[]: 0 0 0 0
-DMA: 324*4kB 0*8kB 1*16kB 1*32kB 1*64kB 0*128kB 0*256kB 1*512kB
-0*1024kB 1*2048kB 0*4096kB = 3968kB
-DMA32: 2378*4kB 1*8kB 1*16kB 1*32kB 0*64kB 1*128kB 0*256kB 1*512kB
-0*1024kB 0*2048kB 0*4096kB = 10208kB
-Swap cache: add 750, delete 488, find 196/269, race 0+0
-Free swap  = 247720kB
-Total swap = 248996kB
-Free swap:       247720kB
-261600 pages of RAM
-5401 reserved pages
-55912 pages shared
-262 pages swap cached
-
---- /proc/slabinfo
-slabinfo - version: 2.1
-# name            <active_objs> <num_objs> <objsize> <objperslab>
-<pagesperslab> : tunables <limit> <batchcount> <sharedfactor> :
-slabdata <active_slabs> <num_slabs> <sharedavail>
-rpc_inode_cache       10     10    768    5    1 : tunables    0    0
-  0 : slabdata      2      2      0
-xt_hashlimit           0      0     88   46    1 : tunables    0    0
-  0 : slabdata      0      0      0
-nf_conntrack_expect     18     18    224   18    1 : tunables    0
-0    0 : slabdata      1      1      0
-nf_conntrack          63     70    280   14    1 : tunables    0    0
-  0 : slabdata      5      5      0
-cfq_io_context        77     78    152   26    1 : tunables    0    0
-  0 : slabdata      3      3      0
-cfq_queue             89     90    136   30    1 : tunables    0    0
-  0 : slabdata      3      3      0
-bsg_cmd                0      0    312   13    1 : tunables    0    0
-  0 : slabdata      0      0      0
-mqueue_inode_cache      9      9    832    9    2 : tunables    0    0
-   0 : slabdata      1      1      0
-xfs_inode         186190 186984    512    8    1 : tunables    0    0
-  0 : slabdata  23373  23373      0
-xfs_efi_item          22     22    352   11    1 : tunables    0    0
-  0 : slabdata      2      2      0
-xfs_efd_item          22     22    360   11    1 : tunables    0    0
-  0 : slabdata      2      2      0
-xfs_buf_item          58     66    184   22    1 : tunables    0    0
-  0 : slabdata      3      3      0
-xfs_da_state          16     16    488    8    1 : tunables    0    0
-  0 : slabdata      2      2      0
-xfs_vnode         186180 186865    576    7    1 : tunables    0    0
-  0 : slabdata  26695  26695      0
-nfsd4_delegations    461    465    272   15    1 : tunables    0    0
-  0 : slabdata     31     31      0
-nfsd4_stateowners     45     45    424    9    1 : tunables    0    0
-  0 : slabdata      5      5      0
-isofs_inode_cache      0      0    576    7    1 : tunables    0    0
-  0 : slabdata      0      0      0
-ext2_inode_cache       0      0    672    6    1 : tunables    0    0
-  0 : slabdata      0      0      0
-journal_handle       340    340     24  170    1 : tunables    0    0
-  0 : slabdata      2      2      0
-journal_head          85    126     96   42    1 : tunables    0    0
-  0 : slabdata      3      3      0
-revoke_table         512    512     16  256    1 : tunables    0    0
-  0 : slabdata      2      2      0
-revoke_record        256    256     32  128    1 : tunables    0    0
-  0 : slabdata      2      2      0
-ext4_inode_cache       0      0    736    5    1 : tunables    0    0
-  0 : slabdata      0      0      0
-ext3_inode_cache    5322   5940    688   11    2 : tunables    0    0
-  0 : slabdata    540    540      0
-kioctx                50     60    384   10    1 : tunables    0    0
-  0 : slabdata      6      6      0
-fasync_cache         340    340     24  170    1 : tunables    0    0
-  0 : slabdata      2      2      0
-shmem_inode_cache    831    835    720    5    1 : tunables    0    0
-  0 : slabdata    167    167      0
-nsproxy              146    146     56   73    1 : tunables    0    0
-  0 : slabdata      2      2      0
-ip_dst_cache         132    132    320   12    1 : tunables    0    0
-  0 : slabdata     11     11      0
-TCP                   26     30   1600    5    2 : tunables    0    0
-  0 : slabdata      6      6      0
-eventpoll_pwq        544    560     72   56    1 : tunables    0    0
-  0 : slabdata     10     10      0
-scsi_io_context        0      0    112   36    1 : tunables    0    0
-  0 : slabdata      0      0      0
-blkdev_queue          12     12   1648    4    2 : tunables    0    0
-  0 : slabdata      3      3      0
-blkdev_requests       36     42    288   14    1 : tunables    0    0
-  0 : slabdata      3      3      0
-sock_inode_cache      84     90    640    6    1 : tunables    0    0
-  0 : slabdata     15     15      0
-skbuff_fclone_cache     20     27    448    9    1 : tunables    0
-0    0 : slabdata      3      3      0
-file_lock_cache      501    506    184   22    1 : tunables    0    0
-  0 : slabdata     23     23      0
-Acpi-Parse           204    204     40  102    1 : tunables    0    0
-  0 : slabdata      2      2      0
-proc_inode_cache     385    392    560    7    1 : tunables    0    0
-  0 : slabdata     56     56      0
-sigqueue              50     50    160   25    1 : tunables    0    0
-  0 : slabdata      2      2      0
-radix_tree_node    13307  16590    560    7    1 : tunables    0    0
-  0 : slabdata   2370   2370      0
-bdev_cache            12     15    768    5    1 : tunables    0    0
-  0 : slabdata      3      3      0
-sysfs_dir_cache     4641   4641     80   51    1 : tunables    0    0
-  0 : slabdata     91     91      0
-inode_cache           71     91    528    7    1 : tunables    0    0
-  0 : slabdata     13     13      0
-dentry             95161  97780    200   20    1 : tunables    0    0
-  0 : slabdata   4889   4889      0
-names_cache            8      8   4096    2    2 : tunables    0    0
-  0 : slabdata      4      4      0
-idr_layer_cache      137    140    536    7    1 : tunables    0    0
-  0 : slabdata     20     20      0
-buffer_head        58093  59748    104   39    1 : tunables    0    0
-  0 : slabdata   1532   1532      0
-mm_struct             64     70    768    5    1 : tunables    0    0
-  0 : slabdata     14     14      0
-vm_area_struct      2462   2592    168   24    1 : tunables    0    0
-  0 : slabdata    108    108      0
-files_cache           75     88    704   11    2 : tunables    0    0
-  0 : slabdata      8      8      0
-signal_cache         109    117    832    9    2 : tunables    0    0
-  0 : slabdata     13     13      0
-sighand_cache         88     90   2112    3    2 : tunables    0    0
-  0 : slabdata     30     30      0
-task_struct          102    108   1808    4    2 : tunables    0    0
-  0 : slabdata     27     27      0
-anon_vma             806    896     32  128    1 : tunables    0    0
-  0 : slabdata      7      7      0
-pid_namespace          0      0   2104    3    2 : tunables    0    0
-  0 : slabdata      0      0      0
-kmalloc-2048         592    624   2048    4    2 : tunables    0    0
-  0 : slabdata    156    156      0
-kmalloc-1024         267    276   1024    4    1 : tunables    0    0
-  0 : slabdata     69     69      0
-kmalloc-512          213    232    512    8    1 : tunables    0    0
-  0 : slabdata     29     29      0
-kmalloc-256          524    656    256   16    1 : tunables    0    0
-  0 : slabdata     41     41      0
-kmalloc-128          932   1152    128   32    1 : tunables    0    0
-  0 : slabdata     36     36      0
-kmalloc-64         27166  31104     64   64    1 : tunables    0    0
-  0 : slabdata    486    486      0
-kmalloc-32          7180  10880     32  128    1 : tunables    0    0
-  0 : slabdata     85     85      0
-kmalloc-16          1886   2816     16  256    1 : tunables    0    0
-  0 : slabdata     11     11      0
-kmalloc-8           2538   2560      8  512    1 : tunables    0    0
-  0 : slabdata      5      5      0
-kmalloc-192         2205   2667    192   21    1 : tunables    0    0
-  0 : slabdata    127    127      0
-kmalloc-96          3024   3192     96   42    1 : tunables    0    0
-  0 : slabdata     76     76      0
-
---- /proc/meminfo
-MemTotal:      1024796 kB
-MemFree:         55160 kB
-Buffers:         12856 kB
-Cached:         315856 kB
-SwapCached:       1052 kB
-Active:         461848 kB
-Inactive:       242108 kB
-SwapTotal:      248996 kB
-SwapFree:       247724 kB
-Dirty:              28 kB
-Writeback:           0 kB
-AnonPages:      375348 kB
-Mapped:          18200 kB
-Slab:           248164 kB
-SReclaimable:   230716 kB
-SUnreclaim:      17448 kB
-PageTables:       4032 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:    761392 kB
-Committed_AS:   541628 kB
-VmallocTotal: 34359738367 kB
-VmallocUsed:    264820 kB
-VmallocChunk: 34359473499 kB
-
---- /proc/zoneinfo
-Node 0, zone      DMA
-  pages free     1259
-        min      10
-        low      12
-        high     15
-        scanned  0 (a: 2 i: 16)
-        spanned  4096
-        present  2559
-    nr_free_pages 1259
-    nr_inactive  66
-    nr_active    7
-    nr_anon_pages 0
-    nr_mapped    0
-    nr_file_pages 73
-    nr_dirty     0
-    nr_writeback 0
-    nr_slab_reclaimable 1296
-    nr_slab_unreclaimable 65
-    nr_page_table_pages 0
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 787
-        protection: (0, 992, 992, 992)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 0
-              high:  0
-              batch: 1
-    cpu: 0 pcp: 1
-              count: 0
-              high:  0
-              batch: 1
-  vm stats threshold: 4
-    cpu: 1 pcp: 0
-              count: 0
-              high:  0
-              batch: 1
-    cpu: 1 pcp: 1
-              count: 0
-              high:  0
-              batch: 1
-  vm stats threshold: 4
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         0
-Node 0, zone    DMA32
-  pages free     12514
-        min      1002
-        low      1252
-        high     1503
-        scanned  0 (a: 0 i: 0)
-        spanned  257504
-        present  253984
-    nr_free_pages 12514
-    nr_inactive  60499
-    nr_active    115446
-    nr_anon_pages 93837
-    nr_mapped    4550
-    nr_file_pages 82403
-    nr_dirty     7
-    nr_writeback 0
-    nr_slab_reclaimable 56383
-    nr_slab_unreclaimable 4290
-    nr_page_table_pages 1008
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 7348
-        protection: (0, 0, 0, 0)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 102
-              high:  186
-              batch: 31
-    cpu: 0 pcp: 1
-              count: 64
-              high:  62
-              batch: 15
-  vm stats threshold: 16
-    cpu: 1 pcp: 0
-              count: 102
-              high:  186
-              batch: 31
-    cpu: 1 pcp: 1
-              count: 65
-              high:  62
-              batch: 15
-  vm stats threshold: 16
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         4096
--- 
-Daniel J Blueman
