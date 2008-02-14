@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759739AbYBNUHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765282AbYBNUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759739AbYBNUHH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:07:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756736AbYBNUGz
+	id S1765282AbYBNUId (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:08:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYBNUIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:06:55 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:33132 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756041AbYBNUGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:06:54 -0500
-Date: Thu, 14 Feb 2008 12:06:53 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Paul Jackson <pj@sgi.com>, David Rientjes <rientjes@google.com>,
-       Lee.Schermerhorn@hp.com, mel@csn.ul.ie, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, travis@sgi.com
-Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
-In-Reply-To: <200802142102.41420.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0802141206100.1041@schroedinger.engr.sgi.com>
-References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
- <Pine.LNX.4.64.0802141126340.375@schroedinger.engr.sgi.com>
- <200802142102.41420.ak@suse.de>
+	Thu, 14 Feb 2008 15:08:23 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:51551 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757689AbYBNUIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:08:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:user-agent:mime-version:to:cc:
+	subject:content-type:content-transfer-encoding;
+	b=MZNXtAD4kJMUDcih+NO79EUTOy8Dz8b01URCTr9EPUXXz21UfMMi0rQ4Hcbjh4dMx
+	eHxdWxkRyvzkRH9qENHxw==
+Message-ID: <47B49FA8.20102@google.com>
+Date: Thu, 14 Feb 2008 12:08:08 -0800
+From: Paul Menage <menage@google.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+CC: linux-fsdevel@vger.kernel.org
+Subject: [PATCH] Add linux-fsdevel to VFS entry in MAINTAINERS
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008, Andi Kleen wrote:
+Add linux-fsdevel to the VFS entry in MAINTAINERS
 
-> You're saying the kernel should use these relative masks internally?
+Signed-off-by: Paul Menage <menage@google.com>
 
-There is just some thoughts about this. Did not have time to look into the 
-details. Mike?
+---
+ MAINTAINERS |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: 2.6.24-mm1-bindflags/MAINTAINERS
+===================================================================
+--- 2.6.24-mm1-bindflags.orig/MAINTAINERS
++++ 2.6.24-mm1-bindflags/MAINTAINERS
+@@ -1616,6 +1616,7 @@ S:	Maintained
+ FILESYSTEMS (VFS and infrastructure)
+ P:	Alexander Viro
+ M:	viro@zeniv.linux.org.uk
++L:	linux-fsdevel@vger.kernel.org
+ S:	Maintained
  
-> That means it would be impossible to run workloads that use the complete
-> machine because you couldn't represent all nodes.
-
-Not sure how they are addressing this.
-
+ FIREWIRE SUBSYSTEM (drivers/firewire, <linux/firewire*.h>)
