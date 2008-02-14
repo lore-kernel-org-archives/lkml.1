@@ -1,67 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932532AbYBNVtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbYBNVtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932532AbYBNVtU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:49:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbYBNVtA
+	id S1755595AbYBNVtu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:49:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbYBNVth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:49:00 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:44243 "EHLO smtps.tip.net.au"
+	Thu, 14 Feb 2008 16:49:37 -0500
+Received: from mga02.intel.com ([134.134.136.20]:41633 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753482AbYBNVs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:48:58 -0500
-Date: Fri, 15 Feb 2008 08:48:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: schwidefsky@de.ibm.com
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: linux-next: first tree
-Message-Id: <20080215084852.44a596e5.sfr@canb.auug.org.au>
-In-Reply-To: <1203002709.1044.5.camel@localhost>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-	<200802141545.56488.rjw@sisk.pl>
-	<20080215020019.f7cb5895.sfr@canb.auug.org.au>
-	<1203002709.1044.5.camel@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+	id S1756059AbYBNVtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:49:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,354,1199692800"; 
+   d="scan'208";a="257974597"
+Date: Thu, 14 Feb 2008 13:48:07 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Andi Kleen <andi@firstfloor.org>, Jike Song <albcamus@gmail.com>,
+       Rijndael Cosque <rijcos@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: What's the status of x2APIC support in Linux kernel?
+Message-ID: <20080214214807.GA27194@linux-os.sc.intel.com>
+References: <26e10850802010043m7375a110t6428d637ed1872bc@mail.gmail.com> <p73fxwc50s5.fsf@bingen.suse.de> <20080201180822.GA376@linux-os.sc.intel.com> <200802141206.37542.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__15_Feb_2008_08_48_52_+1100_t8k27zND2ldQAEem"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802141206.37542.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__15_Feb_2008_08_48_52_+1100_t8k27zND2ldQAEem
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Feb 14, 2008 at 12:06:37PM -0700, Bjorn Helgaas wrote:
+> 
+> Are you adding x2apic support for both x86 and ia64, or only for x86?
 
-Hi Martin,
+x2apic extension is specific to x86. ia64 already has an advanced lsapic,
+isn't it..
 
-On Thu, 14 Feb 2008 16:25:09 +0100 Martin Schwidefsky <schwidefsky@de.ibm.c=
-om> wrote:
->
-> For the s390 architecture please use the "features" branch of git390:
->=20
-> git://git390.osdl.marist.edu/pub/scm/linux-2.6.git features
-
-Added thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__15_Feb_2008_08_48_52_+1100_t8k27zND2ldQAEem
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHtLdITgG2atn1QN8RArJqAJ0f/kAFtOg7PRXnXIKbiS/8WASEwACeKaJ6
-zH9Y9cTdA1EN9yU2/XhbIZc=
-=rCTy
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Feb_2008_08_48_52_+1100_t8k27zND2ldQAEem--
+thanks,
+suresh
