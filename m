@@ -1,169 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964788AbYBNBF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934396AbYBNBIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964788AbYBNBF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 20:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbYBNBFq
+	id S934396AbYBNBIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 20:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762094AbYBNBIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 20:05:46 -0500
-Received: from [198.99.130.12] ([198.99.130.12]:43141 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1761992AbYBNBFp (ORCPT
+	Wed, 13 Feb 2008 20:08:22 -0500
+Received: from wr-out-0506.google.com ([64.233.184.226]:20493 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758945AbYBNBIV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 20:05:45 -0500
-Date: Wed, 13 Feb 2008 20:05:08 -0500
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
-Subject: [PATCH] asm-*/futex.h should include linux/uaccess.h
-Message-ID: <20080214010508.GA17107@c2.user-mode-linux.org>
+	Wed, 13 Feb 2008 20:08:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=v3YCPLwZllVflh94WTAA/H0Dfrbi+uPdhD9oq5Q8L6CkrybyvMXZiqda3T+1ykOtjhQqIWJgdQelTcrxCF6em2AZ7qElzWnsPOv0RJ2Rd3yqkxOtuKYDYc2/zDcFYRAobWiY1x7jGlG4uv9n6AjcsrHTFtWXpMQEOEwtmFyiGlk=
+Subject: [PATCH] debugfs: fix sparse warnings
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 17:08:16 -0800
+Message-Id: <1202951296.18204.39.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ non-urgent - 2.6.26 material ]
+extern does not belong in C files, move declaration to linux/debugfs.h
+fs/debugfs/file.c:42:30: warning: symbol 'debugfs_file_operations' was not declared. Should it be static?
+fs/debugfs/file.c:54:31: warning: symbol 'debugfs_link_operations' was not declared. Should it be static?
 
-Lots of asm-*/futex.h call pagefault_enable and pagefault_disable,
-which are declared in linux/uaccess.h, without including
-linux/uaccess.h.
-
-They all include asm/uaccess.h, so this patch replaces asm/uaccess.h
-with linux/uaccess.h.
-
-Compile-tested on sparc64, x86, ia64, mips, and powerpc.
-
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- include/asm-generic/futex.h |    2 +-
- include/asm-ia64/futex.h    |    2 +-
- include/asm-mips/futex.h    |    2 +-
- include/asm-parisc/futex.h  |    2 +-
- include/asm-powerpc/futex.h |    2 +-
- include/asm-sh/futex.h      |    2 +-
- include/asm-sparc64/futex.h |    2 +-
- include/asm-x86/futex.h     |    2 +-
- 8 files changed, 8 insertions(+), 8 deletions(-)
+ fs/debugfs/inode.c      |    4 ----
+ include/linux/debugfs.h |    5 +++++
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.22/include/asm-generic/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-generic/futex.h	2008-02-12 12:47:49.000000000 -0500
-+++ linux-2.6.22/include/asm-generic/futex.h	2008-02-12 12:47:52.000000000 -0500
-@@ -4,8 +4,8 @@
- #ifdef __KERNEL__
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index d26e282..e9602d8 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -29,10 +29,6 @@
  
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
--#include <asm/uaccess.h>
+ #define DEBUGFS_MAGIC	0x64626720
  
- static inline int
- futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
-Index: linux-2.6.22/include/asm-ia64/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-ia64/futex.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-ia64/futex.h	2008-02-12 12:49:31.000000000 -0500
-@@ -2,9 +2,9 @@
- #define _ASM_FUTEX_H
+-/* declared over in file.c */
+-extern struct file_operations debugfs_file_operations;
+-extern struct inode_operations debugfs_link_operations;
+-
+ static struct vfsmount *debugfs_mount;
+ static int debugfs_mount_count;
  
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
- #include <asm/system.h>
--#include <asm/uaccess.h>
+diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
+index f592d6d..7266124 100644
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -27,6 +27,11 @@ struct debugfs_blob_wrapper {
+ };
  
- #define __futex_atomic_op1(insn, ret, oldval, uaddr, oparg) \
- do {									\
-Index: linux-2.6.22/include/asm-mips/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-mips/futex.h	2007-12-05 10:29:35.000000000 -0500
-+++ linux-2.6.22/include/asm-mips/futex.h	2008-02-12 12:49:49.000000000 -0500
-@@ -11,9 +11,9 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/barrier.h>
- #include <asm/errno.h>
--#include <asm/uaccess.h>
- #include <asm/war.h>
- 
- #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg)		\
-Index: linux-2.6.22/include/asm-parisc/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-parisc/futex.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-parisc/futex.h	2008-02-12 12:50:03.000000000 -0500
-@@ -4,8 +4,8 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
--#include <asm/uaccess.h>
- 
- static inline int
- futex_atomic_op_inuser (int encoded_op, int __user *uaddr)
-Index: linux-2.6.22/include/asm-powerpc/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-powerpc/futex.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.22/include/asm-powerpc/futex.h	2008-02-12 12:50:22.000000000 -0500
-@@ -4,9 +4,9 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
- #include <asm/synch.h>
--#include <asm/uaccess.h>
- #include <asm/asm-compat.h>
- 
- #define __futex_atomic_op(insn, ret, oldval, uaddr, oparg) \
-Index: linux-2.6.22/include/asm-sh/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-sh/futex.h	2007-10-12 12:07:06.000000000 -0400
-+++ linux-2.6.22/include/asm-sh/futex.h	2008-02-12 12:51:17.000000000 -0500
-@@ -4,8 +4,8 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
--#include <asm/uaccess.h>
- 
- /* XXX: UP variants, fix for SH-4A and SMP.. */
- #include <asm/futex-irq.h>
-Index: linux-2.6.22/include/asm-sparc64/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-sparc64/futex.h	2007-11-14 10:33:41.000000000 -0500
-+++ linux-2.6.22/include/asm-sparc64/futex.h	2008-02-12 12:51:35.000000000 -0500
-@@ -2,9 +2,9 @@
- #define _SPARC64_FUTEX_H
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- #include <asm/errno.h>
- #include <asm/system.h>
--#include <asm/uaccess.h>
- 
- #define __futex_cas_op(insn, ret, oldval, uaddr, oparg)	\
- 	__asm__ __volatile__(				\
-Index: linux-2.6.22/include/asm-x86/futex.h
-===================================================================
---- linux-2.6.22.orig/include/asm-x86/futex.h	2008-02-05 12:25:21.000000000 -0500
-+++ linux-2.6.22/include/asm-x86/futex.h	2008-02-12 12:51:51.000000000 -0500
-@@ -4,12 +4,12 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/uaccess.h>
- 
- #include <asm/asm.h>
- #include <asm/errno.h>
- #include <asm/processor.h>
- #include <asm/system.h>
--#include <asm/uaccess.h>
- 
- #define __futex_atomic_op1(insn, ret, oldval, uaddr, oparg)	\
-   __asm__ __volatile(						\
+ #if defined(CONFIG_DEBUG_FS)
++
++/* declared over in file.c */
++extern const struct file_operations debugfs_file_operations;
++extern const struct inode_operations debugfs_link_operations;
++
+ struct dentry *debugfs_create_file(const char *name, mode_t mode,
+ 				   struct dentry *parent, void *data,
+ 				   const struct file_operations *fops);
+-- 
+1.5.4.1.1278.gc75be
+
+
+
