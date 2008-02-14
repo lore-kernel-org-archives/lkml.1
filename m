@@ -1,179 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935016AbYBNAdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbYBNAlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935016AbYBNAdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbYBNAdn
+	id S932664AbYBNAlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:41:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753503AbYBNAlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:33:43 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:61496 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759890AbYBNAdl (ORCPT
+	Wed, 13 Feb 2008 19:41:03 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:1212 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751874AbYBNAlA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:33:41 -0500
+	Wed, 13 Feb 2008 19:41:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NuaYzojnwHPxMbc+rvJXRi+n3bgvBOoQOzyCR2DyK68wphSEAIJ+/mG0h+JFk/kgAPY1OT+0iIMAb27pMg+xUNGn6B3U5vyi+FF22Ut3lA/jajpF0lRPqmGe/fSXzFlnEbuEHgwoQ0CvuHgSfT6tALLcV6NEqQfdpKB6XV6Ly/g=
-Subject: [PATCH-resend] jbd/jbd2: sparse warnings in revoke.c, journal.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Stephen C. Tweedie" <sct@redhat.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 13 Feb 2008 16:33:37 -0800
-Message-Id: <1202949217.18204.32.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=tz8D0kJSnzrb/A8nRarAhBa6L1Q9re/PkLTrbKtcY3QLiH/cxRK3qRqXrZKqDTTjomiGBeDWQDpvbaixLJDKUHZP4WnSTisziTreMi4/NfcbvomBqo0iXoQIbmyvDAR5aT/iHwZlrwpHxH7QD+Bc+PYGvqqxwkjUHQzOIhLiYpc=
+Message-ID: <47B38E13.1060503@gmail.com>
+Date: Thu, 14 Feb 2008 09:40:51 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
+       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
+ take #3
+References: <12028937731333-git-send-email-htejun@gmail.com> <20080213155701.48871761.akpm@linux-foundation.org>
+In-Reply-To: <20080213155701.48871761.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/jbd/revoke.c:176:29: warning: Using plain integer as NULL pointer
-fs/jbd/revoke.c:182:28: warning: Using plain integer as NULL pointer
-fs/jbd/journal.c:1622:2: warning: Using plain integer as NULL pointer
-fs/jbd/journal.c:1629:28: warning: Using plain integer as NULL pointer
+Andrew Morton wrote:
+>> And mprintk the following.
+>>
+>>  code:
+>>   DEFINE_MPRINTK(mp, 2 * 80);
+>>
+>>   mprintk_set_header(&mp, KERN_INFO "ata%u.%2u: ", 1, 0);
+>>   mprintk_push(&mp, "ATA %d", 7);
+>>   mprintk_push(&mp, ", %u sectors\n", 1024);
+>>   mprintk(&mp, "everything seems dandy\n");
+>>
+>>  output:
+>>   <6>ata1.00: ATA 7, 1024 sectors
+>>   <6>ata1.00  everything seems dandy
+> 
+> And that looks like an awful lot of fuss.  Is it really worth doing?
 
-fs/jbd2/revoke.c:177:34: warning: Using plain integer as NULL pointer
-fs/jbd2/revoke.c:183:33: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:222:2: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:222:2: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:234:3: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:234:3: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:1972:2: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:1979:33: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:2005:13: warning: Using plain integer as NULL pointer
-fs/jbd2/journal.c:2012:17: warning: Using plain integer as NULL pointer
+In the above example, s/mprintk(/mprintk_flush(/ and
+s/mprintk_push(/mprintk(/
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Originally sent Feb 02, 2008
- fs/jbd/journal.c  |    4 ++--
- fs/jbd/revoke.c   |    4 ++--
- fs/jbd2/journal.c |   12 ++++++------
- fs/jbd2/revoke.c  |    4 ++--
- 4 files changed, 12 insertions(+), 12 deletions(-)
+Can you please take a look at ata_eh_link_report() in
+drivers/ata/libata-eh.c?  Currently, it has some problems.
 
-diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
-index 5d14243..0459657 100644
---- a/fs/jbd/journal.c
-+++ b/fs/jbd/journal.c
-@@ -1619,14 +1619,14 @@ static int journal_init_journal_head_cache(void)
- {
- 	int retval;
- 
--	J_ASSERT(journal_head_cache == 0);
-+	J_ASSERT(!journal_head_cache);
- 	journal_head_cache = kmem_cache_create("journal_head",
- 				sizeof(struct journal_head),
- 				0,		/* offset */
- 				SLAB_TEMPORARY,	/* flags */
- 				NULL);		/* ctor */
- 	retval = 0;
--	if (journal_head_cache == 0) {
-+	if (!journal_head_cache) {
- 		retval = -ENOMEM;
- 		printk(KERN_EMERG "JBD: no memory for journal_head cache\n");
- 	}
-diff --git a/fs/jbd/revoke.c b/fs/jbd/revoke.c
-index ad2eacf..d5f8eee 100644
---- a/fs/jbd/revoke.c
-+++ b/fs/jbd/revoke.c
-@@ -173,13 +173,13 @@ int __init journal_init_revoke_caches(void)
- 					   0,
- 					   SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
- 					   NULL);
--	if (revoke_record_cache == 0)
-+	if (!revoke_record_cache)
- 		return -ENOMEM;
- 
- 	revoke_table_cache = kmem_cache_create("revoke_table",
- 					   sizeof(struct jbd_revoke_table_s),
- 					   0, SLAB_TEMPORARY, NULL);
--	if (revoke_table_cache == 0) {
-+	if (!revoke_table_cache) {
- 		kmem_cache_destroy(revoke_record_cache);
- 		revoke_record_cache = NULL;
- 		return -ENOMEM;
-diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
-index 96ba846..748b87c 100644
---- a/fs/jbd2/journal.c
-+++ b/fs/jbd2/journal.c
-@@ -219,7 +219,7 @@ static int jbd2_journal_start_thread(journal_t *journal)
- 	if (IS_ERR(t))
- 		return PTR_ERR(t);
- 
--	wait_event(journal->j_wait_done_commit, journal->j_task != 0);
-+	wait_event(journal->j_wait_done_commit, journal->j_task != NULL);
- 	return 0;
- }
- 
-@@ -231,7 +231,7 @@ static void journal_kill_thread(journal_t *journal)
- 	while (journal->j_task) {
- 		wake_up(&journal->j_wait_commit);
- 		spin_unlock(&journal->j_state_lock);
--		wait_event(journal->j_wait_done_commit, journal->j_task == 0);
-+		wait_event(journal->j_wait_done_commit, journal->j_task == NULL);
- 		spin_lock(&journal->j_state_lock);
- 	}
- 	spin_unlock(&journal->j_state_lock);
-@@ -1969,14 +1969,14 @@ static int journal_init_jbd2_journal_head_cache(void)
- {
- 	int retval;
- 
--	J_ASSERT(jbd2_journal_head_cache == 0);
-+	J_ASSERT(!jbd2_journal_head_cache);
- 	jbd2_journal_head_cache = kmem_cache_create("jbd2_journal_head",
- 				sizeof(struct journal_head),
- 				0,		/* offset */
- 				SLAB_TEMPORARY,	/* flags */
- 				NULL);		/* ctor */
- 	retval = 0;
--	if (jbd2_journal_head_cache == 0) {
-+	if (!jbd2_journal_head_cache) {
- 		retval = -ENOMEM;
- 		printk(KERN_EMERG "JBD: no memory for journal_head cache\n");
- 	}
-@@ -2002,14 +2002,14 @@ static struct journal_head *journal_alloc_journal_head(void)
- 	atomic_inc(&nr_journal_heads);
- #endif
- 	ret = kmem_cache_alloc(jbd2_journal_head_cache, GFP_NOFS);
--	if (ret == 0) {
-+	if (!ret) {
- 		jbd_debug(1, "out of memory for journal_head\n");
- 		if (time_after(jiffies, last_warning + 5*HZ)) {
- 			printk(KERN_NOTICE "ENOMEM in %s, retrying.\n",
- 			       __FUNCTION__);
- 			last_warning = jiffies;
- 		}
--		while (ret == 0) {
-+		while (!ret) {
- 			yield();
- 			ret = kmem_cache_alloc(jbd2_journal_head_cache, GFP_NOFS);
- 		}
-diff --git a/fs/jbd2/revoke.c b/fs/jbd2/revoke.c
-index df36f42..2e1453a 100644
---- a/fs/jbd2/revoke.c
-+++ b/fs/jbd2/revoke.c
-@@ -174,13 +174,13 @@ int __init jbd2_journal_init_revoke_caches(void)
- 					   0,
- 					   SLAB_HWCACHE_ALIGN|SLAB_TEMPORARY,
- 					   NULL);
--	if (jbd2_revoke_record_cache == 0)
-+	if (!jbd2_revoke_record_cache)
- 		return -ENOMEM;
- 
- 	jbd2_revoke_table_cache = kmem_cache_create("jbd2_revoke_table",
- 					   sizeof(struct jbd2_revoke_table_s),
- 					   0, SLAB_TEMPORARY, NULL);
--	if (jbd2_revoke_table_cache == 0) {
-+	if (!jbd2_revoke_table_cache) {
- 		kmem_cache_destroy(jbd2_revoke_record_cache);
- 		jbd2_revoke_record_cache = NULL;
- 		return -ENOMEM;
+* All that it wants to do is printing some messages but it's awfully
+complex with temp bufs and super-long printk calls containing optional %s's.
+
+* status / error decode print outs are printed separately from cmd/res
+making it difficult to tell how they are grouped.  Putting them together
+would require allocating another temp buf(s) and adding extra %s's to
+cmd/res printout.
+
+* For timeouts, result TF isn't available and thus res printout is
+misleading.  res shouldn't be printed after timeouts.  This would
+require allocating yest another temp buf and separating out res printing
+into separate snprintf.
+
+I was trying to do this and got fed up with all the tricks in the
+function.  The only sane way out is to build messages piece-by-piece
+into a buffer and print it at once.  The eh message is gigantic and I
+needed to allocate the buffer elsewhere than stack.
+ata_eh_link_report() fortunately has fixed place for that -
+ap->sector_buf - but let's assume there was no such buffer for the
+discussion.  I'm still not too sure whether it's wise to use sector_buf
+for message building anyway.
+
+The only way is to malloc the buffer.  Once the buffer is available,
+building message using snprintf is a bit cumbersome but is okay.  The
+problem is that malloc can fail.  To handle that case, we basically need
+to do
+
+  if (buf)
+     printed += snprintf(buf + printed, len - printed, ...);
+  else
+     printk(...);
+
+which is very cumbersome, so we need a wrapper around the above.  As the
+wrapper needs to control when the message goes out, a flush function is
+necessary too.  Combine those with overflow handling - mprintk.
+
+Similar problem exists for ata_dev_configure() in
+drivers/ata/libata-core.c although it's a bit better there.  Please take
+a look at the fifth patch.  It doesn't remove a lot of lines but it
+streamlines both functions significantly.  For ata_dev_configure(),
+message reporting becomes what the function does secondarily while
+configuring the device, not something it's structured around.
+
+Thanks.
+
 -- 
-1.5.4.rc5.1138.g2602
-
-
-
-
+tejun
