@@ -1,77 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932731AbYBNB0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933941AbYBNB2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932731AbYBNB0b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 20:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYBNB0U
+	id S933941AbYBNB2S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 20:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757565AbYBNB2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 20:26:20 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:47955 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757447AbYBNB0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 20:26:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=QKgzI53y9aXP2HbiKBy+64hBcuTVqu2lqfKdrVtPp1+9wSPipTdVkWSxnUowbenhz+OxAcXpTHaB2TA7/vAzkpzZNG/DhFN8rGU12ZDVe5zfvEhufnHT+Xkmi2msrVT1I8BG4xQvdZma/ztGHzkdIGKCKsXk6s+CgifKqpe9/iI=
-Message-ID: <47B398B3.40308@gmail.com>
-Date: Thu, 14 Feb 2008 10:26:11 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 13 Feb 2008 20:28:05 -0500
+Received: from mail.LOGIN.COM ([192.195.240.2]:53607 "EHLO mail.login.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758528AbYBNB2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 20:28:03 -0500
+X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 Feb 2008 20:28:03 EST
+Message-ID: <47B3978A.9030404@Login.COM>
+Date: Wed, 13 Feb 2008 18:21:14 -0700
+From: Ehud.Gavron@Login.COM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
-       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
- take #3
-References: <12028937731333-git-send-email-htejun@gmail.com>	<20080213155701.48871761.akpm@linux-foundation.org>	<47B38E13.1060503@gmail.com> <20080213170950.86945835.akpm@linux-foundation.org>
-In-Reply-To: <20080213170950.86945835.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: eth0 changes to eth1 after initial boot; udev rules correct; modprobe.conf
+ correct.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Since going to 2.6.24 my wired lan changed from eth0 to eth1.  It starts 
+as eth0... but then changes to eth1.
 
-Andrew Morton wrote:
-> On Thu, 14 Feb 2008 09:40:51 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Can you please take a look at ata_eh_link_report() in
->> drivers/ata/libata-eh.c?
-> 
-> I did.  Punishment?
+udev rules hard sets it to eth0.  For the heck of it I deleted 
+70...network... and it recreated it with eth1, I changed manually to 
+eth0. still have the problem.
 
-Heh.. :-)
+modprobe.conf had an alias for eth1, changed it to eth0, no difference. 
+removed modprobe alias. no difference.
 
->>  Currently, it has some problems.
-> 
-> Yes, and the patches do clean that up.
+sysconfig as written by kudzu made it eth1, changed to eth0 and stopped 
+kudzu from running.  still persists to becoming eth1.
 
-Yeap, it does.
+THERE IS NO REFERENCE TO ETH1 in any file and yet upon boot... it 
+CHANGES from eth0 to eth1!!!
 
-> ho hum.  What tends to happen with this sort of thing is that fi we merge
-> it, it ends up getting used more often than one expected...
+Where else in the system does something cause this effect?
 
-Hmmm... Okay.  mprintk being printk, I'm not too sure how it can go over
-usual expectations but well, yeah, that actually is my expectation.
+I have googled "eth0 becomes eth1", "nic changes name" both with and 
+without 2.6.24.  Every response referse to the udev rules in 
+70-presistent-net.rules. 
 
-> If you stand back and squint at it, there are quite a few places where we
-> do this sort of thing: allocate a buffer, squirt characters into it,
-> reallocating and/or flushing as we proceed.  All sysfs and procfs read-side
-> code, for a start...
+Any ideas to resolve or debug this would be appreciated. 
 
-printk is a special case, I think.  It's the primary logging/debugging
-method which can't fail and as it's mostly interpreted by human beings
-(and developers in problematic cases), it has different maneuvering room
-on errors - ie. it's far better to print messages w/o header or proper
-log level than failing to print, which is quite different requirements
-from other components.
+E
+[root@egdell ~]# dmesg | grep eth
+Driver 'sd' needs updating - please use bus_type methods
+Driver 'sr' needs updating - please use bus_type methods
+eth0: Tigon3 [partno(BCM5752KFBG) rev 6002 PHY(5752)] (PCI Express) 
+10/100/1000Base-T Ethernet 00:18:8b:a5:2c:f5
+eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
+eth0: dma_rwctrl[76180000] dma_mask[64-bit]
+ADDRCONF(NETDEV_UP): eth1: link is not ready
+bridge-eth0: peer interface eth0 not found, will wait for it to come up
+bridge-eth0: attached
+ADDRCONF(NETDEV_UP): eth1: link is not ready
+[root@egdell ~]# ifconfig -a
+eth1      Link encap:Ethernet  HWaddr 00:18:8B:A5:2C:F5          UP 
+BROADCAST MULTICAST  MTU:1500  Metric:1
+         RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:1000
+         RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+         Interrupt:18
 
-Thanks.
+lo        Link encap:Local Loopback          inet addr:127.0.0.1  
+Mask:255.0.0.0
+         inet6 addr: ::1/128 Scope:Host
+         UP LOOPBACK RUNNING  MTU:16436  Metric:1
+         RX packets:1309 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:1309 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:0
+         RX bytes:2366648 (2.2 MiB)  TX bytes:2366648 (2.2 MiB)
 
--- 
-tejun
+vmnet8    Link encap:Ethernet  HWaddr 00:50:56:C0:00:08          inet 
+addr:192.168.232.1  Bcast:192.168.232.255  Mask:255.255.255.0
+         inet6 addr: fe80::250:56ff:fec0:8/64 Scope:Link
+         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+         RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:6 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:1000
+         RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+
+wlan0     Link encap:Ethernet  HWaddr 00:1A:92:0E:40:1F          inet 
+addr:10.1.1.5  Bcast:10.1.1.255  Mask:255.255.255.0
+         inet6 addr: fe80::21a:92ff:fe0e:401f/64 Scope:Link
+         UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+         RX packets:17 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:15 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:1000
+         RX bytes:1838 (1.7 KiB)  TX bytes:1900 (1.8 KiB)
+
+wmaster0  Link encap:UNSPEC  HWaddr 
+00-1A-92-0E-40-1F-00-00-00-00-00-00-00-00-00-00          UP BROADCAST 
+RUNNING MULTICAST  MTU:1500  Metric:1
+         RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+         TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+         collisions:0 txqueuelen:1000
+         RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+[root@egdell ~]# more /etc/udev/rules.d/70-persistent-net.rules
+# This file was automatically generated by the /lib/udev/write_net_rules
+# program run by the persistent-net-generator.rules rules file.
+#
+# You can modify it, as long as you keep each rule on a single line.
+
+# PCI device 0x14e4:0x1600 (tg3) (custom name provided by external tool)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", 
+ATTR{address}=="00:18:8b:a5:2c:f
+5", ATTR{type}=="1", NAME="eth0"
+
+# PCI device 0x14e4:0x4311 (b43-pci-bridge)
+SUBSYSTEM=="net", ACTION=="add", DRIVERS=="?*", 
+ATTR{address}=="00:1a:92:0e:40:1
+f", ATTR{type}=="1", NAME="wlan0"
