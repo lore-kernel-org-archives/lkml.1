@@ -1,40 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbYBNRZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYBNR0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759440AbYBNRZv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYBNRZm
+	id S1760224AbYBNR0n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbYBNR0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:25:42 -0500
-Received: from tetsuo.zabbo.net ([207.173.201.20]:57522 "EHLO tetsuo.zabbo.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752256AbYBNRZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:25:41 -0500
-Message-ID: <47B47994.7020804@oracle.com>
-Date: Thu, 14 Feb 2008 09:25:40 -0800
-From: Zach Brown <zach.brown@oracle.com>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
-MIME-Version: 1.0
-To: Julia Lawall <julia@diku.dk>
-CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
-References: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk>
-In-Reply-To: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk>
+	Thu, 14 Feb 2008 12:26:30 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:35583 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754276AbYBNR03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 12:26:29 -0500
+Date: Thu, 14 Feb 2008 09:24:27 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
+       netdev@vger.kernel.org, dipankar@in.ibm.com, ego@in.ibm.com,
+       herbert@gondor.apana.org.au, akpm@linux-foundation.org
+Subject: Re: [PATCH 2/2] add rcu_assign_index() if ever needed
+Message-Id: <20080214092427.960d1f67.randy.dunlap@oracle.com>
+In-Reply-To: <20080213220515.GA10642@linux.vnet.ibm.com>
+References: <20080213220024.GA30729@linux.vnet.ibm.com>
+	<20080213220515.GA10642@linux.vnet.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Wed, 13 Feb 2008 14:05:15 -0800 Paul E. McKenney wrote:
+
+> Hello again!
 > 
-> The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
-> (d)) but is perhaps more readable.
+> This is a speculative patch that as far as I can tell is not yet required.
+> If anyone applies RCU to a data structure allocated out of an array, using
+> array indexes in place of pointers to link the array elements together,
+> then the rcu_assign_index() function in this patch will be needed to
+> assign a given element's array index to the RCU-traversed index.  The
+> implementation is exactly that of the old rcu_assign_pointer(), so is
+> extremely well tested.
+> 
+> The existing rcu_assign_pointer() will emit a compiler warning in cases
+> where rcu_assign_index() is required.
+> 
+> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> ---
+> 
+>  rcupdate.h |   18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff -urpNa -X dontdiff linux-2.6.24-rap/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
+> --- linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
+> +++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-13 10:55:40.000000000 -0800
+> @@ -286,6 +286,24 @@ extern struct lockdep_map rcu_lock_map;
+>  	})
+>  
+>  /**
+> + * rcu_assign_index - assign (publicize) a index of a newly
+> + * initialized array elementg that will be dereferenced by RCU
+> + * read-side critical sections.  Returns the value assigned.
+> + *
+> + * Inserts memory barriers on architectures that require them
+> + * (pretty much all of them other than x86), and also prevents
+> + * the compiler from reordering the code that initializes the
+> + * structure after the index assignment.  More importantly, this
+> + * call documents which indexes will be dereferenced by RCU read-side
+> + * code.
+> + */
 
-It certainly looks better to me, thanks for doing this.
+s/a index/index/
 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Along with Gautham's typo fix, you could also make this be passable
+kernel-doc notation.  :)
 
-Acked-By: Zach Brown <zach.brown@oracle.com>
 
-- z
+See Documentation/kernel-doc-nano-HOWTO.txt for details.
+
+Summary:
+The function (or macro) name and short description must be on one line.
+This is followed by the parameters, then a "blank" (actually " *") line,
+then any (longer) description, notes, etc.  So basically:
+
+/**
+ * rcu_assign_index - assign (publicize) index of a newly initialized array element
+ * @p: description of @p
+ * @v: description of @v
+ *
+ * This function assigns (publicizes) the index of a newly
+ * initialized array element that will be dereferenced by RCU
+ * read-side critical sections.  Returns the value assigned.
+ *
+ * Inserts memory barriers on architectures that require them
+ * (pretty much all of them other than x86), and also prevents
+ * the compiler from reordering the code that initializes the
+ * structure after the index assignment.  More importantly, this
+ * call documents which indexes will be dereferenced by RCU read-side
+ * code.
+ */
+
+
+> +
+> +#define rcu_assign_index(p, v)	({ \
+> +					smp_wmb(); \
+> +					(p) = (v); \
+> +				})
+> +
+> +/**
+>   * synchronize_sched - block until all CPUs have exited any non-preemptive
+>   * kernel code sequences.
+>   *
+
+---
+~Randy
