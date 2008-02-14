@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933172AbYBNUzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753680AbYBNU4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933172AbYBNUzd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932406AbYBNUzG
+	id S1753680AbYBNU4J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:56:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763808AbYBNUzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:55:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57083 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932205AbYBNUzC (ORCPT
+	Thu, 14 Feb 2008 15:55:52 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:25348 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755550AbYBNUzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:55:02 -0500
-Date: Thu, 14 Feb 2008 12:52:24 -0800
-From: Greg KH <greg@kroah.com>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, David Newall <davidn@davidnewall.com>,
-       linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Handshaking on USB serial devices
-Message-ID: <20080214205224.GC17277@kroah.com>
-References: <47B30291.2040905@davidnewall.com> <200802141255.22048.gene.heskett@gmail.com> <20080214193731.3c36acb0@core> <200802141504.41991.gene.heskett@gmail.com>
+	Thu, 14 Feb 2008 15:55:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=DoBMLfXq0iPQaVLF41NnXymdCbXNmPH0wIwod0apTR0i4u5S/jzmUt6qGUCKA0MUXDkX4Kk3C4Xw8Vl14331H5VnNjdaXU7Qe4OUVVpCmO96Fqs58sR2vuDOCQO1UBUMuPHID0ku1Rt7XPItmECxuloy2utypEXpSJGgGEUMAOo=
+Message-ID: <2c0942db0802141255o5d18c6bfxe052ba9512a18817@mail.gmail.com>
+Date: Thu, 14 Feb 2008 12:55:49 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
+Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>, rientjes@google.com,
+       Lee.Schermerhorn@hp.com, mel@csn.ul.ie, ak@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       clameter@sgi.com
+In-Reply-To: <20080214103541.10943567.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802141504.41991.gene.heskett@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
+	 <2f11576a0802140611h261b9df2qd13406e562f52864@mail.gmail.com>
+	 <20080214103541.10943567.pj@sgi.com>
+X-Google-Sender-Auth: 7b219c3a515af7c0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 03:04:41PM -0500, Gene Heskett wrote:
-> On Thursday 14 February 2008, Alan Cox wrote:
-> >> byte of a packet is being thrown away about .1% of the time for the
-> >> pl2303, but I'm not sure if the FTDI driver still suffers from a similar
-> >> rash.  I
-> >
-> >A 20 byte low speed message is too small for flow control to account for
-> >it.
-> 
-> Where then could the first byte go?  Note I'm not fussing about flow controls 
-> per sei, so the subject line maybe needs to be adjusted, but they obviously 
-> work well enough that a multimegabyte transfer to my printer works very well, 
-> but about usb trying to entirely replace serial here.  There does seem to be 
-> a problem but I'm not 100% positive where it is in the chain of a usb packets 
-> travels.  What I've observed, with hidraw I think it was, is that the 
-> first 'wake up' byte incoming didn't seem to be there.
+On Thu, Feb 14, 2008 at 8:35 AM, Paul Jackson <pj@sgi.com> wrote:
+> Kosaki-san wrote:
+>  > i prefer another name [!relative].
+>
+>  Any suggestions?
+>
+>  I'll give the name some thought myself.
+>  I like good names, and this is the right
+>  time to get this one right.
 
-I have not seen this kind of error in years, why have you not reported
-it?
+'Relative map' implies a constant offset. What you have there is just
+a map as relmap could be sparse (which, btw, would have been nice to
+have in the example).
 
-Can you enable debugging in the pl2303 driver with a simple:
-	modprobe pl2303 debug=1
-or when the driver is running with:
-	echo 1 > /sys/module/pl2303/parameters/debug
+map_bitmap violates your naming convention, bitmap_map isn't all that
+clear, bitmap_remap is taken, and while it is one-to-one and onto, I
+think calling it bitmap_bijection would lose everyone except the
+mathematicians. bitmap_onto? bitmap_map_onto? bitmap_map_bitmap_onto?
 
-That way you can see the data flowing through the device.  If the host
-sends it to the device, perhaps your device is just dropping it somehow?
+bitmap_read_my_kernel_doc?
 
-These pl2303 devices are really cheap, there are lots of different
-variations of them, and none of them are documented at all.  We might be
-missing some kind of interaction here, but in my tests, I have not had
-any lost data.
+Minor suggestion:
++ * and the n-th bit of @relmap is the m-th set bit of @relmap.
 
-Are you sure your userspace program isn't constantly setting the line
-settings?  We have seen instances where the device does get confused and
-resets itself if that happens a lot.  That was just fixed in the last
-kernel release.
-
-thanks,
-
-greg k-h
+Perhaps s/is the/is also the/, so that the reader doesn't try to
+second guess if you accidentally wrote @relmap twice instead of one of
+them being @orig.
