@@ -1,221 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932509AbYBNMA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbYBNMDw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932509AbYBNMA2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 07:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756199AbYBNMAO
+	id S932240AbYBNMDw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 07:03:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYBNMDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 07:00:14 -0500
-Received: from bzq-219-195-70.pop.bezeqint.net ([62.219.195.70]:54498 "EHLO
-	bh-buildlin2.bhalevy.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754995AbYBNMAL (ORCPT
+	Thu, 14 Feb 2008 07:03:44 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60382 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756416AbYBNMDn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 07:00:11 -0500
-Message-ID: <47B42CF4.2050008@panasas.com>
-Date: Thu, 14 Feb 2008 13:58:44 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: =?UTF-8?B?U3ZlbiBLw7ZobGVy?= <skoehler@upb.de>,
-       Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>, linux-kernel@vger.kernel.org,
-       Joerg Dorchain <joerg@dorchain.net>,
-       Jon Chelton <jchelton@ffpglobal.com>,
-       Stefan Priebe - allied internet ag 
-	<s.priebe@allied-internet.ag>
-Subject: [PATCH] gdth: bugfix for the at-exit problems
-References: <fnqka6$l46$1@ger.gmane.org> <47A19E26.30107@panasas.com>	 <47B1D7A8.8010108@panasas.com>  <47B1DA2A.1060904@panasas.com>	 <1202917468.3109.5.camel@localhost.localdomain>	 <47B312B3.3010200@panasas.com>  <47B31BDE.2030408@panasas.com>	 <1202921122.3109.31.camel@localhost.localdomain>	 <47B31FC2.4040206@panasas.com>	 <1202922226.3109.36.camel@localhost.localdomain>	 <47B324E7.9040502@panasas.com> <1202924198.3109.52.camel@localhost.localdomain> <47B41CBD.8040701@panasas.com>
-In-Reply-To: <47B41CBD.8040701@panasas.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 14 Feb 2008 07:03:43 -0500
+Date: Thu, 14 Feb 2008 11:55:50 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Greg KH <greg@kroah.com>
+Cc: David Newall <davidn@davidnewall.com>, linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Handshaking on USB serial devices
+Message-ID: <20080214115550.7aa7c98b@core>
+In-Reply-To: <20080214050211.GB1432@kroah.com>
+References: <47B30291.2040905@davidnewall.com>
+	<20080214050211.GB1432@kroah.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 Feb 2008 21:02:11 -0800
+Greg KH <greg@kroah.com> wrote:
 
-This is a bugfix for the 2.6.24.x stable releases.
+> On Thu, Feb 14, 2008 at 01:15:37AM +1030, David Newall wrote:
+> > Consider a USB-attached serial port that is set to do RTS/CTS (or
+> > DSR/DTR) handshaking: What stops the kernel sending more data to it when
+> > the remote end lowers CTS (or DTR)?
+> 
+> The tty layer should look at the proper flags and not send data on to
+> the driver in this kind of instance.
 
-gdth_exit would first remove all cards then stop the timer
-and would not sync with the timer function. This caused a crash
-in gdth_timer() when module was unloaded.
-So del_timer_sync the timer before we delete the cards.
+For outgoing data the tty ldisc will check the available room indicators
+the driver provides and stop when they fill. We don't want to be directly
+involved in flow control if possible as most decent hardware does RTS/CTS
+handshaking in hardware (except in the PC world).
 
-also the reboot notifier function would crash. So unify
-the exit and halt functions with a gdth_shutdown() that's
-called by both.
+If your hardware is dumb (ie you do RTS/CTS in software) then you need to
+track the CTS state and termios bits (in your set_termios method) and
+transmit according to flow control rules, letting the buffer fill up
+otherwise.
 
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
----
- drivers/scsi/gdth.c |   90 ++++++++++++++++++++------------------------------
- 1 files changed, 36 insertions(+), 54 deletions(-)
-
-diff --git a/drivers/scsi/gdth.c b/drivers/scsi/gdth.c
-index 8eb78be..3828b23 100644
---- a/drivers/scsi/gdth.c
-+++ b/drivers/scsi/gdth.c
-@@ -183,7 +183,6 @@ static int gdth_ioctl(struct inode *inode, struct file *filep,
-                       unsigned int cmd, unsigned long arg);
- 
- static void gdth_flush(gdth_ha_str *ha);
--static int gdth_halt(struct notifier_block *nb, ulong event, void *buf);
- static int gdth_queuecommand(Scsi_Cmnd *scp,void (*done)(Scsi_Cmnd *));
- static int __gdth_queuecommand(gdth_ha_str *ha, struct scsi_cmnd *scp,
- 				struct gdth_cmndinfo *cmndinfo);
-@@ -418,12 +417,6 @@ static inline void gdth_set_sglist(struct scsi_cmnd *cmd,
- #include "gdth_proc.h"
- #include "gdth_proc.c"
- 
--/* notifier block to get a notify on system shutdown/halt/reboot */
--static struct notifier_block gdth_notifier = {
--    gdth_halt, NULL, 0
--};
--static int notifier_disabled = 0;
--
- static gdth_ha_str *gdth_find_ha(int hanum)
- {
- 	gdth_ha_str *ha;
-@@ -3793,6 +3786,8 @@ static void gdth_timeout(ulong data)
-     gdth_ha_str *ha;
-     ulong flags;
- 
-+    BUG_ON(list_empty(&gdth_instances));
-+
-     ha = list_first_entry(&gdth_instances, gdth_ha_str, list);
-     spin_lock_irqsave(&ha->smp_lock, flags);
- 
-@@ -4668,45 +4663,6 @@ static void gdth_flush(gdth_ha_str *ha)
-     }
- }
- 
--/* shutdown routine */
--static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
--{
--    gdth_ha_str *ha;
--#ifndef __alpha__
--    gdth_cmd_str    gdtcmd;
--    char            cmnd[MAX_COMMAND_SIZE];   
--#endif
--
--    if (notifier_disabled)
--        return NOTIFY_OK;
--
--    TRACE2(("gdth_halt() event %d\n",(int)event));
--    if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
--        return NOTIFY_DONE;
--
--    notifier_disabled = 1;
--    printk("GDT-HA: Flushing all host drives .. ");
--    list_for_each_entry(ha, &gdth_instances, list) {
--        gdth_flush(ha);
--
--#ifndef __alpha__
--        /* controller reset */
--        memset(cmnd, 0xff, MAX_COMMAND_SIZE);
--        gdtcmd.BoardNode = LOCALBOARD;
--        gdtcmd.Service = CACHESERVICE;
--        gdtcmd.OpCode = GDT_RESET;
--        TRACE2(("gdth_halt(): reset controller %d\n", ha->hanum));
--        gdth_execute(ha->shost, &gdtcmd, cmnd, 10, NULL);
--#endif
--    }
--    printk("Done.\n");
--
--#ifdef GDTH_STATISTICS
--    del_timer(&gdth_timer);
--#endif
--    return NOTIFY_OK;
--}
--
- /* configure lun */
- static int gdth_slave_configure(struct scsi_device *sdev)
- {
-@@ -5141,13 +5097,13 @@ static void gdth_remove_one(gdth_ha_str *ha)
- 
- 	scsi_remove_host(shp);
- 
-+	gdth_flush(ha);
-+
- 	if (ha->sdev) {
- 		scsi_free_host_dev(ha->sdev);
- 		ha->sdev = NULL;
- 	}
- 
--	gdth_flush(ha);
--
- 	if (shp->irq)
- 		free_irq(shp->irq,ha);
- 
-@@ -5173,6 +5129,22 @@ static void gdth_remove_one(gdth_ha_str *ha)
- 	scsi_host_put(shp);
- }
- 
-+static void gdth_shutdown(void);
-+static int gdth_halt(struct notifier_block *nb, ulong event, void *buf)
-+{
-+	TRACE2(("gdth_halt() event %d\n", (int)event));
-+	if (event != SYS_RESTART && event != SYS_HALT && event != SYS_POWER_OFF)
-+		return NOTIFY_DONE;
-+
-+	gdth_shutdown();
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block gdth_notifier = {
-+    gdth_halt, NULL, 0
-+};
-+static bool gdth_shutdown_done;
-+
- static int __init gdth_init(void)
- {
- 	if (disable) {
-@@ -5185,6 +5157,7 @@ static int __init gdth_init(void)
- 	       GDTH_VERSION_STR);
- 
- 	/* initializations */
-+	gdth_shutdown_done = false;
- 	gdth_polling = TRUE;
- 	gdth_clear_events();
- 
-@@ -5235,23 +5208,32 @@ static int __init gdth_init(void)
- 	add_timer(&gdth_timer);
- #endif
- 	major = register_chrdev(0,"gdth", &gdth_fops);
--	notifier_disabled = 0;
- 	register_reboot_notifier(&gdth_notifier);
- 	gdth_polling = FALSE;
- 	return 0;
- }
- 
--static void __exit gdth_exit(void)
-+static void gdth_shutdown()
- {
- 	gdth_ha_str *ha;
- 
--	list_for_each_entry(ha, &gdth_instances, list)
--		gdth_remove_one(ha);
-+	if (gdth_shutdown_done)
-+		return;
-+
-+	gdth_shutdown_done = true;
-+	unregister_chrdev(major, "gdth");
- 
- #ifdef GDTH_STATISTICS
--	del_timer(&gdth_timer);
-+	del_timer_sync(&gdth_timer);
- #endif
--	unregister_chrdev(major,"gdth");
-+
-+	list_for_each_entry(ha, &gdth_instances, list)
-+		gdth_remove_one(ha);
-+}
-+
-+static void __exit gdth_exit(void)
-+{
-+	gdth_shutdown();
- 	unregister_reboot_notifier(&gdth_notifier);
- }
- 
--- 
-1.5.3.3
-
-
+Alan
