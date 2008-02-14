@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756934AbYBNPXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbYBNPX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756934AbYBNPXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYBNPXd
+	id S1758581AbYBNPX6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755155AbYBNPXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:23:33 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:31908 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbYBNPXc (ORCPT
+	Thu, 14 Feb 2008 10:23:38 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:33527 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbYBNPXh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 10:23:32 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=rOmkUuyX1w7Bry1R1Ycj7D88uoM6oexS3Em5o+VIOPwrcpN3aIpm8TSpax7N/zk4R
-	FuKlsNcvpOsFNxawOdb5g==
-Message-ID: <6599ad830802140723t2239c432v3610d9a0fd77e862@mail.gmail.com>
-Date: Thu, 14 Feb 2008 07:23:21 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Christoph Hellwig" <hch@infradead.org>, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] Add MS_BIND_FLAGS mount flag
-Cc: "Alexander Viro" <viro@zeniv.linux.org.uk>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <6599ad830802140722t2e3a2779sa323657dfd6da841@mail.gmail.com>
+	Thu, 14 Feb 2008 10:23:37 -0500
+Date: Thu, 14 Feb 2008 16:23:37 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+cc: Andi Kleen <andi@firstfloor.org>,
+       Jasper Bryant-Greene <jasper@unix.geek.nz>,
+       rzryyvzy <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
+Subject: Re: Is there a "blackhole" /dev/null directory?
+In-Reply-To: <20080214161942.55ce5089@dilbert.local>
+Message-ID: <Pine.LNX.4.64.0802141620330.694@fbirervta.pbzchgretzou.qr>
+References: <20080214093051.7240852AB0E31@trashmail.net>
+ <1202981957.10928.17.camel@phobos.jasper.bg> <p73pruz27mk.fsf@bingen.suse.de>
+ <Pine.LNX.4.64.0802141553400.694@fbirervta.pbzchgretzou.qr>
+ <20080214161942.55ce5089@dilbert.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B283EB.8070209@google.com>
-	 <20080214060201.GA17680@infradead.org>
-	 <6599ad830802140722t2e3a2779sa323657dfd6da841@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ cc: linux-fsdevel ]
 
-On Thu, Feb 14, 2008 at 7:22 AM, Paul Menage <menage@google.com> wrote:
-> On Wed, Feb 13, 2008 at 10:02 PM, Christoph Hellwig <hch@infradead.org> wrote:
->  >
->  >  I think this concept is reasonable, but I don't think MS_BIND_FLAGS
->  >  is a descriptive name for this flag.  MS_EXPLICIT_FLAGS might be better
->  >  but still isn't optimal.
->  >
+On Feb 14 2008 16:19, Hans-Jürgen Koch wrote:
+>> 
+>> Q: What if a program attempts to mkdir /dev/nullmnt/foo to just
+>>    create a file /dev/nullmnt/foo/barfile?
+>> A: /dev/nullmnt/foo must continue to exist or be accepted for a while,
+>>    or perhaps for eternity.
 >
->  MS_BIND_FLAGS_OVERRIDE ?
->
->  Paul
->
+>Well, the problem seems to be that a "directory" is not just data but
+>also contains metadata. While it's easy to write data to /dev/null, you
+>cannot simply discard metadata associated with a directory. So, such a
+>"/dev/null-directory" would have to remember metadata (at least all
+>created filenames including subdirectories) in the same way as other
+>filesystems do. Only file _content_ can be discarded.
+
+Not even that. Suppose a userspace program (whose output you'd like
+to discard) does:
+
+int main(void)
+{
+	int fd = open("/nullmnt/foo.txt", O_WRONLY | O_CREAT | O_EXCL);
+
+	/* write lots of nonsensical data that we don't need anyway */
+	write(fd, "Hello Wor(l)d", 13);
+
+	if (lseek(fd, 0, SEEK_SET) < 0) {
+		/* should not happen */
+		fprintf(stderr, "Huh, did we write to a pipe or cdev?\n");
+		abort();
+	}
+
+	/* verify */
+	char buf[13];
+	read(fd, buf, 13);
+	if (memcmp(buf, "Hello Wor(l)d", 13) != 0)
+		fprintf(stderr, "Aïe, disk corruption!\n");
+}
+
+>To be honest, I still cannot see many sensible usecases for that...
+
+I agree.
