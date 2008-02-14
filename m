@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764270AbYBNSic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbYBNSir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764270AbYBNSic (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756676AbYBNSiF
+	id S932117AbYBNSir (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764421AbYBNSig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:38:05 -0500
-Received: from vms044pub.verizon.net ([206.46.252.44]:40004 "EHLO
-	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755375AbYBNSiD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:38:03 -0500
-Date: Thu, 14 Feb 2008 12:28:17 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 2/4] IPMI: Remove unnecessary memory barriers
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>,
-       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
-Reply-to: minyard@acm.org
-Message-id: <20080214182817.GB20148@minyard.local>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 14 Feb 2008 13:38:36 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58548 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764350AbYBNSif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 13:38:35 -0500
+Date: Thu, 14 Feb 2008 19:38:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: torvalds@osdl.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       ying.huang@intel.com
+Subject: Re: [PATCH] Fix left over EFI cache mapping problems
+Message-ID: <20080214183819.GA19846@elte.hu>
+References: <20080214131317.GA27769@basil.nowhere.org> <20080214161218.GA28152@elte.hu> <20080214171603.GC16255@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214171603.GC16255@one.firstfloor.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Corey Minyard <cminyard@mvista.com>
 
-Remove some unnecessary barriers.
+* Andi Kleen <andi@firstfloor.org> wrote:
 
-Signed-off-by: Corey Minyard <cminyard@mvista.com>
----
-This can be folded into ipmi-dont-grab-locks-in-run-to-completion-mode.patch
+> > this is indeed a bug (we change the attributes for a larger area 
+> > than needed), but your fix is unclean. Find below a cleaner 
+> > solution.
+> 
+> You're still ignoring the other problem of set_memory_uc() not 
+> handling fixmap and ioremap correctly. [...]
 
-Index: linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
-===================================================================
---- linux-2.6.24.orig/drivers/char/ipmi/ipmi_msghandler.c
-+++ linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
-@@ -3518,7 +3518,6 @@ void ipmi_smi_msg_received(ipmi_smi_t   
- 	/* To preserve message order, if the list is not empty, we
-            tack this message onto the end of the list. */
- 	run_to_completion = intf->run_to_completion;
--	barrier();
- 	if (!run_to_completion)
- 		spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
- 	if (!list_empty(&intf->waiting_msgs)) {
-@@ -3535,7 +3534,6 @@ void ipmi_smi_msg_received(ipmi_smi_t   
- 		/* Could not handle the message now, just add it to a
-                    list to handle later. */
- 		run_to_completion = intf->run_to_completion;
--		barrier();
- 		if (!run_to_completion)
- 			spin_lock_irqsave(&intf->waiting_msgs_lock, flags);
- 		list_add_tail(&msg->link, &intf->waiting_msgs);
+No, we did not ignore it, and yes, you are wrong.
+
+One thing that you miss is that the 64-bit EFI runtime has to be marked 
+uncacheable only if it the EFI image attribute signals an uncacheable 
+area:
+
+                if (!(md->attribute & EFI_MEMORY_WB))
+                        set_memory_uc(md->virt_addr, md->num_pages);
+
+and Linux EFI does not support device EFI runtimes. So your observation, 
+while correct for non-RAM 64-bit EFI images, is theoretical at the 
+moment and has no practical relevance.
+
+Of course, as we've stated it numerous times, we want this all fixed up, 
+and we _have_ fixed it up already, but we wanted to do it properly. 
+Right now we've got the fixes lined up and we are waiting for a test 
+report and an Ack from Ying Huang. (he reported that current -git worked 
+just fine for him)
+
+Also note that 64-bit EFI runtime support (the ability to execute EFI 
+code) is completely new - it got introduced 14 days ago. We only use 
+fixmaps on 64-bit EFI.
+
+32-bit EFI is more common (but still not very common, compared to other 
+x86 platforms) and that is totally unaffected by secondary aliases. 
+(which is a complication of the 64-bit kernel)
+
+Thanks,
+
+	Ingo
