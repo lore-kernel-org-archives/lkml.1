@@ -1,45 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765244AbYBNFCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbYBNFIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765244AbYBNFCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 00:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbYBNFCK
+	id S1758649AbYBNFIW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 00:08:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbYBNFIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 00:02:10 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:64790 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbYBNFCI (ORCPT
+	Thu, 14 Feb 2008 00:08:09 -0500
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:46009 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYBNFII (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 00:02:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m2XwYRE8v3UhPVcBArTUo83Ezx97lQz9MWcGHNjKbU6+yY2ALcNcfqUgrDfKMJHKUKWDij7j3MsdnYxe34yJw/S60MyYEjNhUGSYFBUHpOfirMrV4cJ6V5/08e8NjLJLLL8OcDAF6G552cWrI36MV+GhLVy4wmCcRNfG6/jwOV4=
-Message-ID: <df9815e70802132102v7eb7d8e9k4d6b21ffa6325d0d@mail.gmail.com>
-Date: Thu, 14 Feb 2008 13:02:06 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Max Krasnyansky" <maxk@qualcomm.com>
-Subject: Re: Module loading/unloading and "The Stop Machine"
-Cc: rusty@rustcorp.com.au, "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <47ABC08C.8010101@qualcomm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 00:08:08 -0500
+X-IronPort-AV: E=Sophos;i="4.25,349,1199685600"; 
+   d="scan'208";a="539877376"
+Date: Wed, 13 Feb 2008 23:07:53 -0600
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH] PCI: remove initial bios sort of PCI devices on x86
+Message-ID: <20080214050753.GA28584@auslistsprd01.us.dell.com>
+References: <20080213234029.GA5119@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47ABC08C.8010101@qualcomm.com>
+In-Reply-To: <20080213234029.GA5119@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/8/08, Max Krasnyansky <maxk@qualcomm.com> wrote:
-> Hi Rusty,
+On Wed, Feb 13, 2008 at 03:40:29PM -0800, Greg KH wrote:
+> We currently keep 2 lists of PCI devices in the system, one in the
+> driver core, and one all on its own.  This second list is sorted at boot
+> time, in "BIOS" order, to try to remain compatible with older kernels
+> (2.2 and earlier days).  There was also a "nosort" option to turn this
+> sorting off, to remain compatible with even older kernel versions, but
+> that just ends up being what we have been doing from 2.5 days...
+> 
+> Unfortunately, the second list of devices is not really ever used to
+> determine the probing order of PCI devices or drivers[1].  That is done
+> using the driver core list instead.  This change happened back in the
+> early 2.5 days.
+> 
+> Relying on BIOS ording for the binding of drivers to specific device
+> names is problematic for many reasons, and userspace tools like udev
+> exist to properly name devices in a persistant manner if that is needed,
+> no reliance on the BIOS is needed.
 >
-> I was hopping you could answer a couple of questions about module loading/unloading
-> and the stop machine.
+> Matt Domsch and others at Dell noticed this back in 2006, and added a
+> boot option to sort the PCI device lists (both of them) in a
+> breadth-first manner to help remain compatible with the 2.4 order, if
+> needed for any reason.  This option is not going away, as some systems
+> rely on them.
+> 
+> This patch removes the sorting of the internal PCI device list in "BIOS"
+> mode, as it's not needed at all anymore, and hasn't for many years.
+> I've also removed the PCI flags for this from some other arches that for
+> some reason defined them, but never used them.
+> 
+> This should not change the ordering of any drivers or device probing.
 
-I'm curious to know why it is called `stop machine', which is a queer
-name without any relationship with its function.
 
-Regards,
-Jike
+Good plan.  I'll be glad when the vestigal internal PCI device list is
+gone too.
+
+Thanks,
+Matt
+
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
