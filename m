@@ -1,121 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933062AbYBNUbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764279AbYBNUfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933062AbYBNUbl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYBNUbd
+	id S1764279AbYBNUfV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:35:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbYBNUfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:31:33 -0500
-Received: from wx-out-0506.google.com ([66.249.82.226]:3184 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754395AbYBNUbc (ORCPT
+	Thu, 14 Feb 2008 15:35:05 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:32806 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754516AbYBNUfD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:31:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CpdstN6UF6V9JTPE2ybJVrGYGrdH99Dz4hZkK/xAHwsW1CgBdwlcoHd678j0HZLYmSBmmkNajhWo1Q4SNSWyfy6iIQV55UMHWPA+rdjMpOnJf7xuen7vgk7M6M0IZhBYh3qRyL85tYTdDqiAvk6OkchsjKPy2PRgI2WwnQLS2pE=
-Message-ID: <19f34abd0802141231q1b574157g24cf7d148599640d@mail.gmail.com>
-Date: Thu, 14 Feb 2008 21:31:30 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 4/4] kmemcheck v4
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Richard Knutsson" <ricknu-0@student.ltu.se>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <47B4A0A4.90404@cs.helsinki.fi>
+	Thu, 14 Feb 2008 15:35:03 -0500
+Date: Thu, 14 Feb 2008 12:32:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-ID: <20080214203229.GC16545@kroah.com>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au> <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org> <200802141332.03315.gene.heskett@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47B49DB2.2090402@gmail.com> <47B49E71.4040900@gmail.com>
-	 <47B4A0A4.90404@cs.helsinki.fi>
+In-Reply-To: <200802141332.03315.gene.heskett@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/14/08, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Hi,
->
->
->  Vegard Nossum wrote:
->  > diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
->  > index 412672a..7bdb37f 100644
->  > --- a/include/linux/skbuff.h
->  > +++ b/include/linux/skbuff.h
->  > @@ -1294,7 +1294,11 @@ static inline void __skb_queue_purge(struct
->  > sk_buff_head *list)
->  >  static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
->  >                            gfp_t gfp_mask)
->  >  {
->  > -    struct sk_buff *skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
->  > +    struct sk_buff *skb;
->  > +#ifdef CONFIG_KMEMCHECK
->  > +    gfp_mask |= __GFP_ZERO;
->  > +#endif
->
->
-> Use __GFP_NOTRACK here (no need to wrap it in CONFIG_KMEMCHECK either).
->
->  > +    skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
->
-> >      if (likely(skb))
->  >          skb_reserve(skb, NET_SKB_PAD);
->  >      return skb;
->
->
-> > diff --git a/init/do_mounts.c b/init/do_mounts.c
->  > index f865731..87b1b0f 100644
->  > --- a/init/do_mounts.c
->  > +++ b/init/do_mounts.c
->  > @@ -201,9 +201,13 @@ static int __init do_mount_root(char *name, char
->  > *fs, int flags, void *data)
->  >      return 0;
->  >  }
->  >
->  > +#if PAGE_SIZE < PATH_MAX
->  > +# error increase the fs_names allocation size here
->  > +#endif
->  > +
->  >  void __init mount_block_root(char *name, int flags)
->  >  {
->  > -    char *fs_names = __getname();
->  > +    char *fs_names = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO, 1);
->  >      char *p;
->  >  #ifdef CONFIG_BLOCK
->  >      char b[BDEVNAME_SIZE];
->  > @@ -251,7 +255,7 @@ retry:
->  >  #endif
->  >      panic("VFS: Unable to mount root fs on %s", b);
->  >  out:
->  > -    putname(fs_names);
->  > +    free_pages((unsigned long)fs_names, 1);
->
->
-> As discussed before, I don't think kmemcheck should be complaining about
->  this (even though this is a potential bug). Have you tried with the
->  current patches to see if it still triggers? Could have been one of the
->  kmemcheck bugs, no?
->
->
->  > @@ -255,6 +258,9 @@ struct sk_buff *__netdev_alloc_skb(struct net_device
->  > *dev,
->  >      int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
->  >      struct sk_buff *skb;
->  >
->  > +#ifdef CONFIG_KMEMCHECK
->  > +    gfp_mask |= __GFP_ZERO;
->  > +#endif
->
->
-> __GFP_NOTRACK here
->
->
->                         Pekka
->
+On Thu, Feb 14, 2008 at 01:32:02PM -0500, Gene Heskett wrote:
+> On Thursday 14 February 2008, Linus Torvalds wrote:
+> [...]
+> >And this is where "process" really matters. Making sure people don't get
+> >too frustrated about the constant grind.
+> 
+> One of the problems caused by this 'grind' is being locked out of using 3rd 
+> party closed drivers until the vendor decides its stable enough to make the 
+> effort to update their binary blobs to match the newer functions.
+> 
+> Nvidia vs 2.6.25-rc1 being a case in point, and they (nvidia) are appearing to 
+> indicate its not a problem until some distro actually ships a kernel with the 
+> changes that broke it.  That could be months or even a year plus.
 
-Will fix those, thanks!
+How about "weeks".  Both Fedora and openSUSE's next release is going to
+be based on 2.6.25, and the first round of -rc1 kernels should be
+showing up in their trees in a few days.  So for this instance, I think
+you will be fine :)
 
+thanks,
 
-Vegard
+greg k-h
