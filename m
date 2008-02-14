@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932460AbYBNVCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbYBNVDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932460AbYBNVCU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbYBNVCF
+	id S933415AbYBNVDl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:03:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758161AbYBNVD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:02:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:53378 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754021AbYBNVCD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:02:03 -0500
-Date: Thu, 14 Feb 2008 13:00:03 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: pageexec@freemail.hu, Sam Ravnborg <sam@ravnborg.org>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [x86.git#mm] stack protector fixes, vmsplice exploit
-Message-ID: <20080214130003.4d40d938@laptopd505.fenrus.org>
-In-Reply-To: <20080214202535.GA25316@elte.hu>
-References: <20080214190050.GA32258@elte.hu>
-	<47B4AAB8.106.FEA5232@pageexec.freemail.hu>
-	<20080214202535.GA25316@elte.hu>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 Feb 2008 16:03:29 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60167 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756695AbYBNVD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:03:27 -0500
+Message-ID: <47B4AC97.3040001@garzik.org>
+Date: Thu, 14 Feb 2008 16:03:19 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: linux-next: first tree
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 21:25:35 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Stephen Rothwell wrote:
+> Also, more trees please ...  :-) 
 
-> 
-> * pageexec@freemail.hu <pageexec@freemail.hu> wrote:
-> 
-> > really, the best defense is to reduce the useful lifetime of any 
-> > leaked canary, and you can't get better than syscall granularity 
-> > without disproportional effort and impact elsewhere (and i'm sure
-> > some would find even this disproportional ;).
-> 
-> hm, i think per syscall canaries are really expensive.
+Please add the 'NEXT' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+
+to your list.  This is a throwaway meta-branch that is rebased often.
+
+The 'master' branch of libata-dev.git always contains the base commit 
+from torvalds/linux-2.6.git from which all other branches are based.  I 
+never ever commit to the 'master' branch, only update it from 
+torvalds/linux-2.6.git.
 
 
-it's not that bad. Assuming you use a PNR that you re-seed periodically,
-it's 
-* go to the next random number with PNR
-* write to PDA and task struct
+Andrew,
 
-give or take 10 cycles total if you squeeze it hard, 20 if you don't.
+I will continue to maintain the 'ALL' branch exactly as before.  It may 
+contain changes not suitable for 'NEXT', but suitable for -mm testing.
+
+In my new development process, things will almost always land in 'ALL' 
+before 'NEXT'.
+
+	Jeff
+
+
+
