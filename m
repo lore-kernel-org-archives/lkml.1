@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765344AbYBNUKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbYBNUNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765344AbYBNUKu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:10:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757236AbYBNUKl
+	id S1764864AbYBNUNN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:13:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbYBNUM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:10:41 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:60237 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754318AbYBNUKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:10:41 -0500
-Date: Thu, 14 Feb 2008 12:09:20 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] samples: build fix
-Message-Id: <20080214120920.e3eab2d9.randy.dunlap@oracle.com>
-In-Reply-To: <20080214200257.42815270195@magilla.localdomain>
-References: <20080214034541.EF1BD270192@magilla.localdomain>
-	<20080214132752.GA27478@Krystal>
-	<20080214194633.GA21894@uranus.ravnborg.org>
-	<20080214200257.42815270195@magilla.localdomain>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 14 Feb 2008 15:12:59 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:40980 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756736AbYBNUM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:12:58 -0500
+Date: Thu, 14 Feb 2008 22:12:37 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: David Howells <dhowells@redhat.com>
+Cc: yasutake.koichi@jp.panasonic.com, linux-am33-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Compiler for mn10300?
+Message-ID: <20080214201237.GA23227@cs181133002.pp.htv.fi>
+References: <20080213195951.GA27391@cs181133002.pp.htv.fi> <11844.1202944399@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <11844.1202944399@redhat.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 12:02:57 -0800 (PST) Roland McGrath wrote:
-
-> I don't have any axe to grind here, I just could not figure out how to get
-> the samples/ modules built (without resorting to make M=.../samples/foo and
-> clobbering my source directory).  If there is another plan, point me to its
-> documentation.  I can't see the point of the Kconfig option for samples at all.
-> What does it do?
+On Wed, Feb 13, 2008 at 11:13:19PM +0000, David Howells wrote:
 > 
-> Because they are only ever modules, the samples are never built in.  I
-> honestly don't see why the modules shouldn't be installed like any others.
-> People who are really going to install the kernel for production are not
-> going to set this Kconfig option.
+> Adrian Bunk <bunk@kernel.org> wrote:
+> 
+> > How can I get a compiler suitable for mn10300?
+> 
+> ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/am33-04r2-5/tools
 
-There used to be a make target called "samples_check" (I could have
-misspelled it).  Where did it go?  Sam?
+Thanks, got it.
 
----
-~Randy
+What are the plans regarding getting a plain upstream gcc compiling the 
+kernel?
+
+> David
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
