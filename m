@@ -1,45 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763692AbYBNKFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932222AbYBNKGE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763692AbYBNKFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 05:05:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYBNKFe
+	id S932222AbYBNKGE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 05:06:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbYBNKFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 05:05:34 -0500
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4724 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbYBNKFd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 05:05:33 -0500
-Date: Thu, 14 Feb 2008 10:06:32 +0000
-From: Andy Whitcroft <apw@shadowen.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: bug in checkpatch (on pointers to typedefs?)
-Message-ID: <20080214100617.GB10713@shadowen.org>
-References: <20080210143240.GA13317@joi> <Pine.LNX.4.64.0802132043410.29154@fbirervta.pbzchgretzou.qr>
+	Thu, 14 Feb 2008 05:05:52 -0500
+Received: from os.eurotux.com ([216.75.63.6]:48934 "EHLO os.eurotux.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759183AbYBNKFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 05:05:51 -0500
+Date: Thu, 14 Feb 2008 10:05:44 +0000
+From: Luciano Rocha <luciano@eurotux.com>
+To: Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: sysfs: duplicate filename 'card0' can not be created
+Message-ID: <20080214100544.GA7075@bit.office.eurotux.com>
+Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
+	Takashi Iwai <tiwai@suse.de>, linux-kernel@vger.kernel.org
+References: <20080213140527.GA31014@bit.office.eurotux.com> <s5hzlu5rl71.wl%tiwai@suse.de> <20080213150921.GA4139@bit.office.eurotux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="2fHTh5uZTiUOsy+g"
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802132043410.29154@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080213150921.GA4139@bit.office.eurotux.com>
+User-Agent: Mutt/1.5.14 (2007-03-31)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 08:43:58PM +0100, Jan Engelhardt wrote:
-> 
-> On Feb 10 2008 15:33, Marcin Slusarz wrote:
-> >Checkpatch in current mainline outputs following errors:
-> >
-> >$ ./scripts/checkpatch.pl -q --file ./fs/udf/misc.c
-> >ERROR: need consistent spacing around '*' (ctx:WxV)
-> >#205: FILE: fs/udf/misc.c:205:
-> >+       tag *tag_p;
-> >            ^
-> 
-> I'd say "don't add any new typedefs" (and perhaps get rid of old ones).
 
-It should be doing that at the site of the new typedef :)
+--2fHTh5uZTiUOsy+g
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--apw
+On Wed, Feb 13, 2008 at 03:09:21PM +0000, Luciano Rocha wrote:
+> On Wed, Feb 13, 2008 at 03:21:38PM +0100, Takashi Iwai wrote:
+> > At Wed, 13 Feb 2008 14:05:27 +0000,
+> > Luciano Rocha wrote:
+> > >=20
+> > > Hello,
+> > >=20
+> > > Is this known? I got the error while connecting usb headphones, runni=
+ng
+> > > vanilla 2.6.24.
+> >=20
+> > Not known.  In which situation does it happen and is reproducible?
+> >=20
+>=20
+> Disconnecting and reconnecting doesn't result in error. I'll try a
+> reboot later.
+
+After a reboot I still don't get the error (tryed connecting and
+reconnecting the headset). Do you have any tests you want me to make?
+
+
+--=20
+Luciano Rocha <luciano@eurotux.com>
+Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
+
+--2fHTh5uZTiUOsy+g
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHtBJ4inSul6a7oB8RAtWPAJ9dRMw67y9/6bMJ4kTI6m3k8M4OHACfU4wU
+l5e1UWdyjfVKts/U+Z1AC0w=
+=DLAV
+-----END PGP SIGNATURE-----
+
+--2fHTh5uZTiUOsy+g--
