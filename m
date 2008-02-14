@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbYBNQ3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760599AbYBNQaj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbYBNQ3k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 11:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbYBNQ3b
+	id S1760599AbYBNQaj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 11:30:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754624AbYBNQa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 11:29:31 -0500
-Received: from rtr.ca ([76.10.145.34]:3374 "EHLO mail.rtr.ca"
+	Thu, 14 Feb 2008 11:30:29 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50463 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753329AbYBNQ33 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 11:29:29 -0500
-Message-ID: <47B46C68.6050904@rtr.ca>
-Date: Thu, 14 Feb 2008 11:29:28 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1754206AbYBNQa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 11:30:28 -0500
+Date: Thu, 14 Feb 2008 17:25:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@argo.co.il>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 updates
+Message-ID: <20080214162510.GA29570@elte.hu>
+References: <20080213155725.GA19523@elte.hu> <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, jengelh@computergmbh.de, matthew@wil.cx,
-       randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
- take #3
-References: <12028937731333-git-send-email-htejun@gmail.com> <20080213155701.48871761.akpm@linux-foundation.org> <47B38E13.1060503@gmail.com>
-In-Reply-To: <47B38E13.1060503@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
->..
-> * For timeouts, result TF isn't available and thus res printout is
-> misleading.  res shouldn't be printed after timeouts.  This would
-> require allocating yest another temp buf and separating out res printing
-> into separate snprintf.
-..
 
-And snprintf() is buggy, by the way.  It does not always seem to return
-the correct character fill counts.  I've given up trying to use it here
-for anything in kernelspace that *must* work.
+* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Someday I'll go back and try to figure out where it's screwing up.
-I think it is doing so in the cases where it runs out of space in the buffer.
+> Ingo, could you also please consider the KVM build fix at 
+> http://marc.info/?l=linux-kernel&m=120262794315024&w=2 which has been 
+> acked by Avi. I suspect this patch should be route through git-x86 
+> since it affects arch/x86/Kconfig.
 
--ml
+thanks, applied - this first looked like a KVM item, that's why i havent 
+added it. [Btw., feel free to push it via kvm.git as well - as long as 
+you are sure it does not break the build ;-) ]
+
+	Ingo
