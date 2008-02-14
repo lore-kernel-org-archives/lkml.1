@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758970AbYBNDcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbYBNDdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758970AbYBNDcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 22:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYBNDcU
+	id S1761944AbYBNDdy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 22:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYBNDdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 22:32:20 -0500
-Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:48805 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752236AbYBNDcT (ORCPT
+	Wed, 13 Feb 2008 22:33:45 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:3039 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754635AbYBNDdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 22:32:19 -0500
-Date: Thu, 14 Feb 2008 09:02:09 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, shemminger@vyatta.com, davem@davemloft.net,
-       netdev@vger.kernel.org, dipankar@in.ibm.com,
-       herbert@gondor.apana.org.au, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/2] add rcu_assign_index() if ever needed
-Message-ID: <20080214033209.GA7266@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20080213220024.GA30729@linux.vnet.ibm.com> <20080213220515.GA10642@linux.vnet.ibm.com>
+	Wed, 13 Feb 2008 22:33:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=bt7ElE+C/yh5/pPo9R6FsBdEoejb2AacEhEwq4fHpUMVwmy8PO2oLhFwa9YjgCUi4L6mXy5JttKYh8vvjhdaaN3USVwJeQdtiEunPmydc4xBl7MdkzwnxCLeJ9XR8cfYHzn/CFNW6gX2eohm4MpKWiNiuK2bzxVtDcqTqClMwPY=
+Message-ID: <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
+Date: Wed, 13 Feb 2008 19:33:42 -0800
+From: "Tony Luck" <tony.luck@intel.com>
+To: "David Miller" <davem@davemloft.net>
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+Cc: mingo@elte.hu, rdreier@cisco.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20080213.170452.68851396.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080213220515.GA10642@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <20080213125725.GC6344@elte.hu>
+	 <20080213.050340.64342037.davem@davemloft.net>
+	 <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
+	 <20080213.170452.68851396.davem@davemloft.net>
+X-Google-Sender-Auth: d0cd6aa2b2541593
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 02:05:15PM -0800, Paul E. McKenney wrote:
-> Hello again!
-> 
-> This is a speculative patch that as far as I can tell is not yet required.
-> If anyone applies RCU to a data structure allocated out of an array, using
-> array indexes in place of pointers to link the array elements together,
-> then the rcu_assign_index() function in this patch will be needed to
-> assign a given element's array index to the RCU-traversed index.  The
-> implementation is exactly that of the old rcu_assign_pointer(), so is
-> extremely well tested.
-> 
-> The existing rcu_assign_pointer() will emit a compiler warning in cases
-> where rcu_assign_index() is required.
-> 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
-> 
->  rcupdate.h |   18 ++++++++++++++++++
->  1 file changed, 18 insertions(+)
-> 
-> diff -urpNa -X dontdiff linux-2.6.24-rap/include/linux/rcupdate.h linux-2.6.24-rai/include/linux/rcupdate.h
-> --- linux-2.6.24-rap/include/linux/rcupdate.h	2008-02-13 13:36:47.000000000 -0800
-> +++ linux-2.6.24-rai/include/linux/rcupdate.h	2008-02-13 10:55:40.000000000 -0800
-> @@ -286,6 +286,24 @@ extern struct lockdep_map rcu_lock_map;
->  	})
-> 
->  /**
-> + * rcu_assign_index - assign (publicize) a index of a newly
-> + * initialized array elementg that will be dereferenced by RCU
-			^^^^^^^^ 
+> That's right.  I thought you guys had something that would handle that
+> early on, but looking at how the trick works in the vmlinux.lds.S ia64
+> uses that isn't the case.
 
-I hope Andrew got that one while porting against the latest -mm :)
+We try to get things set up pertty early ... but I agree this is
+fragile.  Adding code to printk() to not provide a timestamp
+before some safe point in boot is a workaround to the
+current problem.  But it may come back to haunt us if
+other per-cpu data is added that needs to be accessed
+early during boot.
 
-Looks good otherwise.
+There are some changes going on at the moment on how
+we allocate the space for the per-cpu area.  It is likely that
+for a non-boot cpu we might be able to get everything that
+we need for per-cpu access to work done in head.S before
+we can get to any C code.  Boot cpu may be harder unless
+we statically allocate space for its per-cpu area in
+vmlinux.lds.S
 
+I'll take a closer look at what is needed tomorrow.
 
-> + * read-side critical sections.  Returns the value assigned.
-> + *
-> + * Inserts memory barriers on architectures that require them
-> + * (pretty much all of them other than x86), and also prevents
-> + * the compiler from reordering the code that initializes the
-> + * structure after the index assignment.  More importantly, this
-> + * call documents which indexes will be dereferenced by RCU read-side
-> + * code.
-> + */
-> +
-> +#define rcu_assign_index(p, v)	({ \
-> +					smp_wmb(); \
-> +					(p) = (v); \
-> +				})
-> +
-> +/**
->   * synchronize_sched - block until all CPUs have exited any non-preemptive
->   * kernel code sequences.
->   *
-
--- 
-Thanks and Regards
-gautham
+-Tony
