@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765481AbYBNTq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765655AbYBNTqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765481AbYBNTq0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 14:46:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758891AbYBNTqN
+	id S1765655AbYBNTqu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 14:46:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765529AbYBNTqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 14:46:13 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:60861 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765221AbYBNTqK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 14:46:10 -0500
-Date: Thu, 14 Feb 2008 20:46:05 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 12/14] fs/binfmt_aout.c: Use time_* macros
-In-Reply-To: <1203003412-11594-13-git-send-email-caglar@pardus.org.tr>
-Message-ID: <Pine.LNX.4.64.0802142044470.12316@anakin>
-References: y <1203003412-11594-13-git-send-email-caglar@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-737208374-1203018365=:12316"
+	Thu, 14 Feb 2008 14:46:33 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60346 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762435AbYBNTqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 14:46:32 -0500
+Date: Thu, 14 Feb 2008 20:46:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Roland McGrath <roland@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] samples: build fix
+Message-ID: <20080214194633.GA21894@uranus.ravnborg.org>
+References: <20080214034541.EF1BD270192@magilla.localdomain> <20080214132752.GA27478@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214132752.GA27478@Krystal>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463808512-737208374-1203018365=:12316
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 14 Feb 2008, S.Ã~GaÄ~_lar Onur wrote:
-> The functions time_before, time_before_eq, time_after, and time_after_eq are more robust for comparing jiffies against other values.
+On Thu, Feb 14, 2008 at 08:27:52AM -0500, Mathieu Desnoyers wrote:
+> * Roland McGrath (roland@redhat.com) wrote:
+> > 
+> > The samples/ subdirectory contains only modules.
+> > But the only make run done there is in commands for vmlinux.
+> > I can't see why this was ever done in this nonstandard fashion.
+> > As things stand, the modules don't get built by 'make modules'.
+> > 
+> > I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
+> > because there is no other conditional like that in the top-level Makefile
+> > and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
+> > always to be included.
+> > 
 > 
-> So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
-> 
-> Cc: linux-arch@vger.kernel.org
-> Signed-off-by: S.Ã‡aÄŸlar Onur <caglar@pardus.org.tr>
-> ---
->  fs/binfmt_aout.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-> index a1bb224..72757fe 100644
-> --- a/fs/binfmt_aout.c
-> +++ b/fs/binfmt_aout.c
-> @@ -6,6 +6,7 @@
->  
->  #include <linux/module.h>
->  
-> +#include <linux/jiffies.h>
->  #include <linux/time.h>
->  #include <linux/kernel.h>
->  #include <linux/mm.h>
-> @@ -374,14 +375,14 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
->  	} else {
->  		static unsigned long error_time, error_time2;
->  		if ((ex.a_text & 0xfff || ex.a_data & 0xfff) &&
-> -		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ)
-> +		    (N_MAGIC(ex) != NMAGIC) && time_after(jiffies, error_time2 + 5 * HZ))
->  		{
->  			printk(KERN_NOTICE "executable not page aligned\n");
->  			error_time2 = jiffies;
->  		}
->
->  
->  		if ((fd_offset & ~PAGE_MASK) != 0 &&
-> -		    (jiffies-error_time) > 5*HZ)
-> +		    time_after(jiffies, error_time + 5 * HZ))
->  		{
->  			printk(KERN_WARNING 
->  			       "fd_offset is not page aligned. Please convert program: %s\n",
-> @@ -498,7 +499,7 @@ static int load_aout_library(struct file *file)
->  		static unsigned long error_time;
->  		loff_t pos = N_TXTOFF(ex);
->  
-> -		if ((jiffies-error_time) > 5*HZ)
-> +		if (time_after(jiffies ,error_time + 5 * HZ))
->  		{
->  			printk(KERN_WARNING 
->  			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
+> Sam, is this ok with the samples intent ? I think as long as we do not
+> include them with the kernel image and have a "make samples" to build
+> them, it's ok. Having them built upon make modules seems like a good
+> idea to me.
 
-To me these constructs look like good candidates for replacement by
-printk_ratelimit()?
+The samples code are supposed to be what the name says 'samples'.
+This is not code that are supposed to be part of the built-in kernel.
+This is not modules that are supposed to be installes when 
+installing modules.
 
-Gr{oetje,eeting}s,
+Adding it to core-y as Roland does in the patch below is plain
+wrong as it enabled both points above.
+The fact that the present code in samples/ does not do this is
+in this respect irellevant.
 
-						Geert
+Do we have problems when to build the sampls - then lets
+address this issue but not by trying to upgrade the samples
+to first class citizen in the kernel - they are not that
+and should not be handled like that.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
----1463808512-737208374-1203018365=:12316--
+	Sam
