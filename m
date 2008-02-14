@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964812AbYBNVZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933643AbYBNV0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964812AbYBNVZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:25:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbYBNVYZ
+	id S933643AbYBNV0o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759139AbYBNV0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:24:25 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:51798 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934338AbYBNVYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:24:23 -0500
-Date: Thu, 14 Feb 2008 23:24:02 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: James Smart <james.smart@emulex.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make lpfc_disable_node() static
-Message-ID: <20080214212402.GF23227@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 14 Feb 2008 16:26:31 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47391 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754464AbYBNV03 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:26:29 -0500
+Subject: Re: linux-next: first tree
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+In-Reply-To: <47B4AC97.3040001@garzik.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	 <47B4AC97.3040001@garzik.org>
+Content-Type: text/plain
+Date: Thu, 14 Feb 2008 15:26:21 -0600
+Message-Id: <1203024381.3158.26.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes theneedlessly global lpfc_disable_node() static.
+On Thu, 2008-02-14 at 16:03 -0500, Jeff Garzik wrote:
+> Stephen Rothwell wrote:
+> > Also, more trees please ...  :-) 
+> 
+> Please add the 'NEXT' branch of
+> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+> 
+> to your list.  This is a throwaway meta-branch that is rebased often.
+> 
+> The 'master' branch of libata-dev.git always contains the base commit 
+> from torvalds/linux-2.6.git from which all other branches are based.  I 
+> never ever commit to the 'master' branch, only update it from 
+> torvalds/linux-2.6.git.
+> 
+> 
+> Andrew,
+> 
+> I will continue to maintain the 'ALL' branch exactly as before.  It may 
+> contain changes not suitable for 'NEXT', but suitable for -mm testing.
+> 
+> In my new development process, things will almost always land in 'ALL' 
+> before 'NEXT'.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+So does this indicate the meaning of upstream and upstream-fixes is
+still the same?  I always took upstream-fixes to be bug fixes for this
+-rc and upstream as queued for the next merge window, in which case NEXT
+would be the union of those two sets?
 
----
+James
 
- drivers/scsi/lpfc/lpfc_crtn.h    |    1 -
- drivers/scsi/lpfc/lpfc_hbadisc.c |    2 +-
- 2 files changed, 1 insertion(+), 2 deletions(-)
-
-c3ed441728e0116d0e545837d84cbe337740a3de diff --git a/drivers/scsi/lpfc/lpfc_crtn.h b/drivers/scsi/lpfc/lpfc_crtn.h
-index 848d977..0819f5f 100644
---- a/drivers/scsi/lpfc/lpfc_crtn.h
-+++ b/drivers/scsi/lpfc/lpfc_crtn.h
-@@ -55,7 +55,6 @@ void lpfc_mbx_cmpl_ns_reg_login(struct lpfc_hba *, LPFC_MBOXQ_t *);
- void lpfc_mbx_cmpl_fdmi_reg_login(struct lpfc_hba *, LPFC_MBOXQ_t *);
- void lpfc_enqueue_node(struct lpfc_vport *, struct lpfc_nodelist *);
- void lpfc_dequeue_node(struct lpfc_vport *, struct lpfc_nodelist *);
--void lpfc_disable_node(struct lpfc_vport *, struct lpfc_nodelist *);
- struct lpfc_nodelist *lpfc_enable_node(struct lpfc_vport *,
- 					struct lpfc_nodelist *, int);
- void lpfc_nlp_set_state(struct lpfc_vport *, struct lpfc_nodelist *, int);
-diff --git a/drivers/scsi/lpfc/lpfc_hbadisc.c b/drivers/scsi/lpfc/lpfc_hbadisc.c
-index bd572d6..9766534 100644
---- a/drivers/scsi/lpfc/lpfc_hbadisc.c
-+++ b/drivers/scsi/lpfc/lpfc_hbadisc.c
-@@ -1694,7 +1694,7 @@ lpfc_dequeue_node(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp)
- 				NLP_STE_UNUSED_NODE);
- }
- 
--void
-+static void
- lpfc_disable_node(struct lpfc_vport *vport, struct lpfc_nodelist *ndlp)
- {
- 	if ((ndlp->nlp_flag & NLP_DELAY_TMO) != 0)
 
