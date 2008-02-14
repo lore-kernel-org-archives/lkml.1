@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbYBNDdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764334AbYBNDe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761944AbYBNDdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 22:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbYBNDdp
+	id S1764334AbYBNDe1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 22:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756531AbYBNDeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 22:33:45 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:3039 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbYBNDdo (ORCPT
+	Wed, 13 Feb 2008 22:34:13 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50563 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754697AbYBNDeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 22:33:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=bt7ElE+C/yh5/pPo9R6FsBdEoejb2AacEhEwq4fHpUMVwmy8PO2oLhFwa9YjgCUi4L6mXy5JttKYh8vvjhdaaN3USVwJeQdtiEunPmydc4xBl7MdkzwnxCLeJ9XR8cfYHzn/CFNW6gX2eohm4MpKWiNiuK2bzxVtDcqTqClMwPY=
-Message-ID: <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
-Date: Wed, 13 Feb 2008 19:33:42 -0800
-From: "Tony Luck" <tony.luck@intel.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-Cc: mingo@elte.hu, rdreier@cisco.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080213.170452.68851396.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 Feb 2008 22:34:10 -0500
+Date: Wed, 13 Feb 2008 19:34:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.25-rc1
+Message-Id: <20080213193403.c0dde7f8.akpm@linux-foundation.org>
+In-Reply-To: <1202951513.3109.101.camel@localhost.localdomain>
+References: <1202947364.3109.96.camel@localhost.localdomain>
+	<20080213161643.65a5a779.akpm@linux-foundation.org>
+	<1202951513.3109.101.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080213125725.GC6344@elte.hu>
-	 <20080213.050340.64342037.davem@davemloft.net>
-	 <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
-	 <20080213.170452.68851396.davem@davemloft.net>
-X-Google-Sender-Auth: d0cd6aa2b2541593
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's right.  I thought you guys had something that would handle that
-> early on, but looking at how the trick works in the vmlinux.lds.S ia64
-> uses that isn't the case.
+On Wed, 13 Feb 2008 19:11:53 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-We try to get things set up pertty early ... but I agree this is
-fragile.  Adding code to printk() to not provide a timestamp
-before some safe point in boot is a workaround to the
-current problem.  But it may come back to haunt us if
-other per-cpu data is added that needs to be accessed
-early during boot.
+> > mptbase-reset-ioc-initiator-during-pci-resume.patch
+> > 
+> >   Fixes suspend/resume on all of Darrick's MPT cards.  I first merged it
+> >   in September 2007.
+> 
+> Patch presented by LSI but has gone back with comments
 
-There are some changes going on at the moment on how
-we allocate the space for the per-cpu area.  It is likely that
-for a non-boot cpu we might be able to get everything that
-we need for per-cpu access to work done in head.S before
-we can get to any C code.  Boot cpu may be harder unless
-we statically allocate space for its per-cpu area in
-vmlinux.lds.S
+Five months is too long to fix a bug when someone has already sent us a
+patch.  If they insist on being this sluggish I'd suggest that you review
+the patch yourself then just merge it.  That will get their attention. 
+Maybe.
 
-I'll take a closer look at what is needed tomorrow.
+> > dell-cerc-support-for-megaraid_mbox.patch
+> 
+> I need megaraid to sign off (and test) this one.
 
--Tony
+Two months, same story.
+
+> > scsi-qlogicptic-section-fixes.patch
+> > 
+> >   Fixes a reference from .text into .init.text and hence might fix a
+> >   machine crash when this driver is build into vmlinux.  Merged a week ago.
+> 
+> This was the one we had the alternative fix for, wasn't it ... ?
+
+In current mainline, __devinit qpti_sbus_probe() still is calling __init
+qpti_chain_add() (for example).  So in a CONFIG_HOTPLUG kernel, hotplugging
+a new device (on sbus, ok, bad example ;)) will crash.
+
+But Adrian has fixed six such bugs in there, maybe one of them can hit.  I
+don't think we've fixed these by alternative means, unless we've disabled
+__devinit?
+
+
+Still, we can discuss specific patches all day.  I think there is a
+_general_ problem getting bugfixes, warning fixes and cleanups into scsi
+drivers within reasonable amounts of time?
