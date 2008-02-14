@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbYBNUTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932710AbYBNUUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932330AbYBNUTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:19:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbYBNUTW
+	id S932710AbYBNUUf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757668AbYBNUU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:19:22 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45389 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYBNUTV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:19:21 -0500
-Message-ID: <47B4A208.7040407@cs.helsinki.fi>
-Date: Thu, 14 Feb 2008 22:18:16 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.9 (Macintosh/20071031)
+	Thu, 14 Feb 2008 15:20:26 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58696 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755053AbYBNUUZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:20:25 -0500
+Date: Thu, 14 Feb 2008 12:20:24 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Caitlin Bestler <caitlin.bestler@gmail.com>
+cc: Steve Wise <swise@opengridcomputing.com>, Rik van Riel <riel@redhat.com>,
+       steiner@sgi.com, Andrea Arcangeli <andrea@qumranet.com>,
+       a.p.zijlstra@chello.nl, izike@qumranet.com,
+       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       avi@qumranet.com, linux-mm@kvack.org, daniel.blueman@quadrics.com,
+       Robin Holt <holt@sgi.com>, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       kvm-devel@lists.sourceforge.net
+Subject: Re: [ofa-general] Re: Demand paging for memory regions
+In-Reply-To: <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com> 
+ <20080209075556.63062452@bree.surriel.com> 
+ <Pine.LNX.4.64.0802091345490.12965@schroedinger.engr.sgi.com> 
+ <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com> 
+ <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> 
+ <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>
+  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>
+ <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>
 MIME-Version: 1.0
-To: Vegard Nossum <vegard.nossum@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       Richard Knutsson <ricknu-0@student.ltu.se>,
-       Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 3/4] kmemcheck v4
-References: <47B49DB2.2090402@gmail.com> <47B49E39.7070904@gmail.com>
-In-Reply-To: <47B49E39.7070904@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vegard Nossum wrote:
->  From 4ce1c09e38b2402dc04f0246916f3c23abe8f3e1 Mon Sep 17 00:00:00 2001
-> From: Vegard Nossum <vegard.nossum@gmail.com>
-> Date: Thu, 14 Feb 2008 19:25:39 +0100
-> Subject: [PATCH] kmemcheck: make SLUB use kmemcheck
-> 
-> With kmemcheck enabled, SLUB needs to do this:
-> 
-> 1. Request twice as much memory as would normally be needed. The bottom 
-> half
->    of the memory is what the user actually sees and uses; the upper half
->    contains the so-called shadow memory, which stores the status of each 
-> byte
->    in the bottom half, e.g. initialized or uninitialized.
-> 2. Tell kmemcheck which parts of memory that should be marked 
-> uninitialized.
->    There are actually a few more states, such as "not yet allocated" and
->    "recently freed".
-> 
-> If a slab cache is set up using the SLAB_NOTRACK flag, it will never return
-> memory that can take page faults because of kmemcheck.
-> 
-> If a slab cache is NOT set up using the SLAB_NOTRACK flag, callers can 
-> still
-> request memory with the __GFP_NOTRACK flag. This does not prevent the page
-> faults from occuring, however, but marks the object in question as being
-> initialized so that no warnings will ever be produced for this object.
-> 
-> Signed-off-by: Vegard Nossum <vegardno@ifi.uio.no>
+On Thu, 14 Feb 2008, Caitlin Bestler wrote:
 
-Looks good to me.
+> So suspend/resume to re-arrange pages is one thing. Suspend/resume to cover
+> swapping out pages so they can be reallocated is an exercise in futility. By the
+> time you resume the connections will be broken or at the minimum damaged.
 
-Reviewed-by: Pekka Enberg <penberg@cs.helsinki.fi>
+The connections would then have to be torn down before swap out and would 
+have to be reestablished after the pages have been brought back from swap.
+ 
