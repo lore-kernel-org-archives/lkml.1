@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763438AbYBNVr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765783AbYBNVsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763438AbYBNVr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbYBNVrp
+	id S1765783AbYBNVsZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:48:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763923AbYBNVsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:47:45 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59530 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760709AbYBNVrn (ORCPT
+	Thu, 14 Feb 2008 16:48:01 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:34165 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763667AbYBNVsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:47:43 -0500
-Date: Thu, 14 Feb 2008 13:46:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 14 Feb 2008 16:48:00 -0500
+Date: Thu, 14 Feb 2008 13:45:42 -0800
+From: Greg KH <greg@kroah.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: adrian.bunk@movial.fi, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       riku.voipio@movial.fi, mikpe@it.uu.se, buytenh@wantstofly.org,
-       rusty@rustcorp.com.au, stable@kernel.org
-Subject: Re: futex local DoS on most architectures
-Message-Id: <20080214134642.600282f1.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802111442130.12988@apollo.tec.linutronix.de>
-References: <20080211130700.GF27537@movial.fi>
-	<alpine.LFD.1.00.0802111442130.12988@apollo.tec.linutronix.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
+Subject: Re: [stable] [GIT pull] hrtimer fixes
+Message-ID: <20080214214542.GA19445@kroah.com>
+References: <alpine.LFD.1.00.0802142120200.12988@apollo.tec.linutronix.de> <20080214212643.GA18521@kroah.com> <alpine.LFD.1.00.0802142236440.12988@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802142236440.12988@apollo.tec.linutronix.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 Feb 2008 14:59:34 +0100 (CET)
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Mon, 11 Feb 2008, Adrian Bunk wrote:
+On Thu, Feb 14, 2008 at 10:37:49PM +0100, Thomas Gleixner wrote:
+> On Thu, 14 Feb 2008, Greg KH wrote:
 > 
-> > The issue described in [1] is still present and unfixed (and even the 
-> > fix there wasn't complete since it didn't cover SMP).
-> 
-> Damn, this slipped through my attention completely. Hotfix (which can
-> be easily backported) below.
->  
-> > Thanks to Riku Voipio for noting that it is still unfixed.
+> > On Thu, Feb 14, 2008 at 10:19:23PM +0100, Thomas Gleixner wrote:
+> > > Linus,
+> > > 
+> > > please pull hrtimer fixes from:
+> > > 
+> > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
+> > > 
+> > > The first patch fixes an overflow problem, which is caused by missing
+> > > checks in the relative to absolute time conversion in the futex
+> > > code. It got caught by the WARN_ON() in clockevents_program_event().
+> > > 
+> > > The second patch prevents a false positive of the same WARN_ON().
+> > > 
+> > > Fixes are confirmed to solve http://lkml.org/lkml/2008/2/10/137
 > > 
-> > cu
-> > Adrian
-> > 
-> > [1] http://lkml.org/lkml/2007/8/1/474
+> > Are one of these needed in the stable tree?
 > 
-> -------->
-> 
-> Subject: futex: disable PI/robust on archs w/o valid implementation
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> We have to disable the complete PI/robust functionality for those
-> archs, which do not implement futex_atomic_cmpxchg_inatomic(). The
-> code in question relies on a valid implementation and does not expect
-> -ENOSYS, which is returned by the stub implementation in
-> asm-generic/futex.h
-> 
-> Pointed out by: Mikael Pettersson, Riku Voipio and Adrian Bunk
-> 
-> This patch is intended for easy backporting and needs to be cleaned up
-> further for current mainline.
+> Yes, both are for stable as well. The report was against 2.6.24 stable
 
-So...
+Cool.  But the stable team deals with individual patches, not git pulls.
+Can you send us the individual patches when they hit Linus's tree?
 
-I queued up this version with a cc to stable under the assumption that this
-is the patch which should be applied to 2.6.x.y, but this version is not
-the one which will go into 2.6.25.
+thanks,
 
-Correct?
-
-If so: messy.  The stable guys might want to wait until they see the real
-2.6.25 patch and perhaps prefer to backport that version.
-
-
+greg k-h
