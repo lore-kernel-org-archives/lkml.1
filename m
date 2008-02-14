@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbYBNRjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762825AbYBNRjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762336AbYBNRjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 12:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757130AbYBNRjF
+	id S1762825AbYBNRjh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 12:39:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762224AbYBNRjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 12:39:05 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46229 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762099AbYBNRjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 12:39:01 -0500
-Date: Thu, 14 Feb 2008 09:38:50 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
-Message-ID: <20080214173850.GC14191@us.ibm.com>
-References: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk>
-X-Operating-System: Linux 2.6.24-09594-g7cf712d (x86_64)
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 14 Feb 2008 12:39:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36468 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762154AbYBNRjR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 12:39:17 -0500
+Date: Thu, 14 Feb 2008 15:38:50 -0200
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-ID: <20080214153850.486f8205@gaivota>
+In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.02.2008 [16:14:33 +0100], Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
-> (d)) but is perhaps more readable.
-> 
-> An extract of the semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @haskernel@
-> @@
-> 
-> #include <linux/kernel.h>
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> (
-> - (n + d - 1) / d
-> + DIV_ROUND_UP(n,d)
-> |
-> - (n + (d - 1)) / d
-> + DIV_ROUND_UP(n,d)
-> )
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> - DIV_ROUND_UP((n),d)
-> + DIV_ROUND_UP(n,d)
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> - DIV_ROUND_UP(n,(d))
-> + DIV_ROUND_UP(n,d)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
-> 
-> diff -u -p a/fs/direct-io.c b/fs/direct-io.c
-> --- a/fs/direct-io.c 2008-02-08 08:58:17.000000000 +0100
-> +++ b/fs/direct-io.c 2008-02-13 20:58:53.000000000 +0100
-> @@ -976,7 +976,7 @@ direct_io_worker(int rw, struct kiocb *i
->  	for (seg = 0; seg < nr_segs; seg++) {
->  		user_addr = (unsigned long)iov[seg].iov_base;
->  		dio->pages_in_io +=
-> -			((user_addr+iov[seg].iov_len +PAGE_SIZE-1)/PAGE_SIZE
-> +			(DIV_ROUND_UP(user_addr + iov[seg].iov_len, PAGE_SIZE)
->  				- user_addr/PAGE_SIZE);
 
-Is it just me, or does
+> The tree currently contains:
+> 	Greg's driver-core, pci and usb quilt series (in that order)
+> 	Alasdair Kergon's device-mapper quilt tree
+> 	Jiri Kosina's hid git tree
+> 	Jean Delvare's i2c quilt tree
+> 	Randy Dunlap's kernel-doc quilt tree
+> 	Haavard Skinnemoen's avr32 git tree
 
-	((user_addr + iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE - user_addr/PAGE_SIZE)
+Please add v4l-dvb tree, at:
 
-not simplify to
+ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/linux-next.git
 
-	= ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE + user_addr/PAGE_SIZE - user_addr/PAGE_SIZE)
+The above tree has two branches: 'master' and 'stable'
 
-	= ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE)
+Both branches will have V4L/DVB next patches. The first is against your master,
+and the second, against your stable.
 
-	= DIV_ROUND_UP(iov[seg].iov_len, PAGE_SIZE)
+I've opted to have both trees, since probably 'stable' is the better option for
+you to clone. On the other hand, 'master' allow me to foresee if an "alien"
+patch would conflict with a subsystem patch.
 
-CMIIW.
-
-Thanks,
-Nish
-
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+Cheers,
+Mauro
