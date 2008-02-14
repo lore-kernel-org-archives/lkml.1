@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764032AbYBNTfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764913AbYBNTh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764032AbYBNTfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 14:35:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYBNTfk
+	id S1764913AbYBNTh0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 14:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756095AbYBNThP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 14:35:40 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:56907 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755517AbYBNTfj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 14:35:39 -0500
-Date: Thu, 14 Feb 2008 11:35:37 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Kanoj Sarcar <kanojsarcar@yahoo.com>
-cc: Christian Bell <christian.bell@qlogic.com>,
-       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Rik van Riel <riel@redhat.com>, Andrea Arcangeli <andrea@qumranet.com>,
-       a.p.zijlstra@chello.nl, izike@qumranet.com,
-       Roland Dreier <rdreier@cisco.com>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Robin Holt <holt@sgi.com>,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       kvm-devel@lists.sourceforge.net
-Subject: Re: [ofa-general] Re: Demand paging for memory regions
-In-Reply-To: <866658.37093.qm@web32510.mail.mud.yahoo.com>
-Message-ID: <Pine.LNX.4.64.0802141133430.477@schroedinger.engr.sgi.com>
-References: <866658.37093.qm@web32510.mail.mud.yahoo.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 Feb 2008 14:37:15 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:49579 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755876AbYBNThO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 14:37:14 -0500
+Date: Thu, 14 Feb 2008 11:36:25 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kernel-doc: remove fastcall
+Message-Id: <20080214113625.5a5d77d2.randy.dunlap@oracle.com>
+In-Reply-To: <1203017437.2748.73.camel@brick>
+References: <1203017437.2748.73.camel@brick>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Kanoj Sarcar wrote:
+On Thu, 14 Feb 2008 11:30:37 -0800 Harvey Harrison wrote:
 
-> Oh ok, yes, I did see the discussion on this; sorry I
-> missed it. I do see what notifiers bring to the table
-> now (without endorsing it :-)).
+> fastcall is gone from the tree, no need to adjust the function
+> prototypes anymore for this.
 > 
-> An orthogonal question is this: is IB/rdma the only
-> "culprit" that elevates page refcounts? Are there no
-> other subsystems which do a similar thing?
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 
-Yes there are actually two projects by SGI that also ran into the same 
-issue that motivated the work on this. One is XPmem which allows 
-sharing of process memory between different Linux instances and then 
-there is the GRU which is a kind of DMA engine. Then there is KVM and 
-probably multiple other drivers.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+
+> ---
+>  scripts/kernel-doc |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> index 6c18a14..26146cb 100755
+> --- a/scripts/kernel-doc
+> +++ b/scripts/kernel-doc
+> @@ -1624,7 +1624,6 @@ sub dump_function($$) {
+>  
+>      $prototype =~ s/^static +//;
+>      $prototype =~ s/^extern +//;
+> -    $prototype =~ s/^fastcall +//;
+>      $prototype =~ s/^asmlinkage +//;
+>      $prototype =~ s/^inline +//;
+>      $prototype =~ s/^__inline__ +//;
+> -- 
+
+---
+~Randy
