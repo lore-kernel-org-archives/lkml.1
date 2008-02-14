@@ -1,61 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765431AbYBNUaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933062AbYBNUbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765431AbYBNUaY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:30:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbYBNUaM
+	id S933062AbYBNUbl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:31:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbYBNUbd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:30:12 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52528 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753164AbYBNUaK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:30:10 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Mike Travis <travis@sgi.com>
-Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
-Date: Thu, 14 Feb 2008 21:30:05 +0100
-User-Agent: KMail/1.9.6
-Cc: Christoph Lameter <clameter@sgi.com>, Paul Jackson <pj@sgi.com>,
-       David Rientjes <rientjes@google.com>, Lee.Schermerhorn@hp.com,
-       mel@csn.ul.ie, linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com> <Pine.LNX.4.64.0802141206100.1041@schroedinger.engr.sgi.com> <47B4A3D7.7040007@sgi.com>
-In-Reply-To: <47B4A3D7.7040007@sgi.com>
+	Thu, 14 Feb 2008 15:31:33 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:3184 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbYBNUbc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:31:32 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CpdstN6UF6V9JTPE2ybJVrGYGrdH99Dz4hZkK/xAHwsW1CgBdwlcoHd678j0HZLYmSBmmkNajhWo1Q4SNSWyfy6iIQV55UMHWPA+rdjMpOnJf7xuen7vgk7M6M0IZhBYh3qRyL85tYTdDqiAvk6OkchsjKPy2PRgI2WwnQLS2pE=
+Message-ID: <19f34abd0802141231q1b574157g24cf7d148599640d@mail.gmail.com>
+Date: Thu, 14 Feb 2008 21:31:30 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 4/4] kmemcheck v4
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <47B4A0A4.90404@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802142130.06155.ak@suse.de>
+References: <47B49DB2.2090402@gmail.com> <47B49E71.4040900@gmail.com>
+	 <47B4A0A4.90404@cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008 21:25:59 Mike Travis wrote:
-> Christoph Lameter wrote:
-> > On Thu, 14 Feb 2008, Andi Kleen wrote:
-> > 
-> >> You're saying the kernel should use these relative masks internally?
-> > 
-> > There is just some thoughts about this. Did not have time to look into the 
-> > details. Mike?
-> 
-> There are a few places where the entire cpumask is not needed.  For
-> example, in the area of core siblings on a node.  There's a limit
-> to how many cores/threads can be on a node and the full 4k cpumask
-> is not needed.  How this pertains to this new functionality I'm
-> not sure yet.
+On 2/14/08, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Hi,
+>
+>
+>  Vegard Nossum wrote:
+>  > diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+>  > index 412672a..7bdb37f 100644
+>  > --- a/include/linux/skbuff.h
+>  > +++ b/include/linux/skbuff.h
+>  > @@ -1294,7 +1294,11 @@ static inline void __skb_queue_purge(struct
+>  > sk_buff_head *list)
+>  >  static inline struct sk_buff *__dev_alloc_skb(unsigned int length,
+>  >                            gfp_t gfp_mask)
+>  >  {
+>  > -    struct sk_buff *skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
+>  > +    struct sk_buff *skb;
+>  > +#ifdef CONFIG_KMEMCHECK
+>  > +    gfp_mask |= __GFP_ZERO;
+>  > +#endif
+>
+>
+> Use __GFP_NOTRACK here (no need to wrap it in CONFIG_KMEMCHECK either).
+>
+>  > +    skb = alloc_skb(length + NET_SKB_PAD, gfp_mask);
+>
+> >      if (likely(skb))
+>  >          skb_reserve(skb, NET_SKB_PAD);
+>  >      return skb;
+>
+>
+> > diff --git a/init/do_mounts.c b/init/do_mounts.c
+>  > index f865731..87b1b0f 100644
+>  > --- a/init/do_mounts.c
+>  > +++ b/init/do_mounts.c
+>  > @@ -201,9 +201,13 @@ static int __init do_mount_root(char *name, char
+>  > *fs, int flags, void *data)
+>  >      return 0;
+>  >  }
+>  >
+>  > +#if PAGE_SIZE < PATH_MAX
+>  > +# error increase the fs_names allocation size here
+>  > +#endif
+>  > +
+>  >  void __init mount_block_root(char *name, int flags)
+>  >  {
+>  > -    char *fs_names = __getname();
+>  > +    char *fs_names = (void *)__get_free_pages(GFP_KERNEL | __GFP_ZERO, 1);
+>  >      char *p;
+>  >  #ifdef CONFIG_BLOCK
+>  >      char b[BDEVNAME_SIZE];
+>  > @@ -251,7 +255,7 @@ retry:
+>  >  #endif
+>  >      panic("VFS: Unable to mount root fs on %s", b);
+>  >  out:
+>  > -    putname(fs_names);
+>  > +    free_pages((unsigned long)fs_names, 1);
+>
+>
+> As discussed before, I don't think kmemcheck should be complaining about
+>  this (even though this is a potential bug). Have you tried with the
+>  current patches to see if it still triggers? Could have been one of the
+>  kmemcheck bugs, no?
+>
+>
+>  > @@ -255,6 +258,9 @@ struct sk_buff *__netdev_alloc_skb(struct net_device
+>  > *dev,
+>  >      int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+>  >      struct sk_buff *skb;
+>  >
+>  > +#ifdef CONFIG_KMEMCHECK
+>  > +    gfp_mask |= __GFP_ZERO;
+>  > +#endif
+>
+>
+> __GFP_NOTRACK here
+>
+>
+>                         Pekka
+>
 
-That would require that the BIOS enumerates the CPUs in a way that
-the cores of a socket are continuous. While that's usually true
-I don't think there's a guarantee. In theory they could be all scattered.
-
-Ok I theory Linux could remap later but that seems hardly worth 
-the trouble.
-
-I would rather just use arrays of integers in this case with a reasonable fixed 
-upper limit (e.g. 16 or 32 -- if there are ever >32 thread x86 CPUs presumably they will
-require an updated cpufreq driver too...) 
+Will fix those, thanks!
 
 
--Andi
-
+Vegard
