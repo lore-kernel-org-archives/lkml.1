@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbYBNSex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763045AbYBNSiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763758AbYBNSex (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762404AbYBNSeo
+	id S1763045AbYBNSiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYBNSiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:34:44 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60784 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761752AbYBNSen (ORCPT
+	Thu, 14 Feb 2008 13:38:03 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:40004 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755313AbYBNSiC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:34:43 -0500
-Message-ID: <47B488D3.5050209@zytor.com>
-Date: Thu, 14 Feb 2008 10:30:43 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: Mark McLoughlin <markmc@redhat.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCHv3 1/3] x86: use ELF format in compressed images.
-References: <1202936100-30859-1-git-send-email-ijc@hellion.org.uk>	 <9d3a007a2bfe774201b6deed5115a0cc8182bbb4.1202935389.git.ijc@hellion.org.uk>	 <1202988844.26435.4.camel@muff> <1203008490.30818.69.camel@localhost.localdomain>
-In-Reply-To: <1203008490.30818.69.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 13:38:02 -0500
+Date: Thu, 14 Feb 2008 12:26:38 -0600
+From: Corey Minyard <minyard@acm.org>
+Subject: [PATCH 1/4] IPMI: Change barrier to cpu_relax in poweroff code
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Reply-to: minyard@acm.org
+Message-id: <20080214182638.GA20148@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> 
-> Agreed. Probably the same deal as the compression format, i.e. use the
-> magic number but only ELF is possible today (even less likely to change
-> than the compression format I guess...).
-> 
+From: Corey Minyard <cminyard@mvista.com>
 
-Quite.
+Change a barrier to cpu_relax(), which is more appropriate for a
+polling loop.
 
-	-hpa
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
+---
+
+Index: linux-2.6.24/drivers/char/ipmi/ipmi_poweroff.c
+===================================================================
+--- linux-2.6.24.orig/drivers/char/ipmi/ipmi_poweroff.c
++++ linux-2.6.24/drivers/char/ipmi/ipmi_poweroff.c
+@@ -175,7 +175,7 @@ static int ipmi_request_in_rc_mode(ipmi_
+ 	 */
+ 	while (atomic_read(&dummy_count) > 0) {
+ 		ipmi_poll_interface(user);
+-		barrier();
++		cpu_relax();
+ 	}
+ 
+ 	return halt_recv_msg.msg.data[0];
