@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbYBNCcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYBNCiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbYBNCcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 21:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYBNCcJ
+	id S1758611AbYBNCiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 21:38:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbYBNCiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 21:32:09 -0500
-Received: from pip23.gyao.ne.jp ([125.63.38.249]:8685 "EHLO mx.gate01.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752178AbYBNCcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 21:32:08 -0500
-Date: Thu, 14 Feb 2008 11:29:54 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, rth <rth@twiddle.net>,
-       "bryan.wu" <bryan.wu@analog.com>, David Howells <dhowells@redhat.com>,
-       William Lee Irwin III <wli@holomorphy.com>, Ingo Molnar <mingo@elte.hu>,
-       gerg@uclinux.org, Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xtime_lock vs update_process_times
-Message-ID: <20080214022954.GA12388@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	rth <rth@twiddle.net>, "bryan.wu" <bryan.wu@analog.com>,
-	David Howells <dhowells@redhat.com>,
-	William Lee Irwin III <wli@holomorphy.com>,
-	Ingo Molnar <mingo@elte.hu>, gerg@uclinux.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Russell King <rmk+lkml@arm.linux.org.uk>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-References: <1202934796.20209.11.camel@lappy>
+	Wed, 13 Feb 2008 21:38:04 -0500
+Received: from mga11.intel.com ([192.55.52.93]:53283 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752585AbYBNCiD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 21:38:03 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,349,1199692800"; 
+   d="scan'208";a="518237261"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1202934796.20209.11.camel@lappy>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH][I/OAT]: Remove duplicate assignation in dma_skb_copy_datagram_iovec
+Date: Wed, 13 Feb 2008 18:29:06 -0800
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C04040F39@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <47B35B88.5070300@inria.fr>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH][I/OAT]: Remove duplicate assignation in dma_skb_copy_datagram_iovec
+Thread-Index: AchuhD5LZsmQaYFtSuSyqwtF/RKZLAALNwJw
+References: <47B35B88.5070300@inria.fr>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Brice Goglin" <Brice.Goglin@inria.fr>,
+       "Williams, Dan J" <dan.j.williams@intel.com>
+Cc: "Leech, Christopher" <christopher.leech@intel.com>,
+       "LKML" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 Feb 2008 02:29:07.0163 (UTC) FILETIME=[5F907AB0:01C86EB1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 09:33:16PM +0100, Peter Zijlstra wrote:
-> Subject: xtime_lock vs update_process_times
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>-----Original Message-----
+>From: Brice Goglin [mailto:Brice.Goglin@inria.fr] 
+>Sent: Wednesday, February 13, 2008 1:05 PM
+>To: Nelson, Shannon; Williams, Dan J
+>Cc: Leech, Christopher; LKML
+>Subject: [PATCH][I/OAT]: Remove duplicate assignation in 
+>dma_skb_copy_datagram_iovec
+>
+>[I/OAT]: Remove duplicate assignation in dma_skb_copy_datagram_iovec
+>
+>No need to compute copy twice in the frags loop in
+>dma_skb_copy_datagram_iovec().
+>
+>Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+>---
+> user_dma.c |    2 +-
+> 1 file changed, 1 insertion(+), 1 deletion(-)
+>
+>diff --git a/net/core/user_dma.c b/net/core/user_dma.c
+>index 0ad1cd5..c77aff9 100644
+>--- a/net/core/user_dma.c
+>+++ b/net/core/user_dma.c
+>@@ -75,7 +75,7 @@ int dma_skb_copy_datagram_iovec(struct 
+>dma_chan *chan,
 > 
-> ( repost from: http://lkml.org/lkml/2008/1/28/101 )
+> 		end = start + skb_shinfo(skb)->frags[i].size;
+> 		copy = end - offset;
+>-		if ((copy = end - offset) > 0) {
+>+		if (copy > 0) {
+> 			skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
+> 			struct page *page = frag->page;
 > 
-> Commit: d3d74453c34f8fd87674a8cf5b8a327c68f22e99
-> Subject: hrtimer: fixup the HRTIMER_CB_IRQSAFE_NO_SOFTIRQ fallback
-> 
-> Broke several archs, since only Russel bothered to merge the fix,
-> and Greg to ACK his arch, I'm sending this for merger.
-> 
-> I have confirmation that the Alpha bit results in a booting kernel.
-> That leaves: blackfin, frv, sh and sparc untested.
-> 
-> The deadlock in question was found by Russell:
-> 
->   IRQ handle 
->     -> timer_tick() - xtime seqlock held for write
->       -> update_process_times() 
->         -> run_local_timers()
->           -> hrtimer_run_queues()
->             -> hrtimer_get_softirq_time() - tries to get a read lock
-> 
-> Now, Thomas assures me the fix is trivial, only do_timer() needs to be
-> done under the xtime_lock, and update_process_times() can savely be removed
-> from under it.
-> 
-The SH bits also work fine. I've already merged that part in to my tree.
-Thanks, Peter.
+
+Acked-by: Shannon Nelson <shannon.nelson@intel.com>
