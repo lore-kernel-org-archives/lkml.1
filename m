@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765503AbYBNXiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933832AbYBNXir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765503AbYBNXiY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 18:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758465AbYBNXiO
+	id S933832AbYBNXir (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 18:38:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760289AbYBNXiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 18:38:14 -0500
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53031 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755712AbYBNXiM (ORCPT
+	Thu, 14 Feb 2008 18:38:16 -0500
+Received: from wx-out-0506.google.com ([66.249.82.232]:58738 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759453AbYBNXiP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 18:38:12 -0500
-Date: Thu, 14 Feb 2008 15:37:59 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: Julia Lawall <julia@diku.dk>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
-Message-ID: <20080214233759.GA30902@us.ibm.com>
-References: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk> <84144f020802141018i235d3adfu13a84d124dc3964e@mail.gmail.com> <Pine.LNX.4.64.0802142049510.19977@ask.diku.dk> <200802142316.44985.m.kozlowski@tuxland.pl>
+	Thu, 14 Feb 2008 18:38:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dXk4r2AMRmIUB+2p+uH1eUvzhfUcKx6LfsfYsujfssKzlMMbj6mWq33IzZM9T4CDtMUPPLrqMCPpW2k28HnNdKJVCAizBwYnvGDCulLPRS9ROaqe/DvnkNRNbGx4toP/3PKiIoine5sRwLqnjDzVNVTxDOVCY+G6hhXtB5YwjSc=
+Message-ID: <86802c440802141538m44d64b6as827426174874979d@mail.gmail.com>
+Date: Thu, 14 Feb 2008 15:38:13 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Greg KH" <gregkh@suse.de>, "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
+Cc: "Frans Pop" <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20080213165837.GA10129@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802142316.44985.m.kozlowski@tuxland.pl>
-X-Operating-System: Linux 2.6.24-09594-g7cf712d (x86_64)
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <200802111623.38478.elendil@planet.nl>
+	 <200802122139.14840.elendil@planet.nl>
+	 <20080212205622.GA21986@suse.de>
+	 <200802131239.14305.elendil@planet.nl>
+	 <20080213165837.GA10129@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 14.02.2008 [23:16:44 +0100], Mariusz Kozlowski wrote:
-> Hello,
-> 
-> > > >  Is it just me, or does
-> > > >
-> > > >         ((user_addr + iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE - user_addr/PAGE_SIZE)
-> > > >
-> > > >  not simplify to
-> > > >
-> > > >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE + user_addr/PAGE_SIZE - user_addr/PAGE_SIZE)
-> > > >
-> > > >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE)
-> > > >
-> > > >         = DIV_ROUND_UP(iov[seg].iov_len, PAGE_SIZE)
-> > > >
-> > > >  CMIIW.
-> > > 
-> > > I double-checked this and I believe you're correct. It's simpler to
-> > > see when you do:
-> > > 
-> > >   x = user_addr
-> > >   y = iov[seg].iov_len
-> > >   z = PAGE_SIZE
-> > > 
-> > > So
-> > > 
-> > >   (x + y + z - 1)/z - x/z
-> > > 
-> > >   = [x + (y + z - 1)]/z - x/z
-> > > 
-> > >   = [xz + z(y + z - 1)]/z^2 - x/z
-> > > 
-> > >   = x/z + (y + z - 1)/z - x/z
-> > > 
-> > > And the rest follows from your simplifications.
-> > 
-> > It doesn't work:
-> > 
-> >  ((3+4+5-1)/5) - (3/5) = 2
-> >  ((4+5-1)/5) = 1
-> 
-> Logic was wrong but conclusion was right :) and so was Nishanth:
+On Wed, Feb 13, 2008 at 8:58 AM, Greg KH <gregkh@suse.de> wrote:
+>
+> On Wed, Feb 13, 2008 at 12:39:13PM +0100, Frans Pop wrote:
+>  > On Tuesday 12 February 2008, Greg KH wrote:
+>  > > On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
+>  > > > On Monday 11 February 2008, Frans Pop wrote:
+>  > > > > In general 2.6.25 if looking quite good on my desktop, but there's
+>  > > > > one important issue: the system no longer powers off after shutdown.
+>  > > > > This works fine with 2.6.24.
+>  > > >
+>  > > > Don't ask me why, but bisection shows this commit to be the cause of
+>  > > > the failure to power off:
+>  > > > commit c10997f6575f476ff38442fa18fd4a0d80345f9d
+>  > > > Author: Greg Kroah-Hartman <gregkh@suse.de>
+>  > > > Date:   Thu Dec 20 08:13:05 2007 -0800
+>  > > >
+>  > > >     Kobject: convert drivers/* from kobject_unregister() to
+>  > > > kobject_put()
+>  > > >
+>  > > > Because it seemed somewhat unlikely, I have double checked this by
+>  > > > doing an extra compilation for this commit and its predecessor.
+>  > >
+>  > > What is the symptom of not powering off?
+>  >
+>  > I already noticed yesterday that there's one hunk in that commit that's not
+>  > a straight replacement:
+>  > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+>  > index 9e102af..5efd555 100644
+>  > --- a/drivers/cpufreq/cpufreq.c
+>  > +++ b/drivers/cpufreq/cpufreq.c
+>  > @@ -1030,8 +1030,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
+>  >
+>  >         unlock_policy_rwsem_write(cpu);
+>  >
+>  > -       kobject_unregister(&data->kobj);
+>  > -
+>  >         kobject_put(&data->kobj);
+>  >
+>  >         /* we need to make sure that the underlying kobj is actually
+>  >
+>  >
+>  > So, just on the off chance, I applied the patch below and bingo, the system
+>  > powers off again. I doubt this will be the correct solution, but just in
+>  > case it is, here's my signed off. A comment why the double put is needed
+>  > would probably be good though.
+>
+>  There is a bug in the cpufreq kref logic that makes this "double put"
+>  necessary.  A real fix has already been posted to solve this issue, and
+>  I think it should be on it's way to Linus for -rc2 already.
+>
+>  Please let me know if -rc2 comes out without this needed fix.
 
-<snip>
+after disable cpufreq, i got
 
-As I replied to Julia off-list -- the math I and others have given is
-correct, but assumes we're dealing with real-typed values. However, we
-only have integer types in the kernel, meaning the divisions truncate.
+ACPI: Preparing to enter system sleep state S5
+Disabling non-boot CPUs ...
+kvm: disabling virtualization on CPU1
+CPU 1 is now offline
+CPU1 is down
+kvm: disabling virtualization on CPU2
+CPU 2 is now offline
+================> hang here.
 
-Thus, while mathematically equivalent, the simplification is not
-computationally so.
+but x86.git/mm could go through down all the cpus....
 
-Thanks,
-Nish
+interesting...
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+YH
