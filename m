@@ -1,117 +1,217 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933502AbYBNM1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765713AbYBNMfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933502AbYBNM1b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 07:27:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759200AbYBNM1X
+	id S1765713AbYBNMfm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 07:35:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbYBNMfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 07:27:23 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:38004 "EHLO relay.sgi.com"
+	Thu, 14 Feb 2008 07:35:31 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:59845 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757548AbYBNM1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 07:27:22 -0500
-Date: Thu, 14 Feb 2008 06:27:16 -0600
+	id S1754905AbYBNMfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 07:35:30 -0500
 From: Paul Jackson <pj@sgi.com>
 To: David Rientjes <rientjes@google.com>
-Cc: Lee.Schermerhorn@hp.com, akpm@linux-foundation.org, clameter@sgi.com,
-       ak@suse.de, linux-kernel@vger.kernel.org, mel@csn.ul.ie
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080214062716.aa36d25a.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802131314210.5914@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	<1202862136.4974.41.camel@localhost>
-	<20080212215242.0342fa25.pj@sgi.com>
-	<alpine.DEB.1.00.0802121955040.11889@chino.kir.corp.google.com>
-	<20080212221354.a33799f2.pj@sgi.com>
-	<alpine.DEB.1.00.0802122018550.11889@chino.kir.corp.google.com>
-	<20080213020344.45c9d924.pj@sgi.com>
-	<alpine.DEB.1.00.0802130113020.3936@chino.kir.corp.google.com>
-	<20080213110426.15179378.pj@sgi.com>
-	<alpine.DEB.1.00.0802131050240.9186@chino.kir.corp.google.com>
-	<20080213142956.5ba52101.pj@sgi.com>
-	<alpine.DEB.1.00.0802131314210.5914@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Cc: Lee.Schermerhorn@hp.com, mel@csn.ul.ie, ak@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Paul Jackson <pj@sgi.com>, clameter@sgi.com
+Date: Thu, 14 Feb 2008 04:35:28 -0800
+Message-Id: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
+Subject: [RFC] bitmap relative operator for mempolicy extensions
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I had taken a vow of silence on this one, but couldn't resist one more
-round.
+From: Paul Jackson <pj@sgi.com>
 
-David wrote:
-> My preference (both mode and flags stored in the same member of struct 
-> mempolicy):
-> 
->    Advantages:
-> 
-> 	- completely consistent with the userspace API of passing modes
-> 	  and flags together in a pointer to an int, and
+[Beware - never tested, never booted.]
 
-True -- the necessary overloaded ugliness of the kernel-user system
-call API is propogated throughout mempolicy.c.  However, I wouldn't
-necessarily call that an advantage.
+The following adds one more bitmap operator, with the usual
+cpumask and nodemask wrappers.  This operator computes one
+bitmap relative to another.  If the n-th bit in the origin
+mask is set, then the m-th bit of the destination mask will
+be set, where m is the position of the n-th set bit in the
+relative mask.
 
-> 	- does not require additional formals to be added to several
-> 	  functions, including functions outside mm/mempolicy.c.
+This is initially to be used by the MPOL_F_RELATIVE_NODES
+facility being considered for mm/mempolicy.c.
 
-... but does require the use of the new mpol_flags() and mpol_mode()
-macros by code in mmshmem.c, outside of mm/mempolicy.c
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Lee.Schermerhorn@hp.com
+Cc: clameter@sgi.com
+Cc: ak@suse.de
+Cc: mel@csn.ul.ie
 
->    Disadvantage:
-> 
-> 	- use of mpol_mode() throughout mm/mempolicy.c code to mask
-> 	  off optional mode flags for conditionals or switch statements.
+---
+ include/linux/bitmap.h   |    3 ++
+ include/linux/cpumask.h  |   12 ++++++++
+ include/linux/nodemask.h |   12 ++++++++
+ lib/bitmap.c             |   63 +++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 88 insertions(+), 2 deletions(-)
 
-This will cause a bug in the future, that escapes into the wild, when
-someone forgets one of these.  I'll bet on that.  It's fragile, because
-(1) such errors are easy to make, and (2) hard to catch.
-
-> Your preference (separate mode and flags members in struct mempolicy):
-> 
->    Advantages:
-> 
-> 	- clearer implementation when dealing with modes: all existing
-> 	  statements involving pol->policy can remain unchanged.
-
-Clear, robust code - that's the biggie.
-
->    Disadvantages:
-> 
-> 	- requires additional formals to be added to several functions,
-> 	  including functions outside mm/mempolicy.c, and
-
-True -- though by this argument, we'd routinely aggregate multiple flags
-and small words into single integer parameters, just to minimize the
-parameter count.  Putting two flags in one parameter is a false
-simplification, unless required by circumstance, such as communicating
-with deep space probes or across the system call boundary with existing
-API's.
-
-Across the system call boundary, we have little choice, for compatibility
-reasons.  But kernel internal interfaces are not so constrained, and the
-ugliness at the system call boundary can be quarantined from most of the
-mempolicy.c code.
-
-> 	- takes additional space in struct mempolicy (two bytes) which
-> 	  could eventually be used for something else.
-
-To be clear to others, as you know, we're not talking here about
-growing the sizeof(struct mempolicy) at present, but rather about using
-some currently unused bytes in the struct.
-
-More often than not, when someone adds complexity that is not needed at
-present, because it might be needed in the future, they are making it
-harder to maintain the code, not easier.
-
-The single most important thing we can do to improve future
-maintainability of code is to make it more readable.
+--- 2.6.24-mm1.orig/include/linux/nodemask.h	2008-02-04 10:41:13.360573666 -0800
++++ 2.6.24-mm1/include/linux/nodemask.h	2008-02-14 03:18:08.134310910 -0800
+@@ -14,6 +14,7 @@
+  * bitmap_scnlistprintf() and bitmap_parselist(), also in bitmap.c.
+  * For details of node_remap(), see bitmap_bitremap in lib/bitmap.c.
+  * For details of nodes_remap(), see bitmap_remap in lib/bitmap.c.
++ * For details of nodes_relative(), see bitmap_relative in lib/bitmap.c.
+  *
+  * The available nodemask operations are:
+  *
+@@ -55,7 +56,8 @@
+  * int nodelist_scnprintf(buf, len, mask) Format nodemask as list for printing
+  * int nodelist_parse(buf, map)		Parse ascii string as nodelist
+  * int node_remap(oldbit, old, new)	newbit = map(old, new)(oldbit)
+- * int nodes_remap(dst, src, old, new)	*dst = map(old, new)(dst)
++ * void nodes_remap(dst, src, old, new)	*dst = map(old, new)(src)
++ * void nodes_relative(dst, orig, relmap) *dst = orig relative to relmap
+  *
+  * for_each_node_mask(node, mask)	for-loop node over mask
+  *
+@@ -326,6 +328,14 @@ static inline void __nodes_remap(nodemas
+ 	bitmap_remap(dstp->bits, srcp->bits, oldp->bits, newp->bits, nbits);
+ }
+ 
++#define nodes_relative(dst, orig, relmap) \
++		__nodes_relative(&(dst), &(orig), &(relmap), MAX_NUMNODES)
++static inline void __nodes_relative(nodemask_t *dstp, const nodemask_t *origp,
++		const nodemask_t *relmapp, int nbits)
++{
++	bitmap_relative(dstp->bits, origp->bits, relmapp->bits, nbits);
++}
++
+ #if MAX_NUMNODES > 1
+ #define for_each_node_mask(node, mask)			\
+ 	for ((node) = first_node(mask);			\
+--- 2.6.24-mm1.orig/include/linux/bitmap.h	2008-02-04 10:41:02.440391382 -0800
++++ 2.6.24-mm1/include/linux/bitmap.h	2008-02-14 03:18:08.150311160 -0800
+@@ -46,6 +46,7 @@
+  * bitmap_shift_left(dst, src, n, nbits)	*dst = *src << n
+  * bitmap_remap(dst, src, old, new, nbits)	*dst = map(old, new)(src)
+  * bitmap_bitremap(oldbit, old, new, nbits)	newbit = map(old, new)(oldbit)
++ * bitmap_relative(dst, orig, relmap, nbits)	*dst = orig relative to relmap
+  * bitmap_scnprintf(buf, len, src, nbits)	Print bitmap src to buf
+  * bitmap_parse(buf, buflen, dst, nbits)	Parse bitmap dst from kernel buf
+  * bitmap_parse_user(ubuf, ulen, dst, nbits)	Parse bitmap dst from user buf
+@@ -120,6 +121,8 @@ extern void bitmap_remap(unsigned long *
+ 		const unsigned long *old, const unsigned long *new, int bits);
+ extern int bitmap_bitremap(int oldbit,
+ 		const unsigned long *old, const unsigned long *new, int bits);
++extern void bitmap_relative(unsigned long *dst, const unsigned long *orig,
++		const unsigned long *relmap, int bits);
+ extern int bitmap_find_free_region(unsigned long *bitmap, int bits, int order);
+ extern void bitmap_release_region(unsigned long *bitmap, int pos, int order);
+ extern int bitmap_allocate_region(unsigned long *bitmap, int pos, int order);
+--- 2.6.24-mm1.orig/include/linux/cpumask.h	2008-02-04 10:53:59.229364809 -0800
++++ 2.6.24-mm1/include/linux/cpumask.h	2008-02-14 03:18:08.174311535 -0800
+@@ -14,6 +14,7 @@
+  * bitmap_scnlistprintf() and bitmap_parselist(), also in bitmap.c.
+  * For details of cpu_remap(), see bitmap_bitremap in lib/bitmap.c
+  * For details of cpus_remap(), see bitmap_remap in lib/bitmap.c.
++ * For details of cpus_relative(), see bitmap_relative in lib/bitmap.c.
+  *
+  * The available cpumask operations are:
+  *
+@@ -53,7 +54,8 @@
+  * int cpulist_scnprintf(buf, len, mask) Format cpumask as list for printing
+  * int cpulist_parse(buf, map)		Parse ascii string as cpulist
+  * int cpu_remap(oldbit, old, new)	newbit = map(old, new)(oldbit)
+- * int cpus_remap(dst, src, old, new)	*dst = map(old, new)(src)
++ * void cpus_remap(dst, src, old, new)	*dst = map(old, new)(src)
++ * void cpus_relative(dst, orig, relmap) *dst = orig relative to relmap
+  *
+  * for_each_cpu_mask(cpu, mask)		for-loop cpu over mask
+  *
+@@ -311,6 +313,14 @@ static inline void __cpus_remap(cpumask_
+ 	bitmap_remap(dstp->bits, srcp->bits, oldp->bits, newp->bits, nbits);
+ }
+ 
++#define cpus_relative(dst, orig, relmap) \
++		__cpus_relative(&(dst), &(orig), &(relmap), NR_CPUS)
++static inline void __cpus_relative(cpumask_t *dstp, const cpumask_t *origp,
++		const cpumask_t *relmapp, int nbits)
++{
++	bitmap_relative(dstp->bits, origp->bits, relmapp->bits, nbits);
++}
++
+ #if NR_CPUS > 1
+ #define for_each_cpu_mask(cpu, mask)		\
+ 	for ((cpu) = first_cpu(mask);		\
+--- 2.6.24-mm1.orig/lib/bitmap.c	2008-02-04 10:41:35.656945848 -0800
++++ 2.6.24-mm1/lib/bitmap.c	2008-02-14 03:18:08.190311785 -0800
+@@ -698,6 +698,69 @@ int bitmap_bitremap(int oldbit, const un
+ }
+ EXPORT_SYMBOL(bitmap_bitremap);
+ 
++/**
++ * bitmap_relative - translate one bitmap relative to another
++ *	@dst: resulting translated bitmap
++ * 	@orig: original untranslated bitmap
++ * 	@relmap: bitmap relative to which translated
++ *	@bits: number of bits in each of these bitmaps
++ *
++ * Set the n-th bit of @dst iff there exists some m such that the
++ * n-th bit of @relmap is set, the m-th bit of @orig is is set,
++ * and the n-th bit of @relmap is the m-th set bit of @relmap.
++ * (If you understood the previous sentence the first time your
++ * read it, you're overqualified for your current job.)
++ *
++ * Example:
++ *  Let's say @relmap has bits 30-39 set, and @orig has bits
++ *  1, 3, 5, 7, 9 and 11 set.  Then on return from this routine,
++ *  @dst will have bits 31, 33, 35, 37 and 39 set.
++ *
++ *  When bit 0 is set in @orig, it means turn on the bit in
++ *  @dst corresponding to whatever is the first bit (if any)
++ *  that is turned on in @relmap.  Since bit 0 was off in the
++ *  above example, we leave off that bit (bit 30) in @dst.
++ *
++ *  When bit 1 is set in @orig (as in the above example), it
++ *  means turn on the bit in @dst corresponding to whatever
++ *  is the second bit that is turned on in @relmap.  The second
++ *  bit in @relmap that was turned on in the above example was
++ *  bit 31, so we turned on bit 31 in @dst.
++ *
++ *  Similarly, we turned on bits 33, 35, 37 and 39 in @dst,
++ *  because they were the 4th, 6th, 8th and 10th set bits
++ *  set in @relmap, and the 4th, 6th, 8th and 10th bits of
++ *  @orig (i.e. bits 3, 5, 7 and 9) were also set.
++ *
++ *  When bit 11 is set in @orig, it means turn on the bit in
++ *  @dst corresponding to whatever is the twelth bit that is
++ *  turned on in @relmap.  In the above example, there were
++ *  only ten bits turned on in @relmap (30..39), so that bit
++ *  11 was set in @orig had no affect on @dst.
++ *
++ * If either of @orig or @relmap is empty (no set bits), then
++ * @dst will be returned empty.
++ *
++ * All bits in @dst not set by the above rule are cleared.
++ */
++void bitmap_relative(unsigned long *dst, const unsigned long *orig,
++			const unsigned long *relmap, int bits)
++{
++	int n, m;	/* same meaning as in above comment */
++
++	bitmap_zero(dst, bits);
++
++	m = 0;
++	for (n = find_first_bit(relmap, bits);
++	     n < bits;
++	     n = find_next_bit(relmap, bits, n + 1)) {
++		/* m == bitmap_pos_to_ord(relmap, n, bits) */
++		if (test_bit(m, orig))
++			set_bit(n, dst);
++		m++;
++	}
++}
++
+ /*
+  * Common code for bitmap_*_region() routines.
+  *	bitmap: array of unsigned longs corresponding to the bitmap
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+                          I won't rest till it's the best ...
+                          Programmer, Linux Scalability
+                          Paul Jackson <pj@sgi.com> 1.650.933.1373
