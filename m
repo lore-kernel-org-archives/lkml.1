@@ -1,81 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934043AbYBNV1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934658AbYBNV1l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934043AbYBNV1G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:27:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764577AbYBNV0f
+	id S934658AbYBNV1l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:27:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934559AbYBNV1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:26:35 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60757 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763661AbYBNV0e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:26:34 -0500
-Date: Thu, 14 Feb 2008 15:24:48 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Becky Bruce <becky.bruce@freescale.com>
-Cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/4]: Respun LMB patches.
-Message-ID: <20080214152448.49c69238@zod.rchland.ibm.com>
-In-Reply-To: <38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
-References: <20080213.170938.34536425.davem@davemloft.net>
-	<38133B3C-75A2-4465-9484-7BF8E7E85D1D@freescale.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 16:27:17 -0500
+Received: from mail.suse.de ([195.135.220.2]:41761 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934607AbYBNV1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:27:15 -0500
+Date: Thu, 14 Feb 2008 13:25:13 -0800
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kevin Lloyd <klloyd@sierrawireless.com>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb: serial: move zte MF330 from sierra to option
+Message-ID: <20080214212513.GA18441@suse.de>
+References: <47B0B02D.2000906@sierrawireless.com> <20080214131228.f76848bd.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080214131228.f76848bd.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 14:58:22 -0600
-Becky Bruce <becky.bruce@freescale.com> wrote:
-
+On Thu, Feb 14, 2008 at 01:12:28PM -0800, Andrew Morton wrote:
+> On Mon, 11 Feb 2008 12:29:33 -0800
+> Kevin Lloyd <klloyd@sierrawireless.com> wrote:
 > 
-> On Feb 13, 2008, at 7:09 PM, David Miller wrote:
+> > From: Kevin Lloyd <linux@sierrawireless.com>
+> > 
+> > Moves the Onda H600/ZTE MF33 device from the sierra driver to the option driver.
+> > 
 > 
-> >
-> > I've taken into consideration the various feedback, and
-> > ported the bug fix and other LMB patches posted recently
-> > in an effort to keep the patch churn by others down wrt.
-> > my moving of these files.
-> >
-> > 1) Use HAVE_LMB as suggested by Sam.
-> >
-> > 2) Fix potential build errors wrt. asm/prom.h dependencies.
-> >
-> >    My algorithm was:
-> >
-> >    a) If the file only included asm/lmb.h I added an include
-> >       of both linux/lmb.c and asm/prom.h
-> >
-> >    b) If the file already includes asm/prom.h, I merely
-> >       changed the asm/lmb.h to linux/lmb.h
-> >
-> >    Header include mimimizations can be done as followon patches.
-> >
-> > 3) Integrate Kumar Gala's initial region fix.
-> >
-> > 4) Integrate Becky Bruce's large physical addressing change,
-> >    but using u64 instead of phys_addr_t.
-> >
-> > It's all at:
-> >
-> > 	master.kernel.org:/pub/scm/linux/kernel/git/davem/lmb-2.6.git
-> >
-> > like before.
-> 
-> 
-> Thanks for picking up the patches from Kumar and myself and fitting  
-> them into your series - this is much appreciated.  FYI, I applied the  
-> entire patch series to my local tree and test-booted both mpc8641 and  
-> mpc8568mds and both build and boot cleanly. I also built pasemi and  
-> ebony, those build cleanly as well.
+> A changelog should describe why a change was made, not simply what the
+> change is.
 
-I plan on actually testing this on Ebony, Walnut, and Bamboo either
-later tonight or tomorrow.  I don't expect many issues.
+I know the history behind it, I'll flush it out when I add it to my
+tree.  Kevin sent this patch because I asked for it, so I'll take the
+blame here.
 
-Dave, those above boards would cover the build of PowerPC 4xx CPU cores.
-Just an FYI.
+thanks,
 
-josh
+greg k-h
