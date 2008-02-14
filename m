@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbYBNSQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760891AbYBNSR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758956AbYBNSQA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYBNSPx
+	id S1760891AbYBNSR1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:17:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbYBNSRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:15:53 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:47526 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752103AbYBNSPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:15:52 -0500
-Date: Thu, 14 Feb 2008 12:15:44 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: vatsa@linux.vnet.ibm.com, dhaval@linux.vnet.ibm.com, arjan@infradead.org,
-       mingo@elte.hu, tglx@linutronix.de, ghaskins@novell.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl
-Subject: Re: [RFC][PATCH 0/2] reworking load_balance_monitor
-Message-Id: <20080214121544.941d91f1.pj@sgi.com>
-In-Reply-To: <20080214155724.772744000@chello.nl>
-References: <20080214155724.772744000@chello.nl>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 Feb 2008 13:17:18 -0500
+Received: from r00tworld.com ([212.85.137.21]:41196 "EHLO r00tworld.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754058AbYBNSRR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 13:17:17 -0500
+From: pageexec@freemail.hu
+To: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 14 Feb 2008 19:16:20 +0200
+MIME-Version: 1.0
+Subject: Re: [x86.git#mm] stack protector fixes, vmsplice exploit
+Reply-to: pageexec@freemail.hu
+CC: Sam Ravnborg <sam@ravnborg.org>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Message-ID: <47B49384.23437.F8FB16A@pageexec.freemail.hu>
+In-reply-to: <20080214170058.GA2043@elte.hu>
+References: <20080214170058.GA2043@elte.hu>
+X-mailer: Pegasus Mail for Windows (4.41)
+Content-type: text/plain; charset=US-ASCII
+Content-transfer-encoding: 7BIT
+Content-description: Mail message body
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.1.12 (r00tworld.com [212.85.137.21]); Thu, 14 Feb 2008 19:14:35 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter wrote of:
-> the lack of rd->load_balance.
+On 14 Feb 2008 at 18:00, Ingo Molnar wrote:
 
-Could you explain to me a bit what that means?
+some comments:
 
-Does this mean that the existing code would, by default (default being
-a single sched domain, covering the entire system's CPUs) load balance
-across the entire system, but with your rework, not so load balance
-there?  That seems unlikely.
+>   x86: fix execve with -fstack-protect
 
-In any event, from my rather cpuset-centric perspective, there are only
-two common cases to consider.
+the commit comment says:
 
- 1. In the default case, build_sched_domains() gets called once,
-    at init, with a cpu_map of all non-isolated CPUs, and we should
-    forever after load balance across all those non-isolated CPUs.
+> This hack was true up to the point the stackprotector added
+> another word to the stack frame. Shifting all the addresses
+> by 8 bytes, crashing and burning any exec attempt.
 
- 2. In some carefully managed systems using the per-cpuset
-    'sched_load_balance' flags, we tear down that first default
-    sched domain, by calling detach_destroy_domains() on it, and we
-    then setup some number of sched_domains (typically in the range
-    of two to ten, though I suppose we should design to scale to
-    hundreds of sched domains, on systems with thousands of CPUs)
-    by additional calls to build_sched_domains(), such that their
-    CPUs don't overlap (pairwise disjoint) and such that the union
-    of all their CPUs may, or may not, include all non-isolated CPUs
-    (some CPUs might be left 'out in the cold', intentionally, as
-    essentially additional isolated CPUs.)  We would then expect load
-    balancing within each of these pair-wise disjoint sched domains,
-    but not between one of them and another.
+actually, that's not the problem here because the canary is in the
+local variable area, it doesn't affect the passed arguments. what
+happens here is that gcc treats the argument area as owned by the
+callee, not the caller and is allowed to do certain tricks. for ssp
+it will make a copy of the struct passed by value into the local
+variable area and pass *its* address down, and it won't copy it back
+into the original instance stored in the argument area.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+so once sys_execve returns, the pt_regs passed by value hasn't at all
+changed and its default content will cause a nice double fault (FWIW,
+this part took me the longest to debug, being down with cold didn't
+help it either ;).
+
+>   x86: fix stackprotector canary updates during context switches
+
+the commit says:
+
+> Note: this means that we call __switch_to() [and its sub-functions]
+> still with the old canary, but that is not a problem, both the previous
+> and the next task has a high-quality canary. The only (mostly academic)
+> disadvantage is that the canary of one task may leak onto the stack of
+> another task, increasing the risk of information leaks, were an attacker
+> able to read the stack of specific tasks (but not that of others).
+
+the best practical defense against leaking the canary is to change its
+value on every syscall but it has some performance impact in microbenchmarks.
+
+>   x86: stackprotector: mix TSC to the boot canary
+
+this should probably be implemented in a general get_random_long()
+function...
+
+>   x86: test the presence of the stackprotector
+>   x86: streamline stackprotector
+
+the config comment says -fstack-protector whereas you're really enabling
+the stonger -fstack-protector-all feature (without the latter the ssp
+test function sample_stackprotector_fn wouldn't even be instrumented ;-).
+
