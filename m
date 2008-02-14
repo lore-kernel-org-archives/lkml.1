@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbYBNOBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763077AbYBNODV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763926AbYBNOBW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbYBNOBO
+	id S1763077AbYBNODV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:03:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYBNODM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:01:14 -0500
-Received: from ti-out-0910.google.com ([209.85.142.188]:61487 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750741AbYBNOBN (ORCPT
+	Thu, 14 Feb 2008 09:03:12 -0500
+Received: from relais.videotron.ca ([24.201.245.36]:15475 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750756AbYBNODL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:01:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nwqI5FGxtn9/+Iz6IQHUa/8o6sm03Dtfn0syW3T9LJrmLrB0vmUap2Ks93eLh1Jc2JWWRyZU4qXAZ5UFnVHv7xMmhzSgqmLmMTOrAIMKBhhUbDUBfc1WLo6xJcknXfoS9DoKyQtUxpteIL90hTLOJ6IeVWcDYv3uGY8Di0ellM4=
-Message-ID: <df9815e70802140601i610574c7t782a618db414c7c9@mail.gmail.com>
-Date: Thu, 14 Feb 2008 22:01:11 +0800
-From: "Jike Song" <albcamus@gmail.com>
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Subject: Re: nmi_watchdog on x86_64
-Cc: "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <86802c440710151912n3b288dc4na06a9abb2addacf4@mail.gmail.com>
+	Thu, 14 Feb 2008 09:03:11 -0500
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Thu, 14 Feb 2008 09:03:09 -0500 (EST)
+From: Nicolas Pitre <nico@cam.org>
+X-X-Sender: nico@xanadu.home
+To: Kevin Hilman <khilman@mvista.com>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.24-rt1] SMC91x: Use special_lock when
+ CONFIG_PREEMPT_[HARD|SOFT]IRQS
+In-reply-to: <1202952946-10511-1-git-send-email-khilman@mvista.com>
+Message-id: <alpine.LFD.1.00.0802140902460.2732@xanadu.home>
+References: <1202952946-10511-1-git-send-email-khilman@mvista.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Oct 16, 2007 at 10:12 AM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> just found my on hand ck804, and mcp55 based AMD servers:
->  nmi_watchdog=1 doesn't work
->  but nmi_watchdog=2 does work
->
->  =1, it say: IOAPIC 8259A virtual wire mode...
->
->  Did nmi_watchdog=1 work on any other amd64 platform?
->
+On Wed, 13 Feb 2008, Kevin Hilman wrote:
 
-I booted 2.6.23 on a HP NX6325 laptop with nmi_watchdog=1, and dmesg says,
+> The smc_special_locks should also be used when either softIRQs or hard
+> IRQs are preempted which may lead to the same problems as under SMP.
+> 
+> Signed-off-by: Kevin Hilman <khilman@mvista.com>
 
-...
-..MP-BIOS bug: 8254 timer not connected to IO-APIC
-timer doesn't work through the IO-APIC - disabling NMI Watchdog!
+Acked-by: Nicolas Pitre <nico@cam.org>
 
-nmi_watchdog remains to be 0, as I read by a simple kernel module.
+> 
+> ---
+>  drivers/net/smc91x.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
+> index f198c49..be62616 100644
+> --- a/drivers/net/smc91x.c
+> +++ b/drivers/net/smc91x.c
+> @@ -530,7 +530,8 @@ static inline void  smc_rcv(struct net_device *dev)
+>  	}
+>  }
+>  
+> -#ifdef CONFIG_SMP
+> +#if defined(CONFIG_SMP) ||						\
+> +    defined(CONFIG_PREEMPT_SOFTIRQS) || defined(CONFIG_PREEMPT_HARDIRQS)
+>  /*
+>   * On SMP we have the following problem:
+>   *
+> -- 
+> 1.5.4
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-Regards,
-Jike
+
+Nicolas
