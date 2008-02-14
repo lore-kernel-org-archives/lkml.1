@@ -1,270 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbYBNURw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764331AbYBNUS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932526AbYBNURw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 15:17:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763601AbYBNURb
+	id S1764331AbYBNUS3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 15:18:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761051AbYBNUSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 15:17:31 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:46527 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762566AbYBNURa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 15:17:30 -0500
-Date: Thu, 14 Feb 2008 20:17:27 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mike Travis <travis@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing boot failure
-Message-ID: <20080214201727.GC30841@csn.ul.ie>
-References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <47B33ACF.5030700@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 14 Feb 2008 15:18:17 -0500
+Received: from vms040pub.verizon.net ([206.46.252.40]:55476 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760926AbYBNUSQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 15:18:16 -0500
+Date: Thu, 14 Feb 2008 15:04:41 -0500
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: Handshaking on USB serial devices
+In-reply-to: <20080214193731.3c36acb0@core>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200802141504.41991.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <47B30291.2040905@davidnewall.com>
+ <200802141255.22048.gene.heskett@gmail.com> <20080214193731.3c36acb0@core>
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (13/02/08 10:45), Mike Travis didst pronounce:
-> Mel Gorman wrote:
-> > On (03/02/08 17:16), Andrew Morton didst pronounce:
-> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.24/2.6.24-mm1/
-> >>
-> > 
-> > bl6-13 (4-way x86_64 machine) from test.kernel.org is failing to boot recent
-> > -mm and mainline trees. I noticed it when testing -mm before rebasing other
-> > patches but the oops on mainline looks the same. The full console log is
-> > below but the important difference between a working and non-working kernel
-> > is the following
-> > 
-> > -PERCPU: Allocating 62512 bytes of per cpu data
-> > -Built 1 zonelists in Node order, mobility grouping on.  Total pages: 255875
-> > +PERCPU: Allocating 65560 bytes of per cpu data
-> > +cpu with no node 2, num_online_nodes 1
-> > +cpu with no node 3, num_online_nodes 1
-> > +Built 1 zonelists in Node order, mobility grouping on.  Total pages:
-> > 251257
-> > 
-> > "cpu with no node 2" is actually saying that cpu 2 has no node and the
-> > message is a just misleading. The number of online nodes and cpu mappings
-> > are not adding up as I got this from a debugging patch
-> 
-> I'll take a closer look though I've not been able to duplicate your
-> error yet.  It does appear from the message text that the code is
-> out-of-date.  The latest "setup_per_cpu_areas()" should say:
-> 
->        "cpu %d has no node, num_online_nodes %d\n",
->         i, num_online_nodes());
-> 
-> There are a number of backed up patches in the queue.  I'm resubmitting
-> the whole set re-based on 2.6.25-rc1 shortly.  (I don't know though, that
-> any will address this problem.)
-> 
+On Thursday 14 February 2008, Alan Cox wrote:
+>> byte of a packet is being thrown away about .1% of the time for the
+>> pl2303, but I'm not sure if the FTDI driver still suffers from a similar
+>> rash.  I
+>
+>A 20 byte low speed message is too small for flow control to account for
+>it.
 
-According to git-bisect, the problem patch is below. It doesn't back out
-cleanly so I haven't verified for sure the bisect is correct yet.
+Where then could the first byte go?  Note I'm not fussing about flow controls 
+per sei, so the subject line maybe needs to be adjusted, but they obviously 
+work well enough that a multimegabyte transfer to my printer works very well, 
+but about usb trying to entirely replace serial here.  There does seem to be 
+a problem but I'm not 100% positive where it is in the chain of a usb packets 
+travels.  What I've observed, with hidraw I think it was, is that the 
+first 'wake up' byte incoming didn't seem to be there.
 
-commit ef97001f3d869d7cc1956e0cc0d89e514e3f7db0
-Author: travis@sgi.com <travis@sgi.com>
-Date:   Wed Jan 30 13:33:10 2008 +0100
-
-    x86: change size of APICIDs from u8 to u16
-    
-    Change the size of APICIDs from u8 to u16.  This partially
-    supports the new x2apic mode that will be present on future
-    processor chips. (Chips actually support 32-bit APICIDs, but that
-    change is more intrusive. Supporting 16-bit is sufficient for now).
-    
-    Signed-off-by: Jack Steiner <steiner@sgi.com>
-    
-    I've included just the partial change from u8 to u16 apicids.  The
-    remaining x2apic changes will be in a separate patch.
-    
-    In addition, the fake_node_to_pxm_map[] and fake_apicid_to_node[]
-    tables have been moved from local data to the __initdata section
-    reducing stack pressure when MAX_NUMNODES and MAX_LOCAL_APIC are
-    increased in size.
-    
-    Signed-off-by: Mike Travis <travis@sgi.com>
-    Reviewed-by: Christoph Lameter <clameter@sgi.com>
-    Signed-off-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-diff --git a/arch/x86/kernel/genapic_64.c b/arch/x86/kernel/genapic_64.c
-index ce703e2..ac2b78f 100644
---- a/arch/x86/kernel/genapic_64.c
-+++ b/arch/x86/kernel/genapic_64.c
-@@ -32,10 +32,10 @@
-  * array during this time.  Is it zeroed when the per_cpu
-  * data area is removed.
-  */
--u8 x86_cpu_to_apicid_init[NR_CPUS] __initdata
-+u16 x86_cpu_to_apicid_init[NR_CPUS] __initdata
- 					= { [0 ... NR_CPUS-1] = BAD_APICID };
- void *x86_cpu_to_apicid_ptr;
--DEFINE_PER_CPU(u8, x86_cpu_to_apicid) = BAD_APICID;
-+DEFINE_PER_CPU(u16, x86_cpu_to_apicid) = BAD_APICID;
- EXPORT_PER_CPU_SYMBOL(x86_cpu_to_apicid);
- 
- struct genapic __read_mostly *genapic = &apic_flat;
-diff --git a/arch/x86/kernel/mpparse_64.c b/arch/x86/kernel/mpparse_64.c
-index ef4aab1..17d21e5 100644
---- a/arch/x86/kernel/mpparse_64.c
-+++ b/arch/x86/kernel/mpparse_64.c
-@@ -67,7 +67,7 @@ unsigned disabled_cpus __cpuinitdata;
- /* Bitmask of physically existing CPUs */
- physid_mask_t phys_cpu_present_map = PHYSID_MASK_NONE;
- 
--u8 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
-+u16 bios_cpu_apicid[NR_CPUS] = { [0 ... NR_CPUS-1] = BAD_APICID };
- 
- 
- /*
-@@ -132,7 +132,7 @@ static void __cpuinit MP_processor_info(struct mpc_config_processor *m)
- 	 * area is created.
- 	 */
- 	if (x86_cpu_to_apicid_ptr) {
--		u8 *x86_cpu_to_apicid = (u8 *)x86_cpu_to_apicid_ptr;
-+		u16 *x86_cpu_to_apicid = (u16 *)x86_cpu_to_apicid_ptr;
- 		x86_cpu_to_apicid[cpu] = m->mpc_apicid;
- 	} else {
- 		per_cpu(x86_cpu_to_apicid, cpu) = m->mpc_apicid;
-diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-index 5bd42ce..1fea185 100644
---- a/arch/x86/kernel/smpboot_64.c
-+++ b/arch/x86/kernel/smpboot_64.c
-@@ -65,7 +65,7 @@ int smp_num_siblings = 1;
- EXPORT_SYMBOL(smp_num_siblings);
- 
- /* Last level cache ID of each logical CPU */
--DEFINE_PER_CPU(u8, cpu_llc_id) = BAD_APICID;
-+DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
- 
- /* Bitmask of currently online CPUs */
- cpumask_t cpu_online_map __read_mostly;
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 551e359..650001a 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -626,7 +626,7 @@ void __init init_cpu_to_node(void)
- 	int i;
- 
- 	for (i = 0; i < NR_CPUS; i++) {
--		u8 apicid = x86_cpu_to_apicid_init[i];
-+		u16 apicid = x86_cpu_to_apicid_init[i];
- 
- 		if (apicid == BAD_APICID)
- 			continue;
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-index 5c0637e..b367bc3 100644
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -130,6 +130,9 @@ void __init
- acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- {
- 	int pxm, node;
-+	int apic_id;
-+
-+	apic_id = pa->apic_id;
- 	if (srat_disabled())
- 		return;
- 	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
-@@ -145,10 +148,10 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
- 		bad_srat();
- 		return;
- 	}
--	apicid_to_node[pa->apic_id] = node;
-+	apicid_to_node[apic_id] = node;
- 	acpi_numa = 1;
- 	printk(KERN_INFO "SRAT: PXM %u -> APIC %u -> Node %u\n",
--	       pxm, pa->apic_id, node);
-+	       pxm, apic_id, node);
- }
- 
- int update_end_of_memory(unsigned long end) {return -1;}
-@@ -343,7 +346,8 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
- 	/* First clean up the node list */
- 	for (i = 0; i < MAX_NUMNODES; i++) {
- 		cutoff_node(i, start, end);
--		if ((nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
-+		/* ZZZ why was this needed. At least add a comment */
-+		if (nodes[i].end && (nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
- 			unparse_node(i);
- 			node_set_offline(i);
- 		}
-@@ -384,6 +388,12 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
- }
- 
- #ifdef CONFIG_NUMA_EMU
-+static int fake_node_to_pxm_map[MAX_NUMNODES] __initdata = {
-+	[0 ... MAX_NUMNODES-1] = PXM_INVAL
-+};
-+static unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] __initdata = {
-+	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
-+};
- static int __init find_node_by_addr(unsigned long addr)
- {
- 	int ret = NUMA_NO_NODE;
-@@ -414,12 +424,6 @@ static int __init find_node_by_addr(unsigned long addr)
- void __init acpi_fake_nodes(const struct bootnode *fake_nodes, int num_nodes)
- {
- 	int i, j;
--	int fake_node_to_pxm_map[MAX_NUMNODES] = {
--		[0 ... MAX_NUMNODES-1] = PXM_INVAL
--	};
--	unsigned char fake_apicid_to_node[MAX_LOCAL_APIC] = {
--		[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
--	};
- 
- 	printk(KERN_INFO "Faking PXM affinity for fake nodes on real "
- 			 "topology.\n");
-diff --git a/include/asm-x86/processor.h b/include/asm-x86/processor.h
-index e701ac5..81ecfed 100644
---- a/include/asm-x86/processor.h
-+++ b/include/asm-x86/processor.h
-@@ -90,14 +90,14 @@ struct cpuinfo_x86 {
- #ifdef CONFIG_SMP
- 	cpumask_t llc_shared_map;	/* cpus sharing the last level cache */
- #endif
--	unsigned char x86_max_cores;	/* cpuid returned max cores value */
--	unsigned char apicid;
--	unsigned short x86_clflush_size;
-+	u16 x86_max_cores;		/* cpuid returned max cores value */
-+	u16 apicid;
-+	u16 x86_clflush_size;
- #ifdef CONFIG_SMP
--	unsigned char booted_cores;	/* number of cores as seen by OS */
--	__u8 phys_proc_id; 		/* Physical processor id. */
--	__u8 cpu_core_id;  		/* Core id */
--	__u8 cpu_index;			/* index into per_cpu list */
-+	u16 booted_cores;		/* number of cores as seen by OS */
-+	u16 phys_proc_id; 		/* Physical processor id. */
-+	u16 cpu_core_id;  		/* Core id */
-+	u16 cpu_index;			/* index into per_cpu list */
- #endif
- } __attribute__((__aligned__(SMP_CACHE_BYTES)));
- 
-diff --git a/include/asm-x86/smp_64.h b/include/asm-x86/smp_64.h
-index 2feddda..b1d5381 100644
---- a/include/asm-x86/smp_64.h
-+++ b/include/asm-x86/smp_64.h
-@@ -26,14 +26,14 @@ extern void unlock_ipi_call_lock(void);
- extern int smp_call_function_mask(cpumask_t mask, void (*func)(void *),
- 				  void *info, int wait);
- 
--extern u8 __initdata x86_cpu_to_apicid_init[];
-+extern u16 __initdata x86_cpu_to_apicid_init[];
- extern void *x86_cpu_to_apicid_ptr;
--extern u8 bios_cpu_apicid[];
-+extern u16 bios_cpu_apicid[];
- 
- DECLARE_PER_CPU(cpumask_t, cpu_sibling_map);
- DECLARE_PER_CPU(cpumask_t, cpu_core_map);
--DECLARE_PER_CPU(u8, cpu_llc_id);
--DECLARE_PER_CPU(u8, x86_cpu_to_apicid);
-+DECLARE_PER_CPU(u16, cpu_llc_id);
-+DECLARE_PER_CPU(u16, x86_cpu_to_apicid);
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
- {
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Whenever people agree with me I always feel I must be wrong.
+		-- Oscar Wilde
