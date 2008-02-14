@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763077AbYBNODV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763201AbYBNOGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763077AbYBNODV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:03:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751722AbYBNODM
+	id S1763201AbYBNOGu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753848AbYBNOGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:03:12 -0500
-Received: from relais.videotron.ca ([24.201.245.36]:15475 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750756AbYBNODL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:03:11 -0500
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Thu, 14 Feb 2008 09:03:09 -0500 (EST)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Kevin Hilman <khilman@mvista.com>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.24-rt1] SMC91x: Use special_lock when
- CONFIG_PREEMPT_[HARD|SOFT]IRQS
-In-reply-to: <1202952946-10511-1-git-send-email-khilman@mvista.com>
-Message-id: <alpine.LFD.1.00.0802140902460.2732@xanadu.home>
-References: <1202952946-10511-1-git-send-email-khilman@mvista.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 14 Feb 2008 09:06:42 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:34775 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753662AbYBNOGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:06:41 -0500
+Date: Thu, 14 Feb 2008 15:06:28 +0100 (CET)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0802141503170.7699@twin.jikos.cz>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Kevin Hilman wrote:
+On Fri, 15 Feb 2008, Stephen Rothwell wrote:
 
-> The smc_special_locks should also be used when either softIRQs or hard
-> IRQs are preempted which may lead to the same problems as under SMP.
-> 
-> Signed-off-by: Kevin Hilman <khilman@mvista.com>
+> The tree consists of subsystem git and quilt trees.  Currently, the 
+> quilt trees are integrated by importing them into appropriately based 
+> git branches and then merging those branches.  
 
-Acked-by: Nicolas Pitre <nico@cam.org>
+Now, would it be possible to have somewhere listed the URLs of git/quilt 
+trees that were merged? The commit messages about merges with different 
+branches aren't too informative, it might sometime be useful to know more 
+about the trees that were merged.
 
-> 
-> ---
->  drivers/net/smc91x.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/smc91x.c b/drivers/net/smc91x.c
-> index f198c49..be62616 100644
-> --- a/drivers/net/smc91x.c
-> +++ b/drivers/net/smc91x.c
-> @@ -530,7 +530,8 @@ static inline void  smc_rcv(struct net_device *dev)
->  	}
->  }
->  
-> -#ifdef CONFIG_SMP
-> +#if defined(CONFIG_SMP) ||						\
-> +    defined(CONFIG_PREEMPT_SOFTIRQS) || defined(CONFIG_PREEMPT_HARDIRQS)
->  /*
->   * On SMP we have the following problem:
->   *
-> -- 
-> 1.5.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Maybe just an additional file somewhere in the root of the source tree 
+would be sufficient ...
 
+Thanks,
 
-Nicolas
+-- 
+Jiri Kosina
