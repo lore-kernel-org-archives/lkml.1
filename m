@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbYBNSZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbYBNS0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbYBNSZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 13:25:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbYBNSZZ
+	id S1759874AbYBNS0f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 13:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbYBNS01
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 13:25:25 -0500
-Received: from mga06.intel.com ([134.134.136.21]:22164 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758125AbYBNSZX (ORCPT
+	Thu, 14 Feb 2008 13:26:27 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:41767 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754418AbYBNS00 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 13:25:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,353,1199692800"; 
-   d="scan'208";a="339988793"
-Message-ID: <47B4876B.6020100@linux.intel.com>
-Date: Thu, 14 Feb 2008 10:24:43 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+	Thu, 14 Feb 2008 13:26:26 -0500
+Message-ID: <47B487D0.5010104@ct.jp.nec.com>
+Date: Thu, 14 Feb 2008 10:26:24 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Bill Davidsen <davidsen@tmr.com>
-CC: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, Jiri Slaby <jirislaby@gmail.com>,
-       Pavel Machek <pavel@suse.cz>, Christoph Hellwig <hch@lst.de>,
-       Dominik Brodowski <linux@brodo.de>, Andi Kleen <ak@suse.de>,
-       Adrian Bunk <bunk@stusta.de>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Len Brown <len.brown@intel.com>
-Subject: Re: Feature Removals for 2.6.25
-References: <1201829922.23523.68.camel@brick>	<47B3AC24.5050605@tmr.com> <20080213185502.0005dd4d@extreme> <47B48564.1010709@tmr.com>
-In-Reply-To: <47B48564.1010709@tmr.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org
+Cc: Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] latencytop: fix kernel panic while reading latency proc file
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Davidsen wrote:
-> Note that because the hardware is old, it's highly likely that most of 
-> it will be retired before that sk98lin driver needs a change. I can't 
-> see anyone using sk98lin on a new system, so it would be less 
-> contentious to let the hardware (or users) die of natural causes if you 
-> can.
-> 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-the problem is that the new one DOES NOT GET FIXED.
-THAT is a huge problem; it means we have a buggy driver...
+Reading /proc/<pid>/latency or /proc/<pid>/task/<tid>/latency could cause
+NULL pointer dereference.
+
+In lstats_open(), get_proc_task() can return NULL, in which case the kernel
+will oops at lstats_show_proc() because m->private is NULL.
+
+When get_proc_task() returns NULL, the kernel should return -ENOENT.
+
+This can be reproduced by the following script.
+while :
+do
+        date
+        bash -c 'ls > ls.$$' &
+        pid=$!
+        cat /proc/$pid/latency &
+        cat /proc/$pid/latency &
+        cat /proc/$pid/latency &
+        cat /proc/$pid/latency
+done
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ fs/proc/base.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 7c6b4ec..1710b03 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -350,6 +350,8 @@ static int lstats_open(struct inode *inode, struct file *file)
+ 	struct seq_file *m;
+ 	struct task_struct *task = get_proc_task(inode);
+ 
++	if (!task)
++		return -ENOENT;
+ 	ret = single_open(file, lstats_show_proc, NULL);
+ 	if (!ret) {
+ 		m = file->private_data;
+-- 
+1.5.3.8
+
