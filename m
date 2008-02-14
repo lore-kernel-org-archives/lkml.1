@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933463AbYBNOeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933885AbYBNOeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933463AbYBNOeV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 09:34:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbYBNOeG
+	id S933885AbYBNOeo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 09:34:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761427AbYBNOe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 09:34:06 -0500
-Received: from mail.bmlv.gv.at ([193.171.152.37]:56980 "EHLO mail.bmlv.gv.at"
+	Thu, 14 Feb 2008 09:34:28 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:60405 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755897AbYBNOeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 09:34:05 -0500
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: Jeff Dike <jdike@addtoit.com>
-Subject: Re: 2.6.24.2 won't compile UML
-Date: Thu, 14 Feb 2008 15:33:56 +0100
-User-Agent: KMail/1.9.7
-Cc: user-mode-linux-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200802141213.09859.philipp.marek@bmlv.gv.at> <20080214142439.GA5901@c2.user-mode-linux.org>
-In-Reply-To: <20080214142439.GA5901@c2.user-mode-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802141533.56387.philipp.marek@bmlv.gv.at>
+	id S1755920AbYBNOe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 09:34:27 -0500
+Date: Fri, 15 Feb 2008 01:34:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-Id: <20080215013421.c081407d.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.LNX.4.64.0802141503170.7699@twin.jikos.cz>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	<Pine.LNX.4.64.0802141503170.7699@twin.jikos.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__15_Feb_2008_01_34_21_+1100_WfUBrBs=p/IOzJ4z"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Donnerstag, 14. Februar 2008, Jeff Dike wrote:
-> On Thu, Feb 14, 2008 at 12:13:09PM +0100, Ph. Marek wrote:
-> >   make -C linux-2.6.24.2/ O=output_path/build ARCH=um bzImage
-> >
-> >   make[2]: *** No rule to make target `bzImage'.  Stop.
+--Signature=_Fri__15_Feb_2008_01_34_21_+1100_WfUBrBs=p/IOzJ4z
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, 14 Feb 2008 15:06:28 +0100 (CET) Jiri Kosina <jikos@jikos.cz> wrote:
 >
-> This seems pretty clear, no?
->
-> bzImage is a x86-ism.  Just leave it off, and you'll get linux and vmlinux.
-Yes ... but the various warnings confused me.
+> On Fri, 15 Feb 2008, Stephen Rothwell wrote:
+>=20
+> > The tree consists of subsystem git and quilt trees.  Currently, the=20
+> > quilt trees are integrated by importing them into appropriately based=20
+> > git branches and then merging those branches. =20
+>=20
+> Now, would it be possible to have somewhere listed the URLs of git/quilt=
+=20
+> trees that were merged? The commit messages about merges with different=20
+> branches aren't too informative, it might sometime be useful to know more=
+=20
+> about the trees that were merged.
+>=20
+> Maybe just an additional file somewhere in the root of the source tree=20
+> would be sufficient ...
 
-Sorry, will try to do better next time.
+Good idea.  I have pushed out an extra commit that just contains the top
+level "Trees" file.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thank you!
+--Signature=_Fri__15_Feb_2008_01_34_21_+1100_WfUBrBs=p/IOzJ4z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHtFFzTgG2atn1QN8RAmDVAJ9nGzGCB2hvJkYACIVpVsTC7HYcJgCeLp5d
+awtC1vPf4N3L14wQO61/dNM=
+=t58y
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__15_Feb_2008_01_34_21_+1100_WfUBrBs=p/IOzJ4z--
