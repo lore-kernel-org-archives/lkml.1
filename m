@@ -1,114 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933243AbYBNWRD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765838AbYBNWTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933243AbYBNWRD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 17:17:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYBNWQs
+	id S1765838AbYBNWTa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 17:19:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755773AbYBNWTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 17:16:48 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4040 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756856AbYBNWQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 17:16:46 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 2/6] fs/direct-io.c: Use DIV_ROUND_UP
-Date: Thu, 14 Feb 2008 23:16:44 +0100
-User-Agent: KMail/1.9.7
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nishanth Aravamudan <nacc@us.ibm.com>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.58.0802141614050.1185@pc-041.diku.dk> <84144f020802141018i235d3adfu13a84d124dc3964e@mail.gmail.com> <Pine.LNX.4.64.0802142049510.19977@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0802142049510.19977@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802142316.44985.m.kozlowski@tuxland.pl>
+	Thu, 14 Feb 2008 17:19:19 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:48835 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755342AbYBNWTS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 17:19:18 -0500
+To: trond.myklebust@fys.uio.no
+CC: miklos@szeredi.hu, menage@google.com, viro@zeniv.linux.org.uk,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-reply-to: <1203016675.18369.21.camel@heimdal.trondhjem.org> (message from
+	Trond Myklebust on Thu, 14 Feb 2008 14:17:55 -0500)
+Subject: Re: [PATCH] Add MS_BIND_FLAGS mount flag
+References: <47B283EB.8070209@google.com>
+	 <E1JPZUb-00013Z-0U@pomaz-ex.szeredi.hu>
+	 <6599ad830802140719l270d6fdfyd6d17806eda12a8d@mail.gmail.com>
+	 <E1JPgYm-0002dm-IX@pomaz-ex.szeredi.hu>
+	 <1203006419.8343.48.camel@heimdal.trondhjem.org>
+	 <E1JPi3u-0002rp-Nz@pomaz-ex.szeredi.hu> <1203016675.18369.21.camel@heimdal.trondhjem.org>
+Message-Id: <E1JPmPw-0003au-SF@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 14 Feb 2008 23:18:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-> > >  Is it just me, or does
-> > >
-> > >         ((user_addr + iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE - user_addr/PAGE_SIZE)
-> > >
-> > >  not simplify to
-> > >
-> > >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE + user_addr/PAGE_SIZE - user_addr/PAGE_SIZE)
-> > >
-> > >         = ((iov[seg].iov_len + PAGE_SIZE - 1)/PAGE_SIZE)
-> > >
-> > >         = DIV_ROUND_UP(iov[seg].iov_len, PAGE_SIZE)
-> > >
-> > >  CMIIW.
+> On Thu, 2008-02-14 at 18:39 +0100, Miklos Szeredi wrote:
+> > > > And I'm not against doing it with the "at*" variants, as Trond
+> > > > suggested.
+> > > 
+> > > If you're going to change the syscall, then you should ensure that it
+> > > solves _all_ the problems that are known at this time. Ignoring the
+> > > automounter issue is just going to force us to redo the syscall in a
+> > > couple of months...
 > > 
-> > I double-checked this and I believe you're correct. It's simpler to
-> > see when you do:
+> > Sure.
 > > 
-> >   x = user_addr
-> >   y = iov[seg].iov_len
-> >   z = PAGE_SIZE
+> > Although, an (almost) equivalent userspace code would be:
 > > 
-> > So
+> > mount_fooat(int fd, const char *path)
+> > {
+> > 	char tmpbuf[64];
+> > 	int tmpfd = openat(fd, path);
 > > 
-> >   (x + y + z - 1)/z - x/z
-> > 
-> >   = [x + (y + z - 1)]/z - x/z
-> > 
-> >   = [xz + z(y + z - 1)]/z^2 - x/z
-> > 
-> >   = x/z + (y + z - 1)/z - x/z
-> > 
-> > And the rest follows from your simplifications.
+> > 	sprintf(tmpbuf, "/proc/self/fd/%i", tmpfd);
+> > 	return mount_foo(tmpbuf, ...);
+> > }
+> >
+> > Or is there something (other than not requiring proc) that the *at
+> > variant gives?
 > 
-> It doesn't work:
+> The ability to have a daemon handle mounting onto a directory that only
+> exists in another process's private namespace.
 > 
->  ((3+4+5-1)/5) - (3/5) = 2
->  ((4+5-1)/5) = 1
+> Say I'm running in my private namespace that contains paths that are not
+> shared by the trusted 'init' namespace. If I were to step on an
+> autofs-like trap, I'd like for the kernel to be able to notify the
+> automounter that is running in the trusted namespace set up by 'init',
+> and have it mount the directory onto my namespace. This should happen
+> even if the path is not shared.
+> 
+> With mountat() the kernel can still pass the necessary information to
+> the automounter by giving it a directory file descriptor 'fd' that
+> points to the directory on top of which it wants the mount to occur.
+> Then automounter then executes
+> 
+>      mountat(AT_FDCWD, dev_name, fd, '.', type, flags, data);
+> 
+> and hey presto, the magic occurs.
 
-Logic was wrong but conclusion was right :) and so was Nishanth:
+I understand perfectly that this is what you want to do.  And I'm
+saying that the following code snippet should do exactly the same,
+without having to add a new syscall:
 
-(a + b) + c = a + (b + c)
+	char tmpbuf[64];
+	sprintf(tmpbuf, "/proc/self/fd/%i", fd);
+	mount(dev_name, tmpbuf, type, flags, data);
 
-and
+[ You could actually try to read people's responses, instead of
+immediately assuming they don't understand :-/ ]
 
-k   l   k + l
-- + - = -----
-m   m     m
+So again, what is the advantage of a mountat() syscall over just using
+the proc trick?
 
-thus:
-
-(user_addr + iov[seg].iov_len + PAGE_SIZE - 1) = user_addr + (iov[seg].iov_len + PAGE_SIZE - 1)
-
-and
-
-
-user_addr + iov[seg].iov_len + PAGE_SIZE - 1   user_addr
--------------------------------------------- - --------- =
-                 PAGE_SIZE                     PAGE_SIZE
-
-
-user_addr   iov[seg].iov_len + PAGE_SIZE - 1   user_addr
---------- + -------------------------------- - --------- = 
-PAGE_SIZE               PAGE_SIZE              PAGE_SIZE
-
-
-iov[seg].iov_len + PAGE_SIZE - 1
---------------------------------
-           PAGE_SIZE
-
-
-or even more:
-
-
-iov[seg].iov_len - 1
--------------------- + 1
-     PAGE_SIZE
-
-
-Regards,
-
-	Mariusz
+Miklos
