@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbYBNPje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbYBNPjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755903AbYBNPje (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 10:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbYBNPjM
+	id S1757268AbYBNPjx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 10:39:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbYBNPjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 10:39:12 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:49912 "EHLO uludag.org.tr"
+	Thu, 14 Feb 2008 10:39:16 -0500
+Received: from ns2.uludag.org.tr ([193.140.100.220]:49911 "EHLO uludag.org.tr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753003AbYBNPjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752788AbYBNPjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Feb 2008 10:39:11 -0500
 From: =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
 To: linux-kernel@vger.kernel.org
-Cc: linuxppc-dev@ozlabs.org,
+Cc: linux-parisc@vger.kernel.org,
        =?utf-8?q?S=2E=C3=87a=C4=9Flar=20Onur?= <caglar@pardus.org.tr>
-Subject: [PATCH 04/14] arch/powerpc/platforms/iseries/pci.c: Use time_* macros
-Date: Thu, 14 Feb 2008 17:36:42 +0200
-Message-Id: <1203003412-11594-5-git-send-email-caglar@pardus.org.tr>
+Subject: [PATCH 03/14] arch/parisc/kernel/unaligned.c: Use time_* macros
+Date: Thu, 14 Feb 2008 17:36:41 +0200
+Message-Id: <1203003412-11594-4-git-send-email-caglar@pardus.org.tr>
 X-Mailer: git-send-email 1.5.3.7
 In-Reply-To: y
 References: y
@@ -30,32 +30,24 @@ The functions time_before, time_before_eq, time_after, and time_after_eq are mor
 
 So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
 
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-parisc@vger.kernel.org
 Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
 ---
- arch/powerpc/platforms/iseries/pci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ arch/parisc/kernel/unaligned.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/iseries/pci.c b/arch/powerpc/platforms/iseries/pci.c
-index cc562e4..02a634f 100644
---- a/arch/powerpc/platforms/iseries/pci.c
-+++ b/arch/powerpc/platforms/iseries/pci.c
-@@ -23,6 +23,7 @@
+diff --git a/arch/parisc/kernel/unaligned.c b/arch/parisc/kernel/unaligned.c
+index aebf3c1..19b8a79 100644
+--- a/arch/parisc/kernel/unaligned.c
++++ b/arch/parisc/kernel/unaligned.c
+@@ -460,7 +460,7 @@ void handle_unaligned(struct pt_regs *regs)
+ 			goto force_sigbus;
+ 		}
  
- #undef DEBUG
- 
-+#include <linux/jiffies.h>
- #include <linux/kernel.h>
- #include <linux/list.h>
- #include <linux/string.h>
-@@ -586,7 +587,7 @@ static inline struct device_node *xlate_iomm_address(
- 		static unsigned long last_jiffies;
- 		static int num_printed;
- 
--		if ((jiffies - last_jiffies) > 60 * HZ) {
-+		if (time_after(jiffies, last_jiffies + 60 * HZ)) {
- 			last_jiffies = jiffies;
- 			num_printed = 0;
+-		if (unaligned_count > 5 && jiffies - last_time > 5*HZ) {
++		if (unaligned_count > 5 && time_after(jiffies, last_time + 5 * HZ)) {
+ 			unaligned_count = 0;
+ 			last_time = jiffies;
  		}
 -- 
 1.5.3.7
