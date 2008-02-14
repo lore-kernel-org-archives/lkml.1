@@ -1,187 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764791AbYBNIqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766004AbYBNItI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764791AbYBNIqa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 03:46:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbYBNIqQ
+	id S1766004AbYBNItI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 03:49:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbYBNIsz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 03:46:16 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:7609 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755901AbYBNIqP (ORCPT
+	Thu, 14 Feb 2008 03:48:55 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:34607 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755989AbYBNIsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 03:46:15 -0500
-In-Reply-To: <200802131617.58646.ossthema@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com> <1202748429.8276.21.camel@nimitz.home.sr71.net> <200802131617.58646.ossthema@de.ibm.com>
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-To: ossthema@linux.vnet.ibm.com
-Cc: apw <apw@uk.ibm.com>, Greg KH <greg@kroah.com>,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       netdev <netdev@vger.kernel.org>, Badari Pulavarty <pbadari@us.ibm.com>,
-       Thomas Q Klein <TKLEIN@de.ibm.com>, tklein@linux.ibm.com
-X-Mailer: Lotus Notes Release 8.0 August 02, 2007
-Message-ID: <OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Thu, 14 Feb 2008 09:46:10 +0100
-X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2FP2HF322 | September
- 26, 2007) at 14/02/2008 09:46:10
+	Thu, 14 Feb 2008 03:48:53 -0500
+X-Greylist: delayed 90595 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 Feb 2008 03:48:53 EST
+Date: Thu, 14 Feb 2008 09:48:42 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+cc: Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+       greg@kroah.com, torvalds@linux-foundation.org, jeff@garzik.org,
+       arjan@infradead.org, sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: Re: distributed module configuration [Was: Announce: Linux-next (Or
+ Andrew's dream :-))]
+In-Reply-To: <200802140156.15325.zippel@linux-m68k.org>
+Message-ID: <Pine.LNX.4.64.0802140944100.15629@anakin>
+References: <20080212174824.GA1919@kroah.com> <20080212.164149.209357519.davem@davemloft.net>
+ <20080213084541.GA8091@uranus.ravnborg.org> <200802140156.15325.zippel@linux-m68k.org>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 Feb 2008, Roman Zippel wrote:
+> On Wednesday 13. February 2008, Sam Ravnborg wrote:
+> > config foo
+> > 	tristate "do you want foo?"
+> > 	depends on USB && BAR
+> > 	module
+> > 	  obj-$(CONFIG_FOO) += foo.o
+> > 	  foo-y := file1.o file2.o
+> > 	help
+> > 	  foo will allow you to explode your PC
+> 
+> I'm more thinking about something like this:
+> 
+> module foo [FOO]
+> 	tristate "do you want foo?"
+> 	depends on USB && BAR
+> 	source file1.c
+> 	source file2.c if BAZ
 
-Dave Hansen <haveblue@us.ibm.com> wrote on 13.02.2008 18:05:00:
+And we can finally distinguish between
 
-> On Wed, 2008-02-13 at 16:17 +0100, Jan-Bernd Themann wrote:
-> > Constraints imposed by HW / FW:
-> > - eHEA has own MMU
-> > - eHEA  Memory Regions (MRs) are used by the eHEA MMU  to translate
-virtual
-> >   addresses to absolute addresses (like DMA mapped memory on a PCI bus)
-> > - The number of MRs is limited (not enough to have one MR per packet)
->
-> Are there enough to have one per 16MB section?
+    config bar
+    bool "do you want bar?"
+    
+for boolean options and
 
-Unfortunately this won't work. This was one of our first ideas we tossed
-out,
-but the number of MRs will not be sufficient.
+    module baz
+    bool "do you want baz?"
 
->
-> > Our current understanding about the current Memory Hotplug System are
-> > (please correct me if I'm wrong):
-> >
-> > - depends on sparse mem
->
-> You're wrong ;).  In mainline, this is true.  There was a version of the
-> SUSE kernel that did otherwise.  But you can not and should not depend
-> on this never changing.  But, someone is perfectly free to go out an
-> implement something better than sparsemem for memory hotplug.  If they
-> go and do this, your driver may get left behind.
+for modules that cannot be modular?
 
-We understand that the add/remove area is not as
-settled in the kernel like for example f_ops ;-)
-Are there already base working assumptions which are very unlikely to
-change?
+And we can make `depends on' do the right thing for dependencies on modules
+that are modular (cfr. e.g. commit e11a6c236b3070ed05b079f91a9b3defa48b54d3,
+[VIDEO]: XVR500 and XVR2500 require FB=y)?
 
->
-> > - only whole memory sections are added / removed
-> > - for each section a memory resource is registered
->
-> True, and true. (There might be exceptions to the whole sections one,
-> but that's blatant abuse and should be fixed. :)
->
-> > From the driver side we need:
-> > - some kind of memory notification mechanism.
-> >   For memory add we can live without any external memory notification
-> >   event. For memory remove we do need an external trigger (see
-explanation
-> >   above).
->
-> You can export and use (un)register_memory_notifier.  You just need to
-> do it in a reasonable way that compiles for randconfig on your
-> architecture.  Believe me, we don't want to start teaching drivers about
-> sparsemem.
+Gr{oetje,eeting}s,
 
-I'm a little confused here....
-...the existing add/remove code depends on sparse mem.
-Other pieces on the POWER6 version of the architecture do as well.
-So we could either chose to disable add/remove if sparsemem is not there,
-or disable the driver by Kconfig in this case.
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> > - a way to iterate over all kernel pages and a way to detect holes in
-the
-> >   kernel memory layout in order to build up our own ehea_bmap.
->
-> Look at kernel/resource.c
->
-> But, I'm really not convinced that you can actually keep this map
-> yourselves.  It's not as simple as you think.  What happens if you get
-> on an LPAR with two sections, one 256MB@0x0 and another
-> 16MB@0x1000000000000000.  That's quite possible.  I think your vmalloc'd
-> array will eat all of memory.
-I'm glad you mention this part. There are many algorithms out there to
-handle this problem,
-hashes/trees/... all of these trade speed for smaller memory footprint.
-We based the table decission on the existing implementations of the
-architecture.
-Do you see such a case coming along for the next generation POWER systems?
-I would guess these drastic changes would also require changes in base
-kernel.
-
-Will you provide a generic mapping system with a contiguous virtual address
-space
-like the ehea_bmap we can query? This would need to be a "stable" part of
-the implementation,
-including translation functions from kernel to nextgen_ehea_generic_bmap
-like virt_to_abs.
-
->
-> That's why we have SPARSEMEM_EXTREME and SPARSEMEM_VMEMMAP implemented
-> in the core, so that we can deal with these kinds of problems, once and
-> *NOT* in every single little driver out there.
->
-> > Functions to use while building ehea_bmap + MRs:
-> > - Use either the functions that are used by the memory hotplug system
-as
-> >   well, that means using the section defines + functions
-(section_nr_to_pfn,
-> >   pfn_valid)
->
-> Basically, you can't use anything related to sections outside of the
-> core code.  You can use things like pfn_valid(), or you can create new
-> interfaces that are properly abstracted.
-
-We picked sections instead of PFNs because this keeps the ehea_bmap in a
-reasonable range
-on the existing systems.
-But if you provide a abstract method handling exactly the problem we
-mention
-we'll be happy to use that and dump our private implementation.
-
->
-> > - Use currently other not exported functions in kernel/resource.c, like
-> >   walk_memory_resource (where we would still need the maximum
-> possible number
-> >   of pages NR_MEM_SECTIONS)
->
-> It isn't the act of exporting that's the problem.  It's making sure that
-> the exports won't be prone to abuse and that people are using them
-> properly.  You should assume that you can export and use
-> walk_memory_resource().
-
-So this seems to come down to a basic question:
-New hardware seems to have a tendency to get "private MMUs",
-which need private mappings from the kernel address space into a
-"HW defined address space with potentially unique characteristics"
-RDMA in Openfabrics with global MR is the most prominent example heading
-there
-
-
->
-> Do you know what other operating systems do with this hardware?
-
-We're not aware of another open source Operating system trying to address
-this topic.
-
->
-> In the future, please make an effort to get review from knowledgeable
-> people about these kinds of things before using them in your driver.
-> Your company has many, many resources available, and all you need to do
-> is ask.  All that you have to do is look to the tops of the files of the
-> functions you are calling.
->
-
-So we're glad we finally found the right person who takes responsibility
-for this topic!
-
-
-> -- Dave
->
-Gruss / Regards
-Christoph Raisch + Jan-Bernd Themann
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
