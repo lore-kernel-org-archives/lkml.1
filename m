@@ -1,53 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935396AbYBNBM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935291AbYBNBNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935396AbYBNBM4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 20:12:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935106AbYBNBKw
+	id S935291AbYBNBNg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 20:13:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935373AbYBNBMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 20:10:52 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49750 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S935181AbYBNBKu (ORCPT
+	Wed, 13 Feb 2008 20:12:01 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:47343 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935365AbYBNBL7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 20:10:50 -0500
-Date: Wed, 13 Feb 2008 17:09:50 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tejun Heo <htejun@gmail.com>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
-       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
+	Wed, 13 Feb 2008 20:11:59 -0500
+Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.25-rc1
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging
- printk, take #3
-Message-Id: <20080213170950.86945835.akpm@linux-foundation.org>
-In-Reply-To: <47B38E13.1060503@gmail.com>
-References: <12028937731333-git-send-email-htejun@gmail.com>
-	<20080213155701.48871761.akpm@linux-foundation.org>
-	<47B38E13.1060503@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+In-Reply-To: <20080213161643.65a5a779.akpm@linux-foundation.org>
+References: <1202947364.3109.96.camel@localhost.localdomain>
+	 <20080213161643.65a5a779.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 13 Feb 2008 19:11:53 -0600
+Message-Id: <1202951513.3109.101.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 09:40:51 +0900
-Tejun Heo <htejun@gmail.com> wrote:
 
-> Can you please take a look at ata_eh_link_report() in
-> drivers/ata/libata-eh.c?
+On Wed, 2008-02-13 at 16:16 -0800, Andrew Morton wrote:
+> On Wed, 13 Feb 2008 18:02:44 -0600
+> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> 
+> > This one's not too bad given the number of patches we had in the merge
+> > window.  We have the advansys fix, a gdth severe problem fix (wouldn't
+> > scan any devices) a bug fix series for lpfc and a few other odds and
+> > ends.
+> > 
+> > The patch is available here:
+> > 
+> > master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> 
+> I have scsi patches!
+> 
+> 
+> 
+> mptbase-reset-ioc-initiator-during-pci-resume.patch
+> 
+>   Fixes suspend/resume on all of Darrick's MPT cards.  I first merged it
+>   in September 2007.
 
-I did.  Punishment?
+Patch presented by LSI but has gone back with comments
 
->  Currently, it has some problems.
+> kill-warnings-in-mptbaseh-on-parisc64.patch
 
-Yes, and the patches do clean that up.
+>   Warning fixes.
 
-ho hum.  What tends to happen with this sort of thing is that fi we merge
-it, it ends up getting used more often than one expected...
+Not sure ... LSI is supposed to be processing this.
+
+> dell-cerc-support-for-megaraid_mbox.patch
+
+I need megaraid to sign off (and test) this one.
+
+>   Turns non-booting machiens into booting ones.  Merged in -mm in
+>   November 2007.
+> 
+> 3w-raid-drivers-memset-not-needed-in-probe.patch
+> 
+>   Small optimisation
+> 
+> scsi-aic94xx-cleanups.patch
+> 
+>   cleanups only.
+> 
+> scsi-qlogicptic-section-fixes.patch
+> 
+>   Fixes a reference from .text into .init.text and hence might fix a
+>   machine crash when this driver is build into vmlinux.  Merged a week ago.
+
+This was the one we had the alternative fix for, wasn't it ... ?
+
+> megaraid-outb_p-extermination.patch
+> 
+>   Cleanup
+> 
+> gdth-convert-to-pci-hotplug-api.patch
+> 
+>   Just merged
+
+That's not a bug fix necessarily ... We do have an outstanding gdth bug
+fix that did have a patch in your tree, though ...  But we're arguing
+over doing it properly.
+
+> 
+> So several of these patches address quite seriosu bugs, and have been
+> stuck in my tree for far too long.
+
+James
 
 
-If you stand back and squint at it, there are quite a few places where we
-do this sort of thing: allocate a buffer, squirt characters into it,
-reallocating and/or flushing as we proceed.  All sysfs and procfs read-side
-code, for a start...
