@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbYBNGM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762839AbYBNGMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756972AbYBNGM0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 01:12:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYBNGMP
+	id S1762839AbYBNGMo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 01:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757218AbYBNGM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 01:12:15 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46683 "EHLO hera.kernel.org"
+	Thu, 14 Feb 2008 01:12:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40462 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750711AbYBNGMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 01:12:13 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Carlos Corbacho <carlos@strangeworlds.co.uk>
-Subject: Re: [PATCH 2/2]  tc1100-wmi - Fail gracefully if ACPI is disabled
-Date: Thu, 14 Feb 2008 01:11:41 -0500
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
-References: <200802080145.16774.lenb@kernel.org> <200802111923.31736.carlos@strangeworlds.co.uk> <200802111955.46199.carlos@strangeworlds.co.uk>
-In-Reply-To: <200802111955.46199.carlos@strangeworlds.co.uk>
+	id S1756972AbYBNGMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 01:12:24 -0500
+Date: Thu, 14 Feb 2008 07:12:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, pageexec@freemail.hu,
+       Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: vmsplice exploits, stack protector and Makefiles
+Message-ID: <20080214061203.GA31327@elte.hu>
+References: <20080212090001.3fcc4ca0@laptopd505.fenrus.org> <47B30F05.29637.9A21F9B@pageexec.freemail.hu> <alpine.LFD.1.00.0802130749210.2920@woody.linux-foundation.org> <20080213160148.GA20241@elte.hu> <20080213171614.GA12259@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802140111.41883.lenb@kernel.org>
+In-Reply-To: <20080213171614.GA12259@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-applied.
 
-thanks,
--len
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-On Monday 11 February 2008 14:55, Carlos Corbacho wrote:
-> tc1100-wmi - Fail gracefully if ACPI is disabled
+> > > if you're merging this, please do the independent parts really 
+> > > independenrly. For example, the above is a patch in its own right, 
+> > > and probably worth doing regardless of anything else.
+> > 
+> > yes. I wanted to have it tested for a bit, because the lack of use 
+> > of the gcc flag means complete lack of testing coverage. The 
+> > obligatory "please add a stackprotector self-test" debug feature 
+> > request went to Arjan two days ago already.
 > 
-> From: Carlos Corbacho <carlos@strangeworlds.co.uk>
-> 
-> WMI drivers, like their ACPI counterparts, should also check if ACPI is
-> disabled or not, and bail out if so, otherwise we cause a crash.
-> 
-> Spotted by Ingo Molnar.
-> 
-> Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
-> CC: Ingo Molnar <mingo@elte.hu>
-> CC: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Len Brown <lenb@kernel.org>
-> ---
-> 
->  drivers/misc/tc1100-wmi.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/drivers/misc/tc1100-wmi.c b/drivers/misc/tc1100-wmi.c
-> index f25e4c9..cb8f79f 100644
-> --- a/drivers/misc/tc1100-wmi.c
-> +++ b/drivers/misc/tc1100-wmi.c
-> @@ -263,6 +263,9 @@ static int __init tc1100_init(void)
->  {
->  	int result = 0;
->  
-> +	if (acpi_disabled)
-> +		return -ENODEV;
-> +
->  	if (!wmi_has_guid(GUID))
->  		return -ENODEV;
->  
-> 
+> Do you think that the top-lvel Makefile change is OK to merge? I would 
+> like to merge it separatly to have maximum bisectability.
+
+sure.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
