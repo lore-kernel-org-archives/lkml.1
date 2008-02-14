@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934388AbYBNAO4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934415AbYBNAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934388AbYBNAO4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 19:14:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933826AbYBNAOZ
+	id S934415AbYBNAPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 19:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbYBNAP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 19:14:25 -0500
-Received: from el-out-1112.google.com ([209.85.162.181]:37332 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932592AbYBNAOS (ORCPT
+	Wed, 13 Feb 2008 19:15:29 -0500
+Received: from 41-052.adsl.zetnet.co.uk ([194.247.41.52]:42921 "EHLO
+	mail.esperi.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932531AbYBNAP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 19:14:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XPvAOnldkeBTZRWwqsxZ9qYAJ/NaTXfKBBCJTSPKXkzz4rxTTi9AHaWZjYpTVN8JkNh5lRN2zWiEYNeP3QVEWKJpFj51E1Pe1VJkvi/CibsoyxssC5/mWwHFylCLb+RNGpVWTdqFSnOpvKkXQ6pXzsqJsWdaQYjd5GlvVH8inxA=
-Message-ID: <47B387D2.5050808@gmail.com>
-Date: Thu, 14 Feb 2008 09:14:10 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Wed, 13 Feb 2008 19:15:26 -0500
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org
+Subject: Re: Upgrade to 2.6.24 breaks NFS service
+References: <87lk5pjkro.fsf@hades.wkstn.nix>
+	<20080213021912.b127c4a7.akpm@linux-foundation.org>
+	<20080213075738.086f7b32@barsoom.rdu.redhat.com>
+From: Nix <nix@esperi.org.uk>
+Emacs: ... it's not just a way of life, it's a text editor!
+Date: Thu, 14 Feb 2008 00:14:50 +0000
+In-Reply-To: <20080213075738.086f7b32@barsoom.rdu.redhat.com> (Jeff Layton's message of "Wed, 13 Feb 2008 07:57:38 -0500")
+Message-ID: <878x1ojsw5.fsf@hades.wkstn.nix>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.5-b28 (linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: torvalds@linux-foundation.org, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] printk: implement printk_buf overflow warning
-References: <47B2B250.8020209@gmail.com> <20080213155954.c1d0b6ee.akpm@linux-foundation.org>
-In-Reply-To: <20080213155954.c1d0b6ee.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-DCC-sonic.net-Metrics: hades 1117; Body=4 Fuz1=4 Fuz2=4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 13 Feb 2008 18:03:12 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> printk silently truncates messages longer than 1024 - 1 bytes.
->> Implement overflow detection and append "$PRINTK_BUF_OVERFLOW$\n" to
->> truncated messages.
-> 
-> I don't think I've ever heard of anyone managing to overflow the printk
-> buffer and it's hard to imagine how a sane person could manage to do this.
-> 
-> I assume this is happening because of changes in your other patchset, and
-> that this change is hence associated with those changes and should probably
-> be a part of the same patch series?
+On 13 Feb 2008, Jeff Layton told this:
 
-I thought this went well with the recursion warning.  I'll move it into
-the mprintk patchset.
+> If upgrading nfs-utils doesn't help, on this box, could you run:
+>
+> # rpcinfo -p localhost
+>
+> send the output? statd expects that lockd will always be listening on a
+> UDP socket and some changes recently made it so that when there are
+> only TCP mounts that it doesn't necessarily do so. That may be the
+> problem here.
 
-Thanks.
+I rebooted back into 2.6.24.2 again, and everything works now, without
+even upgrading nfs-utils (although I did that anyway, to nfs-utils git
+head, and it's still happy).
+
+Linux: debugs itself, no human intervention required! :)
+
+
+
+(The inconsistency of this screams `port allocation' to me. If it
+happens again I'll get some rpcinfo output and packet dumps. I'd
+have done it this time if it hadn't been for the plug-the-security-
+hole rush and it being 2am.)
 
 -- 
-tejun
+`The rest is a tale of post and counter-post.' --- Ian Rawlings
+                                                   describes USENET
