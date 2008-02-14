@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934848AbYBNX62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934349AbYBOAA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934848AbYBNX62 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 18:58:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758452AbYBNX6O
+	id S934349AbYBOAA1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758452AbYBOAAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 18:58:14 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:34185 "EHLO smtps.tip.net.au"
+	Thu, 14 Feb 2008 19:00:15 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:59966 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756466AbYBNX6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 18:58:11 -0500
-Date: Fri, 15 Feb 2008 10:58:04 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: linux-next: first tree
-Message-Id: <20080215105804.7073c463.sfr@canb.auug.org.au>
-In-Reply-To: <47B4AC97.3040001@garzik.org>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-	<47B4AC97.3040001@garzik.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__15_Feb_2008_10_58_04_+1100_pQsYsPtiMz92NU.k"
+	id S1756047AbYBOAAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 19:00:14 -0500
+Date: Fri, 15 Feb 2008 01:59:52 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ubi: fix sparse errors in ubi.h
+Message-ID: <20080214235952.GI23227@cs181133002.pp.htv.fi>
+References: <1203025995.5601.0.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1203025995.5601.0.camel@brick>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__15_Feb_2008_10_58_04_+1100_pQsYsPtiMz92NU.k
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Feb 14, 2008 at 01:53:15PM -0800, Harvey Harrison wrote:
+> In C, signed 1-bit bitfields can only take the values 0 and -1, only
+> 0 and 1 are ever assigned in current code.  Make them unsigned
+> bitfields.
+> 
+> Fixes the (repeated) sparse errors:
+> drivers/mtd/ubi/ubi.h:220:15: error: dubious one-bit signed bitfield
+> drivers/mtd/ubi/ubi.h:221:17: error: dubious one-bit signed bitfield
+> drivers/mtd/ubi/ubi.h:222:18: error: dubious one-bit signed bitfield
+> drivers/mtd/ubi/ubi.h:223:16: error: dubious one-bit signed bitfield
+> drivers/mtd/ubi/ubi.h:224:20: error: dubious one-bit signed bitfield
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Sorry, not sure who to CC on this.
+>...
 
-Hi Jeff,
+$ grep UBI MAINTAINERS 
+UNSORTED BLOCK IMAGES (UBI)
+$ 
 
-On Thu, 14 Feb 2008 16:03:19 -0500 Jeff Garzik <jeff@garzik.org> wrote:
->
-> Please add the 'NEXT' branch of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
->=20
-> to your list.  This is a throwaway meta-branch that is rebased often.
+cu
+Adrian
 
-Added, thanks.
+-- 
 
-> I will continue to maintain the 'ALL' branch exactly as before.  It may=20
-> contain changes not suitable for 'NEXT', but suitable for -mm testing.
->=20
-> In my new development process, things will almost always land in 'ALL'=20
-> before 'NEXT'.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
-Sounds like a good plan.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__15_Feb_2008_10_58_04_+1100_pQsYsPtiMz92NU.k
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHtNWQTgG2atn1QN8RAqlOAJ9tp/aN/vld08DD2YRfA0oG54+w1wCgklhh
-v5/5SDk05SsSmDooHqX/c1w=
-=jI0M
------END PGP SIGNATURE-----
-
---Signature=_Fri__15_Feb_2008_10_58_04_+1100_pQsYsPtiMz92NU.k--
