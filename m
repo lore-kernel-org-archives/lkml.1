@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761133AbYBNV5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbYBNV6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761133AbYBNV5A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754102AbYBNV4v
+	id S1761988AbYBNV6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbYBNV6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:56:51 -0500
-Received: from www.tglx.de ([62.245.132.106]:41621 "EHLO www.tglx.de"
+	Thu, 14 Feb 2008 16:58:40 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:34127 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753931AbYBNV4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:56:50 -0500
-Date: Thu, 14 Feb 2008 22:56:19 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Greg KH <greg@kroah.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Stable Team <stable@kernel.org>
-Subject: Re: [stable] [GIT pull] hrtimer fixes
-In-Reply-To: <20080214214542.GA19445@kroah.com>
-Message-ID: <alpine.LFD.1.00.0802142255540.12988@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0802142120200.12988@apollo.tec.linutronix.de> <20080214212643.GA18521@kroah.com> <alpine.LFD.1.00.0802142236440.12988@apollo.tec.linutronix.de> <20080214214542.GA19445@kroah.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753660AbYBNV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 16:58:38 -0500
+Date: Fri, 15 Feb 2008 08:58:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: linux-next: first tree
+Message-Id: <20080215085830.946d187b.sfr@canb.auug.org.au>
+In-Reply-To: <20080214154928.GC14777@linux-sh.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	<200802141545.56488.rjw@sisk.pl>
+	<20080215020019.f7cb5895.sfr@canb.auug.org.au>
+	<20080214154928.GC14777@linux-sh.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008, Greg KH wrote:
+--Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Thu, Feb 14, 2008 at 10:37:49PM +0100, Thomas Gleixner wrote:
-> > On Thu, 14 Feb 2008, Greg KH wrote:
-> > 
-> > > On Thu, Feb 14, 2008 at 10:19:23PM +0100, Thomas Gleixner wrote:
-> > > > Linus,
-> > > > 
-> > > > please pull hrtimer fixes from:
-> > > > 
-> > > >   ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git master
-> > > > 
-> > > > The first patch fixes an overflow problem, which is caused by missing
-> > > > checks in the relative to absolute time conversion in the futex
-> > > > code. It got caught by the WARN_ON() in clockevents_program_event().
-> > > > 
-> > > > The second patch prevents a false positive of the same WARN_ON().
-> > > > 
-> > > > Fixes are confirmed to solve http://lkml.org/lkml/2008/2/10/137
-> > > 
-> > > Are one of these needed in the stable tree?
-> > 
-> > Yes, both are for stable as well. The report was against 2.6.24 stable
-> 
-> Cool.  But the stable team deals with individual patches, not git pulls.
-> Can you send us the individual patches when they hit Linus's tree?
+Hi Paul,
 
-Sure, will do.
+On Fri, 15 Feb 2008 00:49:28 +0900 Paul Mundt <lethal@linux-sh.org> wrote:
+>
+> For SH:
+>=20
+> 	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
 
-Thanks,
+Added, thanks.
 
-	tglx
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHtLmOTgG2atn1QN8RAgmFAKCSkhKHyhUmFkiz3BzpWuSayqc91gCdHF38
+UHTgBOodvs+8BGnWRDAczjM=
+=tMYk
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__15_Feb_2008_08_58_30_+1100_M4yzcL6cb54tCXZn--
