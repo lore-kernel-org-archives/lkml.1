@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763068AbYBNDqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764739AbYBNDro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763068AbYBNDqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 Feb 2008 22:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbYBNDpw
+	id S1764739AbYBNDro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 Feb 2008 22:47:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756644AbYBNDrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 Feb 2008 22:45:52 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39547 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756614AbYBNDpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 Feb 2008 22:45:50 -0500
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] samples: build fix
-X-Fcc: ~/Mail/linus
-X-Windows: some voids are better left unfilled.
-Message-Id: <20080214034541.EF1BD270192@magilla.localdomain>
-Date: Wed, 13 Feb 2008 19:45:41 -0800 (PST)
+	Wed, 13 Feb 2008 22:47:35 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:21426 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbYBNDre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 Feb 2008 22:47:34 -0500
+To: "Tony Luck" <tony.luck@intel.com>
+Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+X-Message-Flag: Warning: May contain useful information
+References: <20080213125725.GC6344@elte.hu>
+	<20080213.050340.64342037.davem@davemloft.net>
+	<12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
+	<20080213.170452.68851396.davem@davemloft.net>
+	<12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Wed, 13 Feb 2008 19:47:26 -0800
+In-Reply-To: <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com> (Tony Luck's message of "Wed, 13 Feb 2008 19:33:42 -0800")
+Message-ID: <adaprv0rygh.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 14 Feb 2008 03:47:28.0766 (UTC) FILETIME=[51F029E0:01C86EBC]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > I'll take a closer look at what is needed tomorrow.
 
-The samples/ subdirectory contains only modules.
-But the only make run done there is in commands for vmlinux.
-I can't see why this was ever done in this nonstandard fashion.
-As things stand, the modules don't get built by 'make modules'.
+Hi Tony,
 
-I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
-because there is no other conditional like that in the top-level Makefile
-and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
-always to be included.
+Just curious -- can you reproduce the same problem with
+CONFIG_PRINTK_TIME as I'm seeing?  If not I'm happy to test anything
+you want to try.
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- Makefile |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+The strange thing is that Ingo's patch to make cpu_clock() a NOP until
+after sched_init() didn't fix things for me...
 
-diff --git a/Makefile b/Makefile
-index c162370..9e9ce33 100644
---- a/Makefile
-+++ b/Makefile
-@@ -602,7 +602,7 @@ export mod_strip_cmd
- 
- 
- ifeq ($(KBUILD_EXTMOD),)
--core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-+core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ samples/
- 
- vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
- 		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
-@@ -802,9 +802,6 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o $(kallsyms.o)
- ifdef CONFIG_HEADERS_CHECK
- 	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
- endif
--ifdef CONFIG_SAMPLES
--	$(Q)$(MAKE) $(build)=samples
--endif
- 	$(call vmlinux-modpost)
- 	$(call if_changed_rule,vmlinux__)
- 	$(Q)rm -f .old_version
+ - R.
+
