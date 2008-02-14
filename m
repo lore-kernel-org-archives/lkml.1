@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932975AbYBNNdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933513AbYBNNd7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932975AbYBNNdk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 08:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBNNd2
+	id S933513AbYBNNd7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 08:33:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBNNdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 08:33:28 -0500
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:54992 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755022AbYBNNcy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 08:32:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FABfSs0dMQWYv/2dsb2JhbACBWZA7nFs
-Date: Thu, 14 Feb 2008 08:27:52 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Sam Ravnborg <sam@ravnborg.org>, Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] samples: build fix
-Message-ID: <20080214132752.GA27478@Krystal>
-References: <20080214034541.EF1BD270192@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Feb 2008 08:33:45 -0500
+Received: from mail.bmlv.gv.at ([193.171.152.37]:49885 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933139AbYBNNdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 08:33:43 -0500
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: user-mode-linux-user@lists.sourceforge.net
+Subject: Re: 2.6.24.2 won't compile UML
+Date: Thu, 14 Feb 2008 14:33:29 +0100
+User-Agent: KMail/1.9.7
+Cc: jdike@addtoit.com, linux-kernel@vger.kernel.org
+References: <200802141213.09859.philipp.marek@bmlv.gv.at>
+In-Reply-To: <200802141213.09859.philipp.marek@bmlv.gv.at>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080214034541.EF1BD270192@magilla.localdomain>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 08:24:48 up 3 days,  9:25,  3 users,  load average: 0.07, 0.15,
-	0.25
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200802141433.29839.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Roland McGrath (roland@redhat.com) wrote:
-> 
-> The samples/ subdirectory contains only modules.
-> But the only make run done there is in commands for vmlinux.
-> I can't see why this was ever done in this nonstandard fashion.
-> As things stand, the modules don't get built by 'make modules'.
-> 
-> I didn't make the addition of the directory use core-$(CONFIG_SAMPLES)
-> because there is no other conditional like that in the top-level Makefile
-> and samples/Makefile already uses obj-$(CONFIG_SAMPLES) as if it expects
-> always to be included.
-> 
+Hello everybody,
 
-Sam, is this ok with the samples intent ? I think as long as we do not
-include them with the kernel image and have a "make samples" to build
-them, it's ok. Having them built upon make modules seems like a good
-idea to me.
+On Donnerstag, 14. Februar 2008, Ph. Marek wrote:
+> I'm trying to compile an UML binary from 2.6.24.
+>
+>   make ARCH=um O=... bzImage
+>
+> gives
+>
+>   make -C linux-2.6.24.2/ O=output_path/build ARCH=um bzImage
+>   make[1]: Entering directory `output_path/linux-2.6.24.2'
+>     GEN     output_path/build/Makefile
+>   scripts/kconfig/conf -s arch/um/Kconfig
+>   net/bluetooth/hidp/Kconfig:4:warning: 'select' used by config symbol 'BT_HIDP' refers to undefined symbol 'HID'
 
-Mathieu
+I now made a patch based on the spirit of 
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0263603a01e802f79e369ac489793e5320031560
+- although that's surely the wrong way to go, because it'll break
+the other options. I just attach it in case other people have the same problem.
 
-> Signed-off-by: Roland McGrath <roland@redhat.com>
-> ---
->  Makefile |    5 +----
->  1 files changed, 1 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Makefile b/Makefile
-> index c162370..9e9ce33 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -602,7 +602,7 @@ export mod_strip_cmd
->  
->  
->  ifeq ($(KBUILD_EXTMOD),)
-> -core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/
-> +core-y		+= kernel/ mm/ fs/ ipc/ security/ crypto/ block/ samples/
->  
->  vmlinux-dirs	:= $(patsubst %/,%,$(filter %/, $(init-y) $(init-m) \
->  		     $(core-y) $(core-m) $(drivers-y) $(drivers-m) \
-> @@ -802,9 +802,6 @@ vmlinux: $(vmlinux-lds) $(vmlinux-init) $(vmlinux-main) vmlinux.o $(kallsyms.o)
->  ifdef CONFIG_HEADERS_CHECK
->  	$(Q)$(MAKE) -f $(srctree)/Makefile headers_check
->  endif
-> -ifdef CONFIG_SAMPLES
-> -	$(Q)$(MAKE) $(build)=samples
-> -endif
->  	$(call vmlinux-modpost)
->  	$(call if_changed_rule,vmlinux__)
->  	$(Q)rm -f .old_version
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Now I get other errors ...
+	$ make
+	  CHK     include/linux/version.h
+	  CHK     include/linux/utsrelease.h
+	  CC      arch/x86/kernel/asm-offsets.s
+	In file included from include/linux/sched.h:54,
+	                 from arch/x86/kernel/asm-offsets_32.c:8,
+	                 from arch/x86/kernel/asm-offsets.c:2:
+	include/linux/jiffies.h:18:5: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:20:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:22:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:24:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:26:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:28:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:30:7: warning: "CONFIG_HZ" is not defined
+	include/linux/jiffies.h:33:3: error: #error You lose.
+and so on, and so on ...
+
+I'm currently trying to use the pre-build binary from 
+http://user-mode-linux.sourceforge.net - but I'd prefer to build
+the kernel myself.
+
+
+Help, please? Anyone?
+
+
+Regards,
+
+Phil
