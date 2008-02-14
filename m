@@ -1,39 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764135AbYBNHTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765229AbYBNHVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764135AbYBNHTo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 02:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbYBNHTf
+	id S1765229AbYBNHVe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 02:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbYBNHV0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 02:19:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37774 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756354AbYBNHTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 02:19:34 -0500
-Date: Thu, 14 Feb 2008 02:19:08 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] spufs support multiple probes markers
-Message-ID: <20080214071908.GA8866@infradead.org>
-References: <20080212152245.2d816143.akpm@linux-foundation.org> <20080212233914.GA22966@Krystal> <20080212235650.GA23693@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080212235650.GA23693@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 14 Feb 2008 02:21:26 -0500
+Received: from www.tglx.de ([62.245.132.106]:34936 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756354AbYBNHVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 02:21:25 -0500
+Date: Thu, 14 Feb 2008 08:21:14 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: Alessandro Guido <alessandro.guido@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Use menuconfig for CONFIG_UIO
+Message-ID: <20080214082114.2c6117e3@dilbert.local>
+In-Reply-To: <200802132328.19310.alessandro.guido@gmail.com>
+References: <200802132328.19310.alessandro.guido@gmail.com>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 06:56:50PM -0500, Mathieu Desnoyers wrote:
-> Update spufs to the new linux kernel markers API, which supports connecting
-> more than one probe to a single marker.
+Am Wed, 13 Feb 2008 23:28:19 +0100
+schrieb Alessandro Guido <alessandro.guido@gmail.com>:
 
-Compiles and works for me.  But saying I like the odd API would be lying.
+> Signed-off-by: Alessandro Guido <alessandro.guido@gmail.com>
 
+Hi Alessandro,
+thanks, but this was already done by Denis Cheng:
+
+http://lkml.org/lkml/2008/2/2/60
+
+I signed-off his patch, but AFAICS it hasn't been applied yet.
+BTW, please CC Greg Kroah-Hartman as well if you send patches for UIO.
+
+Thanks,
+Hans
+
+> 
+> ---
+> 
+>  drivers/uio/Kconfig |    8 ++------
+>  1 files changed, 2 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+> index b778ed7..dce4cae 100644
+> --- a/drivers/uio/Kconfig
+> +++ b/drivers/uio/Kconfig
+> @@ -1,8 +1,6 @@
+> -menu "Userspace I/O"
+> -	depends on !S390
+> -
+> -config UIO
+> +menuconfig UIO
+>  	tristate "Userspace I/O drivers"
+> +	depends on !S390
+>  	default n
+>  	help
+>  	  Enable this to allow the userspace driver core code to be
+> @@ -25,5 +23,3 @@ config UIO_CIF
+>  
+>  	  To compile this driver as a module, choose M here: the
+> module will be called uio_cif.
+> -
+> -endmenu
