@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762364AbYBNVv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765008AbYBNVx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762364AbYBNVv4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 16:51:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbYBNVvs
+	id S1765008AbYBNVx1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 16:53:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYBNVxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 16:51:48 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46683 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752728AbYBNVvr (ORCPT
+	Thu, 14 Feb 2008 16:53:18 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:42633 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753575AbYBNVxR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 16:51:47 -0500
-Date: Thu, 14 Feb 2008 13:50:59 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Andrew Paprocki" <andrew@ishiboo.com>
-Cc: linux-kernel@vger.kernel.org, wim@iguana.be
-Subject: Re: [PATCH] [WATCHDOG] it8712f_wdt support for 16-bit timeout
- values, WDIOC_GETSTATUS
-Message-Id: <20080214135059.b72570f0.akpm@linux-foundation.org>
-In-Reply-To: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
-References: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 14 Feb 2008 16:53:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=NQtPpIxTg3yWnhdftTgN/6c6SiNI84wVwAPqLC+RD6i5VP6AxgPj3HqhzmDGdx1Qn9aPfI4fFuR7ykZ0uiGkPNUZzMM+dJspokGNxfYJFjvDSG63kV9UhX4zTforbjFITg0KaEnOQc06+LwwLZvZQDvoNjg94UCxqkSJEAbPPck=
+Subject: [PATCH] ubi: fix sparse errors in ubi.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 14 Feb 2008 13:53:15 -0800
+Message-Id: <1203025995.5601.0.camel@brick>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 Feb 2008 22:11:15 -0500
-"Andrew Paprocki" <andrew@ishiboo.com> wrote:
+In C, signed 1-bit bitfields can only take the values 0 and -1, only
+0 and 1 are ever assigned in current code.  Make them unsigned
+bitfields.
 
-> This patch adds support for 16-bit watchdog timeout values which are
-> available in chip revisions >= 0x08. Values <= 65535 are seconds precision,
-> otherwise minutes precision is used up to a maximum value of 3932100. Added
-> implementation for WDIOC_GETSTATUS which checks the WDT status bit in the
-> WDT control register.
-> 
-> Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
-> ---
->   drivers/watchdog/it8712f_wdt.c |   82
-> ++++++++++++++++++++++++++++++++--------
->   1 files changed, 66 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
-> index 1b6d7d1..803c699 100644
-> --- a/drivers/watchdog/it8712f_wdt.c
-> +++ b/drivers/watchdog/it8712f_wdt.c
+Fixes the (repeated) sparse errors:
+drivers/mtd/ubi/ubi.h:220:15: error: dubious one-bit signed bitfield
+drivers/mtd/ubi/ubi.h:221:17: error: dubious one-bit signed bitfield
+drivers/mtd/ubi/ubi.h:222:18: error: dubious one-bit signed bitfield
+drivers/mtd/ubi/ubi.h:223:16: error: dubious one-bit signed bitfield
+drivers/mtd/ubi/ubi.h:224:20: error: dubious one-bit signed bitfield
 
-The patch is wordwrapped, space-stuffed and has tabs replaced with spaces. 
-You hit the trifecta!
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Sorry, not sure who to CC on this.
 
-Please resend.  If you'd prefer to use an attachment rather than spending
-half an hour wrestling your email client, feel free to do so ;)
+ drivers/mtd/ubi/ubi.h |   10 +++++-----
+ 1 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/mtd/ubi/ubi.h b/drivers/mtd/ubi/ubi.h
+index 4577106..a548c1d 100644
+--- a/drivers/mtd/ubi/ubi.h
++++ b/drivers/mtd/ubi/ubi.h
+@@ -217,11 +217,11 @@ struct ubi_volume {
+ 	void *upd_buf;
+ 
+ 	int *eba_tbl;
+-	int checked:1;
+-	int corrupted:1;
+-	int upd_marker:1;
+-	int updating:1;
+-	int changing_leb:1;
++	unsigned int checked:1;
++	unsigned int corrupted:1;
++	unsigned int upd_marker:1;
++	unsigned int updating:1;
++	unsigned int changing_leb:1;
+ 
+ #ifdef CONFIG_MTD_UBI_GLUEBI
+ 	/*
+-- 
+1.5.4.1.1278.gc75be
+
+
 
