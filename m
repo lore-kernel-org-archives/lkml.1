@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933195AbYBOD3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765722AbYBODdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933195AbYBOD3Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 22:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759150AbYBOD26
+	id S1765722AbYBODdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 22:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYBODdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 22:28:58 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:10742 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbYBOD25 (ORCPT
+	Thu, 14 Feb 2008 22:33:08 -0500
+Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59262 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752394AbYBODdG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 22:28:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=oAe1zMU6okbYGqS/hNzpru/Ka/hgY/5SwgDo0HbconutHLPy8Hz4dyS3tsVmhcHCQn7P6hjpdvEj6ltxA9eTGEqf9/3+HyOb+RU4P3fypLg8c3xOyIHuY825U9EUbQlFdXReS0DoneedSxKK9j/z64Sf0onhWMGOKmNFsjwDU/E=
-Message-ID: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
-Date: Thu, 14 Feb 2008 19:28:55 -0800
-From: "Dan Gora" <dan.gora@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: PCI Bursting with PIO
+	Thu, 14 Feb 2008 22:33:06 -0500
+Message-ID: <47B5073B.9070802@linux.vnet.ibm.com>
+Date: Fri, 15 Feb 2008 09:00:03 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
 MIME-Version: 1.0
+To: Avi Kivity <avi@qumranet.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [git pull] x86 updates
+References: <20080213155725.GA19523@elte.hu> <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com> <20080214162510.GA29570@elte.hu> <47B47D85.9070504@qumranet.com>
+In-Reply-To: <47B47D85.9070504@qumranet.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Avi Kivity wrote:
+> Ingo Molnar wrote:
+>> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>>
+>>  
+>>> Ingo, could you also please consider the KVM build fix at
+>>> http://marc.info/?l=linux-kernel&m=120262794315024&w=2 which has been
+>>> acked by Avi. I suspect this patch should be route through git-x86
+>>> since it affects arch/x86/Kconfig.
+>>>     
+>>
+>> thanks, applied - this first looked like a KVM item, that's why i
+>> havent added it. [Btw., feel free to push it via kvm.git as well - as
+>> long as you are sure it does not break the build ;-) ]   
+> 
+> Yeah, I'm queuing it as well, it will get there one way or the other.
+> 
 
-I am trying to optimize a driver for a slave only PCI device and am
-having a lot of trouble getting any kind of PCI burst transactions in
-either the read or the write direction.  Using bcopy/memcpy or even a
-hand-crafted while (len) { *pdst++ = *psrc++} (with pdst and psrc
-unsigned long*) I can only get writes to burst and even in that case
-only for 2 data phases (8 bytes) and only on 64 bit machines.  The
-best that I have managed is to use a hand crafted asm function which
-copies the data through mmx registers on i386 machines, but that still
-only bursts a maximum of 16 bytes in the write direction and not at
-all in the read direction.  The source and destination pointers are
-both aligned to 8 byte boundaries, so I don't think that it's an
-alignment issue.
+Excellent! :)
 
-Is there any way to get PIO to burst over the PCI bus in the read and
-write direction?  My device has 4 BAR registers, but the area where I
-am transferring data is marked 'prefetchable' (although the others are
-not).  I read here: http://lkml.org/lkml/2004/9/23/393 that this was a
-prerequisite, but it is apparently not sufficient.  He also mentioned
-that the area had to be marked as write-back, but it's not clear how
-you can tell (no /proc/mtrr doesn't tell you) or that it has anything
-to do with bursting reads.
-
-Any ideas would be really appreciated,
-
-thanks-
-dan
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
