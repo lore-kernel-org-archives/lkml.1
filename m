@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934238AbYBOOxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbYBOO6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934238AbYBOOxd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:53:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbYBOOxX
+	id S933409AbYBOO6S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758665AbYBOO6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:53:23 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:37724 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755775AbYBOOxW (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:53:22 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-In-Reply-To: Your message of "Fri, 15 Feb 2008 04:26:45 EST."
-             <200802150426.46351.gene.heskett@gmail.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <200802141332.03315.gene.heskett@gmail.com> <4367.1203056954@turing-police.cc.vt.edu>
-            <200802150426.46351.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1203087132_2934P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 15 Feb 2008 09:58:04 -0500
+Received: from mail-in-08.arcor-online.net ([151.189.21.48]:52093 "EHLO
+	mail-in-08.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757810AbYBOO6C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 09:58:02 -0500
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: Disk schedulers
+Date: Fri, 15 Feb 2008 15:57:54 +0100
+User-Agent: KMail/1.9.7
+Cc: Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org
+References: <20080214162104.GA5347@ics.muni.cz> <Pine.LNX.4.64.0802151541370.30301@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0802151541370.30301@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1373559.hoEbklHTSK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 15 Feb 2008 09:52:12 -0500
-Message-ID: <12457.1203087132@turing-police.cc.vt.edu>
+Message-Id: <200802151557.59082.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1203087132_2934P
-Content-Type: text/plain; charset=us-ascii
+--nextPart1373559.hoEbklHTSK
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-On Fri, 15 Feb 2008 04:26:45 EST, Gene Heskett said:
-> On Friday 15 February 2008, Valdis.Kletnieks@vt.edu wrote:
-> >On Thu, 14 Feb 2008 13:32:02 EST, Gene Heskett said:
-> >> Nvidia vs 2.6.25-rc1 being a case in point, and they (nvidia) are
-> >> appearing to indicate its not a problem until some distro actually ships a
-> >> kernel with the changes that broke it.  That could be months or even a
-> >> year plus.
+On the day of Friday 15 February 2008 Jan Engelhardt hast written:
+> On Feb 14 2008 17:21, Lukas Hejtmanek wrote:
+> >Hello,
 > >
-> >Actually following the NVidia forums indicates otherwise:
-> >
-> >http://www.nvnews.net/vbulletin/showthread.php?t=107144
-> >
-> >I expect Zander will be posting a patch rather soonish, for some value of
-> >soonish.  And if you're running a -rc or -mm kernel, patching the 169.09
-> >drivers should be well within your abilities....
-> 
-> Not so for the binaries, existing patches do make it compile but it still 
-> upchucks someplace in the binary, or was this time yesterday.
+> >whom should I blame about disk schedulers?
+>
+> Also consider
+> - DMA (e.g. only UDMA2 selected)
+> - aging disk
 
-Umm.. if you actually *read* the mentioned thread, you'll see that "existing
-patches" are known to be incomplete, complete with the "upchucks in the binary"
-(mentioned at entry number 9 of the thread), and that Zander already knows
-about it (entry #11), and has apparently one remaining issue left to resolve
-(entries #32 and #36).
+Nope, I also reported this problem _years_ ago, but till now much hasn't=20
+changed. Large writes lead to read starvation.
 
-And entry #36 is what the NVidia engineer doing the work was thinking about
-20 hours ago.  Interpret it as you will...
+=2D-=20
+(=B0=3D                 =3D=B0)
+//\ Prakash Punnoor /\\
+V_/                 \_V
 
-
---==_Exmh_1203087132_2934P
-Content-Type: application/pgp-signature
+--nextPart1373559.hoEbklHTSK
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+Version: GnuPG v2.0.7 (GNU/Linux)
 
-iD8DBQFHtacccC3lWbTT17ARAoR3AKD8wYjftIHG/CBMaviLfafZATVMwgCgsS9i
-SQJh5SNXQzo8FRMfUWFS9d8=
-=2g2/
+iD8DBQBHtah3xU2n/+9+t5gRAhVBAKCLdbLHMUfg3IYXmsxewjsKdDWfwACdHD7P
+AQatuU5y7UGh5pxQhST7scc=
+=oTa4
 -----END PGP SIGNATURE-----
 
---==_Exmh_1203087132_2934P--
+--nextPart1373559.hoEbklHTSK--
