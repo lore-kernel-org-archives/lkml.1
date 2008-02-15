@@ -1,44 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934097AbYBOLUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933784AbYBOLW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934097AbYBOLUs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 06:20:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763268AbYBOLUH
+	id S933784AbYBOLW7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 06:22:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbYBOLWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 06:20:07 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33342 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762071AbYBOLUF (ORCPT
+	Fri, 15 Feb 2008 06:22:52 -0500
+Received: from viefep20-int.chello.at ([62.179.121.40]:48973 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758829AbYBOLWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 06:20:05 -0500
-Date: Fri, 15 Feb 2008 19:19:58 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org,
-       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
-Subject: Re: [patch] crypto test build failure
-Message-ID: <20080215111958.GA13284@gondor.apana.org.au>
-References: <20080209195232.GC11728@slug>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080209195232.GC11728@slug>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 15 Feb 2008 06:22:51 -0500
+Message-Id: <20080215111819.978881000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Fri, 15 Feb 2008 12:18:20 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] for sched-devel.git
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 09, 2008 at 08:52:32PM +0100, Frederik Deweerdt wrote:
-> Hello Herbert,
-> 
-> Building latest git fails with the following error:
-> 	ERROR: "crypto_alloc_ablkcipher" [crypto/tcrypt.ko] undefined!
-> This appears to happen because CONFIG_CRYPTO_TEST is set while
-> CONFIG_CRYPTO_BLKCIPHER is not.
-> The following patch fixes the problem for me.
+Hi Ingo,
 
-Patch applied.  Thanks a lot!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Would you stick these into sched-devel.
+
+The first patch should address the latency isolation issue. While the second
+rectifies a massive brainfart :-)
+
+
+
