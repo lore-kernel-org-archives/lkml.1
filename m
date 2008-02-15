@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934265AbYBOOVG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYBOOVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934265AbYBOOVG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:21:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757615AbYBOOUV
+	id S1759292AbYBOOVa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759647AbYBOOUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:20:21 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42680 "EHLO
+	Fri, 15 Feb 2008 09:20:22 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:42681 "EHLO
 	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756368AbYBOOUS (ORCPT
+	by vger.kernel.org with ESMTP id S1756384AbYBOOUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 09:20:18 -0500
-Subject: [PATCH 0/4] Voltage and current regulator framework
+Subject: [PATCH 3/4] Voltage and current regulator framework
 From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
 Content-Type: text/plain
-Date: Fri, 15 Feb 2008 14:10:41 +0000
-Message-Id: <1203084641.3466.210.camel@localhost.localdomain>
+Date: Fri, 15 Feb 2008 14:12:53 +0000
+Message-Id: <1203084773.3466.216.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
@@ -25,71 +26,117 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch series provides a generic framework to allow device drivers
-to control voltage and current regulators on SoC based devices (e.g.
-phones, gps, media players).
+Platform interface :-
 
-The intention is to allow systems to dynamically control regulator
-output in order to save power and prolong battery life. This applies to
-both voltage regulators (where voltage output is controllable) and
-current sinks (where current output is controllable).
-
-The framework is designed around SoC based devices but may also be
-relevant to non SoC devices. It's also been designed against two Power
-Management ICs (PMICs) currently on the market - namely the Freescale
-MC13783 and the Wolfson WM8350. However it is quite generic and should
-apply to all PMICs. 
-
-The framework provides several interfaces :-
-
- 1. Client or Consumer driver API.
-
-  This uses a similar API to the kernel clock interface in that client
-or consumer drivers can get and put a regulator (like they can with
-clocks atm) and get/set voltage, current, mode, enable and disable. This
-should allow clients complete control over their supply voltage and
-current. This API also compiles out if not in use so drivers can be
-reused in systems with no PMIC power control.
-
- 2. Regulator driver API.
-
-  This allows regulator drivers to register their regulators and provide
-operations to the core. It also has a notifier call chain for
-propagating regulator events to clients.
-
- 3. Platform API.
-
-  This API is for platform/device specific code and allows the creation
-of voltage/current domains (with constraints) for each regulator. It can
-provide regulator constraints that will prevent device damage through
-over voltage or over current caused by buggy client drivers.  It also
-allows the creation of a regulator tree whereby some regulators are
-supplied by others (similar to a clock tree).
-
- 4. Userspace.
-
-  The framework also exports a lot of useful voltage/current data to
-userspace via sysfs. This could be used to monitor device and regulator
-power and status.
-
-Fwiw, there is code in our public git tree that currently shows this API
-in use:-
-
-http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=shortlog;h=imx31
-
-All the relevant files are under include/linux/regulator and
-drivers/regulator. There are client drivers here :-
-
-http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=arch/arm/mach-mx3/cpufreq.c;h=77f03d85fef6b29b0ca2e820d38d9ebb068e7bf7;hb=imx31
-
-http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=drivers/leds/leds-wm8350.c;h=a81bbf9154b4de13c029aee0613294562a03f506;hb=imx31
-
-http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=drivers/video/backlight/wm8350_bl.c;h=3eafb83683b7f242ec78ff620431307c25e23202;hb=imx31
-
-http://opensource.wolfsonmicro.com/cgi-bin/gitweb.cgi?p=linux-2.6-audioplus.git;a=blob;f=sound/soc/imx/imx32ads-wm8350.c;h=aae347ac556203fbdb64d71f4dc0be7df250767a;hb=imx31
-
-Patch follows.
-
-Liam
+diff --git a/include/linux/regulator/regulator-platform.h b/include/linux/regulator/regulator-platform.h
+new file mode 100644
+index 0000000..5558630
+--- /dev/null
++++ b/include/linux/regulator/regulator-platform.h
+@@ -0,0 +1,104 @@
++/*
++ * regulator-platform.h -- SoC Regulator support, platform driver API.
++ *
++ * Copyright (C) 2007, 2008 Wolfson Microelectronics PLC.
++ *
++ * Author: Liam Girdwood <lg@opensource.wolfsonmicro.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Regulator Platform Interface.
++ */
++
++
++#ifndef __LINUX_REGULATOR_PLATFORM_H_
++#define __LINUX_REGULATOR_PLATFORM_H_
++
++#include <linux/regulator/regulator.h>
++
++struct regulator;
++
++/*
++ * Regulator operation constraint flags. These flags are used to enable
++ * certain regulator operations.
++ *
++ * @VOLTAGE:  Regulator output voltage can be changed by software on this
++ *            board/machine.
++ * @CURRENT:  Regulator output current can be changed by software on this
++ *            board machine.
++ * @MODE:     Regulator operating mode can be changed by software on this
++ *            board machine.
++ * @STATUS:   Regulator can be enabled and disabled.
++ * @DRMS:     Dynamic Regulator Mode Switching is enabled for this regulator.
++ */
++
++#define REGULATOR_CHANGE_VOLTAGE	0x1
++#define REGULATOR_CHANGE_CURRENT	0x2
++#define REGULATOR_CHANGE_MODE		0x4
++#define REGULATOR_CHANGE_STATUS		0x8
++#define REGULATOR_CHANGE_DRMS		0x10
++
++/**
++ * struct regulation_constraints - regulator operating constraints.
++ *
++ * This struct describes regulator and board/machine specific constraints.
++ */
++struct regulation_constraints {
++
++	char *name;
++
++	/* voltage output range - for voltage control */
++	int min_uV;
++	int max_uV;
++
++	/* current output range - for current control */
++	int min_uA;
++	int max_uA;
++
++	/* valid regulator operating modes for this machine */
++	unsigned int valid_modes_mask;
++
++	/* valid operations for regulator on this machine */
++	unsigned int valid_ops_mask;
++
++	/* input voltage */
++	int input_uV;
++};
++
++/**
++ * regulator_set_platform_source - set regulator source regulator
++ * @regulator: regulator source
++ * @parent: source or parent regulator
++ *
++ * Called by platform initialisation code to set the source supply or "parent"
++ * regulator for this regulator. This ensures that a regulator source will
++ * also be enabled by the core if it's child is enabled.
++ */
++int regulator_set_platform_source(const char *regulator_source,
++	const char *regulator_parent);
++
++/**
++ * regulator_get_platform_source - get regulator source regulator
++ * @regulator: regulator source
++ *
++ * Returns the regulator supply regulator or NULL if no supply regulator
++ * exists (i.e the regulator is supplied directly from USB, Line, Battery, etc)
++ */
++const char *regulator_get_platform_source(const char *regulator_name);
++
++
++/**
++ * regulator_set_platform_constraints - sets regulator constraints
++ * @regulator: regulator source
++ *
++ * Allows platform initialisation code to define and constrain regulator
++ * circuits e.g. valid voltage/current ranges, etc.
++ * NOTE: Constraints *must* be set by platform code in order for some
++ * regulator operations to proceed i.e. set_voltage, set_current, set_mode.
++ */
++int regulator_set_platform_constraints(const char *regulator_name,
++	struct regulation_constraints *constraints);
++
++#endif
 
 
