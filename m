@@ -1,69 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934809AbYBOOWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbYBOOWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934809AbYBOOWT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934589AbYBOOV2
+	id S1761752AbYBOOWh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:22:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934729AbYBOOV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:21:28 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:23600 "EHLO hobbit.corpit.ru"
+	Fri, 15 Feb 2008 09:21:58 -0500
+Received: from smtp25.orange.fr ([193.252.22.22]:15086 "EHLO smtp25.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934578AbYBOOV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:21:27 -0500
-Message-ID: <47B59FE5.9000506@msgid.tls.msk.ru>
-Date: Fri, 15 Feb 2008 17:21:25 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	id S934704AbYBOOVz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 09:21:55 -0500
+X-ME-UUID: 20080215142152928.E29A01C0008C@mwinf2526.orange.fr
+Message-ID: <47B59FFC.4030603@cosmosbay.com>
+Date: Fri, 15 Feb 2008 15:21:48 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH] quota: Turn quotas off when remounting read-only
-References: <20080207143721.GH6140@duck.suse.cz> <20080207103655.14ce8512.akpm@linux-foundation.org> <47AB5B9F.8090302@msgid.tls.msk.ru> <20080211123927.GF9622@duck.suse.cz> <Pine.LNX.4.64.0802151509010.30301@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802151509010.30301@fbirervta.pbzchgretzou.qr>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: herbert@gondor.apana.org.au, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: tbench regression in 2.6.25-rc1
+References: <1203040321.3027.131.camel@ymzhang>	 <47B52B95.3070607@cosmosbay.com> <1203057044.3027.134.camel@ymzhang>
+In-Reply-To: <1203057044.3027.134.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Feb 11 2008 13:39, Jan Kara wrote:
->>> But...  I'm thinking about this scenario:
+Zhang, Yanmin a écrit :
+> On Fri, 2008-02-15 at 07:05 +0100, Eric Dumazet wrote:
+>   
+>> Zhang, Yanmin a �crit :
+>>     
+>>> Comparing with kernel 2.6.24, tbench result has regression with
+>>> 2.6.25-rc1.
 >>>
->>>  # mount /data
->>>  # quotaon /data
->>>  (some maintenance stuff to be planned)
->>>  # mount -o remount,ro /data
->>>  (do backup etc)
->>>  # mount -r remount,rw /data
+>>> 1) On 2 quad-core processor stoakley: 4%.
+>>> 2) On 4 quad-core processor tigerton: more than 30%.
 >>>
->>> at this point, it's expected that quota on /data is enabled.
->>> After this patch, it's not anymore...
->>  Yes, it previously accidentally worked this way (for an year or so,
->> before that we refused to remount read-only). Hmm, but maybe we could
->> somehow tweak quotas to be turned on when remounting read-write again.
->> We have all the information we need at the time of remounting read-only
->> so we could store it and use it later when remounting read-write. I'll have
->> a look into that.
-> 
-> Maybe it is possible to leave quota on all times, so that the
-> reporting quota ioctls continue to work even in ro mode?
+>>> bisect located below patch.
+>>>
+>>> b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b is first bad commit
+>>> commit b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b
+>>> Author: Herbert Xu <herbert@gondor.apana.org.au>
+>>> Date:   Tue Nov 13 21:33:32 2007 -0800
+>>>
+>>>     [IPV6]: Move nfheader_len into rt6_info
+>>>     
+>>>     The dst member nfheader_len is only used by IPv6.  It's also currently
+>>>     creating a rather ugly alignment hole in struct dst.  Therefore this patch
+>>>     moves it from there into struct rt6_info.
+>>>
+>>>
+>>> As tbench uses ipv4, so the patch's real impact on ipv4 is it deletes
+>>> nfheader_len in dst_entry. It might change cache line alignment.
+>>>
+>>> To verify my finding, I just added nfheader_len back to dst_entry in 2.6.25-rc1
+>>> and reran tbench on the 2 machines. Performance could be recovered completely.
+>>>
+>>> I started cpu_number*2 tbench processes. On my 16-core tigerton:
+>>> #./tbench_srv &
+>>> #./tbench 32 127.0.0.1
+>>>
+>>> -yanmin
+>>>       
+>> Yup. struct dst is sensitive to alignements, especially for benches.
+>>
+>> In the real world, we need to make sure that next pointer start at a cache 
+>> line bondary (or a litle bit after), so that RT cache lookups use one cache 
+>> line per entry instead of two. This permits better behavior in DDOS attacks.
+>>
+>> (check commit 1e19e02ca0c5e33ea73a25127dbe6c3b8fcaac4b for reference)
+>>
+>> Are you using a 64 or a 32 bit kernel ?
+>>     
+> 64bit x86-64 machine. On another 4-way Madison Itanium machine, tbench has the
+> similiar regression.
+>
+>   
 
-Well, that'd be the best approach imho (plus check if all
-ioctls which try to modify quotas fails with EROFS as
-appropriate).
+On linux-2.6.25-rc1 x86_64 :
 
-But the problem really is that it's unknown at this time
-where it fails in the first place.  I can't reproduce my
-hang "on demand" (mount-ro followed with umount when quotas
-are turned on, with ext3fs - umount never finishes), yet
-it has biten me for several times already.  So it must be
-something rare, some small race maybe, which is difficult
-to find...  Yet it finds itself at the most inappropriate
-moment. ;)  I already learned to turn the quota off before
-doing something with a filesystem, but sometimes I'm
-forgetting this, and the result is always the same... ;)
-Oh well.
+offsetof(struct dst_entry, lastuse)=0xb0
+offsetof(struct dst_entry, __refcnt)=0xb8
+offsetof(struct dst_entry, __use)=0xbc
+offsetof(struct dst_entry, next)=0xc0
 
-/mjt
+So it should be optimal... I dont know why tbench prefers __refcnt being 
+on 0xc0, since in this case lastuse will be on a different cache line...
+
+Each incoming IP packet will need to change lastuse, __refcnt and __use, 
+so keeping them in the same cache line is a win.
+
+I suspect then that even this patch could help tbench, since it avoids 
+writing lastuse...
+
+diff --git a/include/net/dst.h b/include/net/dst.h
+index e3ac7d0..24d3c4e 100644
+--- a/include/net/dst.h
++++ b/include/net/dst.h
+@@ -147,7 +147,8 @@ static inline void dst_use(struct dst_entry *dst, 
+unsigned long time)
+ {
+        dst_hold(dst);
+        dst->__use++;
+-       dst->lastuse = time;
++       if (time != dst->lastuse)
++               dst->lastuse = time;
+ }
+
+
+
+
+
+
+
