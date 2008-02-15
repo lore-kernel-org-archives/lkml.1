@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbYBOWIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYBOWKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758801AbYBOWIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbYBOWIF
+	id S1759392AbYBOWKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:10:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754613AbYBOWKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:08:05 -0500
-Received: from py-out-1112.google.com ([64.233.166.183]:8050 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753760AbYBOWID (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:08:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lZ6np3+nR4qJ6fkd4JTiWmSHIMDePxSn/2jEXd/t/g+A3SiWvgUVfe2mh6WvViZ1Qn4sOituYW5wXV5ddHiOuQnrML2fflDFr100TOmbIg8ypCvOulAdpzkBGFupG3h70D/uUbey2VFBCkcUYQoliqJNmPAsFUR12TJI8kDYGts=
-Message-ID: <43e72e890802151408g35fa2e49r5eb8557e4a5bbce4@mail.gmail.com>
-Date: Fri, 15 Feb 2008 17:08:00 -0500
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH 2/3] WDEV, ath5k, don't return int from bool function
-Cc: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@lists.ath5k.org,
-       "Nick Kossifidis" <mickflemm@gmail.com>
-In-Reply-To: <1203109133-32217-2-git-send-email-jirislaby@gmail.com>
+	Fri, 15 Feb 2008 17:10:15 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:44826 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754661AbYBOWKO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 17:10:14 -0500
+Date: Fri, 15 Feb 2008 23:09:59 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: =?ISO-8859-2?Q?Petr_Tit=ECra?= <P.Titera@century.cz>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: e_powersaver.c
+In-Reply-To: <47B5E61F.3030603@century.cz>
+Message-ID: <Pine.LNX.4.64.0802152309140.7699@twin.jikos.cz>
+References: <47B5E61F.3030603@century.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203109133-32217-1-git-send-email-jirislaby@gmail.com>
-	 <1203109133-32217-2-git-send-email-jirislaby@gmail.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-2117598454-1203113399=:7699"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 3:58 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->  -static bool
->  +static int
->   ath5k_hw_setup_xr_tx_desc(struct ath5k_hw *ah, struct ath5k_desc *desc,
->         unsigned int tx_rate1, u_int tx_tries1, u_int tx_rate2, u_int tx_tries2,
->         unsigned int tx_rate3, u_int tx_tries3)
->  @@ -3773,10 +3773,10 @@ ath5k_hw_setup_xr_tx_desc(struct ath5k_hw *ah, struct ath5k_desc *desc,
->
->   #undef _XTX_TRIES
->
->  -               return true;
->  +               return 1;
->         }
->
->  -       return false;
->  +       return 0;
->   }
+---1747641777-2117598454-1203113399=:7699
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Shouldn't we then treat 0 as OK?
+On Fri, 15 Feb 2008, Petr Tit=ECra wrote:
 
-  Luis
+>    is there some reason for printing current voltage and multiplier of=20
+> processor after each change? This change was added by commit 553ae38c.=20
+
+Which tree is this commit in? Definitely not latest Linus' tree:
+
+$ git pull
+Already up-to-date.
+$ git show 553ae38c
+fatal: ambiguous argument '553ae38c': unknown revision or path not in the w=
+orking tree.
+
+--=20
+Jiri Kosina
+SUSE Labs
+
+---1747641777-2117598454-1203113399=:7699--
