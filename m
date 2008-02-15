@@ -1,1074 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934973AbYBOOZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934115AbYBOO3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934973AbYBOOZv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933717AbYBOOZX
+	id S934115AbYBOO3m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbYBOO3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:25:23 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:59536 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756878AbYBOOZT (ORCPT
+	Fri, 15 Feb 2008 09:29:32 -0500
+Received: from frost.carfax.org.uk ([212.13.194.111]:2347 "EHLO
+	frost.carfax.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756858AbYBOO3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:25:19 -0500
-Subject: [PATCH 4/4] Voltage and current regulator framework
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 14:14:55 +0000
-Message-Id: <1203084895.3466.219.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Feb 2008 09:29:30 -0500
+X-Greylist: delayed 2542 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Feb 2008 09:29:30 EST
+Date: Fri, 15 Feb 2008 13:46:58 +0000
+From: Hugo Mills <hugo-lkml@carfax.org.uk>
+To: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Spurious completions during NCQ
+Message-ID: <20080215134658.GB27745@vlad.carfax.org.uk>
+Mail-Followup-To: Hugo Mills <hugo-lkml@carfax.org.uk>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="DKU6Jbt7q3WqK7+M"
+Content-Disposition: inline
+X-GPG-Fingerprint: 8C59 86C7 81F3 93FE BB02  DDB1 20AC B3BE 515C 238D
+X-GPG-Key: 515C238D
+X-Parrot: It is no more. It has joined the choir invisible.
+X-IRC-Nicks: darksatanic darkersatanic darkling darkthing
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-frost.carfax.org.uk-Spam-Score: -2.6 (--)
+X-frost.carfax.org.uk-Spam-Report: Spam detection software, running on the system "admin.corona.bitfolk.com", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  I'm getting these on my Dell Latitude D830: Feb 15 13:06:00
+	willow kernel: ata1.00: exception Emask 0x2 SAct 0x4 SErr 0x0 action 0x2
+	frozen Feb 15 13:06:00 willow kernel: ata1.00: spurious completions during
+	NCQ issue=0x0 SAct=0x4 FIS=004040a1:00000002 Feb 15 13:06:00 willow kernel:
+	ata1.00: cmd 61/10:10:26:fb:c4/00:00:02:00:00/40 tag 2 cdb 0x0 data 8192
+	out Feb 15 13:06:00 willow kernel: res 40/00:10:26:fb:c4/00:00:02:00:00/40
+	Emask 0x2 (HSM violation) Feb 15 13:06:00 willow kernel: ata1: soft resetting
+	port Feb 15 13:06:00 willow kernel: ata1: SATA link up 3.0 Gbps (SStatus
+	123 SControl 300) Feb 15 13:06:00 willow kernel: ata1.00: configured for UDMA/133
+	Feb 15 13:06:00 willow kernel: ata1: EH complete Feb 15 13:06:00 willow kernel:
+	sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB) Feb 15
+	13:06:00 willow kernel: sd 0:0:0:0: [sda] Write Protect is off Feb 15 13:06:00
+	willow kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00 Feb 15 13:06:00
+	willow kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled,
+	doesn't support DPO or FUA [...] 
+	Content analysis details:   (-2.6 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regulator framework core :-
 
-diff --git a/drivers/regulator/reg-core.c b/drivers/regulator/reg-core.c
-new file mode 100644
-index 0000000..1434697
---- /dev/null
-+++ b/drivers/regulator/reg-core.c
-@@ -0,0 +1,1036 @@
-+/*
-+ * regulator.c  --  Voltage/Current Regulator framework.
-+ *
-+ * Copyright 2007 Wolfson Microelectronics PLC.
-+ *
-+ * Author: Liam Girdwood <liam.girdwood@wolfsonmicro.com>
-+ *
-+ *  This program is free software; you can redistribute  it and/or modify it
-+ *  under  the terms of  the GNU General  Public License as published by the
-+ *  Free Software Foundation;  either version 2 of the  License, or (at your
-+ *  option) any later version.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/device.h>
-+#include <linux/err.h>
-+#include <linux/mutex.h>
-+#include <linux/regulator/regulator.h>
-+#include <linux/regulator/regulator-drv.h>
-+#include <linux/regulator/regulator-platform.h>
-+
-+#define REGULATOR_VERSION "0.2"
-+
-+/* We need to undef the current macro (from include/asm/current.h) otherwise
-+ * our "current" sysfs entry becomes "(get_current())".
-+ */
-+#undef current
-+
-+static DEFINE_MUTEX(list_mutex);
-+static LIST_HEAD(regulator_cdevs);
-+
-+/**
-+ * struct regulator_cdev
-+ *
-+ * Voltage / Current regulator class device. One for each regulator.
-+ */
-+struct regulator_cdev {
-+	struct regulator_desc *desc;
-+	int use_count;
-+
-+	struct list_head list;
-+	struct list_head consumer_list;
-+	struct blocking_notifier_head notifier;
-+	struct mutex mutex;
-+	struct module *owner;
-+	struct class_device cdev;
-+	struct regulation_constraints *constraints;
-+	struct regulator_cdev *parent; /* for tree */
-+
-+	void *reg_data; /* regulator_cdev data */
-+	void *vendor; /* regulator_cdev vendor extensions */
-+};
-+#define to_rcdev(cd) \
-+	container_of(cd, struct regulator_cdev, cdev)
-+
-+/*
-+ * struct regulator
-+ *
-+ * One for each consumer device.
-+ */
-+struct regulator {
-+	struct device *dev;
-+	struct list_head list;
-+	int uA_load;
-+	int uV_required;
-+	int enabled;
-+	struct device_attribute dev_attr;
-+	struct regulator_cdev *rcdev;
-+};
-+
-+static int _regulator_is_enabled(struct regulator_cdev *rcdev);
-+static int _regulator_disable(struct regulator_cdev *rcdev);
-+static int _regulator_get_voltage(struct regulator_cdev *rcdev);
-+static int _regulator_get_current(struct regulator_cdev *rcdev);
-+static unsigned int _regulator_get_mode(struct regulator_cdev *rcdev);
-+
-+static struct regulator *get_regulator_load(struct device *dev)
-+{
-+	struct regulator *regulator = NULL;
-+	struct regulator_cdev *rcdev;
-+
-+	list_for_each_entry(rcdev, &regulator_cdevs, list) {
-+		list_for_each_entry(regulator, &rcdev->consumer_list, list) {
-+			if (regulator->dev == dev)
-+				return regulator;
-+		}
-+	}
-+	return NULL;
-+}
-+
-+static int regulator_check_voltage(struct regulator_cdev *rcdev, int uV)
-+{
-+	if (!rcdev->constraints) {
-+		printk(KERN_ERR "%s: no constraints for %s\n", __func__,
-+			rcdev->desc->name);
-+		return -ENODEV;
-+	}
-+	if (!rcdev->constraints->valid_ops_mask & REGULATOR_CHANGE_VOLTAGE) {
-+		printk(KERN_ERR "%s: operation not allowed for %s\n",
-+			__func__, rcdev->desc->name);
-+		return -EPERM;
-+	}
-+	if (uV > rcdev->constraints->max_uV ||
-+		uV < rcdev->constraints->min_uV) {
-+		printk(KERN_ERR "%s: invalid voltage %duV for %s\n",
-+			__func__, uV, rcdev->desc->name);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int regulator_check_current(struct regulator_cdev *rcdev, int uA)
-+{
-+	if (!rcdev->constraints) {
-+		printk(KERN_ERR "%s: no constraints for %s\n", __func__,
-+			rcdev->desc->name);
-+		return -ENODEV;
-+	}
-+	if (!rcdev->constraints->valid_ops_mask & REGULATOR_CHANGE_CURRENT) {
-+		printk(KERN_ERR "%s: operation not allowed for %s\n",
-+			__func__, rcdev->desc->name);
-+		return -EPERM;
-+	}
-+	if (uA > rcdev->constraints->max_uA ||
-+		uA < rcdev->constraints->min_uA) {
-+		printk(KERN_ERR "%s: invalid current %duA for %s\n",
-+			__func__, uA, rcdev->desc->name);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int regulator_check_mode(struct regulator_cdev *rcdev, int mode)
-+{
-+	if (!rcdev->constraints) {
-+		printk(KERN_ERR "%s: no constraints for %s\n", __func__,
-+			rcdev->desc->name);
-+		return -ENODEV;
-+	}
-+	if (!rcdev->constraints->valid_ops_mask & REGULATOR_CHANGE_MODE) {
-+		printk(KERN_ERR "%s: operation not allowed for %s\n",
-+			__func__, rcdev->desc->name);
-+		return -EPERM;
-+	}
-+	if (!rcdev->constraints->valid_modes_mask & mode) {
-+		printk(KERN_ERR "%s: invalid mode %x for %s\n",
-+			__func__, mode, rcdev->desc->name);
-+		return -EINVAL;
-+	}
-+	return 0;
-+}
-+
-+static int regulator_check_drms(struct regulator_cdev *rcdev)
-+{
-+	if (!rcdev->constraints) {
-+		printk(KERN_ERR "%s: no constraints for %s\n", __func__,
-+			rcdev->desc->name);
-+		return -ENODEV;
-+	}
-+	if (!rcdev->constraints->valid_ops_mask & REGULATOR_CHANGE_DRMS) {
-+		printk(KERN_ERR "%s: operation not allowed for %s\n",
-+			__func__, rcdev->desc->name);
-+		return -EPERM;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t dev_load_show(struct device *dev,
-+	struct device_attribute *attr, char *buf)
-+{
-+	struct regulator *regulator;
-+
-+	regulator = get_regulator_load(dev);
-+	if (regulator == NULL)
-+		return 0;
-+
-+	return sprintf(buf, "%d\n", regulator->uA_load);
-+}
-+
-+static ssize_t regulator_uV_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+
-+	return sprintf(buf, "%d\n", _regulator_get_voltage(rcdev));
-+}
-+
-+static ssize_t regulator_uA_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+
-+	return sprintf(buf, "%d\n", _regulator_get_current(rcdev));
-+}
-+
-+static ssize_t regulator_mode_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+	int mode = _regulator_get_mode(rcdev);
-+
-+	switch (mode) {
-+	case REGULATOR_MODE_FAST:
-+		return sprintf(buf, "fast\n");
-+	case REGULATOR_MODE_NORMAL:
-+		return sprintf(buf, "normal\n");
-+	case REGULATOR_MODE_IDLE:
-+		return sprintf(buf, "idle\n");
-+	case REGULATOR_MODE_STANDBY:
-+		return sprintf(buf, "standby\n");
-+	}
-+	return sprintf(buf, "unknown\n");
-+}
-+
-+static ssize_t regulator_state_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+	int state = _regulator_is_enabled(rcdev);
-+
-+	if (state > 0)
-+		return sprintf(buf, "enabled\n");
-+	else if (state == 0)
-+		return sprintf(buf, "disabled\n");
-+	else
-+		return sprintf(buf, "unknown\n");
-+}
-+
-+static ssize_t regulator_constraint_uA_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+
-+	if (!rcdev->constraints)
-+		return sprintf(buf, "constraints not defined\n");
-+
-+	return sprintf (buf, "%d %d\n", rcdev->constraints->min_uA,
-+		rcdev->constraints->max_uA);
-+}
-+
-+static ssize_t regulator_constraint_uV_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+
-+	if (!rcdev->constraints)
-+		return sprintf(buf, "constraints not defined\n");
-+
-+	return sprintf (buf, "%d %d\n", rcdev->constraints->min_uV,
-+		rcdev->constraints->max_uV);
-+}
-+
-+static ssize_t regulator_constraint_modes_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+	int count = 0;
-+
-+	if (!rcdev->constraints)
-+		return sprintf(buf, "constraints not defined\n");
-+
-+	if (rcdev->constraints->valid_modes_mask & REGULATOR_MODE_FAST)
-+		count = sprintf (buf, "fast ");
-+	if (rcdev->constraints->valid_modes_mask & REGULATOR_MODE_NORMAL)
-+		count += sprintf (buf + count, "normal ");
-+	if (rcdev->constraints->valid_modes_mask & REGULATOR_MODE_IDLE)
-+		count += sprintf (buf + count, "idle ");
-+	if (rcdev->constraints->valid_modes_mask & REGULATOR_MODE_STANDBY)
-+		count += sprintf (buf + count, "standby");
-+	count += sprintf(buf + count, "\n");
-+	return count;
-+}
-+
-+static ssize_t regulator_total_dev_load(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+	struct regulator *regulator;
-+	int uA = 0;
-+
-+	list_for_each_entry(regulator, &rcdev->consumer_list, list)
-+		uA =+ regulator->uA_load;
-+	return sprintf(buf, "%d\n", uA);
-+}
-+
-+static ssize_t regulator_enabled_use_count(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+	return sprintf(buf, "%d\n", rcdev->use_count);
-+}
-+
-+static ssize_t regulator_type_show(struct class_device *cdev, char *buf)
-+{
-+	struct regulator_cdev *rcdev = to_rcdev(cdev);
-+
-+	switch (rcdev->desc->type) {
-+	case REGULATOR_VOLTAGE:
-+		return sprintf(buf, "voltage\n");
-+	case REGULATOR_CURRENT:
-+		return sprintf(buf, "current\n");
-+	}
-+	return sprintf(buf, "unknown\n");
-+}
-+
-+static struct class_device_attribute regulator_dev_attrs[] = {
-+	__ATTR(voltage, 0444, regulator_uV_show, NULL),
-+	__ATTR(current, 0444, regulator_uA_show, NULL),
-+	__ATTR(opmode, 0444, regulator_mode_show, NULL),
-+	__ATTR(enabled, 0444, regulator_state_show, NULL),
-+	__ATTR(voltage_limits, 0444, regulator_constraint_uA_show, NULL),
-+	__ATTR(current_limits, 0444, regulator_constraint_uV_show, NULL),
-+	__ATTR(valid_opmodes, 0444, regulator_constraint_modes_show, NULL),
-+	__ATTR(total_load, 0444, regulator_total_dev_load, NULL),
-+	__ATTR(enabled_count, 0444, regulator_enabled_use_count, NULL),
-+	__ATTR(type, 0444, regulator_type_show, NULL),
-+	__ATTR_NULL,
-+};
-+
-+static void regulator_dev_release(struct class_device *class_dev) {}
-+
-+struct class regulator_class = {
-+	.name			= "regulator",
-+	.release		= regulator_dev_release,
-+	.class_dev_attrs	= regulator_dev_attrs,
-+};
-+
-+/* find the lowest stable voltage that all enabled clients can operate at */
-+static int get_lowest_stable_voltage(struct regulator_cdev *rcdev)
-+{
-+	struct regulator *regulator;
-+	int highest_uV = 0;
-+
-+	list_for_each_entry(regulator, &rcdev->consumer_list, list) {
-+		if (regulator->enabled && regulator->uV_required > highest_uV)
-+			highest_uV = regulator->uV_required;
-+	}
-+	return highest_uV;
-+}
-+
-+/* set the regulator voltage to the lowest possible value that can safely
-+ * support all the client devices */
-+static int regulator_set_stable_voltage(struct regulator_cdev *rcdev)
-+{
-+	int ret = 0, uV;
-+
-+	if (rcdev->desc->type == REGULATOR_VOLTAGE) {
-+		uV = get_lowest_stable_voltage(rcdev);
-+		if (uV && rcdev->desc->ops->set_voltage)
-+			ret = rcdev->desc->ops->set_voltage(rcdev, uV);
-+	}
-+	return ret;
-+}
-+
-+static void regulator_load_change (struct regulator_cdev *rcdev)
-+{
-+	struct regulator *sibling;
-+	int current_uA = 0, output_uV, input_uV, err;
-+	unsigned int mode;
-+
-+	err = regulator_check_drms(rcdev);
-+	if (err < 0 || !rcdev->desc->ops->get_optimum_mode ||
-+		!rcdev->desc->ops->get_voltage || !rcdev->desc->ops->set_mode);
-+		return;
-+
-+	/* get output voltage */
-+	output_uV = rcdev->desc->ops->get_voltage(rcdev);
-+
-+	/* get input voltage */
-+	if (rcdev->parent && rcdev->parent->desc->ops->get_voltage)
-+		input_uV = rcdev->parent->desc->ops->get_voltage(rcdev->parent);
-+	else
-+		input_uV = rcdev->constraints->input_uV;
-+
-+	/* calc total requested load */
-+	list_for_each_entry(sibling, &rcdev->consumer_list, list)
-+		current_uA += sibling->uA_load;
-+
-+	/* now get the optimum mode for our new total regulator load */
-+	mode = rcdev->desc->ops->get_optimum_mode(rcdev, input_uV,
-+		output_uV, current_uA);
-+
-+	/* check the new mode is allowed */
-+	err = regulator_check_mode(rcdev, mode);
-+	if (err == 0)
-+		rcdev->desc->ops->set_mode(rcdev, mode);
-+}
-+
-+static void print_constraints(struct regulator_cdev *rcdev)
-+{
-+	struct regulation_constraints *constraints = rcdev->constraints;
-+	char buf[80];
-+	int count;
-+
-+	if (rcdev->desc->type == REGULATOR_VOLTAGE) {
-+		if (constraints->min_uV == constraints->max_uV)
-+			count = sprintf(buf, "%d mV ",
-+				uV_to_mV(constraints->min_uV));
-+		else
-+			count = sprintf(buf, "%d <--> %d mV ",
-+				uV_to_mV(constraints->min_uV),
-+				uV_to_mV(constraints->max_uV));
-+	} else {
-+		if (constraints->min_uA == constraints->max_uA)
-+			count = sprintf(buf, "%d mA ",
-+				uA_to_mA(constraints->min_uA));
-+		else
-+			count = sprintf(buf, "%d <--> %d mA ",
-+				uA_to_mA(constraints->min_uA),
-+				uA_to_mA(constraints->max_uA));
-+	}
-+	if (constraints->valid_modes_mask & REGULATOR_MODE_FAST)
-+		count += sprintf (buf + count, "fast ");
-+	if (constraints->valid_modes_mask & REGULATOR_MODE_NORMAL)
-+		count += sprintf (buf + count, "normal ");
-+	if (constraints->valid_modes_mask & REGULATOR_MODE_IDLE)
-+		count += sprintf (buf + count, "idle ");
-+	if (constraints->valid_modes_mask & REGULATOR_MODE_STANDBY)
-+		count += sprintf (buf + count, "standby");
-+
-+	printk(KERN_INFO "regulator: %s: %s\n", rcdev->desc->name, buf);
-+}
-+
-+static struct regulator *create_regulator(struct regulator_cdev *rcdev,
-+	struct device *dev)
-+{
-+	struct regulator *regulator;
-+	char buf[32];
-+	int err;
-+
-+	regulator = kzalloc(sizeof(*regulator), GFP_KERNEL);
-+	if (regulator == NULL)
-+		return NULL;
-+
-+	regulator->rcdev = rcdev;
-+	sprintf(buf, "current_requested-%s", regulator->rcdev->desc->name);
-+	list_add(&regulator->list, &rcdev->consumer_list);
-+
-+	if (dev == NULL)
-+		goto out;
-+
-+	regulator->dev = dev;
-+	regulator->dev_attr.attr.name = kstrdup(buf, GFP_KERNEL);
-+	if (regulator->dev_attr.attr.name == NULL)
-+		goto err_out;
-+	regulator->dev_attr.attr.owner = THIS_MODULE;
-+	regulator->dev_attr.attr.mode = 0444;
-+	regulator->dev_attr.show = dev_load_show;
-+	err = device_create_file(dev, &regulator->dev_attr);
-+	if (err < 0) {
-+		printk(KERN_WARNING "%s: could not add regulator_cdev load"
-+		" sysfs\n", __func__);
-+		goto err_out;
-+	}
-+	err = sysfs_create_link(&rcdev->cdev.kobj, &dev->kobj,
-+		dev->kobj.name);
-+	if (err) {
-+		printk(KERN_WARNING "%s : could not add device link %s err %d\n",
-+			__func__, dev->kobj.name, err);
-+		goto err_out;
-+	}
-+out:
-+	return regulator;
-+err_out:
-+	kfree(regulator->dev_attr.attr.name);
-+	list_del(&regulator->list);
-+	kfree(regulator);
-+	return NULL;
-+}
-+
-+struct regulator *regulator_get(struct device *dev, const char *id)
-+{
-+	struct regulator_cdev *rcdev;
-+	struct regulator *regulator = ERR_PTR(-ENODEV);
-+
-+	if (id == NULL)
-+		return regulator;
-+
-+	mutex_lock(&list_mutex);
-+	list_for_each_entry(rcdev, &regulator_cdevs, list) {
-+		if (strcmp(id, rcdev->desc->name) == 0 &&
-+			try_module_get(rcdev->owner)) {
-+			goto found;
-+		}
-+	}
-+	printk(KERN_ERR "regulator: Unable to get requested regulator: %s\n", id);
-+	mutex_unlock(&list_mutex);
-+	return regulator;
-+
-+found:
-+	regulator = create_regulator(rcdev, dev);
-+	if (regulator == NULL) {
-+		regulator = ERR_PTR(-ENOMEM);
-+		module_put(rcdev->owner);
-+	}
-+
-+	mutex_unlock(&list_mutex);
-+	return regulator;
-+}
-+EXPORT_SYMBOL_GPL(regulator_get);
-+
-+void regulator_put(struct regulator *regulator)
-+{
-+	struct regulator_cdev *rcdev = regulator->rcdev;
-+
-+	if (regulator == NULL || IS_ERR(regulator))
-+		return;
-+
-+	/* remove any sysfs entries */
-+	if (regulator->dev) {
-+		sysfs_remove_link(&rcdev->cdev.kobj, regulator->dev->kobj.name);
-+		device_remove_file(regulator->dev, &regulator->dev_attr);
-+	}
-+	list_del(&regulator->list);
-+	kfree(regulator->dev_attr.attr.name);
-+	kfree(regulator);
-+
-+	module_put(rcdev->owner);
-+	mutex_unlock(&list_mutex);
-+}
-+EXPORT_SYMBOL_GPL(regulator_put);
-+
-+static int _regulator_enable(struct regulator_cdev *rcdev)
-+{
-+	int ret = 0;
-+
-+	/* if the regulator is currently disabled make sure we check
-+	 * it's parent, mode and required voltage */
-+	if (rcdev->use_count == 0) {
-+		if (rcdev->parent) {
-+			ret = _regulator_enable(rcdev->parent);
-+			if (ret < 0) {
-+				printk(KERN_ERR "%s: failed to enable %s\n",
-+					__func__, rcdev->desc->name);
-+				goto out;
-+			}
-+		}
-+		if (rcdev->desc->ops->enable) {
-+			ret = regulator_set_stable_voltage(rcdev);
-+			if (ret < 0) {
-+				printk(KERN_ERR "%s: invalid voltage for %s\n",
-+					__func__, rcdev->desc->name);
-+				goto out;
-+			}
-+			regulator_load_change(rcdev);
-+			ret = rcdev->desc->ops->enable(rcdev);
-+			if (ret < 0) {
-+				printk(KERN_ERR "%s: failed to enable %s\n",
-+					__func__, rcdev->desc->name);
-+				goto out;
-+			}
-+		}
-+	} else {
-+		ret = regulator_set_stable_voltage(rcdev);
-+		if (ret < 0) {
-+			printk(KERN_ERR "%s: invalid voltage for %s\n",
-+				__func__, rcdev->desc->name);
-+			goto out;
-+		}
-+		regulator_load_change(rcdev);
-+	}
-+	rcdev->use_count++;
-+out:
-+	return ret;
-+}
-+
-+int regulator_enable(struct regulator *regulator)
-+{
-+	int ret;
-+
-+	mutex_lock(&regulator->rcdev->mutex);
-+	regulator->enabled = 1;
-+	ret = _regulator_enable(regulator->rcdev);
-+	if (ret < 0)
-+		regulator->enabled = 0;
-+	mutex_unlock(&regulator->rcdev->mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_enable);
-+
-+static int _regulator_disable(struct regulator_cdev *rcdev)
-+{
-+	int ret = 0;
-+
-+	/* make sure we are the last user before disabling this regulator */
-+	if (rcdev->use_count == 1) {
-+		if (rcdev->desc->ops->disable) {
-+			ret = rcdev->desc->ops->disable(rcdev);
-+			if (ret < 0) {
-+				printk(KERN_ERR "%s: failed to disable %s\n",
-+					__func__, rcdev->desc->name);
-+				goto out;
-+			}
-+		}
-+		/* decrease parent ref count and disable if required */
-+		if (rcdev->parent)
-+			_regulator_disable(rcdev->parent);
-+	} else {
-+		/* set to next best requested voltage and mode */
-+		ret = regulator_set_stable_voltage(rcdev);
-+		regulator_load_change(rcdev);
-+	}
-+	rcdev->use_count--;
-+out:
-+	if (rcdev->use_count < 0) {
-+		printk(KERN_ERR "%s: tried to disable too many times\n",
-+			__func__);
-+		rcdev->use_count = 0;
-+	}
-+	return ret;
-+}
-+
-+int regulator_disable(struct regulator *regulator)
-+{
-+	int ret;
-+
-+	mutex_lock(&regulator->rcdev->mutex);
-+	regulator->enabled = 0;
-+	regulator->uA_load = 0;
-+	ret = _regulator_disable(regulator->rcdev);
-+	if (ret < 0)
-+		regulator->enabled = 1;
-+	mutex_unlock(&regulator->rcdev->mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_disable);
-+
-+static int _regulator_is_enabled(struct regulator_cdev *rcdev)
-+{
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->is_enabled) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = rcdev->desc->ops->is_enabled(rcdev);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+
-+int regulator_is_enabled(struct regulator *regulator)
-+{
-+	return _regulator_is_enabled(regulator->rcdev);
-+}
-+EXPORT_SYMBOL_GPL(regulator_is_enabled);
-+
-+int regulator_set_voltage(struct regulator *regulator, int uV)
-+{
-+	struct regulator_cdev *rcdev = regulator->rcdev;
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->set_voltage) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* constraints check */
-+	ret = regulator_check_voltage(rcdev, uV);
-+	if (ret < 0)
-+		goto out;
-+	regulator->uV_required = uV;
-+
-+	/* only set the new voltage if it's all clients can use it */
-+	ret = regulator_set_stable_voltage(rcdev);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_voltage);
-+
-+static int _regulator_get_voltage(struct regulator_cdev *rcdev)
-+{
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->get_voltage) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = rcdev->desc->ops->get_voltage(rcdev);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+
-+int regulator_get_voltage(struct regulator *regulator)
-+{
-+	return _regulator_get_voltage(regulator->rcdev);
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_voltage);
-+
-+int regulator_set_current(struct regulator *regulator, int uA)
-+{
-+	struct regulator_cdev *rcdev = regulator->rcdev;
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->set_current) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* constraints check */
-+	ret = regulator_check_current(rcdev, uA);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = rcdev->desc->ops->set_current(rcdev, uA);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_current);
-+
-+static int _regulator_get_current(struct regulator_cdev *rcdev)
-+{
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->get_current) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = rcdev->desc->ops->get_current(rcdev);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+
-+int regulator_get_current(struct regulator *regulator)
-+{
-+	return _regulator_get_current(regulator->rcdev);
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_current);
-+
-+int regulator_set_mode(struct regulator *regulator, unsigned int mode)
-+{
-+	struct regulator_cdev *rcdev = regulator->rcdev;
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->set_mode) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	/* constraints check */
-+	ret = regulator_check_mode(rcdev, mode);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = rcdev->desc->ops->set_mode(rcdev, mode);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_mode);
-+
-+static unsigned int _regulator_get_mode(struct regulator_cdev *rcdev)
-+{
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->get_mode) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = rcdev->desc->ops->get_mode(rcdev);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+
-+unsigned int regulator_get_mode(struct regulator *regulator)
-+{
-+	return _regulator_get_mode(regulator->rcdev);
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_mode);
-+
-+static unsigned int _regulator_get_optimum_mode(struct regulator_cdev *rcdev,
-+	int input_uV, int output_uV, int load_uA)
-+{
-+	int ret;
-+
-+	mutex_lock(&rcdev->mutex);
-+
-+	/* sanity check */
-+	if (!rcdev->desc->ops->get_optimum_mode) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	ret = rcdev->desc->ops->get_optimum_mode(rcdev,
-+		input_uV, output_uV, load_uA);
-+out:
-+	mutex_unlock(&rcdev->mutex);
-+	return ret;
-+}
-+
-+unsigned int regulator_get_optimum_mode(struct regulator *regulator,
-+	int input_uV, int output_uV, int load_uA)
-+{
-+	return _regulator_get_optimum_mode(regulator->rcdev, input_uV,
-+		output_uV, load_uA);
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_optimum_mode);
-+
-+int regulator_register_client(struct regulator *regulator,
-+	struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_register(&regulator->rcdev->notifier, nb);
-+}
-+EXPORT_SYMBOL_GPL(regulator_register_client);
-+
-+int regulator_unregister_client(struct regulator *regulator,
-+	struct notifier_block *nb)
-+{
-+	return blocking_notifier_chain_unregister(&regulator->rcdev->notifier, nb);
-+}
-+EXPORT_SYMBOL_GPL(regulator_unregister_client);
-+
-+int regulator_notifier_call_chain(struct regulator_cdev *rcdev,
-+	unsigned long event, void *data)
-+{
-+	return blocking_notifier_call_chain(&rcdev->notifier, event, data);
-+}
-+EXPORT_SYMBOL_GPL(regulator_notifier_call_chain);
-+
-+struct regulator_cdev *regulator_register(
-+	struct regulator_desc *regulator_desc, void *reg_data)
-+{
-+	static atomic_t regulator_no = ATOMIC_INIT(0);
-+	struct regulator_cdev *rcdev;
-+	int ret;
-+
-+	if (regulator_desc == NULL)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (regulator_desc->name == NULL || regulator_desc->ops == NULL)
-+		return ERR_PTR(-EINVAL);
-+
-+	if (!regulator_desc->type == REGULATOR_VOLTAGE &&
-+		!regulator_desc->type == REGULATOR_CURRENT)
-+		return ERR_PTR(-EINVAL);
-+
-+	rcdev = kzalloc(sizeof(struct regulator_cdev), GFP_KERNEL);
-+	if (rcdev == NULL)
-+		return ERR_PTR(-ENOMEM);
-+
-+	mutex_lock(&list_mutex);
-+
-+	mutex_init(&rcdev->mutex);
-+	rcdev->reg_data = reg_data;
-+	rcdev->owner = regulator_desc->owner;
-+	rcdev->desc = regulator_desc;
-+	INIT_LIST_HEAD(&rcdev->consumer_list);
-+	INIT_LIST_HEAD(&rcdev->list);
-+	BLOCKING_INIT_NOTIFIER_HEAD(&rcdev->notifier);
-+
-+	rcdev->cdev.class = &regulator_class;
-+	class_device_initialize(&rcdev->cdev);
-+	snprintf(rcdev->cdev.class_id, sizeof(rcdev->cdev.class_id),
-+		"regulator-%ld-%s",
-+		(unsigned long) atomic_inc_return(&regulator_no) - 1,
-+		regulator_desc->name);
-+
-+	ret = class_device_add(&rcdev->cdev);
-+	if (ret == 0)
-+		list_add(&rcdev->list, &regulator_cdevs);
-+	else {
-+		kfree(rcdev);
-+		rcdev = ERR_PTR(ret);
-+	}
-+	mutex_unlock(&list_mutex);
-+	return rcdev;
-+}
-+EXPORT_SYMBOL_GPL(regulator_register);
-+
-+void regulator_unregister(struct regulator_cdev *rcdev)
-+{
-+	if (rcdev == NULL)
-+		return;
-+
-+	mutex_lock(&list_mutex);
-+	list_del(&rcdev->list);
-+	if (rcdev->parent)
-+		sysfs_remove_link(&rcdev->cdev.kobj, "source");
-+	class_device_unregister(&rcdev->cdev);
-+	kfree(rcdev);
-+	mutex_unlock(&list_mutex);
-+}
-+EXPORT_SYMBOL_GPL(regulator_unregister);
-+
-+int regulator_set_platform_source(const char *regulator_source,
-+	const char *regulator_parent)
-+{
-+	struct regulator_cdev *source_rcdev, *parent_rcdev;
-+	int err;
-+
-+	if (regulator_source == NULL || regulator_parent == NULL)
-+		return -EINVAL;
-+
-+	mutex_lock(&list_mutex);
-+
-+	list_for_each_entry(source_rcdev, &regulator_cdevs, list) {
-+		if (!strcmp(source_rcdev->desc->name, regulator_source))
-+			goto found_source;
-+	}
-+	mutex_unlock(&list_mutex);
-+	return -ENODEV;
-+
-+found_source:
-+	list_for_each_entry(parent_rcdev, &regulator_cdevs, list) {
-+		if (!strcmp(parent_rcdev->desc->name, regulator_parent))
-+			goto found_parent;
-+	}
-+	mutex_unlock(&list_mutex);
-+	return -ENODEV;
-+
-+found_parent:
-+	source_rcdev->parent = parent_rcdev;
-+	err = sysfs_create_link(&source_rcdev->cdev.kobj, &parent_rcdev->cdev.kobj,
-+		"source");
-+	if (err)
-+		printk(KERN_WARNING "%s : could not add device link %s err %d\n",
-+			__func__, parent_rcdev->cdev.kobj.name, err);
-+	mutex_unlock(&list_mutex);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_platform_source);
-+
-+const char *regulator_get_platform_source(const char *regulator_name)
-+{
-+	struct regulator_cdev *rcdev;
-+
-+	if (regulator_name == NULL)
-+		return NULL;
-+
-+	mutex_lock(&list_mutex);
-+	list_for_each_entry(rcdev, &regulator_cdevs, list) {
-+		if (!strcmp(rcdev->desc->name, regulator_name))
-+			goto found;
-+	}
-+	mutex_unlock(&list_mutex);
-+	return NULL;
-+
-+found:
-+	mutex_unlock(&list_mutex);
-+	if (rcdev->parent)
-+		return rcdev->parent->desc->name;
-+	else
-+		return NULL;
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_platform_source);
-+
-+int regulator_set_platform_constraints(const char *regulator_name,
-+	struct regulation_constraints *constraints)
-+{
-+	struct regulator_cdev *rcdev;
-+
-+	if (regulator_name == NULL)
-+		return -EINVAL;
-+
-+	mutex_lock(&list_mutex);
-+	list_for_each_entry(rcdev, &regulator_cdevs, list) {
-+		if (!strcmp(regulator_name, rcdev->desc->name)) {
-+			mutex_lock(&rcdev->mutex);
-+			rcdev->constraints = constraints;
-+			print_constraints(rcdev);
-+			mutex_unlock(&rcdev->mutex);
-+			mutex_unlock(&list_mutex);
-+			return 0;
-+		}
-+	}
-+	mutex_unlock(&list_mutex);
-+	return -ENODEV;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_platform_constraints);
-+
-+void regulator_drms_notify_load(struct regulator *regulator, int uA)
-+{
-+	struct regulator_cdev *rcdev = regulator->rcdev;
-+
-+	mutex_lock(&rcdev->mutex);
-+	regulator->uA_load = uA;
-+	regulator_load_change (rcdev);
-+	mutex_unlock(&rcdev->mutex);
-+}
-+EXPORT_SYMBOL_GPL(regulator_drms_notify_load);
-+
-+void *regulator_get_drvdata(struct regulator *regulator)
-+{
-+	return regulator->rcdev->reg_data;
-+}
-+EXPORT_SYMBOL_GPL(regulator_get_drvdata);
-+
-+void regulator_set_drvdata(struct regulator *regulator, void *data)
-+{
-+	regulator->rcdev->reg_data = data;
-+}
-+EXPORT_SYMBOL_GPL(regulator_set_drvdata);
-+
-+int rcdev_get_id (struct regulator_cdev *rcdev)
-+{
-+	return rcdev->desc->id;
-+}
-+EXPORT_SYMBOL_GPL(rcdev_get_id);
-+
-+void *rcdev_get_drvdata (struct regulator_cdev *rcdev)
-+{
-+	return rcdev->reg_data;
-+}
-+EXPORT_SYMBOL_GPL(rcdev_get_drvdata);
-+
-+static int __init regulator_init(void)
-+{
-+	printk(KERN_INFO "regulator: core version %s\n", REGULATOR_VERSION);
-+	return class_register(&regulator_class);
-+}
-+
-+/* init early to allow our consumers to complete system booting */
-+core_initcall(regulator_init);
+--DKU6Jbt7q3WqK7+M
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+   I'm getting these on my Dell Latitude D830:
+
+Feb 15 13:06:00 willow kernel: ata1.00: exception Emask 0x2 SAct 0x4 SErr 0x0 action 0x2 frozen
+Feb 15 13:06:00 willow kernel: ata1.00: spurious completions during NCQ issue=0x0 SAct=0x4 FIS=004040a1:00000002
+Feb 15 13:06:00 willow kernel: ata1.00: cmd 61/10:10:26:fb:c4/00:00:02:00:00/40 tag 2 cdb 0x0 data 8192 out
+Feb 15 13:06:00 willow kernel:          res 40/00:10:26:fb:c4/00:00:02:00:00/40 Emask 0x2 (HSM violation)
+Feb 15 13:06:00 willow kernel: ata1: soft resetting port
+Feb 15 13:06:00 willow kernel: ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+Feb 15 13:06:00 willow kernel: ata1.00: configured for UDMA/133
+Feb 15 13:06:00 willow kernel: ata1: EH complete
+Feb 15 13:06:00 willow kernel: sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
+Feb 15 13:06:00 willow kernel: sd 0:0:0:0: [sda] Write Protect is off
+Feb 15 13:06:00 willow kernel: sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+Feb 15 13:06:00 willow kernel: sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+
+   In some cases, there are several cmd/res lines listed. It's
+happening about once an hour or so (not correlated with any other
+event that I can see). It doesn't seem to be affecting operation of
+the machine, but it's making me nervous.
+
+   Can anyone set my mind at rest? (Or suggest a fix?)
+
+uname -a reports:
+Linux willow 2.6.23.1-hrt3 #1 SMP Sun Nov 4 14:51:20 GMT 2007 x86_64 GNU/Linux
+
+   It's a kernel.org kernel with the patch for tickless operation on
+amd64.
+
+hdparm -i reports:
+
+/dev/sda:
+
+ Model=ST9160823AS                             , FwRev=3.ADC   , SerialNo=            5NK0C448
+ Config={ HardSect NotMFM HdSw>15uSec Fixed DTR>10Mbs RotSpdTol>.5% }
+ RawCHS=16383/16/63, TrkSize=0, SectSize=0, ECCbytes=4
+ BuffType=unknown, BuffSize=8192kB, MaxMultSect=16, MultSect=?8?
+ CurCHS=16383/16/63, CurSects=16514064, LBA=yes, LBAsects=268435455
+ IORDY=on/off, tPIO={min:120,w/IORDY:120}, tDMA={min:120,rec:120}
+ PIO modes:  pio0 pio1 pio2 pio3 pio4 
+ DMA modes:  mdma0 mdma1 mdma2 
+ UDMA modes: udma0 udma1 udma2 udma3 udma4 udma5 
+ AdvancedPM=yes: unknown setting WriteCache=enabled
+ Drive conforms to: Unspecified:  ATA/ATAPI-1,2,3,4,5,6,7
+
+ * signifies the current active mode
 
 
+   Hugo.
+
+-- 
+=== Hugo Mills: hugo@... carfax.org.uk | darksatanic.net | lug.org.uk ===
+  PGP key: 515C238D from wwwkeys.eu.pgp.net or http://www.carfax.org.uk
+              --- w.w.w.  : England's batting scorecard ---              
+
+--DKU6Jbt7q3WqK7+M
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHtZfSIKyzvlFcI40RAjGkAKCxuDHSck654WUiio7FZGO86RW/0ACfcU6d
+vzeJ/lidh5rvDF+2LxONio8=
+=M6oS
+-----END PGP SIGNATURE-----
+
+--DKU6Jbt7q3WqK7+M--
