@@ -1,53 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbYBOSw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760558AbYBOS4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbYBOSw4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761116AbYBOSwj
+	id S1760558AbYBOS4F (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:56:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYBOSzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:52:39 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54673 "EHLO mail.dvmed.net"
+	Fri, 15 Feb 2008 13:55:55 -0500
+Received: from mx.neterion.com ([72.1.205.142]:28223 "EHLO owa.neterion.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761068AbYBOSwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:52:38 -0500
-Message-ID: <47B5DF74.3020801@garzik.org>
-Date: Fri, 15 Feb 2008 13:52:36 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1757139AbYBOSzz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 13:55:55 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Harvey Harrison <harvey.harrison@gmail.com>
-CC: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-ide <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH 06/11] ata: sparse fixes for pata_amd.c
-References: <3ad7c41048d88a3f8aad098570b9fac9ff719aff.1202965399.git.harvey.harrison@gmail.com> <1202966060.2748.20.camel@brick>
-In-Reply-To: <1202966060.2748.20.camel@brick>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] Re: Demand paging for memory regions
+Date: Fri, 15 Feb 2008 13:53:53 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77030E25F1@nekter>
+In-Reply-To: <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] Re: Demand paging for memory regions
+Thread-Index: AchwAwj0ZFEAYBH7Qw6U48onZobTHgAACQ/A
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>  <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com>  <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>  <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>  <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>  <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com> <469958e00802141443g33448abcs3efa6d6c4aec2b56@mail.gmail.com> <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E2456@nekter> <Pine.LNX.4.64.0802141836070.4898@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E25BA@nekter> <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com>
+From: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Cc: <linux-kernel@vger.kernel.org>, <avi@qumranet.com>, <linux-mm@kvack.org>,
+       <general@lists.openfabrics.org>, <kvm-devel@lists.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Harrison wrote:
-> drop return statement.
-> drivers/ata/pata_amd.c:149:2: warning: returning void-valued expression
-> 
-> Commit ce54d1616302117fa98513ae916bb3333e1c02ea pata_amd: update mode selection for NV PATAs
-> 
-> added the initializer for nv_mode_filter but missed deleting the previously
-> set mode_filter
-> 
-> drivers/ata/pata_amd.c:509:3: warning: Initializer entry defined twice
-> drivers/ata/pata_amd.c:521:3:   also defined here
-> drivers/ata/pata_amd.c:544:3: warning: Initializer entry defined twice
-> drivers/ata/pata_amd.c:556:3:   also defined here
-> 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
->  drivers/ata/pata_amd.c |    7 ++-----
->  1 files changed, 2 insertions(+), 5 deletions(-)
-
-applied 6-10
 
 
+> -----Original Message-----
+> From: Christoph Lameter [mailto:clameter@sgi.com]
+> Sent: Friday, February 15, 2008 10:46 AM
+> To: Caitlin Bestler
+> Cc: linux-kernel@vger.kernel.org; avi@qumranet.com;
+linux-mm@kvack.org;
+> general@lists.openfabrics.org; kvm-devel@lists.sourceforge.net
+> Subject: RE: [ofa-general] Re: Demand paging for memory regions
+> 
+> On Fri, 15 Feb 2008, Caitlin Bestler wrote:
+> 
+> > > What does it mean that the "application layer has to be determine
+> what
+> > > pages are registered"? The application does not know which of its
+> > pages
+> > > are currently in memory. It can only force these pages to stay in
+> > > memory if their are mlocked.
+> > >
+> >
+> > An application that advertises an RDMA accessible buffer
+> > to a remote peer *does* have to know that its pages *are*
+> > currently in memory.
+> 
+> Ok that would mean it needs to inform the VM of that issue by mlocking
+> these pages.
+> 
+> > But the more fundamental issue is recognizing that applications
+> > that use direct interfaces need to know that buffers that they
+> > enable truly have committed resources. They need a way to
+> > ask for twenty *real* pages, not twenty pages of address
+> > space. And they need to do it in a way that allows memory
+> > to be rearranged or even migrated with them to a new host.
+> 
+> mlock will force the pages to stay in memory without requiring the OS
+> to keep them where they are.
+
+So that would mean that mlock is used by the application before it 
+registers memory for direct access, and then it is up to the RDMA
+layer and the OS to negotiate actual pinning of the addresses for
+whatever duration is required.
+
+There is no *protocol* barrier to replacing pages within a Memory
+Region as long as it is done in a way that keeps the content of
+those page coherent. But existing devices have their own ideas
+on how this is done and existing devices are notoriously poor at
+learning new tricks.
+
+Merely mlocking pages deals with the end-to-end RDMA semantics.
+What still needs to be addressed is how a fastpath interface
+would dynamically pin and unpin. Yielding pins for short-term
+suspensions (and flushing cached translations) deals with the
+rest. Understanding the range of support that existing devices
+could provide with software updates would be the next step if
+you wanted to pursue this.
