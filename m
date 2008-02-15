@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbYBOSqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYBOSq3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbYBOSqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:46:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbYBOSp6
+	id S1758201AbYBOSq3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:46:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760242AbYBOSqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:45:58 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:57317 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756159AbYBOSp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:45:57 -0500
-Date: Fri, 15 Feb 2008 10:45:55 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Caitlin Bestler <Caitlin.Bestler@neterion.com>
-cc: linux-kernel@vger.kernel.org, avi@qumranet.com, linux-mm@kvack.org,
-       general@lists.openfabrics.org, kvm-devel@lists.sourceforge.net
-Subject: RE: [ofa-general] Re: Demand paging for memory regions
-In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD77030E25BA@nekter>
-Message-ID: <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com> 
- <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com> 
- <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com> 
- <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>
-  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>
-  <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com> 
- <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com>
- <469958e00802141443g33448abcs3efa6d6c4aec2b56@mail.gmail.com>
- <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com>
- <78C9135A3D2ECE4B8162EBDCE82CAD77030E2456@nekter>
- <Pine.LNX.4.64.0802141836070.4898@schroedinger.engr.sgi.com>
- <78C9135A3D2ECE4B8162EBDCE82CAD77030E25BA@nekter>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Feb 2008 13:46:09 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:59973 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760134AbYBOSqH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 13:46:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=U02dBLo/Z2lG6jnwOkOZxZpJhAYfT51Ctzb0J4AJrDSSF+7eFwsT3b0C0cbosNF9ujSn166Mg/ANQGkoMgGTbwt47vPTjC2LWRP9G/cSzCjnWCJsFpG8D4kHy8bp87Fcs3rHCRFo143wCb6Qai3FBUMhXCrklpdnTx1va/6OhyM=
+Subject: [PATCH] befs: fix sparse warning in linuxvfs.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: "Sergey S. Kostyliov" <rathamahata@php4.ru>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 10:46:04 -0800
+Message-Id: <1203101164.15275.21.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008, Caitlin Bestler wrote:
+Use link as the variable name to avoid shadowing the arg.
 
-> > What does it mean that the "application layer has to be determine what
-> > pages are registered"? The application does not know which of its
-> pages
-> > are currently in memory. It can only force these pages to stay in
-> > memory if their are mlocked.
-> > 
-> 
-> An application that advertises an RDMA accessible buffer
-> to a remote peer *does* have to know that its pages *are*
-> currently in memory.
+fs/befs/linuxvfs.c:492:8: warning: symbol 'p' shadows an earlier one
+fs/befs/linuxvfs.c:488:77: originally declared here
 
-Ok that would mean it needs to inform the VM of that issue by mlocking 
-these pages.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+This should be checked in case there is a latent bug here.  Should it
+be the arg *p getting freed, or the local var *p that was shadowing
+it?
+
+ fs/befs/linuxvfs.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
+index 82123ff..e8717de 100644
+--- a/fs/befs/linuxvfs.c
++++ b/fs/befs/linuxvfs.c
+@@ -489,9 +489,9 @@ static void befs_put_link(struct dentry *dentry, struct nameidata *nd, void *p)
+ {
+ 	befs_inode_info *befs_ino = BEFS_I(dentry->d_inode);
+ 	if (befs_ino->i_flags & BEFS_LONG_SYMLINK) {
+-		char *p = nd_get_link(nd);
+-		if (!IS_ERR(p))
+-			kfree(p);
++		char *link = nd_get_link(nd);
++		if (!IS_ERR(link))
++			kfree(link);
+ 	}
+ }
  
-> But the more fundamental issue is recognizing that applications
-> that use direct interfaces need to know that buffers that they
-> enable truly have committed resources. They need a way to
-> ask for twenty *real* pages, not twenty pages of address
-> space. And they need to do it in a way that allows memory
-> to be rearranged or even migrated with them to a new host.
+-- 
+1.5.4.1.1278.gc75be
 
-mlock will force the pages to stay in memory without requiring the OS to 
-keep them where they are.
+
 
