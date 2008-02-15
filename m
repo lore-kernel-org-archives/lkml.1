@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761895AbYBOAqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935619AbYBOAqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761895AbYBOAqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:46:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932780AbYBOAmp
+	id S935619AbYBOAqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934833AbYBOAms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 19:42:45 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:54075 "EHLO mx2.suse.de"
+	Thu, 14 Feb 2008 19:42:48 -0500
+Received: from ns1.suse.de ([195.135.220.2]:38004 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762293AbYBOAmm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:42:42 -0500
+	id S934825AbYBOAmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 19:42:47 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-pci@atrey.karlin.mff.cuni.cz
 Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>, Matt Domsch <Matt_Domsch@dell.com>
-Subject: [PATCH 08/12] PCI: remove initial bios sort of PCI devices on x86
-Date: Thu, 14 Feb 2008 16:40:06 -0800
-Message-Id: <1203036010-27988-8-git-send-email-gregkh@suse.de>
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 09/12] PCI: make no_pci_devices() use the pci_bus_type list
+Date: Thu, 14 Feb 2008 16:40:07 -0800
+Message-Id: <1203036010-27988-9-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4
 In-Reply-To: <20080215003909.GA27981@kroah.com>
 References: <20080215003909.GA27981@kroah.com>
@@ -23,265 +23,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We currently keep 2 lists of PCI devices in the system, one in the
-driver core, and one all on its own.  This second list is sorted at boot
-time, in "BIOS" order, to try to remain compatible with older kernels
-(2.2 and earlier days).  There was also a "nosort" option to turn this
-sorting off, to remain compatible with even older kernel versions, but
-that just ends up being what we have been doing from 2.5 days...
+no_pci_devices() should use the driver core list of PCI devices, not our
+"separate" one.
 
-Unfortunately, the second list of devices is not really ever used to
-determine the probing order of PCI devices or drivers[1].  That is done
-using the driver core list instead.  This change happened back in the
-early 2.5 days.
-
-Relying on BIOS ording for the binding of drivers to specific device
-names is problematic for many reasons, and userspace tools like udev
-exist to properly name devices in a persistant manner if that is needed,
-no reliance on the BIOS is needed.
-
-Matt Domsch and others at Dell noticed this back in 2006, and added a
-boot option to sort the PCI device lists (both of them) in a
-breadth-first manner to help remain compatible with the 2.4 order, if
-needed for any reason.  This option is not going away, as some systems
-rely on them.
-
-This patch removes the sorting of the internal PCI device list in "BIOS"
-mode, as it's not needed at all anymore, and hasn't for many years.
-I've also removed the PCI flags for this from some other arches that for
-some reason defined them, but never used them.
-
-This should not change the ordering of any drivers or device probing.
-
-[1] The old-style pci_get_device and pci_find_device() still used this
-sorting order, but there are very few drivers that use these functions,
-as they are deprecated for use in this manner.  If for some reason, a
-driver rely on the order and uses these functions, the breadth-first
-boot option will resolve any problem.
-
-Cc: Matt Domsch <Matt_Domsch@dell.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/kernel-parameters.txt     |    4 --
- arch/frv/mb93090-mb00/pci-frv.h         |    2 -
- arch/mn10300/unit-asb2305/pci-asb2305.h |    2 -
- arch/sh/drivers/pci/pci-sh4.h           |    2 -
- arch/x86/pci/common.c                   |    7 ---
- arch/x86/pci/pcbios.c                   |   72 -------------------------------
- arch/x86/pci/pci.h                      |    3 -
- include/asm-sh/mpc1211/pci.h            |    2 -
- 8 files changed, 0 insertions(+), 94 deletions(-)
+ drivers/pci/probe.c |   17 ++++++++++++++---
+ 1 files changed, 14 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index a4fc7fc..c64dfd7 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1393,10 +1393,6 @@ and is between 256 and 4096 characters. It is defined in the file
- 		nomsi		[MSI] If the PCI_MSI kernel config parameter is
- 				enabled, this kernel boot option can be used to
- 				disable the use of MSI interrupts system-wide.
--		nosort		[X86-32] Don't sort PCI devices according to
--				order given by the PCI BIOS. This sorting is
--				done to get a device order compatible with
--				older kernels.
- 		biosirq		[X86-32] Use PCI BIOS calls to get the interrupt
- 				routing table. These calls are known to be buggy
- 				on several machines and they hang the machine
-diff --git a/arch/frv/mb93090-mb00/pci-frv.h b/arch/frv/mb93090-mb00/pci-frv.h
-index 7481797..0c7bf39 100644
---- a/arch/frv/mb93090-mb00/pci-frv.h
-+++ b/arch/frv/mb93090-mb00/pci-frv.h
-@@ -17,8 +17,6 @@
- #define PCI_PROBE_BIOS		0x0001
- #define PCI_PROBE_CONF1		0x0002
- #define PCI_PROBE_CONF2		0x0004
--#define PCI_NO_SORT		0x0100
--#define PCI_BIOS_SORT		0x0200
- #define PCI_NO_CHECKS		0x0400
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
-diff --git a/arch/mn10300/unit-asb2305/pci-asb2305.h b/arch/mn10300/unit-asb2305/pci-asb2305.h
-index 84634fa..9763d1c 100644
---- a/arch/mn10300/unit-asb2305/pci-asb2305.h
-+++ b/arch/mn10300/unit-asb2305/pci-asb2305.h
-@@ -23,8 +23,6 @@
- #define PCI_PROBE_BIOS 1
- #define PCI_PROBE_CONF1 2
- #define PCI_PROBE_CONF2 4
--#define PCI_NO_SORT 0x100
--#define PCI_BIOS_SORT 0x200
- #define PCI_NO_CHECKS 0x400
- #define PCI_ASSIGN_ROMS 0x1000
- #define PCI_BIOS_IRQ_SCAN 0x2000
-diff --git a/arch/sh/drivers/pci/pci-sh4.h b/arch/sh/drivers/pci/pci-sh4.h
-index 4925c79..5f43bc9 100644
---- a/arch/sh/drivers/pci/pci-sh4.h
-+++ b/arch/sh/drivers/pci/pci-sh4.h
-@@ -15,8 +15,6 @@
- #define PCI_PROBE_BIOS		1
- #define PCI_PROBE_CONF1		2
- #define PCI_PROBE_CONF2		4
--#define PCI_NO_SORT		0x100
--#define PCI_BIOS_SORT		0x200
- #define PCI_NO_CHECKS		0x400
- #define PCI_ASSIGN_ROMS		0x1000
- #define PCI_BIOS_IRQ_SCAN	0x2000
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index b7c67a1..a67c1fe 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -427,10 +427,6 @@ static int __init pcibios_init(void)
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 4d23b9f..5fd662e 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -22,16 +22,27 @@ EXPORT_SYMBOL(pci_root_buses);
  
- 	if (pci_bf_sort >= pci_force_bf)
- 		pci_sort_breadthfirst();
--#ifdef CONFIG_PCI_BIOS
--	if ((pci_probe & PCI_BIOS_SORT) && !(pci_probe & PCI_NO_SORT))
--		pcibios_sort();
--#endif
- 	return 0;
- }
+ LIST_HEAD(pci_devices);
  
-@@ -455,9 +451,6 @@ char * __devinit  pcibios_setup(char *str)
- 	} else if (!strcmp(str, "nobios")) {
- 		pci_probe &= ~PCI_PROBE_BIOS;
- 		return NULL;
--	} else if (!strcmp(str, "nosort")) {
--		pci_probe |= PCI_NO_SORT;
--		return NULL;
- 	} else if (!strcmp(str, "biosirq")) {
- 		pci_probe |= PCI_BIOS_IRQ_SCAN;
- 		return NULL;
-diff --git a/arch/x86/pci/pcbios.c b/arch/x86/pci/pcbios.c
-index 10ac8c3..ee003d7 100644
---- a/arch/x86/pci/pcbios.c
-+++ b/arch/x86/pci/pcbios.c
-@@ -152,28 +152,6 @@ static int __devinit check_pcibios(void)
- 	return 0;
- }
- 
--static int __devinit pci_bios_find_device (unsigned short vendor, unsigned short device_id,
--					unsigned short index, unsigned char *bus, unsigned char *device_fn)
--{
--	unsigned short bx;
--	unsigned short ret;
--
--	__asm__("lcall *(%%edi); cld\n\t"
--		"jc 1f\n\t"
--		"xor %%ah, %%ah\n"
--		"1:"
--		: "=b" (bx),
--		  "=a" (ret)
--		: "1" (PCIBIOS_FIND_PCI_DEVICE),
--		  "c" (device_id),
--		  "d" (vendor),
--		  "S" ((int) index),
--		  "D" (&pci_indirect));
--	*bus = (bx >> 8) & 0xff;
--	*device_fn = bx & 0xff;
--	return (int) (ret & 0xff00) >> 8;
--}
--
- static int pci_bios_read(unsigned int seg, unsigned int bus,
- 			 unsigned int devfn, int reg, int len, u32 *value)
- {
-@@ -354,55 +332,6 @@ static struct pci_raw_ops * __devinit pci_find_bios(void)
- }
- 
++
++static int find_anything(struct device *dev, void *data)
++{
++	return 1;
++}
++
  /*
-- * Sort the device list according to PCI BIOS. Nasty hack, but since some
-- * fool forgot to define the `correct' device order in the PCI BIOS specs
-- * and we want to be (possibly bug-to-bug ;-]) compatible with older kernels
-- * which used BIOS ordering, we are bound to do this...
-- */
--
--void __devinit pcibios_sort(void)
--{
--	LIST_HEAD(sorted_devices);
--	struct list_head *ln;
--	struct pci_dev *dev, *d;
--	int idx, found;
--	unsigned char bus, devfn;
--
--	DBG("PCI: Sorting device list...\n");
--	while (!list_empty(&pci_devices)) {
--		ln = pci_devices.next;
--		dev = pci_dev_g(ln);
--		idx = found = 0;
--		while (pci_bios_find_device(dev->vendor, dev->device, idx, &bus, &devfn) == PCIBIOS_SUCCESSFUL) {
--			idx++;
--			list_for_each(ln, &pci_devices) {
--				d = pci_dev_g(ln);
--				if (d->bus->number == bus && d->devfn == devfn) {
--					list_move_tail(&d->global_list, &sorted_devices);
--					if (d == dev)
--						found = 1;
--					break;
--				}
--			}
--			if (ln == &pci_devices) {
--				printk(KERN_WARNING "PCI: BIOS reporting unknown device %02x:%02x\n", bus, devfn);
--				/*
--				 * We must not continue scanning as several buggy BIOSes
--				 * return garbage after the last device. Grr.
--				 */
--				break;
--			}
--		}
--		if (!found) {
--			printk(KERN_WARNING "PCI: Device %s not found by BIOS\n",
--				pci_name(dev));
--			list_move_tail(&dev->global_list, &sorted_devices);
--		}
--	}
--	list_splice(&sorted_devices, &pci_devices);
--}
--
--/*
-  *  BIOS Functions for IRQ Routing
+  * Some device drivers need know if pci is initiated.
+  * Basically, we think pci is not initiated when there
+- * is no device in list of pci_devices.
++ * is no device to be found on the pci_bus_type.
   */
- 
-@@ -485,7 +414,6 @@ void __init pci_pcbios_init(void)
+ int no_pci_devices(void)
  {
- 	if ((pci_probe & PCI_PROBE_BIOS) 
- 		&& ((raw_pci_ops = pci_find_bios()))) {
--		pci_probe |= PCI_BIOS_SORT;
- 		pci_bios_present = 1;
- 	}
- }
-diff --git a/arch/x86/pci/pci.h b/arch/x86/pci/pci.h
-index 3431518..02b016a 100644
---- a/arch/x86/pci/pci.h
-+++ b/arch/x86/pci/pci.h
-@@ -19,8 +19,6 @@
- #define PCI_PROBE_MASK		0x000f
- #define PCI_PROBE_NOEARLY	0x0010
+-	return list_empty(&pci_devices);
+-}
++	struct device *dev;
++	int no_devices;
  
--#define PCI_NO_SORT		0x0100
--#define PCI_BIOS_SORT		0x0200
- #define PCI_NO_CHECKS		0x0400
- #define PCI_USE_PIRQ_MASK	0x0800
- #define PCI_ASSIGN_ROMS		0x1000
-@@ -101,7 +99,6 @@ extern int pci_direct_probe(void);
- extern void pci_direct_init(int type);
- extern void pci_pcbios_init(void);
- extern void pci_mmcfg_init(int type);
--extern void pcibios_sort(void);
++	dev = bus_find_device(&pci_bus_type, NULL, NULL, find_anything);
++	no_devices = (dev == NULL);
++	put_device(dev);
++	return no_devices;
++}
+ EXPORT_SYMBOL(no_pci_devices);
  
- /* pci-mmconfig.c */
- 
-diff --git a/include/asm-sh/mpc1211/pci.h b/include/asm-sh/mpc1211/pci.h
-index 5d3712c..d9162c5 100644
---- a/include/asm-sh/mpc1211/pci.h
-+++ b/include/asm-sh/mpc1211/pci.h
-@@ -24,8 +24,6 @@
- #define PCI_PROBE_BIOS    1
- #define PCI_PROBE_CONF1   2
- #define PCI_PROBE_CONF2   4
--#define PCI_NO_SORT       0x100
--#define PCI_BIOS_SORT     0x200
- #define PCI_NO_CHECKS     0x400
- #define PCI_ASSIGN_ROMS   0x1000
- #define PCI_BIOS_IRQ_SCAN 0x2000
+ #ifdef HAVE_PCI_LEGACY
 -- 
 1.5.4
 
