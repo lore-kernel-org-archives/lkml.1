@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbYBOQ4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756208AbYBOQ6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbYBOQ4K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 11:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756056AbYBOQzq
+	id S1756208AbYBOQ6K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 11:58:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbYBOQ55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 11:55:46 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:45619 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118AbYBOQzo (ORCPT
+	Fri, 15 Feb 2008 11:57:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:51984 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750798AbYBOQ54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 11:55:44 -0500
-Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Raisch <RAISCH@de.ibm.com>
-Cc: apw <apw@uk.ibm.com>, Greg KH <greg@kroah.com>,
-       Jan-Bernd Themann <THEMANN@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       netdev <netdev@vger.kernel.org>, ossthema@linux.vnet.ibm.com,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Thomas Q Klein <TKLEIN@de.ibm.com>, tklein@linux.ibm.com
-In-Reply-To: <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-References: <200802111724.12416.ossthema@de.ibm.com>
-	 <1202748429.8276.21.camel@nimitz.home.sr71.net>
-	 <200802131617.58646.ossthema@de.ibm.com>
-	 <OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com>
-	 <1203009163.19205.42.camel@nimitz.home.sr71.net>
-	 <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 08:55:38 -0800
-Message-Id: <1203094538.8142.23.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 15 Feb 2008 11:57:56 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kCUaKAWUfzIcPc3fXjEcXMCf61Vfbur1CZ/+2AJAviRhiGbMfWTm5yptddGAyXOQlDc0+Vliqwof+XoIEG3/PL1U4S0F0MDInd4mRq0aEzI3Z9GU8i4eO5Z9LkE1bhKJvP0O39ES5keVE2ry8E84T9PgW11sUMyRxN7uDHu9SgM=
+Message-ID: <6101e8c40802150857h656efbf9of2646e9ae8c07a5b@mail.gmail.com>
+Date: Fri, 15 Feb 2008 17:57:53 +0100
+From: "Oliver Pinter" <oliver.pntr@gmail.com>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: [PATCH] Make sysctl a separate filesystem
+Cc: "Mikael Pettersson" <mikpe@it.uu.se>, "Andi Kleen" <andi@firstfloor.org>,
+       "Pavel Emelyanov" <xemul@openvz.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Al Viro" <viro@zeniv.linux.org.uk>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alexey Dobriyan" <adobriyan@openvz.org>
+In-Reply-To: <Pine.LNX.4.64.0802151343330.30301@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47B56BF2.4020600@openvz.org> <p73ejbe1ook.fsf@bingen.suse.de>
+	 <18357.30971.334517.722985@harpo.it.uu.se>
+	 <Pine.LNX.4.64.0802151343330.30301@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-15 at 14:22 +0100, Christoph Raisch wrote:
-> A translation from kernel to ehea_bmap space should be fast and
-> predictable
-> (ruling out hashes).
-> If a driver doesn't know anything else about the mapping structure,
-> the normal solution in kernel for this type of problem is a multi
-> level
-> look up table
-> like pgd->pud->pmd->pte
-> This doesn't sound right to be implemented in a device driver.
-> 
-> We didn't see from the existing code that such a mapping to a
-> contiguous
-> space already exists.
-> Maybe we've missed it.
+On 2/15/08, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>
+> On Feb 15 2008 12:35, Mikael Pettersson wrote:
+> >Andi Kleen writes:
+> > > Pavel Emelyanov <xemul@openvz.org> writes:
+> > > > this subdir;
+> > > > 3. sysctl inodes are now smaller than the procfs ones.
+> > >
+> > > That's always a good thing.
+> > >
+> > > > Note: update your initscripts to mount sysctl filesystem
+> > > > right after the proc is mounted in order not to lose your
+> > > > /etc/sysctl.conf configuration (and optionally fstab).
+> > >
+> > > That will break about everybody's init scripts I suspect.
+> > >
+> > > I think you would need to go through some deprecation
+> > > period for this at least, with printks warning people
+> > > to fix their init scripts.
+> > >
+> > > Or better find some way to do the mount automatically.
+> >
+> >Doing it automatically is the only acceptable way, IMO.
+>
+> For time being only.
+>
+> The kernel (currently) only auto-mounts invisible filesystems.
+ and /selinux with selinuxfs, it is automounted ... but it is visible fs
 
-I've been thinking about that, and I don't think you really *need* to
-keep a comprehensive map like that.  
 
-When the memory is in a particular configuration (range of memory
-present along with unique set of holes) you get a unique ehea_bmap
-configuration.  That layout is completely predictable.
-
-So, if at any time you want to figure out what the ehea_bmap address for
-a particular *Linux* virtual address is, you just need to pretend that
-you're creating the entire ehea_bmap, use the same algorithm and figure
-out host you would have placed things, and use that result.
-
-Now, that's going to be a slow, crappy linear search (but maybe not as
-slow as recreating the silly thing).  So, you might eventually run into
-some scalability problems with a lot of packets going around.  But, I'd
-be curious if you do in practice.
-
-The other idea is that you create a mapping that is precisely 1:1 with
-kernel memory.  Let's say you have two sections present, 0 and 100.  You
-have a high_section_index of 100, and you vmalloc() a 100 entry array.
-
-You need to create a *CONTIGUOUS* ehea map?  Create one like this:
-
-EHEA_VADDR->Linux Section
-0->0
-1->0
-2->0
-3->0
-...
-100->100
-
-It's contiguous.  Each area points to a valid Linux memory address.
-It's also discernable in O(1) to what EHEA address a given Linux address
-is mapped.  You just have a couple of duplicate entries.  
-
--- Dave
-
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at http://www.tux.org/lkml/
+>
+--
+Thanks,
+Oliver
