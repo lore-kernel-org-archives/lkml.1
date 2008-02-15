@@ -1,149 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762235AbYBOJ1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbYBOJ1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762235AbYBOJ1G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:27:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757884AbYBOJZU
+	id S933331AbYBOJ1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 04:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbYBOJZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:25:20 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:60785 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755124AbYBOJZJ (ORCPT
+	Fri, 15 Feb 2008 04:25:23 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58380 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755446AbYBOJZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 04:25:09 -0500
-Date: Fri, 15 Feb 2008 01:31:16 -0800
+Date: Fri, 15 Feb 2008 01:32:50 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 4/5] x86_64: check msr to get mmconfig for amd family 10h
- opteron v3
-In-reply-to: <200802150130.14915.yinghai.lu@sun.com>
+Subject: [PATCH 5/5] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
+ is used. v4
+In-reply-to: <200802150131.16816.yinghai.lu@sun.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802150131.16816.yinghai.lu@sun.com>
+Message-id: <200802150132.50461.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
 References: <200802150127.21247.yinghai.lu@sun.com>
- <200802150128.41638.yinghai.lu@sun.com> <200802150130.14915.yinghai.lu@sun.com>
+ <200802150130.14915.yinghai.lu@sun.com> <200802150131.16816.yinghai.lu@sun.com>
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
 
-so even booting kernel with acpi=off or even MCFG is not there, we still can
-use MMCONFIG.
+reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Greg KH <greg@kroah.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
 
- arch/x86/pci/mmconfig-shared.c |   67 ++++++++++++++++++++++++++++---
- 1 file changed, 61 insertions(+), 6 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
 ===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-+++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-@@ -100,33 +100,88 @@ static const char __init *pci_mmcfg_inte
- 	return "Intel Corporation 945G/GZ/P/PL Express Memory Controller Hub";
+Index: linux-2.6/arch/x86/pci/fixup.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/fixup.c
++++ linux-2.6/arch/x86/pci/fixup.c
+@@ -493,3 +493,20 @@ static void __devinit pci_siemens_interr
  }
- 
-+static const char __init *pci_mmcfg_amd_fam10h(void)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
+ 			  pci_siemens_interrupt_controller);
++
++/*
++ * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
++ * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
++ * access it.  Maybe we don't have a way to generate extended config space
++ * accesses.   So check it
++ */
++static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
 +{
-+	u32 low, high, address;
-+	u64 base, msr;
-+	int i;
-+	unsigned segnbits = 0, busnbits;
-+
-+	address = MSR_FAM10H_MMIO_CONF_BASE;
-+	if (rdmsr_safe(address, &low, &high))
-+		return NULL;
-+
-+	msr = high;
-+	msr <<= 32;
-+	msr |= low;
-+
-+	/* mmconfig is not enable */
-+	if (!(msr & FAM10H_MMIO_CONF_ENABLE))
-+		return NULL;
-+
-+	base = msr & (FAM10H_MMIO_CONF_BASE_MASK<<FAM10H_MMIO_CONF_BASE_SHIFT);
-+
-+	busnbits = (msr >> FAM10H_MMIO_CONF_BUSRANGE_SHIFT) &
-+			 FAM10H_MMIO_CONF_BUSRANGE_MASK;
-+	if (busnbits > 8) {
-+		segnbits = busnbits - 8;
-+		busnbits = 8;
-+	}
-+
-+	pci_mmcfg_config_num = (1 << segnbits);
-+	pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]) *
-+				   pci_mmcfg_config_num, GFP_KERNEL);
-+	if (!pci_mmcfg_config)
-+		return NULL;
-+
-+	for (i = 0; i < (1 << segnbits); i++) {
-+		pci_mmcfg_config[i].address = base + (1<<28) * i;
-+		pci_mmcfg_config[i].pci_segment = i;
-+		pci_mmcfg_config[i].start_bus_number = 0;
-+		pci_mmcfg_config[i].end_bus_number = (1 << busnbits) - 1;
-+	}
-+
-+	return "AMD Family 10h NB";
++	dev->cfg_size = pci_cfg_space_size_ext(dev, 0);
 +}
 +
- struct pci_mmcfg_hostbridge_probe {
-+	u32 bus;
-+	u32 devfn;
- 	u32 vendor;
- 	u32 device;
- 	const char *(*probe)(void);
- };
- 
- static struct pci_mmcfg_hostbridge_probe pci_mmcfg_probes[] __initdata = {
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 },
--	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 },
-+	{ 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_INTEL,
-+	  PCI_DEVICE_ID_INTEL_E7520_MCH, pci_mmcfg_e7520 },
-+	{ 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_INTEL,
-+	  PCI_DEVICE_ID_INTEL_82945G_HB, pci_mmcfg_intel_945 },
-+	{ 0, PCI_DEVFN(0x18, 0), PCI_VENDOR_ID_AMD,
-+	  0x1200, pci_mmcfg_amd_fam10h },
-+	{ 0xff, PCI_DEVFN(0, 0), PCI_VENDOR_ID_AMD,
-+	  0x1200, pci_mmcfg_amd_fam10h },
- };
- 
- static int __init pci_mmcfg_check_hostbridge(void)
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, fam10h_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c
++++ linux-2.6/drivers/pci/probe.c
+@@ -809,11 +809,14 @@ static void set_pcie_port_type(struct pc
+  * reading the dword at 0x100 which must either be 0 or a valid extended
+  * capability header.
+  */
+-int pci_cfg_space_size(struct pci_dev *dev)
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix)
  {
- 	u32 l;
-+	u32 bus, devfn;
- 	u16 vendor, device;
- 	int i;
- 	const char *name;
+ 	int pos;
+ 	u32 status;
  
--	pci_direct_conf1.read(0, 0, PCI_DEVFN(0,0), 0, 4, &l);
--	vendor = l & 0xffff;
--	device = (l >> 16) & 0xffff;
--
- 	pci_mmcfg_config_num = 0;
- 	pci_mmcfg_config = NULL;
- 	name = NULL;
- 
- 	for (i = 0; !name && i < ARRAY_SIZE(pci_mmcfg_probes); i++) {
-+		bus =  pci_mmcfg_probes[i].bus;
-+		devfn = pci_mmcfg_probes[i].devfn;
-+		pci_direct_conf1.read(0, bus, devfn, 0, 4, &l);
-+		vendor = l & 0xffff;
-+		device = (l >> 16) & 0xffff;
++	if (!check_exp_pcix)
++		goto skip;
 +
- 		if (pci_mmcfg_probes[i].vendor == vendor &&
- 		    pci_mmcfg_probes[i].device == device)
- 			name = pci_mmcfg_probes[i].probe();
+ 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
+ 	if (!pos) {
+ 		pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
+@@ -825,6 +828,7 @@ int pci_cfg_space_size(struct pci_dev *d
+ 			goto fail;
+ 	}
+ 
++ skip:
+ 	if (pci_read_config_dword(dev, 256, &status) != PCIBIOS_SUCCESSFUL)
+ 		goto fail;
+ 	if (status == 0xffffffff)
+@@ -836,6 +840,11 @@ int pci_cfg_space_size(struct pci_dev *d
+ 	return PCI_CFG_SPACE_SIZE;
+ }
+ 
++int pci_cfg_space_size(struct pci_dev *dev)
++{
++	return pci_cfg_space_size_ext(dev, 1);
++}
++
+ static void pci_release_bus_bridge_dev(struct device *dev)
+ {
+ 	kfree(dev);
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -654,6 +654,7 @@ int pci_scan_bridge(struct pci_bus *bus,
+ 
+ void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
++int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix);
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
+ 
