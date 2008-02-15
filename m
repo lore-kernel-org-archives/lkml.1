@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYBOCPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764148AbYBOCR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbYBOCPS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 21:15:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbYBOCPB
+	id S1764148AbYBOCR4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 21:17:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYBOCRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 21:15:01 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:38792 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756244AbYBOCPA (ORCPT
+	Thu, 14 Feb 2008 21:17:48 -0500
+Received: from fk-out-0910.google.com ([209.85.128.187]:12557 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756634AbYBOCRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 21:15:00 -0500
+	Thu, 14 Feb 2008 21:17:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K/8A2DqV+sGnXhLp8psLeWx3tNROOqSvIGyKswlqKD7iE1lQ5xoCnNOIg2hnLLVL9B2Zm3ejTTcoy/q3fWh8WLLCOyCpJCiebNNvdrOcJHGVDNq6i1iAPtg1plMP3Rjw+1g2X4kyesv8FxdisBV3bzqo2YsAQys8zhGhyBcgKPE=
-Message-ID: <86802c440802141814t39b8082bx7ceb7eaf37c1142c@mail.gmail.com>
-Date: Thu, 14 Feb 2008 18:14:59 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Cc: "Greg KH" <gregkh@suse.de>, "Frans Pop" <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20080214234832.GA14363@elte.hu>
+        b=hexA1CGHY2p67cSBut8jP3eQG88I7kFxKgC750B4bbYoG8qOjQOFHRfCBWYWo/rEamd2IjkRxejdzq2OHXJz9MEB6ETwPUnXGwjz1GA90XnA6DziZ4jy/1n6yWMuPuudrB/RlopJCpBvDRoJPGFqtiZ9hVBVhg7nfN597qF9SMw=
+Message-ID: <12c511ca0802141817i3295e83cxd7c05e07f2c54fea@mail.gmail.com>
+Date: Thu, 14 Feb 2008 18:17:45 -0800
+From: "Tony Luck" <tony.luck@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1FE6DD409037234FAB833C420AA843EC97C8B0@orsmsx424.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200802111623.38478.elendil@planet.nl>
-	 <200802122139.14840.elendil@planet.nl>
-	 <20080212205622.GA21986@suse.de>
-	 <200802131239.14305.elendil@planet.nl>
-	 <20080213165837.GA10129@suse.de>
-	 <86802c440802141538m44d64b6as827426174874979d@mail.gmail.com>
-	 <20080214234832.GA14363@elte.hu>
+References: <20080213125725.GC6344@elte.hu>
+	 <20080213.050340.64342037.davem@davemloft.net>
+	 <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
+	 <20080213.170452.68851396.davem@davemloft.net>
+	 <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
+	 <adaprv0rygh.fsf@cisco.com>
+	 <12c511ca0802141327j6e31e8c2tee1d679053b604fc@mail.gmail.com>
+	 <ada7ih7qjoq.fsf@cisco.com>
+	 <1FE6DD409037234FAB833C420AA843EC97C8B0@orsmsx424.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 3:48 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
->  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
->  > after disable cpufreq, i got
->  >
->  > ACPI: Preparing to enter system sleep state S5
->  > Disabling non-boot CPUs ...
->  > kvm: disabling virtualization on CPU1
->  > CPU 1 is now offline
->  > CPU1 is down
->  > kvm: disabling virtualization on CPU2
->  > CPU 2 is now offline
->  > ================> hang here.
->  >
->  > but x86.git/mm could go through down all the cpus....
->  >
->  > interesting...
->
->  i suspect some kobject related race, and i have the feeling this all is
->  timing dependent.
->
->  Andrew started seeing reboot hangs roughly around the time when the
->  kobject changes went upstream. Given that x86.git had flux in that
->  timeframe too i couldnt be sure what caused them.
+> We *ought* to be safe after cpu_init() ... which is called from setup_arch(),
+> which is several calls before sched_init().
 
-it seems only happen
-1. first hang with cpufreq enabled.
-2. reboot to kernel with cpufreq disable will have problem.
+Perhaps what is happening is that cpu0 comes online ... safely skips
+over the early printk calls.  Calls cpu_init() which sets up the resources
+*it* needs (ar.k3 points to per-cpu space), and then executes
+sched_init() which marks it safe for all printk's. Then cpu1 comes
+up and does a printk before it gets to cpu_init().
 
-wonder if different cpu freq out sync and next kernel with reboot
-doesn't have cpufreq so it ....
--- with warm reset doesn't do the right job to sync freq again.
+Try with Ingo patch and CONFIG_SMP=n to see if you can come
+up on a uni-processor.
 
-Greg,
-
-where is patch to fix cpufreq problem?
-
-YH
+-Tony
