@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbYBOPXi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753113AbYBOPYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbYBOPXi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:23:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbYBOPX3
+	id S1753113AbYBOPYy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbYBOPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:23:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36603 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYBOPX2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:23:28 -0500
-Date: Fri, 15 Feb 2008 07:20:08 -0800
-From: Greg KH <greg@kroah.com>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: jdmason@kudzu.us, bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080215152008.GA1975@kroah.com>
-References: <20080213001506.GA13933@kroah.com> <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com> <20080215071703.GA9022@kroah.com> <20080215074827.GE4334@rhun.haifa.ibm.com>
-MIME-Version: 1.0
+	Fri, 15 Feb 2008 10:24:47 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:41538 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752369AbYBOPYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 10:24:46 -0500
+Date: Fri, 15 Feb 2008 16:24:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 0/4] Voltage and current regulator framework
+Message-ID: <20080215152451.GL1178@uranus.ravnborg.org>
+References: <1203084641.3466.210.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080215074827.GE4334@rhun.haifa.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1203084641.3466.210.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 09:48:27AM +0200, Muli Ben-Yehuda wrote:
-> In conclusion, our usage doesn't seem lika a good fit for the probe
-> approach, although it could probably converted provided we got the
-> ordering right with regards to regular PCI device
-> initialization. Doesn't seem to be worth the effort.
+On Fri, Feb 15, 2008 at 02:10:41PM +0000, Liam Girdwood wrote:
+> This patch series provides a generic framework to allow device drivers
+> to control voltage and current regulators on SoC based devices (e.g.
+> phones, gps, media players).
+> 
+> The intention is to allow systems to dynamically control regulator
+> output in order to save power and prolong battery life. This applies to
+> both voltage regulators (where voltage output is controllable) and
+> current sinks (where current output is controllable).
+> 
+> The framework is designed around SoC based devices but may also be
+> relevant to non SoC devices. It's also been designed against two Power
+> Management ICs (PMICs) currently on the market - namely the Freescale
+> MC13783 and the Wolfson WM8350. However it is quite generic and should
+> apply to all PMICs. 
 
-After reading this, and looking at the code again, I agree.  Thanks for
-the great explaination, I'll leave the code alone now :)
+General comments related to your patch submission - not to the code.
 
-thanks,
+- Each patch should have a descriptive subject for the said patch.
+  The headlines you use below looks fine for this.
+- Tag each subject with name of the framework so it is obvious
+  they belong to the same area.
+  Note that the numbers will be lost when the patches are applied to git.
+- Each patch should contain a description of what it contains
+  and why it is needed.
+  You seem to have it written but it is 'hidden' in the 0/4
+  mail that will not go into git - so the info is hard to find when
+  the patches goes in.
+- Each patch should contain a diffstat before the actual patch so
+  it is obvious what is touched by the patch.
+- The patches should not break the build.
+  As your patches did not include any Makefile / Kconfig fragments
+  I gues you have no issues here.
+  It is typical to split up patches like you have done and apply
+  the MAkefile/Kconfig bits as the final patch to make sure the kernel
+  continue to build.
 
-greg k-h
+	Sam
