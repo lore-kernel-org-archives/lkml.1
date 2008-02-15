@@ -1,116 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932229AbYBOVBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763865AbYBOVCC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932229AbYBOVBl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 16:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762612AbYBOVAf
+	id S1763865AbYBOVCC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 16:02:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765132AbYBOVAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 16:00:35 -0500
-Received: from web36606.mail.mud.yahoo.com ([209.191.85.23]:23498 "HELO
-	web36606.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1764355AbYBOVAc (ORCPT
+	Fri, 15 Feb 2008 16:00:50 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52455 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761220AbYBOVAt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 16:00:32 -0500
-X-YMail-OSG: cnpDpTcVM1k2u7Cava__d02u4ICU8ks5KnY9c94gFsG8UeL_pOml5YrWWk54iylyJFP40p4SPtu1KX9dDpNDChourQAeAiZOstU4zov9rCKJ2x6MbikCEj5RQwwaQQ--
-X-RocketYMMF: rancidfat
-Date: Fri, 15 Feb 2008 13:00:26 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] (02/14/08 Linus git) Smack unlabeled outgoing ambient packets - v3
-To: Paul Moore <paul.moore@hp.com>, casey@schaufler-ca.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <200802151359.35049.paul.moore@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <291070.74513.qm@web36606.mail.mud.yahoo.com>
+	Fri, 15 Feb 2008 16:00:49 -0500
+To: jdike@addtoit.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <20080215204602.GA10036@c2.user-mode-linux.org> (message from
+	Jeff Dike on Fri, 15 Feb 2008 15:46:02 -0500)
+Subject: Re: 2.6.24-mm1 bugs
+References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu> <20080215184741.GB8810@c2.user-mode-linux.org> <E1JQ6bM-0005z4-Ac@pomaz-ex.szeredi.hu> <20080215204602.GA10036@c2.user-mode-linux.org>
+Message-Id: <E1JQ7fn-00069k-5F@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 15 Feb 2008 22:00:43 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> On Fri, Feb 15, 2008 at 08:52:04PM +0100, Miklos Szeredi wrote:
+> > > What does it do?
+> > 
+> > See below.
+> 
+> > [    0.420000] Checking host MADV_REMOVE support...<3>MADV_REMOVE failed, err = -38
+> 
+> Where'd MADV_REMOVE go?  I have it on 2.6.24.
 
---- Paul Moore <paul.moore@hp.com> wrote:
+Oh, I always get this message.  Looking closer, this only works if
+/tmp is tmpfs.  Which isn't in most cases.
 
-> On Friday 15 February 2008 12:38:49 am Casey Schaufler wrote:
-> > From: Casey Schaufler <casey@schaufler-ca.com>
-> >
-> > Smack uses CIPSO labeling, but allows for unlabeled packets
-> > by specifying an "ambient" label that is applied to incoming
-> > unlabeled packets. Because the other end of the connection
-> > may dislike IP options, and ssh is one know application that
-> > behaves thus, it is prudent to respond in kind. This patch
-> > changes the network labeling behavior such that an outgoing
-> > packet that would be given a CIPSO label that matches the
-> > ambient label is left unlabeled. An "unlbl" domain is added
-> > and the netlabel defaulting mechanism invoked rather than
-> > assuming that everything is CIPSO. Locking has been added
-> > around changes to the ambient label as the mechanisms used
-> > to do so are more involved.
-> >
-> > Cleaned up some issues noted in review.
-> > Make smk_cipso_doi() static.
-> > Create a hook for the new security_secctx_to_secid()
-> > using existing underlying code.
-> > Fill in audit data for netlbl domain calls.
-> > Collapse unnecessary multiple assignments.
-> >
-> > Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+> > [    0.420000] Failed to get registers from stub, errno = 3
+> > [    0.420000] wait_stub_done : failed to wait for SIGTRAP, pid = 30073, n = 30073, errno = 0, status = 0x0
 > 
-> Hi Casey,
-> 
-> Thanks for the update, it's much improved.  I'd ack it except for one 
-> last thing which popped up in this revision ... (and don't worry, it's 
-> kinda my fault - not yours) ...
-> 
-> > @@ -1282,15 +1281,21 @@ static int smack_netlabel(struct sock *s
-> >  {
-> >  	struct socket_smack *ssp;
-> >  	struct netlbl_lsm_secattr secattr;
-> > -	int rc = 0;
-> > +	int rc;
-> >
-> >  	ssp = sk->sk_security;
-> >  	netlbl_secattr_init(&secattr);
-> >  	smack_to_secattr(ssp->smk_out, &secattr);
-> > -	if (secattr.flags != NETLBL_SECATTR_NONE)
-> > -		rc = netlbl_sock_setattr(sk, &secattr);
-> > -
-> > +	rc = netlbl_sock_setattr(sk, &secattr);
-> >  	netlbl_secattr_destroy(&secattr);
-> > +
-> > +	/*
-> > +	 * A return of -ENOENT from netlbl_sock_setattr
-> > +	 * indicates that the "domain" was not found, but that's
-> > +	 * not an issue because of the defaulting behavior.
-> > +	 */
-> > +	if (rc == -ENOENT)
-> > +		rc = 0;
-> >  	return rc;
-> >  }
-> 
-> ... you shouldn't fix-up the return value from netlbl_sock_setattr().  
-> It only returns an error when there really is an error, if there are no 
-> matching domain mappings and the default catches the "domain" then the 
-> function will return 0 (assuming no other failures).
-> 
-> The fact that you ran into this problem isn't your fault, it's mine, but 
-> thankfully for both of us Pavel Emelyanov found this bug and fixed 
-> it[1].  It hasn't hit Linus' tree yet but it's in the net-2.6 tree.  If 
-> you can't wait for it to hit Linus' tree you can always apply the fix 
-> by hand, it's pretty minor.
-> 
-> Sorry about that.
-> 
->
-[1]http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commit;h=4c3a0a254e5d706d3fe01bf42261534858d05586
+> Is utrace in there, by any chance?  When I see crazy stuff like this,
+> I think utrace.
 
-Yerk. I can put that fix into my tree, but my patch without
-the "correction" makes sockets behave very badly. I can't have
-people using it without Pavel's fix. Any notion on the plans to
-get that in?
+Nope.  Must be some other crazy stuff :)
 
-Thank you.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+Miklos
