@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbYBOE7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765480AbYBOE7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761359AbYBOE7X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 23:59:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbYBOE7N
+	id S1765480AbYBOE7z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 23:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbYBOE7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 23:59:13 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35604 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbYBOE7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 23:59:11 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: first tree
-Date: Thu, 14 Feb 2008 23:58:38 -0500
-User-Agent: KMail/1.9.5
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au> <200802141545.56488.rjw@sisk.pl> <20080215020019.f7cb5895.sfr@canb.auug.org.au>
-In-Reply-To: <20080215020019.f7cb5895.sfr@canb.auug.org.au>
+	Thu, 14 Feb 2008 23:59:24 -0500
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:52690 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753160AbYBOE7O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 23:59:14 -0500
+Date: Thu, 14 Feb 2008 23:57:48 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH] rcu_batches_completed prototype cleanup
+Message-ID: <Pine.LNX.4.58.0802142335280.17968@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802142358.39171.lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008 10:00, Stephen Rothwell wrote:
-> Hi Rafael,
-> 
-> On Thu, 14 Feb 2008 15:45:55 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> >
-> > Perhaps you can add:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6 test
-> 
-> I would prefer that the trees be added by the subsystem maintainers and
-> they can tell me which branch represents their expectations for the next
-> kernel release (in this case 2.6.26). But thanks, hopefully you will have
-> prodded them along. :-)
 
-Rafael has it right, please add the branch above.
-It will include both the upcoming ACPI and suspend patches.
+rcu_batches_completed and rcu_patches_completed_bh are both declared
+in rcuclassic.h and rcupreempt.h. This patch removes the extra
+prototypes for them from rcupdate.h.
 
-Note that I reserve the right to re-base it from time to time -
-so when you pull it, you want to pull it onto a new branch vs. Linux
-rather than onto a previous copy of itself.
+rcu_batches_completed_bh is defined as a static inline in the rcupreempt.h
+header file. Trying to export this as EXPORT_SYMBOL_GPL causes section
+problems with the powerpc compiler. There's no need to export a static
+inlined function.
 
-thanks,
--Len
+Modules must be compiled with the same type of RCU implementation as the
+kernel they are for.
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ include/linux/rcupdate.h |    2 --
+ kernel/rcupreempt.c      |    2 --
+ 2 files changed, 4 deletions(-)
+
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 37a642c..ae5ba4e 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -238,8 +238,6 @@ extern void call_rcu_bh(struct rcu_head *head,
+ /* Exported common interfaces */
+ extern void synchronize_rcu(void);
+ extern void rcu_barrier(void);
+-extern long rcu_batches_completed(void);
+-extern long rcu_batches_completed_bh(void);
+
+ /* Internal to kernel */
+ extern void rcu_init(void);
+diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
+index 987cfb7..bdd0a1d 100644
+--- a/kernel/rcupreempt.c
++++ b/kernel/rcupreempt.c
+@@ -213,8 +213,6 @@ long rcu_batches_completed(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_batches_completed);
+
+-EXPORT_SYMBOL_GPL(rcu_batches_completed_bh);
+-
+ void __rcu_read_lock(void)
+ {
+ 	int idx;
+
