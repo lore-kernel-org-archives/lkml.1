@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934493AbYBOA2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbYBOAeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934493AbYBOA2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761071AbYBOA2J
+	id S1762138AbYBOAeT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750814AbYBOAeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 19:28:09 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:54788 "EHLO e6.ny.us.ibm.com"
+	Thu, 14 Feb 2008 19:34:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42169 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755693AbYBOA2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:28:05 -0500
-Subject: Re: [PATCH resend] ext2/3/4: convert byte order of constant
-	instead of variable
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tytso@mit.edu
-In-Reply-To: <20080214142015.f59a9e21.akpm@linux-foundation.org>
-References: <20080210101010.GB6737@joi>
-	 <20080214142015.f59a9e21.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Thu, 14 Feb 2008 16:27:55 -0800
-Message-Id: <1203035275.3637.71.camel@localhost.localdomain>
+	id S1750773AbYBOAeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 19:34:01 -0500
+Date: Fri, 15 Feb 2008 11:33:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-Id: <20080215113356.71a6633a.sfr@canb.auug.org.au>
+In-Reply-To: <1203028077.18860.29.camel@heimdal.trondhjem.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	<1203028077.18860.29.camel@heimdal.trondhjem.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__15_Feb_2008_11_33_56_+1100_Ht7dDQXiUNzHFuV2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 14:20 -0800, Andrew Morton wrote:
-> On Sun, 10 Feb 2008 11:10:15 +0100
-> Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> 
-> >  fs/ext2/super.c |    8 +++-----
-> >  fs/ext3/super.c |    2 +-
-> >  fs/ext4/super.c |    2 +-
-> 
-> Please don't bundle the filesystem patches in this manner.  I split
-> it into three patches.
-> 
-Andrew, Ted,
+--Signature=_Fri__15_Feb_2008_11_33_56_+1100_Ht7dDQXiUNzHFuV2
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I added the ext4 patch in the ext4 patch queue.
+Hi Trond,
 
-Regards,
-Mingming
+On Thu, 14 Feb 2008 17:27:57 -0500 Trond Myklebust <trond.myklebust@fys.uio=
+.no> wrote:
+>
+> Please add the 'linux-next' branch of
+>=20
+>   git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git
 
+Added, thanks.
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__15_Feb_2008_11_33_56_+1100_Ht7dDQXiUNzHFuV2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHtN33TgG2atn1QN8RAkKxAJ9G2tP4ppm/83TDi73uCQaXBx36BgCdG9J4
+AwI+DXC6+XuvlEaB3DXzAXg=
+=+UyC
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__15_Feb_2008_11_33_56_+1100_Ht7dDQXiUNzHFuV2--
