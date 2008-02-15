@@ -1,40 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933868AbYBOKy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbYBOK6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933868AbYBOKy6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbYBOKyv
+	id S932155AbYBOK6n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865AbYBOK6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:54:51 -0500
-Received: from ns2.suse.de ([195.135.220.15]:58989 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758893AbYBOKyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:54:51 -0500
-To: "Dan Gora" <dan.gora@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PCI Bursting with PIO
-From: Andi Kleen <andi@firstfloor.org>
-References: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
-Date: Fri, 15 Feb 2008 11:54:50 +0100
-In-Reply-To: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com> (Dan Gora's message of "Thu\, 14 Feb 2008 19\:28\:55 -0800")
-Message-ID: <p73abm21ocl.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Feb 2008 05:58:35 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43068 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757615AbYBOK6f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 05:58:35 -0500
+Date: Fri, 15 Feb 2008 04:58:29 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Cc: kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+       Lee.Schermerhorn@hp.com, mel@csn.ul.ie, ak@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       clameter@sgi.com
+Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
+Message-Id: <20080215045829.36a3e0b1.pj@sgi.com>
+In-Reply-To: <2c0942db0802141255o5d18c6bfxe052ba9512a18817@mail.gmail.com>
+References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
+	<2f11576a0802140611h261b9df2qd13406e562f52864@mail.gmail.com>
+	<20080214103541.10943567.pj@sgi.com>
+	<2c0942db0802141255o5d18c6bfxe052ba9512a18817@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Dan Gora" <dan.gora@gmail.com> writes:
->
-> Is there any way to get PIO 
+Ray wrote:
+> bitmap_onto?
 
-I assume you really mean MMIO, not PIO. PIO would be port IO.
+Ah - you were the original person to propose this.  Thank-you.
 
-> to burst over the PCI bus in the read and
-> write direction? 
+> bitmap_read_my_kernel_doc?
 
-You should set the MMIO mapping to write combining using an MTRR
-You might need to add appropiate memory barriers if you rely
-on write ordering though.
+;).
 
--Andi
+> Minor suggestion:
+> + * and the n-th bit of @relmap is the m-th set bit of @relmap.
+
+I'll ponder that confusing line - thanks.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
