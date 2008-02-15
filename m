@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbYBOT72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761990AbYBOUAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761639AbYBOT72 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758424AbYBOT7R
+	id S1761990AbYBOUAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 15:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755769AbYBOUAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:59:17 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41369 "EHLO mx3.mail.elte.hu"
+	Fri, 15 Feb 2008 15:00:12 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41471 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757527AbYBOT7Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:59:16 -0500
-Date: Fri, 15 Feb 2008 20:58:54 +0100
+	id S1754415AbYBOUAK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 15:00:10 -0500
+Date: Fri, 15 Feb 2008 20:59:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: stable@kernel.org
 Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
        Andi Kleen <andi@firstfloor.org>
-Subject: [patch 2/3] x86_64: CPA, fix cache attribute inconsistency bug,
-	v2.6.23 backport
-Message-ID: <20080215195854.GB15432@elte.hu>
+Subject: [patch 3/3] x86_64: CPA, fix cache attribute inconsistency bug,
+	v2.6.24 backport
+Message-ID: <20080215195933.GC15432@elte.hu>
 References: <20080215195508.GA12405@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,10 +36,9 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-fix CPA cache attribute bug in v2.6.23. When phys_base is nonzero
-(when CONFIG_RELOCATABLE=y) then change_page_attr_addr() miscalculates
-the secondary alias address by -14 MB (depending on the configured
-offset).
+fix CPA cache attribute bug in v2.6.24. When phys_base is nonzero (when 
+CONFIG_RELOCATABLE=y) then change_page_attr_addr() miscalculates the 
+secondary alias address by -14 MB (depending on the configured offset).
 
 The default 64-bit kernels of Fedora and Ubuntu are affected:
 
@@ -69,14 +68,14 @@ kernel until the AGP driver is unloaded.
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Acked-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- arch/x86_64/mm/pageattr.c |    2 +-
+ arch/x86/mm/pageattr_64.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-tmp/arch/x86_64/mm/pageattr.c
+Index: linux-tmp/arch/x86/mm/pageattr_64.c
 ===================================================================
---- linux-tmp.orig/arch/x86_64/mm/pageattr.c
-+++ linux-tmp/arch/x86_64/mm/pageattr.c
-@@ -206,7 +206,7 @@ int change_page_attr_addr(unsigned long 
+--- linux-tmp.orig/arch/x86/mm/pageattr_64.c
++++ linux-tmp/arch/x86/mm/pageattr_64.c
+@@ -207,7 +207,7 @@ int change_page_attr_addr(unsigned long 
  		if (__pa(address) < KERNEL_TEXT_SIZE) {
  			unsigned long addr2;
  			pgprot_t prot2;
