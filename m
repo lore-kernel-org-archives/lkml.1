@@ -1,72 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933517AbYBOW7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933840AbYBOXAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933517AbYBOW7g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764724AbYBOW4R
+	id S933840AbYBOXAf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 18:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbYBOXAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:56:17 -0500
-Received: from gate.crashing.org ([63.228.1.57]:50837 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764777AbYBOW4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:56:14 -0500
-Subject: Re: [PATCH] libata: Add MMIO support to pata_sil680
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Tim Ellis <tim@ngndg.com>,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-In-Reply-To: <20080215222725.0af29563@core>
-References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com>
-	 <1202850129.7410.22.camel@pasglop>
-	 <Pine.LNX.4.64.0802151651340.27735@axis700.grange>
-	 <20080215155332.2b89c429@core> <1203111956.22915.24.camel@pasglop>
-	 <20080215222725.0af29563@core>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 09:55:44 +1100
-Message-Id: <1203116144.22915.39.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 15 Feb 2008 18:00:19 -0500
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:37284 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbYBOXAP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 18:00:15 -0500
+Message-ID: <47B61955.5020100@tiscali.nl>
+Date: Fri, 15 Feb 2008 23:59:33 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Greg KH <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       David Miller <davem@davemloft.net>, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <20080212044314.GA4888@kroah.com> <20080211211751.3e265754@laptopd505.fenrus.org> <20080211.221126.230471463.davem@davemloft.net> <47B1CB08.4020101@garzik.org> <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org> <20080212174824.GA1919@kroah.com> <alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org> <20080212191552.GA20883@kroah.com> <alpine.LFD.1.00.0802121133210.2920@woody.linux-foundation.org> <47B32510.20200@tiscali.nl> <alpine.LFD.1.00.0802131002250.2920@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802131002250.2920@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-15 at 22:27 +0000, Alan Cox wrote:
-> > The dbdma start is mostly harmless (things don't get posted for -that-
-> > long), though I suppose it's worth fixing. Would reading back dmactl do
-> > in that case or do you foresee any kind of side effect ? (Maybe only
-> > doing it for MMIO ?)
+Linus Torvalds wrote:
 > 
-> The dmactl read back should be just fine, or any other DMA register (eg
-> status).
+> On Wed, 13 Feb 2008, Roel Kluin wrote:
+>> In nature there is a lot of duplication: several copies of genes can exist
+>> and different copies may have a distinct evolution.
 > 
-> > As for SRST, I'm not totally confident how safe it is to read back
-> > there while doing the reset sequence, so I'm tempted to really only
-> > do it for MMIO and use altstat rather than ctl/stat (the later tends
-> > to have side effects which we don't want here).
+> This is true of very complex animals, but much less so when looking at 
+> things like bacteria (and arguably, any current sw project is closer to 
+> bacteria in complexity than anything mammalian).
 > 
-> Agreed - we know some controllers crap themselves spectacularly on
-> anything which causes a SATA data transfer to be needed during a reset so
-> the status is probably safest. The fact its not fixed is because nobody
-> has sat down to figure out what is safe.
+> In bacteria (and viruses), duplication of DNA/RNA is a big cost of living 
+> in general, and as a result there is *much* less junk DNA. So in an 
+> evolutionary sense, it's much closer to what the kernel should have (with 
+> occasional duplication of code and interfaces to allow new functionality, 
+> but rather aggressive pruning of the excess baggage).
+
+I like the comparison, and while I wrote my comment I have to admit I was
+also thinking of bacteria and virusses as an exception: There the speed of
+replication can be an important factor for survival. Less DNA means faster
+replication and therefore the pressure is on removal of junk DNA. It can
+be disputed however that removal of 'junk sourcecode' is a survival factor
+for the linux kernel but the benefit may be disputable as well.
+
+> In other words, all of these choices are a matter of "balance". In some 
+> areas, excess code is not a sufficient downside, and we keep even broken 
+> source code around with no actual function, "just because" (or rather, 
+> because the cost of carrying it around is so small that nobody cares). 
 > 
-> > The main problem from here is that I don't know whether we are using
-> > MMIO or PIO from libata-core. Maybe I can add a host flag indicate
-> > that such flushing is needed ?
+> That's true in the kernel as in biology: check out not just deprecated 
+> code, but the drivers and other odds-and-ends that are explicitly marked 
+> as non-coding DNA (we just happen to call them BROKEN in our Kconfig).
 > 
-> Easier to add that to the ioxxxx ops I suspect (ioispio/ioismmio say) ?
+> 			Linus
 
-Maybe, though that will involve fixing all the arch versions which do
-different things. In fact, I'm not even sure I can tell you 100% after
-the fact on ppc64, I have to double check.
+Maybe we can elaborate a bit on this comparison, just for fun:
 
-I'd rather stick a flag in there to be safe, also since altstatus isn't
-always there (which is why I used nsect in the test patch I sent to
-Guennadi). I'm pretty sure I can rely on all MMIO controllers having an
-altstatus but I'd rather still make that explicit with a host flag to
-avoid unintended consequences to others.
+I think not the linux kernel alone, but rather the entire Linux OS could
+be compared with a cell. The kernel source encodes vital software parts
+including the interactions with hardware - the environment for the
+computer. Gcc can be compared with the (transcription and) translation
+machinery. DNA can be seen as a language that encodes proteins, with
+biological functions: Some are vital, including ones that allow
+interactions with the environment: The cellular environment is beyond
+the membrane. Interactions occur through membrane receptors, channels,
+etc.
 
-Ben.
+Interaction between proteins can be compared with functions selectively
+calling other functions. Activation of certain proteins can cause a
+cascade of protein interactions, comparable with function calls in a
+loop: the activated protein activates particular protein(s) several
+times. Some proteins influence intracellular messengers: cellular
+global variables.
 
+Transmembrane receptors responding to extracellular signals transmit
+this through conformational changes across the membrane to the
+intracellular region: These structural changes may allow interactions
+with new proteins. Maybe comparable with a combination of hardware
+interrupts, signals and the userspace?
 
+The response to extracellular signals often depends on several
+sequential interactions between proteins. This provides a protective
+layer that can be compared with the kernelspace layer. This is where 
+the comparison probably becomes too biased to continue.
