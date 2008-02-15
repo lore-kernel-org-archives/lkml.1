@@ -1,104 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933776AbYBONvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932926AbYBON5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933776AbYBONvO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 08:51:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbYBONu6
+	id S932926AbYBON5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 08:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755886AbYBON52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 08:50:58 -0500
-Received: from ag-out-0708.google.com ([72.14.246.242]:26948 "EHLO
-	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761049AbYBONu5 (ORCPT
+	Fri, 15 Feb 2008 08:57:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:35845 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755838AbYBON51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 08:50:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=T8d8/OSB4z/0LypMWtLtk1xxCdKCaZKVeCrDqW2k2eIfYns+uYznQYvyHVpLq0/tqX5aL3+M0uUdjRgWZQ3ZZAZKuWW2L29S8eJQN2Rq2j6rdDTyg1mT36y7OMA7YS96Px//SGJQMlbifX4ojguua7pUZYdui/epcro928GIGE0=
-Date: Fri, 15 Feb 2008 21:46:31 +0800 (CST)
-Message-Id: <20080215.214631.169269331.xiyou.wangcong@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@osdl.org>, tglx@linutronix.de
-Subject: [Patch] Fix shadowed variables in kernel/posix-cpu-timers.c
-From: WANG Cong <xiyou.wangcong@gmail.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 15 Feb 2008 08:57:27 -0500
+Subject: Re: [PATCH 3/4] IPMI: convert locked counters to atomics
+From: Peter Zijlstra <peterz@infradead.org>
+To: minyard@acm.org
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>,
+       Konstantin Baydarov <kbaidarov@ru.mvista.com>
+In-Reply-To: <20080214183051.GC20148@minyard.local>
+References: <20080214183051.GC20148@minyard.local>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 14:57:23 +0100
+Message-Id: <1203083843.6855.44.camel@twins>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Fix sparse warnings like this:
-kernel/posix-cpu-timers.c:1090:25: warning: symbol 't' shadows an earlier one
-kernel/posix-cpu-timers.c:1058:21: originally declared here
+On Thu, 2008-02-14 at 12:30 -0600, Corey Minyard wrote:
 
-Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
+> +/*
+> + * Various statistics for IPMI, these index stats[] in the ipmi_smi
+> + * structure.
+> + */
+> +/* Commands we got from the user that were invalid. */
+> +#define IPMI_STAT_sent_invalid_commands			0
+> +
+> +/* Commands we sent to the MC. */
+> +#define IPMI_STAT_sent_local_commands			1
+> +
+> +/* Responses from the MC that were delivered to a user. */
+> +#define IPMI_STAT_handled_local_responses		2
+> +
+> +/* Responses from the MC that were not delivered to a user. */
+> +#define IPMI_STAT_unhandled_local_responses		3
+> +
+> +/* Commands we sent out to the IPMB bus. */
+> +#define IPMI_STAT_sent_ipmb_commands			4
+> +
+> +/* Commands sent on the IPMB that had errors on the SEND CMD */
+> +#define IPMI_STAT_sent_ipmb_command_errs		5
+> +
+> +/* Each retransmit increments this count. */
+> +#define IPMI_STAT_retransmitted_ipmb_commands		6
+> +
+> +/* When a message times out (runs out of retransmits) this is incremented. */
+> +#define IPMI_STAT_timed_out_ipmb_commands		7
+> +
+> +/*
+> + * This is like above, but for broadcasts.  Broadcasts are
+> + * *not* included in the above count (they are expected to
+> + * time out).
+> + */
+> +#define IPMI_STAT_timed_out_ipmb_broadcasts		8
+> +
+> +/* Responses I have sent to the IPMB bus. */
+> +#define IPMI_STAT_sent_ipmb_responses			9
+> +
+> +/* The response was delivered to the user. */
+> +#define IPMI_STAT_handled_ipmb_responses		10
+> +
+> +/* The response had invalid data in it. */
+> +#define IPMI_STAT_invalid_ipmb_responses		11
+> +
+> +/* The response didn't have anyone waiting for it. */
+> +#define IPMI_STAT_unhandled_ipmb_responses		12
+> +
+> +/* Commands we sent out to the IPMB bus. */
+> +#define IPMI_STAT_sent_lan_commands			13
+> +
+> +/* Commands sent on the IPMB that had errors on the SEND CMD */
+> +#define IPMI_STAT_sent_lan_command_errs			14
+> +
+> +/* Each retransmit increments this count. */
+> +#define IPMI_STAT_retransmitted_lan_commands		15
+> +
+> +/* When a message times out (runs out of retransmits) this is incremented. */
+> +#define IPMI_STAT_timed_out_lan_commands		16
+> +
+> +/* Responses I have sent to the IPMB bus. */
+> +#define IPMI_STAT_sent_lan_responses			17
+> +
+> +/* The response was delivered to the user. */
+> +#define IPMI_STAT_handled_lan_responses			18
+> +
+> +/* The response had invalid data in it. */
+> +#define IPMI_STAT_invalid_lan_responses			19
+> +
+> +/* The response didn't have anyone waiting for it. */
+> +#define IPMI_STAT_unhandled_lan_responses		20
+> +
+> +/* The command was delivered to the user. */
+> +#define IPMI_STAT_handled_commands			21
+> +
+> +/* The command had invalid data in it. */
+> +#define IPMI_STAT_invalid_commands			22
+> +
+> +/* The command didn't have anyone waiting for it. */
+> +#define IPMI_STAT_unhandled_commands			23
+> +
+> +/* Invalid data in an event. */
+> +#define IPMI_STAT_invalid_events			24
+> +
+> +/* Events that were received with the proper format. */
+> +#define IPMI_STAT_events				25
+> +
+> +/* When you add a statistic, you must update this value. */
+> +#define IPMI_NUM_STATS					26
 
----
-diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-index 2eae91f..ae5c6c1 100644
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -1087,45 +1087,45 @@ static void check_process_timers(struct task_struct *tsk,
- 	maxfire = 20;
- 	prof_expires = cputime_zero;
- 	while (!list_empty(timers)) {
--		struct cpu_timer_list *t = list_first_entry(timers,
-+		struct cpu_timer_list *tl = list_first_entry(timers,
- 						      struct cpu_timer_list,
- 						      entry);
--		if (!--maxfire || cputime_lt(ptime, t->expires.cpu)) {
--			prof_expires = t->expires.cpu;
-+		if (!--maxfire || cputime_lt(ptime, tl->expires.cpu)) {
-+			prof_expires = tl->expires.cpu;
- 			break;
- 		}
--		t->firing = 1;
--		list_move_tail(&t->entry, firing);
-+		tl->firing = 1;
-+		list_move_tail(&tl->entry, firing);
- 	}
- 
- 	++timers;
- 	maxfire = 20;
- 	virt_expires = cputime_zero;
- 	while (!list_empty(timers)) {
--		struct cpu_timer_list *t = list_first_entry(timers,
-+		struct cpu_timer_list *tl = list_first_entry(timers,
- 						      struct cpu_timer_list,
- 						      entry);
--		if (!--maxfire || cputime_lt(utime, t->expires.cpu)) {
--			virt_expires = t->expires.cpu;
-+		if (!--maxfire || cputime_lt(utime, tl->expires.cpu)) {
-+			virt_expires = tl->expires.cpu;
- 			break;
- 		}
--		t->firing = 1;
--		list_move_tail(&t->entry, firing);
-+		tl->firing = 1;
-+		list_move_tail(&tl->entry, firing);
- 	}
- 
- 	++timers;
- 	maxfire = 20;
- 	sched_expires = 0;
- 	while (!list_empty(timers)) {
--		struct cpu_timer_list *t = list_first_entry(timers,
-+		struct cpu_timer_list *tl = list_first_entry(timers,
- 						      struct cpu_timer_list,
- 						      entry);
--		if (!--maxfire || sum_sched_runtime < t->expires.sched) {
--			sched_expires = t->expires.sched;
-+		if (!--maxfire || sum_sched_runtime < tl->expires.sched) {
-+			sched_expires = tl->expires.sched;
- 			break;
- 		}
--		t->firing = 1;
--		list_move_tail(&t->entry, firing);
-+		tl->firing = 1;
-+		list_move_tail(&tl->entry, firing);
- 	}
- 
- 	/*
+This shouts enum to me..
+
