@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765480AbYBOE7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbYBOFAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765480AbYBOE7z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 23:59:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761540AbYBOE7Y
+	id S1752894AbYBOFAi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 00:00:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYBOFAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 23:59:24 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:52690 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbYBOE7O (ORCPT
+	Fri, 15 Feb 2008 00:00:17 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2864 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbYBOFAO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 23:59:14 -0500
-Date: Thu, 14 Feb 2008 23:57:48 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@osdl.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: [PATCH] rcu_batches_completed prototype cleanup
-Message-ID: <Pine.LNX.4.58.0802142335280.17968@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Feb 2008 00:00:14 -0500
+Subject: Re: [PATCH] ubi: fix sparse errors in ubi.h
+From: Joe Perches <joe@perches.com>
+To: Ben Dooks <ben@fluff.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080214235637.GA4715@fluff.org.uk>
+References: <1203025995.5601.0.camel@brick>
+	 <20080214235637.GA4715@fluff.org.uk>
+Content-Type: text/plain
+Date: Thu, 14 Feb 2008 20:58:31 -0800
+Message-Id: <1203051511.13820.28.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-02-14 at 23:56 +0000, Ben Dooks wrote:
+> On Thu, Feb 14, 2008 at 01:53:15PM -0800, Harvey Harrison wrote:
+> > In C, signed 1-bit bitfields can only take the values 0 and -1, only
+> > 0 and 1 are ever assigned in current code.  Make them unsigned
+> > bitfields.
+> > 
+> > Fixes the (repeated) sparse errors:
+> > drivers/mtd/ubi/ubi.h:220:15: error: dubious one-bit signed bitfield
+> > drivers/mtd/ubi/ubi.h:221:17: error: dubious one-bit signed bitfield
+> > drivers/mtd/ubi/ubi.h:222:18: error: dubious one-bit signed bitfield
+> > drivers/mtd/ubi/ubi.h:223:16: error: dubious one-bit signed bitfield
+> > drivers/mtd/ubi/ubi.h:224:20: error: dubious one-bit signed bitfield
+> > 
+> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> > ---
+> > Sorry, not sure who to CC on this.
+> 
+> IIRC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
 
-rcu_batches_completed and rcu_patches_completed_bh are both declared
-in rcuclassic.h and rcupreempt.h. This patch removes the extra
-prototypes for them from rcupdate.h.
+UNSORTED BLOCK IMAGES (UBI)
+P:      Artem Bityutskiy
+M:      dedekind@infradead.org
+W:      http://www.linux-mtd.infradead.org/
+L:      linux-mtd@lists.infradead.org
+T:      git git://git.infradead.org/~dedekind/ubi-2.6.git
+S:      Maintained
+F:      drivers/mtd/ubi
+F:      include/linux/mtd/ubi.h
+F:      include/mtd/ubi-*
 
-rcu_batches_completed_bh is defined as a static inline in the rcupreempt.h
-header file. Trying to export this as EXPORT_SYMBOL_GPL causes section
-problems with the powerpc compiler. There's no need to export a static
-inlined function.
-
-Modules must be compiled with the same type of RCU implementation as the
-kernel they are for.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- include/linux/rcupdate.h |    2 --
- kernel/rcupreempt.c      |    2 --
- 2 files changed, 4 deletions(-)
-
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 37a642c..ae5ba4e 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -238,8 +238,6 @@ extern void call_rcu_bh(struct rcu_head *head,
- /* Exported common interfaces */
- extern void synchronize_rcu(void);
- extern void rcu_barrier(void);
--extern long rcu_batches_completed(void);
--extern long rcu_batches_completed_bh(void);
-
- /* Internal to kernel */
- extern void rcu_init(void);
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index 987cfb7..bdd0a1d 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -213,8 +213,6 @@ long rcu_batches_completed(void)
- }
- EXPORT_SYMBOL_GPL(rcu_batches_completed);
-
--EXPORT_SYMBOL_GPL(rcu_batches_completed_bh);
--
- void __rcu_read_lock(void)
- {
- 	int idx;
 
