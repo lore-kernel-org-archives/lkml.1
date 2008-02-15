@@ -1,34 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932853AbYBOKVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765596AbYBOKYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932853AbYBOKVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:21:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbYBOKVf
+	id S1765596AbYBOKYB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753138AbYBOKXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:21:35 -0500
-Received: from baikonur.stro.at ([213.239.196.228]:36044 "EHLO
-	baikonur.stro.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757129AbYBOKVe (ORCPT
+	Fri, 15 Feb 2008 05:23:54 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:34093 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752448AbYBOKXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:21:34 -0500
-Date: Fri, 15 Feb 2008 11:21:32 +0100
-From: maximilian attems <max@stro.at>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Norbert Preining <preining@logic.at>, linux-kernel@vger.kernel.org
-Subject: Re: Huawei E220 and usb storage
-Message-ID: <20080215102132.GE6053@stro.at>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 15 Feb 2008 05:23:53 -0500
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [patch] fuse: fix permission checking
+Message-Id: <E1JPxjP-0004sQ-5O@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 15 Feb 2008 11:23:47 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ok, did new tests with 2.6.24-rc2:
-> - with plain kernel the usb-storage modules attaches and detaches
->   permanently a virtual cd drive, I stopped after 30+ iterations.
+This is for 2.6.25 and 2.6.24.y, but NOT for 2.6.23.y.
 
-afais this is caused by hal.
-when i stop hal this bouncy behaviour stops.
+Thanks,
+Miklos
+----
 
-also it doesn't happen if you put your huawei on before boot.
+From: Miklos Szeredi <mszeredi@suse.cz>
+
+I added a nasty local variable shadowing bug to fuse in 2.6.24, with
+the result, that the 'default_permissions' mount option is basically
+ignored.
+
+How did this happen?
+
+ - old err declaration in inner scope
+ - new err getting declared in outer scope
+ - 'return err' from inner scope getting removed
+ - old declaration not being noticed
+
+-Wshadow would have saved us, but it doesn't seem practical for
+the kernel :(
+
+More testing would have also saved us :((
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/fs/fuse/dir.c
+===================================================================
+--- linux.orig/fs/fuse/dir.c	2008-02-15 10:46:06.000000000 +0100
++++ linux/fs/fuse/dir.c	2008-02-15 11:05:46.000000000 +0100
+@@ -906,7 +906,7 @@ static int fuse_permission(struct inode 
+ 	}
+ 
+ 	if (fc->flags & FUSE_DEFAULT_PERMISSIONS) {
+-		int err = generic_permission(inode, mask, NULL);
++		err = generic_permission(inode, mask, NULL);
+ 
+ 		/* If permission is denied, try to refresh file
+ 		   attributes.  This is also needed, because the root
