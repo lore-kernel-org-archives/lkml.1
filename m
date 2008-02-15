@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933074AbYBOW53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935047AbYBOW5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933074AbYBOW53 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:57:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbYBOWpX
+	id S935047AbYBOW5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765519AbYBOWqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:45:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:25340 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932795AbYBOWpT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:45:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type;
-        b=ceIJoddoENA7HdY6AIrwgHaAbF2TDLC/uiun4M/Us1nVog4kPRqRLUhm2w61z6zbCRingMas0OKWGYxrwnm6S9bxVphIj/kaaMxPk6L+Himc1Hlu+iWbFIUHGrW+M2TtvVgwtJ+O2Q0o113zaYScl/gum5kMDe0orjlctyyrE6g=
-Message-ID: <47B61708.7070006@gmail.com>
-Date: Fri, 15 Feb 2008 23:49:44 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-To: Denys Fedoryshchenko <denys@visp.net.lb>
-CC: Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: BUG/ spinlock lockup, 2.6.24
-References: <20080215150044.M24489@visp.net.lb> <e2e108260802150724k4e5e6089mcb603b524157a9bc@mail.gmail.com> <20080215193854.M55147@visp.net.lb> <47B5F462.40603@gmail.com> <47B5FE1E.5080804@gmail.com>
-In-Reply-To: <47B5FE1E.5080804@gmail.com>
-Content-Type: multipart/mixed;
- boundary="------------040804030703050800090605"
+	Fri, 15 Feb 2008 17:46:40 -0500
+Received: from xenotime.net ([66.160.160.81]:39060 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1764551AbYBOWqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 17:46:38 -0500
+Date: Fri, 15 Feb 2008 14:46:36 -0800
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: kernel-doc : possible fix for non-fatal perl errors when
+ parsing some function pointers
+Message-Id: <20080215144636.aeef1837.rdunlap@xenotime.net>
+In-Reply-To: <1203097344.2929.63.camel@castor.localdomain>
+References: <1203095592.2929.54.camel@castor.localdomain>
+	<20080215092154.4a8cbba7.rdunlap@xenotime.net>
+	<1203097344.2929.63.camel@castor.localdomain>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040804030703050800090605
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+On Fri, 15 Feb 2008 17:42:24 +0000 Richard Kennedy wrote:
 
-Jarek Poplawski wrote, On 02/15/2008 10:03 PM:
-...
-
-> ...On the other hand this:
 > 
->> Feb 15 15:50:17 217.151.X.X [1521315.068984] BUG: spinlock lockup on CPU#1, 
->> ksoftirqd/1/7, f0551180
+> On Fri, 2008-02-15 at 09:21 -0800, Randy Dunlap wrote:
+> > On Fri, 15 Feb 2008 17:13:12 +0000 Richard Kennedy wrote:
+> > 
+> > > When running "make htmldocs" I'm seeing some non-fatal perl errors
+> > > caused by trying to parse the callback function definitions in
+> > > blk-core.c.
+> > > 
+> > >
+> > 
+> > Hi Richard,
+> > Thanks for the patch.  I was planning to look into this problem
+> > this weekend.
+> > 
+> > I think that changing scripts/kernel-doc to accept the current
+> > kernel source tree usage is the right thing to do, even if the
+> > block/blk code is a bit different.  I'll test it a bit and then
+> > push it.
+> > 
+> > I appreciate the patch.
+> > 
+> No problem. 
 > 
-> seems to point just at spinlock lockup, so it's more about the full report.
-> I wonder if this patch to prink could help here:
+> I have given the patch some testing, and the output xml is the same
+> except for the blk_end_request_callback entry.
 > 
-> author	Ingo Molnar <mingo at elte.hu>
-> 	Fri, 25 Jan 2008 20:07:58 +0000 (21:07 +0100)
-> printk: make printk more robust by not allowing recursion
+> But I wonder if it should change to this :-
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=32a76006683f7b28ae3cc491da37716e002f198e
+> > -         $type =~ s/([^\(]+\(\*)$param/$1/;
+> > +         $type =~ s/([^\(]+\(\*?)\s*$param/$1/;
+> 
+> just in case there is some stray whitespace in there.
 
+That should be OK, so I changed that line.
 
-...or maybe a patch like this attached here?
+Can I get a Signed-off-by: from you, please?
 
-Jarek P.
-
---------------040804030703050800090605
-Content-Type: text/x-diff;
- name="spinlock_debug.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spinlock_debug.diff"
-
-diff --git a/lib/spinlock_debug.c b/lib/spinlock_debug.c
-index 9c4b025..21c8aaa 100644
---- a/lib/spinlock_debug.c
-+++ b/lib/spinlock_debug.c
-@@ -111,8 +111,7 @@ static void __spin_lock_debug(spinlock_t *lock)
- 			__delay(1);
- 		}
- 		/* lockup suspected: */
--		if (print_once) {
--			print_once = 0;
-+		if (print_once == 1) {
- 			printk(KERN_EMERG "BUG: spinlock lockup on CPU#%d, "
- 					"%s/%d, %p\n",
- 				raw_smp_processor_id(), current->comm,
-@@ -122,7 +121,14 @@ static void __spin_lock_debug(spinlock_t *lock)
- 			trigger_all_cpu_backtrace();
- #endif
- 		}
-+		if (print_once++ > 1000)
-+			goto out;
- 	}
-+	return;
-+out:
-+	panic("spinlock lockup panic #%llu\n", i);
-+	// or:
-+	// BUG();
- }
- 
- void _raw_spin_lock(spinlock_t *lock)
-
---------------040804030703050800090605--
+Thanks,
+---
+~Randy
