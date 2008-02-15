@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764545AbYBON1J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbYBON1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764545AbYBON1J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 08:27:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbYBON04
+	id S933585AbYBON1e (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 08:27:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932895AbYBON1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 08:26:56 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:37410 "EHLO pasmtpB.tele.dk"
+	Fri, 15 Feb 2008 08:27:21 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44505 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbYBON0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 08:26:55 -0500
-Date: Fri, 15 Feb 2008 14:27:03 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 00/14] [ISDN] HiSax hotplug conversion
-Message-ID: <20080215132703.GG1178@uranus.ravnborg.org>
-References: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1765739AbYBON1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 08:27:20 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] MN10300: Define HZ as a config option
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Fri, 15 Feb 2008 13:27:15 +0000
+Message-ID: <20080215132715.22161.62836.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 17, 2007 at 11:04:04PM -0400, Jeff Garzik wrote:
-> 
-> This is a refresh of an on-going work-in-progress:  convert the last
-> remaining users of pci_find_device() to the ISA/PCI/etc.  hotplug APIs
-> now in standard use.  After SCSI's gdth, ISDN's HiSax suite of drivers
-> are just about the last place using the older API.
-> 
-> A few rough edges remain, and I'm not sure how much of ISDN userland
-> will explode (I have no ISDN hardware, nor much want any:)), but this
-> should get us almost all the way there.
-> 
-> The patches are diff'd against 2.6.25-rc1.
-> 
-> Comments/review/testing welcome.  Especially "it works" or "its dead"
-> testing.
+Define HZ as a config option.
 
-Just ran checkpatch for the fun of it:
-total: 28 errors, 86 warnings, 4896 lines checked
-Most looks easy to fix.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Anyone with minimal interest in isdn could do so - hint!
+ arch/mn10300/Kconfig        |    4 ++++
+ include/asm-mn10300/param.h |    2 +-
+ 2 files changed, 5 insertions(+), 1 deletions(-)
 
-	Sam
+
+diff --git a/arch/mn10300/Kconfig b/arch/mn10300/Kconfig
+index eedc3a5..6a6409a 100644
+--- a/arch/mn10300/Kconfig
++++ b/arch/mn10300/Kconfig
+@@ -63,6 +63,10 @@ config GENERIC_HARDIRQS
+ config HOTPLUG_CPU
+ 	def_bool n
+ 
++config HZ
++	int
++	default 1000
++
+ mainmenu "Matsushita MN10300/AM33 Kernel Configuration"
+ 
+ source "init/Kconfig"
+diff --git a/include/asm-mn10300/param.h b/include/asm-mn10300/param.h
+index 54b883e..789b1df 100644
+--- a/include/asm-mn10300/param.h
++++ b/include/asm-mn10300/param.h
+@@ -12,7 +12,7 @@
+ #define _ASM_PARAM_H
+ 
+ #ifdef __KERNEL__
+-#define HZ		1000		/* Internal kernel timer frequency */
++#define HZ		CONFIG_HZ	/* Internal kernel timer frequency */
+ #define USER_HZ		100		/* .. some user interfaces are in
+ 					 * "ticks" */
+ #define CLOCKS_PER_SEC	(USER_HZ)	/* like times() */
+
