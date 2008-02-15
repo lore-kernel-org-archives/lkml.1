@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760486AbYBOWbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbYBOWbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760486AbYBOWbJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:31:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761246AbYBOWaL
+	id S1762734AbYBOWbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762244AbYBOWaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:30:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:53175 "EHLO mx1.redhat.com"
+	Fri, 15 Feb 2008 17:30:25 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:53187 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761075AbYBOWaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:30:08 -0500
-Date: Fri, 15 Feb 2008 17:29:38 -0500 (EST)
-Message-Id: <20080215.172938.125896466.k-ueda@ct.jp.nec.com>
+	id S1762215AbYBOWaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 17:30:23 -0500
+Date: Fri, 15 Feb 2008 17:30:25 -0500 (EST)
+Message-Id: <20080215.173025.105430617.k-ueda@ct.jp.nec.com>
 To: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
 Cc: linux-scsi@vger.kernel.org, dm-devel@redhat.com, j-nomura@ce.jp.nec.com,
        k-ueda@ct.jp.nec.com
-Subject: [APPENDIX PATCH 02/13] block: add request submission interface
+Subject: [APPENDIX PATCH 04/13] block: export blk_end_io
 From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0
  =?iso-2022-jp?B?KBskQjgtTFobKEIp?=
@@ -25,105 +25,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a generic request submission interface for request
-stacking drivers so that request-based dm can use it to submit
-clones to underlying devices.
+This patch exports blk_end_io() so that request-based dm can use it
+to complete their clone.
 
-The request may have been made based on limitations of other queues.
-So generic limitation checks based on the submitting queue are needed.
+Request-based dm can't use blk_end_request interfaces for their clone,
+since their callback is called again.
+So another request completion interface which has no stacking hook
+is needed.
 
 Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
 Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
 ---
- block/blk-core.c       |   65 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/blkdev.h |    1 
- 2 files changed, 66 insertions(+)
+ block/blk-core.c       |    6 +++---
+ include/linux/blkdev.h |    3 +++
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
 Index: 2.6.25-rc1/block/blk-core.c
 ===================================================================
 --- 2.6.25-rc1.orig/block/blk-core.c
 +++ 2.6.25-rc1/block/blk-core.c
-@@ -1510,6 +1510,71 @@ void submit_bio(int rw, struct bio *bio)
- }
- EXPORT_SYMBOL(submit_bio);
+@@ -1938,9 +1938,8 @@ EXPORT_SYMBOL(end_request);
+  *     0 - we are done with this request
+  *     1 - this request is not freed yet, it still has pending buffers.
+  **/
+-static int blk_end_io(struct request *rq, int error, unsigned int nr_bytes,
+-		      unsigned int bidi_bytes,
+-		      int (drv_callback)(struct request *))
++int blk_end_io(struct request *rq, int error, unsigned int nr_bytes,
++	       unsigned int bidi_bytes, int (drv_callback)(struct request *))
+ {
+ 	struct request_queue *q = rq->q;
+ 	unsigned long flags = 0UL;
+@@ -1967,6 +1966,7 @@ static int blk_end_io(struct request *rq
  
-+/*
-+ * Check a request for queue limits
-+ */
-+static int check_queue_limit(struct request_queue *q, struct request *rq)
-+{
-+	if (rq->nr_sectors > q->max_sectors ||
-+	    rq->data_len >> 9 > q->max_hw_sectors) {
-+		printk(KERN_ERR "%s: over max size limit.\n", __func__);
-+		return 1;
-+	}
-+
-+	/*
-+	 * queue's settings related to segment counting like q->bounce_pfn
-+	 * may differ from that of other stacking queues.
-+	 * Recalculate it to check the request correctly on this queue's
-+	 * limitation.
-+	 */
-+	blk_recalc_rq_segments(rq);
-+	if (rq->nr_phys_segments > q->max_phys_segments ||
-+	    rq->nr_hw_segments > q->max_hw_segments) {
-+		printk(KERN_ERR "%s: over max segments limit.\n", __func__);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * blk_submit_request - Helper for stacking drivers to submit the request
-+ * @q:  the queue to submit the request
-+ * @rq: the request being queued
-+ **/
-+void blk_submit_request(struct request_queue *q, struct request *rq)
-+{
-+	unsigned long flags;
-+
-+	if (check_queue_limit(q, rq))
-+		goto end_io;
-+
-+#ifdef CONFIG_FAIL_MAKE_REQUEST
-+	if (rq->rq_disk && rq->rq_disk->flags & GENHD_FL_FAIL &&
-+	    should_fail(&fail_make_request, blk_rq_bytes(rq)))
-+		goto end_io;
-+#endif
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	/*
-+	 * Submitting request must be dequeued before calling this function
-+	 * because it will be linked to another request_queue
-+	 */
-+	BUG_ON(blk_queued_rq(rq));
-+
-+	drive_stat_acct(rq, 1);
-+	__elv_add_request(q, rq, ELEVATOR_INSERT_BACK, 0);
-+
-+	spin_unlock_irqrestore(q->queue_lock, flags);
-+
-+	return;
-+
-+end_io:
-+	blk_end_request(rq, -EIO, blk_rq_bytes(rq));
-+}
-+EXPORT_SYMBOL_GPL(blk_submit_request);
-+
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(blk_end_io);
+ 
  /**
-  * __end_that_request_first - end I/O on a request
-  * @req:      the request being processed
+  * blk_end_request - Helper function for drivers to complete the request.
 Index: 2.6.25-rc1/include/linux/blkdev.h
 ===================================================================
 --- 2.6.25-rc1.orig/include/linux/blkdev.h
 +++ 2.6.25-rc1/include/linux/blkdev.h
-@@ -616,6 +616,7 @@ extern void blk_end_sync_rq(struct reque
- extern struct request *blk_get_request(struct request_queue *, int, gfp_t);
- extern void blk_insert_request(struct request_queue *, struct request *, int, void *);
- extern void blk_requeue_request(struct request_queue *, struct request *);
-+extern void blk_submit_request(struct request_queue *q, struct request *rq);
- extern void blk_plug_device(struct request_queue *);
- extern int blk_remove_plug(struct request_queue *);
- extern void blk_recount_segments(struct request_queue *, struct bio *);
+@@ -701,6 +701,9 @@ extern int __blk_end_request(struct requ
+ 				unsigned int nr_bytes);
+ extern int blk_end_bidi_request(struct request *rq, int error,
+ 				unsigned int nr_bytes, unsigned int bidi_bytes);
++extern int blk_end_io(struct request *rq, int error,
++		      unsigned int nr_bytes, unsigned int bidi_bytes,
++		      int (drv_callback)(struct request *));
+ extern void blk_async_end_request(struct request *rq, int error);
+ extern void end_request(struct request *, int);
+ extern void end_queued_request(struct request *, int);
