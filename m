@@ -1,67 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbYBOSq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYBOSsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbYBOSq3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:46:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760242AbYBOSqJ
+	id S1760173AbYBOSsR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:48:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbYBOSsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:46:09 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:59973 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760134AbYBOSqH (ORCPT
+	Fri, 15 Feb 2008 13:48:05 -0500
+Received: from saraswathi.solana.com ([198.99.130.12]:55172 "EHLO
+	saraswathi.solana.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755776AbYBOSsE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:46:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=U02dBLo/Z2lG6jnwOkOZxZpJhAYfT51Ctzb0J4AJrDSSF+7eFwsT3b0C0cbosNF9ujSn166Mg/ANQGkoMgGTbwt47vPTjC2LWRP9G/cSzCjnWCJsFpG8D4kHy8bp87Fcs3rHCRFo143wCb6Qai3FBUMhXCrklpdnTx1va/6OhyM=
-Subject: [PATCH] befs: fix sparse warning in linuxvfs.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "Sergey S. Kostyliov" <rathamahata@php4.ru>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 10:46:04 -0800
-Message-Id: <1203101164.15275.21.camel@brick>
+	Fri, 15 Feb 2008 13:48:04 -0500
+Date: Fri, 15 Feb 2008 13:47:41 -0500
+From: Jeff Dike <jdike@addtoit.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jack@suse.cz
+Subject: Re: 2.6.24-mm1 bugs
+Message-ID: <20080215184741.GB8810@c2.user-mode-linux.org>
+References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use link as the variable name to avoid shadowing the arg.
+On Fri, Feb 15, 2008 at 12:43:45PM +0100, Miklos Szeredi wrote:
+>  - UML doesn't boot: guest is 2.6.24-mm1 also, haven't tried any
+>    other.  Same guest boots fine on 2.6.24 host.
 
-fs/befs/linuxvfs.c:492:8: warning: symbol 'p' shadows an earlier one
-fs/befs/linuxvfs.c:488:77: originally declared here
+What does it do?
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-This should be checked in case there is a latent bug here.  Should it
-be the arg *p getting freed, or the local var *p that was shadowing
-it?
+Any chance you can bisect it?
 
- fs/befs/linuxvfs.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+				Jeff
 
-diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
-index 82123ff..e8717de 100644
---- a/fs/befs/linuxvfs.c
-+++ b/fs/befs/linuxvfs.c
-@@ -489,9 +489,9 @@ static void befs_put_link(struct dentry *dentry, struct nameidata *nd, void *p)
- {
- 	befs_inode_info *befs_ino = BEFS_I(dentry->d_inode);
- 	if (befs_ino->i_flags & BEFS_LONG_SYMLINK) {
--		char *p = nd_get_link(nd);
--		if (!IS_ERR(p))
--			kfree(p);
-+		char *link = nd_get_link(nd);
-+		if (!IS_ERR(link))
-+			kfree(link);
- 	}
- }
- 
 -- 
-1.5.4.1.1278.gc75be
-
-
-
+Work email - jdike at linux dot intel dot com
