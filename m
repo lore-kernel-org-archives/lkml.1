@@ -1,131 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764891AbYBOB3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYBOBiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764891AbYBOB3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 20:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbYBOB3K
+	id S1758445AbYBOBiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 20:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYBOBhv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 20:29:10 -0500
-Received: from mx.neterion.com ([72.1.205.142]:4691 "EHLO owa.neterion.com"
+	Thu, 14 Feb 2008 20:37:51 -0500
+Received: from www.tglx.de ([62.245.132.106]:37064 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755850AbYBOB3I convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 20:29:08 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751583AbYBOBhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 20:37:50 -0500
+Date: Fri, 15 Feb 2008 02:36:58 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: adrian.bunk@movial.fi, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       riku.voipio@movial.fi, mikpe@it.uu.se, buytenh@wantstofly.org,
+       rusty@rustcorp.com.au, stable@kernel.org
+Subject: [PATCH 2/2] futex: runtime enable pi and robust functionality
+In-Reply-To: <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.00.0802150223390.12988@apollo.tec.linutronix.de>
+References: <20080211130700.GF27537@movial.fi> <alpine.LFD.1.00.0802111442130.12988@apollo.tec.linutronix.de> <20080214134642.600282f1.akpm@linux-foundation.org> <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] Re: Demand paging for memory regions
-Date: Thu, 14 Feb 2008 20:26:51 -0500
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77030E2456@nekter>
-In-Reply-To: <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] Re: Demand paging for memory regions
-Thread-Index: AchvW9jcZIDklBNpTse45hej3AZXQAAE03BQ
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>  <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com>  <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>  <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>  <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>  <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com> <469958e00802141443g33448abcs3efa6d6c4aec2b56@mail.gmail.com> <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com>
-From: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Cc: <linux-kernel@vger.kernel.org>, <avi@qumranet.com>, <linux-mm@kvack.org>,
-       <general@lists.openfabrics.org>, <kvm-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Not all architectures implement futex_atomic_cmpxchg_inatomic(). The
+default implementation returns -ENOSYS, which is currently not handled
+inside of the futex guts. 
 
+Futex PI calls and robust list exits with a held futex result in an
+endless loop in the futex code on architectures which have no support.
 
-> -----Original Message-----
-> From: Christoph Lameter [mailto:clameter@sgi.com]
-> Sent: Thursday, February 14, 2008 2:49 PM
-> To: Caitlin Bestler
-> Cc: linux-kernel@vger.kernel.org; avi@qumranet.com;
-linux-mm@kvack.org;
-> general@lists.openfabrics.org; kvm-devel@lists.sourceforge.net
-> Subject: Re: [ofa-general] Re: Demand paging for memory regions
-> 
-> On Thu, 14 Feb 2008, Caitlin Bestler wrote:
-> 
-> > I have no problem with that, as long as the application layer is
-> responsible for
-> > tearing down and re-establishing the connections. The RDMA/transport
-> layers
-> > are incapable of tearing down and re-establishing a connection
-> transparently
-> > because connections need to be approved above the RDMA layer.
-> 
-> I am not that familiar with the RDMA layers but it seems that RDMA has
-> a library that does device driver like things right? So the logic
-would
-> best fit in there I guess.
-> 
-> If you combine mlock with the mmu notifier then you can actually
-> guarantee that a certain memory range will not be swapped out. The
-> notifier will then only be called if the memory range will need to be
-> moved for page migration, memory unplug etc etc. There may be a limit
-> on
-> the percentage of memory that you can mlock in the future. This may be
-> done to guarantee that the VM still has memory to work with.
-> 
+Fixing up every place where futex_atomic_cmpxchg_inatomic() is called
+would add a fair amount of extra if/else constructs to the already
+complex code. It is also not possible to disable the robust feature
+before user space tries to register robust lists.
 
-The problem is that with existing APIs, or even slightly modified APIs,
-the RDMA layer will not be able to figure out which connections need to
-be "interrupted" in order to deal with what memory suspensions.
+Compile time disabling is not a good idea either, as there are already
+architectures with runtime detection of futex_atomic_cmpxchg_inatomic
+support.
 
-Further, because any request for a new connection will be handled by
-the remote *application layer* peer there is no way for the two RDMA
-layers to agree to covertly tear down and re-establish the connection.
-Nor really should there be, connections should be approved by OS layer
-networking controls. RDMA should not be able to tell the network stack,
-"trust me, you don't have to check if this connection is legitimate".
+Detect the functionality at runtime instead by calling
+cmpxchg_futex_value_locked() with a NULL pointer from the futex
+initialization code. This is guaranteed to fail, but the call of
+futex_atomic_cmpxchg_inatomic() happens with pagefaults disabled. 
 
-Another example, if you terminate a connection pending receive
-operations
-complete *to the user* in a Completion Queue. Those completions are NOT
-seen by the RDMA layer, and especially not by the Connection Manager. It
-has absolutely no way to repost them transparently to the same
-connection
-when the connection is re-established.
+On architectures, which use the asm-generic implementation or have a
+runtime CPU feature detection, a -ENOSYS return value disables the
+PI/robust features.
 
-Even worse, some portions of a receive operation might have been placed
-in the receive buffer and acknowledged to the remote peer. But there is
-no mechanism to report this fact in the CQE. A receive operation that is
-aborted is aborted. There is no concept of partial success. Therefore
-you
-cannot covertly terminate a connection mid-operation and covertly
-re-establish
-it later. Data will be lost, it will no longer be a reliable connection,
-and
-therefore it needs to be torn down anyway.
+On architectures with a working implementation the call returns
+-EFAULT and the PI/robust features are enabled.
 
-The RDMA layers also cannot tell the other side not to transmit. Flow
-control is the responsibility of the application layer, not RDMA.
+The relevant syscalls return -ENOSYS and the robust list exit code is
+blocked, when the detection fails.
 
-What the RDMA layer could do is this: once you tell it to suspend a
-given
-memory region it can either tell you that it doesn't know how to do that
-or it can instruct the device to stop processing a set of connections
-that will ceases all access for a given Memory Region. When you resume
-it can guarantee that it is no longer using any cached older mappings
-for the memory region (assuming it was capable of doing the suspend),
-and then because RDMA connections are reliable everything will recover
-unless the connection timed-out. The chance that it will time-out is
-probably low, but the chance that the underlying connection will be in
-slow start or equivalent is much higher.
+Fixes http://lkml.org/lkml/2008/2/11/149
+Originally reported by: Lennart Buytenhek
 
-So any solution that requires the upper layers to suspend operations
-for a brief bit will require explicit interaction with those layers.
-No RDMA layer can perform the sleight of hand tricks that you seem
-to want it to perform.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: stable@kernel.org
 
-AT the RDMA layer the best you could get is very brief suspensions
-for the purpose of *re-arranging* memory, not of reducing the amount
-of registered memory. If you need to reduce the amount of registered
-memory then you have to talk to the application. Discussions on making
-it easier for the application to trim a memory region dynamically might
-be in order, but you will not work around the fact that the application
-layer needs to determine what pages are registered. And they would
-really
-prefer just to be told how much memory they can have up front, they can
-figure out how to deal with that amount of memory on their own.
+---
+ include/linux/futex.h |    1 +
+ kernel/futex.c        |   38 ++++++++++++++++++++++++++++++++++----
+ kernel/futex_compat.c |    9 +++++++++
+ 3 files changed, 44 insertions(+), 4 deletions(-)
 
+Index: linux-2.6/include/linux/futex.h
+===================================================================
+--- linux-2.6.orig/include/linux/futex.h
++++ linux-2.6/include/linux/futex.h
+@@ -167,6 +167,7 @@ union futex_key {
+ #ifdef CONFIG_FUTEX
+ extern void exit_robust_list(struct task_struct *curr);
+ extern void exit_pi_state_list(struct task_struct *curr);
++extern int futex_cmpxchg_enabled;
+ #else
+ static inline void exit_robust_list(struct task_struct *curr)
+ {
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c
++++ linux-2.6/kernel/futex.c
+@@ -60,6 +60,8 @@
+ 
+ #include "rtmutex_common.h"
+ 
++int __read_mostly futex_cmpxchg_enabled;
++
+ #define FUTEX_HASHBITS (CONFIG_BASE_SMALL ? 4 : 8)
+ 
+ /*
+@@ -469,6 +471,8 @@ void exit_pi_state_list(struct task_stru
+ 	struct futex_hash_bucket *hb;
+ 	union futex_key key;
+ 
++	if (!futex_cmpxchg_enabled)
++		return;
+ 	/*
+ 	 * We are a ZOMBIE and nobody can enqueue itself on
+ 	 * pi_state_list anymore, but we have to be careful
+@@ -1870,6 +1874,8 @@ asmlinkage long
+ sys_set_robust_list(struct robust_list_head __user *head,
+ 		    size_t len)
+ {
++	if (!futex_cmpxchg_enabled)
++		return -ENOSYS;
+ 	/*
+ 	 * The kernel knows only one size for now:
+ 	 */
+@@ -1894,6 +1900,9 @@ sys_get_robust_list(int pid, struct robu
+ 	struct robust_list_head __user *head;
+ 	unsigned long ret;
+ 
++	if (!futex_cmpxchg_enabled)
++		return -ENOSYS;
++
+ 	if (!pid)
+ 		head = current->robust_list;
+ 	else {
+@@ -1997,6 +2006,9 @@ void exit_robust_list(struct task_struct
+ 	unsigned long futex_offset;
+ 	int rc;
+ 
++	if (!futex_cmpxchg_enabled)
++		return;
++
+ 	/*
+ 	 * Fetch the list head (which was registered earlier, via
+ 	 * sys_set_robust_list()):
+@@ -2051,7 +2063,7 @@ void exit_robust_list(struct task_struct
+ long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
+ 		u32 __user *uaddr2, u32 val2, u32 val3)
+ {
+-	int ret;
++	int ret = -ENOSYS;
+ 	int cmd = op & FUTEX_CMD_MASK;
+ 	struct rw_semaphore *fshared = NULL;
+ 
+@@ -2083,13 +2095,16 @@ long do_futex(u32 __user *uaddr, int op,
+ 		ret = futex_wake_op(uaddr, fshared, uaddr2, val, val2, val3);
+ 		break;
+ 	case FUTEX_LOCK_PI:
+-		ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
++		if (futex_cmpxchg_enabled)
++			ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
+ 		break;
+ 	case FUTEX_UNLOCK_PI:
+-		ret = futex_unlock_pi(uaddr, fshared);
++		if (futex_cmpxchg_enabled)
++			ret = futex_unlock_pi(uaddr, fshared);
+ 		break;
+ 	case FUTEX_TRYLOCK_PI:
+-		ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
++		if (futex_cmpxchg_enabled)
++			ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
+ 		break;
+ 	default:
+ 		ret = -ENOSYS;
+@@ -2145,8 +2160,23 @@ static struct file_system_type futex_fs_
+ 
+ static int __init init(void)
+ {
++	u32 curval;
+ 	int i;
+ 
++	/*
++	 * This will fail and we want it. Some arch implementations do
++	 * runtime detection of the futex_atomic_cmpxchg_inatomic()
++	 * functionality. We want to know that before we call in any
++	 * of the complex code paths. Also we want to prevent
++	 * registration of robust lists in that case. NULL is
++	 * guaranteed to fault and we get -EFAULT on functional
++	 * implementation, the non functional ones will return
++	 * -ENOSYS.
++	 */
++	curval = cmpxchg_futex_value_locked(NULL, 0, 0);
++	if (curval == -EFAULT)
++		futex_cmpxchg_enabled = 1;
++
+ 	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
+ 		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
+ 		spin_lock_init(&futex_queues[i].lock);
+Index: linux-2.6/kernel/futex_compat.c
+===================================================================
+--- linux-2.6.orig/kernel/futex_compat.c
++++ linux-2.6/kernel/futex_compat.c
+@@ -54,6 +54,9 @@ void compat_exit_robust_list(struct task
+ 	compat_long_t futex_offset;
+ 	int rc;
+ 
++	if (!futex_cmpxchg_enabled)
++		return;
++
+ 	/*
+ 	 * Fetch the list head (which was registered earlier, via
+ 	 * sys_set_robust_list()):
+@@ -115,6 +118,9 @@ asmlinkage long
+ compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
+ 			   compat_size_t len)
+ {
++	if (!futex_cmpxchg_enabled)
++		return -ENOSYS;
++
+ 	if (unlikely(len != sizeof(*head)))
+ 		return -EINVAL;
+ 
+@@ -130,6 +136,9 @@ compat_sys_get_robust_list(int pid, comp
+ 	struct compat_robust_list_head __user *head;
+ 	unsigned long ret;
+ 
++	if (!futex_cmpxchg_enabled)
++		return -ENOSYS;
++
+ 	if (!pid)
+ 		head = current->compat_robust_list;
+ 	else {
