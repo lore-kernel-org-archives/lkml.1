@@ -1,74 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbYBOQYz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755640AbYBOQeP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbYBOQYz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 11:24:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYBOQYq
+	id S1755640AbYBOQeP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 11:34:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYBOQd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 11:24:46 -0500
-Received: from mail.free-electrons.com ([88.191.46.45]:3698 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbYBOQYp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 11:24:45 -0500
-Date: Fri, 15 Feb 2008 17:04:22 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com
-Subject: Re: [PATCH] Use directly kmalloc() and kfree() in init/initramfs.c
-Message-ID: <20080215170422.192de4df@crazy>
-In-Reply-To: <Pine.LNX.4.64.0802151658320.30301@fbirervta.pbzchgretzou.qr>
-References: <20080215121330.3f790783@crazy>
-	<Pine.LNX.4.64.0802151546230.30301@fbirervta.pbzchgretzou.qr>
-	<20080215164503.245752e6@crazy>
-	<Pine.LNX.4.64.0802151658320.30301@fbirervta.pbzchgretzou.qr>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/MIMjM7hKs0NkhgllvR5VGQ6";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Fri, 15 Feb 2008 11:33:58 -0500
+Received: from mga11.intel.com ([192.55.52.93]:9680 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753681AbYBOQd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 11:33:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,358,1199692800"; 
+   d="scan'208";a="519234238"
+Message-ID: <47B5BDC0.3020003@intel.com>
+Date: Fri, 15 Feb 2008 08:28:48 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, jdike@addtoit.com,
+       jack@suse.cz
+Subject: Re: 2.6.24-mm1 bugs
+References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Feb 2008 16:29:40.0971 (UTC) FILETIME=[F6DE9BB0:01C86FEF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/MIMjM7hKs0NkhgllvR5VGQ6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Miklos Szeredi wrote:
+>  - network doesn't always come up at first try (e1000e).  On 2.6.24
+>    e1000e doesn't seem to work at all, so I use e1000, but that has
+>    other problems.
 
-Le Fri, 15 Feb 2008 17:00:35 +0100 (CET),
-Jan Engelhardt <jengelh@computergmbh.de> a =C3=A9crit :
+Andy Gospodarek pointed out a possible problem with e1000e if you are not using
+MSI interrupts (e.g. booting with pci=nomsi or CONFIG_PCI_MSI=n). Can you confirm
+that you are not using MSI irqs? If so, then we have a patch that you can try.
 
-> Anyone you can get to push the actual changeset; many won't feel
-> responsible :) so the path is through ->akpm->linus here.
+IOW post your `cat /proc/interrupts` please :)
 
-Ok, so as Andrew is in Cc:, I suppose he will pick the patch :-)
-
-> BTW, if you changed free to kfree, did the free macro/whatever get=20
-> removed or is it still used?
-
-After this patch, they are still used by the lib/inflate.c code. But if
-you look at the patch called "inflate: refactor inflate malloc code"
-that I sent to the LKML this morning, you'll see that it removes the
-malloc() and free() wrappers (and does some more clean-up).
-
-Sincerly,
-
-Thomas
---=20
-Thomas Petazzoni, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
-
---Sig_/MIMjM7hKs0NkhgllvR5VGQ6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHtbgG9lPLMJjT96cRAtmNAJ4pkJgyXMA1f3HW9HEMgEBskD6cZgCeNAjG
-Wxm+pErJxnSpRZpa5QLXDUU=
-=t+ZI
------END PGP SIGNATURE-----
-
---Sig_/MIMjM7hKs0NkhgllvR5VGQ6--
+Auke
