@@ -1,56 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765722AbYBODdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbYBODpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765722AbYBODdS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 22:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbYBODdI
+	id S1763340AbYBODpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 22:45:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbYBODpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 22:33:08 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:59262 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752394AbYBODdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 22:33:06 -0500
-Message-ID: <47B5073B.9070802@linux.vnet.ibm.com>
-Date: Fri, 15 Feb 2008 09:00:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git pull] x86 updates
-References: <20080213155725.GA19523@elte.hu> <661de9470802130819i61dfe317jf3725a49d8a314b4@mail.gmail.com> <20080214162510.GA29570@elte.hu> <47B47D85.9070504@qumranet.com>
-In-Reply-To: <47B47D85.9070504@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Feb 2008 22:45:12 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46256 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756303AbYBODpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 22:45:11 -0500
+Cc: LKML Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Zhang Wei <wei.zhang@freescale.com>
+Message-Id: <DC488215-D313-41E0-A98A-1C90D02A465D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Dan Williams <dan.j.williams@intel.com>
+In-Reply-To: <e9c3a7c20802141014k6018f6dfvc1a97bf81acb872e@mail.gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: dma engine drivers for 2.6.25?
+Date: Thu, 14 Feb 2008 21:44:59 -0600
+References: <BEF96263-F31B-472E-B31F-0751F5ABFBDA@kernel.crashing.org> <e9c3a7c20802141014k6018f6dfvc1a97bf81acb872e@mail.gmail.com>
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Ingo Molnar wrote:
->> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>
->>  
->>> Ingo, could you also please consider the KVM build fix at
->>> http://marc.info/?l=linux-kernel&m=120262794315024&w=2 which has been
->>> acked by Avi. I suspect this patch should be route through git-x86
->>> since it affects arch/x86/Kconfig.
->>>     
->>
->> thanks, applied - this first looked like a KVM item, that's why i
->> havent added it. [Btw., feel free to push it via kvm.git as well - as
->> long as you are sure it does not break the build ;-) ]   
-> 
-> Yeah, I'm queuing it as well, it will get there one way or the other.
-> 
 
-Excellent! :)
+On Feb 14, 2008, at 12:14 PM, Dan Williams wrote:
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> On Wed, Feb 13, 2008 at 8:52 PM, Kumar Gala  
+> <galak@kernel.crashing.org> wrote:
+>> Dan,
+>>
+>> What's going on with the dma engine drivers for 2.6.25?  We had a
+>> Freescale dma driver from Zhang Wei queued up but seems to have been
+>> lost.
+>
+> I pulled it into my tree and am holding it until Zhang has an
+> opportunity to address the pending review comments [1].  I also did
+> not feel comfortable pushing it to Linus without a PPC maintainer's
+> Acked-by/Reviewed-by.
+>
+> I have attached the version I am carrying.
+
+What issues are still open.  I was under the belief that Zhang had  
+resolved all the issues.
+
+- k
