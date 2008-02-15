@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932340AbYBOGXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765728AbYBOGad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932340AbYBOGXw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 01:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbYBOGXo
+	id S1765728AbYBOGad (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 01:30:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758261AbYBOGaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 01:23:44 -0500
-Received: from mga02.intel.com ([134.134.136.20]:20707 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbYBOGXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 01:23:43 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,356,1199692800"; 
-   d="scan'208";a="258032025"
-Subject: Re: [PATCH] Fix left over EFI cache mapping problems
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
-References: <20080214131317.GA27769@basil.nowhere.org>
-	 <20080214161218.GA28152@elte.hu>
-	 <1203050886.30010.19.camel@caritas-dev.intel.com>
-	 <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 15 Feb 2008 14:24:40 +0800
-Message-Id: <1203056680.30010.21.camel@caritas-dev.intel.com>
+	Fri, 15 Feb 2008 01:30:22 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36988 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757466AbYBOGaU (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 01:30:20 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gene Heskett <gene.heskett@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-reply-to: Your message of "Thu, 14 Feb 2008 13:32:02 EST."
+             <200802141332.03315.gene.heskett@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au> <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org>
+            <200802141332.03315.gene.heskett@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-OriginalArrivalTime: 15 Feb 2008 06:23:38.0663 (UTC) FILETIME=[4D3EBB70:01C86F9B]
+Content-Type: text/plain; charset=us-ascii
+Date: Fri, 15 Feb 2008 01:29:14 -0500
+Message-ID: <4367.1203056954@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 21:44 -0800, Linus Torvalds wrote:
-> 
-> On Fri, 15 Feb 2008, Huang, Ying wrote:
-> > 
-> > I think the patch following may be better, because it is possible that
-> > the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
-> 
-> If this is a problem in practice, we'd be better off having a helper 
-> function to do it, to avoid overflows. Right now, doing
-> 
-> > +		unsigned long num_pages;
-> > +		num_pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
-> 
-> overflows at 4GB on x86-32. And maybe you never have areas that big, and 
-> people are moving over to 64-bit anyway, it still sounds like a bug 
-> waiting to happen.
-> 
-> So *if* we care (I doubt we do, since EFI_PAGE_SHIFT at least right now 
-> matches PAGE_SHIFT on x86), you'd probably want to do something like
-> 
->   static inline unsigned long efi_pages_to_native_pages(unsigned long efi_pages)
->   {
->   #if EFI_PAGE_SHIFT > PAGE_SHIFT
-> 	return efi_pages << (EFI_PAGE_SHIFT - PAGE_SHIFT);
->   #else
-> 	return efi_pages >> (PAGE_SHIFT - EFI_PAGE_SHIFT);
->   #endif
->   }
-> 
-> or whatever.
-> 
-> Otherwise, trying to avoid a bug with different page sizes is actually 
-> more likely to *introduce* one rather than fix one..
+On Thu, 14 Feb 2008 13:32:02 EST, Gene Heskett said:
 
-Yes, I will fix this.
+> Nvidia vs 2.6.25-rc1 being a case in point, and they (nvidia) are appearing to 
+> indicate its not a problem until some distro actually ships a kernel with the
+> changes that broke it.  That could be months or even a year plus.
 
-Best Regards,
-Huang Ying
+Actually following the NVidia forums indicates otherwise:
+
+http://www.nvnews.net/vbulletin/showthread.php?t=107144
+
+I expect Zander will be posting a patch rather soonish, for some value of
+soonish.  And if you're running a -rc or -mm kernel, patching the 169.09
+drivers should be well within your abilities....
 
