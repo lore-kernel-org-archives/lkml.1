@@ -1,113 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753441AbYBOF3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYBOFpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753441AbYBOF3y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 00:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYBOF3k
+	id S1757954AbYBOFpl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 00:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYBOFpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 00:29:40 -0500
-Received: from mga11.intel.com ([192.55.52.93]:37358 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbYBOF3j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 00:29:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,356,1199692800"; 
-   d="scan'208";a="298696901"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Fri, 15 Feb 2008 00:45:30 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53402 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752288AbYBOFp3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 00:45:29 -0500
+Date: Thu, 14 Feb 2008 21:44:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix left over EFI cache mapping problems
+In-Reply-To: <1203050886.30010.19.camel@caritas-dev.intel.com>
+Message-ID: <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
+References: <20080214131317.GA27769@basil.nowhere.org>  <20080214161218.GA28152@elte.hu> <1203050886.30010.19.camel@caritas-dev.intel.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C86F93.389D2A60"
-Subject: [patch 6/6] Intel Menlow : extract return values using PTR_ERR
-Date: Fri, 15 Feb 2008 10:55:47 +0530
-Message-ID: <05B550FD4BD2014E841D83547B62600802AA650F@bgsmsx411.gar.corp.intel.com>
-X-MS-Has-Attach: yes
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 6/6] Intel Menlow : extract return values using PTR_ERR
-Thread-Index: AchvkzhPFora5yiiTmKaP8YSyj68SA==
-From: "Thomas, Sujith" <sujith.thomas@intel.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Cc: <lenb@kernel.org>, <mingo@elte.hu>, <linux-acpi@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>, <linux-pm@lists.linux-foundation.org>,
-       "Zhang, Rui" <rui.zhang@intel.com>
-X-OriginalArrivalTime: 15 Feb 2008 05:25:51.0633 (UTC) FILETIME=[3ABBF010:01C86F93]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C86F93.389D2A60
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
 
-From: Thomas Sujith <sujith.thomas@intel.com>
+On Fri, 15 Feb 2008, Huang, Ying wrote:
+> 
+> I think the patch following may be better, because it is possible that
+> the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
 
-Need to extract errors using PTR_ERR macro and
-process accordingly.thermal_cooling_device_register
-returning NULL means that CONFIG_THERMAL=3Dn and in that
-case no need to create symbolic links.
+If this is a problem in practice, we'd be better off having a helper 
+function to do it, to avoid overflows. Right now, doing
 
-Signed-off-by: Thomas Sujith <sujith.thomas@intel.com>
----
+> +		unsigned long num_pages;
+> +		num_pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
 
- drivers/misc/intel_menlow.c |   11 +++++++----
- 1 files changed, 7 insertions(+), 4 deletions(-)
+overflows at 4GB on x86-32. And maybe you never have areas that big, and 
+people are moving over to 64-bit anyway, it still sounds like a bug 
+waiting to happen.
 
-Index: linux-2.6.24/drivers/misc/intel_menlow.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.24.orig/drivers/misc/intel_menlow.c
-+++ linux-2.6.24/drivers/misc/intel_menlow.c
-@@ -170,10 +170,13 @@ static int intel_menlow_memory_add(struc
-=20
- 	cdev =3D thermal_cooling_device_register("Memory controller",
-device,
- 					       &memory_cooling_ops);
--	acpi_driver_data(device) =3D cdev;
--	if (!cdev)
--		result =3D -ENODEV;
--	else {
-+	if (IS_ERR(cdev)) {
-+		result =3D PTR_ERR(cdev);
-+		goto end;
-+	}
-+
-+	if (cdev) {
-+		acpi_driver_data(device) =3D cdev;
- 		result =3D sysfs_create_link(&device->dev.kobj,
- 					&cdev->device.kobj,
-"thermal_cooling");
- 		if (result)
+So *if* we care (I doubt we do, since EFI_PAGE_SHIFT at least right now 
+matches PAGE_SHIFT on x86), you'd probably want to do something like
 
-------_=_NextPart_001_01C86F93.389D2A60
-Content-Type: application/octet-stream;
-	name="[patch 6 of 6] Intel Menlow - extract return value using PTR_ERR"
-Content-Transfer-Encoding: base64
-Content-Description: [patch 6 of 6] Intel Menlow - extract return value using PTR_ERR
-Content-Disposition: attachment;
-	filename="[patch 6 of 6] Intel Menlow - extract return value using PTR_ERR"
+  static inline unsigned long efi_pages_to_native_pages(unsigned long efi_pages)
+  {
+  #if EFI_PAGE_SHIFT > PAGE_SHIFT
+	return efi_pages << (EFI_PAGE_SHIFT - PAGE_SHIFT);
+  #else
+	return efi_pages >> (PAGE_SHIFT - EFI_PAGE_SHIFT);
+  #endif
+  }
 
-RnJvbTogVGhvbWFzIFN1aml0aCA8c3VqaXRoLnRob21hc0BpbnRlbC5jb20+CgpOZWVkIHRvIGV4
-dHJhY3QgZXJyb3JzIHVzaW5nIFBUUl9FUlIgbWFjcm8gYW5kCnByb2Nlc3MgYWNjb3JkaW5nbHku
-dGhlcm1hbF9jb29saW5nX2RldmljZV9yZWdpc3RlcgpyZXR1cm5pbmcgTlVMTCBtZWFucyB0aGF0
-IENPTkZJR19USEVSTUFMPW4gYW5kIGluIHRoYXQKY2FzZSBubyBuZWVkIHRvIGNyZWF0ZSBzeW1i
-b2xpYyBsaW5rcy4KClNpZ25lZC1vZmYtYnk6IFRob21hcyBTdWppdGggPHN1aml0aC50aG9tYXNA
-aW50ZWwuY29tPgotLS0KCiBkcml2ZXJzL21pc2MvaW50ZWxfbWVubG93LmMgfCAgIDExICsrKysr
-KystLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKSwgNCBkZWxldGlvbnMoLSkK
-CkluZGV4OiBsaW51eC0yLjYuMjQvZHJpdmVycy9taXNjL2ludGVsX21lbmxvdy5jCj09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT0KLS0tIGxpbnV4LTIuNi4yNC5vcmlnL2RyaXZlcnMvbWlzYy9pbnRlbF9tZW5sb3cuYworKysg
-bGludXgtMi42LjI0L2RyaXZlcnMvbWlzYy9pbnRlbF9tZW5sb3cuYwpAQCAtMTcwLDEwICsxNzAs
-MTMgQEAgc3RhdGljIGludCBpbnRlbF9tZW5sb3dfbWVtb3J5X2FkZChzdHJ1YwogCiAJY2RldiA9
-IHRoZXJtYWxfY29vbGluZ19kZXZpY2VfcmVnaXN0ZXIoIk1lbW9yeSBjb250cm9sbGVyIiwgZGV2
-aWNlLAogCQkJCQkgICAgICAgJm1lbW9yeV9jb29saW5nX29wcyk7Ci0JYWNwaV9kcml2ZXJfZGF0
-YShkZXZpY2UpID0gY2RldjsKLQlpZiAoIWNkZXYpCi0JCXJlc3VsdCA9IC1FTk9ERVY7Ci0JZWxz
-ZSB7CisJaWYgKElTX0VSUihjZGV2KSkgeworCQlyZXN1bHQgPSBQVFJfRVJSKGNkZXYpOworCQln
-b3RvIGVuZDsKKwl9CisKKwlpZiAoY2RldikgeworCQlhY3BpX2RyaXZlcl9kYXRhKGRldmljZSkg
-PSBjZGV2OwogCQlyZXN1bHQgPSBzeXNmc19jcmVhdGVfbGluaygmZGV2aWNlLT5kZXYua29iaiwK
-IAkJCQkJJmNkZXYtPmRldmljZS5rb2JqLCAidGhlcm1hbF9jb29saW5nIik7CiAJCWlmIChyZXN1
-bHQpCg==
+or whatever.
 
-------_=_NextPart_001_01C86F93.389D2A60--
+Otherwise, trying to avoid a bug with different page sizes is actually 
+more likely to *introduce* one rather than fix one..
+
+			Linus
