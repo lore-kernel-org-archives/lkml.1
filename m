@@ -1,237 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbYBOKkT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764185AbYBOKp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932909AbYBOKkT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:40:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbYBOKkG
+	id S1764185AbYBOKp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:45:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757784AbYBOKpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:40:06 -0500
-Received: from sacred.ru ([62.205.161.221]:46433 "EHLO sacred.ru"
+	Fri, 15 Feb 2008 05:45:21 -0500
+Received: from hel.is.scarlet.be ([193.74.71.26]:36012 "EHLO hel.is.scarlet.be"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758591AbYBOKkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:40:00 -0500
-Message-ID: <47B56BF2.4020600@openvz.org>
-Date: Fri, 15 Feb 2008 13:39:46 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1756326AbYBOKpU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 05:45:20 -0500
+Date: Fri, 15 Feb 2008 11:44:52 +0100
+Message-Id: <JWA0IS$52EB33BDF46A1EBD2B77B8DCB8FC63DF@scarlet.be>
+Subject: Re: parisc compile error
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Al Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: [PATCH] Make sysctl a separate filesystem
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 15 Feb 2008 13:39:39 +0300 (MSK)
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "rubisher" <rubisher@scarlet.be>
+To: "kyle" <kyle@mcmartin.ca>
+Cc: "kyle" <kyle@mcmartin.ca>, "clameter" <clameter@sgi.com>,
+       "bunk" <bunk@kernel.org>, "kyle" <kyle@parisc-linux.org>,
+       "matthew" <matthew@wil.cx>, "grundler" <grundler@parisc-linux.org>,
+       "linux-parisc" <linux-parisc@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "rubisher" <rubisher@scarlet.be>
+X-XaM3-API-Version: 4.1 (B54)
+X-type: 0
+X-SenderIP: 57.67.177.33
+X-DCC-scarlet.be-Metrics: hel; whitelist
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sysctl files/inodes now have their own readdir and lookup
-methods, so there is one step left in turning this into a 
-separate filesystem.
+> On Wed, Feb 13, 2008 at 01:42:10PM +0100, rubisher wrote:
+> >     - some lake of changes of kset to kobj:
+> 
+> thanks, i don't build this driver, somehow it made its way out of my
+> configs. patch looks correct though. applied.
+> 
+Cool ;-)
 
-The benefits of this are:
+Btw, it boot fine to me on b2k and d380 running all up 32bit kernels ;-)
 
-1. this will allow to remove a fancy revalidation rules from
-   sysctl dentries (will be in a separate patch);
-2. the same approach will make /proc/net implementation MUCH
-   cleaner in respect to net namespaces interaction, i.e.
-   no racy shadows and no revalidation for proc entries in 
-   this subdir;
-3. sysctl inodes are now smaller than the procfs ones.
-
-Note: update your initscripts to mount sysctl filesystem 
-right after the proc is mounted in order not to lose your
-/etc/sysctl.conf configuration (and optionally fstab).
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
-
+Cheers,
+    r.
 ---
-
-diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-index 1c81c8f..47dec4b 100644
---- a/fs/proc/internal.h
-+++ b/fs/proc/internal.h
-@@ -11,11 +11,6 @@
- 
- #include <linux/proc_fs.h>
- 
--#ifdef CONFIG_PROC_SYSCTL
--extern int proc_sys_init(void);
--#else
--static inline void proc_sys_init(void) { }
--#endif
- #ifdef CONFIG_NET
- extern int proc_net_init(void);
- #else
-diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
-index 614c34b..1b52f43 100644
---- a/fs/proc/proc_sysctl.c
-+++ b/fs/proc/proc_sysctl.c
-@@ -1,11 +1,9 @@
- /*
-  * /proc/sys support
-  */
--
-+#include <linux/magic.h>
- #include <linux/sysctl.h>
--#include <linux/proc_fs.h>
- #include <linux/security.h>
--#include "internal.h"
- 
- static struct dentry_operations proc_sys_dentry_operations;
- static const struct file_operations proc_sys_file_operations;
-@@ -28,22 +26,26 @@ static void proc_sys_refresh_inode(struct inode *inode, struct ctl_table *table)
- 	}
- }
- 
-+static inline long inode_depth(struct inode *ino)
-+{
-+	return (long)ino->i_private;
-+}
-+
-+static inline void set_inode_depth(struct inode *ino, long depth)
-+{
-+	ino->i_private = (void *)depth;
-+}
-+
- static struct inode *proc_sys_make_inode(struct inode *dir, struct ctl_table *table)
- {
- 	struct inode *inode;
--	struct proc_inode *dir_ei, *ei;
--	int depth;
- 
- 	inode = new_inode(dir->i_sb);
- 	if (!inode)
- 		goto out;
- 
- 	/* A directory is always one deeper than it's parent */
--	dir_ei = PROC_I(dir);
--	depth = dir_ei->fd + 1;
--
--	ei = PROC_I(inode);
--	ei->fd = depth;
-+	set_inode_depth(inode, inode_depth(dir) + 1);
- 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
- 	inode->i_op = &proc_sys_inode_operations;
- 	inode->i_fop = &proc_sys_file_operations;
-@@ -56,10 +58,7 @@ out:
- static struct dentry *proc_sys_ancestor(struct dentry *dentry, int depth)
- {
- 	for (;;) {
--		struct proc_inode *ei;
--
--		ei = PROC_I(dentry->d_inode);
--		if (ei->fd == depth)
-+		if (inode_depth(dentry->d_inode) == depth)
- 			break; /* found */
- 
- 		dentry = dentry->d_parent;
-@@ -93,12 +92,9 @@ static struct ctl_table *proc_sys_lookup_table(struct dentry *dentry,
- 						struct ctl_table *table)
- {
- 	struct dentry *ancestor;
--	struct proc_inode *ei;
- 	int depth, i;
- 
--	ei = PROC_I(dentry->d_inode);
--	depth = ei->fd;
--
-+	depth = inode_depth(dentry->d_inode);
- 	if (depth == 0)
- 		return table;
- 
-@@ -385,7 +381,7 @@ static int proc_sys_permission(struct inode *inode, int mask, struct nameidata *
- 	int error;
- 
- 	head = NULL;
--	depth = PROC_I(inode)->fd;
-+	depth = inode_depth(inode);
- 
- 	/* First check the cached permissions, in case we don't have
- 	 * enough information to lookup the sysctl table entry.
-@@ -466,13 +462,56 @@ static struct dentry_operations proc_sys_dentry_operations = {
- 	.d_revalidate	= proc_sys_revalidate,
- };
- 
--static struct proc_dir_entry *proc_sys_root;
-+static const struct super_operations sysctl_ops = {
-+	.statfs		= simple_statfs,
-+	.drop_inode	= generic_delete_inode,
-+};
- 
--int proc_sys_init(void)
-+static int sysctl_fill_super(struct super_block *sb, void *data, int flags)
- {
--	proc_sys_root = proc_mkdir("sys", NULL);
--	proc_sys_root->proc_iops = &proc_sys_inode_operations;
--	proc_sys_root->proc_fops = &proc_sys_file_operations;
--	proc_sys_root->nlink = 0;
-+	struct inode *ino;
-+
-+	sb->s_flags |= MS_NODIRATIME | MS_NOSUID | MS_NOEXEC | MS_NODEV;
-+	sb->s_blocksize = 1024;
-+	sb->s_blocksize_bits = 10;
-+	sb->s_magic = PROC_SUPER_MAGIC;
-+	sb->s_op = &sysctl_ops;
-+	sb->s_time_gran = 1;
-+
-+	ino = new_inode(sb);
-+	if (ino == NULL)
-+		return -ENOMEM;
-+
-+	ino->i_op = &proc_sys_inode_operations;
-+	ino->i_fop = &proc_sys_file_operations;
-+	set_inode_depth(ino, 0);
-+	ino->i_uid = 0;
-+	ino->i_gid = 0;
-+	ino->i_mode = 0555 | S_IFDIR;
-+
-+	sb->s_root = d_alloc_root(ino);
-+	if (sb->s_root == NULL) {
-+		iput(ino);
-+		return -ENOMEM;
-+	}
-+
- 	return 0;
- }
-+
-+static int sysctl_get_sb(struct file_system_type *fs_type,
-+	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
-+{
-+	return get_sb_single(fs_type, flags, data, sysctl_fill_super, mnt);
-+}
-+
-+static struct file_system_type sysctl_fs = {
-+	.name = "sysctl",
-+	.get_sb = sysctl_get_sb,
-+	.kill_sb = kill_anon_super,
-+};
-+
-+static int __init proc_sys_init(void)
-+{
-+	return register_filesystem(&sysctl_fs);
-+}
-+module_init(proc_sys_init);
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index ef0fb57..9035938 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -129,6 +129,7 @@ void __init proc_root_init(void)
- 	proc_root_fs = proc_mkdir("fs", NULL);
- 	proc_root_driver = proc_mkdir("driver", NULL);
- 	proc_mkdir("fs/nfsd", NULL); /* somewhere for the nfsd filesystem to be mounted */
-+	proc_mkdir("sys", NULL);
- #if defined(CONFIG_SUN_OPENPROMFS) || defined(CONFIG_SUN_OPENPROMFS_MODULE)
- 	/* just give it a mountpoint */
- 	proc_mkdir("openprom", NULL);
-@@ -138,7 +139,6 @@ void __init proc_root_init(void)
- 	proc_device_tree_init();
- #endif
- 	proc_bus = proc_mkdir("bus", NULL);
--	proc_sys_init();
- }
- 
- static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat
+Scarlet One, ADSL 6 Mbps + Telephone, from EUR 29,95...
+http://www.scarlet.be/
 
