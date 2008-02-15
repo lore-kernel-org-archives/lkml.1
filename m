@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbYBOVTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbYBOVT4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbYBOVTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 16:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYBOVTN
+	id S1758028AbYBOVT4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 16:19:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759920AbYBOVTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 16:19:13 -0500
-Received: from ishtar.tlinx.org ([64.81.245.74]:57552 "EHLO ishtar.tlinx.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752069AbYBOVTM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 16:19:12 -0500
-Message-ID: <47B601CF.9070300@tlinx.org>
-Date: Fri, 15 Feb 2008 13:19:11 -0800
-From: Linda Walsh <lkml@tlinx.org>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: x86-32-config: why is pc-speaker an input device?
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 15 Feb 2008 16:19:46 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60969 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752551AbYBOVTp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 16:19:45 -0500
+Date: Fri, 15 Feb 2008 13:19:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: rathamahata@php4.ru, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] befs: fix sparse warning in linuxvfs.c
+Message-Id: <20080215131922.0d0dcb08.akpm@linux-foundation.org>
+In-Reply-To: <1203101164.15275.21.camel@brick>
+References: <1203101164.15275.21.camel@brick>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm wondering how the generic, builtin PC-Speaker (config option
-"INPUT_PCSPKR") can be used as an input device.
+On Fri, 15 Feb 2008 10:46:04 -0800
+Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-If it can not be used for input, why is it under the input config section:
+> Use link as the variable name to avoid shadowing the arg.
+> 
+> fs/befs/linuxvfs.c:492:8: warning: symbol 'p' shadows an earlier one
+> fs/befs/linuxvfs.c:488:77: originally declared here
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> This should be checked in case there is a latent bug here.  Should it
+> be the arg *p getting freed, or the local var *p that was shadowing
+> it?
+> 
 
-"Device Drivers"
-+ -> "Input Device Support"
-     + -> "Miscellaneous devices"
-         + -> "PC Speaker Support"
+The code looks OK - the name was allocated in befs_follow_link() and was
+saved away with nd_set_link().
 
-When booting, it is "enumerated" as an input device: (from dmesg)
-
-  input: PC Speaker as /devices/platform/pcspkr/input/input2
-
-Just trying to figure out the rationale behind the choice...
-
+> 
+> diff --git a/fs/befs/linuxvfs.c b/fs/befs/linuxvfs.c
+> index 82123ff..e8717de 100644
+> --- a/fs/befs/linuxvfs.c
+> +++ b/fs/befs/linuxvfs.c
+> @@ -489,9 +489,9 @@ static void befs_put_link(struct dentry *dentry, struct nameidata *nd, void *p)
+>  {
+>  	befs_inode_info *befs_ino = BEFS_I(dentry->d_inode);
+>  	if (befs_ino->i_flags & BEFS_LONG_SYMLINK) {
+> -		char *p = nd_get_link(nd);
+> -		if (!IS_ERR(p))
+> -			kfree(p);
+> +		char *link = nd_get_link(nd);
+> +		if (!IS_ERR(link))
+> +			kfree(link);
+>  	}
+>  }
+>  
+> -- 
+> 1.5.4.1.1278.gc75be
+> 
+> 
