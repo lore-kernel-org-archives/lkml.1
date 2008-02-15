@@ -1,46 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763865AbYBOVCC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932528AbYBOVCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763865AbYBOVCC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 16:02:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765132AbYBOVAu
+	id S932528AbYBOVCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 16:02:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755398AbYBOVBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 16:00:50 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52455 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761220AbYBOVAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 16:00:49 -0500
-To: jdike@addtoit.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080215204602.GA10036@c2.user-mode-linux.org> (message from
-	Jeff Dike on Fri, 15 Feb 2008 15:46:02 -0500)
-Subject: Re: 2.6.24-mm1 bugs
-References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu> <20080215184741.GB8810@c2.user-mode-linux.org> <E1JQ6bM-0005z4-Ac@pomaz-ex.szeredi.hu> <20080215204602.GA10036@c2.user-mode-linux.org>
-Message-Id: <E1JQ7fn-00069k-5F@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 15 Feb 2008 22:00:43 +0100
+	Fri, 15 Feb 2008 16:01:09 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:48659 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762942AbYBOVBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 16:01:06 -0500
+Date: Fri, 15 Feb 2008 16:00:57 -0500
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-ID: <20080215210057.GV26266@fieldses.org>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au> <1203028077.18860.29.camel@heimdal.trondhjem.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203028077.18860.29.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Feb 15, 2008 at 08:52:04PM +0100, Miklos Szeredi wrote:
-> > > What does it do?
+On Thu, Feb 14, 2008 at 05:27:57PM -0500, Trond Myklebust wrote:
+> 
+> On Fri, 2008-02-15 at 00:35 +1100, Stephen Rothwell wrote:
 > > 
-> > See below.
+> > Also, more trees please ... :-)
 > 
-> > [    0.420000] Checking host MADV_REMOVE support...<3>MADV_REMOVE failed, err = -38
+> Please add the 'linux-next' branch of
 > 
-> Where'd MADV_REMOVE go?  I have it on 2.6.24.
+>   git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git
 
-Oh, I always get this message.  Looking closer, this only works if
-/tmp is tmpfs.  Which isn't in most cases.
+And 'nfsd-next' at
 
-> > [    0.420000] Failed to get registers from stub, errno = 3
-> > [    0.420000] wait_stub_done : failed to wait for SIGTRAP, pid = 30073, n = 30073, errno = 0, status = 0x0
-> 
-> Is utrace in there, by any chance?  When I see crazy stuff like this,
-> I think utrace.
+	git://git.linux-nfs.org/~bfields/linux.git nfsd-next
 
-Nope.  Must be some other crazy stuff :)
-
-Miklos
+--b.
