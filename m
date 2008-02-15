@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbYBOHJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbYBOH0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbYBOHJM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 02:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762135AbYBOHI6
+	id S932591AbYBOH0H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 02:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763131AbYBOHZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 02:08:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59071 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761662AbYBOHI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 02:08:57 -0500
-Date: Fri, 15 Feb 2008 08:08:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: Andi Kleen <andi@firstfloor.org>, torvalds@osdl.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix left over EFI cache mapping problems
-Message-ID: <20080215070843.GA6975@elte.hu>
-References: <20080214131317.GA27769@basil.nowhere.org> <20080214161218.GA28152@elte.hu> <1203050886.30010.19.camel@caritas-dev.intel.com>
+	Fri, 15 Feb 2008 02:25:54 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56789 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756434AbYBOHZx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 02:25:53 -0500
+Date: Thu, 14 Feb 2008 23:17:47 -0800
+From: Greg KH <greg@kroah.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Andreas Jaeger <aj@suse.de>, muli@il.ibm.com, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       jdmason@kudzu.us, linux-pci@atrey.karlin.mff.cuni.cz,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [discuss] pci_get_device_reverse(), why does Calgary need this?
+Message-ID: <20080215071747.GB9022@kroah.com>
+References: <20080213001506.GA13933@kroah.com> <20080213181655.GB8960@kroah.com> <ho3arwq8w7.fsf@reger.suse.de> <200802141311.43103.bzolnier@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1203050886.30010.19.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200802141311.43103.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Huang, Ying <ying.huang@intel.com> wrote:
-
-> On Thu, 2008-02-14 at 17:12 +0100, Ingo Molnar wrote: 
-> > this is indeed a bug (we change the attributes for a larger area than 
-> > needed), but your fix is unclean. Find below a cleaner solution.
+On Thu, Feb 14, 2008 at 01:11:42PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On Thursday 14 February 2008, Andreas Jaeger wrote:
+> > Greg KH <greg@kroah.com> writes:
 > > 
-> > Ying, if you agree with this fix could you please test and ACK it before 
-> > we push it to Linus? (this fix is also in the latest x86.git#mm)
+> > > How does the patch below look?  I didn't want to remove the whole config
+> > > option, as there is more to the logic than just the "reverse order"
+> > > stuff there.
+> > 
+> > I think you miss Documentation - it's mentioned in ide.txt and
+> > kernel-parameters.txt,
 > 
-> I think the patch following may be better, because it is possible that 
-> the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
+> + drivers/ide/Kconfig
+> 
+> Greg, please update the patch (and add my S-o-B while at it).
 
-right now, EFI page size is 4096:
+Will do.  Andreas, thanks for pointing that out.
 
-  include/linux/efi.h:#define EFI_PAGE_SHIFT          12
-
-i doubt we'll ever change PAGE_SIZE on x86 - ia64's variable lowlevel 
-pagesizes are not particularly useful IMO. I think we'll at most have 
-some generic kernel feature that allows a larger PAGE_CACHE_SHIFT - but 
-on the lowlevel MMU level we'll always stay at 4K.
-
-and i doubt EFI_PAGE_SHIFT would want to (ever) go away from 12 either. 
-
-So perhaps, at least as far as arch/x86/kernel/efi*.c files go, it would 
-be cleaner to just replace EFI_PAGE_SHIFT with PAGE_SHIFT and 
-EFI_PAGE_SIZE with PAGE_SIZE?
-
-	Ingo
+greg k-h
