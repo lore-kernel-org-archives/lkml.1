@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbYBOXJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752725AbYBOXKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760745AbYBOXJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 18:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751028AbYBOXJU
+	id S1752725AbYBOXKQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 18:10:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbYBOXJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 18:09:20 -0500
-Received: from testure.choralone.org ([194.9.77.134]:45885 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750984AbYBOXJT (ORCPT
+	Fri, 15 Feb 2008 18:09:56 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:29991 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbYBOXJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 18:09:19 -0500
-Date: Fri, 15 Feb 2008 18:09:10 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Petr =?utf-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: e_powersaver.c
-Message-ID: <20080215230910.GC9132@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Petr =?utf-8?Q?Tit=C4=9Bra?= <P.Titera@century.cz>,
-	linux-kernel@vger.kernel.org
-References: <47B5E61F.3030603@century.cz>
+	Fri, 15 Feb 2008 18:09:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=sKHsk3jQmiXGH2ZrVkURXoKof0rD4U8AePfkY5go6tBfncxMWFY5pgKYulgclceC9xswS+P17+AMuc74/wTBrfriRYLfwT/zlmydZIGkwyrVoOUqTfSRpSMrbyqE+hilBemA6AYMWOvJTUxM3z9MSb5syOK9gp4aGzYultcJwC8=
+Date: Sat, 16 Feb 2008 01:07:22 +0200
+To: Andreas Schwab <schwab@suse.de>
+Cc: libc-alpha@sourceware.org, libc-alpha@sources.redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Linux i386 clone(): %ebx 'frobbing' ?
+Message-ID: <20080215230722.GA8012@ubuntu>
+References: <20080215184228.GA6687@ubuntu> <jewsp69e5t.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47B5E61F.3030603@century.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <jewsp69e5t.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 08:21:03PM +0100, Petr Titěra wrote:
- > Hello,
- > 
- >     is there some reason for printing current voltage and multiplier of 
- > processor after each change? This change was added by commit 553ae38c. 
- > If this required for some reason can be this output changed to use 
- > KERN_DEBUG level?
+Hi Andreas,
 
-I think that's just leftover debugging cruft, I'll remove it.
+On Fri, Feb 15, 2008, Andreas Schwab wrote:
+> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
+> 
+> > I don't understand how the `fn' argument reached the child thread
+> > in the %ebx register. It's said in the comment that `fn' will be
+> > popped to child 'in the ebx frobbing below'. But what does that mean ?
+> 
+> See "popl %ebx" after "int $0x80".
+> 
 
-Thanks,
+I hope I'm not misreading something obvious, but I can't find
+the code where FUNC(%esp) is stored in %ebx before %ebx value
+got pushed in the stack (and restored in above 'popl' statement).
 
-	Dave 
+Thanks a lot for help.
 
 -- 
-http://www.codemonkey.org.uk
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
