@@ -1,29 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757615AbYBOJ0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbYBOJ0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757615AbYBOJ0C (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:26:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbYBOJZQ
+	id S1755464AbYBOJ0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 04:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbYBOJZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:25:16 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58376 "EHLO
+	Fri, 15 Feb 2008 04:25:18 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58377 "EHLO
 	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755048AbYBOJZJ (ORCPT
+	with ESMTP id S1755117AbYBOJZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 04:25:09 -0500
-Date: Fri, 15 Feb 2008 01:28:41 -0800
+Date: Fri, 15 Feb 2008 01:30:14 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 2/5] x86: clear pci_mmcfg_virt when mmcfg get rejected
-In-reply-to: <200802150127.21247.yinghai.lu@sun.com>
+Subject: [PATCH 3/5] x86: mmconf enable mcfg early
+In-reply-to: <200802150128.41638.yinghai.lu@sun.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802150128.41638.yinghai.lu@sun.com>
+Message-id: <200802150130.14915.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
 Content-transfer-encoding: 7BIT
 Content-disposition: inline
 References: <200802150127.21247.yinghai.lu@sun.com>
+ <200802150128.41638.yinghai.lu@sun.com>
 User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,8 +32,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
 
-For x86_64, need to free pci_mmcfg_virt, and iounmap some pointers
-when MMCONF is not reserved in E820 or acpi _CRS and get rejected
+Patch
+	x86: validate against ACPI motherboard resources
+
+changed the mmconf init sequence, and init MMCONF late in acpi_init.
+
+here change it back to old sequence
+1. check hostbridge in early
+2. check MCFG with e820 in early
+3. if all fail, will check MCFg with acpi _CRS in acpi_init
+
+So we can make MCONF working again when acpi=off is set if hostbridge support
+that.
 
 Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 Cc: Greg KH <greg@kroah.com>
@@ -42,88 +53,167 @@ Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/x86/pci/mmconfig-shared.c |    1 +
- arch/x86/pci/mmconfig_32.c     |    4 ++++
- arch/x86/pci/mmconfig_64.c     |   22 +++++++++++++++++++++-
- arch/x86/pci/pci.h             |    1 +
- 4 files changed, 27 insertions(+), 1 deletion(-)
+ arch/x86/pci/mmconfig-shared.c |  106 +++++++++++++++++--------------
+ 1 file changed, 61 insertions(+), 45 deletions(-)
 
 Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
 +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-@@ -300,6 +300,7 @@ static void __init pci_mmcfg_reject_brok
+@@ -241,7 +241,7 @@ static int __init is_acpi_reserved(unsig
+ 	return mcfg_res.flags;
+ }
  
- reject:
- 	printk(KERN_ERR "PCI: Not using MMCONFIG.\n");
-+	pci_mmcfg_arch_free();
- 	kfree(pci_mmcfg_config);
- 	pci_mmcfg_config = NULL;
- 	pci_mmcfg_config_num = 0;
-Index: linux-2.6/arch/x86/pci/mmconfig_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig_32.c
-+++ linux-2.6/arch/x86/pci/mmconfig_32.c
-@@ -136,3 +136,7 @@ int __init pci_mmcfg_arch_init(void)
- 	raw_pci_ext_ops = &pci_mmcfg;
- 	return 1;
- }
-+
-+void __init pci_mmcfg_arch_free(void)
-+{
-+}
-Index: linux-2.6/arch/x86/pci/mmconfig_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig_64.c
-+++ linux-2.6/arch/x86/pci/mmconfig_64.c
-@@ -127,7 +127,7 @@ static void __iomem * __init mcfg_iorema
- int __init pci_mmcfg_arch_init(void)
+-static void __init pci_mmcfg_reject_broken(void)
++static void __init pci_mmcfg_reject_broken(int type, int early)
  {
+ 	typeof(pci_mmcfg_config[0]) *cfg;
  	int i;
--	pci_mmcfg_virt = kmalloc(sizeof(*pci_mmcfg_virt) *
-+	pci_mmcfg_virt = kzalloc(sizeof(*pci_mmcfg_virt) *
- 				 pci_mmcfg_config_num, GFP_KERNEL);
- 	if (pci_mmcfg_virt == NULL) {
- 		printk(KERN_ERR "PCI: Can not allocate memory for mmconfig structures\n");
-@@ -141,9 +141,29 @@ int __init pci_mmcfg_arch_init(void)
- 			printk(KERN_ERR "PCI: Cannot map mmconfig aperture for "
- 					"segment %d\n",
- 				pci_mmcfg_config[i].pci_segment);
-+			pci_mmcfg_arch_free();
- 			return 0;
- 		}
+@@ -266,34 +266,43 @@ static void __init pci_mmcfg_reject_brok
  	}
- 	raw_pci_ext_ops = &pci_mmcfg;
- 	return 1;
- }
+ 
+ 	for (i = 0; i < pci_mmcfg_config_num; i++) {
++		int valid = 0;
+ 		u32 size = (cfg->end_bus_number + 1) << 20;
+ 		cfg = &pci_mmcfg_config[i];
+-		printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lu "
++		printk(KERN_NOTICE "PCI: MCFG configuration %d: base %lx "
+ 		       "segment %hu buses %u - %u\n",
+ 		       i, (unsigned long)cfg->address, cfg->pci_segment,
+ 		       (unsigned int)cfg->start_bus_number,
+ 		       (unsigned int)cfg->end_bus_number);
+-		if (is_acpi_reserved(cfg->address, cfg->address + size - 1)) {
 +
-+void __init pci_mmcfg_arch_free(void)
-+{
-+	int i;
-+
-+	if (pci_mmcfg_virt == NULL)
-+		return;
-+
-+	for (i = 0; i < pci_mmcfg_config_num; ++i) {
-+		if (pci_mmcfg_virt[i].virt) {
-+			iounmap(pci_mmcfg_virt[i].virt);
-+			pci_mmcfg_virt[i].virt = NULL;
-+			pci_mmcfg_virt[i].cfg = NULL;
++		if (!early &&
++		    is_acpi_reserved(cfg->address, cfg->address + size - 1)) {
+ 			printk(KERN_NOTICE "PCI: MCFG area at %Lx reserved "
+ 			       "in ACPI motherboard resources\n",
+ 			       cfg->address);
+-		} else {
++			valid = 1;
 +		}
++
++		if (valid)
++			continue;
++
++		if (!early)
+ 			printk(KERN_ERR "PCI: BIOS Bug: MCFG area at %Lx is not"
+ 			       " reserved in ACPI motherboard resources\n",
+ 			       cfg->address);
+-			/* Don't try to do this check unless configuration
+-			   type 1 is available. */
+-			if ((pci_probe & PCI_PROBE_CONF1) &&
+-			    e820_all_mapped(cfg->address,
+-					    cfg->address + size - 1,
+-					    E820_RESERVED))
+-				printk(KERN_NOTICE
+-				       "PCI: MCFG area at %Lx reserved in "
+-				       "E820\n",
+-				       cfg->address);
+-			else
+-				goto reject;
++		/* Don't try to do this check unless configuration
++		   type 1 is available. */
++		if (type == 1 && e820_all_mapped(cfg->address,
++						  cfg->address + size - 1,
++						  E820_RESERVED)) {
++			printk(KERN_NOTICE
++			       "PCI: MCFG area at %Lx reserved in E820\n",
++			       cfg->address);
++			valid = 1;
+ 		}
++
++		if (!valid)
++			goto reject;
+ 	}
+ 
+ 	return;
+@@ -306,46 +315,36 @@ reject:
+ 	pci_mmcfg_config_num = 0;
+ }
+ 
+-void __init pci_mmcfg_early_init(int type)
+-{
+-	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
+-		return;
+-
+-	/* If type 1 access is available, no need to enable MMCONFIG yet, we can
+-	   defer until later when the ACPI interpreter is available to better
+-	   validate things. */
+-	if (type == 1)
+-		return;
+-
+-	acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
+-
+-	if ((pci_mmcfg_config_num == 0) ||
+-	    (pci_mmcfg_config == NULL) ||
+-	    (pci_mmcfg_config[0].address == 0))
+-		return;
++static int __initdata known_bridge;
+ 
+-	if (pci_mmcfg_arch_init())
+-		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
+-}
+-
+-void __init pci_mmcfg_late_init(void)
++void __init __pci_mmcfg_init(int type, int early)
+ {
+-	int known_bridge = 0;
+-
+ 	/* MMCONFIG disabled */
+ 	if ((pci_probe & PCI_PROBE_MMCONF) == 0)
+ 		return;
+ 
+ 	/* MMCONFIG already enabled */
+-	if (!(pci_probe & PCI_PROBE_MASK & ~PCI_PROBE_MMCONF))
++	if (!early && !(pci_probe & PCI_PROBE_MASK & ~PCI_PROBE_MMCONF))
+ 		return;
+ 
+-	if ((pci_probe & PCI_PROBE_CONF1) && pci_mmcfg_check_hostbridge())
+-		known_bridge = 1;
+-	else
+-		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
++	/* for late to exit */
++	if (known_bridge)
++		return;
+ 
+-	pci_mmcfg_reject_broken();
++	if (early && type == 1) {
++		if (pci_mmcfg_check_hostbridge())
++			known_bridge = 1;
++#if 0
++	/* check e820 in late? */
++		else
++			return;
++#endif
 +	}
 +
-+	kfree(pci_mmcfg_virt);
-+	pci_mmcfg_virt = NULL;
++	if (!known_bridge) {
++		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
++		pci_mmcfg_reject_broken(type, early);
++	}
+ 
+ 	if ((pci_mmcfg_config_num == 0) ||
+ 	    (pci_mmcfg_config == NULL) ||
+@@ -365,6 +364,21 @@ void __init pci_mmcfg_late_init(void)
+ 	}
+ }
+ 
++void __init pci_mmcfg_early_init(int type)
++{
++	__pci_mmcfg_init(type, 1);
 +}
-Index: linux-2.6/arch/x86/pci/pci.h
-===================================================================
---- linux-2.6.orig/arch/x86/pci/pci.h
-+++ linux-2.6/arch/x86/pci/pci.h
-@@ -105,6 +105,7 @@ extern void pcibios_sort(void);
- /* pci-mmconfig.c */
- 
- extern int __init pci_mmcfg_arch_init(void);
-+extern void __init pci_mmcfg_arch_free(void);
- 
- /*
-  * AMD Fam10h CPUs are buggy, and cannot access MMIO config space
++
++void __init pci_mmcfg_late_init(void)
++{
++	int type = 0;
++
++	if (pci_probe & PCI_PROBE_CONF1)
++		type = 1;
++
++	__pci_mmcfg_init(type, 0);
++}
++
+ static int __init pci_mmcfg_late_insert_resources(void)
+ {
+ 	/*
