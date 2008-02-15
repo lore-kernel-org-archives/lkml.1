@@ -1,55 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYBONIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbYBONKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbYBONIH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 08:08:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYBONH4
+	id S1761215AbYBONKn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 08:10:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYBONKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 08:07:56 -0500
-Received: from hobbit.corpit.ru ([81.13.94.6]:22084 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750995AbYBONH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 08:07:56 -0500
-Message-ID: <47B58EAA.8040405@msgid.tls.msk.ru>
-Date: Fri, 15 Feb 2008 16:07:54 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Implement barrier support for single device DM devices
-References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com>
-In-Reply-To: <20080215122002.GM29914@agk.fab.redhat.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Feb 2008 08:10:36 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56739 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752028AbYBONKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 08:10:35 -0500
+Date: Fri, 15 Feb 2008 13:02:44 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Dan Gora" <dan.gora@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: PCI Bursting with PIO
+Message-ID: <20080215130244.780285cf@core>
+In-Reply-To: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
+References: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alasdair G Kergon wrote:
-> On Fri, Feb 15, 2008 at 01:08:21PM +0100, Andi Kleen wrote:
->> Implement barrier support for single device DM devices
->  
-> Thanks.  We've got some (more-invasive) dm patches in the works that
-> attempt to use flushing to emulate barriers where we can't just
-> pass them down like that.
+> Is there any way to get PIO to burst over the PCI bus in the read and
+> write direction?  My device has 4 BAR registers, but the area where I
 
-I wonder if it's worth the effort to try to implement this.
+I think you are doign about as well as the X folks did when they spent
+time on trying to optimise pio transfers to and from graphics card RAM.
 
-As far as I understand (*), if a filesystem realizes that the
-underlying block device does not support barriers, it will
-switch to using regular flushes instead - isn't it the same
-thing as you're trying to do on an MD level?
+> Any ideas would be really appreciated,
 
-Note that a filesystem must understand barriers/flushes on
-underlying block device, since many disk drives don't support
-barriers anyway.
+Put a DMA controller on it ;)
 
-(*) this is, in fact, an interesting question.  I still can't
-find complete information about this.  For example, how safe
-xfs is if barriers are not supported or turned off?  Is it
-"less safe" than with barriers?  Will it use regular cache
-flushes if barriers are not here?  Ditto for ext3fs, but
-here, barriers are not enabled by default.
-
-/mjt
+Alan
