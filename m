@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759617AbYBOTR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYBOTTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759617AbYBOTR6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:17:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYBOTRs
+	id S1761479AbYBOTTN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:19:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYBOTS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:17:48 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:23208 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbYBOTRq (ORCPT
+	Fri, 15 Feb 2008 14:18:59 -0500
+Received: from rv-out-0910.google.com ([209.85.198.187]:56751 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755283AbYBOTS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:17:46 -0500
+	Fri, 15 Feb 2008 14:18:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
-        b=ipUVC+g7f4cADjOkpUTFrryqzjzcYzpxw+83HiXI8/z7fl5VUk7u2kV/JFMk+rQrU7YiOQwzhSpHijrQhsAHI5agiU3X7Kol6bgFqmxlyhKXDWCyej1PMrEtuAzLC5WPNzRje/R15zrsoJsznHe3GfM71KT/3C2cnOg+g+c/+L0=
-Message-ID: <e9c3a7c20802151117i4e8a3f1bq7be1e94433702fbf@mail.gmail.com>
-Date: Fri, 15 Feb 2008 12:17:43 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: "Laurent CORBES" <laurent.corbes@smartjog.com>
-Subject: Re: [BUG] OOPS 2.6.24.2 raid5 write with ioatdma
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Shannon Nelson" <shannon.nelson@intel.com>, maciej.sosnowski@intel.com
-In-Reply-To: <20080215171905.2e5c6bee@smartjog.com>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KVUMGOIFFYRrWUnALuYVXjvcvdu3AtHkQSP+kSTJZwBrisfnaN4ljGMifSsS2hX6oMQSXK+PjHSdtRtthI8UX1Iq0I7yRq6aNLlZ9UeUHDIz6/5NI6DCXSUUc0P0k4kGzHtIyjss0A3stE2TpwktQlYgIMLWyhXlrgyWAbzaEVY=
+Message-ID: <19f34abd0802151118k142439e9nc47ea1f7a359fe0f@mail.gmail.com>
+Date: Fri, 15 Feb 2008 20:18:54 +0100
+From: "Vegard Nossum" <vegard.nossum@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH 4/4] kmemcheck v4
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "Richard Knutsson" <ricknu-0@student.ltu.se>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <20080214214907.GC19473@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_4752_2546834.1203103063267"
-References: <20080215171905.2e5c6bee@smartjog.com>
-X-Google-Sender-Auth: cf1b2cc0e5ea1b7c
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47B49DB2.2090402@gmail.com> <47B49E71.4040900@gmail.com>
+	 <20080214214907.GC19473@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_4752_2546834.1203103063267
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, Feb 14, 2008 at 10:49 PM, Andi Kleen <andi@firstfloor.org> wrote:
+>  The ifdefs are quite ugly. I would recommend to define standard
+>  functions (kmemcheck_init_zero or similar and an own __GFP flag) that can
+>  be used without ifdef and easily nop'ed out on !KMEMCHECK kernels.
 
-On Fri, Feb 15, 2008 at 9:19 AM, Laurent CORBES
-<laurent.corbes@smartjog.com> wrote:
-> Hi all,
->
->  I got a raid5 oops when trying to write on a raid 5 array, with ioatdma loaded
->  and without DCA activated in bios:
->
+Yes, they are. We do in fact have a flag for this purpose,
+__GFP_NOTRACK (or SLAB_NOTRACK for entire slab caches). I have now
+changed some of the hunks to use this method instead of ifdefs. Thanks
+for pointing this out.
 
-At first glance I believe the attached patch may fix the issue, I'll
-try to reproduce this locally.
+Also note that this patch is not meant to be a part of kmemcheck
+itself; it simply silences some of the (some bogus) warnings.
+Preferably, each one of these call-sites should be carefully audited
+and "fixed" independently of kmemcheck itself. In fact, the patch
+should probably be split, one for the bogus warnings (where the
+bogus-warning fixes are no-ops if kmemcheck is disabled), and the real
+errors in their own patches.
 
-Regards,
-Dan
+There is currently a huge problem with bit-fields. When bit-fields are
+initialized, gcc may use the AND/OR instructions to initialize one
+field at a time (depending on what the C code looks like, of course).
+This is seen by kmemcheck as 1. full 8/16/32-bit read 2. full
+8/16/32-bit write. Therefore the first initialization of (access to) a
+bit-field variable will generally cause a warning from kmemcheck. And
+this is perfectly legal from the compiler point of view.
 
-------=_Part_4752_2546834.1203103063267
-Content-Type: text/x-patch; name=ioat-init-ack.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fcp4ebul0
-Content-Disposition: attachment; filename=ioat-init-ack.patch
+Ingo's approach so far has been to initialize all the bit-field
+variables at once. This is probably what the author of the original
+code wants to do anyway, though not in all cases. I admit that I am
+not confident enough with kernel code myself to decide what the
+appropriate fix would be in most cases of kmemcheck warnings.
+Therefore, take this last patch with a grain of salt (for now).
 
-aW9hdDogZml4ICdhY2snIGhhbmRsaW5nLCBkcml2ZXIgbXVzdCBlbnN1cmUgdGhhdCAnYWNrJyBp
-cyB6ZXJvCgpGcm9tOiBEYW4gV2lsbGlhbXMgPGRhbi5qLndpbGxpYW1zQGludGVsLmNvbT4KCklu
-aXRpYWxpemUgJ2FjaycgdG8gemVybyBpbiBjYXNlIHRoZSBkZXNjcmlwdG9yIGhhcyBiZWVuIHJl
-Y3ljbGVkLgoKU2lnbmVkLW9mZi1ieTogRGFuIFdpbGxpYW1zIDxkYW4uai53aWxsaWFtc0BpbnRl
-bC5jb20+Ci0tLQoKIGRyaXZlcnMvZG1hL2lvYXRfZG1hLmMgfCAgICAyICsrCiAxIGZpbGVzIGNo
-YW5nZWQsIDIgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkKCgpkaWZmIC0tZ2l0IGEvZHJp
-dmVycy9kbWEvaW9hdF9kbWEuYyBiL2RyaXZlcnMvZG1hL2lvYXRfZG1hLmMKaW5kZXggNDVlN2I0
-Ni4uOGNmNTQyYiAxMDA2NDQKLS0tIGEvZHJpdmVycy9kbWEvaW9hdF9kbWEuYworKysgYi9kcml2
-ZXJzL2RtYS9pb2F0X2RtYS5jCkBAIC03MjYsNiArNzI2LDcgQEAgc3RhdGljIHN0cnVjdCBkbWFf
-YXN5bmNfdHhfZGVzY3JpcHRvciAqaW9hdDFfZG1hX3ByZXBfbWVtY3B5KAogCiAJaWYgKG5ldykg
-ewogCQluZXctPmxlbiA9IGxlbjsKKwkJbmV3LT5hc3luY190eC5hY2sgPSAwOwogCQlyZXR1cm4g
-Jm5ldy0+YXN5bmNfdHg7CiAJfSBlbHNlCiAJCXJldHVybiBOVUxMOwpAQCAtNzQ5LDYgKzc1MCw3
-IEBAIHN0YXRpYyBzdHJ1Y3QgZG1hX2FzeW5jX3R4X2Rlc2NyaXB0b3IgKmlvYXQyX2RtYV9wcmVw
-X21lbWNweSgKIAogCWlmIChuZXcpIHsKIAkJbmV3LT5sZW4gPSBsZW47CisJCW5ldy0+YXN5bmNf
-dHguYWNrID0gMDsKIAkJcmV0dXJuICZuZXctPmFzeW5jX3R4OwogCX0gZWxzZQogCQlyZXR1cm4g
-TlVMTDsK
-------=_Part_4752_2546834.1203103063267--
+Thank you.
+
+
+Vegard
