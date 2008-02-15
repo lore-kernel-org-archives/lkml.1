@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYBOAnO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbYBOAnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbYBOAnO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:43:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758838AbYBOAmR
+	id S934331AbYBOAnj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934260AbYBOAmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 19:42:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37040 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754824AbYBOAmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:42:16 -0500
-Date: Thu, 14 Feb 2008 16:39:09 -0800
-From: Greg KH <greg@kroah.com>
-To: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: [RFC] PCI: remove the "shadow" device list
-Message-ID: <20080215003909.GA27981@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 14 Feb 2008 19:42:22 -0500
+Received: from ns2.suse.de ([195.135.220.15]:54040 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764558AbYBOAmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 19:42:20 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH 03/12] IDE: remove ide=reverse IDE core
+Date: Thu, 14 Feb 2008 16:40:01 -0800
+Message-Id: <1203036010-27988-3-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <20080215003909.GA27981@kroah.com>
+References: <20080215003909.GA27981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a series of 12 patches that I've added to my quilt tree for
-2.6.26 that delete the "shadow" PCI device tree.  There is no real need
-to keep two lists of all PCI devices in the kernel, the driver core
-should be able to properly handle all of this.
+This option is obsolete and can be removed safely.
 
-We do keep the bus list of devices, as that is still useful for a lot of
-things, and I don't see any obviously easy way to clean that up at the
-moment.
+It allows us to remove the pci_get_device_reverse() function from the
+PCI core.
 
-Overall, the patch ends up deleting a lot of code, which is always a
-good thing.
 
-Comments are appreciated.
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/ide/ide-scan-pci.c |    9 ++-------
+ drivers/ide/ide.c          |   12 ------------
+ include/linux/ide.h        |    1 -
+ 3 files changed, 2 insertions(+), 20 deletions(-)
 
-thanks,
-
-greg k-h
-
-----------------------
-
- Documentation/kernel-parameters.txt        |    4 -
- arch/frv/mb93090-mb00/pci-frv.h            |    2 -
- arch/frv/mb93090-mb00/pci-vdk.c            |   53 -----
- arch/mn10300/unit-asb2305/pci-asb2305.h    |    2 -
- arch/powerpc/platforms/pseries/pci_dlpar.c |    7 +-
- arch/sh/drivers/pci/pci-sh4.h              |    2 -
- arch/x86/kernel/pci-calgary_64.c           |    3 +-
- arch/x86/pci/common.c                      |   61 ------
- arch/x86/pci/pcbios.c                      |   72 -------
- arch/x86/pci/pci.h                         |    3 -
- drivers/ide/ide-scan-pci.c                 |    9 +-
- drivers/ide/ide.c                          |   12 -
- drivers/pci/bus.c                          |   15 +-
- drivers/pci/hotplug/Kconfig                |    4 +-
- drivers/pci/hotplug/cpcihp_generic.c       |    8 +-
- drivers/pci/probe.c                        |   56 ++----
- drivers/pci/remove.c                       |   10 +-
- drivers/pci/search.c                       |  313 +++++++++++-----------------
- include/asm-sh/mpc1211/pci.h               |    2 -
- include/linux/ide.h                        |    1 -
- include/linux/pci.h                        |   20 +--
- 21 files changed, 159 insertions(+), 500 deletions(-)
-
----------------
-
-Greg Kroah-Hartman (12):
-      PCI: remove pci_find_present
-      PCI: remove pci_get_device_reverse from calgary driver
-      IDE: remove ide=reverse IDE core
-      PCI: remove pci_get_device_reverse
-      PCI: clean up search.c a lot
-      PCI Hotplug: make cpcihp driver use modern apis
-      PCI Hotplug: the ibm driver is not dependant on PCI_LEGACY
-      PCI: remove initial bios sort of PCI devices on x86
-      PCI: make no_pci_devices() use the pci_bus_type list
-      PCI: add is_added flag to struct pci_dev
-      PCI: remove pcibious_fixup_ghosts()
-      PCI: remove global list of PCI devices
+diff --git a/drivers/ide/ide-scan-pci.c b/drivers/ide/ide-scan-pci.c
+index 93d2e41..98888da 100644
+--- a/drivers/ide/ide-scan-pci.c
++++ b/drivers/ide/ide-scan-pci.c
+@@ -88,13 +88,8 @@ static int __init ide_scan_pcibus(void)
+ 	struct list_head *l, *n;
+ 
+ 	pre_init = 0;
+-	if (!ide_scan_direction)
+-		while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)))
+-			ide_scan_pcidev(dev);
+-	else
+-		while ((dev = pci_get_device_reverse(PCI_ANY_ID, PCI_ANY_ID,
+-						     dev)))
+-			ide_scan_pcidev(dev);
++	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)))
++		ide_scan_pcidev(dev);
+ 
+ 	/*
+ 	 *	Hand the drivers over to the PCI layer now we
+diff --git a/drivers/ide/ide.c b/drivers/ide/ide.c
+index 4a8952a..eed7ead 100644
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -90,10 +90,6 @@ static int system_bus_speed;	/* holds what we think is VESA/PCI bus speed */
+ DEFINE_MUTEX(ide_cfg_mtx);
+  __cacheline_aligned_in_smp DEFINE_SPINLOCK(ide_lock);
+ 
+-#ifdef CONFIG_IDEPCI_PCIBUS_ORDER
+-int ide_scan_direction; /* THIS was formerly 2.2.x pci=reverse */
+-#endif
+-
+ int noautodma = 0;
+ 
+ #ifdef CONFIG_BLK_DEV_IDEACPI
+@@ -1225,14 +1221,6 @@ static int __init ide_setup(char *s)
+ 		goto obsolete_option;
+ 	}
+ 
+-#ifdef CONFIG_IDEPCI_PCIBUS_ORDER
+-	if (!strcmp(s, "ide=reverse")) {
+-		ide_scan_direction = 1;
+-		printk(" : Enabled support for IDE inverse scan order.\n");
+-		return 1;
+-	}
+-#endif
+-
+ #ifdef CONFIG_BLK_DEV_IDEACPI
+ 	if (!strcmp(s, "ide=noacpi")) {
+ 		//printk(" : Disable IDE ACPI support.\n");
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index a3b69c1..415adbb 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -990,7 +990,6 @@ extern void do_ide_request(struct request_queue *);
+ void ide_init_disk(struct gendisk *, ide_drive_t *);
+ 
+ #ifdef CONFIG_IDEPCI_PCIBUS_ORDER
+-extern int ide_scan_direction;
+ extern int __ide_pci_register_driver(struct pci_driver *driver, struct module *owner, const char *mod_name);
+ #define ide_pci_register_driver(d) __ide_pci_register_driver(d, THIS_MODULE, KBUILD_MODNAME)
+ #else
+-- 
+1.5.4
 
