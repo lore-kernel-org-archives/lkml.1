@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934121AbYBOPA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbYBOPDE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934121AbYBOPA1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759517AbYBOPAL
+	id S932178AbYBOPDE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:03:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757331AbYBOPCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:00:11 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:2676 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755343AbYBOPAJ (ORCPT
+	Fri, 15 Feb 2008 10:02:51 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:56805 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756836AbYBOPCt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:00:09 -0500
+	Fri, 15 Feb 2008 10:02:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qW404PEEC5C8p0tWmYMJaD9an/EXLlQ0tTKpRvdt2n4um/Da6vqegJo4oORWkKIjheYsqEPZ27xmBPVnJclIrJ/5cr1O7u005K3f8HptsJWAHOFVEKCzDd4m0eTq8MXQrlHY95hAV4JOl0LgXM66IB+EEZUJIZRBTy19cgv3MeM=
-Subject: Re: Spurious completions during NCQ
-From: Calvin Walton <calvin.walton@gmail.com>
-To: Hugo Mills <hugo-lkml@carfax.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-In-Reply-To: <20080215134658.GB27745@vlad.carfax.org.uk>
-References: <20080215134658.GB27745@vlad.carfax.org.uk>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 10:00:00 -0500
-Message-Id: <1203087600.25150.5.camel@zem>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.91 
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=t7bmghnn7dcB1dz1Qi78kRN3LaR7fSFBhylQ40yoTgdQcoMwtHWTN5KaUwM24tJVWtTc+8yhBxZrSleH9spgvHeNxOz32RIVIVfMUV8QcbHFCKkpopAHeZJlsVWQH1dh1gH1zjaW0QAqv3LjYk4KZQr0sZL6r7rggqvhG2j2nDk=
+Message-ID: <e2e108260802150702g43bf7b47ye2c98770ef0857a7@mail.gmail.com>
+Date: Fri, 15 Feb 2008 16:02:47 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Subject: Re: Integration of SCST in the mainstream Linux kernel
+Cc: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
+       "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <47AB0B63.20500@vlnb.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
+	 <1202145901.3096.49.camel@localhost.localdomain>
+	 <47A751C5.60600@vlnb.net>
+	 <1202149322.3096.66.camel@localhost.localdomain>
+	 <47A75B8A.3020503@vlnb.net>
+	 <1202151293.3096.80.camel@localhost.localdomain>
+	 <47A8B210.8040202@vlnb.net>
+	 <1202238802.3133.71.camel@localhost.localdomain>
+	 <e2e108260802070513t4eeb9a9fucfe9821d94bd7f82@mail.gmail.com>
+	 <47AB0B63.20500@vlnb.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-15 at 13:46 +0000, Hugo Mills wrote:
-> I'm getting these on my Dell Latitude D830:
-> 
-> Feb 15 13:06:00 willow kernel: ata1.00: exception Emask 0x2 SAct 0x4 SErr 0x0 action 0x2 frozen
-> Feb 15 13:06:00 willow kernel: ata1.00: spurious completions during NCQ issue=0x0 SAct=0x4 FIS=004040a1:00000002
+On Thu, Feb 7, 2008 at 2:45 PM, Vladislav Bolkhovitin <vst@vlnb.net> wrote:
+>
+> Bart Van Assche wrote:
+>  > Since the focus of this thread shifted somewhat in the last few
+>  > messages, I'll try to summarize what has been discussed so far:
+>  > - There was a number of participants who joined this discussion
+>  > spontaneously. This suggests that there is considerable interest in
+>  > networked storage and iSCSI.
+>  > - It has been motivated why iSCSI makes sense as a storage protocol
+>  > (compared to ATA over Ethernet and Fibre Channel over Ethernet).
+>  > - The direct I/O performance results for block transfer sizes below 64
+>  > KB are a meaningful benchmark for storage target implementations.
+>  > - It has been discussed whether an iSCSI target should be implemented
+>  > in user space or in kernel space. It is clear now that an
+>  > implementation in the kernel can be made faster than a user space
+>  > implementation (http://kerneltrap.org/mailarchive/linux-kernel/2008/2/4/714804).
+>  > Regarding existing implementations, measurements have a.o. shown that
+>  > SCST is faster than STGT (30% with the following setup: iSCSI via
+>  > IPoIB and direct I/O block transfers with a size of 512 bytes).
+>  > - It has been discussed which iSCSI target implementation should be in
+>  > the mainstream Linux kernel. There is no agreement on this subject
+>  > yet. The short-term options are as follows:
+>  > 1) Do not integrate any new iSCSI target implementation in the
+>  > mainstream Linux kernel.
+>  > 2) Add one of the existing in-kernel iSCSI target implementations to
+>  > the kernel, e.g. SCST or PyX/LIO.
+>  > 3) Create a new in-kernel iSCSI target implementation that combines
+>  > the advantages of the existing iSCSI kernel target implementations
+>  > (iETD, STGT, SCST and PyX/LIO).
+>  >
+>  > As an iSCSI user, I prefer option (3). The big question is whether the
+>  > various storage target authors agree with this ?
+>
+>  I tend to agree with some important notes:
+>
+>  1. IET should be excluded from this list, iSCSI-SCST is IET updated for
+>  SCST framework with a lot of bugfixes and improvements.
+>
+>  2. I think, everybody will agree that Linux iSCSI target should work
+>  over some standard SCSI target framework. Hence the choice gets
+>  narrower: SCST vs STGT. I don't think there's a way for a dedicated
+>  iSCSI target (i.e. PyX/LIO) in the mainline, because of a lot of code
+>  duplication. Nicholas could decide to move to either existing framework
+>  (although, frankly, I don't think there's a possibility for in-kernel
+>  iSCSI target and user space SCSI target framework) and if he decide to
+>  go with SCST, I'll be glad to offer my help and support and wouldn't
+>  care if LIO-SCST eventually replaced iSCSI-SCST. The better one should win.
 
->    In some cases, there are several cmd/res lines listed. It's
-> happening about once an hour or so (not correlated with any other
-> event that I can see). It doesn't seem to be affecting operation of
-> the machine, but it's making me nervous.
-> 
->    Can anyone set my mind at rest? (Or suggest a fix?)
+If I understood the above correctly, regarding a kernel space iSCSI
+target implementation, only LIO-SE and SCST should be considered. What
+I know today about these Linux iSCSI target implementations is as
+follows:
+* SCST performs slightly better than LIO-SE, and LIO-SE performs
+slightly better than STGT (both with regard to latency and with regard
+to bandwidth).
+* The coding style of SCST is closer to the Linux kernel coding style
+than the coding style of the LIO-SE project.
+* The structure of SCST is closer to what Linus expects than the
+structure of LIO-SE (i.e., authentication handled in userspace, data
+transfer handled by the kernel -- LIO-SE handles both in kernel
+space).
+* Until now I did not encounter any strange behavior in SCST. The
+issues I encountered with LIO-SE are being resolved via the LIO-SE
+mailing list (http://groups.google.com/group/linux-iscsi-target-dev).
 
-You didn't mention which SATA chipset your laptop has, but some quick
-googling says that it's AHCI. Until 2.6.24, the AHCI driver has a
-problem where it'll report superious NCQ completions due to a bug in the
-driver logic.
+It would take too much effort to develop a new kernel space iSCSI
+target from scratch -- we should start from either LIO-SE or SCST. My
+opinion is that the best approach is to start with integrating SCST in
+the mainstream kernel, and that the more advanced features from LIO-SE
+that are not yet in SCST can be ported from LIO-SE to the SCST
+framework.
 
-> uname -a reports:
-> Linux willow 2.6.23.1-hrt3 #1 SMP Sun Nov 4 14:51:20 GMT 2007 x86_64 GNU/Linux
+Nicholas, do you think the structure of SCST is powerful enough to be
+extended with LIO-SE's powerful features like ERL-2 ?
 
-The fix is simple, upgrade your kernel to 2.6.24 :)
-
->    It's a kernel.org kernel with the patch for tickless operation on
-> amd64.
-
-Handily, the 2.6.24 kernel.org kernel includes amd64 tickless support
-already.
-
--- 
-Calvin Walton <calvin.walton@gmail.com>
-
-
+Bart Van Assche.
