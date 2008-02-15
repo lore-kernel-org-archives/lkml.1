@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbYBONZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932423AbYBONZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbYBONZg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 08:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbYBONZ2
+	id S932423AbYBONZt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 08:25:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761608AbYBONZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 08:25:28 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40385 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751982AbYBONZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 08:25:28 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <47B490A8.3050500@gmail.com>
-References: <47B490A8.3050500@gmail.com>
-To: Jan Dittmer <jan.dittmer@gmail.com>
-Cc: dhowells@redhat.com, linux-am33-list@redhat.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-am33-list] Cross-Compiling mn10300: Assembler messages: junk at end of line: 0
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 15 Feb 2008 13:25:24 +0000
-Message-ID: <22098.1203081924@redhat.com>
+	Fri, 15 Feb 2008 08:25:38 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:9237 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760533AbYBONZg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 08:25:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=CTskPFae8lm0hHgCIy8Pu1K+mtffvALOcpE0dpyX3ymUqDqhJRCvgdBctT+beWuih0QPUyTX2dC87BqSpp/FIUcCiE9kutSm5CM6BIMxvUEda+j50RawrkexIvEmFYHs0WE0yPJK7Y+T9hIXQ/MTaRxJjxuo84JkHCKyJKovjPA=
+Message-ID: <20cbb9450802150525g1e197b1dwed82afac91bfa7b0@mail.gmail.com>
+Date: Fri, 15 Feb 2008 18:25:34 +0500
+From: "Shahbaz Khan" <shaz.linux@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: TPM-IMA Setup Problems
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Dittmer <jan.dittmer@gmail.com> wrote:
+For the past 2 days I am trying to configure IMA on Dell Optiplex 745
+with Broadcom TPM. The kernel version is 2.6.20-rc4-mm1 + all the
+tpm3.2.0 patches from IBM IMA webpage. I've been through so much that
+can't remember all but currently I can't find any braodcom tpm driver
+modules and tpm_tis seems to be able to get to the TPM chip. I am
+getting the following message on
 
-> + make ARCH=mn10300 HOSTCC=gcc-4.0 CROSS_COMPILE=mn10300-elf- 
-> CROSS32_COMPILE= O=../2.6.25-rc1-mn10300/
+[       ]# init_tpm /etc/bootkeys:
+[       ]Unexpected error code 35
 
-Hmmm...  There seems to be some confusion somewhere, probably because the
-documentation there doesn't say which compiler you should use for what.  Can
-you try this toolchain instead:
 
-	i686-pc-linux-gnulibc2.3-x-am33_2.0-linux-gnu.tar.bz2
+I am also encounterring IRQ conflicts of TPM with sometimes rtc, hdc,
+fd0. It looks like this in /proc/interrupts:
 
-rather than the:
+           CPU0       CPU1
+  0:     124995     105404   IO-APIC-edge      timer
+  1:          2          0   IO-APIC-edge      i8042
+  7:          1          0   IO-APIC-edge      parport0
+  8:          3          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 11:	      3		 0   		                tpm0	
+ 12:          7          0   IO-APIC-edge      i8042
+ 14:      27408       1694   IO-APIC-edge      ide0
+ 16:         99          0   IO-APIC-fasteoi   uhci_hcd:usb1, HDA Intel
+ 17:          0          0   IO-APIC-fasteoi   uhci_hcd:usb2, uhci_hcd:usb4
+ 18:          2          0   IO-APIC-fasteoi   uhci_hcd:usb3, ehci_hcd:usb7
+ 19:        799        587   IO-APIC-fasteoi   uhci_hcd:usb5
+ 20:          0          0   IO-APIC-fasteoi   ehci_hcd:usb6
+220:          4          0   PCI-MSI-edge      eth0
+NMI:          0          0
+LOC:     230430     230419
+ERR:          0
+MIS:          0
 
-	i686-pc-linux-gnulibc2.3-x-mn10300-elf.tar.bz2
-
-in the location:
-
-	ftp://ftp.redhat.com/pub/redhat/gnupro/AM33/am33-04r2-5/tools/
-
-Note that the MN10300 arch needs some patches to get it to compile due to some
-changes that Linus merged that weren't in the -mm tree.
-
-David
+Any suggestions?
