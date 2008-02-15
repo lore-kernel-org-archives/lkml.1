@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934474AbYBOO6s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934735AbYBOO7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934474AbYBOO6s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:58:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760799AbYBOO6H
+	id S934735AbYBOO7N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:59:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbYBOO6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:58:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:57448 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758118AbYBOO6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:58:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [patch] move wakeup code to .c
-Date: Fri, 15 Feb 2008 15:56:04 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Len Brown <lenb@kernel.org>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>, hpa@zytor.com,
-       sam@ravnborg.org
-References: <20080210222723.GA1865@elf.ucw.cz> <200802150135.07127.lenb@kernel.org> <20080215095544.GA4667@ucw.cz>
-In-Reply-To: <20080215095544.GA4667@ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Feb 2008 09:58:55 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:60346 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934559AbYBOO6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 09:58:54 -0500
+Date: Fri, 15 Feb 2008 16:34:39 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: device-mapper development <dm-devel@redhat.com>,
+       Michael Tokarev <mjt@tls.msk.ru>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
+Message-ID: <20080215153439.GB30504@one.firstfloor.org>
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802151556.05521.rjw@sisk.pl>
+In-Reply-To: <20080215141229.GB1788@agk.fab.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 of February 2008, Pavel Machek wrote:
-> Hi!
+On Fri, Feb 15, 2008 at 02:12:29PM +0000, Alasdair G Kergon wrote:
+> On Fri, Feb 15, 2008 at 03:20:10PM +0100, Andi Kleen wrote:
+> > On Fri, Feb 15, 2008 at 04:07:54PM +0300, Michael Tokarev wrote:
+> > > I wonder if it's worth the effort to try to implement this.
 > 
-> > scripts/checkpatch.pl
-> > ERROR: do not initialise externals to 0 or NULL
-> > #113: FILE: arch/x86/boot/video-mode.c:29:
-> > +int do_restore = 0;    /* Screen contents changed during mode flip */
-> 
-> We were doing file move with minimal changes.
-> 
-> > ERROR: need a space before the open parenthesis '('
-> > #710: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:70:
-> > +               while(1);
-> 
-> Bogus warning.
-> 
-> I'll fix al but this one, but could we do it as a followup patch? I'm
-> currently at holidays, moving .S code into .c is rather
-> good/important, and it should get testing ASAP.
+> My personal view (which seems to be in the minority) is that it's a
+> waste of our development time *except* in the (rare?) cases similar to
 
-I'll move the definitions into a header file.
+At least for my machines it is the standard case; it is not rare.
 
-Thanks,
-Rafael
+And don't RH distributions install with LVM by default these days?
+For those it should be the standard case too on all systems with
+only a single disk.
+
+The other relatively simple case I plan to look into (in fact
+I already wrote something, but it's not postable yet) is dm-crypt
+on single device. But it's a little more complicated than the
+simple dm-linear case.
+
+-Andi 
