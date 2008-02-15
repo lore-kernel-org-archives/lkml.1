@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbYBOSEI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760078AbYBOSFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759203AbYBOSEI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:04:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbYBOSD5
+	id S1760078AbYBOSFu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756349AbYBOSFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:03:57 -0500
-Received: from vms040pub.verizon.net ([206.46.252.40]:34472 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753096AbYBOSD4 (ORCPT
+	Fri, 15 Feb 2008 13:05:42 -0500
+Received: from vms048pub.verizon.net ([206.46.252.48]:63276 "EHLO
+	vms048pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756523AbYBOSFl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:03:56 -0500
-Date: Fri, 15 Feb 2008 12:03:41 -0600
+	Fri, 15 Feb 2008 13:05:41 -0500
+Date: Fri, 15 Feb 2008 12:05:24 -0600
 From: Corey Minyard <minyard@acm.org>
-Subject: [PATCH 1/5] IPMI: convert message handler defines to an enum
+Subject: [PATCH 2/5] IPMI: Convert system interface defines to an enum
 To: Linux Kernel <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@osdl.org>,
        OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>,
        Peter Zijlstra <peterz@infradead.org>
 Reply-to: minyard@acm.org
-Message-id: <20080215180341.GA29755@minyard.local>
+Message-id: <20080215180524.GB29755@minyard.local>
 MIME-version: 1.0
 Content-type: text/plain; charset=us-ascii
 Content-disposition: inline
@@ -29,173 +29,91 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Corey Minyard <cminyard@mvista.com>
 
-Convert the #defines for statistics into an enum in the IPMI message
-handler.
+Convert the #defines for statistics into an enum in the IPMI system
+interface and remove the unused timeout_restart statistic.  And comment
+what these statistics mean.
 
 Signed-off-by: Corey Minyard <cminyard@mvista.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 ---
-Ok to merge into ipmi-convert-locked-counters-to-atomics.patch
+Ok to merge into
+ipmi-convert-locked-counters-to-atomics-in-the-system-interface.patch
 
-Index: linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
+Index: linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
 ===================================================================
---- linux-2.6.24.orig/drivers/char/ipmi/ipmi_msghandler.c
-+++ linux-2.6.24/drivers/char/ipmi/ipmi_msghandler.c
-@@ -189,90 +189,99 @@ struct bmc_device
-  * Various statistics for IPMI, these index stats[] in the ipmi_smi
-  * structure.
+--- linux-2.6.24.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.24/drivers/char/ipmi/ipmi_si_intf.c
+@@ -124,22 +124,50 @@ static struct device_driver ipmi_driver 
+ /*
+  * Indexes into stats[] in smi_info below.
   */
--/* Commands we got from the user that were invalid. */
--#define IPMI_STAT_sent_invalid_commands			0
-+enum ipmi_stat_indexes {
-+	/* Commands we got from the user that were invalid. */
-+	IPMI_STAT_sent_invalid_commands = 0,
- 
--/* Commands we sent to the MC. */
--#define IPMI_STAT_sent_local_commands			1
-+	/* Commands we sent to the MC. */
-+	IPMI_STAT_sent_local_commands,
- 
--/* Responses from the MC that were delivered to a user. */
--#define IPMI_STAT_handled_local_responses		2
-+	/* Responses from the MC that were delivered to a user. */
-+	IPMI_STAT_handled_local_responses,
- 
--/* Responses from the MC that were not delivered to a user. */
--#define IPMI_STAT_unhandled_local_responses		3
-+	/* Responses from the MC that were not delivered to a user. */
-+	IPMI_STAT_unhandled_local_responses,
- 
--/* Commands we sent out to the IPMB bus. */
--#define IPMI_STAT_sent_ipmb_commands			4
-+	/* Commands we sent out to the IPMB bus. */
-+	IPMI_STAT_sent_ipmb_commands,
- 
--/* Commands sent on the IPMB that had errors on the SEND CMD */
--#define IPMI_STAT_sent_ipmb_command_errs		5
-+	/* Commands sent on the IPMB that had errors on the SEND CMD */
-+	IPMI_STAT_sent_ipmb_command_errs,
- 
--/* Each retransmit increments this count. */
--#define IPMI_STAT_retransmitted_ipmb_commands		6
-+	/* Each retransmit increments this count. */
-+	IPMI_STAT_retransmitted_ipmb_commands,
- 
--/* When a message times out (runs out of retransmits) this is incremented. */
--#define IPMI_STAT_timed_out_ipmb_commands		7
++enum si_stat_indexes {
 +	/*
-+	 * When a message times out (runs out of retransmits) this is
-+	 * incremented.
++	 * Number of times the driver requested a timer while an operation
++	 * was in progress.
 +	 */
-+	IPMI_STAT_timed_out_ipmb_commands,
- 
--/*
-- * This is like above, but for broadcasts.  Broadcasts are
-- * *not* included in the above count (they are expected to
-- * time out).
-- */
--#define IPMI_STAT_timed_out_ipmb_broadcasts		8
++	SI_STAT_short_timeouts = 0,
++
 +	/*
-+	 * This is like above, but for broadcasts.  Broadcasts are
-+	 * *not* included in the above count (they are expected to
-+	 * time out).
++	 * Number of times the driver requested a timer while nothing was in
++	 * progress.
 +	 */
-+	IPMI_STAT_timed_out_ipmb_broadcasts,
++	SI_STAT_long_timeouts,
++
++	/* Number of times the interface was idle while being polled. */
++	SI_STAT_idles,
++
++	/* Number of interrupts the driver handled. */
++	SI_STAT_interrupts,
++
++	/* Number of time the driver got an ATTN from the hardware. */
++	SI_STAT_attentions,
  
--/* Responses I have sent to the IPMB bus. */
--#define IPMI_STAT_sent_ipmb_responses			9
-+	/* Responses I have sent to the IPMB bus. */
-+	IPMI_STAT_sent_ipmb_responses,
+-#define SI_STAT_short_timeouts		0
+-#define SI_STAT_long_timeouts		1
+-#define SI_STAT_timeout_restarts	2
+-#define SI_STAT_idles			3
+-#define SI_STAT_interrupts		4
+-#define SI_STAT_attentions		5
+-#define SI_STAT_flag_fetches		6
+-#define SI_STAT_hosed_count		7
+-#define SI_STAT_complete_transactions	8
+-#define SI_STAT_events			9
+-#define SI_STAT_watchdog_pretimeouts	10
+-#define SI_STAT_incoming_messages	11
++	/* Number of times the driver requested flags from the hardware. */
++	SI_STAT_flag_fetches,
  
--/* The response was delivered to the user. */
--#define IPMI_STAT_handled_ipmb_responses		10
-+	/* The response was delivered to the user. */
-+	IPMI_STAT_handled_ipmb_responses,
- 
--/* The response had invalid data in it. */
--#define IPMI_STAT_invalid_ipmb_responses		11
-+	/* The response had invalid data in it. */
-+	IPMI_STAT_invalid_ipmb_responses,
- 
--/* The response didn't have anyone waiting for it. */
--#define IPMI_STAT_unhandled_ipmb_responses		12
-+	/* The response didn't have anyone waiting for it. */
-+	IPMI_STAT_unhandled_ipmb_responses,
- 
--/* Commands we sent out to the IPMB bus. */
--#define IPMI_STAT_sent_lan_commands			13
-+	/* Commands we sent out to the IPMB bus. */
-+	IPMI_STAT_sent_lan_commands,
- 
--/* Commands sent on the IPMB that had errors on the SEND CMD */
--#define IPMI_STAT_sent_lan_command_errs			14
-+	/* Commands sent on the IPMB that had errors on the SEND CMD */
-+	IPMI_STAT_sent_lan_command_errs,
- 
--/* Each retransmit increments this count. */
--#define IPMI_STAT_retransmitted_lan_commands		15
-+	/* Each retransmit increments this count. */
-+	IPMI_STAT_retransmitted_lan_commands,
- 
--/* When a message times out (runs out of retransmits) this is incremented. */
--#define IPMI_STAT_timed_out_lan_commands		16
-+	/*
-+	 * When a message times out (runs out of retransmits) this is
-+	 * incremented.
-+	 */
-+	IPMI_STAT_timed_out_lan_commands,
- 
--/* Responses I have sent to the IPMB bus. */
--#define IPMI_STAT_sent_lan_responses			17
-+	/* Responses I have sent to the IPMB bus. */
-+	IPMI_STAT_sent_lan_responses,
- 
--/* The response was delivered to the user. */
--#define IPMI_STAT_handled_lan_responses			18
-+	/* The response was delivered to the user. */
-+	IPMI_STAT_handled_lan_responses,
- 
--/* The response had invalid data in it. */
--#define IPMI_STAT_invalid_lan_responses			19
-+	/* The response had invalid data in it. */
-+	IPMI_STAT_invalid_lan_responses,
- 
--/* The response didn't have anyone waiting for it. */
--#define IPMI_STAT_unhandled_lan_responses		20
-+	/* The response didn't have anyone waiting for it. */
-+	IPMI_STAT_unhandled_lan_responses,
- 
--/* The command was delivered to the user. */
--#define IPMI_STAT_handled_commands			21
-+	/* The command was delivered to the user. */
-+	IPMI_STAT_handled_commands,
- 
--/* The command had invalid data in it. */
--#define IPMI_STAT_invalid_commands			22
-+	/* The command had invalid data in it. */
-+	IPMI_STAT_invalid_commands,
- 
--/* The command didn't have anyone waiting for it. */
--#define IPMI_STAT_unhandled_commands			23
-+	/* The command didn't have anyone waiting for it. */
-+	IPMI_STAT_unhandled_commands,
- 
--/* Invalid data in an event. */
--#define IPMI_STAT_invalid_events			24
-+	/* Invalid data in an event. */
-+	IPMI_STAT_invalid_events,
- 
--/* Events that were received with the proper format. */
--#define IPMI_STAT_events				25
-+	/* Events that were received with the proper format. */
-+	IPMI_STAT_events,
- 
--/* When you add a statistic, you must update this value. */
--#define IPMI_NUM_STATS					26
+-/* If you add a stat, you must update this value. */
+-#define SI_NUM_STATS			12
++	/* Number of times the hardware didn't follow the state machine. */
++	SI_STAT_hosed_count,
++
++	/* Number of completed messages. */
++	SI_STAT_complete_transactions,
++
++	/* Number of IPMI events received from the hardware. */
++	SI_STAT_events,
++
++	/* Number of watchdog pretimeouts. */
++	SI_STAT_watchdog_pretimeouts,
++
++	/* Number of asyncronous messages received. */
++	SI_STAT_incoming_messages,
++
 +
 +	/* This *must* remain last, add new values above this. */
-+	IPMI_NUM_STATS
++	SI_NUM_STATS
 +};
  
- 
- #define IPMI_IPMB_NUM_SEQ	64
+ struct smi_info
+ {
+@@ -2400,8 +2428,6 @@ static int stat_file_read_proc(char *pag
+ 		       smi_get_stat(smi, short_timeouts));
+ 	out += sprintf(out, "long_timeouts:         %u\n",
+ 		       smi_get_stat(smi, long_timeouts));
+-	out += sprintf(out, "timeout_restarts:      %u\n",
+-		       smi_get_stat(smi, timeout_restarts));
+ 	out += sprintf(out, "idles:                 %u\n",
+ 		       smi_get_stat(smi, idles));
+ 	out += sprintf(out, "interrupts:            %u\n",
