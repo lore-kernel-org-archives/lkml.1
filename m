@@ -1,211 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbYCVCif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759186AbYCVCiv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbYCVCif (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 21 Mar 2008 22:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754596AbYCVCiK
+	id S1759186AbYCVCiv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 22:38:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYCVCiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 21 Mar 2008 22:38:10 -0400
+	Fri, 21 Mar 2008 22:38:11 -0400
 Received: from py-out-1112.google.com ([64.233.166.182]:18672 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754387AbYCVCiI (ORCPT
+	with ESMTP id S1754550AbYCVCiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 21 Mar 2008 22:38:08 -0400
+	Fri, 21 Mar 2008 22:38:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=subject:from:references:to:date:message-id:sender;
-        b=adZWgFSqP40H9vuZy/s1rQzjbjZ5XO0IIf33jJT/fyghlzAmpDCMOemFAbo6dT0NzWaCA4d//ek0tslKH/zPl6HgaQ2qEFEHBA6Yov6FWRDLTOGxwQqpPBmNyfAMv3ut6kanDyoZZoKNX/B9B7HuZajiIvuUyi0RxWly3OWu2NM=
-Subject: [RFC][PATCH 6/9] cgroups: block: cfq: I/O bandwidth controlling subsystem for CGroups based on CFQ
+        b=qnEXWWr+5KTMS+AdJDsz9svz1BSrnlM86MDVxDwLZ797zY5ZCQlLO6/hejWRYwKMUWVSda60SY9iEAebiz6uCDkDGyCE8TMSLNL7sQk25aKJxbIxHC+ZDjrRo1SLc3eFpc/jLL40pNv86J7RrEt1TC9Yc98lznj2qHfsQzVyFf8=
+Subject: [RFC][PATCH 1/9] cgroups: block: cfq: I/O bandwidth controlling subsystem for CGroups based on CFQ
 From: Vasily Tarasov <vtaras@openvz.org>
 References: <1203058414.042372.2088.nullmailer@me>
 To: axboe@kernel.dk, linux-kernel@vger.kernel.org, devel@openvz.org,
        containers@linux-foundation.com, dev@openvz.org, xemul@openvz.org
-Date: Fri, 15 Feb 2008 01:59:51 -0500
-Message-Id: <1203058791.927554.2147.nullmailer@me>
+Date: Fri, 15 Feb 2008 01:59:41 -0500
+Message-Id: <1203058781.089241.2137.nullmailer@me>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Vasily Tarasov <vtaras@openvz.org>
 
-Introduces cgroups scheduling. Each time when I/O request is placed on 
-per-process request queue and there were no other requests from this
-cgroup, this cgroup is added to the end of active cgroups list.
-This list is service in round-robin fashion. Switching between
-cgroups happens eiher when cgroup expires its time slice, either if there
-are no more requests from it. Each time I/O request is completed,
-we check if it was the last request from cgroup, and in this case remove
-cgroup from the active list.
+Simply moves CFQ data structure definitions to the header file.
 
 Signed-off-by: Vasily Tarasov <vtaras@openvz.org>
 
 ---
 
---- linux-2.6.25-rc5-mm1/include/linux/cfqio-cgroup.h.cgrpsched	2008-02-15 01:08:25.000000000 -0500
-+++ linux-2.6.25-rc5-mm1/include/linux/cfqio-cgroup.h	2008-02-15 01:10:42.000000000 -0500
-@@ -42,6 +42,10 @@ static inline struct cfqio_ss_css *cfqio
- 	return container_of(tsk->cgroups->subsys[cfqio_subsys_id],
- 						struct cfqio_ss_css, css);
- }
-+extern int cfqio_cgrp_expired(struct cfq_data *);
-+extern void cfqio_cgrp_schedule_active(struct cfq_data *);
-+extern void  cfqio_cgrp_inc_rqnum(struct cfq_queue *);
-+extern void cfqio_cgrp_dec_rqnum(struct cfq_queue *);
- #else
- static inline struct cfqio_cgroup_data *
- cfqio_cgrp_findcreate(struct cfqio_ss_css *cfqio_ss,
-@@ -56,6 +60,16 @@ static inline struct cfqio_ss_css *cfqio
- {
- 	return NULL;
- }
+--- /dev/null	2008-02-14 08:57:49.255923728 -0500
++++ linux-2.6.25-rc5-mm1/include/linux/cfq-iosched.h	2008-02-15 01:03:38.000000000 -0500
+@@ -0,0 +1,103 @@
++#ifndef _LINUX_CFQ_IOSCHED_H
++#define _LINUX_CFQ_IOSCHED_H
 +
-+static inline int cfqio_cgrp_expired(struct cfq_data *cfqd) { return 0; }
++/*
++ * Most of our rbtree usage is for sorting with min extraction, so
++ * if we cache the leftmost node we don't have to walk down the tree
++ * to find it. Idea borrowed from Ingo Molnars CFS scheduler. We should
++ * move this into the elevator for the rq sorting as well.
++ */
++struct cfq_rb_root {
++	struct rb_root rb;
++	struct rb_node *left;
++};
++#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, }
 +
-+static inline void cfqio_cgrp_schedule_active(struct cfq_data *cfqd)
-+{
-+	cfqd->active_cfqio_cgroup = &cfqd->cfqio_cgroup;
-+}
++/*
++ * Per block device queue structure
++ */
++struct cfq_data {
++	struct request_queue *queue;
 +
-+static inline void cfqio_cgrp_inc_rqnum(struct cfq_queue *cfqq) { ; }
-+static inline void cfqio_cgrp_dec_rqnum(struct cfq_queue *cfqq) { ; }
- #endif /* CONFIG_CGROUP_CFQIO */
- 
- static inline void cfqio_init_cfqio_cgroup(struct cfqio_cgroup_data *cfqio_cgrp)
---- linux-2.6.25-rc5-mm1/include/linux/cfq-iosched.h.cgrpsched	2008-02-15 01:09:09.000000000 -0500
-+++ linux-2.6.25-rc5-mm1/include/linux/cfq-iosched.h	2008-02-15 01:10:42.000000000 -0500
-@@ -56,6 +56,7 @@ struct cfqio_cgroup_data {
- 	struct cfqio_ss_css	*cfqio_css;
- 	/* rr list of queues with requests */
- 	struct cfq_rb_root	service_tree;
-+	unsigned long		rqnum;
- };
- 
- /*
-@@ -113,6 +114,8 @@ struct cfq_data {
- 	struct list_head act_cfqio_cgrp_head;
- 	/* cgroup that owns a timeslice at the moment */
- 	struct cfqio_cgroup_data *active_cfqio_cgroup;
-+	unsigned int cfqio_cgrp_slice;
-+	unsigned long cfqio_slice_end;
- };
- 
- /*
---- linux-2.6.25-rc5-mm1/block/cfqio-cgroup.c.cgrpsched	2008-02-15 01:07:29.000000000 -0500
-+++ linux-2.6.25-rc5-mm1/block/cfqio-cgroup.c	2008-02-15 01:10:42.000000000 -0500
-@@ -24,6 +24,65 @@ LIST_HEAD(cfqio_ss_css_head);
-  */
- DEFINE_SPINLOCK(cfqio_ss_css_lock);
- 
-+int cfqio_cgrp_expired(struct cfq_data *cfqd)
-+{
-+	return time_after(jiffies, cfqd->cfqio_slice_end) ?  1 : 0;
-+}
++	/*
++	 * rr list of queues with requests and the count of them
++	 */
++	struct cfq_rb_root service_tree;
++	unsigned int busy_queues;
 +
-+static inline unsigned long time_slice_by_ioprio(unsigned int ioprio,
-+							unsigned int base_slice)
-+{
-+	return  base_slice +
-+		(base_slice * (ioprio - CFQIO_SS_IOPRIO_MIN))
-+			/ (CFQIO_SS_IOPRIO_MAX - CFQIO_SS_IOPRIO_MIN);
-+}
++	int rq_in_driver;
++	int sync_flight;
++	int hw_tag;
 +
-+static inline void set_active_cgrp(struct cfq_data *cfqd)
-+{
-+	if (list_empty(&cfqd->act_cfqio_cgrp_head))
-+		return;
++	/*
++	 * idle window management
++	 */
++	struct timer_list idle_slice_timer;
++	struct work_struct unplug_work;
 +
-+	cfqd->active_cfqio_cgroup = list_first_entry(&cfqd->act_cfqio_cgrp_head,
-+				struct cfqio_cgroup_data, act_cfqio_cgrp_list);
-+	list_move_tail(&cfqd->active_cfqio_cgroup->act_cfqio_cgrp_list,
-+					&cfqd->act_cfqio_cgrp_head);
-+	cfqd->cfqio_slice_end = jiffies +
-+	time_slice_by_ioprio(cfqd->active_cfqio_cgroup->cfqio_css->ioprio,
-+							cfqd->cfqio_cgrp_slice);
-+}
++	struct cfq_queue *active_queue;
++	struct cfq_io_context *active_cic;
 +
-+void cfqio_cgrp_schedule_active(struct cfq_data *cfqd)
-+{
-+	if (cfqio_cgrp_expired(cfqd) || !cfqd->active_cfqio_cgroup ||
-+				!cfqd->active_cfqio_cgroup->rqnum)
-+		set_active_cgrp(cfqd);
-+}
++	/*
++	 * async queue for each priority case
++	 */
++	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
++	struct cfq_queue *async_idle_cfqq;
 +
-+void cfqio_cgrp_inc_rqnum(struct cfq_queue *cfqq)
-+{
-+	struct cfqio_cgroup_data *cfqio_cgrp;
++	sector_t last_position;
++	unsigned long last_end_request;
 +
-+	cfqio_cgrp = cfqq->cfqio_cgrp;
++	/*
++	 * tunables, see top of file
++	 */
++	unsigned int cfq_quantum;
++	unsigned int cfq_fifo_expire[2];
++	unsigned int cfq_back_penalty;
++	unsigned int cfq_back_max;
++	unsigned int cfq_slice[2];
++	unsigned int cfq_slice_async_rq;
++	unsigned int cfq_slice_idle;
 +
-+	if (!cfqio_cgrp->rqnum)
-+		list_add_tail(&cfqio_cgrp->act_cfqio_cgrp_list,
-+				&cfqq->cfqd->act_cfqio_cgrp_head);
++	struct list_head cic_list;
++};
 +
-+	cfqio_cgrp->rqnum++;
-+}
++/*
++ * Per process-grouping structure
++ */
++struct cfq_queue {
++	/* reference count */
++	atomic_t ref;
++	/* parent cfq_data */
++	struct cfq_data *cfqd;
++	/* service_tree member */
++	struct rb_node rb_node;
++	/* service_tree key */
++	unsigned long rb_key;
++	/* sorted list of pending requests */
++	struct rb_root sort_list;
++	/* if fifo isn't expired, next request to serve */
++	struct request *next_rq;
++	/* requests queued in sort_list */
++	int queued[2];
++	/* currently allocated requests */
++	int allocated[2];
++	/* pending metadata requests */
++	int meta_pending;
++	/* fifo list of requests in sort_list */
++	struct list_head fifo;
 +
-+void cfqio_cgrp_dec_rqnum(struct cfq_queue *cfqq)
-+{
-+	struct cfqio_cgroup_data *cfqio_cgrp;
++	unsigned long slice_end;
++	long slice_resid;
 +
-+	cfqio_cgrp = cfqq->cfqio_cgrp;
++	/* number of requests that are on the dispatch list or inside driver */
++	int dispatched;
 +
-+	cfqio_cgrp->rqnum--;
++	/* io prio of this group */
++	unsigned short ioprio, org_ioprio;
++	unsigned short ioprio_class, org_ioprio_class;
 +
-+	if (!cfqio_cgrp->rqnum)
-+		list_del(&cfqio_cgrp->act_cfqio_cgrp_list);
-+}
++	/* various state flags, see below */
++	unsigned int flags;
++};
 +
- static struct cfqio_cgroup_data *
- __find_cfqio_cgrp(struct cfqio_ss_css *cfqio_css, struct cfq_data *cfqd)
- {
---- linux-2.6.25-rc5-mm1/block/cfq-iosched.c.cgrpsched	2008-02-15 01:09:09.000000000 -0500
-+++ linux-2.6.25-rc5-mm1/block/cfq-iosched.c	2008-02-15 01:10:42.000000000 -0500
-@@ -29,6 +29,7 @@ static const int cfq_slice_sync = HZ / 1
- static int cfq_slice_async = HZ / 25;
- static const int cfq_slice_async_rq = 2;
- static int cfq_slice_idle = HZ / 125;
-+static int cfqio_cgrp_slice = HZ / 2;
++#endif /* _LINUX_CFQ_IOSCHED_H */
+--- linux-2.6.25-rc5-mm1/block/cfq-iosched.c.move	2008-02-15 00:49:11.000000000 -0500
++++ linux-2.6.25-rc5-mm1/block/cfq-iosched.c	2008-02-15 01:03:38.000000000 -0500
+@@ -11,6 +11,7 @@
+ #include <linux/elevator.h>
+ #include <linux/rbtree.h>
+ #include <linux/ioprio.h>
++#include <linux/cfq-iosched.h>
  
  /*
-  * offset from end of service tree
-@@ -185,6 +186,8 @@ static inline int cfq_slice_used(struct 
- {
- 	if (cfq_cfqq_slice_new(cfqq))
- 		return 0;
-+	if (cfqio_cgrp_expired(cfqq->cfqd))
-+		return 1;
- 	if (time_before(jiffies, cfqq->slice_end))
- 		return 0;
+  * tunables
+@@ -58,105 +59,6 @@ static struct completion *ioc_gone;
  
-@@ -447,6 +450,7 @@ static void cfq_add_cfqq_rr(struct cfq_d
- 	BUG_ON(cfq_cfqq_on_rr(cfqq));
- 	cfq_mark_cfqq_on_rr(cfqq);
- 	cfqd->busy_queues++;
-+	cfqio_cgrp_inc_rqnum(cfqq);
+ #define sample_valid(samples)	((samples) > 80)
  
- 	cfq_resort_rr_list(cfqd, cfqq);
- }
-@@ -466,6 +470,7 @@ static void cfq_del_cfqq_rr(struct cfq_d
- 
- 	BUG_ON(!cfqd->busy_queues);
- 	cfqd->busy_queues--;
-+	cfqio_cgrp_dec_rqnum(cfqq);
- }
- 
- /*
-@@ -708,6 +713,8 @@ static struct cfq_queue *cfq_get_next_qu
- {
- 	struct cfqio_cgroup_data *cfqio_cgrp;
- 
-+	cfqio_cgrp_schedule_active(cfqd);
-+
- 	cfqio_cgrp = cfqd->active_cfqio_cgroup;
- 	if (!cfqio_cgrp)
- 		return NULL;
-@@ -2076,6 +2083,7 @@ static void *cfq_init_queue(struct reque
- 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
- 	cfqd->cfq_slice_idle = cfq_slice_idle;
- 	INIT_LIST_HEAD(&cfqd->act_cfqio_cgrp_head);
-+	cfqd->cfqio_cgrp_slice = cfqio_cgrp_slice;
- 
- 	return cfqd;
- }
+-/*
+- * Most of our rbtree usage is for sorting with min extraction, so
+- * if we cache the leftmost node we don't have to walk down the tree
+- * to find it. Idea borrowed from Ingo Molnars CFS scheduler. We should
+- * move this into the elevator for the rq sorting as well.
+- */
+-struct cfq_rb_root {
+-	struct rb_root rb;
+-	struct rb_node *left;
+-};
+-#define CFQ_RB_ROOT	(struct cfq_rb_root) { RB_ROOT, NULL, }
+-
+-/*
+- * Per block device queue structure
+- */
+-struct cfq_data {
+-	struct request_queue *queue;
+-
+-	/*
+-	 * rr list of queues with requests and the count of them
+-	 */
+-	struct cfq_rb_root service_tree;
+-	unsigned int busy_queues;
+-
+-	int rq_in_driver;
+-	int sync_flight;
+-	int hw_tag;
+-
+-	/*
+-	 * idle window management
+-	 */
+-	struct timer_list idle_slice_timer;
+-	struct work_struct unplug_work;
+-
+-	struct cfq_queue *active_queue;
+-	struct cfq_io_context *active_cic;
+-
+-	/*
+-	 * async queue for each priority case
+-	 */
+-	struct cfq_queue *async_cfqq[2][IOPRIO_BE_NR];
+-	struct cfq_queue *async_idle_cfqq;
+-
+-	sector_t last_position;
+-	unsigned long last_end_request;
+-
+-	/*
+-	 * tunables, see top of file
+-	 */
+-	unsigned int cfq_quantum;
+-	unsigned int cfq_fifo_expire[2];
+-	unsigned int cfq_back_penalty;
+-	unsigned int cfq_back_max;
+-	unsigned int cfq_slice[2];
+-	unsigned int cfq_slice_async_rq;
+-	unsigned int cfq_slice_idle;
+-
+-	struct list_head cic_list;
+-};
+-
+-/*
+- * Per process-grouping structure
+- */
+-struct cfq_queue {
+-	/* reference count */
+-	atomic_t ref;
+-	/* parent cfq_data */
+-	struct cfq_data *cfqd;
+-	/* service_tree member */
+-	struct rb_node rb_node;
+-	/* service_tree key */
+-	unsigned long rb_key;
+-	/* sorted list of pending requests */
+-	struct rb_root sort_list;
+-	/* if fifo isn't expired, next request to serve */
+-	struct request *next_rq;
+-	/* requests queued in sort_list */
+-	int queued[2];
+-	/* currently allocated requests */
+-	int allocated[2];
+-	/* pending metadata requests */
+-	int meta_pending;
+-	/* fifo list of requests in sort_list */
+-	struct list_head fifo;
+-
+-	unsigned long slice_end;
+-	long slice_resid;
+-
+-	/* number of requests that are on the dispatch list or inside driver */
+-	int dispatched;
+-
+-	/* io prio of this group */
+-	unsigned short ioprio, org_ioprio;
+-	unsigned short ioprio_class, org_ioprio_class;
+-
+-	/* various state flags, see below */
+-	unsigned int flags;
+-};
+-
+ enum cfqq_state_flags {
+ 	CFQ_CFQQ_FLAG_on_rr = 0,	/* on round-robin busy list */
+ 	CFQ_CFQQ_FLAG_wait_request,	/* waiting for a request */
