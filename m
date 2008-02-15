@@ -1,65 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbYBOPxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbYBOPxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbYBOPxK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755352AbYBOPwx
+	id S1757216AbYBOPxe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYBOPxS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:52:53 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:41367 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755277AbYBOPww (ORCPT
+	Fri, 15 Feb 2008 10:53:18 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:37548 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756622AbYBOPxO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:52:52 -0500
-Date: Fri, 15 Feb 2008 10:52:51 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Yi Yang <yi.y.yang@intel.com>
-cc: akpm@linux-foundation.org, <davej@codemonkey.org.uk>,
-       <cpufreq@lists.linux.org.uk>, <gregkh@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-       <mingo@elte.hu>, <torvalds@linux-foundation.org>,
-       <linux-pm@lists.linux-foundation.org>
-Subject: Re: [linux-pm] [PATCH 2.6.25-rc1] cpufreq: fix cpufreq policy refcount
- imbalance
-In-Reply-To: <1203032921.3897.10.camel@yangyi-dev.bj.intel.com>
-Message-ID: <Pine.LNX.4.44L0.0802151043230.3423-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 Feb 2008 10:53:14 -0500
+Subject: Re: [PATCH] SCSI: fix data corruption caused by ses v2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       kristen.c.accardi@intel.com, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <200802131625.17172.yinghai.lu@sun.com>
+References: <200802090413.53275.yinghai.lu@sun.com>
+	 <200802122310.23050.yinghai.lu@sun.com>
+	 <1202945127.3109.89.camel@localhost.localdomain>
+	 <200802131625.17172.yinghai.lu@sun.com>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 09:53:06 -0600
+Message-Id: <1203090786.3058.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008, Yi Yang wrote:
+On Wed, 2008-02-13 at 16:25 -0800, Yinghai Lu wrote:
+> one system: initrd get courrupted:
+> 
+> RAMDISK: Compressed image found at block 0
+> RAMDISK: incomplete write (-28 != 2048) 134217728
+> crc error
+> VFS: Mounted root (ext2 filesystem).
+> Freeing unused kernel memory: 388k freed
+> init_special_inode: bogus i_mode (177777)
+> Warning: unable to open an initial console.
+> init_special_inode: bogus i_mode (177777)
+> init_special_inode: bogus i_mode (177777)
+> Kernel panic - not syncing: No init found.  Try passing init= option to kernel.
+> 
+> bisected to
+> commit 9927c68864e9c39cc317b4f559309ba29e642168
+> Author: James Bottomley <James.Bottomley@HansenPartnership.com>
+> Date:   Sun Feb 3 15:48:56 2008 -0600
+> 
+>     [SCSI] ses: add new Enclosure ULD
+> 
+> changes:
+> 1. change char to unsigned char to avoid type change later.
+> 2. preserve len for page1
+> 3. need to move desc_ptr even the entry is not enclosure_component_device/raid.
+>    so keep desc_ptr on right position
+> 4. record page7 len, and double check if desc_ptr out of boundary before touch.
+> 5. fix typo in subenclosure checking: should use hdr_buf instead.
+> 
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-> This patch adds kobject_put to balance refcount. I noticed Greg suggests
-> it will fix a power-off issue to remove kobject_get statement block, but i
-> think that isn't the best way because those code block has existed very long
-> and it is helpful because the successive statements are invoking relevant
-> data.
+OK, I added this with a fixup to eliminate the spurious goto
 
-Are you referring to this section of code (before the region affected 
-by your patch)?
+Thanks,
 
-	if (!kobject_get(&data->kobj)) {
-		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
-		cpufreq_debug_enable_ratelimit();
-		unlock_policy_rwsem_write(cpu);
-		return -EFAULT;
-	}
+James
 
-Greg is correct that the kobject_get() here is useless and should be
-removed.  kobject_get() never returns NULL unless its argument is NULL.  
-Since &data->kobj can never be NULL, the "if" test will never fail.  
-Hence there's no point in making the test at all.
+---
 
-The fact that a section of code has existed for a long time doesn't 
-mean that it is right.  :-)
+diff --git a/drivers/scsi/ses.c b/drivers/scsi/ses.c
+index cbba012..a6d9669 100644
+--- a/drivers/scsi/ses.c
++++ b/drivers/scsi/ses.c
+@@ -561,16 +561,15 @@ static int ses_intf_add(struct class_device *cdev,
+ 			if (desc_ptr) {
+ 				if (desc_ptr >= buf + page7_len) {
+ 					desc_ptr = NULL;
+-					goto noname;
++				} else {
++					len = (desc_ptr[2] << 8) + desc_ptr[3];
++					desc_ptr += 4;
++					/* Add trailing zero - pushes into
++					 * reserved space */
++					desc_ptr[len] = '\0';
++					name = desc_ptr;
+ 				}
+-				len = (desc_ptr[2] << 8) + desc_ptr[3];
+-				desc_ptr += 4;
+-				/* Add trailing zero - pushes into
+-				 * reserved space */
+-				desc_ptr[len] = '\0';
+-				name = desc_ptr;
+ 			}
+-		noname:
+ 			if (type_ptr[0] == ENCLOSURE_COMPONENT_DEVICE ||
+ 			    type_ptr[0] == ENCLOSURE_COMPONENT_ARRAY_DEVICE) {
+ 
 
-Furthermore, there's no reason to do the kobject_get().  Holding 2 
-references to a kobject is no better than holding just 1 reference.  
-Assuming you know that the kobject is still registered, then you also 
-know that there is already a reference to it.  So you have no reason to 
-take an additional reference.
-
-Alan Stern
 
