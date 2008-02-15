@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761091AbYBOUQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbYBOURM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761091AbYBOUQv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 15:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbYBOUQn
+	id S1754052AbYBOURM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 15:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbYBOUQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 15:16:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52335 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755586AbYBOUQm (ORCPT
+	Fri, 15 Feb 2008 15:16:44 -0500
+Received: from mx.neterion.com ([72.1.205.142]:32095 "EHLO owa.neterion.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbYBOUQn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 15:16:42 -0500
-Date: Fri, 15 Feb 2008 12:15:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: miklos@szeredi.hu, linux-kernel@vger.kernel.org, jdike@addtoit.com,
-       jack@suse.cz
-Subject: Re: isofs - Re: 2.6.24-mm1 bugs
-Message-Id: <20080215121548.b3c3f548.akpm@linux-foundation.org>
-In-Reply-To: <19039.1203094015@turing-police.cc.vt.edu>
-References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu>
-	<19039.1203094015@turing-police.cc.vt.edu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 Feb 2008 15:16:43 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [ofa-general] Re: Demand paging for memory regions
+Date: Fri, 15 Feb 2008 15:14:41 -0500
+Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77030E2657@nekter>
+In-Reply-To: <Pine.LNX.4.64.0802151158560.14517@schroedinger.engr.sgi.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] Re: Demand paging for memory regions
+Thread-Index: AchwDbDJ1lH4/i9bS56aSmkwkPQr6QAANQDA
+References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>  <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com>  <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>  <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>  <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>  <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com> <469958e00802141443g33448abcs3efa6d6c4aec2b56@mail.gmail.com> <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E2456@nekter> <Pine.LNX.4.64.0802141836070.4898@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E25BA@nekter> <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E25F1@nekter> <Pine.LNX.4.64.0802151158560.14517@schroedinger.engr.sgi.com>
+From: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Cc: <linux-kernel@vger.kernel.org>, <avi@qumranet.com>, <linux-mm@kvack.org>,
+       <general@lists.openfabrics.org>, <kvm-devel@lists.sourceforge.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008 11:46:55 -0500
-Valdis.Kletnieks@vt.edu wrote:
-
-> On Fri, 15 Feb 2008 12:43:45 +0100, Miklos Szeredi said:
-> > I'm trying out 2.6.24-mm1 on my work laptop (T60), and generally it
+Christoph Lameter wrote
 > 
-> >  - mounting isofs always results in an empty directory
+> > Merely mlocking pages deals with the end-to-end RDMA semantics.
+> > What still needs to be addressed is how a fastpath interface
+> > would dynamically pin and unpin. Yielding pins for short-term
+> > suspensions (and flushing cached translations) deals with the
+> > rest. Understanding the range of support that existing devices
+> > could provide with software updates would be the next step if
+> > you wanted to pursue this.
 > 
-> I hit this in 24-rc8-mm1, and bisected it down to
-> iget-stop-isofs-from-using-read_inode-fix-2.patch
-> 
-> Apparently it got broken way back in 24-rc6-mm1.
-> 
-> And that directory is *really* empty - even . and .. are missing. :)
->
+> That is addressed on the VM level by the mmu_notifier which started
+> this whole thread. The RDMA layers need to subscribe to this notifier
+> and then do whatever the hardware requires to unpin and pin memory.
+> I can only go as far as dealing with the VM layer. If you have any
+> issues there I'd be glad to help.
 
-Seems that 2.6.24-mm1+hot-fixes still didn't have
-iget-stop-isofs-from-using-read_inode-fix-3.patch:
-
-
-
-From: David Howells <dhowells@redhat.com>
-
-Fix isofs_get_block() to return only 0 on success.  It shouldn't return a
-+ve block count for example.
-
-Also make sure that isofs_get_blocks() doesn't accidentally return an error
-if rv is 0 come the return statement.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- fs/isofs/inode.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff -puN fs/isofs/inode.c~iget-stop-isofs-from-using-read_inode-fix-3 fs/isofs/inode.c
---- a/fs/isofs/inode.c~iget-stop-isofs-from-using-read_inode-fix-3
-+++ a/fs/isofs/inode.c
-@@ -1022,6 +1022,7 @@ int isofs_get_blocks(struct inode *inode
- 		rv++;
- 	}
- 
-+	error = 0;
- abort:
- 	unlock_kernel();
- 	return rv != 0 ? rv : error;
-@@ -1033,12 +1034,15 @@ abort:
- static int isofs_get_block(struct inode *inode, sector_t iblock,
- 		    struct buffer_head *bh_result, int create)
- {
-+	int ret;
-+
- 	if (create) {
- 		printk(KERN_DEBUG "%s: Kernel tries to allocate a block\n", __func__);
- 		return -EROFS;
- 	}
- 
--	return isofs_get_blocks(inode, iblock, &bh_result, 1);
-+	ret = isofs_get_blocks(inode, iblock, &bh_result, 1);
-+	return ret < 0 ? ret : 0;
- }
- 
- static int isofs_bmap(struct inode *inode, sector_t block)
-_
+There isn't much point in the RDMA layer subscribing to mmu
+notifications
+if the specific RDMA device will not be able to react appropriately when
+the notification occurs. I don't see how you get around needing to know
+which devices are capable of supporting page migration (via
+suspend/resume
+or other mechanisms) and which can only respond to a page migration by
+aborting connections.
 
