@@ -1,121 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933372AbYBOKu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933685AbYBOKxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933372AbYBOKu4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:50:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759311AbYBOKuq
+	id S933685AbYBOKxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:53:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbYBOKxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:50:46 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:60615 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758899AbYBOKuo (ORCPT
+	Fri, 15 Feb 2008 05:53:03 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:46833 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758834AbYBOKxB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:50:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=ZDMIzLNVu3TUHa+uHjPgkqn3VV3vEb4vFHdKcbvOnXjdvmlmHYhY0wC7nejB4GNT24zgnQIVI/BSdUlqauCAANbAkkS22eq3Og62u0cIrnjYjuXNTL/DROYzDopotgOjiFkWu31cs23D5gen5CiOksG+1bom183FsMD7Gn9fxew=
-Date: Fri, 15 Feb 2008 11:50:31 +0100
-To: Boris Petkov <petkovbb@googlemail.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: IDE cdrom problem with PLEXTOR DVDR PX-608AL
-Message-ID: <20080215105031.GG13446@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Boris Petkov <petkovbb@googlemail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org
-References: <200802121026.17420.hpj@urpla.net> <200802140037.51450.hpj@urpla.net> <20080214062652.GE13446@gollum.tnic> <200802141324.06731.bzolnier@gmail.com> <9ea470500802140542m325f05bdq256d3578950e4240@mail.gmail.com>
+	Fri, 15 Feb 2008 05:53:01 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Keith Mok <ek9852@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vfat: bug fix for vfat cannot handle filename with 255 asian characters when mounted with utf8
+References: <47B3213E.1020407@gmail.com> <87ejbea9xo.fsf@duaron.myhome.or.jp>
+	<47B56C20.3030200@gmail.com>
+Date: Fri, 15 Feb 2008 19:52:50 +0900
+In-Reply-To: <47B56C20.3030200@gmail.com> (Keith Mok's message of "Fri, 15 Feb
+	2008 18:40:32 +0800")
+Message-ID: <87abm2a3ul.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <9ea470500802140542m325f05bdq256d3578950e4240@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Borislav Petkov <petkovbb@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 02:42:58PM +0100, Boris Petkov wrote:
-> On 2/14/08, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > On Thursday 14 February 2008, Borislav Petkov wrote:
-> > > On Thu, Feb 14, 2008 at 12:37:50AM +0100, Hans-Peter Jansen wrote:
-> > >
-> > > [Added Bart to CC]
-> > >
-> > > > Am Dienstag, 12. Februar 2008 schrieb Borislav Petkov:
-> > > > > On Tue, Feb 12, 2008 at 10:26:17AM +0100, Hans-Peter Jansen wrote:
-> > > > > > Hi,
-> > > > > >
-> > > > > > I suffer from unreliable cdrom operations (failing DAE and burn
-> > > > > > sessions) with the openSUSE 2.6.18.8-0.7-bigsmp kernel.
-> > > > >
-> > > > >                   ^^^^
-> > > > > Hi,
-> > > > >
-> > > > > can please you test this with a more recent kernel. Yours is almost
-> > > > > ancient - from Sep. 2006.
-> > > >
-> > > > Sure, sorry. Here we go:
-> > > >
-> > > > Feb 14 00:18:18 kernel: hde: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
-> > > >  Trying to recover by ending request.
-> > > > Feb 14 00:27:27 kernel: hdc: cdrom_pc_intr: The drive appears confused (ireason = 0x01).
-> > > >  Trying to recover by ending request.
-> > > >
-> > > > ~> uname -a
-> > > > Linux xrated 2.6.24.1-35-pae #1 SMP 2008/02/12 01:00:18 UTC i686 athlon i386 GNU/Linux
-> > >
-> > > Actually the interrupt handler in ide-cd got rewritten and you're still using the
-> > > old one (cdrom_pc_intr vs cdrom_newpc_intr). Those changes went into mainline before
-> > > the 2.6.25-rc1 so we'll be able to test the new one only when you try out 2.6.25-rc1
-> > > or wait until 2.6.25 is released in case you don't want to try hazardous materials
-> > > such as an -rc kernel[*] :).
-> > >
-> > > Bart?
-> > >
-> > > *. As a matter of fact it runs quite smoothly on my machines.
-> >
-> > 2.6.25-rc1-git1 if you are using IDE.
-> >
-> > however it may still have this problem
-> >
-> >        if (ireason == 0) {
-> >                write = 1;
-> >                xferfunc = HWIF(drive)->atapi_output_bytes;
-> >        } else if (ireason == 2 || (ireason == 1 &&
-> >                   (blk_fs_request(rq) || blk_pc_request(rq)))) {
-> >
-> > we problably need to call ide_cd_check_ireason() also for REQ_TYPE_ATA_PC
-> > requests and remove (blk_fs_request(rq) || blk_pc_request(rq) here
-> >
-> >                write = 0;
-> >                xferfunc = HWIF(drive)->atapi_input_bytes;
-> >        } else {
-> >                printk(KERN_ERR "%s: %s: The drive "
-> >                                "appears confused (ireason = 0x%02x). "
-> >                                "Trying to recover by ending request.\n",
-> >                                drive->name, __FUNCTION__, ireason);
-> >                goto end_request;
-> >        }
-> >
-> > Bart
-> >
-> Hans-Peter,
-> 
-> i will prepare a patch against 2.6.24 for you to try later.
-Hi,
+Keith Mok <ek9852@gmail.com> writes:
 
-i thought that backporting ide-cd to 2.6.24 would be self-contained but the
-problem is that it pulls in changes made in the block layer (ll_rw_blk.c splitup)
-and if i pull those also in the patch, i can't guarantee the stability of your
-system. Besides, this turns pretty fast into a chained pulling which will result
-into a subset of 2.6.25-rc1 applied ontop of your 2.6.24.1 kernel so the only
-alternative is to wait after 2.6.25 has been released and tackle the problem then.
+> Patch modified according to coding style in Linux.
+> NLS and UTF8 filename length are checked and limited to 255 after convert to unicode in xlate_to_uni function.
+>
+>
+> Signed-off-by: Keith Mok <ek9852@gmail.com>
+
+Looks good to me. I'll submit after some test. (and maybe some cleanup
+of this area).
+
+Thanks.
+
+> --- linux-source-2.6.22/fs/fat/dir.c.orig	2007-07-09 07:32:17.000000000 +0800
+> +++ linux-source-2.6.22/fs/fat/dir.c	2008-02-15 17:24:18.000000000 +0800
+> @@ -124,7 +124,7 @@ static inline int fat_get_entry(struct i
+>   * but ignore that right now.
+>   * Ahem... Stack smashing in ring 0 isn't fun. Fixed.
+>   */
+> -static int uni16_to_x8(unsigned char *ascii, wchar_t *uni, int uni_xlate,
+> +static int uni16_to_x8(unsigned char *ascii, wchar_t *uni, int len, int uni_xlate,
+>  		       struct nls_table *nls)
+>  {
+>  	wchar_t *ip, ec;
+> @@ -135,10 +135,11 @@ static int uni16_to_x8(unsigned char *as
+>  	ip = uni;
+>  	op = ascii;
+>  
+> -	while (*ip) {
+> +	while (*ip && ((len - NLS_MAX_CHARSET_SIZE) > 0)) {
+>  		ec = *ip++;
+>  		if ( (charlen = nls->uni2char(ec, op, NLS_MAX_CHARSET_SIZE)) > 0) {
+>  			op += charlen;
+> +			len -= charlen;
+>  		} else {
+>  			if (uni_xlate == 1) {
+>  				*op = ':';
+> @@ -149,15 +150,18 @@ static int uni16_to_x8(unsigned char *as
+>  					ec >>= 4;
+>  				}
+>  				op += 5;
+> +				len -= 5;
+>  			} else {
+>  				*op++ = '?';
+> +				len--;
+>  			}
+>  		}
+> -		/* We have some slack there, so it's OK */
+> -		if (op>ascii+256) {
+> -			op = ascii + 256;
+> -			break;
+> -		}
+> +	}
+> +	
+> +	if(unlikely(*ip)) {
+> +		printk(KERN_WARNING
+> +			"FAT: truncated while convert unicode characters in %s\n",
+> +			__FUNCTION__);
+>  	}
+>  	*op = 0;
+>  	return (op - ascii);
+> @@ -311,9 +315,11 @@ int fat_search_long(struct inode *inode,
+>  	struct nls_table *nls_io = sbi->nls_io;
+>  	struct nls_table *nls_disk = sbi->nls_disk;
+>  	wchar_t bufuname[14];
+> -	unsigned char xlate_len, nr_slots;
+> +	int xlate_len;
+> +	unsigned char nr_slots;
+>  	wchar_t *unicode = NULL;
+> -	unsigned char work[8], bufname[260];	/* 256 + 4 */
+> +	unsigned char work[8];
+> +	unsigned char *bufname = NULL;
+>  	int uni_xlate = sbi->options.unicode_xlate;
+>  	int utf8 = sbi->options.utf8;
+>  	int anycase = (sbi->options.name_check != 's');
+> @@ -321,6 +327,10 @@ int fat_search_long(struct inode *inode,
+>  	loff_t cpos = 0;
+>  	int chl, i, j, last_u, err;
+>  
+> +	bufname = (unsigned char*)__get_free_page(GFP_KERNEL);
+> +	if (!bufname) {
+> +		return -ENOMEM;
+> +	}
+>  	err = -ENOENT;
+>  	while(1) {
+>  		if (fat_get_entry(inode, &cpos, &bh, &de) == -1)
+> @@ -383,8 +393,8 @@ parse_record:
+>  
+>  		bufuname[last_u] = 0x0000;
+>  		xlate_len = utf8
+> -			?utf8_wcstombs(bufname, bufuname, sizeof(bufname))
+> -			:uni16_to_x8(bufname, bufuname, uni_xlate, nls_io);
+> +			?utf8_wcstombs(bufname, bufuname, PAGE_SIZE)
+> +			:uni16_to_x8(bufname, bufuname, PAGE_SIZE, uni_xlate, nls_io);
+>  		if (xlate_len == name_len)
+>  			if ((!anycase && !memcmp(name, bufname, xlate_len)) ||
+>  			    (anycase && !nls_strnicmp(nls_io, name, bufname,
+> @@ -393,8 +403,8 @@ parse_record:
+>  
+>  		if (nr_slots) {
+>  			xlate_len = utf8
+> -				?utf8_wcstombs(bufname, unicode, sizeof(bufname))
+> -				:uni16_to_x8(bufname, unicode, uni_xlate, nls_io);
+> +				?utf8_wcstombs(bufname, unicode, PAGE_SIZE)
+> +				:uni16_to_x8(bufname, unicode, PAGE_SIZE, uni_xlate, nls_io);
+>  			if (xlate_len != name_len)
+>  				continue;
+>  			if ((!anycase && !memcmp(name, bufname, xlate_len)) ||
+> @@ -413,6 +423,8 @@ Found:
+>  	sinfo->i_pos = fat_make_i_pos(sb, sinfo->bh, sinfo->de);
+>  	err = 0;
+>  EODir:
+> +	if (bufname)
+> +		free_page((unsigned long)bufname);
+>  	if (unicode)
+>  		free_page((unsigned long)unicode);
+>  
+> @@ -593,7 +605,7 @@ parse_record:
+>  	if (isvfat) {
+>  		bufuname[j] = 0x0000;
+>  		i = utf8 ? utf8_wcstombs(bufname, bufuname, sizeof(bufname))
+> -			 : uni16_to_x8(bufname, bufuname, uni_xlate, nls_io);
+> +			 : uni16_to_x8(bufname, bufuname, sizeof(bufname), uni_xlate, nls_io);
+>  	}
+>  
+>  	fill_name = bufname;
+> @@ -605,7 +617,7 @@ parse_record:
+>  		int buf_size = PAGE_SIZE - (261 * sizeof(unicode[0]));
+>  		int long_len = utf8
+>  			? utf8_wcstombs(longname, unicode, buf_size)
+> -			: uni16_to_x8(longname, unicode, uni_xlate, nls_io);
+> +			: uni16_to_x8(longname, unicode, buf_size, uni_xlate, nls_io);
+>  
+>  		if (!both) {
+>  			fill_name = longname;
+> --- linux-source-2.6.22/fs/vfat/namei.c.orig	2007-07-09 07:32:17.000000000 +0800
+> +++ linux-source-2.6.22/fs/vfat/namei.c	2008-02-15 18:33:15.000000000 +0800
+> @@ -176,15 +176,8 @@ static inline int vfat_is_used_badchars(
+>  	for (i = 0; i < len; i++)
+>  		if (vfat_bad_char(s[i]))
+>  			return -EINVAL;
+> -	return 0;
+> -}
+> -
+> -static int vfat_valid_longname(const unsigned char *name, unsigned int len)
+> -{
+> -	if (name[len - 1] == ' ')
+> +	if (s[i - 1] == 0x0020) /* last character cannot be space */
+>  		return -EINVAL;
+> -	if (len >= 256)
+> -		return -ENAMETOOLONG;
+>  	return 0;
+>  }
+>  
+> @@ -485,11 +478,14 @@ xlate_to_uni(const unsigned char *name, 
+>  		 */
+>  		*outlen -= (name_len - len);
+>  
+> +		if (*outlen > 255)
+> +			return -ENAMETOOLONG;
+> +
+>  		op = &outname[*outlen * sizeof(wchar_t)];
+>  	} else {
+>  		if (nls) {
+>  			for (i = 0, ip = name, op = outname, *outlen = 0;
+> -			     i < len && *outlen <= 260;
+> +			     i < len && *outlen <= 255;
+>  			     *outlen += 1)
+>  			{
+>  				if (escape && (*ip == ':')) {
+> @@ -525,18 +521,20 @@ xlate_to_uni(const unsigned char *name, 
+>  					op += 2;
+>  				}
+>  			}
+> +			if (i < len)
+> +				return -ENAMETOOLONG;
+>  		} else {
+>  			for (i = 0, ip = name, op = outname, *outlen = 0;
+> -			     i < len && *outlen <= 260;
+> +			     i < len && *outlen <= 255;
+>  			     i++, *outlen += 1)
+>  			{
+>  				*op++ = *ip++;
+>  				*op++ = 0;
+>  			}
+> +			if (i < len)
+> +				return -ENAMETOOLONG;
+>  		}
+>  	}
+> -	if (*outlen > 260)
+> -		return -ENAMETOOLONG;
+>  
+>  	*longlen = *outlen;
+>  	if (*outlen % 13) {
+> @@ -574,9 +572,6 @@ static int vfat_build_slots(struct inode
+>  	loff_t offset;
+>  
+>  	*nr_slots = 0;
+> -	err = vfat_valid_longname(name, len);
+> -	if (err)
+> -		return err;
+>  
+>  	page = __get_free_page(GFP_KERNEL);
+>  	if (!page)
+>
+>
+>
 
 -- 
-Regards/Gruﬂ,
-    Boris.
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
