@@ -1,86 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbYBOWzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764879AbYBOW4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbYBOWzo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763471AbYBOWkl
+	id S1764879AbYBOW4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764524AbYBOWla
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:40:41 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:47736 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763318AbYBOWkh (ORCPT
+	Fri, 15 Feb 2008 17:41:30 -0500
+Received: from mga11.intel.com ([192.55.52.93]:9771 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764525AbYBOWl0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:40:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=OQQsEtS2ajoJqL/hLZspPuCbMXjfHMdQq+MoXCMZUre5yeGLJosGdOpCBhaE1ecKS9Zjdqrc1qjYJJkCIkYl4xchMGCEr54ALaC7xMgFvwl+bp0Iqgu73uOiou0M7p/uRwzmMtKQrzCM61mrkoVBKyBgIvzbADdWcpYwFw7SR3M=
-Message-ID: <47B614DE.1050305@gmail.com>
-Date: Fri, 15 Feb 2008 23:40:30 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 15 Feb 2008 17:41:26 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,360,1199692800"; 
+   d="scan'208";a="519417249"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Nick Kossifidis <mickflemm@gmail.com>
-CC: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@lists.ath5k.org,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: [PATCH 1/1] WDEV: ath5k, test single chip before reset
-References: <1203107827-27632-1-git-send-email-jirislaby@gmail.com> <40f31dec0802151353l2d03fdaam23d4f731a6c7bddc@mail.gmail.com>
-In-Reply-To: <40f31dec0802151353l2d03fdaam23d4f731a6c7bddc@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: ipw3945: not only it periodically dies, it also BUG()s
+Date: Fri, 15 Feb 2008 14:41:08 -0800
+Message-ID: <D936D925018D154694D8A362EEB0892003ABD431@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20080206210026.GA32641@elf.ucw.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ipw3945: not only it periodically dies, it also BUG()s
+Thread-Index: AchpA6GyVSSBv8TLQhGq6I6Yh6OVZQHIAHSQ
+References: <20080205214441.GA1518@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982BB1@orsmsx416.amr.corp.intel.com> <20080206143218.GA16188@elf.ucw.cz> <D936D925018D154694D8A362EEB0892003982E4C@orsmsx416.amr.corp.intel.com> <20080206210026.GA32641@elf.ucw.cz>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: <ipw3945-devel@lists.sourceforge.net>, <linux-wireless@vger.kernel.org>,
+       "Zhu, Yi" <yi.zhu@intel.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 15 Feb 2008 22:41:24.0816 (UTC) FILETIME=[E4FF4500:01C87023]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/15/2008 10:53 PM, Nick Kossifidis wrote:
-> 2008/2/15, Jiri Slaby <jirislaby@gmail.com>:
->> Move ath5k_hw_nic_wakeup after ah_single_chip being set, because we
->>  test the value in there and decides whether reset or not.
->>
->>  Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
->>  Cc: Nick Kossifidis <mickflemm@gmail.com>
->>  Cc: Luis R. Rodriguez <mcgrof@gmail.com>
->>  ---
->>   drivers/net/wireless/ath5k/hw.c |   21 ++++++++++-----------
->>   1 files changed, 10 insertions(+), 11 deletions(-)
->>
->>  diff --git a/drivers/net/wireless/ath5k/hw.c b/drivers/net/wireless/ath5k/hw.c
->>  index 3a4bf40..9cdd27f 100644
->>  --- a/drivers/net/wireless/ath5k/hw.c
->>  +++ b/drivers/net/wireless/ath5k/hw.c
-[...]
->>  @@ -210,12 +205,13 @@ struct ath5k_hw *ath5k_hw_attach(struct ath5k_softc *sc, u8 mac_version)
->>         }
->>
->>         /* Identify single chip solutions */
->>  -       if((srev <= AR5K_SREV_VER_AR5414) &&
->>  -       (srev >= AR5K_SREV_VER_AR2424)) {
->>  -               ah->ah_single_chip = true;
->>  -       } else {
->>  -               ah->ah_single_chip = false;
->>  -       }
->>  +       ah->ah_single_chip = srev >= AR5K_SREV_VER_AR2424 &&
->>  +                       srev <= AR5K_SREV_VER_AR5414;
->>  +
->>  +       /* Bring device out of sleep and reset it's units */
->>  +       ret = ath5k_hw_nic_wakeup(ah, AR5K_INIT_MODE, true);
->>  +       if (ret)
->>  +               goto err_free;
->>
->>         /* Single chip radio */
->>         if (ah->ah_radio_2ghz_revision == ah->ah_radio_5ghz_revision)
->>
+On Wednesday, February 06, 2008 1:00 PM, Pavel Machek  wrote:
+
+> Hmmm... bugzilla says:
 > 
-> NACK, single chip flag is going out since only needed check is for
-> 5424/2424 during nic_wakeup, 5413/2413 behave like the rest
-> 5211/5212-combatible cards.
+>    * Exact steps to reproduce
+>    * Reproducability of bug (e.g. intermittent or 100% reproducable)
+>    * Did this problem not exist in previous version of the driver?
+>    * kernel version
+>    * AP brand/model
+>    * dmesg output at debug level 0x43fff
+>      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> 		it would be nice to specify how to do this. It is
+> insmod parameter, right?
+> 
+>    * Type of security (if any) you are using (e.g. WEP64,
+> WEP128, WPA, WPA2, 802.1x, etc)
+>    * Version of firmware
+>    * Version of the ieee80211 module
+>    * Proximity to the AP
+> 
+>    * Before reporting any firmware errors, please be sure to read Ben
+> Cahill's mailing list post on how to most effectively report such
+>    bugs.
+>
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> unfortunately the link here does not work. 
 
-Ok, thanks.
+The instructions on how to report a bug have been updated to address the
+above issues. Thank you very much for helping us to make it better.
 
-> Sorry for delaying the relevant patches, i'm working with the 2413
-> card i got from Mike to make it work and it'll take some time (not as
-> easy as i thought, i probably miss something)...
-
-No problem, if I could do anything for you in this area, don't hesitate to drop 
-a message.
+Reinette
