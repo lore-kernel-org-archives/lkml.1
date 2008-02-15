@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759080AbYBOI2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761643AbYBOIeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759080AbYBOI2f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 03:28:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbYBOI2Z
+	id S1761643AbYBOIeB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 03:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbYBOIdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 03:28:25 -0500
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3146 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752922AbYBOI2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 03:28:24 -0500
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: problem with starting 2.5.25-rc1 and latest git
-Date: Fri, 15 Feb 2008 09:28:19 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <200802132316.03155.m.kozlowski@tuxland.pl> <20080214234748.GA6061@suse.de>
-In-Reply-To: <20080214234748.GA6061@suse.de>
+	Fri, 15 Feb 2008 03:33:53 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:49596 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYBOIdv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 03:33:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b3X2hglQewoorM4GCaFMqhDwy9+xOxB/nkgHrGdPXDas23utJaPVPmtQc0IKymEWBqrjfSEq8tZY0wzKWITS2GAOrtIm7FW3blp5R5T7UYtVcdmi7ArKruPh05+yqzr/lS6IXTwX8WsBfMhm84FDX+jwNE9GcI5D3XgD4wluRBg=
+Message-ID: <386072610802150033k4dc2faf1je119bf5516336ee9@mail.gmail.com>
+Date: Fri, 15 Feb 2008 16:33:50 +0800
+From: "Bryan Wu" <cooloney.lkml@gmail.com>
+To: "Stephen Rothwell" <sfr@canb.auug.org.au>
+Subject: Re: linux-next: first tree
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080215003537.8911ce35.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802150928.19530.m.kozlowski@tuxland.pl>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, Feb 14, 2008 at 9:35 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi all,
+>
+>  I have created the first cut of the linux-next tree at
+>  git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+>
+>  Things to know about this tree:
+>
+>  It has two branches - master and stable.  Stable is currently just Linus'
+>  tree and will never rebase.  Master will rebase on an almost daily basis
+>  (maybe slower at the start).
+>
+>  The tree consists of subsystem git and quilt trees.  Currently, the quilt
+>  trees are integrated by importing them into appropriately based git
+>  branches and then merging those branches.  This has the advantage that
+>  any conflict resolution will onlt have to happen once at the merge point
+>  rather than, possibly, sevveral times during the series.  However, I am
+>  considering just applying the quilt trees on top of the current tree
+>  to get a result more like Linus' tree - we will see. The git trees are
+>  obviously just merged.
+>
+>  Between each merge, the tree was built with both an allmodconfig for both
+>  powerpc and x86_64.
+>
+>  The tree currently contains:
+>         Greg's driver-core, pci and usb quilt series (in that order)
+>         Alasdair Kergon's device-mapper quilt tree
+>         Jiri Kosina's hid git tree
+>         Jean Delvare's i2c quilt tree
+>         Randy Dunlap's kernel-doc quilt tree
+>         Haavard Skinnemoen's avr32 git tree
+>
+>  There was only one unresolved conflict which could have been caused
+>  because I was not sure where to base the kernel-doc tree.
+>
+>  So, comments, please.
+>
+>  Also, more trees please ... :-)
+>
+Hi Stephen,
 
-> > 	I tried 2.6.25-rc1 and latest git on my laptop (x86 32bit) and have a problem.
-> > Linux boots but with huge delay due to some issue with loading usb modules.
-> > Udev complains:
-> > 
-> > 'Could not lock modprobe uhci_hcd'
-> > 'Could not lock modprobe yenta_socket'
-> > 'Unknown symbol usb_*'
-> > 'Gave up waiting for init of module usbcore'
-> > 
-> > at the same time I can see these messages in syslog (look at timing - grep by usb):
-> > 
-> > Feb 13 21:34:22 laptop kernel: usbcore: registered new interface driver usbfs
-> > Feb 13 21:34:22 laptop kernel: usbcore: registered new interface driver hub
-> > Feb 13 21:34:22 laptop kernel: usbcore: registered new device driver usb
-> > Feb 13 21:34:22 laptop kernel: ehci_hcd: gave up waiting for init of module usbcore.
-> 
-> I don't see how this is a usb issue, it looks to be a module loading
-> issue, which is in the module core and module-init-tools.
+Could you please add Blackfin tree to the linux-next
 
-Well ... that was just a guess.
+ git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git
+for-linus
 
-> What version of module-init-tools do you have, and are you using an
-> initramfs that loads these modules?  If so, what distro and version are
-> you using?
+Thanks a lot.
 
-I'm using gentoo. No initramfs. The same configuration under 2.6.24 boots without
-delays.
-
-module-init-tools: 3.4
-udev: 115 (gentoo says 115-r1)
-
-this is my grub.conf entry (on 2.6.24 I have identical boot parameters):
-
-title  2.6.25-rc1
-root (hd0,0)
-kernel (hd0,0)/kernel-2.6.25-rc1 root=/dev/hda3 vga=0x318 video=vesafb:mtrr lapic pci=routeirq rootflags=data=writeback
-
-
-Linux laptop 2.6.24 #2 PREEMPT Sat Jan 26 00:48:39 CET 2008 i686 Intel(R) Pentium(R) 4 CPU 2.40GHz GenuineIntel GNU/Linux
- 
-Gnu C                  4.1.2
-Gnu make               3.81
-binutils               2.18
-util-linux             2.13
-mount                  2.13
-module-init-tools      3.4
-e2fsprogs              1.40.4
-pcmciautils            014
-pcmcia-cs              3.2.8
-PPP                    2.4.4
-Linux C Library        2.6.1
-Dynamic linker (ldd)   2.6.1
-Procps                 3.2.7
-Net-tools              1.60
-Kbd                    1.13
-Sh-utils               6.9
-udev                   115
-wireless-tools         29
-Modules Loaded         orinoco_cs orinoco hermes pcmcia firmware_class ehci_hcd psmouse parport_pc parport 8139too uhci_hcd usbcore yenta_socket rsrc_nonstatic rtc floppy
+And do you have the blackfin cross-compile toolchain?
 
 Regards,
-
-	Mariusz
+-Bryan
