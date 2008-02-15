@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbYBOFAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbYBOFIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbYBOFAi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 00:00:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYBOFAR
+	id S1754081AbYBOFIt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 00:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYBOFIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 00:00:17 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2864 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbYBOFAO (ORCPT
+	Fri, 15 Feb 2008 00:08:39 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:35888 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbYBOFIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 00:00:14 -0500
-Subject: Re: [PATCH] ubi: fix sparse errors in ubi.h
-From: Joe Perches <joe@perches.com>
-To: Ben Dooks <ben@fluff.org>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080214235637.GA4715@fluff.org.uk>
-References: <1203025995.5601.0.camel@brick>
-	 <20080214235637.GA4715@fluff.org.uk>
-Content-Type: text/plain
-Date: Thu, 14 Feb 2008 20:58:31 -0800
-Message-Id: <1203051511.13820.28.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Fri, 15 Feb 2008 00:08:38 -0500
+Message-ID: <47B51E55.6020203@davidnewall.com>
+Date: Fri, 15 Feb 2008 15:38:37 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Gene Heskett <gene.heskett@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Handshaking on USB serial devices
+References: <47B30291.2040905@davidnewall.com>	<200802141116.14722.gene.heskett@gmail.com>	<20080214163143.0915b44c@core>	<200802141255.22048.gene.heskett@gmail.com> <20080214193731.3c36acb0@core>
+In-Reply-To: <20080214193731.3c36acb0@core>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-14 at 23:56 +0000, Ben Dooks wrote:
-> On Thu, Feb 14, 2008 at 01:53:15PM -0800, Harvey Harrison wrote:
-> > In C, signed 1-bit bitfields can only take the values 0 and -1, only
-> > 0 and 1 are ever assigned in current code.  Make them unsigned
-> > bitfields.
-> > 
-> > Fixes the (repeated) sparse errors:
-> > drivers/mtd/ubi/ubi.h:220:15: error: dubious one-bit signed bitfield
-> > drivers/mtd/ubi/ubi.h:221:17: error: dubious one-bit signed bitfield
-> > drivers/mtd/ubi/ubi.h:222:18: error: dubious one-bit signed bitfield
-> > drivers/mtd/ubi/ubi.h:223:16: error: dubious one-bit signed bitfield
-> > drivers/mtd/ubi/ubi.h:224:20: error: dubious one-bit signed bitfield
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> > Sorry, not sure who to CC on this.
-> 
-> IIRC: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Alan Cox wrote:
+>> byte of a packet is being thrown away about .1% of the time for the pl2303, 
+>> but I'm not sure if the FTDI driver still suffers from a similar rash.  I 
+>>     
+>
+> A 20 byte low speed message is too small for flow control to account for
+> it.
 
-UNSORTED BLOCK IMAGES (UBI)
-P:      Artem Bityutskiy
-M:      dedekind@infradead.org
-W:      http://www.linux-mtd.infradead.org/
-L:      linux-mtd@lists.infradead.org
-T:      git git://git.infradead.org/~dedekind/ubi-2.6.git
-S:      Maintained
-F:      drivers/mtd/ubi
-F:      include/linux/mtd/ubi.h
-F:      include/mtd/ubi-*
-
-
+I agree.  I've observed the first byte of received data disappears on
+pl2303 devices, but haven't spent time finding out why.  (It's on my list.)
