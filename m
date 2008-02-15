@@ -1,240 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762916AbYBOKjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932909AbYBOKkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762916AbYBOKjX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758591AbYBOKjN
+	id S932909AbYBOKkT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758829AbYBOKkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:39:13 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:34928 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758190AbYBOKjL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:39:11 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=qs6GsLaAXF0inISfBcMRDzIUQ8eRc+7ZqUTXkHPsyxaj+GH6E9qHJ8bN5besaQptoBF/BMRAF6gabbMhGjz7B5QbycFIlTz0LxXhlzA4y7ZwAxacLW6YpGWdmMGOHMB2hsL/Fvrxxqq31EgGfb17o2P8xEnFaHi7u55gypxdCbc=
-Message-ID: <47B56C20.3030200@gmail.com>
-Date: Fri, 15 Feb 2008 18:40:32 +0800
-From: Keith Mok <ek9852@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 15 Feb 2008 05:40:06 -0500
+Received: from sacred.ru ([62.205.161.221]:46433 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758591AbYBOKkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 05:40:00 -0500
+Message-ID: <47B56BF2.4020600@openvz.org>
+Date: Fri, 15 Feb 2008 13:39:46 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] vfat: bug fix for vfat cannot handle filename with 255
- asian characters when mounted with utf8
-References: <47B3213E.1020407@gmail.com> <87ejbea9xo.fsf@duaron.myhome.or.jp>
-In-Reply-To: <87ejbea9xo.fsf@duaron.myhome.or.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+Subject: [PATCH] Make sysctl a separate filesystem
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 15 Feb 2008 13:39:39 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch modified according to coding style in Linux.
-NLS and UTF8 filename length are checked and limited to 255 after convert to unicode in xlate_to_uni function.
+Sysctl files/inodes now have their own readdir and lookup
+methods, so there is one step left in turning this into a 
+separate filesystem.
 
+The benefits of this are:
 
-Signed-off-by: Keith Mok <ek9852@gmail.com>
+1. this will allow to remove a fancy revalidation rules from
+   sysctl dentries (will be in a separate patch);
+2. the same approach will make /proc/net implementation MUCH
+   cleaner in respect to net namespaces interaction, i.e.
+   no racy shadows and no revalidation for proc entries in 
+   this subdir;
+3. sysctl inodes are now smaller than the procfs ones.
 
+Note: update your initscripts to mount sysctl filesystem 
+right after the proc is mounted in order not to lose your
+/etc/sysctl.conf configuration (and optionally fstab).
+
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Alexey Dobriyan <adobriyan@openvz.org>
 
 ---
 
-Keith Mok
-
-
-
---- linux-source-2.6.22/fs/fat/dir.c.orig	2007-07-09 07:32:17.000000000 +0800
-+++ linux-source-2.6.22/fs/fat/dir.c	2008-02-15 17:24:18.000000000 +0800
-@@ -124,7 +124,7 @@ static inline int fat_get_entry(struct i
-  * but ignore that right now.
-  * Ahem... Stack smashing in ring 0 isn't fun. Fixed.
+diff --git a/fs/proc/internal.h b/fs/proc/internal.h
+index 1c81c8f..47dec4b 100644
+--- a/fs/proc/internal.h
++++ b/fs/proc/internal.h
+@@ -11,11 +11,6 @@
+ 
+ #include <linux/proc_fs.h>
+ 
+-#ifdef CONFIG_PROC_SYSCTL
+-extern int proc_sys_init(void);
+-#else
+-static inline void proc_sys_init(void) { }
+-#endif
+ #ifdef CONFIG_NET
+ extern int proc_net_init(void);
+ #else
+diff --git a/fs/proc/proc_sysctl.c b/fs/proc/proc_sysctl.c
+index 614c34b..1b52f43 100644
+--- a/fs/proc/proc_sysctl.c
++++ b/fs/proc/proc_sysctl.c
+@@ -1,11 +1,9 @@
+ /*
+  * /proc/sys support
   */
--static int uni16_to_x8(unsigned char *ascii, wchar_t *uni, int uni_xlate,
-+static int uni16_to_x8(unsigned char *ascii, wchar_t *uni, int len, int uni_xlate,
- 		       struct nls_table *nls)
- {
- 	wchar_t *ip, ec;
-@@ -135,10 +135,11 @@ static int uni16_to_x8(unsigned char *as
- 	ip = uni;
- 	op = ascii;
- 
--	while (*ip) {
-+	while (*ip && ((len - NLS_MAX_CHARSET_SIZE) > 0)) {
- 		ec = *ip++;
- 		if ( (charlen = nls->uni2char(ec, op, NLS_MAX_CHARSET_SIZE)) > 0) {
- 			op += charlen;
-+			len -= charlen;
- 		} else {
- 			if (uni_xlate == 1) {
- 				*op = ':';
-@@ -149,15 +150,18 @@ static int uni16_to_x8(unsigned char *as
- 					ec >>= 4;
- 				}
- 				op += 5;
-+				len -= 5;
- 			} else {
- 				*op++ = '?';
-+				len--;
- 			}
- 		}
--		/* We have some slack there, so it's OK */
--		if (op>ascii+256) {
--			op = ascii + 256;
--			break;
--		}
-+	}
-+	
-+	if(unlikely(*ip)) {
-+		printk(KERN_WARNING
-+			"FAT: truncated while convert unicode characters in %s\n",
-+			__FUNCTION__);
- 	}
- 	*op = 0;
- 	return (op - ascii);
-@@ -311,9 +315,11 @@ int fat_search_long(struct inode *inode,
- 	struct nls_table *nls_io = sbi->nls_io;
- 	struct nls_table *nls_disk = sbi->nls_disk;
- 	wchar_t bufuname[14];
--	unsigned char xlate_len, nr_slots;
-+	int xlate_len;
-+	unsigned char nr_slots;
- 	wchar_t *unicode = NULL;
--	unsigned char work[8], bufname[260];	/* 256 + 4 */
-+	unsigned char work[8];
-+	unsigned char *bufname = NULL;
- 	int uni_xlate = sbi->options.unicode_xlate;
- 	int utf8 = sbi->options.utf8;
- 	int anycase = (sbi->options.name_check != 's');
-@@ -321,6 +327,10 @@ int fat_search_long(struct inode *inode,
- 	loff_t cpos = 0;
- 	int chl, i, j, last_u, err;
- 
-+	bufname = (unsigned char*)__get_free_page(GFP_KERNEL);
-+	if (!bufname) {
-+		return -ENOMEM;
-+	}
- 	err = -ENOENT;
- 	while(1) {
- 		if (fat_get_entry(inode, &cpos, &bh, &de) == -1)
-@@ -383,8 +393,8 @@ parse_record:
- 
- 		bufuname[last_u] = 0x0000;
- 		xlate_len = utf8
--			?utf8_wcstombs(bufname, bufuname, sizeof(bufname))
--			:uni16_to_x8(bufname, bufuname, uni_xlate, nls_io);
-+			?utf8_wcstombs(bufname, bufuname, PAGE_SIZE)
-+			:uni16_to_x8(bufname, bufuname, PAGE_SIZE, uni_xlate, nls_io);
- 		if (xlate_len == name_len)
- 			if ((!anycase && !memcmp(name, bufname, xlate_len)) ||
- 			    (anycase && !nls_strnicmp(nls_io, name, bufname,
-@@ -393,8 +403,8 @@ parse_record:
- 
- 		if (nr_slots) {
- 			xlate_len = utf8
--				?utf8_wcstombs(bufname, unicode, sizeof(bufname))
--				:uni16_to_x8(bufname, unicode, uni_xlate, nls_io);
-+				?utf8_wcstombs(bufname, unicode, PAGE_SIZE)
-+				:uni16_to_x8(bufname, unicode, PAGE_SIZE, uni_xlate, nls_io);
- 			if (xlate_len != name_len)
- 				continue;
- 			if ((!anycase && !memcmp(name, bufname, xlate_len)) ||
-@@ -413,6 +423,8 @@ Found:
- 	sinfo->i_pos = fat_make_i_pos(sb, sinfo->bh, sinfo->de);
- 	err = 0;
- EODir:
-+	if (bufname)
-+		free_page((unsigned long)bufname);
- 	if (unicode)
- 		free_page((unsigned long)unicode);
- 
-@@ -593,7 +605,7 @@ parse_record:
- 	if (isvfat) {
- 		bufuname[j] = 0x0000;
- 		i = utf8 ? utf8_wcstombs(bufname, bufuname, sizeof(bufname))
--			 : uni16_to_x8(bufname, bufuname, uni_xlate, nls_io);
-+			 : uni16_to_x8(bufname, bufuname, sizeof(bufname), uni_xlate, nls_io);
- 	}
- 
- 	fill_name = bufname;
-@@ -605,7 +617,7 @@ parse_record:
- 		int buf_size = PAGE_SIZE - (261 * sizeof(unicode[0]));
- 		int long_len = utf8
- 			? utf8_wcstombs(longname, unicode, buf_size)
--			: uni16_to_x8(longname, unicode, uni_xlate, nls_io);
-+			: uni16_to_x8(longname, unicode, buf_size, uni_xlate, nls_io);
- 
- 		if (!both) {
- 			fill_name = longname;
---- linux-source-2.6.22/fs/vfat/namei.c.orig	2007-07-09 07:32:17.000000000 +0800
-+++ linux-source-2.6.22/fs/vfat/namei.c	2008-02-15 18:33:15.000000000 +0800
-@@ -176,15 +176,8 @@ static inline int vfat_is_used_badchars(
- 	for (i = 0; i < len; i++)
- 		if (vfat_bad_char(s[i]))
- 			return -EINVAL;
--	return 0;
--}
 -
--static int vfat_valid_longname(const unsigned char *name, unsigned int len)
--{
--	if (name[len - 1] == ' ')
-+	if (s[i - 1] == 0x0020) /* last character cannot be space */
- 		return -EINVAL;
--	if (len >= 256)
--		return -ENAMETOOLONG;
- 	return 0;
++#include <linux/magic.h>
+ #include <linux/sysctl.h>
+-#include <linux/proc_fs.h>
+ #include <linux/security.h>
+-#include "internal.h"
+ 
+ static struct dentry_operations proc_sys_dentry_operations;
+ static const struct file_operations proc_sys_file_operations;
+@@ -28,22 +26,26 @@ static void proc_sys_refresh_inode(struct inode *inode, struct ctl_table *table)
+ 	}
  }
  
-@@ -485,11 +478,14 @@ xlate_to_uni(const unsigned char *name, 
- 		 */
- 		*outlen -= (name_len - len);
- 
-+		if (*outlen > 255)
-+			return -ENAMETOOLONG;
++static inline long inode_depth(struct inode *ino)
++{
++	return (long)ino->i_private;
++}
 +
- 		op = &outname[*outlen * sizeof(wchar_t)];
- 	} else {
- 		if (nls) {
- 			for (i = 0, ip = name, op = outname, *outlen = 0;
--			     i < len && *outlen <= 260;
-+			     i < len && *outlen <= 255;
- 			     *outlen += 1)
- 			{
- 				if (escape && (*ip == ':')) {
-@@ -525,18 +521,20 @@ xlate_to_uni(const unsigned char *name, 
- 					op += 2;
- 				}
- 			}
-+			if (i < len)
-+				return -ENAMETOOLONG;
- 		} else {
- 			for (i = 0, ip = name, op = outname, *outlen = 0;
--			     i < len && *outlen <= 260;
-+			     i < len && *outlen <= 255;
- 			     i++, *outlen += 1)
- 			{
- 				*op++ = *ip++;
- 				*op++ = 0;
- 			}
-+			if (i < len)
-+				return -ENAMETOOLONG;
- 		}
- 	}
--	if (*outlen > 260)
--		return -ENAMETOOLONG;
++static inline void set_inode_depth(struct inode *ino, long depth)
++{
++	ino->i_private = (void *)depth;
++}
++
+ static struct inode *proc_sys_make_inode(struct inode *dir, struct ctl_table *table)
+ {
+ 	struct inode *inode;
+-	struct proc_inode *dir_ei, *ei;
+-	int depth;
  
- 	*longlen = *outlen;
- 	if (*outlen % 13) {
-@@ -574,9 +572,6 @@ static int vfat_build_slots(struct inode
- 	loff_t offset;
+ 	inode = new_inode(dir->i_sb);
+ 	if (!inode)
+ 		goto out;
  
- 	*nr_slots = 0;
--	err = vfat_valid_longname(name, len);
--	if (err)
--		return err;
+ 	/* A directory is always one deeper than it's parent */
+-	dir_ei = PROC_I(dir);
+-	depth = dir_ei->fd + 1;
+-
+-	ei = PROC_I(inode);
+-	ei->fd = depth;
++	set_inode_depth(inode, inode_depth(dir) + 1);
+ 	inode->i_mtime = inode->i_atime = inode->i_ctime = CURRENT_TIME;
+ 	inode->i_op = &proc_sys_inode_operations;
+ 	inode->i_fop = &proc_sys_file_operations;
+@@ -56,10 +58,7 @@ out:
+ static struct dentry *proc_sys_ancestor(struct dentry *dentry, int depth)
+ {
+ 	for (;;) {
+-		struct proc_inode *ei;
+-
+-		ei = PROC_I(dentry->d_inode);
+-		if (ei->fd == depth)
++		if (inode_depth(dentry->d_inode) == depth)
+ 			break; /* found */
  
- 	page = __get_free_page(GFP_KERNEL);
- 	if (!page)
-
-
+ 		dentry = dentry->d_parent;
+@@ -93,12 +92,9 @@ static struct ctl_table *proc_sys_lookup_table(struct dentry *dentry,
+ 						struct ctl_table *table)
+ {
+ 	struct dentry *ancestor;
+-	struct proc_inode *ei;
+ 	int depth, i;
+ 
+-	ei = PROC_I(dentry->d_inode);
+-	depth = ei->fd;
+-
++	depth = inode_depth(dentry->d_inode);
+ 	if (depth == 0)
+ 		return table;
+ 
+@@ -385,7 +381,7 @@ static int proc_sys_permission(struct inode *inode, int mask, struct nameidata *
+ 	int error;
+ 
+ 	head = NULL;
+-	depth = PROC_I(inode)->fd;
++	depth = inode_depth(inode);
+ 
+ 	/* First check the cached permissions, in case we don't have
+ 	 * enough information to lookup the sysctl table entry.
+@@ -466,13 +462,56 @@ static struct dentry_operations proc_sys_dentry_operations = {
+ 	.d_revalidate	= proc_sys_revalidate,
+ };
+ 
+-static struct proc_dir_entry *proc_sys_root;
++static const struct super_operations sysctl_ops = {
++	.statfs		= simple_statfs,
++	.drop_inode	= generic_delete_inode,
++};
+ 
+-int proc_sys_init(void)
++static int sysctl_fill_super(struct super_block *sb, void *data, int flags)
+ {
+-	proc_sys_root = proc_mkdir("sys", NULL);
+-	proc_sys_root->proc_iops = &proc_sys_inode_operations;
+-	proc_sys_root->proc_fops = &proc_sys_file_operations;
+-	proc_sys_root->nlink = 0;
++	struct inode *ino;
++
++	sb->s_flags |= MS_NODIRATIME | MS_NOSUID | MS_NOEXEC | MS_NODEV;
++	sb->s_blocksize = 1024;
++	sb->s_blocksize_bits = 10;
++	sb->s_magic = PROC_SUPER_MAGIC;
++	sb->s_op = &sysctl_ops;
++	sb->s_time_gran = 1;
++
++	ino = new_inode(sb);
++	if (ino == NULL)
++		return -ENOMEM;
++
++	ino->i_op = &proc_sys_inode_operations;
++	ino->i_fop = &proc_sys_file_operations;
++	set_inode_depth(ino, 0);
++	ino->i_uid = 0;
++	ino->i_gid = 0;
++	ino->i_mode = 0555 | S_IFDIR;
++
++	sb->s_root = d_alloc_root(ino);
++	if (sb->s_root == NULL) {
++		iput(ino);
++		return -ENOMEM;
++	}
++
+ 	return 0;
+ }
++
++static int sysctl_get_sb(struct file_system_type *fs_type,
++	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
++{
++	return get_sb_single(fs_type, flags, data, sysctl_fill_super, mnt);
++}
++
++static struct file_system_type sysctl_fs = {
++	.name = "sysctl",
++	.get_sb = sysctl_get_sb,
++	.kill_sb = kill_anon_super,
++};
++
++static int __init proc_sys_init(void)
++{
++	return register_filesystem(&sysctl_fs);
++}
++module_init(proc_sys_init);
+diff --git a/fs/proc/root.c b/fs/proc/root.c
+index ef0fb57..9035938 100644
+--- a/fs/proc/root.c
++++ b/fs/proc/root.c
+@@ -129,6 +129,7 @@ void __init proc_root_init(void)
+ 	proc_root_fs = proc_mkdir("fs", NULL);
+ 	proc_root_driver = proc_mkdir("driver", NULL);
+ 	proc_mkdir("fs/nfsd", NULL); /* somewhere for the nfsd filesystem to be mounted */
++	proc_mkdir("sys", NULL);
+ #if defined(CONFIG_SUN_OPENPROMFS) || defined(CONFIG_SUN_OPENPROMFS_MODULE)
+ 	/* just give it a mountpoint */
+ 	proc_mkdir("openprom", NULL);
+@@ -138,7 +139,6 @@ void __init proc_root_init(void)
+ 	proc_device_tree_init();
+ #endif
+ 	proc_bus = proc_mkdir("bus", NULL);
+-	proc_sys_init();
+ }
+ 
+ static int proc_root_getattr(struct vfsmount *mnt, struct dentry *dentry, struct kstat *stat
 
