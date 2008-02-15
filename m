@@ -1,65 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbYBOS66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761448AbYBOS7z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760845AbYBOS66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:58:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYBOS6v
+	id S1761448AbYBOS7z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:59:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbYBOS7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:58:51 -0500
-Received: from py-out-1112.google.com ([64.233.166.176]:43926 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754355AbYBOS6u (ORCPT
+	Fri, 15 Feb 2008 13:59:43 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:24148 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754295AbYBOS7l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:58:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XiQMzm9xMrXXT1IHdRqMZP0d6saO9vvDA36Y2Xu/bGmNM26Z/aq933tEGuRroZ12KEkPMdiFDrJ4y/GDgkFpZFmpljASBLRKbwxvtnzTdCcMliTOC/XvWHMzvasOUx3wuOt6pIQV8Fqo+XFjP3asdohCa41gMTVa5BniZN/IJ00=
-Subject: [RFC-PATCH] fuse: shadowed variable warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Miklos Szeredi <miklos@szeredi.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 10:58:22 -0800
-Message-Id: <1203101902.15275.25.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 15 Feb 2008 13:59:41 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: casey@schaufler-ca.com
+Subject: Re: [PATCH] (02/14/08 Linus git) Smack unlabeled outgoing ambient packets - v3
+Date: Fri, 15 Feb 2008 13:59:34 -0500
+User-Agent: KMail/1.9.7
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <47B52569.9040502@schaufler-ca.com>
+In-Reply-To: <47B52569.9040502@schaufler-ca.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802151359.35049.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/fuse/dir.c:909:7: warning: symbol 'err' shadows an earlier one
-fs/fuse/dir.c:893:6: originally declared here
+On Friday 15 February 2008 12:38:49 am Casey Schaufler wrote:
+> From: Casey Schaufler <casey@schaufler-ca.com>
+>
+> Smack uses CIPSO labeling, but allows for unlabeled packets
+> by specifying an "ambient" label that is applied to incoming
+> unlabeled packets. Because the other end of the connection
+> may dislike IP options, and ssh is one know application that
+> behaves thus, it is prudent to respond in kind. This patch
+> changes the network labeling behavior such that an outgoing
+> packet that would be given a CIPSO label that matches the
+> ambient label is left unlabeled. An "unlbl" domain is added
+> and the netlabel defaulting mechanism invoked rather than
+> assuming that everything is CIPSO. Locking has been added
+> around changes to the ambient label as the mechanisms used
+> to do so are more involved.
+>
+> Cleaned up some issues noted in review.
+> Make smk_cipso_doi() static.
+> Create a hook for the new security_secctx_to_secid()
+> using existing underlying code.
+> Fill in audit data for netlbl domain calls.
+> Collapse unnecessary multiple assignments.
+>
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-This means that an error between lines 909 and 923 will not be
-returned.
+Hi Casey,
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Miklos, could you confirm whether or not you want the err from lines
-909-923 returned or not.  If so, I can respin this patch changing the
-variable name instead which would preserve the current behavior.
-This patch changes behavior.
+Thanks for the update, it's much improved.  I'd ack it except for one 
+last thing which popped up in this revision ... (and don't worry, it's 
+kinda my fault - not yours) ...
 
- fs/fuse/dir.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> @@ -1282,15 +1281,21 @@ static int smack_netlabel(struct sock *s
+>  {
+>  	struct socket_smack *ssp;
+>  	struct netlbl_lsm_secattr secattr;
+> -	int rc = 0;
+> +	int rc;
+>
+>  	ssp = sk->sk_security;
+>  	netlbl_secattr_init(&secattr);
+>  	smack_to_secattr(ssp->smk_out, &secattr);
+> -	if (secattr.flags != NETLBL_SECATTR_NONE)
+> -		rc = netlbl_sock_setattr(sk, &secattr);
+> -
+> +	rc = netlbl_sock_setattr(sk, &secattr);
+>  	netlbl_secattr_destroy(&secattr);
+> +
+> +	/*
+> +	 * A return of -ENOENT from netlbl_sock_setattr
+> +	 * indicates that the "domain" was not found, but that's
+> +	 * not an issue because of the defaulting behavior.
+> +	 */
+> +	if (rc == -ENOENT)
+> +		rc = 0;
+>  	return rc;
+>  }
 
-diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
-index 7fb514b..c4807b3 100644
---- a/fs/fuse/dir.c
-+++ b/fs/fuse/dir.c
-@@ -906,7 +906,7 @@ static int fuse_permission(struct inode *inode, int mask, struct nameidata *nd)
- 	}
- 
- 	if (fc->flags & FUSE_DEFAULT_PERMISSIONS) {
--		int err = generic_permission(inode, mask, NULL);
-+		err = generic_permission(inode, mask, NULL);
- 
- 		/* If permission is denied, try to refresh file
- 		   attributes.  This is also needed, because the root
+... you shouldn't fix-up the return value from netlbl_sock_setattr().  
+It only returns an error when there really is an error, if there are no 
+matching domain mappings and the default catches the "domain" then the 
+function will return 0 (assuming no other failures).
+
+The fact that you ran into this problem isn't your fault, it's mine, but 
+thankfully for both of us Pavel Emelyanov found this bug and fixed 
+it[1].  It hasn't hit Linus' tree yet but it's in the net-2.6 tree.  If 
+you can't wait for it to hit Linus' tree you can always apply the fix 
+by hand, it's pretty minor.
+
+Sorry about that.
+
+[1]http://git.kernel.org/?p=linux/kernel/git/davem/net-2.6.git;a=commit;h=4c3a0a254e5d706d3fe01bf42261534858d05586
+
 -- 
-1.5.4.1.1278.gc75be
-
-
-
+paul moore
+linux security @ hp
