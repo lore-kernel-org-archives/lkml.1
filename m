@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765638AbYBOC11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932306AbYBOC2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765638AbYBOC11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 21:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759692AbYBOC1R
+	id S932306AbYBOC2o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 21:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760414AbYBOC2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 21:27:17 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:44079 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759028AbYBOC1P (ORCPT
+	Thu, 14 Feb 2008 21:28:33 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51886 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760221AbYBOC2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 21:27:15 -0500
-From: Jonathan Lim <jlim@sgi.com>
-Message-Id: <200802150227.m1F2RrSi174268@sabah.engr.sgi.com>
-Subject: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
-To: linux-kernel@vger.kernel.org
-Date: Thu, 14 Feb 2008 18:27:52 -0800 (PST)
-Cc: akpm@linux-foundation.org
-X-Mailer: ELM [version 2.5 PL6]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 14 Feb 2008 21:28:31 -0500
+Date: Thu, 14 Feb 2008 18:27:00 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, jengelh@computergmbh.de,
+       matthew@wil.cx, randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCHSET] printk: implement printk_header() and merging
+ printk, take #3
+Message-Id: <20080214182700.a9a706e9.akpm@linux-foundation.org>
+In-Reply-To: <47B4EFAB.2040102@gmail.com>
+References: <12028937731333-git-send-email-htejun@gmail.com>
+	<20080213155701.48871761.akpm@linux-foundation.org>
+	<47B38E13.1060503@gmail.com>
+	<20080213170950.86945835.akpm@linux-foundation.org>
+	<47B398B3.40308@gmail.com>
+	<47B4EFAB.2040102@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's possible that the values used in and returned from jiffies_to_usecs() are
-incorrect because of truncation when variables of type u64 are involved.  So a
-function specific to that type is used instead.
+On Fri, 15 Feb 2008 10:49:31 +0900 Tejun Heo <htejun@gmail.com> wrote:
 
-Diff'd against: linux/kernel/git/torvalds/linux-2.6.git
+> > printk is a special case, I think.  It's the primary logging/debugging
+> > method which can't fail and as it's mostly interpreted by human beings
+> > (and developers in problematic cases), it has different maneuvering room
+> > on errors - ie. it's far better to print messages w/o header or proper
+> > log level than failing to print, which is quite different requirements
+> > from other components.
+> 
+> Andrew, any more comments or suggestions on how to proceed on this?
 
-Signed-off-by: Jonathan Lim <jlim@sgi.com>
+Nope.
 
---- a/include/linux/jiffies.h	Thu Feb 14 18:04:14 PST 2008
-+++ b/include/linux/jiffies.h	Thu Feb 14 18:07:17 PST 2008
-@@ -42,7 +42,7 @@
- /* LATCH is used in the interval timer and ftape setup. */
- #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
- 
--/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
-+/* Suppose we want to divide two numbers NOM and DEN: NOM/DEN, then we can
-  * improve accuracy by shifting LSH bits, hence calculating:
-  *     (NOM << LSH) / DEN
-  * This however means trouble for large NOM, because (NOM << LSH) may no
-@@ -204,7 +204,7 @@ extern unsigned long preset_lpj;
-  * operator if the result is a long long AND at least one of the
-  * operands is cast to long long (usually just prior to the "*" so as
-  * not to confuse it into thinking it really has a 64-bit operand,
-- * which, buy the way, it can do, but it takes more code and at least 2
-+ * which, by the way, it can do, but it takes more code and at least 2
-  * mpys).
- 
-  * We also need to be aware that one second in nanoseconds is only a
-@@ -269,6 +269,7 @@ extern unsigned long preset_lpj;
-  */
- extern unsigned int jiffies_to_msecs(const unsigned long j);
- extern unsigned int jiffies_to_usecs(const unsigned long j);
-+extern u64 jiffies_64_to_usecs(const u64 j);
- extern unsigned long msecs_to_jiffies(const unsigned int m);
- extern unsigned long usecs_to_jiffies(const unsigned int u);
- extern unsigned long timespec_to_jiffies(const struct timespec *value);
---- a/kernel/time.c	Thu Feb 14 18:05:12 PST 2008
-+++ b/kernel/time.c	Thu Feb 14 18:08:08 PST 2008
-@@ -268,6 +268,12 @@ unsigned int inline jiffies_to_usecs(con
- }
- EXPORT_SYMBOL(jiffies_to_usecs);
- 
-+u64 jiffies_64_to_usecs(const u64 j)
-+{
-+	return (j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1) / HZ_TO_USEC_DEN;
-+}
-+EXPORT_SYMBOL(jiffies_64_to_usecs);
-+
- /**
-  * timespec_trunc - Truncate timespec to a granularity
-  * @t: Timespec
---- a/kernel/tsacct.c	Thu Feb 14 18:06:17 PST 2008
-+++ b/kernel/tsacct.c	Thu Feb 14 18:08:47 PST 2008
-@@ -85,8 +85,8 @@ void xacct_add_tsk(struct taskstats *sta
- 	struct mm_struct *mm;
- 
- 	/* convert pages-jiffies to Mbyte-usec */
--	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
--	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
-+	stats->coremem = jiffies_64_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-+	stats->virtmem = jiffies_64_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
- 	mm = get_task_mm(p);
- 	if (mm) {
- 		/* adjust to KB unit */
+>  One
+> way or the other, I think this is a problem worth solving.
+
+There are a lot of such problems ;)
