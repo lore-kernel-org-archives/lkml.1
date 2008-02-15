@@ -1,141 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbYBOOuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbYBOOwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933142AbYBOOuX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYBOOuL
+	id S933718AbYBOOwb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:52:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYBOOwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:50:11 -0500
-Received: from frankvm.xs4all.nl ([80.126.170.174]:36729 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754545AbYBOOuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:50:09 -0500
-Date: Fri, 15 Feb 2008 15:50:07 +0100
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Machine check exception with a kernel dependency
-Message-ID: <20080215145007.GA18341@janus>
-References: <20080213162528.GA32635@janus> <20080215132241.23823d43@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080215132241.23823d43@core>
-User-Agent: Mutt/1.4.1i
+	Fri, 15 Feb 2008 09:52:23 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:39864 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754607AbYBOOwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 09:52:23 -0500
+Message-ID: <47B5A699.7010509@redhat.com>
+Date: Fri, 15 Feb 2008 09:50:01 -0500
+From: Larry Woodman <lwoodman@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040301
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Problem with /proc/sys/vm/lowmem_reserve_ratio ???
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 01:22:41PM +0000, Alan Cox wrote:
-> On Wed, 13 Feb 2008 17:25:28 +0100
-> Frank van Maarseveen <frankvm@frankvm.com> wrote:
-> 
-> > On at least two Dell optiplex 755 systems with a Core 2 Duo I get
-> > 
-> > Feb 13 15:14:01 inari CPU 1: Machine Check Exception: 0000000000000004 
-> > Feb 13 15:14:01 inari CPU 0: Machine Check Exception: 0000000000000005 
-> > Feb 13 15:14:01 inari Bank 0: b200004000000800 
-> > Feb 13 15:14:01 inari Bank 5: b200221024080400 
-> > 
-> > 2.6.22.10 shows the problem, 2.6.24.2 ditto but I'm unable to reproduce
-> > it with 2.6.24-rc8. BIOS upgrade didn't help. Removing all PCI[e] cards
-> > didn't help either.
-> 
-> If you run the MCE numbers through a decoder what do you get back ?
+balance_pgdat() calls zone_watermark_ok() three times, the first call
+passes a zero(0) in as the 4th argument.  This 4th argument is the
+classzone_idx which is used as the index into the 
+zone->lowmem_reserve[] array.  Since setup_per_zone_lowmem_reserve()
+always sets the zone->lowmem_reserve[0] = 0(because there is nothing
+below the DMA zone), zone_watermark_ok() will not consider the
+lowmem_reserve pages when zero is passed as the 4th arg.  Shouldnt this
+4th argument be either "i" or "nr_zones - 1" ???
 
-I've some trouble decoding these in a convincing way. mcelog --core2
---ascii reports "MCG status:RIPV MCIP" for 0000000000000005 and "MCG
-status:MCIP" for 0000000000000004.
+-------------------------------------------------------------------------
+--- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
+11:14:55.000000000 -0500
++++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:15:02.000000000
+-0500
+@@ -1375,7 +1375,7 @@ loop_again:
+                                continue;
 
-I've collected several Bank # output lines:
+                        if (!zone_watermark_ok(zone, order, zone->pages_high,
 
-#  text
----------------------------
-26 Bank 0: b200004000000800
-10 Bank 5: b200121014040400
- 8 Bank 5: b200121020080400
- 4 Bank 5: b200221010040400
- 4 Bank 5: b200221024080400
+-                                              0, 0)) {
++                                              i, 0)) {
+                                end_zone = i;
+                                break;
+-------------------------------------------------------------------------
+--- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
+11:14:55.000000000 -0500
++++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:16:35.000000000
+-0500
+@@ -1375,7 +1375,7 @@ loop_again:
+                                continue;
 
-but mcelog expects lines of the format
+                        if (!zone_watermark_ok(zone, order, zone->pages_high,
 
-	CPU %u: Machine Check Exception: %16Lx Bank %d: %016Lx
-
-(they got broken by netconsole) so I made these up:
-
-CPU 1: Machine Check Exception: 0000000000000004 Bank 0: b200004000000800
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200121014040400
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200121020080400
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200221010040400
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200221024080400
-
-result:
-
-CPU 1: Machine Check Exception: 0000000000000004 Bank 0: b200004000000800
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 1 BANK 0 MCG status:MCIP 
-MCi status:
-Uncorrected error
-Error enabled
-Processor context corrupt
-MCA: BUS Level-0 Originated-request Generic Memory-access Request-timeout Error
-BQ_DCU_READ_TYPE BQ_ERR_HARD_TYPE BQ_ERR_HARD_TYPE
-timeout BINIT (ROB timeout)
-STATUS b200004000000800 MCGSTATUS 4
-
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200121014040400
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 5 MCG status:RIPV MCIP 
-MCi status:
-Uncorrected error
-Error enabled
-Processor context corrupt
-MCA: Internal Timer error
-STATUS b200121014040400 MCGSTATUS 5
-
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200121020080400
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 5 MCG status:RIPV MCIP 
-MCi status:
-Uncorrected error
-Error enabled
-Processor context corrupt
-MCA: Internal Timer error
-STATUS b200121020080400 MCGSTATUS 5
-
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200221010040400
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 5 MCG status:RIPV MCIP 
-MCi status:
-Uncorrected error
-Error enabled
-Processor context corrupt
-MCA: Internal Timer error
-STATUS b200221010040400 MCGSTATUS 5
-
-CPU 0: Machine Check Exception: 0000000000000005 Bank 5: b200221024080400
-HARDWARE ERROR. This is *NOT* a software problem!
-Please contact your hardware vendor
-CPU 0 BANK 5 MCG status:RIPV MCIP 
-MCi status:
-Uncorrected error
-Error enabled
-Processor context corrupt
-MCA: Internal Timer error
-STATUS b200221024080400 MCGSTATUS 5
+-                                              0, 0)) {
++                                              nr_zones - 1, 0)) {
+                                end_zone = i;
+                                break;
+                        }
+-------------------------------------------------------------------------
 
 
-The problem also exists on an entirely different Xeon system with 4 cores:
-
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Xeon(R) CPU           X3210  @ 2.13GHz
-stepping        : 11
-
-
--- 
-Frank
