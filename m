@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758662AbYBORZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbYBOR0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758662AbYBORZp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 12:25:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbYBORZe
+	id S1759134AbYBOR0E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 12:26:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbYBORZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 12:25:34 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:58557 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754103AbYBORZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 12:25:33 -0500
-Date: Fri, 15 Feb 2008 18:25:16 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, linuxconsole-dev@lists.sourceforge.net
-Subject: [PATCH] VT notifier extension for accessibility
-Message-ID: <20080215172516.GK4511@implementation>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org,
-	linuxconsole-dev@lists.sourceforge.net
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+	Fri, 15 Feb 2008 12:25:38 -0500
+Received: from anchor-post-32.mail.demon.net ([194.217.242.90]:2931 "EHLO
+	anchor-post-32.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756978AbYBORZh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 12:25:37 -0500
+X-Greylist: delayed 742 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Feb 2008 12:25:36 EST
+Subject: kernel-doc : possible fix for non-fatal perl errors when parsing
+	some function pointers
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: rdunlap@xenotime.net
+Cc: lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 17:13:12 +0000
+Message-Id: <1203095592.2929.54.camel@castor.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some accessibility modules need to be able to catch the output on the
-console before the VT interpretation, and possibly swallow it.
+When running "make htmldocs" I'm seeing some non-fatal perl errors
+caused by trying to parse the callback function definitions in
+blk-core.c.
 
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-From: Karl Dahlke <eklhad@comcast.net>
+The errors are "Use of uninitialized value in concatenation (.)..."
 
---- include/linux/notifier.h	2008-02-15 08:44:10.000000000 -0500
-+++ include/linux/notifier.h.new	2008-02-15 09:58:00.000000000 -0500
-@@ -247,6 +247,7 @@ extern struct blocking_notifier_head reb
- #define VT_DEALLOCATE		0x0002 /* Console will be deallocated */
- #define VT_WRITE		0x0003 /* A char got output */
- #define VT_UPDATE		0x0004 /* A bigger update occurred */
-+#define VT_PREWRITE		0x0005 /* A char is about to be written to the console */
+The function pointers are defined without a * i.e. 
+int (drv_callback)(struct request *)
+
+The compiler is happy with them, but kernel-doc isn't. 
+
+This patch teaches create_parameterlist in kernel-doc to parse this type
+of function pointer definition, but is it the right way to fix the
+problem ? The problem only seems to occur in blk-core.c.
+
+However with the patch applied, kernel-doc finds the correct parameter
+description for the callback in blk_end_request_callback, which is
+doesn't normally.
+(the patch is against v2.6.25-rc1)
+
+I thought it would be a bit odd to change to code to use the more normal
+form of function pointers just to get the documentation to work, so I
+fixed kernel-doc instead - even though this is teaching it to understand
+code that might go away (The comment for blk_end_request_callback says
+that it should not be used and will removed at some point). 
+
+Any ideas on which is the best way to fix this?
  
- #endif /* __KERNEL__ */
- #endif /* _LINUX_NOTIFIER_H */
---- drivers/char/vt.c	2008-02-15 08:43:35.000000000 -0500
-+++ drivers/char/vt.c.new	2008-02-15 10:11:14.000000000 -0500
-@@ -2053,6 +2053,7 @@ static int do_con_write(struct tty_struc
- 	unsigned long draw_from = 0, draw_to = 0;
- 	struct vc_data *vc;
- 	unsigned char vc_attr;
-+	struct vt_notifier_param param;
- 	uint8_t rescan;
- 	uint8_t inverse;
- 	uint8_t width;
-@@ -2112,6 +2113,8 @@ static int do_con_write(struct tty_struc
- 	if (IS_FG(vc))
- 		hide_cursor(vc);
- 
-+	param.vc = vc;
-+
- 	while (!tty->stopped && count) {
- 		int orig = *buf;
- 		c = orig;
-@@ -2200,6 +2203,10 @@ rescan_last_byte:
- 		    tc = vc->vc_translate[vc->vc_toggle_meta ? (c | 0x80) : c];
- 		}
- 
-+		param.c = tc;
-+		if (atomic_notifier_call_chain(&vt_notifier_list, VT_PREWRITE, &param) == NOTIFY_STOP)
-+			continue;
-+
-                 /* If the original code was a control character we
-                  * only allow a glyph to be displayed if the code is
-                  * not normally used (such as for cursor movement) or
+Thanks
+Richard
+
+
+
+
+
+
+diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+index 26146cb..68b2e4e 100755
+--- a/scripts/kernel-doc
++++ b/scripts/kernel-doc
+@@ -1512,13 +1512,13 @@ sub create_parameterlist($$$) {
+ 	    # corresponding data structures "correctly". Catch it later in
+ 	    # output_* subs.
+ 	    push_parameter($arg, "", $file);
+-	} elsif ($arg =~ m/\(.*\*/) {
++	} elsif ($arg =~ m/\(.+\)\s*\(/) {
+ 	    # pointer-to-function
+ 	    $arg =~ tr/#/,/;
+-	    $arg =~ m/[^\(]+\(\*\s*([^\)]+)\)/;
++	    $arg =~ m/[^\(]+\(\*?\s*(\w*)\s*\)/;
+ 	    $param = $1;
+ 	    $type = $arg;
+-	    $type =~ s/([^\(]+\(\*)$param/$1/;
++	    $type =~ s/([^\(]+\(\*?)$param/$1/;
+ 	    push_parameter($param, $type, $file);
+ 	} elsif ($arg) {
+ 	    $arg =~ s/\s*:\s*/:/g;
+--  
+
