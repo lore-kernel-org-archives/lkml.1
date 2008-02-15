@@ -1,44 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933482AbYBON7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764303AbYBOOCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933482AbYBON7B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 08:59:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYBON6v
+	id S1764303AbYBOOCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756201AbYBOOCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 08:58:51 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:34791 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755509AbYBON6u (ORCPT
+	Fri, 15 Feb 2008 09:02:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:62795 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755690AbYBOOCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 08:58:50 -0500
-Date: Fri, 15 Feb 2008 06:58:48 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Greg KH <greg@kroah.com>, Rene Herman <rene.herman@keyaccess.nl>,
-       bzolnier@gmail.com, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: "ide=reverse" do we still need this?
-Message-ID: <20080215135848.GD7657@parisc-linux.org>
-References: <20080213001506.GA13933@kroah.com> <47B24AB3.3040009@keyaccess.nl> <20080213044436.GB10101@kroah.com> <47B4777A.70400@tmr.com>
+	Fri, 15 Feb 2008 09:02:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:user-agent:mime-version:to:subject:content-type:content-transfer-encoding:from;
+        b=hgIYMSepWvi6esDulUXlTSk1SNS9ipI+dkZHeGTJd2nTFFIq02/0fgFD7Q+Q4K1FyVSC+wM/qsEIIkeCvXcSq9zZ8m9SnohYPNYDQKXLZQcm83ElKhzDbhYqJJ2HPrRpxb98ARYJqJIJ2iyvVcAczIA9EcKNy8VdaJmh9iwWlcQ=
+Message-ID: <47B59B22.4010205@gmail.com>
+Date: Fri, 15 Feb 2008 15:01:06 +0100
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B4777A.70400@tmr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: man-pages-2.78 is released
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 12:16:42PM -0500, Bill Davidsen wrote:
-> There are any number of things you can do when the system is booted, but 
-> the only thing you can do when the system won't boot is use kernel boot 
-> options.
+Gidday
 
-Greg's not removing your option to boot the system using an old kernel
-to set up a new kernel properly ;-)
+Some news: the man-pages web site at http://www.kernel.org/doc/man-pages/
+now includes a (Google-based) search facility for searching the pages that
+are online there.
+
+I've released man-pages-2.78.
+
+This release is now available for download at:
+
+    http://www.kernel.org/pub/linux/docs/man-pages
+    or ftp://ftp.kernel.org/pub/linux/docs/man-pages
+
+A full list of the changes in this release can be seen at
+http://www.kernel.org/doc/man-pages/changelog.html
+A summary of the changes in this release that may be of interest to readers
+of this list is provided below.
+
+Cheers,
+
+Michael
+
+==================== Changes in man-pages-2.78 ====================
+
+
+New pages
+---------
+
+eventfd.2
+    mtk, with input and review from Davide Libenzi
+        Documents the eventfd() system call, new in 2.6.22.
+
+signalfd.2
+    mtk, with input and review from Davide Libenzi
+        Documents the signalfd() system call, new in 2.6.22.
+
+Changes to individual pages
+---------------------------
+
+open.2
+    Greg Banks
+        Greatly expand the detail on O_DIRECT.
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Michael Kerrisk
+Maintainer of the Linux man-pages project
+http://www.kernel.org/doc/man-pages/
+Want to report a man-pages bug?  Look here:
+http://www.kernel.org/doc/man-pages/reporting_bugs.html
+
+
