@@ -1,57 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbYBOVX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762128AbYBOV0H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761702AbYBOVX4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 16:23:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbYBOVXt
+	id S1762128AbYBOV0H (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 16:26:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbYBOVZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 16:23:49 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:64992 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753927AbYBOVXs (ORCPT
+	Fri, 15 Feb 2008 16:25:55 -0500
+Received: from mail3.key-systems.net ([81.3.43.213]:60269 "HELO
+	mail3.key-systems.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755104AbYBOVZy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 16:23:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wxYne3T+sUAsMxol5R0rGkx7unh37IeKoB59MPrckmWJniJcUnYgNm32pKvX6Ik1rJsXvhNTvoOSovqs27Gbds99KlZXxghSGkOnqDFiWTvnIWDjHH60fiXhlfsa5rYOHdLgHTUzx9X6GyfNH1T5JUjCGsiNqVl478B16kW9DOU=
-Subject: Re: [PATCH] befs: fix sparse warning in linuxvfs.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: rathamahata@php4.ru, linux-kernel@vger.kernel.org
-In-Reply-To: <20080215131922.0d0dcb08.akpm@linux-foundation.org>
-References: <1203101164.15275.21.camel@brick>
-	 <20080215131922.0d0dcb08.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 13:23:46 -0800
-Message-Id: <1203110626.15275.42.camel@brick>
+	Fri, 15 Feb 2008 16:25:54 -0500
+Subject: Re: data corruption with dmcrypt/LUKS
+From: Christoph Anton Mitterer <calestyo@scientia.net>
+To: Filippo Zangheri <filippo.zangheri@yahoo.it>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <47B3639F.10809@yahoo.it>
+References: <1202050237.3200.33.camel@fermat.scientia.net>
+	 <47A63AD3.6080501@redhat.com>
+	 <1202085829.3223.19.camel@fermat.scientia.net>
+	 <47A6D80C.9070204@redhat.com>
+	 <1202174881.1070.15.camel@fermat.scientia.net>  <47B3639F.10809@yahoo.it>
+Content-Type: multipart/signed; micalg=sha1; protocol="application/x-pkcs7-signature"; boundary="=-TXGG59Mzzu18bOcIqfAZ"
+Date: Fri, 15 Feb 2008 22:25:48 +0100
+Message-Id: <1203110748.3220.25.camel@fermat.scientia.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-15 at 13:19 -0800, Andrew Morton wrote:
-> On Fri, 15 Feb 2008 10:46:04 -0800
-> Harvey Harrison <harvey.harrison@gmail.com> wrote:
-> 
-> > Use link as the variable name to avoid shadowing the arg.
-> > 
-> > fs/befs/linuxvfs.c:492:8: warning: symbol 'p' shadows an earlier one
-> > fs/befs/linuxvfs.c:488:77: originally declared here
-> > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> > This should be checked in case there is a latent bug here.  Should it
-> > be the arg *p getting freed, or the local var *p that was shadowing
-> > it?
-> > 
-> 
-> The code looks OK - the name was allocated in befs_follow_link() and was
-> saved away with nd_set_link().
 
-OK, that's as far as I got as well, but don't know the area well enough
-to be sure, hence the caveat.
+--=-TXGG59Mzzu18bOcIqfAZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Harvey
+Hi Filippo.
+
+
+On Wed, 2008-02-13 at 22:39 +0100, Filippo Zangheri wrote:
+> have you conducted further tests? Have you discovered anything?
+I actually conducted some tests last week (also with aes-cbc-essiv) but
+wasn't able to reproduce the two errors (tested it on the same computer,
+with the same USB-sticks, same commands, kernel 2.6.24 etc.).
+I'm not sure if I should be glad about this,.. because I definitely had
+those two problems, but of course it's still possible (though I consider
+it unlikely) that there were hardware problems.
+
+
+Today I copied a complete Debian installation (about 6 GB) from an
+unencrypted partition to a luks/dm-crypt partition with aes-xts-plain
+(according the Herbert Xu plain is the "most secure" and it's not
+required to use the benbi mode for the IV generation).
+I had no problems with this mode, too.
+
+Best wishes,
+Chris.
+
+--=-TXGG59Mzzu18bOcIqfAZ
+Content-Type: application/x-pkcs7-signature; name=smime.p7s
+Content-Disposition: attachment; filename=smime.p7s
+Content-Transfer-Encoding: base64
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIQ/DCCBXQw
+ggNcoAMCAQICAjh/MA0GCSqGSIb3DQEBBQUAMFQxFDASBgNVBAoTC0NBY2VydCBJbmMuMR4wHAYD
+VQQLExVodHRwOi8vd3d3LkNBY2VydC5vcmcxHDAaBgNVBAMTE0NBY2VydCBDbGFzcyAzIFJvb3Qw
+HhcNMDcxMDI0MTkyNzQxWhcNMDkxMDIzMTkyNzQxWjB8MSEwHwYDVQQDExhDaHJpc3RvcGggQW50
+b24gTWl0dGVyZXIxJDAiBgkqhkiG9w0BCQEWFWNhbGVzdHlvQHNjaWVudGlhLm5ldDExMC8GCSqG
+SIb3DQEJARYibWFpbEBjaHJpc3RvcGguYW50b24ubWl0dGVyZXIubmFtZTCCASIwDQYJKoZIhvcN
+AQEBBQADggEPADCCAQoCggEBAPgLlUBy3NRbH25w8pOnhF+qtj4GN04aG7ur+JsXTcEkFNOZWZ5I
+al2PaQWP7GfEEp5lL0w/LdYXPfnLNohp4l/Nb+db8aHUeVBYgGBTPGF+mJHfJGeochfvZo78u6Bp
+KkCrDAw2BKN1JNxw+OxmWuunCmXSFM9gqRfBnfmc25P6ba9tQlDXGLKZA8/JKXLMKcTTS7dIkroE
+bM5FTSaAmGWkvwnD6fpxjFgWNLXjagNqlQD6+q+a//+gXNOGP34aZ3qPnLPR/gUi/yqrQuAVvGep
+GAhl4B1Kn+c7eROoodq33Ghomoznh8hogBkDJXp+Xq4k8measwtN99ZUdMaFeJsCAwEAAaOCASYw
+ggEiMAwGA1UdEwEB/wQCMAAwVgYJYIZIAYb4QgENBEkWR1RvIGdldCB5b3VyIG93biBjZXJ0aWZp
+Y2F0ZSBmb3IgRlJFRSBoZWFkIG92ZXIgdG8gaHR0cDovL3d3dy5DQWNlcnQub3JnMEAGA1UdJQQ5
+MDcGCCsGAQUFBwMEBggrBgEFBQcDAgYKKwYBBAGCNwoDBAYKKwYBBAGCNwoDAwYJYIZIAYb4QgQB
+MDIGCCsGAQUFBwEBBCYwJDAiBggrBgEFBQcwAYYWaHR0cDovL29jc3AuY2FjZXJ0Lm9yZzBEBgNV
+HREEPTA7gRVjYWxlc3R5b0BzY2llbnRpYS5uZXSBIm1haWxAY2hyaXN0b3BoLmFudG9uLm1pdHRl
+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
+
+
+--=-TXGG59Mzzu18bOcIqfAZ--
 
