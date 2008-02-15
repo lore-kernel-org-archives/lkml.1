@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbYBOBxv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763031AbYBOCAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761620AbYBOBxv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 20:53:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753844AbYBOBxj
+	id S1763031AbYBOCAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 21:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754823AbYBOCAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 20:53:39 -0500
-Received: from mga10.intel.com ([192.55.52.92]:11510 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753513AbYBOBxi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 20:53:38 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,355,1199692800"; 
-   d="scan'208";a="518927222"
-Subject: tbench regression in 2.6.25-rc1
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: herbert@gondor.apana.org.au
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 15 Feb 2008 09:52:01 +0800
-Message-Id: <1203040321.3027.131.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Thu, 14 Feb 2008 21:00:04 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:58691 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754694AbYBOCAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 21:00:01 -0500
+Message-ID: <47B4F1C5.9010408@cn.fujitsu.com>
+Date: Fri, 15 Feb 2008 09:58:29 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+CC: akpm@osdl.org, "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       adobriyan@gmail.com
+Subject: Re: [PATCH] exporting capability code/name pairs (try #5)
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com> <47AC23F1.5030300@ak.jp.nec.com> <20080212180859.GA12876@sergelap.austin.ibm.com> <47B2A3F3.8060701@ak.jp.nec.com> <47B4ED1B.6070206@ak.jp.nec.com>
+In-Reply-To: <47B4ED1B.6070206@ak.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with kernel 2.6.24, tbench result has regression with
-2.6.25-rc1.
+Kohei KaiGai wrote:
 
-1) On 2 quad-core processor stoakley: 4%.
-2) On 4 quad-core processor tigerton: more than 30%.
+<...snip...>
 
-bisect located below patch.
+> +static int __init capability_export_names(void)
+> +{
+> +	/* make /sys/kernel/capability */
+> +	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
+> +	if (!capability_kobj)
+> +		goto error0;
+> +
+> +	/* make /sys/kernel/capability/names */
+> +	if (sysfs_create_group(capability_kobj,
+> +			       &capability_name_attr_group))
+> +		goto error1;
+> +
+> +	/* make /sys/kernel/capability/codes */
+> +	if (sysfs_create_group(capability_kobj,
+> +			       &capability_code_attr_group))
+> +		goto error2;
+> +
+> +	if (sysfs_create_file(capability_kobj,
+> +			      &cap_version_attr.attr))
+> +		goto error3;
+> +
+> +	return 0;
+> +
+> +error3:
+> +	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
+> +error2:
+> +	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
+> +error1:
+> +	kobject_put(capability_kobj);
+> +error0:
+> +	printk(KERN_ERR "Unable to export capabilities\n");
+> +
+> +	return 0;
 
-b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b is first bad commit
-commit b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b
-Author: Herbert Xu <herbert@gondor.apana.org.au>
-Date:   Tue Nov 13 21:33:32 2007 -0800
+Should return -EFXXX ..
 
-    [IPV6]: Move nfheader_len into rt6_info
-    
-    The dst member nfheader_len is only used by IPv6.  It's also currently
-    creating a rather ugly alignment hole in struct dst.  Therefore this patch
-    moves it from there into struct rt6_info.
-
-
-As tbench uses ipv4, so the patch's real impact on ipv4 is it deletes
-nfheader_len in dst_entry. It might change cache line alignment.
-
-To verify my finding, I just added nfheader_len back to dst_entry in 2.6.25-rc1
-and reran tbench on the 2 machines. Performance could be recovered completely.
-
-I started cpu_number*2 tbench processes. On my 16-core tigerton:
-#./tbench_srv &
-#./tbench 32 127.0.0.1
-
--yanmin
-
+> +}
+> +__initcall(capability_export_names);
+> 
 
