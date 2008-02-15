@@ -1,114 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbYBOSM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbYBOSOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758868AbYBOSM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:12:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754189AbYBOSMT
+	id S1759063AbYBOSOf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYBOSO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:12:19 -0500
-Received: from mail.gmx.net ([213.165.64.20]:37790 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757519AbYBOSMR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:12:17 -0500
-X-Authenticated: #815327
-X-Provags-ID: V01U2FsdGVkX18+KZYdKrk+4Vys/4lVtZAXsyxCKLT0OahT03e8Nm
-	efNzj0AEf8MLJe
-Date: Fri, 15 Feb 2008 19:12:15 +0100
-From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
-To: Tejun Heo <htejun@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Regression: kernel 2.6.24{,.1} ahci problem, does not boot
- (resend)
-Message-ID: <20080215191215.430ee2e0@highlander.home.lan>
-In-Reply-To: <47B4D02E.9030101@gmail.com>
-References: <20080214184700.0bd3837d@highlander.home.lan>
-	<47B4D02E.9030101@gmail.com>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+	Fri, 15 Feb 2008 13:14:28 -0500
+Received: from anchor-post-37.mail.demon.net ([194.217.242.87]:50440 "EHLO
+	anchor-post-37.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753483AbYBOSO1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 13:14:27 -0500
+Subject: Re: kernel-doc : possible fix for non-fatal perl errors when
+	parsing some function pointers
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Randy Dunlap <rdunlap@xenotime.net>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080215094437.5f6d7b3b.rdunlap@xenotime.net>
+References: <1203095592.2929.54.camel@castor.localdomain>
+	 <20080215092154.4a8cbba7.rdunlap@xenotime.net>
+	 <20080215094437.5f6d7b3b.rdunlap@xenotime.net>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 18:14:24 +0000
+Message-Id: <1203099264.2929.70.camel@castor.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/YN=RmG0aoGTr9uPkO+q1kUe";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/YN=RmG0aoGTr9uPkO+q1kUe
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 15 Feb 2008 08:35:10 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+On Fri, 2008-02-15 at 09:44 -0800, Randy Dunlap wrote:
+> On Fri, 15 Feb 2008 09:21:54 -0800 Randy Dunlap wrote:
+> 
+> > On Fri, 15 Feb 2008 17:13:12 +0000 Richard Kennedy wrote:
+> > 
+> > > When running "make htmldocs" I'm seeing some non-fatal perl errors
+> > > caused by trying to parse the callback function definitions in
+> > > blk-core.c.
+> > > 
+> > > The errors are "Use of uninitialized value in concatenation (.)..."
+> > > 
+> > > The function pointers are defined without a * i.e. 
+> > > int (drv_callback)(struct request *)
+> > > 
+> > > The compiler is happy with them, but kernel-doc isn't. 
+> > > 
+> > > This patch teaches create_parameterlist in kernel-doc to parse this type
+> > > of function pointer definition, but is it the right way to fix the
+> > > problem ? The problem only seems to occur in blk-core.c.
+> > > 
+> > > However with the patch applied, kernel-doc finds the correct parameter
+> > > description for the callback in blk_end_request_callback, which is
+> > > doesn't normally.
+> > > (the patch is against v2.6.25-rc1)
+> > > 
+> > > I thought it would be a bit odd to change to code to use the more normal
+> > > form of function pointers just to get the documentation to work, so I
+> > > fixed kernel-doc instead - even though this is teaching it to understand
+> > > code that might go away (The comment for blk_end_request_callback says
+> > > that it should not be used and will removed at some point). 
+> > > 
+> > > Any ideas on which is the best way to fix this?
+> > 
+> > Hi Richard,
+> > Thanks for the patch.  I was planning to look into this problem
+> > this weekend.
+> > 
+> > I think that changing scripts/kernel-doc to accept the current
+> > kernel source tree usage is the right thing to do, even if the
+> > block/blk code is a bit different.  I'll test it a bit and then
+> > push it.
+> 
+> I'm not quite happy with the way that these function pointer
+> parameters are presented.  E.g.,
+> the callback function above is presented by kernel-doc as:
+> 
+> 		int ()(struct request *) drv_callback);
+> whereas this
+> 		int (drv_callback)(struct request *)
+> would be much better.  If you could look into massaging that
+> parameter output, that would be great.  If not, I'll look into
+> later.
 
-> Malte Schr=C3=B6der wrote:
-> > Hello,
-> > on one of my machines neither 2.6.24 nor 2.6.24.1 work.
-> > The system is 64bit on Athlon X2 and ATI-Chipset (SB600).
-> >=20
-> > Extract from the kernel messages during boot:
-> >=20
-> > [   66.943103] ahci 0000:00:12.0: controller can't do 64bit DMA, forcin=
-g 32bit
-> > [   66.950374] ahci 0000:00:12.0: controller can't do PMP, turning off =
-CAP_PMP
-> > [   67.956470] ahci 0000:00:12.0: AHCI 0001.0100 32 slots 4 ports 3 Gbp=
-s 0xf impl SATA mode
-> > [   67.964996] ahci 0000:00:12.0: flags: ncq sntf ilck pm led clo pio s=
-lum part
-> > [   67.972820] scsi0 : ahci
-> > [   67.975699] scsi1 : ahci
-> > [   67.978445] scsi2 : ahci
-> > [   67.981178] scsi3 : ahci
-> > [   67.983949] ata1: SATA max UDMA/133 abar m1024@0xfadffc00 port 0xfad=
-ffd00 irq 509
-> > [   67.991825] ata2: SATA max UDMA/133 abar m1024@0xfadffc00 port 0xfad=
-ffd80 irq 509
-> > [   67.999729] ata3: SATA max UDMA/133 abar m1024@0xfadffc00 port 0xfad=
-ffe00 irq 509
-> > [   68.007619] ata4: SATA max UDMA/133 abar m1024@0xfadffc00 port 0xfad=
-ffe80 irq 509
-> > [   68.470669] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > [   98.431945] ata1.00: qc timeout (cmd 0xec)
-> > [   98.454907] ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
-> > [   98.461296] ata1: failed to recover some devices, retrying in 5 secs
-> > [  103.916773] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > [  133.878045] ata1.00: qc timeout (cmd 0xec)
-> > [  133.882371] ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
-> > [  133.888797] ata1: failed to recover some devices, retrying in 5 secs
-> > [  139.343901] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > [  169.305174] ata1.00: qc timeout (cmd 0xec)
-> > [  169.309534] ata1.00: failed to IDENTIFY (I/O error, err_mask=3D0x4)
-> > [  169.315926] ata1: failed to recover some devices, retrying in 5 secs
-> > [  174.771030] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> >=20
-> > The complete boot-log (captured via serial console), lspci output,
-> > output of hdparm -I and the kernel config are attached.
-> >=20
-> > The PC has one IDE-drive and four SATA-drives (see hdparm.txt).
-> > If I wait long enough, the IDE-drive get's recognized and I can
-> > continue the boot process, but the SATA-drives are never recognized.
-> > The system work's fine with kernel 2.6.23.11 (later kernels not tested).
->=20
-> Does irqpoll kernel parameter help?
-=20
-No, problem stays.
+This simplest thing to do would be
 
---=20
----------------------------------------
-Malte Schr=C3=B6der
-MalteSch@gmx.de
-ICQ# 68121508
----------------------------------------
+-           push_parameter($param, $type, $file);
++           push_parameter($param, $arg, $file);
+
+but then the function definition in the doc comes out as :- 
+
+..., int (drv_callback)(struct request *)  drv_callback);
+
+which is probably worse.
+
+I don't see a simple way to fix this right now. But I'll let you know if
+I come up with anything :)
 
 
---Sig_/YN=RmG0aoGTr9uPkO+q1kUe
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFHtdX/4q3E2oMjYtURAgrXAKDiCwsELkyVwiCGSgiNOwQx9qfK2gCghAmp
-ffivnZTdi074RoHI75jB5Yc=
-=6UTt
------END PGP SIGNATURE-----
+> > I appreciate the patch.
+> > 
+> > > diff --git a/scripts/kernel-doc b/scripts/kernel-doc
+> > > index 26146cb..68b2e4e 100755
+> > > --- a/scripts/kernel-doc
+> > > +++ b/scripts/kernel-doc
+> > > @@ -1512,13 +1512,13 @@ sub create_parameterlist($$$) {
+> > >  	    # corresponding data structures "correctly". Catch it later in
+> > >  	    # output_* subs.
+> > >  	    push_parameter($arg, "", $file);
+> > > -	} elsif ($arg =~ m/\(.*\*/) {
+> > > +	} elsif ($arg =~ m/\(.+\)\s*\(/) {
+> > >  	    # pointer-to-function
+> > >  	    $arg =~ tr/#/,/;
+> > > -	    $arg =~ m/[^\(]+\(\*\s*([^\)]+)\)/;
+> > > +	    $arg =~ m/[^\(]+\(\*?\s*(\w*)\s*\)/;
+> > >  	    $param = $1;
+> > >  	    $type = $arg;
+> > > -	    $type =~ s/([^\(]+\(\*)$param/$1/;
+> > > +	    $type =~ s/([^\(]+\(\*?)$param/$1/;
+> > >  	    push_parameter($param, $type, $file);
+> > >  	} elsif ($arg) {
+> > >  	    $arg =~ s/\s*:\s*/:/g;
+> 
+> 
+> ---
+Richard
 
---Sig_/YN=RmG0aoGTr9uPkO+q1kUe--
