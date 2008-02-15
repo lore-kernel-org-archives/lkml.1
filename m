@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760399AbYBOSbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758808AbYBOSgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760399AbYBOSbT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbYBOSbL
+	id S1758808AbYBOSgO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbYBOSf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:31:11 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:33919 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755981AbYBOSbJ (ORCPT
+	Fri, 15 Feb 2008 13:35:58 -0500
+Received: from vms173003pub.verizon.net ([206.46.173.3]:34964 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754954AbYBOSf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:31:09 -0500
-Date: Fri, 15 Feb 2008 10:28:22 -0800
-From: Greg KH <greg@kroah.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, jdmason@kudzu.us, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080215182822.GA5675@kroah.com>
-References: <20080213001506.GA13933@kroah.com> <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com> <20080215071703.GA9022@kroah.com> <20080215074827.GE4334@rhun.haifa.ibm.com> <20080215152008.GA1975@kroah.com> <20080215153140.GN1178@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080215153140.GN1178@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 15 Feb 2008 13:35:58 -0500
+Date: Fri, 15 Feb 2008 12:35:46 -0600
+From: Corey Minyard <minyard@acm.org>
+Subject: [Patch 3/5] IPMI: Style fixes in the base code
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>,
+       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>
+Reply-to: minyard@acm.org
+Message-id: <20080215183546.GA30335@minyard.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 04:31:40PM +0100, Sam Ravnborg wrote:
-> On Fri, Feb 15, 2008 at 07:20:08AM -0800, Greg KH wrote:
-> > On Fri, Feb 15, 2008 at 09:48:27AM +0200, Muli Ben-Yehuda wrote:
-> > > In conclusion, our usage doesn't seem lika a good fit for the probe
-> > > approach, although it could probably converted provided we got the
-> > > ordering right with regards to regular PCI device
-> > > initialization. Doesn't seem to be worth the effort.
-> > 
-> > After reading this, and looking at the code again, I agree.  Thanks for
-> > the great explaination, I'll leave the code alone now :)
-> 
-> Copy the nice explanation from the mail into the code as a comment
-> somewhere?
+From: Corey Minyard <cminyard@mvista.com>
 
-That would be nice.  Muli, want to make a patch for this?
+Lots of style fixes for the base IPMI driver.  No functional changes.
+Basically fixes everything reported by checkpatch and fixes the comment
+style.
 
-thanks,
+Signed-off-by: Corey Minyard <cminyard@mvista.com>
 
-greg k-h
+Patch is too big for the list, per the Submitting Patches document.  It
+is available at:
+
+http://mysite.verizon.net/tcminyard/ipmi-style-fixes.patch
