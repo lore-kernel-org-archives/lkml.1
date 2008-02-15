@@ -1,404 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935378AbYBOAo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935435AbYBOAor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935378AbYBOAo0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbYBOAmc
+	id S935435AbYBOAor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbYBOAme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 14 Feb 2008 19:42:34 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:34266 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934698AbYBOAmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Feb 2008 19:42:32 -0500
-Received: from ns.suse.de ([195.135.220.2]:37977 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934672AbYBOAma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:42:30 -0500
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 05/12] PCI: clean up search.c a lot
-Date: Thu, 14 Feb 2008 16:40:03 -0800
-Message-Id: <1203036010-27988-5-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.4
-In-Reply-To: <20080215003909.GA27981@kroah.com>
-References: <20080215003909.GA27981@kroah.com>
+Date: Thu, 14 Feb 2008 16:42:29 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: torvalds@linux-foundation.org
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: [git pull] slab allocator fixes / cleanups
+Message-ID: <Pine.LNX.4.64.0802141544130.3913@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleans up the search.c file, now using the pci list of devices that
-are created for the driver core, instead of relying on our separate list
-of devices.  It's better to use the functions already created for this
-kind of thing, instead of rolling our own all the time.
+The following changes since commit e760e716d47b48caf98da348368fd41b4a9b9e7e:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
 
-This work is done in anticipation of getting rid of that second list of
-pci devices all together.
+are available in the git repository at:
 
-And it ends up saving code, always a nice benefit.
+  git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git slab-linus
 
-This also removes one compiler warning for when CONFIG_PCI_LEGACY is
-enabled as we no longer internally use the deprecated functions anymore.
+Adrian Bunk (1):
+      make slub.c:slab_address() static
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- drivers/pci/search.c |  249 ++++++++++++++++++++++---------------------------
- include/linux/pci.h  |    4 +-
- 2 files changed, 114 insertions(+), 139 deletions(-)
+Christoph Lameter (3):
+      slub: Determine gfpflags once and not every time a slab is allocated
+      slub: Fallback to kmalloc_large for failing higher order allocs
+      slub: Support 4k kmallocs again to compensate for page allocator slowness
 
-diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-index a04c43f..217814f 100644
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -114,31 +114,63 @@ pci_find_next_bus(const struct pci_bus *from)
- }
- 
- #ifdef CONFIG_PCI_LEGACY
--
- /**
-  * pci_find_slot - locate PCI device from a given PCI slot
-  * @bus: number of PCI bus on which desired PCI device resides
-- * @devfn: encodes number of PCI slot in which the desired PCI 
-- * device resides and the logical device number within that slot 
-+ * @devfn: encodes number of PCI slot in which the desired PCI
-+ * device resides and the logical device number within that slot
-  * in case of multi-function devices.
-  *
-- * Given a PCI bus and slot/function number, the desired PCI device 
-+ * Given a PCI bus and slot/function number, the desired PCI device
-  * is located in system global list of PCI devices.  If the device
-- * is found, a pointer to its data structure is returned.  If no 
-+ * is found, a pointer to its data structure is returned.  If no
-  * device is found, %NULL is returned.
-+ *
-+ * NOTE: Do not use this function any more; use pci_get_slot() instead, as
-+ * the PCI device returned by this function can disappear at any moment in
-+ * time.
-  */
--struct pci_dev *
--pci_find_slot(unsigned int bus, unsigned int devfn)
-+struct pci_dev *pci_find_slot(unsigned int bus, unsigned int devfn)
- {
- 	struct pci_dev *dev = NULL;
- 
--	while ((dev = pci_find_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		if (dev->bus->number == bus && dev->devfn == devfn)
-+	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
-+		if (dev->bus->number == bus && dev->devfn == devfn) {
-+			pci_dev_put(dev);
- 			return dev;
-+		}
- 	}
- 	return NULL;
- }
-+EXPORT_SYMBOL(pci_find_slot);
- 
-+/**
-+ * pci_find_device - begin or continue searching for a PCI device by vendor/device id
-+ * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
-+ * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
-+ * @from: Previous PCI device found in search, or %NULL for new search.
-+ *
-+ * Iterates through the list of known PCI devices.  If a PCI device is found
-+ * with a matching @vendor and @device, a pointer to its device structure is
-+ * returned.  Otherwise, %NULL is returned.
-+ * A new search is initiated by passing %NULL as the @from argument.
-+ * Otherwise if @from is not %NULL, searches continue from next device
-+ * on the global list.
-+ *
-+ * NOTE: Do not use this function any more; use pci_get_device() instead, as
-+ * the PCI device returned by this function can disappear at any moment in
-+ * time.
-+ */
-+struct pci_dev *pci_find_device(unsigned int vendor, unsigned int device,
-+				const struct pci_dev *from)
-+{
-+	struct pci_dev *pdev;
-+
-+	pdev = pci_get_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
-+	pci_dev_put(pdev);
-+	return pdev;
-+}
-+EXPORT_SYMBOL(pci_find_device);
- #endif /* CONFIG_PCI_LEGACY */
- 
- /**
-@@ -204,86 +236,52 @@ struct pci_dev * pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
- 	return NULL;
- }
- 
--#ifdef CONFIG_PCI_LEGACY
--/**
-- * pci_find_subsys - begin or continue searching for a PCI device by vendor/subvendor/device/subdevice id
-- * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
-- * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
-- * @ss_vendor: PCI subsystem vendor id to match, or %PCI_ANY_ID to match all vendor ids
-- * @ss_device: PCI subsystem device id to match, or %PCI_ANY_ID to match all device ids
-- * @from: Previous PCI device found in search, or %NULL for new search.
-- *
-- * Iterates through the list of known PCI devices.  If a PCI device is
-- * found with a matching @vendor, @device, @ss_vendor and @ss_device, a
-- * pointer to its device structure is returned.  Otherwise, %NULL is returned.
-- * A new search is initiated by passing %NULL as the @from argument.
-- * Otherwise if @from is not %NULL, searches continue from next device
-- * on the global list.
-- *
-- * NOTE: Do not use this function any more; use pci_get_subsys() instead, as
-- * the PCI device returned by this function can disappear at any moment in
-- * time.
-- */
--static struct pci_dev * pci_find_subsys(unsigned int vendor,
--				        unsigned int device,
--					unsigned int ss_vendor,
--					unsigned int ss_device,
--					const struct pci_dev *from)
-+static int match_pci_dev_by_id(struct device *dev, void *data)
- {
--	struct list_head *n;
--	struct pci_dev *dev;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	struct pci_device_id *id = data;
- 
--	WARN_ON(in_interrupt());
--
--	/*
--	 * pci_find_subsys() can be called on the ide_setup() path, super-early
--	 * in boot.  But the down_read() will enable local interrupts, which
--	 * can cause some machines to crash.  So here we detect and flag that
--	 * situation and bail out early.
--	 */
--	if (unlikely(no_pci_devices()))
--		return NULL;
--	down_read(&pci_bus_sem);
--	n = from ? from->global_list.next : pci_devices.next;
--
--	while (n && (n != &pci_devices)) {
--		dev = pci_dev_g(n);
--		if ((vendor == PCI_ANY_ID || dev->vendor == vendor) &&
--		    (device == PCI_ANY_ID || dev->device == device) &&
--		    (ss_vendor == PCI_ANY_ID || dev->subsystem_vendor == ss_vendor) &&
--		    (ss_device == PCI_ANY_ID || dev->subsystem_device == ss_device))
--			goto exit;
--		n = n->next;
--	}
--	dev = NULL;
--exit:
--	up_read(&pci_bus_sem);
--	return dev;
-+	if (pci_match_one_device(id, pdev))
-+		return 1;
-+	return 0;
- }
- 
--/**
-- * pci_find_device - begin or continue searching for a PCI device by vendor/device id
-- * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
-- * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
-+/*
-+ * pci_get_dev_by_id - begin or continue searching for a PCI device by id
-+ * @id: pointer to struct pci_device_id to match for the device
-  * @from: Previous PCI device found in search, or %NULL for new search.
-  *
-  * Iterates through the list of known PCI devices.  If a PCI device is found
-- * with a matching @vendor and @device, a pointer to its device structure is
-- * returned.  Otherwise, %NULL is returned.
-- * A new search is initiated by passing %NULL as the @from argument.
-- * Otherwise if @from is not %NULL, searches continue from next device
-- * on the global list.
-- * 
-- * NOTE: Do not use this function any more; use pci_get_device() instead, as
-- * the PCI device returned by this function can disappear at any moment in
-- * time.
-+ * with a matching id a pointer to its device structure is returned, and the
-+ * reference count to the device is incremented.  Otherwise, %NULL is returned.
-+ * A new search is initiated by passing %NULL as the @from argument.  Otherwise
-+ * if @from is not %NULL, searches continue from next device on the global
-+ * list.  The reference count for @from is always decremented if it is not
-+ * %NULL.
-+ *
-+ * This is an internal function for use by the other search functions in
-+ * this file.
-  */
--struct pci_dev *
--pci_find_device(unsigned int vendor, unsigned int device, const struct pci_dev *from)
-+static struct pci_dev *pci_get_dev_by_id(const struct pci_device_id *id,
-+					 const struct pci_dev *from)
- {
--	return pci_find_subsys(vendor, device, PCI_ANY_ID, PCI_ANY_ID, from);
-+	struct device *dev;
-+	struct device *dev_start = NULL;
-+	struct pci_dev *pdev = NULL;
-+
-+	WARN_ON(in_interrupt());
-+	if (from) {
-+		/* FIXME
-+		 * take the cast off, when bus_find_device is made const.
-+		 */
-+		dev_start = (struct device *)&from->dev;
-+	}
-+	dev = bus_find_device(&pci_bus_type, dev_start, (void *)id,
-+			      match_pci_dev_by_id);
-+	if (dev)
-+		pdev = to_pci_dev(dev);
-+	return pdev;
- }
--#endif /* CONFIG_PCI_LEGACY */
- 
- /**
-  * pci_get_subsys - begin or continue searching for a PCI device by vendor/subvendor/device/subdevice id
-@@ -301,42 +299,34 @@ pci_find_device(unsigned int vendor, unsigned int device, const struct pci_dev *
-  * searches continue from next device on the global list.
-  * The reference count for @from is always decremented if it is not %NULL.
-  */
--struct pci_dev * 
--pci_get_subsys(unsigned int vendor, unsigned int device,
--	       unsigned int ss_vendor, unsigned int ss_device,
--	       struct pci_dev *from)
-+struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
-+			       unsigned int ss_vendor, unsigned int ss_device,
-+			       const struct pci_dev *from)
- {
--	struct list_head *n;
--	struct pci_dev *dev;
--
--	WARN_ON(in_interrupt());
-+	struct pci_dev *pdev;
-+	struct pci_device_id *id;
- 
- 	/*
--	 * pci_get_subsys() can potentially be called by drivers super-early
--	 * in boot.  But the down_read() will enable local interrupts, which
--	 * can cause some machines to crash.  So here we detect and flag that
--	 * situation and bail out early.
-+	 * pci_find_subsys() can be called on the ide_setup() path,
-+	 * super-early in boot.  But the down_read() will enable local
-+	 * interrupts, which can cause some machines to crash.  So here we
-+	 * detect and flag that situation and bail out early.
- 	 */
- 	if (unlikely(no_pci_devices()))
- 		return NULL;
--	down_read(&pci_bus_sem);
--	n = from ? from->global_list.next : pci_devices.next;
--
--	while (n && (n != &pci_devices)) {
--		dev = pci_dev_g(n);
--		if ((vendor == PCI_ANY_ID || dev->vendor == vendor) &&
--		    (device == PCI_ANY_ID || dev->device == device) &&
--		    (ss_vendor == PCI_ANY_ID || dev->subsystem_vendor == ss_vendor) &&
--		    (ss_device == PCI_ANY_ID || dev->subsystem_device == ss_device))
--			goto exit;
--		n = n->next;
--	}
--	dev = NULL;
--exit:
--	dev = pci_dev_get(dev);
--	up_read(&pci_bus_sem);
--	pci_dev_put(from);
--	return dev;
-+
-+	id = kzalloc(sizeof(*id), GFP_KERNEL);
-+	if (!id)
-+		return NULL;
-+	id->vendor = vendor;
-+	id->device = device;
-+	id->subvendor = ss_vendor;
-+	id->subdevice = ss_device;
-+
-+	pdev = pci_get_dev_by_id(id, from);
-+	kfree(id);
-+
-+	return pdev;
- }
- 
- /**
-@@ -375,24 +365,18 @@ pci_get_device(unsigned int vendor, unsigned int device, struct pci_dev *from)
-  */
- struct pci_dev *pci_get_class(unsigned int class, struct pci_dev *from)
- {
--	struct list_head *n;
- 	struct pci_dev *dev;
-+	struct pci_device_id *id;
- 
--	WARN_ON(in_interrupt());
--	down_read(&pci_bus_sem);
--	n = from ? from->global_list.next : pci_devices.next;
-+	id = kzalloc(sizeof(*id), GFP_KERNEL);
-+	if (!id)
-+		return NULL;
-+	id->vendor = id->device = id->subvendor = id->subdevice = PCI_ANY_ID;
-+	id->class_mask = PCI_ANY_ID;
-+	id->class = class;
- 
--	while (n && (n != &pci_devices)) {
--		dev = pci_dev_g(n);
--		if (dev->class == class)
--			goto exit;
--		n = n->next;
--	}
--	dev = NULL;
--exit:
--	dev = pci_dev_get(dev);
--	up_read(&pci_bus_sem);
--	pci_dev_put(from);
-+	dev = pci_get_dev_by_id(id, from);
-+	kfree(id);
- 	return dev;
- }
- 
-@@ -409,31 +393,22 @@ exit:
-  */
- int pci_dev_present(const struct pci_device_id *ids)
- {
--	struct pci_dev *dev;
--	const struct pci_device_id *found = NULL;
-+	struct pci_dev *found = NULL;
- 
- 	WARN_ON(in_interrupt());
--	down_read(&pci_bus_sem);
- 	while (ids->vendor || ids->subvendor || ids->class_mask) {
--		list_for_each_entry(dev, &pci_devices, global_list) {
--			if ((found = pci_match_one_device(ids, dev)) != NULL)
--				goto exit;
--		}
-+		found = pci_get_dev_by_id(ids, NULL);
-+		if (found)
-+			goto exit;
- 		ids++;
- 	}
- exit:
--	up_read(&pci_bus_sem);
- 	if (found)
- 		return 1;
- 	return 0;
- }
- EXPORT_SYMBOL(pci_dev_present);
- 
--#ifdef CONFIG_PCI_LEGACY
--EXPORT_SYMBOL(pci_find_device);
--EXPORT_SYMBOL(pci_find_slot);
--#endif /* CONFIG_PCI_LEGACY */
--
- /* For boot time work */
- EXPORT_SYMBOL(pci_find_bus);
- EXPORT_SYMBOL(pci_find_next_bus);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 99cd9b2..a38c855 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -509,7 +509,7 @@ struct pci_dev *pci_get_device(unsigned int vendor, unsigned int device,
- 				struct pci_dev *from);
- struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
- 				unsigned int ss_vendor, unsigned int ss_device,
--				struct pci_dev *from);
-+				const struct pci_dev *from);
- struct pci_dev *pci_get_slot(struct pci_bus *bus, unsigned int devfn);
- struct pci_dev *pci_get_bus_and_slot(unsigned int bus, unsigned int devfn);
- struct pci_dev *pci_get_class(unsigned int class, struct pci_dev *from);
-@@ -783,7 +783,7 @@ static inline struct pci_dev *pci_get_subsys(unsigned int vendor,
- 					     unsigned int device,
- 					     unsigned int ss_vendor,
- 					     unsigned int ss_device,
--					     struct pci_dev *from)
-+					     const struct pci_dev *from)
- {
- 	return NULL;
- }
--- 
-1.5.4
+Marcin Slusarz (1):
+      slab: avoid double initialization & do initialization in 1 place
+
+Pekka Enberg (1):
+      slub: kmalloc page allocator pass-through cleanup
+
+ include/linux/slub_def.h |   15 +++++--
+ mm/slab.c                |    3 +-
+ mm/slub.c                |   94 
++++++++++++++++++++++++++++++++---------------
+ 3 files changed, 75 insertions(+), 37 deletions(-)
 
