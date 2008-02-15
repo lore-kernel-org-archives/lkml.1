@@ -1,61 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763759AbYBOWll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765416AbYBOWmJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763759AbYBOWll (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:41:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763914AbYBOWhm
+	id S1765416AbYBOWmJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:42:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764009AbYBOWhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:37:42 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48733 "EHLO e6.ny.us.ibm.com"
+	Fri, 15 Feb 2008 17:37:43 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:48741 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762534AbYBOWhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762902AbYBOWhi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 17:37:38 -0500
-Subject: [PATCH 03/30] check for null vfsmount in dentry_open()
+Subject: [PATCH 05/30] do namei_flags calculation inside open_namei()
 To: linux-kernel@vger.kernel.org
 Cc: hch@lst.de, miklos@szeredi.hu, akpm@osdl.org,
        Dave Hansen <haveblue@us.ibm.com>
 From: Dave Hansen <haveblue@us.ibm.com>
-Date: Fri, 15 Feb 2008 14:37:24 -0800
+Date: Fri, 15 Feb 2008 14:37:27 -0800
 References: <20080215223721.9E0A088A@kernel>
 In-Reply-To: <20080215223721.9E0A088A@kernel>
-Message-Id: <20080215223724.D5C70940@kernel>
+Message-Id: <20080215223727.C511C77F@kernel>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Make sure no-one calls dentry_open with a NULL vfsmount argument and crap
-out with a stacktrace otherwise.  A NULL file->f_vfsmnt has always been
-problematic, but with the per-mount r/o tracking we can't accept anymore
-at all.
+My end goal here is to make sure all users of may_open()
+return filps.  This will ensure that we properly release
+mount write counts which were taken for the filp in
+may_open().
+
+This patch moves the sys_open flags to namei flags
+calculation into fs/namei.c.  We'll shortly be moving
+the nameidata_to_filp() calls into namei.c, and this
+gets the sys_open flags to a place where we can get
+at them when we need them.
 
 Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
 ---
 
- linux-2.6.git-dave/fs/open.c |   12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ linux-2.6.git-dave/fs/namei.c |   43 +++++++++++++++++++++++++++++++++---------
+ linux-2.6.git-dave/fs/open.c  |   22 +--------------------
+ 2 files changed, 36 insertions(+), 29 deletions(-)
 
-diff -puN fs/open.c~check-for-NULL-vfsmount-in-dentry-open fs/open.c
---- linux-2.6.git/fs/open.c~check-for-NULL-vfsmount-in-dentry-open	2008-02-15 13:25:42.000000000 -0800
-+++ linux-2.6.git-dave/fs/open.c	2008-02-15 13:25:42.000000000 -0800
-@@ -903,6 +903,18 @@ struct file *dentry_open(struct dentry *
- 	int error;
- 	struct file *f;
+diff -puN fs/namei.c~do-namei_flags-calculation-inside-open_namei fs/namei.c
+--- linux-2.6.git/fs/namei.c~do-namei_flags-calculation-inside-open_namei	2008-02-15 13:25:44.000000000 -0800
++++ linux-2.6.git-dave/fs/namei.c	2008-02-15 13:25:44.000000000 -0800
+@@ -1676,7 +1676,12 @@ int may_open(struct nameidata *nd, int a
+ 	return 0;
+ }
  
-+	/*
-+	 * We must always pass in a valid mount pointer.   Historically
-+	 * callers got away with not passing it, but we must enforce this at
-+	 * the earliest possible point now to avoid strange problems deep in the
-+	 * filesystem stack.
-+	 */
-+	if (!mnt) {
-+		printk(KERN_WARNING "%s called with NULL vfsmount\n", __func__);
-+		dump_stack();
-+		return ERR_PTR(-EINVAL);
-+	}
+-static int open_namei_create(struct nameidata *nd, struct path *path,
++/*
++ * Be careful about ever adding any more callers of this
++ * function.  Its flags must be in the namei format, not
++ * what get passed to sys_open().
++ */
++static int __open_namei_create(struct nameidata *nd, struct path *path,
+ 				int flag, int mode)
+ {
+ 	int error;
+@@ -1695,26 +1700,46 @@ static int open_namei_create(struct name
+ }
+ 
+ /*
++ * Note that while the flag value (low two bits) for sys_open means:
++ *	00 - read-only
++ *	01 - write-only
++ *	10 - read-write
++ *	11 - special
++ * it is changed into
++ *	00 - no permissions needed
++ *	01 - read-permission
++ *	10 - write-permission
++ *	11 - read-write
++ * for the internal routines (ie open_namei()/follow_link() etc)
++ * This is more logical, and also allows the 00 "no perm needed"
++ * to be used for symlinks (where the permissions are checked
++ * later).
++ *
++*/
++static inline int open_to_namei_flags(int flag)
++{
++	if ((flag+1) & O_ACCMODE)
++		flag++;
++	return flag;
++}
 +
- 	error = -ENFILE;
- 	f = get_empty_filp();
- 	if (f == NULL) {
++/*
+  *	open_namei()
+  *
+  * namei for open - this is in fact almost the whole open-routine.
+  *
+  * Note that the low bits of "flag" aren't the same as in the open
+- * system call - they are 00 - no permissions needed
+- *			  01 - read permission needed
+- *			  10 - write permission needed
+- *			  11 - read/write permissions needed
+- * which is a lot more logical, and also allows the "no perm" needed
+- * for symlinks (where the permissions are checked later).
++ * system call.  See open_to_namei_flags().
+  * SMP-safe
+  */
+-int open_namei(int dfd, const char *pathname, int flag,
++int open_namei(int dfd, const char *pathname, int open_flag,
+ 		int mode, struct nameidata *nd)
+ {
+ 	int acc_mode, error;
+ 	struct path path;
+ 	struct dentry *dir;
+ 	int count = 0;
++	int flag = open_to_namei_flags(open_flag);
+ 
+ 	acc_mode = ACC_MODE(flag);
+ 
+@@ -1775,7 +1800,7 @@ do_last:
+ 
+ 	/* Negative dentry, just create the file */
+ 	if (!path.dentry->d_inode) {
+-		error = open_namei_create(nd, &path, flag, mode);
++		error = __open_namei_create(nd, &path, flag, mode);
+ 		if (error)
+ 			goto exit;
+ 		return 0;
+diff -puN fs/open.c~do-namei_flags-calculation-inside-open_namei fs/open.c
+--- linux-2.6.git/fs/open.c~do-namei_flags-calculation-inside-open_namei	2008-02-15 13:25:44.000000000 -0800
++++ linux-2.6.git-dave/fs/open.c	2008-02-15 13:25:44.000000000 -0800
+@@ -796,31 +796,13 @@ cleanup_file:
+ 	return ERR_PTR(error);
+ }
+ 
+-/*
+- * Note that while the flag value (low two bits) for sys_open means:
+- *	00 - read-only
+- *	01 - write-only
+- *	10 - read-write
+- *	11 - special
+- * it is changed into
+- *	00 - no permissions needed
+- *	01 - read-permission
+- *	10 - write-permission
+- *	11 - read-write
+- * for the internal routines (ie open_namei()/follow_link() etc). 00 is
+- * used by symlinks.
+- */
+ static struct file *do_filp_open(int dfd, const char *filename, int flags,
+ 				 int mode)
+ {
+-	int namei_flags, error;
++	int error;
+ 	struct nameidata nd;
+ 
+-	namei_flags = flags;
+-	if ((namei_flags+1) & O_ACCMODE)
+-		namei_flags++;
+-
+-	error = open_namei(dfd, filename, namei_flags, mode, &nd);
++	error = open_namei(dfd, filename, flags, mode, &nd);
+ 	if (!error)
+ 		return nameidata_to_filp(&nd, flags);
+ 
 _
