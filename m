@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761509AbYBOWgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbYBOWhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761509AbYBOWgj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 17:36:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764895AbYBOWfg
+	id S1764141AbYBOWhp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 17:37:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756190AbYBOWh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 17:35:36 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48364 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763489AbYBOWfc (ORCPT
+	Fri, 15 Feb 2008 17:37:26 -0500
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:44115 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755362AbYBOWhY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 17:35:32 -0500
-Date: Fri, 15 Feb 2008 22:27:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: benh@kernel.crashing.org
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, Tim Ellis <tim@ngndg.com>,
-       linux-kernel@vger.kernel.org, jeff@garzik.org
-Subject: Re: [PATCH] libata: Add MMIO support to pata_sil680
-Message-ID: <20080215222725.0af29563@core>
-In-Reply-To: <1203111956.22915.24.camel@pasglop>
-References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com>
-	<1202850129.7410.22.camel@pasglop>
-	<Pine.LNX.4.64.0802151651340.27735@axis700.grange>
-	<20080215155332.2b89c429@core>
-	<1203111956.22915.24.camel@pasglop>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 15 Feb 2008 17:37:24 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAFOjtUdMQWRV/2dsb2JhbACBWax+
+Date: Fri, 15 Feb 2008 17:37:21 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MARKERS depends on MODULES
+Message-ID: <20080215223721.GA18891@Krystal>
+References: <20080215222848.GA2440@shell.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080215222848.GA2440@shell.boston.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 17:36:47 up 4 days, 18:37,  4 users,  load average: 0.32, 0.28,
+	0.30
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The dbdma start is mostly harmless (things don't get posted for -that-
-> long), though I suppose it's worth fixing. Would reading back dmactl do
-> in that case or do you foresee any kind of side effect ? (Maybe only
-> doing it for MMIO ?)
+* Chris Snook (csnook@redhat.com) wrote:
+> From: Chris Snook <csnook@redhat.com>
+> 
+> Make MARKERS depend on MODULES to prevent build failures with certain configs.
+> 
+> Signed-off-by: Chris Snook <csnook@redhat.com>
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index dcef8b5..933df15 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -729,6 +729,7 @@ config PROFILING
+>  
+>  config MARKERS
+>  	bool "Activate markers"
+> +	depends on MODULES
+>  	help
+>  	  Place an empty function call at each marker site. Can be
+>  	  dynamically changed for a probe function.
 
-The dmactl read back should be just fine, or any other DMA register (eg
-status).
+It should not be needed. Please try Adrian's fix there :
+http://lkml.org/lkml/2008/2/13/714
 
-> As for SRST, I'm not totally confident how safe it is to read back
-> there while doing the reset sequence, so I'm tempted to really only
-> do it for MMIO and use altstat rather than ctl/stat (the later tends
-> to have side effects which we don't want here).
+It should fix your problem.
 
-Agreed - we know some controllers crap themselves spectacularly on
-anything which causes a SATA data transfer to be needed during a reset so
-the status is probably safest. The fact its not fixed is because nobody
-has sat down to figure out what is safe.
+Mathieu
 
-> The main problem from here is that I don't know whether we are using
-> MMIO or PIO from libata-core. Maybe I can add a host flag indicate
-> that such flushing is needed ?
-
-Easier to add that to the ioxxxx ops I suspect (ioispio/ioismmio say) ?
-
-Alan
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
