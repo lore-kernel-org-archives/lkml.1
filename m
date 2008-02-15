@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYCBKP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbYCVCcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYCBKP1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 2 Mar 2008 05:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbYCBKPP
+	id S1756644AbYCVCcZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 21 Mar 2008 22:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYCVCcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 2 Mar 2008 05:15:15 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2465 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753025AbYCBKPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 2 Mar 2008 05:15:13 -0500
-Date: Sun, 24 Feb 2008 19:03:39 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Elias Oltmanns <eo@nebensachen.de>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC] Disk shock protection (revisited)
-Message-ID: <20080224180339.GA3861@ucw.cz>
-References: <87skzgd1zk.fsf@denkblock.local> <20080226123946.75dbe3d2@core> <87mypl8p49.fsf@denkblock.local> <20080228111349.6831925c@core>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080228111349.6831925c@core>
-User-Agent: Mutt/1.5.9i
+	Fri, 21 Mar 2008 22:32:16 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:8518 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbYCVCcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 21 Mar 2008 22:32:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=subject:from:to:date:message-id:sender;
+        b=lBhJdRbhDyj2mBj0njU/N0p8CZXfXMMemiCF0zUf0jetjt5utR7BqiC0jY7gVCtdUJ+84IdwSKsPw+yqCTynt4ObVdqailpB/R6oF0U+qnbetzwFYF4x4Ej6SxezLBYhUCJ4H0zgbzXv4gDLrdQ7Bf7arvQUqZ33qSH83mjHxMk=
+Subject: [RFC][PATCH 0/9] cgroups: block: cfq: I/O bandwidth controlling subsystem for CGroups based on CFQ
+From: Vasily Tarasov <vtaras@openvz.org>
+To: axboe@kernel.dk, linux-kernel@vger.kernel.org, devel@openvz.org,
+       containers@linux-foundation.com, dev@openvz.org, xemul@openvz.org,
+       vtaras@openvz.org
+Date: Fri, 15 Feb 2008 01:53:34 -0500
+Message-Id: <1203058414.042372.2088.nullmailer@me>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+From: Vasily Tarasov <vtaras@openvz.org>
 
-> > > That sounds like a non starter. What if the box is busy, what if the
-> > > daemon or something you touch needs memory and causes paging ?
-> > 
-> > The daemon runs mlock'd anyway, so there won't be any need for paging
-> 
-> mlock does not guarantee anything of that form. A syscall by an mlocked
-> process which causes a memory allocation can cause paging of another
-> process on the system.
+The following patchset introduces I/O bandwidth controlling subsystem
+for the CGroups framework based on the CFQ scheduler.
+User can assign a priority from 0 to 7 to a cgroup, and I/O bandwidth
+will be adjusted proportionally.
+This effect is achieved by introducing a certain modifications to CFQ.
+Now there is not only per process time slice, but also per cgroup
+time slice. During cgroup's time slice only processes from current
+cgroup can add requests to the queue. Inside cgroups's time slice
+processes are managed based on (per-process) time slices (as usual in CFQ).
+This is why we call this approach "two level CFQ".
 
-Well... but you can be careful about the syscalls, right?
+Such kind of system works in OpenVZ project.
 
-Anyway, active protection is 'best effort' anyway. There's not enough
-time to park heads if you drop the machine without tilting it first...
-and we have been running with no protection for years now...
+Patch is against 2.6.25-rc2-mm1
 
-> > stays in memory all the time, it can go ahead and notify the kernel that
-> > the disk heads should be unloaded. The kernel takes care to insert the
-> > idle immediate command at the head of the queue. Am I missing something?
-> 
-> Yes - the fact we may well have bounced off the floor already.
-
-Well, shit happens. Even notebook with parked harddrive is not
-guaranteed to survive the fall.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Comments, suggestions, criticism are all welcome.
