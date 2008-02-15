@@ -1,66 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933718AbYBOOwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934238AbYBOOxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933718AbYBOOwb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 09:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbYBOOwX
+	id S934238AbYBOOxd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 09:53:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759221AbYBOOxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 09:52:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:39864 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754607AbYBOOwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 09:52:23 -0500
-Message-ID: <47B5A699.7010509@redhat.com>
-Date: Fri, 15 Feb 2008 09:50:01 -0500
-From: Larry Woodman <lwoodman@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040301
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Problem with /proc/sys/vm/lowmem_reserve_ratio ???
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Fri, 15 Feb 2008 09:53:23 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:37724 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755775AbYBOOxW (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 09:53:22 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Gene Heskett <gene.heskett@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+In-Reply-To: Your message of "Fri, 15 Feb 2008 04:26:45 EST."
+             <200802150426.46351.gene.heskett@gmail.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <200802141332.03315.gene.heskett@gmail.com> <4367.1203056954@turing-police.cc.vt.edu>
+            <200802150426.46351.gene.heskett@gmail.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1203087132_2934P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Feb 2008 09:52:12 -0500
+Message-ID: <12457.1203087132@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-balance_pgdat() calls zone_watermark_ok() three times, the first call
-passes a zero(0) in as the 4th argument.  This 4th argument is the
-classzone_idx which is used as the index into the 
-zone->lowmem_reserve[] array.  Since setup_per_zone_lowmem_reserve()
-always sets the zone->lowmem_reserve[0] = 0(because there is nothing
-below the DMA zone), zone_watermark_ok() will not consider the
-lowmem_reserve pages when zero is passed as the 4th arg.  Shouldnt this
-4th argument be either "i" or "nr_zones - 1" ???
+--==_Exmh_1203087132_2934P
+Content-Type: text/plain; charset=us-ascii
 
--------------------------------------------------------------------------
---- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
-11:14:55.000000000 -0500
-+++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:15:02.000000000
--0500
-@@ -1375,7 +1375,7 @@ loop_again:
-                                continue;
+On Fri, 15 Feb 2008 04:26:45 EST, Gene Heskett said:
+> On Friday 15 February 2008, Valdis.Kletnieks@vt.edu wrote:
+> >On Thu, 14 Feb 2008 13:32:02 EST, Gene Heskett said:
+> >> Nvidia vs 2.6.25-rc1 being a case in point, and they (nvidia) are
+> >> appearing to indicate its not a problem until some distro actually ships a
+> >> kernel with the changes that broke it.  That could be months or even a
+> >> year plus.
+> >
+> >Actually following the NVidia forums indicates otherwise:
+> >
+> >http://www.nvnews.net/vbulletin/showthread.php?t=107144
+> >
+> >I expect Zander will be posting a patch rather soonish, for some value of
+> >soonish.  And if you're running a -rc or -mm kernel, patching the 169.09
+> >drivers should be well within your abilities....
+> 
+> Not so for the binaries, existing patches do make it compile but it still 
+> upchucks someplace in the binary, or was this time yesterday.
 
-                        if (!zone_watermark_ok(zone, order, zone->pages_high,
+Umm.. if you actually *read* the mentioned thread, you'll see that "existing
+patches" are known to be incomplete, complete with the "upchucks in the binary"
+(mentioned at entry number 9 of the thread), and that Zander already knows
+about it (entry #11), and has apparently one remaining issue left to resolve
+(entries #32 and #36).
 
--                                              0, 0)) {
-+                                              i, 0)) {
-                                end_zone = i;
-                                break;
--------------------------------------------------------------------------
---- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
-11:14:55.000000000 -0500
-+++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:16:35.000000000
--0500
-@@ -1375,7 +1375,7 @@ loop_again:
-                                continue;
-
-                        if (!zone_watermark_ok(zone, order, zone->pages_high,
-
--                                              0, 0)) {
-+                                              nr_zones - 1, 0)) {
-                                end_zone = i;
-                                break;
-                        }
--------------------------------------------------------------------------
+And entry #36 is what the NVidia engineer doing the work was thinking about
+20 hours ago.  Interpret it as you will...
 
 
+--==_Exmh_1203087132_2934P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHtacccC3lWbTT17ARAoR3AKD8wYjftIHG/CBMaviLfafZATVMwgCgsS9i
+SQJh5SNXQzo8FRMfUWFS9d8=
+=2g2/
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1203087132_2934P--
