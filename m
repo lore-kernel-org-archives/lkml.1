@@ -1,63 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbYBOFpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbYBOGFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757954AbYBOFpl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 00:45:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbYBOFpa
+	id S1764153AbYBOGFa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 01:05:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761047AbYBOGFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 00:45:30 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53402 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752288AbYBOFp3 (ORCPT
+	Fri, 15 Feb 2008 01:05:18 -0500
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:40055
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759132AbYBOGFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 00:45:29 -0500
-Date: Thu, 14 Feb 2008 21:44:57 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Huang, Ying" <ying.huang@intel.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix left over EFI cache mapping problems
-In-Reply-To: <1203050886.30010.19.camel@caritas-dev.intel.com>
-Message-ID: <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
-References: <20080214131317.GA27769@basil.nowhere.org>  <20080214161218.GA28152@elte.hu> <1203050886.30010.19.camel@caritas-dev.intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 15 Feb 2008 01:05:16 -0500
+Message-ID: <47B52B95.3070607@cosmosbay.com>
+Date: Fri, 15 Feb 2008 07:05:09 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: herbert@gondor.apana.org.au, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: tbench regression in 2.6.25-rc1
+References: <1203040321.3027.131.camel@ymzhang>
+In-Reply-To: <1203040321.3027.131.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 15 Feb 2008, Huang, Ying wrote:
+Zhang, Yanmin a écrit :
+> Comparing with kernel 2.6.24, tbench result has regression with
+> 2.6.25-rc1.
 > 
-> I think the patch following may be better, because it is possible that
-> the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
+> 1) On 2 quad-core processor stoakley: 4%.
+> 2) On 4 quad-core processor tigerton: more than 30%.
+> 
+> bisect located below patch.
+> 
+> b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b is first bad commit
+> commit b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b
+> Author: Herbert Xu <herbert@gondor.apana.org.au>
+> Date:   Tue Nov 13 21:33:32 2007 -0800
+> 
+>     [IPV6]: Move nfheader_len into rt6_info
+>     
+>     The dst member nfheader_len is only used by IPv6.  It's also currently
+>     creating a rather ugly alignment hole in struct dst.  Therefore this patch
+>     moves it from there into struct rt6_info.
+> 
+> 
+> As tbench uses ipv4, so the patch's real impact on ipv4 is it deletes
+> nfheader_len in dst_entry. It might change cache line alignment.
+> 
+> To verify my finding, I just added nfheader_len back to dst_entry in 2.6.25-rc1
+> and reran tbench on the 2 machines. Performance could be recovered completely.
+> 
+> I started cpu_number*2 tbench processes. On my 16-core tigerton:
+> #./tbench_srv &
+> #./tbench 32 127.0.0.1
+> 
+> -yanmin
 
-If this is a problem in practice, we'd be better off having a helper 
-function to do it, to avoid overflows. Right now, doing
+Yup. struct dst is sensitive to alignements, especially for benches.
 
-> +		unsigned long num_pages;
-> +		num_pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
+In the real world, we need to make sure that next pointer start at a cache 
+line bondary (or a litle bit after), so that RT cache lookups use one cache 
+line per entry instead of two. This permits better behavior in DDOS attacks.
 
-overflows at 4GB on x86-32. And maybe you never have areas that big, and 
-people are moving over to 64-bit anyway, it still sounds like a bug 
-waiting to happen.
+(check commit 1e19e02ca0c5e33ea73a25127dbe6c3b8fcaac4b for reference)
 
-So *if* we care (I doubt we do, since EFI_PAGE_SHIFT at least right now 
-matches PAGE_SHIFT on x86), you'd probably want to do something like
+Are you using a 64 or a 32 bit kernel ?
 
-  static inline unsigned long efi_pages_to_native_pages(unsigned long efi_pages)
-  {
-  #if EFI_PAGE_SHIFT > PAGE_SHIFT
-	return efi_pages << (EFI_PAGE_SHIFT - PAGE_SHIFT);
-  #else
-	return efi_pages >> (PAGE_SHIFT - EFI_PAGE_SHIFT);
-  #endif
-  }
 
-or whatever.
-
-Otherwise, trying to avoid a bug with different page sizes is actually 
-more likely to *introduce* one rather than fix one..
-
-			Linus
