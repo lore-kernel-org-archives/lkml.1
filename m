@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYBOTLz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbYBOTOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760012AbYBOTLz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:11:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYBOTLs
+	id S1760813AbYBOTOT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:14:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbYBOTOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:11:48 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:46045 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbYBOTLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:11:47 -0500
-Date: Fri, 15 Feb 2008 20:11:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 00/14] [ISDN] HiSax hotplug conversion
-Message-ID: <20080215191153.GA3667@uranus.ravnborg.org>
-References: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org> <20080215132703.GG1178@uranus.ravnborg.org> <47B5AC27.1030107@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B5AC27.1030107@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 15 Feb 2008 14:14:09 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54171 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754167AbYBOTOI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 14:14:08 -0500
+To: harvey.harrison@gmail.com
+CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-reply-to: <1203101902.15275.25.camel@brick> (message from Harvey Harrison
+	on Fri, 15 Feb 2008 10:58:22 -0800)
+Subject: Re: [RFC-PATCH] fuse: shadowed variable warning
+References: <1203101902.15275.25.camel@brick>
+Message-Id: <E1JQ60S-0005vO-QW@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 15 Feb 2008 20:13:56 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >
-> >Just ran checkpatch for the fun of it:
-> >total: 28 errors, 86 warnings, 4896 lines checked
-> >Most looks easy to fix.
 > 
-> I'll take a look...  if its checkpatch stuff I caused, I'm happy to fix it.
+> fs/fuse/dir.c:909:7: warning: symbol 'err' shadows an earlier one
+> fs/fuse/dir.c:893:6: originally declared here
 > 
-> But I'm trying to avoid cleanups for pre-existing conditions, i.e. 
-> flagged by checkpatch only because I moved existing code to a new location.
-> 
-> Down that path lies madness and way too much work :)  I didn't sign on 
-> to clean up ISDN :)
-> 
-> Anyway, thanks for the multiple comments, they will be taken into 
-> account in the next update of these patches.
+> This means that an error between lines 909 and 923 will not be
+> returned.
 
-I was distracted when halfdone - but I assume that I would just
-repeated myself for the rest of the drivers.
+Right.  Just submitted the exact same patch this morning :)
 
-When you post an updated version I will try to take a little
-bit deeper look. I did not get the full picture of the libification
-you have made in hisax.
+Thanks,
+Miklos
 
-	Sam
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Miklos, could you confirm whether or not you want the err from lines
+> 909-923 returned or not.  If so, I can respin this patch changing the
+> variable name instead which would preserve the current behavior.
+> This patch changes behavior.
+> 
+>  fs/fuse/dir.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
+> index 7fb514b..c4807b3 100644
+> --- a/fs/fuse/dir.c
+> +++ b/fs/fuse/dir.c
+> @@ -906,7 +906,7 @@ static int fuse_permission(struct inode *inode, int mask, struct nameidata *nd)
+>  	}
+>  
+>  	if (fc->flags & FUSE_DEFAULT_PERMISSIONS) {
+> -		int err = generic_permission(inode, mask, NULL);
+> +		err = generic_permission(inode, mask, NULL);
+>  
+>  		/* If permission is denied, try to refresh file
+>  		   attributes.  This is also needed, because the root
+> -- 
+> 1.5.4.1.1278.gc75be
+> 
+> 
+> 
+> 
