@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933635AbYBOKAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933451AbYBOKBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933635AbYBOKAk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 05:00:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764164AbYBOKAZ
+	id S933451AbYBOKBw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:01:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbYBOKBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 05:00:25 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41491 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761838AbYBOKAX (ORCPT
+	Fri, 15 Feb 2008 05:01:43 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45249
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754593AbYBOKBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 05:00:23 -0500
-Date: Fri, 15 Feb 2008 04:00:21 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080215040021.31e22cf4.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802141739050.16945@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	<20080214040918.d735e920.pj@sgi.com>
-	<alpine.DEB.1.00.0802141135110.17096@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802141739050.16945@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Fri, 15 Feb 2008 05:01:42 -0500
+Date: Fri, 15 Feb 2008 02:02:12 -0800 (PST)
+Message-Id: <20080215.020212.202401321.davem@davemloft.net>
+To: k-keiichi@bx.jp.nec.com
+Cc: mpm@selenic.com, satyam.sharma@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, shemminger@linux-foundation.org
+Subject: Re: [PATCH] netconsole: avoid null pointer dereference at
+ show_local_mac()
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <47B55F4C.5080703@bx.jp.nec.com>
+References: <47B55F4C.5080703@bx.jp.nec.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> like MPOL_F_RELATIVE_NODES or whatever Paul decides to call it 
+From: Keiichi KII <k-keiichi@bx.jp.nec.com>
+Date: Fri, 15 Feb 2008 18:45:48 +0900
 
-MPOL_F_RELATIVE_NODES it is.
+> This patch avoids a null pointer dereference when we read local_mac 
+> for netconsole in configfs and shows default local mac address
+> value.
+> 
+> A null pointer dereference occurs when we call show_local_mac() via 
+> local_mac entry in configfs before we setup the content of netpoll
+> using netpoll_setup().
+> 
+> This patch is for 2.6.25-rc1.
+> Your comments are very welcome.
+> 
+> Signed-off-by: Keiichi KII <k-keiichi@bx.jp.nec.com>
 
-I see no compelling need for this name to track whatever
-we name the relative bitmap operator.  They are related,
-but not the same thing.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Patch applied, thank you.
