@@ -1,116 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933331AbYBOJ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933584AbYBOJ2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933331AbYBOJ1q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759176AbYBOJZX
+	id S933584AbYBOJ2X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 04:28:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933013AbYBOJ0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:25:23 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:58380 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755446AbYBOJZJ (ORCPT
+	Fri, 15 Feb 2008 04:26:50 -0500
+Received: from mga10.intel.com ([192.55.52.92]:51028 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932117AbYBOJ0q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 04:25:09 -0500
-Date: Fri, 15 Feb 2008 01:32:50 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 5/5] x86_64: set cfg_size for AMD Family 10h in case MMCONFIG
- is used. v4
-In-reply-to: <200802150131.16816.yinghai.lu@sun.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802150132.50461.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802150127.21247.yinghai.lu@sun.com>
- <200802150130.14915.yinghai.lu@sun.com> <200802150131.16816.yinghai.lu@sun.com>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Fri, 15 Feb 2008 04:26:46 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,357,1199692800"; 
+   d="scan'208";a="519072456"
+Subject: Re: 2.6.25-rc1: volanoMark 45% regression
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: vatsa@linux.vnet.ibm.com
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <1202974901.3027.58.camel@ymzhang>
+References: <1202895028.3027.27.camel@ymzhang>
+	 <47B2BC2C.80100@linux.vnet.ibm.com>
+	 <20080213120708.GA16231@linux.vnet.ibm.com>
+	 <1202974901.3027.58.camel@ymzhang>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 15 Feb 2008 17:25:05 +0800
+Message-Id: <1203067505.3027.178.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2008-02-14 at 15:41 +0800, Zhang, Yanmin wrote:
+> On Wed, 2008-02-13 at 17:37 +0530, Srivatsa Vaddagiri wrote:
+> > On Wed, Feb 13, 2008 at 03:15:16PM +0530, Balbir Singh wrote:
+> > > Zhang, Yanmin wrote:
+> > > > volanoMark has 45% regression with kernel 2.6.25-rc1 on my both 8-core
+> > > > stoakley and 16-core Tigerton.
+> > > > 
+> > > > I used bisect to locate below patch.
+> > > > 
+> > > > commit 58e2d4ca581167c2a079f4ee02be2f0bc52e8729
+> > > > Author: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+> > > > Date:   Fri Jan 25 21:08:00 2008 +0100
+> > > > 
+> > > >     sched: group scheduling, change how cpu load is calculated
+> > > > 
+> > > > 
+> > > > 
+> > > > hackbench has about 30% regression on 16-core tigerton, but has about 10% improvement
+> > > > on 8-core stoakley.
+> > > > 
+> > > > In addition, tbench has about 6% regression on my 8-core stoakley and
+> > > > 25% regression on 16-core stoakley.
+> I verified tbench regression is not caused by the same patch. I am digging tbench now.
+> 
+> >  Some other benchmarks, like netperf/aim7
+> > > > also have some regression. I will verify if they are all related to the
+> > > > patch.
+> > > > 
+> > > > -yanmin
+> > > 
+> > > Hi, Yamin,
+> > > 
+> > > Thanks for reporting the issue? Any chance we could getthe Oprofile output for
+> > > the run?
+> I got oprofile data but it didn't show clear evidence.
+> 
+> When doing volanoMark testing, vmstat showed the good kernel's context switch
+> is about 1100000, but the bad kernel's context switch is 720000. Good kernel's
+> idle is about 1%, and bad kernel's idle is about 5%.
+> 
+> >  The exact commandline and .config being used would also help.
+> I used some scripts to start volanoMark.
+> 
+> Netperf loop UDP-RR-1/512's 10% regression
+netperf loopback UDP-RR-1/512 regression is 5% on 8-core stoakley and 16-core tigerton.
+On tulsa machine (8 cores+hyperThread), it's 18%.
 
-reuse pci_cfg_space_size but skip check pci express and pci-x CAP ID.
+If set CONFIG_FAIR_GROUP_SCHED=n, part regression of netperf disappears. If I change
+dst_entry like what I said in http://marc.info/?l=linux-kernel&m=120305556317006&w=2, plus
+CONFIG_FAIR_GROUP_SCHED=n, the result is a little better than 2.6.24.
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+I have a couple of different machines and sometimes benchmarks might have different
+behavior. Sorry for the update.
 
-===================================================================
-Index: linux-2.6/arch/x86/pci/fixup.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/fixup.c
-+++ linux-2.6/arch/x86/pci/fixup.c
-@@ -493,3 +493,20 @@ static void __devinit pci_siemens_interr
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_SIEMENS, 0x0015,
- 			  pci_siemens_interrupt_controller);
-+
-+/*
-+ * Regular PCI devices have 256 bytes, but AMD Family 10h Opteron ext config
-+ * have 4096 bytes.  Even if the device is capable, that doesn't mean we can
-+ * access it.  Maybe we don't have a way to generate extended config space
-+ * accesses.   So check it
-+ */
-+static void fam10h_pci_cfg_space_size(struct pci_dev *dev)
-+{
-+	dev->cfg_size = pci_cfg_space_size_ext(dev, 0);
-+}
-+
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1200, fam10h_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1201, fam10h_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1202, fam10h_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1203, fam10h_pci_cfg_space_size);
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_AMD, 0x1204, fam10h_pci_cfg_space_size);
-Index: linux-2.6/drivers/pci/probe.c
-===================================================================
---- linux-2.6.orig/drivers/pci/probe.c
-+++ linux-2.6/drivers/pci/probe.c
-@@ -809,11 +809,14 @@ static void set_pcie_port_type(struct pc
-  * reading the dword at 0x100 which must either be 0 or a valid extended
-  * capability header.
-  */
--int pci_cfg_space_size(struct pci_dev *dev)
-+int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix)
- {
- 	int pos;
- 	u32 status;
- 
-+	if (!check_exp_pcix)
-+		goto skip;
-+
- 	pos = pci_find_capability(dev, PCI_CAP_ID_EXP);
- 	if (!pos) {
- 		pos = pci_find_capability(dev, PCI_CAP_ID_PCIX);
-@@ -825,6 +828,7 @@ int pci_cfg_space_size(struct pci_dev *d
- 			goto fail;
- 	}
- 
-+ skip:
- 	if (pci_read_config_dword(dev, 256, &status) != PCIBIOS_SUCCESSFUL)
- 		goto fail;
- 	if (status == 0xffffffff)
-@@ -836,6 +840,11 @@ int pci_cfg_space_size(struct pci_dev *d
- 	return PCI_CFG_SPACE_SIZE;
- }
- 
-+int pci_cfg_space_size(struct pci_dev *dev)
-+{
-+	return pci_cfg_space_size_ext(dev, 1);
-+}
-+
- static void pci_release_bus_bridge_dev(struct device *dev)
- {
- 	kfree(dev);
-Index: linux-2.6/include/linux/pci.h
-===================================================================
---- linux-2.6.orig/include/linux/pci.h
-+++ linux-2.6/include/linux/pci.h
-@@ -654,6 +654,7 @@ int pci_scan_bridge(struct pci_bus *bus,
- 
- void pci_walk_bus(struct pci_bus *top, void (*cb)(struct pci_dev *, void *),
- 		  void *userdata);
-+int pci_cfg_space_size_ext(struct pci_dev *dev, unsigned check_exp_pcix);
- int pci_cfg_space_size(struct pci_dev *dev);
- unsigned char pci_bus_max_busnr(struct pci_bus *bus);
- 
+>  on 16-core tigerton is also related to the patch.
+> If I set CONFIG_FAIR_GROUP_SCHED=n, there is no the netperf regression. I bind the netserver
+> process to a core and bind the client to another core in another processor.
+> 
+> It's hard to debug into netperf regression if it's caused by scheduler.
+> 
+> > 
+> > Yamin,
+> > 	I would also like to know against which previous version is this
+> > regression being compared with. Is it 2.6.24?
+> Yes.
+> 
+> >  Did you have
+> > CONFIG_FAIR_USER_SCHED enabled in both cases?
+> Yes.
+> 
+> CONFIG_FAIR_GROUP_SCHED=y
+> CONFIG_FAIR_USER_SCHED=y
+> 
+> >  It would also help to know if you
+> > see the same regression with FAIR_GROUP_SCHED turned off.
+> No regression if CONFIG_FAIR_GROUP_SCHED=n.
+
+
