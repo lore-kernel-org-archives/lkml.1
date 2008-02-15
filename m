@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbYBORLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYBORPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbYBORLW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 12:11:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752154AbYBORLK
+	id S1757251AbYBORPZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 12:15:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYBORPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 12:11:10 -0500
-Received: from threatwall.zlynx.org ([199.45.143.218]:33243 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751691AbYBORLI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 12:11:08 -0500
-Subject: Re: Disk schedulers
-From: Zan Lynx <zlynx@acm.org>
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Lukas Hejtmanek <xhejtman@ics.muni.cz>, linux-kernel@vger.kernel.org
-In-Reply-To: <200802151557.59082.prakash@punnoor.de>
-References: <20080214162104.GA5347@ics.muni.cz>
-	 <Pine.LNX.4.64.0802151541370.30301@fbirervta.pbzchgretzou.qr>
-	 <200802151557.59082.prakash@punnoor.de>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-aIeDty+2jUMx7GC6E0Lj"
-Date: Fri, 15 Feb 2008 10:11:26 -0700
-Message-Id: <1203095486.6663.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
-X-Envelope-From: zlynx@acm.org
-X-Spam-Id: 20080215/1JQ45J-0004p2-IQ-linux-kernel@vger.kernel.org:zlynx@acm.org:199.45.143.218
+	Fri, 15 Feb 2008 12:15:18 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:43707 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751723AbYBORPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 12:15:16 -0500
+Date: Fri, 15 Feb 2008 12:15:08 -0500
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, jeff@garzik.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       linville@tuxdriver.com
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-ID: <20080215171508.GF20826@fieldses.org>
+References: <47B1C9F4.30402@garzik.org> <20080212193754.GC18625@fieldses.org> <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org> <20080212.165014.01238510.davem@davemloft.net> <alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org> <20080213042512.GB9766@fieldses.org> <alpine.LFD.1.00.0802122127110.2920@woody.linux-foundation.org> <20080213175212.GB13462@fieldses.org> <47B47BC7.60401@panasas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B47BC7.60401@panasas.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 14, 2008 at 07:35:03PM +0200, Benny Halevy wrote:
+> One idea that I thought about when debating rebase vs. merge (and it's
+> far far from being fully baked) is versioned commits.  The gist of it
+> is that patches are assigned an hash identifier like today when they
+> are first committed into the tree, but, and this is the main change:
+> if they mutate, e.g. by a rebase, or even git commit --amend, their
+> version is bumped up rather than SHA changed.
 
---=-aIeDty+2jUMx7GC6E0Lj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The SHA1 is uniquely determined by the contents of that commit--commit
+and author names and times, changelog message, snapshot of the tree at
+that point, and parents--hence, recursively, by the entire history
+leading up to that commit.
 
+Naming objects by their content in that way has a lot of advantages--for
+example, you can sign an entire history by signing just the SHA1 of the
+commit at its tip.  So you can't break that link between the names of
+commits and their contents without ending up with a fundamentally
+different (and probably weaker, in some sense), system.
 
-On Fri, 2008-02-15 at 15:57 +0100, Prakash Punnoor wrote:
-> On the day of Friday 15 February 2008 Jan Engelhardt hast written:
-> > On Feb 14 2008 17:21, Lukas Hejtmanek wrote:
-> > >Hello,
-> > >
-> > >whom should I blame about disk schedulers?
-> >
-> > Also consider
-> > - DMA (e.g. only UDMA2 selected)
-> > - aging disk
->=20
-> Nope, I also reported this problem _years_ ago, but till now much hasn't=20
-> changed. Large writes lead to read starvation.
+I suspect there's an unavoidable tradeoff--if you want to be able to
+reliably and efficiently determine how two branches are related, then
+you can't just throw away their (possibly messy) history.  The best you
+may be able to do, if you want the advantages of both rebasing and
+merging, is to maintain on your own the messier meta-history as a
+superset of the simpler history that you end up submitting.
 
-Yes, I see this often myself.  It's like the disk IO queue (I set mine
-to 1024) fills up, and pdflush and friends can stuff write requests into
-it much more quickly than any other programs can provide read requests.
+--b.
 
-CFQ and ionice work very well up until iostat shows average IO queuing
-above 1024 (where I set the queue number).
---=20
-Zan Lynx <zlynx@acm.org>
-
---=-aIeDty+2jUMx7GC6E0Lj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.7 (GNU/Linux)
-
-iD4DBQBHtce+G8fHaOLTWwgRAjmfAJdDk9RuzmukPm00vgc8a2Dk8hy8AJ46GBp3
-wQ4kH35/1cp8cIujlnURZA==
-=GD0e
------END PGP SIGNATURE-----
-
---=-aIeDty+2jUMx7GC6E0Lj--
-
+> This way all versions of the commit would be accessible and addressable using
+> their respective SHA *and* version. I think that this can help keep
+> the tree's history in a more intuitive way (since the patches' base identifier
+> won't change, just its version number), and you get a bonus of seeing each
+> commit's history, who changed it, and what was the change.
