@@ -1,173 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933141AbYBOJ5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763926AbYBOKAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933141AbYBOJ5B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbYBOJ4x
+	id S1763926AbYBOKAZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 05:00:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbYBOKAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:56:53 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:24903 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756492AbYBOJ4v (ORCPT
+	Fri, 15 Feb 2008 05:00:12 -0500
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4174 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754593AbYBOKAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 04:56:51 -0500
-Date: Fri, 15 Feb 2008 10:56:47 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, jkosina@suse.cz, zdenek.kabelac@gmail.com
-Subject: [PATCH] Run IST traps from user mode preemptive on process stack
-Message-ID: <20080215095647.GA5644@basil.nowhere.org>
+	Fri, 15 Feb 2008 05:00:10 -0500
+Date: Fri, 15 Feb 2008 10:01:09 +0000
+From: Andy Whitcroft <apw@shadowen.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 15
+Message-ID: <20080215100109.GD24479@shadowen.org>
+References: <20080215183143.c811803c.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20080215183143.c811803c.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 15 Feb 2008 09:50:25.0341 (UTC) FILETIME=[30338ED0:01C86FB8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Run IST traps from user mode preemptive on process stack
+On Fri, Feb 15, 2008 at 06:31:43PM +1100, Stephen Rothwell wrote:
+> Hi all,
+> 
+> I have created today's linux-next tree at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+> 
+> Between each merge, the tree was built with allmodconfig for both
+> powerpc and x86_64.
+> 
+> You can see which trees have been included by looking in the Trees file
+> in the source.
+> 
+> The tree is now tagged with a tag like next-YYYYMMDD and has a
+> localversion-next file which adds "-next-YYYYMMDD" to the kernel revision.
 
-x86-64 has a few exceptions which run on special architecture 
-supported IST exception stacks: these are nmi, double fault, stack fault,
-int 3, debug.
+Thats cool except that the tags seem to be missing in your public tree.
+Tags do not get pushed automatically, you have to push them manually,
+perhaps they were missed?
 
-Previously they would check for a scheduling event on returning
-if the original CPU state was user mode and then switch to a 
-process stack to schedule.
+> There were a couple of merge conflicts and one build failure and the
+> appropriate people contacted.
+> 
+> We are up to 18 trees, more are welcome.
 
-But the actual trap handler would still run on the IST stack
-with preemption disabled.
-
-This patch changes these traps instead to always switch 
-to the process stack when the trap originated from user mode.
-For kernel traps it keeps running non preemptive on the IST stack
- because that is much safer (e.g. to still get nmi watchdog events
-out even when the process stack is corrupted) 
-
-Then the actual trap handlers can run with preemption enabled
-or schedule as needed (e.g. to take locks) 
-
-This fixes a regression I added earlier with print_vma_addr()
-executing down() in these trap handlers from user space.
-
-Strictly the change would have been only needed for debug 
-and int3, but since they share this code as macros it was 
-cleanest to just change all.
-
-Cc: jkosina@suse.cz
-Cc: zdenek.kabelac@gmail.com
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux/arch/x86/kernel/entry_64.S
-===================================================================
---- linux.orig/arch/x86/kernel/entry_64.S
-+++ linux/arch/x86/kernel/entry_64.S
-@@ -770,12 +770,18 @@ END(spurious_interrupt)
- 	.if \ist
- 	movq	%gs:pda_data_offset, %rbp
- 	.endif
--	movq %rsp,%rdi
- 	movq ORIG_RAX(%rsp),%rsi
- 	movq $-1,ORIG_RAX(%rsp)
- 	.if \ist
- 	subq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
- 	.endif
-+	testl $3,CS(%rsp)
-+	jz 2f					/* in kernel? stay on exception stack for now */
-+	movq %rsp,%rdi
-+	call sync_regs				/* Move all state over to process stack */
-+	movq %rax,%rsp				/* switch stack to process stack */
-+2:
-+	movq %rsp,%rdi
- 	call \sym
- 	.if \ist
- 	addq	$EXCEPTION_STKSZ, per_cpu__init_tss + TSS_ist + (\ist - 1) * 8(%rbp)
-@@ -801,16 +807,16 @@ END(spurious_interrupt)
- 	.macro paranoidexit trace=1
- 	/* ebx:	no swapgs flag */
- paranoid_exit\trace:
--	testl %ebx,%ebx				/* swapgs needed? */
--	jnz paranoid_restore\trace
- 	testl $3,CS(%rsp)
- 	jnz   paranoid_userspace\trace
- paranoid_swapgs\trace:
-+	testl %ebx,%ebx				/* swapgs needed? */
-+	jnz 1f
- 	.if \trace
- 	TRACE_IRQS_IRETQ 0
- 	.endif
- 	SWAPGS_UNSAFE_STACK
--paranoid_restore\trace:
-+1:
- 	RESTORE_ALL 8
- 	jmp irq_return
- paranoid_userspace\trace:
-@@ -818,9 +824,6 @@ paranoid_userspace\trace:
- 	movl threadinfo_flags(%rcx),%ebx
- 	andl $_TIF_WORK_MASK,%ebx
- 	jz paranoid_swapgs\trace
--	movq %rsp,%rdi			/* &pt_regs */
--	call sync_regs
--	movq %rax,%rsp			/* switch stack for scheduling */
- 	testl $_TIF_NEED_RESCHED,%ebx
- 	jnz paranoid_schedule\trace
- 	movl %ebx,%edx			/* arg3: thread flags */
-Index: linux/arch/x86/kernel/traps_64.c
-===================================================================
---- linux.orig/arch/x86/kernel/traps_64.c
-+++ linux/arch/x86/kernel/traps_64.c
-@@ -84,7 +84,8 @@ static inline void conditional_sti(struc
- 
- static inline void preempt_conditional_sti(struct pt_regs *regs)
- {
--	preempt_disable();
-+	if (!user_mode(regs))
-+		preempt_disable();
- 	if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_enable();
- }
-@@ -93,9 +94,8 @@ static inline void preempt_conditional_c
- {
- 	if (regs->flags & X86_EFLAGS_IF)
- 		local_irq_disable();
--	/* Make sure to not schedule here because we could be running
--	   on an exception stack. */
--	preempt_enable_no_resched();
-+	if (!user_mode(regs))
-+		preempt_enable_no_resched();
- }
- 
- int kstack_depth_to_print = 12;
-@@ -855,7 +855,7 @@ asmlinkage __kprobes void default_do_nmi
- 		io_check_error(reason, regs);
- }
- 
--/* runs on IST stack. */
-+/* May run on IST stack. */
- asmlinkage void __kprobes do_int3(struct pt_regs * regs, long error_code)
- {
- 	trace_hardirqs_fixup();
-@@ -868,9 +868,10 @@ asmlinkage void __kprobes do_int3(struct
- 	preempt_conditional_cli(regs);
- }
- 
--/* Help handler running on IST stack to switch back to user stack
--   for scheduling or signal handling. The actual stack switch is done in
--   entry.S */
-+/*
-+ * Help handler running on IST stack to switch back to user stack.
-+ * The actual stack switch is done in entry.S
-+ */
- asmlinkage __kprobes struct pt_regs *sync_regs(struct pt_regs *eregs)
- {
- 	struct pt_regs *regs = eregs;
-@@ -889,7 +890,7 @@ asmlinkage __kprobes struct pt_regs *syn
- 	return regs;
- }
- 
--/* runs on IST stack. */
-+/* May run on IST stack. */
- asmlinkage void __kprobes do_debug(struct pt_regs * regs,
- 				   unsigned long error_code)
- {
+-apw
