@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755337AbYBOVAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765076AbYBOVBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755337AbYBOVAu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 16:00:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765706AbYBOU7v
+	id S1765076AbYBOVBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 16:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758836AbYBOVAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 15:59:51 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:42437 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755951AbYBOU7t (ORCPT
+	Fri, 15 Feb 2008 16:00:20 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:56106 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764318AbYBOVAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 15:59:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=F4DSvUwiFSkWQqyJCNhW6CIlXl0YdYJHYwCYijCWotOqoHoyus7KoNyR3VaOxlABuPw6p3k0+fC21jHCTQ7Lt8AWcfu6IxEGMBZ3uEdcMtNMopgFEF8gzn+dTOZPDMxcA4WgewZKaLy6rHMmtnLOHXkrPZhV5aXE6y97WE+aptA=
-Message-ID: <47B5FE1E.5080804@gmail.com>
-Date: Fri, 15 Feb 2008 22:03:26 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
-MIME-Version: 1.0
-CC: Denys Fedoryshchenko <denys@visp.net.lb>,
-       Bart Van Assche <bart.vanassche@gmail.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: BUG/ spinlock lockup, 2.6.24
-References: <20080215150044.M24489@visp.net.lb> <e2e108260802150724k4e5e6089mcb603b524157a9bc@mail.gmail.com> <20080215193854.M55147@visp.net.lb> <47B5F462.40603@gmail.com>
-In-Reply-To: <47B5F462.40603@gmail.com>
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+	Fri, 15 Feb 2008 16:00:18 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: linville@tuxdriver.com
+Cc: <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       ath5k-devel@lists.ath5k.org, Jiri Slaby <jirislaby@gmail.com>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: [PATCH 3/3] WDEV: ath5k, typecheck on nonDEBUG
+Date: Fri, 15 Feb 2008 21:58:53 +0100
+Message-Id: <1203109133-32217-3-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.3.8
+In-Reply-To: <1203109133-32217-1-git-send-email-jirislaby@gmail.com>
+References: <1203109133-32217-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote, On 02/15/2008 09:21 PM:
+At least type check the ATH5K_TRACE paramter on !ATH5K_DEBUG configs.
 
-> Denys Fedoryshchenko wrote, On 02/15/2008 08:42 PM:
-> ...
-> 
->> I have similar crashes on completely different hardware with same job (QOS), 
->> so i think it is actually some nasty bug in networking.
-> 
-> Maybe you could try with some other debugging options? E.g. since lockdep
-> doesn't help - turn this off. Instead try some others, like these:
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Nick Kossifidis <mickflemm@gmail.com>
+Cc: Luis R. Rodriguez <mcgrof@gmail.com>
+---
+ drivers/net/wireless/ath5k/debug.h |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-...On the other hand this:
+diff --git a/drivers/net/wireless/ath5k/debug.h b/drivers/net/wireless/ath5k/debug.h
+index c4fd8c4..44324c3 100644
+--- a/drivers/net/wireless/ath5k/debug.h
++++ b/drivers/net/wireless/ath5k/debug.h
+@@ -171,7 +171,9 @@ ath5k_debug_printtxbuf(struct ath5k_softc *sc,
+ 
+ #else /* no debugging */
+ 
+-#define ATH5K_TRACE(_sc) /* empty */
++#include <linux/compiler.h>
++
++#define ATH5K_TRACE(_sc) typecheck(struct ath5k_softc *, (_sc))
+ 
+ static inline void __attribute__ ((format (printf, 3, 4)))
+ ATH5K_DBG(struct ath5k_softc *sc, unsigned int m, const char *fmt, ...) {}
+-- 
+1.5.3.8
 
-> Feb 15 15:50:17 217.151.X.X [1521315.068984] BUG: spinlock lockup on CPU#1, 
-> ksoftirqd/1/7, f0551180
-
-seems to point just at spinlock lockup, so it's more about the full report.
-I wonder if this patch to prink could help here:
-
-author	Ingo Molnar <mingo at elte.hu>
-	Fri, 25 Jan 2008 20:07:58 +0000 (21:07 +0100)
-printk: make printk more robust by not allowing recursion
-
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=32a76006683f7b28ae3cc491da37716e002f198e
-
-Jarek P.
