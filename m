@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765977AbYBOGVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932340AbYBOGXw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765977AbYBOGVp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 01:21:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761792AbYBOGVf
+	id S932340AbYBOGXw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 01:23:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758924AbYBOGXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 01:21:35 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53384 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759541AbYBOGVe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 01:21:34 -0500
-Date: Thu, 14 Feb 2008 22:21:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: hch@infradead.org, serue@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: [patch 00/10] mount ownership and unprivileged mount syscall
- (v8)
-Message-Id: <20080214222103.a5d8f4fe.akpm@linux-foundation.org>
-In-Reply-To: <20080205213616.343721693@szeredi.hu>
-References: <20080205213616.343721693@szeredi.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Feb 2008 01:23:44 -0500
+Received: from mga02.intel.com ([134.134.136.20]:20707 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751950AbYBOGXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 01:23:43 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,356,1199692800"; 
+   d="scan'208";a="258032025"
+Subject: Re: [PATCH] Fix left over EFI cache mapping problems
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
+References: <20080214131317.GA27769@basil.nowhere.org>
+	 <20080214161218.GA28152@elte.hu>
+	 <1203050886.30010.19.camel@caritas-dev.intel.com>
+	 <alpine.LFD.1.00.0802142139260.4255@woody.linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Feb 2008 14:24:40 +0800
+Message-Id: <1203056680.30010.21.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 15 Feb 2008 06:23:38.0663 (UTC) FILETIME=[4D3EBB70:01C86F9B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 05 Feb 2008 22:36:16 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> Just documentation updates, compared to the previous submission.
-> Thanks to Serge for the relentless reviews :)
+On Thu, 2008-02-14 at 21:44 -0800, Linus Torvalds wrote:
 > 
-> Please consider for -mm, and then for 2.6.26.
+> On Fri, 15 Feb 2008, Huang, Ying wrote:
+> > 
+> > I think the patch following may be better, because it is possible that
+> > the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
+> 
+> If this is a problem in practice, we'd be better off having a helper 
+> function to do it, to avoid overflows. Right now, doing
+> 
+> > +		unsigned long num_pages;
+> > +		num_pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
+> 
+> overflows at 4GB on x86-32. And maybe you never have areas that big, and 
+> people are moving over to 64-bit anyway, it still sounds like a bug 
+> waiting to happen.
+> 
+> So *if* we care (I doubt we do, since EFI_PAGE_SHIFT at least right now 
+> matches PAGE_SHIFT on x86), you'd probably want to do something like
+> 
+>   static inline unsigned long efi_pages_to_native_pages(unsigned long efi_pages)
+>   {
+>   #if EFI_PAGE_SHIFT > PAGE_SHIFT
+> 	return efi_pages << (EFI_PAGE_SHIFT - PAGE_SHIFT);
+>   #else
+> 	return efi_pages >> (PAGE_SHIFT - EFI_PAGE_SHIFT);
+>   #endif
+>   }
+> 
+> or whatever.
+> 
+> Otherwise, trying to avoid a bug with different page sizes is actually 
+> more likely to *introduce* one rather than fix one..
 
-Linus has just merged all the VFS renaming patches, so the decks
-are clear for looking at this work.
+Yes, I will fix this.
 
-However David and Christoph are beavering away on the r-o-bind-mounts
-patches and I expect that there will be overlaps with unprivileged mounts.
+Best Regards,
+Huang Ying
 
-Could we coordinate things a bit please?  Decide who goes first, review
-and maybe even test each others work, etc?
-
-Thanks.
