@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbYBOX2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762112AbYBOX3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbYBOX2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 18:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbYBOX2N
+	id S1762112AbYBOX3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 18:29:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755696AbYBOX3k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 18:28:13 -0500
-Received: from mx2.suse.de ([195.135.220.15]:58597 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753814AbYBOX2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 18:28:13 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: libc-alpha@sourceware.org, libc-alpha@sources.redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux i386 clone(): %ebx 'frobbing' ?
-References: <20080215184228.GA6687@ubuntu> <jewsp69e5t.fsf@sykes.suse.de>
-	<20080215230722.GA8012@ubuntu>
-X-Yow: Hey, wait a minute!!  I want a divorce!!..  you're not Clint Eastwood!!
-Date: Sat, 16 Feb 2008 00:28:11 +0100
-In-Reply-To: <20080215230722.GA8012@ubuntu> (Ahmed S. Darwish's message of
-	"Sat\, 16 Feb 2008 01\:07\:22 +0200")
-Message-ID: <jeir0pajg4.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Fri, 15 Feb 2008 18:29:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:63391 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbYBOX3j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 18:29:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=H+odPA5Pn8T6SvU61QrL0rOzPlHP9oeaf2n0fNsW9IphHPIZe8N6M4BhSkdKaelHRWM1j/tlgBB5Fj7WcXyPtQjHiwrjBvtgI4KboxY8POv87X3n7c51gwkWu6KP8q0qGib1XolzlBGedOR5Kep5rI3wwD7XA2VLHp7GJ2YNEiM=
+Message-ID: <47B6205E.9030807@gmail.com>
+Date: Sat, 16 Feb 2008 00:29:34 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: linville@tuxdriver.com, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@lists.ath5k.org,
+       Nick Kossifidis <mickflemm@gmail.com>
+Subject: Re: [PATCH 2/3] WDEV, ath5k, don't return int from bool function
+References: <1203109133-32217-1-git-send-email-jirislaby@gmail.com>	 <1203109133-32217-2-git-send-email-jirislaby@gmail.com>	 <43e72e890802151408g35fa2e49r5eb8557e4a5bbce4@mail.gmail.com>	 <47B61473.7060206@gmail.com> <43e72e890802151524q4690f589hcc29ea8645b1d843@mail.gmail.com>
+In-Reply-To: <43e72e890802151524q4690f589hcc29ea8645b1d843@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Ahmed S. Darwish" <darwish.07@gmail.com> writes:
+On 02/16/2008 12:24 AM, Luis R. Rodriguez wrote:
+> On Fri, Feb 15, 2008 at 5:38 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
+>> You mean to consider 0 as supported, -ENODEV/-EOPNOTSUPP as
+>>  unsupported and the rest as error?
+>>
+> 
+> Yeap, what do you think?
 
-> Hi Andreas,
->
-> On Fri, Feb 15, 2008, Andreas Schwab wrote:
->> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
->> 
->> > I don't understand how the `fn' argument reached the child thread
->> > in the %ebx register. It's said in the comment that `fn' will be
->> > popped to child 'in the ebx frobbing below'. But what does that mean ?
->> 
->> See "popl %ebx" after "int $0x80".
->> 
->
-> I hope I'm not misreading something obvious, but I can't find
-> the code where FUNC(%esp) is stored in %ebx before %ebx value
-> got pushed in the stack (and restored in above 'popl' statement).
-
-It is stored in the new stack for the child, as explained in the
-comment.  The parent has a different stack.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+I have no opinion in this case, which one do you (all) like more?
