@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932591AbYBOH0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933521AbYBOH0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932591AbYBOH0H (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 02:26:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763131AbYBOHZy
+	id S933521AbYBOH0k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 02:26:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763276AbYBOHZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 02:25:54 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56789 "EHLO
+	Fri, 15 Feb 2008 02:25:55 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56791 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756434AbYBOHZx (ORCPT
+	with ESMTP id S1757050AbYBOHZx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 02:25:53 -0500
-Date: Thu, 14 Feb 2008 23:17:47 -0800
+Date: Thu, 14 Feb 2008 23:17:03 -0800
 From: Greg KH <greg@kroah.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Andreas Jaeger <aj@suse.de>, muli@il.ibm.com, discuss@x86-64.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jdmason@kudzu.us, linux-pci@atrey.karlin.mff.cuni.cz,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [discuss] pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080215071747.GB9022@kroah.com>
-References: <20080213001506.GA13933@kroah.com> <20080213181655.GB8960@kroah.com> <ho3arwq8w7.fsf@reger.suse.de> <200802141311.43103.bzolnier@gmail.com>
+To: Muli Ben-Yehuda <muli@il.ibm.com>
+Cc: jdmason@kudzu.us, bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       discuss@x86-64.org
+Subject: Re: pci_get_device_reverse(), why does Calgary need this?
+Message-ID: <20080215071703.GA9022@kroah.com>
+References: <20080213001506.GA13933@kroah.com> <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802141311.43103.bzolnier@gmail.com>
+In-Reply-To: <20080213181459.GA8960@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 01:11:42PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Thursday 14 February 2008, Andreas Jaeger wrote:
-> > Greg KH <greg@kroah.com> writes:
+On Wed, Feb 13, 2008 at 10:14:59AM -0800, Greg KH wrote:
+> On Wed, Feb 13, 2008 at 07:47:11PM +0200, Muli Ben-Yehuda wrote:
+> > On Wed, Feb 13, 2008 at 09:32:03AM -0800, Greg KH wrote:
 > > 
-> > > How does the patch below look?  I didn't want to remove the whole config
-> > > option, as there is more to the logic than just the "reverse order"
-> > > stuff there.
+> > > Is there some reason you aren't using the "real" PCI driver api here
+> > > and registering a pci driver for these devices?  That would take the
+> > > whole "loop over all pci devices" logic out of the code entirely.
 > > 
-> > I think you miss Documentation - it's mentioned in ide.txt and
-> > kernel-parameters.txt,
+> > I recall we had a reason, but I no longer recall what it was. Some
+> > reason the "real" PCI driver API didn't fit at the time. If someone
+> > were to whip up a working patch, I'd happily apply it.
 > 
-> + drivers/ide/Kconfig
+> "at the time"?  It's been in place since the 2.2 days :)
 > 
-> Greg, please update the patch (and add my S-o-B while at it).
+> Is the problem that other drivers also want access to this PCI device
+> for some reason?
+> 
+> I'll whip up a patch for you to test with in a bit...
 
-Will do.  Andreas, thanks for pointing that out.
+Hm, that's wierd.  I thought I got something, until I realized that you
+are doing a lot of logic before you ever even determine that your
+hardware is present in the system.  Why are you calling
+calgary_locate_bbars() and doing all of that work?  Or am I mising
+something in the code flow here?
+
+Also, it looks like you use the pci_get_device() to find the pci device,
+then you do somethings, and then drop the device, never to use it again.
+
+So, a traditional "probe" might not work as well, but it could be used
+if you want to.
+
+thanks,
 
 greg k-h
