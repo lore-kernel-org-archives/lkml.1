@@ -1,144 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYBOJ3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752299AbYBOJfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYBOJ3d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:29:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933006AbYBOJ17
+	id S1752299AbYBOJfe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 04:35:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752473AbYBOJf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:27:59 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50585 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932633AbYBOJ1y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 04:27:54 -0500
-Date: Fri, 15 Feb 2008 03:27:48 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080215032748.8b07e5eb.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802141336590.6067@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	<20080214040918.d735e920.pj@sgi.com>
-	<alpine.DEB.1.00.0802141336590.6067@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Feb 2008 04:35:26 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:33137 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751849AbYBOJfZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 04:35:25 -0500
+Reply-To: <kmpark@infradead.org>
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: <joakim.tjernlund@transmode.se>
+Cc: <linux-mtd@lists.infradead.org>, <linux-kernel@vger.kernel.org>
+References: <004601c86fa2$201a78d0$1fa9580a@swcenter.sec.samsung.co.kr> <1203065237.5419.74.camel@gentoo-jocke.transmode.se> <005001c86fb0$b9bc6d00$1fa9580a@swcenter.sec.samsung.co.kr> <1203065951.5419.84.camel@gentoo-jocke.transmode.se>
+Subject: RE: Abnormal behavior with JFFS2 on latest kernel
+Date: Fri, 15 Feb 2008 18:35:20 +0900
+Organization: infradead
+Message-ID: <007d01c86fb6$1705db90$1fa9580a@swcenter.sec.samsung.co.kr>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="ks_c_5601-1987"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 11
+In-reply-to: <1203065951.5419.84.camel@gentoo-jocke.transmode.se>
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
+Thread-index: AchvsQ7neq0Ue+kBS1SqnxyAjSoYMgABNVNg
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David wrote:
-> But without MPOL_FLAG_SHIFT it becomes 
-> impossible to determine whether a user passed an invalid flag.
+> 
+> Nope, the patch is probably named
+> "[JFFS2] Stop erasing blocks when rebooting."
+> 
 
-I don't think so.  It's not possible to detemine if exactly the low
-eight bits of the 'policy' short are a valid mode, -however- that
-"eight" is a spurious detail.  Remove it.
+No it's same; we have to find another one.
 
-Instead of specifying that the 'policy' short consists of two bytes,
-one for mode and one for flags, rather specify that the policy fields
-consists of some high bits for flags, and the remaining low bits
-(however many remain) for the mode.
+KB  reclen   write rewrite    read    reread
+          131072       4    3420    3683    15320    15341
+          131072       8INFO: task iozone:227 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+iozone        D c021685c     0   227    222
+[<c02164c0>] (schedule+0x0/0x41c) from [<c0216314>] (__down+0xa4/0xfc)
+[<c0216270>] (__down+0x0/0xfc) from [<c021620c>] (__down_failed+0xc/0x20)
+ r8:c3815c70 r7:00000000 r6:c3815c30 r5:00000000 r4:00004078
+[<c01182b8>] (jffs2_write_begin+0x0/0x3c0) from [<c00660cc>] (generic_file_buff)
+[<c0065fbc>] (generic_file_buffered_write+0x0/0x65c) from [<c0066e58>] (__gener)
+[<c0066908>] (__generic_file_aio_write_nolock+0x0/0x580) from [<c0066f00>] (gen)
+[<c0066e88>] (generic_file_aio_write+0x0/0xf4) from [<c008870c>] (do_sync_write)
+[<c008865c>] (do_sync_write+0x0/0xf4) from [<c0088810>] (vfs_write+0xc0/0xf8)
+ r8:c0020224 r7:c3d5df78 r6:41200000 r5:c3d9a220 r4:00002000
+[<c0088750>] (vfs_write+0x0/0xf8) from [<c0088904>] (sys_write+0x48/0x74)
+ r7:00000004 r6:c3d9a220 r5:00000000 r4:04078000
+[<c00888bc>] (sys_write+0x0/0x74) from [<c001fa20>] (ret_fast_syscall+0x0/0x2c)
+ r6:00000000 r5:00002000 r4:00004000
+INFO: task jffs2_gcd_mtd4:257 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+jffs2_gcd_mtd D c021685c     0   257      2
+[<c02164c0>] (schedule+0x0/0x41c) from [<c0216da8>] (io_schedule+0x2c/0x48)
+[<c0216d7c>] (io_schedule+0x0/0x48) from [<c0063b54>] (sync_page+0x50/0x5c)
+ r5:00000000 r4:c3f07cb0
+[<c0063b04>] (sync_page+0x0/0x5c) from [<c02170f8>] (__wait_on_bit_lock+0x60/0x)
+[<c0217098>] (__wait_on_bit_lock+0x0/0x94) from [<c006469c>] (__lock_page+0x88/)
+[<c0064614>] (__lock_page+0x0/0x98) from [<c00654ac>] (read_cache_page_async+0x)
+ r5:00000000 r4:c0320ea0
+[<c006536c>] (read_cache_page_async+0x0/0x1b8) from [<c0124fcc>] (jffs2_gc_fetc)
+[<c0124fa0>] (jffs2_gc_fetch_page+0x0/0x64) from [<c0121758>] (jffs2_garbage_co)
+ r4:0407a000
+[<c0120cac>] (jffs2_garbage_collect_live+0x0/0x11ac) from [<c01225a4>] (jffs2_g)
+[<c0121e58>] (jffs2_garbage_collect_pass+0x0/0x844) from [<c0123cb0>] (jffs2_ga)
+[<c0123b88>] (jffs2_garbage_collect_thread+0x0/0x168) from [<c003de0c>] (do_exi)
+ r8:00000000 r7:00000000 r6:00000000 r5:00000000 r4:00000000
 
-That in turn exposes the opportunity to remove a couple of checks
-for "(mpol_flags(mode) & ~MPOL_MODE_FLAGS)" being zero, and that
-in turn makes it obvious that the 'flags' variable in
-sys_set_mempolicy() is unused.
+Thank you,
+Kyungmin Park
 
-Consider the following patch, on top of the latest you sent me a day
-ago.
-
----
- include/linux/mempolicy.h |   26 +++++++++++++++-----------
- mm/mempolicy.c            |    6 ------
- 2 files changed, 15 insertions(+), 17 deletions(-)
-
---- 2.6.24-mm1.orig/include/linux/mempolicy.h	2008-02-15 00:11:10.000000000 -0800
-+++ 2.6.24-mm1/include/linux/mempolicy.h	2008-02-15 01:13:51.597894429 -0800
-@@ -8,6 +8,14 @@
-  * Copyright 2003,2004 Andi Kleen SuSE Labs
-  */
- 
-+/*
-+ * The 'policy' field of 'struct mempolicy' has both a mode and
-+ * some flags packed into it.  The flags (MPOL_F_* below) occupy
-+ * the high bit positions (MPOL_MODE_FLAGS), and the mempolicy
-+ * modes (the "Policies" below) are encoded in the remaining low
-+ * bit positions.
-+ */
-+
- /* Policies */
- enum {
- 	MPOL_DEFAULT,
-@@ -18,16 +26,12 @@ enum {
- };
- 
- /*
-- * The lower MPOL_FLAG_SHIFT bits of the policy mode represent the MPOL_*
-- * constants defined in the above enum.  The upper bits represent optional
-- * set_mempolicy() or mbind() MPOL_F_* mode flags.
-+ * Optional flags that modify nodemask numbering.
-  */
--#define MPOL_FLAG_SHIFT		(8)
--#define MPOL_MODE_MASK		((1 << MPOL_FLAG_SHIFT) - 1)
--
--/* Flags for set_mempolicy */
--#define MPOL_F_STATIC_NODES	(1 << MPOL_FLAG_SHIFT)
--#define MPOL_MODE_FLAGS		(MPOL_F_STATIC_NODES)	/* legal set_mempolicy() MPOL_F_* flags */
-+#define MPOL_F_RELATIVE_NODES (1<<14)		/* remapped relative to cpuset */
-+#define MPOL_F_STATIC_NODES (1<<15)		/* unremapped physical masks */
-+#define MPOL_MODE_FLAGS (MPOL_F_RELATIVE_NODES|MPOL_F_STATIC_NODES)
-+						/* combined MPOL_F_* mask flags */
- 
- /* Flags for get_mempolicy */
- #define MPOL_F_NODE	(1<<0)	/* return next IL mode instead of node mask */
-@@ -130,12 +134,12 @@ static inline int mpol_equal(struct memp
- 
- static inline unsigned char mpol_mode(unsigned short mode)
- {
--	return mode & MPOL_MODE_MASK;
-+	return mode & ~MPOL_MODE_FLAGS;
- }
- 
- static inline unsigned short mpol_flags(unsigned short mode)
- {
--	return mode & ~MPOL_MODE_MASK;
-+	return mode & MPOL_MODE_FLAGS;
- }
- 
- /*
---- 2.6.24-mm1.orig/mm/mempolicy.c	2008-02-15 00:18:35.000000000 -0800
-+++ 2.6.24-mm1/mm/mempolicy.c	2008-02-15 01:23:53.775748002 -0800
-@@ -884,8 +884,6 @@ asmlinkage long sys_mbind(unsigned long 
- 
- 	if (mpol_mode(mode) >= MPOL_MAX)
- 		return -EINVAL;
--	if (mpol_flags(mode) & ~MPOL_MODE_FLAGS)
--		return -EINVAL;
- 	err = get_nodes(&nodes, nmask, maxnode);
- 	if (err)
- 		return err;
-@@ -898,13 +896,9 @@ asmlinkage long sys_set_mempolicy(int mo
- {
- 	int err;
- 	nodemask_t nodes;
--	unsigned short flags;
- 
- 	if (mpol_mode(mode) >= MPOL_MAX)
- 		return -EINVAL;
--	if (mpol_flags(mode) & ~MPOL_MODE_FLAGS)
--		return -EINVAL;
--	flags = mpol_flags(mode) & MPOL_MODE_FLAGS;
- 	err = get_nodes(&nodes, nmask, maxnode);
- 	if (err)
- 		return err;
-
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
