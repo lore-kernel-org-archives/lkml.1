@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761131AbYBOMmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbYBOMoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761131AbYBOMmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 07:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753100AbYBOMmI
+	id S1763390AbYBOMoo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 07:44:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbYBOMoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 07:42:08 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:29302 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752956AbYBOMmG (ORCPT
+	Fri, 15 Feb 2008 07:44:37 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59920 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753309AbYBOMog (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 07:42:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=p4Cz+Yg/P+TmiHPzIkvCxSQ7tjNKlQJmQhWkp33TB3GlXyAM/cOqc+c8y757P8ICJih28BhcmEHQ4mHS47llhODTZ3VHFHjJXvRiaS2PfEFLgH+ishzaC/PHb8NkHlKNnoaL661Yf1MKELw14LULLe/0ysYZFUAGwQlJFJ2bNyg=
-Message-ID: <dc1166600802150442w7787b372pb91be1f51919f00@mail.gmail.com>
-Date: Fri, 15 Feb 2008 23:42:03 +1100
-From: "Michael Ellerman" <michael@ellerman.id.au>
-To: "Chris Snook" <csnook@redhat.com>
-Subject: Re: linux-next build status
-Cc: "Stephen Rothwell" <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47B4E9CB.3090708@redhat.com>
+	Fri, 15 Feb 2008 07:44:36 -0500
+Date: Fri, 15 Feb 2008 13:44:35 +0100 (CET)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: Andi Kleen <andi@firstfloor.org>, Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [PATCH] Make sysctl a separate filesystem
+In-Reply-To: <18357.30971.334517.722985@harpo.it.uu.se>
+Message-ID: <Pine.LNX.4.64.0802151343330.30301@fbirervta.pbzchgretzou.qr>
+References: <47B56BF2.4020600@openvz.org> <p73ejbe1ook.fsf@bingen.suse.de>
+ <18357.30971.334517.722985@harpo.it.uu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080215114253.ddf3f929.sfr@canb.auug.org.au>
-	 <47B4E9CB.3090708@redhat.com>
-X-Google-Sender-Auth: 501b765bed60e1cf
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 12:24 PM, Chris Snook <csnook@redhat.com> wrote:
-> Stephen Rothwell wrote:
->  > Hi all,
->  >
->  > Initial status can be seen here
->  > http://kisskb.ellerman.id.au/kisskb/branch/9/ (I hope to make a better
->  > URL soon).  Suggestions for more compiler/config combinations are
->  > welcome, but we can't necessarily commit to fulfilling all you
->  > wishes.  :-)
->  >
->
->  i386 allmodconfig please.
->
->  Also, I highly recommend adding some randconfig builds, at least one 32-bit arch
->  and one 64-bit arch.  Any given randconfig build is not particularly likely to
->  catch bugs that would be missed elsewhere, but doing them daily for two months
->  will catch a lot of things before they get released.  The catch, of course, is
->  that you have to actually save the .config for this to be useful, which might
->  require a slight modification to your scripts.
 
-It does save the configs, so randconfig might be an option. I'll look
-at it next week.
+On Feb 15 2008 12:35, Mikael Pettersson wrote:
+>Andi Kleen writes:
+> > Pavel Emelyanov <xemul@openvz.org> writes:
+> > >    this subdir;
+> > > 3. sysctl inodes are now smaller than the procfs ones.
+> > 
+> > That's always a good thing.
+> > 
+> > > Note: update your initscripts to mount sysctl filesystem 
+> > > right after the proc is mounted in order not to lose your
+> > > /etc/sysctl.conf configuration (and optionally fstab).
+> > 
+> > That will break about everybody's init scripts I suspect.
+> > 
+> > I think you would need to go through some deprecation
+> > period for this at least, with printks warning people
+> > to fix their init scripts.
+> > 
+> > Or better find some way to do the mount automatically.
+>
+>Doing it automatically is the only acceptable way, IMO.
 
-cheers
+For time being only.
+
+The kernel (currently) only auto-mounts invisible filesystems.
