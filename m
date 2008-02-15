@@ -1,149 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYBOTwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYBOTx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbYBOTwW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:52:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYBOTwP
+	id S1760012AbYBOTx4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYBOTxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:52:15 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:55456 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752751AbYBOTwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:52:13 -0500
-To: jdike@addtoit.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-reply-to: <20080215184741.GB8810@c2.user-mode-linux.org> (message from Jeff
-	Dike on Fri, 15 Feb 2008 13:47:41 -0500)
-Subject: Re: 2.6.24-mm1 bugs
-References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu> <20080215184741.GB8810@c2.user-mode-linux.org>
-Message-Id: <E1JQ6bM-0005z4-Ac@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 15 Feb 2008 20:52:04 +0100
+	Fri, 15 Feb 2008 14:53:47 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:57512 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752751AbYBOTxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 14:53:45 -0500
+X-IronPort-AV: E=Sophos;i="4.25,359,1199692800"; 
+   d="scan'208";a="152527193"
+Subject: [GIT] Please pull client fixes for 2.6.25-rc1
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Fri, 15 Feb 2008 14:53:32 -0500
+Message-Id: <1203105213.16315.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 15 Feb 2008 19:53:34.0684 (UTC) FILETIME=[72BB11C0:01C8700C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  - UML doesn't boot: guest is 2.6.24-mm1 also, haven't tried any
-> >    other.  Same guest boots fine on 2.6.24 host.
-> 
-> What does it do?
+Hi Linus,
 
-See below.
+Please pull from the "hotfixes" branch of the repository at
 
-> 
-> Any chance you can bisect it?
+   git pull git://git.linux-nfs.org/projects/trondmy/nfs-2.6.git hotfixes
 
-It would be a bit painful, because this is the only machine I can use.
-I much prefer bisecting UML kernels :)
+This will update the following files through the appended changesets.
 
-Thanks,
-Miklos
+  Cheers,
+    Trond
 
+----
+ fs/compat.c        |    3 ---
+ fs/nfs/callback.c  |   18 ++++++++++++------
+ fs/nfs/dir.c       |    8 +++-----
+ fs/nfs/nfs4state.c |    4 ++--
+ fs/nfs/super.c     |    4 ++++
+ 5 files changed, 21 insertions(+), 16 deletions(-)
 
+commit 8d042218b075de3cdbe066198515b3521553746e
+Author: Olga Kornievskaia <aglo@citi.umich.edu>
+Date:   Wed Feb 13 16:47:06 2008 -0500
 
+    NFS: add missing spkm3 strings to mount option parser
+    
+    This patch adds previous missing spkm3 string values that are needed
+    to parse mount options in the kernel.
 
-GNU gdb 6.6.50.20070726-cvs
-Copyright (C) 2007 Free Software Foundation, Inc.
-GDB is free software, covered by the GNU General Public License, and you are
-welcome to change it and/or distribute copies of it under certain conditions.
-Type "show copying" to see the conditions.
-There is absolutely no warranty for GDB.  Type "show warranty" for details.
-This GDB was configured as "x86_64-suse-linux"...
-Using host libthread_db library "/lib64/libthread_db.so.1".
-(gdb) r umid=uml
-Starting program: /store/quilt/linux/linux umid=uml
-Core dump limits :
-        soft - 0
-        hard - NONE
-Checking that ptrace can change system call numbers...OK
-Checking syscall emulation patch for ptrace...missing
-Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
-Checking PROT_EXEC mmap in /tmp/...OK
-Checking for the skas3 patch in the host:
-  - /proc/mm...not found: No such file or directory
-  - PTRACE_FAULTINFO...not found: Invalid argument
-  - PTRACE_LDT...not found: Invalid argument
-UML running in SKAS0 mode
-Adding 24977408 bytes to physical memory to account for exec-shield gap
-[    0.000000] Linux version 2.6.24-mm1 (mszeredi@tucsk) (gcc version 4.2.1 (SUSE Linux)) #26 Fri Feb 15 11:05:54 CET 2008
-[    0.010000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 14179
-[    0.010000] Kernel command line: root=98:0
-[    0.010000] PID hash table entries: 256 (order: 8, 1024 bytes)
-[    0.010000] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-[    0.010000] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-[    0.010000] Memory: 29504k available
-[    0.270000] Mount-cache hash table entries: 512
-[    0.270000] Checking for host processor cmov support...Yes
-[    0.270000] Checking that host ptys support output SIGIO...Yes
-[    0.270000] Checking that host ptys support SIGIO on close...No, enabling workaround
-[    0.270000] net_namespace: 184 bytes
-[    0.270000] Using 2.6 host AIO
-[    0.270000] NET: Registered protocol family 16
-[    0.300000] NET: Registered protocol family 2
-[    0.310000] Time: itimer clocksource has been installed.
-[    0.390000] IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
-[    0.390000] TCP established hash table entries: 2048 (order: 2, 16384 bytes)
-[    0.390000] TCP bind hash table entries: 2048 (order: 3, 40960 bytes)
-[    0.390000] TCP: Hash tables configured (established 2048 bind 2048)
-[    0.390000] TCP reno registered
-[    0.420000] Checking host MADV_REMOVE support...<3>MADV_REMOVE failed, err = -38
-[    0.420000] Can't release memory to the host - memory hotplug won't be supported
-[    0.420000] mconsole (version 2) initialized on /home/mszeredi/.uml/uml/mconsole
-[    0.420000] Host TLS support detected
-[    0.420000] Detected host type: x86_64 (GDT indexes 12 to 15)
-[    0.420000] fuse init (API version 7.9)
-[    0.420000] io scheduler noop registered (default)
-[    0.420000] loop: module loaded
-[    0.420000] TCP cubic registered
-[    0.420000] NET: Registered protocol family 1
-[    0.420000] Initialized stdio console driver
-[    0.420000] Console initialized on /dev/tty0
-[    0.420000] console [tty0] enabled
-[    0.420000] console [mc-1] enabled
-[    0.420000]  ubda: unknown partition table
-[    0.420000] kjournald starting.  Commit interval 5 seconds
-[    0.420000] EXT3-fs: mounted filesystem with ordered data mode.
-[    0.420000] VFS: Mounted root (ext3 filesystem) readonly.
-[    0.420000] Failed to get registers from stub, errno = 3
-[    0.420000] wait_stub_done : failed to wait for SIGTRAP, pid = 30073, n = 30073, errno = 0, status = 0x0
-[New LWP 30070]
-               [New LWP 30071]
-                              [New LWP 30072]
+commit 25606656b19a38bbece914c4c67101f674908f49
+Author: Jeff Layton <jlayton@redhat.com>
+Date:   Tue Feb 12 06:49:01 2008 -0500
 
-Program received signal SIGTERM, Terminated.
-0xffffe430 in __kernel_vsyscall ()
-(gdb) bt
-#0  0xffffe430 in __kernel_vsyscall ()
-#1  0xf7eabc26 in kill () from /lib/libc.so.6
-#2  0x0806cf82 in os_dump_core () at arch/um/os-Linux/util.c:105
-#3  0x0805d64d in fatal_sigsegv () at arch/um/kernel/trap.c:141
-#4  0x0806e32b in wait_stub_done (pid=30073)
-    at arch/um/os-Linux/skas/process.c:94
-#5  0x0806d94b in run_syscall_stub (mm_idp=0xb26ff18, syscall=123,
-    args=0xb067e08, expected=0, addr=0xb067ea4, done=1)
-    at arch/um/os-Linux/skas/mem.c:86
-#6  0x0806f997 in write_ldt_entry (mm_idp=0xb26ff18, func=1, desc=0xb067e94,
-    addr=0xb067ea4, done=1) at arch/um/sys-i386/ldt.c:72
-#7  0x08070434 in init_new_ldt (new_mm=0xb26ff18, from_mm=0x0)
-    at arch/um/sys-i386/ldt.c:425
-#8  0x0805de43 in init_new_context (task=0xb05bc00, mm=0xb26fdc0)
-    at arch/um/kernel/skas/mmu.c:87
-#9  0x080ce3c1 in bprm_mm_init (bprm=0xb1a6980) at fs/exec.c:337
-#10 0x080cfa2d in do_execve (filename=0x820d61f "/sbin/init", argv=0x8250020,
-    envp=0x8250240, regs=0xb05be04) at fs/exec.c:1296
-#11 0x080599e8 in execve1 (file=0x820d61f "/sbin/init", argv=0x8250020,
-    env=0x8250240) at arch/um/kernel/exec.c:62
-#12 0x08059a4f in um_execve (file=0x820d61f "/sbin/init", argv=0x8250020,
-    env=0x8250240) at arch/um/kernel/exec.c:78
-#13 0x0805c4fb in kernel_execve (filename=0x820d61f "/sbin/init",
----Type <return> to continue, or q <return> to quit---
-    argv=0x8250020, envp=0x8250240) at arch/um/kernel/syscall.c:146
-#14 0x08059616 in run_init_process (init_filename=0x820d61f "/sbin/init")
-    at init/main.c:763
-#15 0x080596d3 in init_post () at init/main.c:809
-#16 0x08049a74 in kernel_init (unused=0x0) at init/main.c:865
-#17 0x0806ac31 in run_kernel_thread (fn=0x8049a00 <kernel_init>, arg=0x0,
-    jmp_ptr=0xb05be70) at arch/um/os-Linux/process.c:267
-#18 0x0805ad62 in new_thread_handler () at arch/um/kernel/process.c:153
-#19 0x00000000 in ?? ()
-(gdb)
+    NFS: remove error field from nfs_readdir_descriptor_t
+    
+    The error field in nfs_readdir_descriptor_t is never used outside of the
+    function in which it is set. Remove the field and change the place that
+    does use it to use an existing local variable.
+    
+    Signed-off-by: Jeff Layton <jlayton@redhat.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 497799e7c0ac7e82164a510ebf8beed7b3635e34
+Author: Dan Muntz <dmuntz@netapp.com>
+Date:   Wed Feb 13 13:09:35 2008 -0800
+
+    NFS: missing spaces in KERN_WARNING
+    
+    The warning message for a v4 server returning various bad sequence-ids is
+    missing spaces.
+    
+    Signed-off-by: Dan Muntz <dmuntz@netapp.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 4267c9561d9c3bb2abf45abed9c75a1c892d7d15
+Author: Chuck Lever <chuck.lever@oracle.com>
+Date:   Wed Feb 13 14:55:17 2008 -0500
+
+    NFS: Allow text-based mounts via compat_sys_mount
+    
+    The compat_sys_mount() system call throws EINVAL for text-based NFSv4
+    mounts.
+    
+    The text-based mount interface assumes that any mount option blob that
+    doesn't set the version field to "1" is a C string (ie not a legacy
+    mount request).  The compat_sys_mount() call treats blobs that don't
+    set the version field to "1" as an error.  We just relax the check in
+    compat_sys_mount() a bit to allow C strings to be passed down to the NFSv4
+    client.
+    
+    Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+commit 8e60029f403781b8a63b7ffdb7dc1faff6ca651e
+Author: Jeff Layton <jlayton@redhat.com>
+Date:   Mon Feb 11 10:00:20 2008 -0500
+
+    NFS: fix reference counting for NFSv4 callback thread
+    
+    The reference counting for the NFSv4 callback thread stays artificially
+    high. When this thread comes down, it doesn't properly tear down the
+    svc_serv, causing a memory leak. In my testing on an older kernel on
+    x86_64, memory would leak out of the 8k kmalloc slab. So, we're leaking
+    at least a page of memory every time the thread comes down.
+    
+    svc_create() creates the svc_serv with a sv_nrthreads count of 1, and
+    then svc_create_thread() increments that count. Whenever the callback
+    thread is started it has a sv_nrthreads count of 2. When coming down, it
+    calls svc_exit_thread() which decrements that count and if it hits 0, it
+    tears everything down. That never happens here since the count is always
+    at 2 when the thread exits.
+    
+    The problem is that nfs_callback_up() should be calling svc_destroy() on
+    the svc_serv on both success and failure. This is how lockd_up_proto()
+    handles the reference counting, and doing that here fixes the leak.
+    
+    Signed-off-by: Jeff Layton <jlayton@redhat.com>
+    Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+
+diff --git a/fs/compat.c b/fs/compat.c
+index 43ca016..2ce4456 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -702,9 +702,6 @@ static int do_nfs4_super_data_conv(void *raw_data)
+ 		real->flags = raw->flags;
+ 		real->version = raw->version;
+ 	}
+-	else {
+-		return -EINVAL;
+-	}
+ 
+ 	return 0;
+ }
+diff --git a/fs/nfs/callback.c b/fs/nfs/callback.c
+index bd185a5..ecc06c6 100644
+--- a/fs/nfs/callback.c
++++ b/fs/nfs/callback.c
+@@ -105,7 +105,7 @@ static void nfs_callback_svc(struct svc_rqst *rqstp)
+  */
+ int nfs_callback_up(void)
+ {
+-	struct svc_serv *serv;
++	struct svc_serv *serv = NULL;
+ 	int ret = 0;
+ 
+ 	lock_kernel();
+@@ -122,24 +122,30 @@ int nfs_callback_up(void)
+ 	ret = svc_create_xprt(serv, "tcp", nfs_callback_set_tcpport,
+ 			      SVC_SOCK_ANONYMOUS);
+ 	if (ret <= 0)
+-		goto out_destroy;
++		goto out_err;
+ 	nfs_callback_tcpport = ret;
+ 	dprintk("Callback port = 0x%x\n", nfs_callback_tcpport);
+ 
+ 	ret = svc_create_thread(nfs_callback_svc, serv);
+ 	if (ret < 0)
+-		goto out_destroy;
++		goto out_err;
+ 	nfs_callback_info.serv = serv;
+ 	wait_for_completion(&nfs_callback_info.started);
+ out:
++	/*
++	 * svc_create creates the svc_serv with sv_nrthreads == 1, and then
++	 * svc_create_thread increments that. So we need to call svc_destroy
++	 * on both success and failure so that the refcount is 1 when the
++	 * thread exits.
++	 */
++	if (serv)
++		svc_destroy(serv);
+ 	mutex_unlock(&nfs_callback_mutex);
+ 	unlock_kernel();
+ 	return ret;
+-out_destroy:
++out_err:
+ 	dprintk("Couldn't create callback socket or server thread; err = %d\n",
+ 		ret);
+-	svc_destroy(serv);
+-out_err:
+ 	nfs_callback_info.users--;
+ 	goto out;
+ }
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 476cb0f..ae04892 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -154,7 +154,6 @@ typedef struct {
+ 	struct nfs_entry *entry;
+ 	decode_dirent_t	decode;
+ 	int		plus;
+-	int		error;
+ 	unsigned long	timestamp;
+ 	int		timestamp_valid;
+ } nfs_readdir_descriptor_t;
+@@ -213,7 +212,6 @@ int nfs_readdir_filler(nfs_readdir_descriptor_t *desc, struct page *page)
+ 	return 0;
+  error:
+ 	unlock_page(page);
+-	desc->error = error;
+ 	return -EIO;
+ }
+ 
+@@ -483,13 +481,13 @@ int uncached_readdir(nfs_readdir_descriptor_t *desc, void *dirent,
+ 		goto out;
+ 	}
+ 	timestamp = jiffies;
+-	desc->error = NFS_PROTO(inode)->readdir(file->f_path.dentry, cred, *desc->dir_cookie,
+-						page,
++	status = NFS_PROTO(inode)->readdir(file->f_path.dentry, cred,
++						*desc->dir_cookie, page,
+ 						NFS_SERVER(inode)->dtsize,
+ 						desc->plus);
+ 	desc->page = page;
+ 	desc->ptr = kmap(page);		/* matching kunmap in nfs_do_filldir */
+-	if (desc->error >= 0) {
++	if (status >= 0) {
+ 		desc->timestamp = timestamp;
+ 		desc->timestamp_valid = 1;
+ 		if ((status = dir_decode(desc)) == 0)
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index f9c7432..6233eb5 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -682,8 +682,8 @@ static void nfs_increment_seqid(int status, struct nfs_seqid *seqid)
+ 			if (seqid->sequence->flags & NFS_SEQID_CONFIRMED)
+ 				return;
+ 			printk(KERN_WARNING "NFS: v4 server returned a bad"
+-					"sequence-id error on an"
+-					"unconfirmed sequence %p!\n",
++					" sequence-id error on an"
++					" unconfirmed sequence %p!\n",
+ 					seqid->sequence);
+ 		case -NFS4ERR_STALE_CLIENTID:
+ 		case -NFS4ERR_STALE_STATEID:
+diff --git a/fs/nfs/super.c b/fs/nfs/super.c
+index 7f4505f..1fb3818 100644
+--- a/fs/nfs/super.c
++++ b/fs/nfs/super.c
+@@ -190,6 +190,10 @@ static match_table_t nfs_secflavor_tokens = {
+ 	{ Opt_sec_lkeyi, "lkeyi" },
+ 	{ Opt_sec_lkeyp, "lkeyp" },
+ 
++	{ Opt_sec_spkm, "spkm3" },
++	{ Opt_sec_spkmi, "spkm3i" },
++	{ Opt_sec_spkmp, "spkm3p" },
++
+ 	{ Opt_sec_err, NULL }
+ };
+ 
