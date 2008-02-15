@@ -1,366 +1,931 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934361AbYBOGw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934564AbYBOGwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934361AbYBOGw1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 01:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763303AbYBOGtn
+	id S934564AbYBOGwu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 01:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933480AbYBOGuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 01:49:43 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:57760 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762260AbYBOGtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 01:49:40 -0500
-Message-Id: <20080215064932.620773824@sgi.com>
-References: <20080215064859.384203497@sgi.com>
-User-Agent: quilt/0.46-1
-Date: Thu, 14 Feb 2008 22:49:01 -0800
-From: Christoph Lameter <clameter@sgi.com>
-To: akpm@linux-foundation.org
-Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>
-Cc: Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>
-Cc: kvm-devel@lists.sourceforge.net
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org
-Cc: Steve Wise <swise@opengridcomputing.com>
-Cc: Roland Dreier <rdreier@cisco.com>
-Cc: Kanoj Sarcar <kanojsarcar@yahoo.com>
-Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Cc: daniel.blueman@quadrics.com
-Subject: [patch 2/6] mmu_notifier: Callbacks to invalidate address ranges
-Content-Disposition: inline; filename=mmu_invalidate_range_callbacks
+	Fri, 15 Feb 2008 01:50:37 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34084 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754877AbYBOGuf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 01:50:35 -0500
+Date: Thu, 14 Feb 2008 22:49:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] fb: add support for foreign endianness
+Message-Id: <20080214224942.a0cb6218.akpm@linux-foundation.org>
+In-Reply-To: <20080205154432.GA8749@localhost.localdomain>
+References: <20080205154432.GA8749@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The invalidation of address ranges in a mm_struct needs to be
-performed when pages are removed or permissions etc change.
+On Tue, 5 Feb 2008 18:44:32 +0300 Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-If invalidate_range_begin() is called with locks held then we
-pass a flag into invalidate_range() to indicate that no sleeping is
-possible. Locks are only held for truncate and huge pages.
+> This patch adds support for the framebuffers with non-native
+> endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
+> be used by the drivers. Depending on the host endianness this flag
+> will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
+> 
+> Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
 
-In two cases we use invalidate_range_begin/end to invalidate
-single pages because the pair allows holding off new references
-(idea by Robin Holt).
+That's a pretty large patch to fbdev core, and Tony appears to have gone
+offline again and you didn't cc the fbdev mailing list.
 
-do_wp_page(): We hold off new references while we update the pte.
+I fixed the third problem.  Could the other fbdev developers please review
+and comment on this?
 
-xip_unmap: We are not taking the PageLock so we cannot
-use the invalidate_page mmu_rmap_notifier. invalidate_range_begin/end
-stands in.
+Thanks.
 
-Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
-Signed-off-by: Robin Holt <holt@sgi.com>
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
+
+Actually...  should CONFIG_FB_FOREIGN_ENDIAN exist, or should this feature
+be permanently enabled?
+
+I'd like to at least queue a patch in -mm so that CONFIG_FB_FOREIGN_ENDIAN
+is forced-on, so the code gets some runtime testing.  Will that break
+anything?
+
+
+
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+
+Add support for the framebuffers with non-native endianness.  This is done via
+FBINFO_FOREIGN_ENDIAN flag that will be used by the drivers.  Depending on the
+host endianness this flag will be overwritten by FBINFO_BE_MATH internal flag,
+or cleared.
+
+Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
+
+Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- mm/filemap_xip.c |    5 +++++
- mm/fremap.c      |    3 +++
- mm/hugetlb.c     |    3 +++
- mm/memory.c      |   35 +++++++++++++++++++++++++++++------
- mm/mmap.c        |    2 ++
- mm/mprotect.c    |    3 +++
- mm/mremap.c      |    7 ++++++-
- 7 files changed, 51 insertions(+), 7 deletions(-)
 
-Index: linux-2.6/mm/fremap.c
-===================================================================
---- linux-2.6.orig/mm/fremap.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/fremap.c	2008-02-14 18:45:07.000000000 -0800
-@@ -15,6 +15,7 @@
- #include <linux/rmap.h>
- #include <linux/module.h>
- #include <linux/syscalls.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/cacheflush.h>
-@@ -214,7 +215,9 @@ asmlinkage long sys_remap_file_pages(uns
- 		spin_unlock(&mapping->i_mmap_lock);
- 	}
- 
-+	mmu_notifier(invalidate_range_begin, mm, start, start + size, 0);
- 	err = populate_range(mm, vma, start, size, pgoff);
-+	mmu_notifier(invalidate_range_end, mm, start, start + size, 0);
- 	if (!err && !(flags & MAP_NONBLOCK)) {
- 		if (unlikely(has_write_lock)) {
- 			downgrade_write(&mm->mmap_sem);
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/memory.c	2008-02-14 18:45:07.000000000 -0800
-@@ -51,6 +51,7 @@
- #include <linux/init.h>
- #include <linux/writeback.h>
- #include <linux/memcontrol.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/pgalloc.h>
- #include <asm/uaccess.h>
-@@ -611,6 +612,9 @@ int copy_page_range(struct mm_struct *ds
- 	if (is_vm_hugetlb_page(vma))
- 		return copy_hugetlb_page_range(dst_mm, src_mm, vma);
- 
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier(invalidate_range_begin, src_mm, addr, end, 0);
-+
- 	dst_pgd = pgd_offset(dst_mm, addr);
- 	src_pgd = pgd_offset(src_mm, addr);
- 	do {
-@@ -621,6 +625,11 @@ int copy_page_range(struct mm_struct *ds
- 						vma, addr, next))
- 			return -ENOMEM;
- 	} while (dst_pgd++, src_pgd++, addr = next, addr != end);
-+
-+	if (is_cow_mapping(vma->vm_flags))
-+		mmu_notifier(invalidate_range_end, src_mm,
-+						vma->vm_start, end, 0);
-+
- 	return 0;
- }
- 
-@@ -893,13 +902,16 @@ unsigned long zap_page_range(struct vm_a
- 	struct mmu_gather *tlb;
- 	unsigned long end = address + size;
- 	unsigned long nr_accounted = 0;
-+	int atomic = details ? (details->i_mmap_lock != 0) : 0;
- 
- 	lru_add_drain();
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
-+	mmu_notifier(invalidate_range_begin, mm, address, end, atomic);
- 	end = unmap_vmas(&tlb, vma, address, end, &nr_accounted, details);
- 	if (tlb)
- 		tlb_finish_mmu(tlb, address, end);
-+	mmu_notifier(invalidate_range_end, mm, address, end, atomic);
- 	return end;
- }
- 
-@@ -1339,7 +1351,7 @@ int remap_pfn_range(struct vm_area_struc
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + PAGE_ALIGN(size);
-+	unsigned long start = addr, end = addr + PAGE_ALIGN(size);
- 	struct mm_struct *mm = vma->vm_mm;
- 	int err;
- 
-@@ -1373,6 +1385,7 @@ int remap_pfn_range(struct vm_area_struc
- 	pfn -= addr >> PAGE_SHIFT;
- 	pgd = pgd_offset(mm, addr);
- 	flush_cache_range(vma, addr, end);
-+	mmu_notifier(invalidate_range_begin, mm, start, end, 0);
- 	do {
- 		next = pgd_addr_end(addr, end);
- 		err = remap_pud_range(mm, pgd, addr, next,
-@@ -1380,6 +1393,7 @@ int remap_pfn_range(struct vm_area_struc
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range_end, mm, start, end, 0);
- 	return err;
- }
- EXPORT_SYMBOL(remap_pfn_range);
-@@ -1463,10 +1477,11 @@ int apply_to_page_range(struct mm_struct
- {
- 	pgd_t *pgd;
- 	unsigned long next;
--	unsigned long end = addr + size;
-+	unsigned long start = addr, end = addr + size;
- 	int err;
- 
- 	BUG_ON(addr >= end);
-+	mmu_notifier(invalidate_range_begin, mm, start, end, 0);
- 	pgd = pgd_offset(mm, addr);
- 	do {
- 		next = pgd_addr_end(addr, end);
-@@ -1474,6 +1489,7 @@ int apply_to_page_range(struct mm_struct
- 		if (err)
- 			break;
- 	} while (pgd++, addr = next, addr != end);
-+	mmu_notifier(invalidate_range_end, mm, start, end, 0);
- 	return err;
- }
- EXPORT_SYMBOL_GPL(apply_to_page_range);
-@@ -1614,8 +1630,10 @@ static int do_wp_page(struct mm_struct *
- 			page_table = pte_offset_map_lock(mm, pmd, address,
- 							 &ptl);
- 			page_cache_release(old_page);
--			if (!pte_same(*page_table, orig_pte))
--				goto unlock;
-+			if (!pte_same(*page_table, orig_pte)) {
-+				pte_unmap_unlock(page_table, ptl);
-+				goto check_dirty;
-+			}
- 
- 			page_mkwrite = 1;
- 		}
-@@ -1631,7 +1649,8 @@ static int do_wp_page(struct mm_struct *
- 		if (ptep_set_access_flags(vma, address, page_table, entry,1))
- 			update_mmu_cache(vma, address, entry);
- 		ret |= VM_FAULT_WRITE;
--		goto unlock;
-+		pte_unmap_unlock(page_table, ptl);
-+		goto check_dirty;
- 	}
- 
- 	/*
-@@ -1653,6 +1672,8 @@ gotten:
- 	if (mem_cgroup_charge(new_page, mm, GFP_KERNEL))
- 		goto oom_free_new;
- 
-+	mmu_notifier(invalidate_range_begin, mm, address,
-+				address + PAGE_SIZE, 0);
- 	/*
- 	 * Re-check the pte - we dropped the lock
- 	 */
-@@ -1691,8 +1712,10 @@ gotten:
- 		page_cache_release(new_page);
- 	if (old_page)
- 		page_cache_release(old_page);
--unlock:
- 	pte_unmap_unlock(page_table, ptl);
-+	mmu_notifier(invalidate_range_end, mm,
-+				address, address + PAGE_SIZE, 0);
-+check_dirty:
- 	if (dirty_page) {
- 		if (vma->vm_file)
- 			file_update_time(vma->vm_file);
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c	2008-02-14 18:44:56.000000000 -0800
-+++ linux-2.6/mm/mmap.c	2008-02-14 18:45:07.000000000 -0800
-@@ -1748,11 +1748,13 @@ static void unmap_region(struct mm_struc
- 	lru_add_drain();
- 	tlb = tlb_gather_mmu(mm, 0);
- 	update_hiwater_rss(mm);
-+	mmu_notifier(invalidate_range_begin, mm, start, end, 0);
- 	unmap_vmas(&tlb, vma, start, end, &nr_accounted, NULL);
- 	vm_unacct_memory(nr_accounted);
- 	free_pgtables(&tlb, vma, prev? prev->vm_end: FIRST_USER_ADDRESS,
- 				 next? next->vm_start: 0);
- 	tlb_finish_mmu(tlb, start, end);
-+	mmu_notifier(invalidate_range_end, mm, start, end, 0);
- }
- 
- /*
-Index: linux-2.6/mm/hugetlb.c
-===================================================================
---- linux-2.6.orig/mm/hugetlb.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/hugetlb.c	2008-02-14 18:45:07.000000000 -0800
-@@ -14,6 +14,7 @@
- #include <linux/mempolicy.h>
- #include <linux/cpuset.h>
- #include <linux/mutex.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/page.h>
- #include <asm/pgtable.h>
-@@ -755,6 +756,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	BUG_ON(start & ~HPAGE_MASK);
- 	BUG_ON(end & ~HPAGE_MASK);
- 
-+	mmu_notifier(invalidate_range_begin, mm, start, end, 1);
- 	spin_lock(&mm->page_table_lock);
- 	for (address = start; address < end; address += HPAGE_SIZE) {
- 		ptep = huge_pte_offset(mm, address);
-@@ -775,6 +777,7 @@ void __unmap_hugepage_range(struct vm_ar
- 	}
- 	spin_unlock(&mm->page_table_lock);
- 	flush_tlb_range(vma, start, end);
-+	mmu_notifier(invalidate_range_end, mm, start, end, 1);
- 	list_for_each_entry_safe(page, tmp, &page_list, lru) {
- 		list_del(&page->lru);
- 		put_page(page);
-Index: linux-2.6/mm/filemap_xip.c
-===================================================================
---- linux-2.6.orig/mm/filemap_xip.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/filemap_xip.c	2008-02-14 18:45:07.000000000 -0800
-@@ -13,6 +13,7 @@
- #include <linux/module.h>
- #include <linux/uio.h>
- #include <linux/rmap.h>
-+#include <linux/mmu_notifier.h>
- #include <linux/sched.h>
- #include <asm/tlbflush.h>
- 
-@@ -190,6 +191,8 @@ __xip_unmap (struct address_space * mapp
- 		address = vma->vm_start +
- 			((pgoff - vma->vm_pgoff) << PAGE_SHIFT);
- 		BUG_ON(address < vma->vm_start || address >= vma->vm_end);
-+		mmu_notifier(invalidate_range_begin, mm, address,
-+					address + PAGE_SIZE, 1);
- 		pte = page_check_address(page, mm, address, &ptl);
- 		if (pte) {
- 			/* Nuke the page table entry. */
-@@ -201,6 +204,8 @@ __xip_unmap (struct address_space * mapp
- 			pte_unmap_unlock(pte, ptl);
- 			page_cache_release(page);
- 		}
-+		mmu_notifier(invalidate_range_end, mm,
-+				address, address + PAGE_SIZE, 1);
- 	}
- 	spin_unlock(&mapping->i_mmap_lock);
- }
-Index: linux-2.6/mm/mremap.c
-===================================================================
---- linux-2.6.orig/mm/mremap.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/mremap.c	2008-02-14 18:45:07.000000000 -0800
-@@ -18,6 +18,7 @@
- #include <linux/highmem.h>
- #include <linux/security.h>
- #include <linux/syscalls.h>
-+#include <linux/mmu_notifier.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -124,12 +125,15 @@ unsigned long move_page_tables(struct vm
- 		unsigned long old_addr, struct vm_area_struct *new_vma,
- 		unsigned long new_addr, unsigned long len)
- {
--	unsigned long extent, next, old_end;
-+	unsigned long extent, next, old_start, old_end;
- 	pmd_t *old_pmd, *new_pmd;
- 
-+	old_start = old_addr;
- 	old_end = old_addr + len;
- 	flush_cache_range(vma, old_addr, old_end);
- 
-+	mmu_notifier(invalidate_range_begin, vma->vm_mm,
-+					old_addr, old_end, 0);
- 	for (; old_addr < old_end; old_addr += extent, new_addr += extent) {
- 		cond_resched();
- 		next = (old_addr + PMD_SIZE) & PMD_MASK;
-@@ -150,6 +154,7 @@ unsigned long move_page_tables(struct vm
- 		move_ptes(vma, old_pmd, old_addr, old_addr + extent,
- 				new_vma, new_pmd, new_addr);
- 	}
-+	mmu_notifier(invalidate_range_end, vma->vm_mm, old_start, old_end, 0);
- 
- 	return len + old_addr - old_end;	/* how much done */
- }
-Index: linux-2.6/mm/mprotect.c
-===================================================================
---- linux-2.6.orig/mm/mprotect.c	2008-02-14 18:43:31.000000000 -0800
-+++ linux-2.6/mm/mprotect.c	2008-02-14 18:45:07.000000000 -0800
-@@ -21,6 +21,7 @@
- #include <linux/syscalls.h>
- #include <linux/swap.h>
- #include <linux/swapops.h>
-+#include <linux/mmu_notifier.h>
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
- #include <asm/cacheflush.h>
-@@ -198,10 +199,12 @@ success:
- 		dirty_accountable = 1;
- 	}
- 
-+	mmu_notifier(invalidate_range_begin, mm, start, end, 0);
- 	if (is_vm_hugetlb_page(vma))
- 		hugetlb_change_protection(vma, start, end, vma->vm_page_prot);
- 	else
- 		change_protection(vma, start, end, vma->vm_page_prot, dirty_accountable);
-+	mmu_notifier(invalidate_range_end, mm, start, end, 0);
- 	vm_stat_account(mm, oldflags, vma->vm_file, -nrpages);
- 	vm_stat_account(mm, newflags, vma->vm_file, nrpages);
- 	return 0;
+ drivers/video/Kconfig       |    9 +++++
+ drivers/video/cfbcopyarea.c |   23 ++++++++-------
+ drivers/video/cfbfillrect.c |   48 +++++++++++++++++--------------
+ drivers/video/cfbimgblt.c   |   52 +++++++++++++++++-----------------
+ drivers/video/fb_draw.h     |   31 +++++++++++---------
+ drivers/video/fbmem.c       |    8 +++++
+ drivers/video/syscopyarea.c |   20 ++++++-------
+ drivers/video/sysfillrect.c |   49 ++++++++++++++++----------------
+ drivers/video/sysimgblt.c   |   47 ++++++++++++++----------------
+ include/linux/fb.h          |   36 +++++++++++++++++------
+ 10 files changed, 183 insertions(+), 140 deletions(-)
 
--- 
+diff -puN drivers/video/Kconfig~fb-add-support-for-foreign-endianness drivers/video/Kconfig
+--- a/drivers/video/Kconfig~fb-add-support-for-foreign-endianness
++++ a/drivers/video/Kconfig
+@@ -139,6 +139,15 @@ config FB_SYS_IMAGEBLIT
+ 	  blitting. This is used by drivers that don't provide their own
+ 	  (accelerated) version and the framebuffer is in system RAM.
+ 
++config FB_FOREIGN_ENDIAN
++	bool "Enable support for foreign endianness"
++	depends on FB
++	---help---
++	  This option enables support for the framebuffers with non-native
++	  endianness (e.g. Little-Endian framebuffer on a Big-Endian machine).
++	  You probably don't have such hardware, so in most cases it's safe to
++	  say "n" here.
++
+ config FB_SYS_FOPS
+        tristate
+        depends on FB
+diff -puN drivers/video/cfbcopyarea.c~fb-add-support-for-foreign-endianness drivers/video/cfbcopyarea.c
+--- a/drivers/video/cfbcopyarea.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/cfbcopyarea.c
+@@ -44,15 +44,16 @@
+      */
+ 
+ static void
+-bitcpy(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
+-	int src_idx, int bits, unsigned n, u32 bswapmask)
++bitcpy(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
++		const unsigned long __iomem *src, int src_idx, int bits,
++		unsigned n, u32 bswapmask)
+ {
+ 	unsigned long first, last;
+ 	int const shift = dst_idx-src_idx;
+ 	int left, right;
+ 
+-	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
+-	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
++	first = fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
++	last = ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask);
+ 
+ 	if (!shift) {
+ 		// Same alignment for source and dest
+@@ -202,8 +203,9 @@ bitcpy(unsigned long __iomem *dst, int d
+      */
+ 
+ static void
+-bitcpy_rev(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
+-		int src_idx, int bits, unsigned n, u32 bswapmask)
++bitcpy_rev(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
++		const unsigned long __iomem *src, int src_idx, int bits,
++		unsigned n, u32 bswapmask)
+ {
+ 	unsigned long first, last;
+ 	int shift;
+@@ -221,8 +223,9 @@ bitcpy_rev(unsigned long __iomem *dst, i
+ 
+ 	shift = dst_idx-src_idx;
+ 
+-	first = fb_shifted_pixels_mask_long(bits - 1 - dst_idx, bswapmask);
+-	last = ~fb_shifted_pixels_mask_long(bits - 1 - ((dst_idx-n) % bits), bswapmask);
++	first = fb_shifted_pixels_mask_long(p, bits - 1 - dst_idx, bswapmask);
++	last = ~fb_shifted_pixels_mask_long(p, bits - 1 - ((dst_idx-n) % bits),
++					    bswapmask);
+ 
+ 	if (!shift) {
+ 		// Same alignment for source and dest
+@@ -404,7 +407,7 @@ void cfb_copyarea(struct fb_info *p, con
+ 			dst_idx &= (bytes - 1);
+ 			src += src_idx >> (ffs(bits) - 1);
+ 			src_idx &= (bytes - 1);
+-			bitcpy_rev(dst, dst_idx, src, src_idx, bits,
++			bitcpy_rev(p, dst, dst_idx, src, src_idx, bits,
+ 				width*p->var.bits_per_pixel, bswapmask);
+ 		}
+ 	} else {
+@@ -413,7 +416,7 @@ void cfb_copyarea(struct fb_info *p, con
+ 			dst_idx &= (bytes - 1);
+ 			src += src_idx >> (ffs(bits) - 1);
+ 			src_idx &= (bytes - 1);
+-			bitcpy(dst, dst_idx, src, src_idx, bits,
++			bitcpy(p, dst, dst_idx, src, src_idx, bits,
+ 				width*p->var.bits_per_pixel, bswapmask);
+ 			dst_idx += bits_per_line;
+ 			src_idx += bits_per_line;
+diff -puN drivers/video/cfbfillrect.c~fb-add-support-for-foreign-endianness drivers/video/cfbfillrect.c
+--- a/drivers/video/cfbfillrect.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/cfbfillrect.c
+@@ -36,16 +36,16 @@
+      */
+ 
+ static void
+-bitfill_aligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
+-		unsigned n, int bits, u32 bswapmask)
++bitfill_aligned(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
++		unsigned long pat, unsigned n, int bits, u32 bswapmask)
+ {
+ 	unsigned long first, last;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
+-	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
++	first = fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
++	last = ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask);
+ 
+ 	if (dst_idx+n <= bits) {
+ 		// Single word
+@@ -93,16 +93,16 @@ bitfill_aligned(unsigned long __iomem *d
+      */
+ 
+ static void
+-bitfill_unaligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
+-			int left, int right, unsigned n, int bits)
++bitfill_unaligned(struct fb_info *p, unsigned long __iomem *dst, int dst_idx,
++		  unsigned long pat, int left, int right, unsigned n, int bits)
+ {
+ 	unsigned long first, last;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		// Single word
+@@ -147,8 +147,9 @@ bitfill_unaligned(unsigned long __iomem 
+      *  Aligned pattern invert using 32/64-bit memory accesses
+      */
+ static void
+-bitfill_aligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
+-		unsigned n, int bits, u32 bswapmask)
++bitfill_aligned_rev(struct fb_info *p, unsigned long __iomem *dst,
++		    int dst_idx, unsigned long pat, unsigned n, int bits,
++		    u32 bswapmask)
+ {
+ 	unsigned long val = pat, dat;
+ 	unsigned long first, last;
+@@ -156,8 +157,8 @@ bitfill_aligned_rev(unsigned long __iome
+ 	if (!n)
+ 		return;
+ 
+-	first = fb_shifted_pixels_mask_long(dst_idx, bswapmask);
+-	last = ~fb_shifted_pixels_mask_long((dst_idx+n) % bits, bswapmask);
++	first = fb_shifted_pixels_mask_long(p, dst_idx, bswapmask);
++	last = ~fb_shifted_pixels_mask_long(p, (dst_idx+n) % bits, bswapmask);
+ 
+ 	if (dst_idx+n <= bits) {
+ 		// Single word
+@@ -217,16 +218,17 @@ bitfill_aligned_rev(unsigned long __iome
+      */
+ 
+ static void
+-bitfill_unaligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
+-			int left, int right, unsigned n, int bits)
++bitfill_unaligned_rev(struct fb_info *p, unsigned long __iomem *dst,
++		      int dst_idx, unsigned long pat, int left, int right,
++		      unsigned n, int bits)
+ {
+ 	unsigned long first, last, dat;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		// Single word
+@@ -306,7 +308,8 @@ void cfb_fillrect(struct fb_info *p, con
+ 		p->fbops->fb_sync(p);
+ 	if (!left) {
+ 		u32 bswapmask = fb_compute_bswapmask(p);
+-		void (*fill_op32)(unsigned long __iomem *dst, int dst_idx,
++		void (*fill_op32)(struct fb_info *p,
++				  unsigned long __iomem *dst, int dst_idx,
+ 		                  unsigned long pat, unsigned n, int bits,
+ 				  u32 bswapmask) = NULL;
+ 
+@@ -325,16 +328,17 @@ void cfb_fillrect(struct fb_info *p, con
+ 		while (height--) {
+ 			dst += dst_idx >> (ffs(bits) - 1);
+ 			dst_idx &= (bits - 1);
+-			fill_op32(dst, dst_idx, pat, width*bpp, bits, bswapmask);
++			fill_op32(p, dst, dst_idx, pat, width*bpp, bits,
++				  bswapmask);
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	} else {
+ 		int right;
+ 		int r;
+ 		int rot = (left-dst_idx) % bpp;
+-		void (*fill_op)(unsigned long __iomem *dst, int dst_idx,
+-		                unsigned long pat, int left, int right,
+-		                unsigned n, int bits) = NULL;
++		void (*fill_op)(struct fb_info *p, unsigned long __iomem *dst,
++				int dst_idx, unsigned long pat, int left,
++				int right, unsigned n, int bits) = NULL;
+ 
+ 		/* rotate pattern to correct start position */
+ 		pat = pat << rot | pat >> (bpp-rot);
+@@ -355,7 +359,7 @@ void cfb_fillrect(struct fb_info *p, con
+ 		while (height--) {
+ 			dst += dst_idx >> (ffs(bits) - 1);
+ 			dst_idx &= (bits - 1);
+-			fill_op(dst, dst_idx, pat, left, right,
++			fill_op(p, dst, dst_idx, pat, left, right,
+ 				width*bpp, bits);
+ 			r = (p->fix.line_length*8) % bpp;
+ 			pat = pat << (bpp-r) | pat >> r;
+diff -puN drivers/video/cfbimgblt.c~fb-add-support-for-foreign-endianness drivers/video/cfbimgblt.c
+--- a/drivers/video/cfbimgblt.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/cfbimgblt.c
+@@ -43,30 +43,26 @@
+ #define DPRINTK(fmt, args...)
+ #endif
+ 
+-static const u32 cfb_tab8[] = {
+-#if defined(__BIG_ENDIAN)
++static const u32 cfb_tab8_be[] = {
+     0x00000000,0x000000ff,0x0000ff00,0x0000ffff,
+     0x00ff0000,0x00ff00ff,0x00ffff00,0x00ffffff,
+     0xff000000,0xff0000ff,0xff00ff00,0xff00ffff,
+     0xffff0000,0xffff00ff,0xffffff00,0xffffffff
+-#elif defined(__LITTLE_ENDIAN)
++};
++
++static const u32 cfb_tab8_le[] = {
+     0x00000000,0xff000000,0x00ff0000,0xffff0000,
+     0x0000ff00,0xff00ff00,0x00ffff00,0xffffff00,
+     0x000000ff,0xff0000ff,0x00ff00ff,0xffff00ff,
+     0x0000ffff,0xff00ffff,0x00ffffff,0xffffffff
+-#else
+-#error FIXME: No endianness??
+-#endif
+ };
+ 
+-static const u32 cfb_tab16[] = {
+-#if defined(__BIG_ENDIAN)
++static const u32 cfb_tab16_be[] = {
+     0x00000000, 0x0000ffff, 0xffff0000, 0xffffffff
+-#elif defined(__LITTLE_ENDIAN)
++};
++
++static const u32 cfb_tab16_le[] = {
+     0x00000000, 0xffff0000, 0x0000ffff, 0xffffffff
+-#else
+-#error FIXME: No endianness??
+-#endif
+ };
+ 
+ static const u32 cfb_tab32[] = {
+@@ -98,7 +94,8 @@ static inline void color_imageblit(const
+ 		val = 0;
+ 		
+ 		if (start_index) {
+-			u32 start_mask = ~fb_shifted_pixels_mask_u32(start_index, bswapmask);
++			u32 start_mask = ~fb_shifted_pixels_mask_u32(p,
++						start_index, bswapmask);
+ 			val = FB_READL(dst) & start_mask;
+ 			shift = start_index;
+ 		}
+@@ -108,20 +105,21 @@ static inline void color_imageblit(const
+ 				color = palette[*src];
+ 			else
+ 				color = *src;
+-			color <<= FB_LEFT_POS(bpp);
+-			val |= FB_SHIFT_HIGH(color, shift ^ bswapmask);
++			color <<= FB_LEFT_POS(p, bpp);
++			val |= FB_SHIFT_HIGH(p, color, shift ^ bswapmask);
+ 			if (shift >= null_bits) {
+ 				FB_WRITEL(val, dst++);
+ 	
+ 				val = (shift == null_bits) ? 0 : 
+-					FB_SHIFT_LOW(color, 32 - shift);
++					FB_SHIFT_LOW(p, color, 32 - shift);
+ 			}
+ 			shift += bpp;
+ 			shift &= (32 - 1);
+ 			src++;
+ 		}
+ 		if (shift) {
+-			u32 end_mask = fb_shifted_pixels_mask_u32(shift, bswapmask);
++			u32 end_mask = fb_shifted_pixels_mask_u32(p, shift,
++						bswapmask);
+ 
+ 			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
+ 		}
+@@ -152,8 +150,8 @@ static inline void slow_imageblit(const 
+ 	u32 bswapmask = fb_compute_bswapmask(p);
+ 
+ 	dst2 = (u32 __iomem *) dst1;
+-	fgcolor <<= FB_LEFT_POS(bpp);
+-	bgcolor <<= FB_LEFT_POS(bpp);
++	fgcolor <<= FB_LEFT_POS(p, bpp);
++	bgcolor <<= FB_LEFT_POS(p, bpp);
+ 
+ 	for (i = image->height; i--; ) {
+ 		shift = val = 0;
+@@ -164,7 +162,8 @@ static inline void slow_imageblit(const 
+ 
+ 		/* write leading bits */
+ 		if (start_index) {
+-			u32 start_mask = ~fb_shifted_pixels_mask_u32(start_index, bswapmask);
++			u32 start_mask = ~fb_shifted_pixels_mask_u32(p,
++						start_index, bswapmask);
+ 			val = FB_READL(dst) & start_mask;
+ 			shift = start_index;
+ 		}
+@@ -172,13 +171,13 @@ static inline void slow_imageblit(const 
+ 		while (j--) {
+ 			l--;
+ 			color = (*s & (1 << l)) ? fgcolor : bgcolor;
+-			val |= FB_SHIFT_HIGH(color, shift ^ bswapmask);
++			val |= FB_SHIFT_HIGH(p, color, shift ^ bswapmask);
+ 			
+ 			/* Did the bitshift spill bits to the next long? */
+ 			if (shift >= null_bits) {
+ 				FB_WRITEL(val, dst++);
+ 				val = (shift == null_bits) ? 0 :
+-					FB_SHIFT_LOW(color,32 - shift);
++					FB_SHIFT_LOW(p, color, 32 - shift);
+ 			}
+ 			shift += bpp;
+ 			shift &= (32 - 1);
+@@ -187,7 +186,8 @@ static inline void slow_imageblit(const 
+ 
+ 		/* write trailing bits */
+  		if (shift) {
+-			u32 end_mask = fb_shifted_pixels_mask_u32(shift, bswapmask);
++			u32 end_mask = fb_shifted_pixels_mask_u32(p, shift,
++						bswapmask);
+ 
+ 			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
+ 		}
+@@ -223,13 +223,13 @@ static inline void fast_imageblit(const 
+ 	u32 __iomem *dst;
+ 	const u32 *tab = NULL;
+ 	int i, j, k;
+-		
++
+ 	switch (bpp) {
+ 	case 8:
+-		tab = cfb_tab8;
++		tab = fb_be_math(p) ? cfb_tab8_be : cfb_tab8_le;
+ 		break;
+ 	case 16:
+-		tab = cfb_tab16;
++		tab = fb_be_math(p) ? cfb_tab16_be : cfb_tab16_le;
+ 		break;
+ 	case 32:
+ 	default:
+diff -puN drivers/video/fb_draw.h~fb-add-support-for-foreign-endianness drivers/video/fb_draw.h
+--- a/drivers/video/fb_draw.h~fb-add-support-for-foreign-endianness
++++ a/drivers/video/fb_draw.h
+@@ -94,41 +94,44 @@ static inline unsigned long fb_rev_pixel
+ 	return val;
+ }
+ 
+-static inline u32 fb_shifted_pixels_mask_u32(u32 index, u32 bswapmask)
++static inline u32 fb_shifted_pixels_mask_u32(struct fb_info *p, u32 index,
++					     u32 bswapmask)
+ {
+ 	u32 mask;
+ 
+ 	if (!bswapmask) {
+-		mask = FB_SHIFT_HIGH(~(u32)0, index);
++		mask = FB_SHIFT_HIGH(p, ~(u32)0, index);
+ 	} else {
+-		mask = 0xff << FB_LEFT_POS(8);
+-		mask = FB_SHIFT_LOW(mask, index & (bswapmask)) & mask;
+-		mask = FB_SHIFT_HIGH(mask, index & ~(bswapmask));
++		mask = 0xff << FB_LEFT_POS(p, 8);
++		mask = FB_SHIFT_LOW(p, mask, index & (bswapmask)) & mask;
++		mask = FB_SHIFT_HIGH(p, mask, index & ~(bswapmask));
+ #if defined(__i386__) || defined(__x86_64__)
+ 		/* Shift argument is limited to 0 - 31 on x86 based CPU's */
+ 		if(index + bswapmask < 32)
+ #endif
+-			mask |= FB_SHIFT_HIGH(~(u32)0,
++			mask |= FB_SHIFT_HIGH(p, ~(u32)0,
+ 					(index + bswapmask) & ~(bswapmask));
+ 	}
+ 	return mask;
+ }
+ 
+-static inline unsigned long fb_shifted_pixels_mask_long(u32 index, u32 bswapmask)
++static inline unsigned long fb_shifted_pixels_mask_long(struct fb_info *p,
++							u32 index,
++							u32 bswapmask)
+ {
+ 	unsigned long mask;
+ 
+ 	if (!bswapmask) {
+-		mask = FB_SHIFT_HIGH(~0UL, index);
++		mask = FB_SHIFT_HIGH(p, ~0UL, index);
+ 	} else {
+-		mask = 0xff << FB_LEFT_POS(8);
+-		mask = FB_SHIFT_LOW(mask, index & (bswapmask)) & mask;
+-		mask = FB_SHIFT_HIGH(mask, index & ~(bswapmask));
++		mask = 0xff << FB_LEFT_POS(p, 8);
++		mask = FB_SHIFT_LOW(p, mask, index & (bswapmask)) & mask;
++		mask = FB_SHIFT_HIGH(p, mask, index & ~(bswapmask));
+ #if defined(__i386__) || defined(__x86_64__)
+ 		/* Shift argument is limited to 0 - 31 on x86 based CPU's */
+ 		if(index + bswapmask < BITS_PER_LONG)
+ #endif
+-			mask |= FB_SHIFT_HIGH(~0UL,
++			mask |= FB_SHIFT_HIGH(p, ~0UL,
+ 					(index + bswapmask) & ~(bswapmask));
+ 	}
+ 	return mask;
+@@ -158,8 +161,8 @@ static inline unsigned long fb_rev_pixel
+ 	return val;
+ }
+ 
+-#define fb_shifted_pixels_mask_u32(i, b) FB_SHIFT_HIGH(~(u32)0, (i))
+-#define fb_shifted_pixels_mask_long(i, b) FB_SHIFT_HIGH(~0UL, (i))
++#define fb_shifted_pixels_mask_u32(p, i, b) FB_SHIFT_HIGH((p), ~(u32)0, (i))
++#define fb_shifted_pixels_mask_long(p, i, b) FB_SHIFT_HIGH((p), ~0UL, (i))
+ #define fb_compute_bswapmask(...) 0
+ 
+ #endif  /* CONFIG_FB_CFB_REV_PIXELS_IN_BYTE */
+diff -puN drivers/video/fbmem.c~fb-add-support-for-foreign-endianness drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/fbmem.c
+@@ -1368,6 +1368,7 @@ register_framebuffer(struct fb_info *fb_
+ 	int i;
+ 	struct fb_event event;
+ 	struct fb_videomode mode;
++	const bool foreign_endian = fb_info->flags & FBINFO_FOREIGN_ENDIAN;
+ 
+ 	if (num_registered_fb == FB_MAX)
+ 		return -ENXIO;
+@@ -1404,6 +1405,13 @@ register_framebuffer(struct fb_info *fb_
+ 	if (!fb_info->pixmap.blit_y)
+ 		fb_info->pixmap.blit_y = ~(u32)0;
+ 
++	fb_info->flags &= ~FBINFO_FOREIGN_ENDIAN;
++#ifdef __BIG_ENDIAN
++	fb_info->flags |= foreign_endian ? 0 : FBINFO_BE_MATH;
++#else
++	fb_info->flags |= foreign_endian ? FBINFO_BE_MATH : 0;
++#endif
++
+ 	if (!fb_info->modelist.prev || !fb_info->modelist.next)
+ 		INIT_LIST_HEAD(&fb_info->modelist);
+ 
+diff -puN drivers/video/syscopyarea.c~fb-add-support-for-foreign-endianness drivers/video/syscopyarea.c
+--- a/drivers/video/syscopyarea.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/syscopyarea.c
+@@ -26,15 +26,15 @@
+      */
+ 
+ static void
+-bitcpy(unsigned long *dst, int dst_idx, const unsigned long *src,
+-	int src_idx, int bits, unsigned n)
++bitcpy(struct fb_info *p, unsigned long *dst, int dst_idx,
++		const unsigned long *src, int src_idx, int bits, unsigned n)
+ {
+ 	unsigned long first, last;
+ 	int const shift = dst_idx-src_idx;
+ 	int left, right;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (!shift) {
+ 		/* Same alignment for source and dest */
+@@ -167,8 +167,8 @@ bitcpy(unsigned long *dst, int dst_idx, 
+      */
+ 
+ static void
+-bitcpy_rev(unsigned long *dst, int dst_idx, const unsigned long *src,
+-	   int src_idx, int bits, unsigned n)
++bitcpy_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
++		const unsigned long *src, int src_idx, int bits, unsigned n)
+ {
+ 	unsigned long first, last;
+ 	int shift;
+@@ -186,8 +186,8 @@ bitcpy_rev(unsigned long *dst, int dst_i
+ 
+ 	shift = dst_idx-src_idx;
+ 
+-	first = FB_SHIFT_LOW(~0UL, bits - 1 - dst_idx);
+-	last = ~(FB_SHIFT_LOW(~0UL, bits - 1 - ((dst_idx-n) % bits)));
++	first = FB_SHIFT_LOW(p, ~0UL, bits - 1 - dst_idx);
++	last = ~(FB_SHIFT_LOW(p, ~0UL, bits - 1 - ((dst_idx-n) % bits)));
+ 
+ 	if (!shift) {
+ 		/* Same alignment for source and dest */
+@@ -353,7 +353,7 @@ void sys_copyarea(struct fb_info *p, con
+ 			dst_idx &= (bytes - 1);
+ 			src += src_idx >> (ffs(bits) - 1);
+ 			src_idx &= (bytes - 1);
+-			bitcpy_rev(dst, dst_idx, src, src_idx, bits,
++			bitcpy_rev(p, dst, dst_idx, src, src_idx, bits,
+ 				width*p->var.bits_per_pixel);
+ 		}
+ 	} else {
+@@ -362,7 +362,7 @@ void sys_copyarea(struct fb_info *p, con
+ 			dst_idx &= (bytes - 1);
+ 			src += src_idx >> (ffs(bits) - 1);
+ 			src_idx &= (bytes - 1);
+-			bitcpy(dst, dst_idx, src, src_idx, bits,
++			bitcpy(p, dst, dst_idx, src, src_idx, bits,
+ 				width*p->var.bits_per_pixel);
+ 			dst_idx += bits_per_line;
+ 			src_idx += bits_per_line;
+diff -puN drivers/video/sysfillrect.c~fb-add-support-for-foreign-endianness drivers/video/sysfillrect.c
+--- a/drivers/video/sysfillrect.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/sysfillrect.c
+@@ -22,16 +22,16 @@
+      */
+ 
+ static void
+-bitfill_aligned(unsigned long *dst, int dst_idx, unsigned long pat,
+-		unsigned n, int bits)
++bitfill_aligned(struct fb_info *p, unsigned long *dst, int dst_idx,
++		unsigned long pat, unsigned n, int bits)
+ {
+ 	unsigned long first, last;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		/* Single word */
+@@ -78,16 +78,16 @@ bitfill_aligned(unsigned long *dst, int 
+      */
+ 
+ static void
+-bitfill_unaligned(unsigned long *dst, int dst_idx, unsigned long pat,
+-		  int left, int right, unsigned n, int bits)
++bitfill_unaligned(struct fb_info *p, unsigned long *dst, int dst_idx,
++		  unsigned long pat, int left, int right, unsigned n, int bits)
+ {
+ 	unsigned long first, last;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		/* Single word */
+@@ -132,8 +132,8 @@ bitfill_unaligned(unsigned long *dst, in
+      *  Aligned pattern invert using 32/64-bit memory accesses
+      */
+ static void
+-bitfill_aligned_rev(unsigned long *dst, int dst_idx, unsigned long pat,
+-		    unsigned n, int bits)
++bitfill_aligned_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
++		    unsigned long pat, unsigned n, int bits)
+ {
+ 	unsigned long val = pat;
+ 	unsigned long first, last;
+@@ -141,8 +141,8 @@ bitfill_aligned_rev(unsigned long *dst, 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		/* Single word */
+@@ -188,16 +188,17 @@ bitfill_aligned_rev(unsigned long *dst, 
+      */
+ 
+ static void
+-bitfill_unaligned_rev(unsigned long *dst, int dst_idx, unsigned long pat,
+-			int left, int right, unsigned n, int bits)
++bitfill_unaligned_rev(struct fb_info *p, unsigned long *dst, int dst_idx,
++		      unsigned long pat, int left, int right, unsigned n,
++		      int bits)
+ {
+ 	unsigned long first, last;
+ 
+ 	if (!n)
+ 		return;
+ 
+-	first = FB_SHIFT_HIGH(~0UL, dst_idx);
+-	last = ~(FB_SHIFT_HIGH(~0UL, (dst_idx+n) % bits));
++	first = FB_SHIFT_HIGH(p, ~0UL, dst_idx);
++	last = ~(FB_SHIFT_HIGH(p, ~0UL, (dst_idx+n) % bits));
+ 
+ 	if (dst_idx+n <= bits) {
+ 		/* Single word */
+@@ -267,9 +268,9 @@ void sys_fillrect(struct fb_info *p, con
+ 	if (p->fbops->fb_sync)
+ 		p->fbops->fb_sync(p);
+ 	if (!left) {
+-		void (*fill_op32)(unsigned long *dst, int dst_idx,
+-		                  unsigned long pat, unsigned n, int bits) =
+-			NULL;
++		void (*fill_op32)(struct fb_info *p, unsigned long *dst,
++				  int dst_idx, unsigned long pat, unsigned n,
++				  int bits) = NULL;
+ 
+ 		switch (rect->rop) {
+ 		case ROP_XOR:
+@@ -287,16 +288,16 @@ void sys_fillrect(struct fb_info *p, con
+ 		while (height--) {
+ 			dst += dst_idx >> (ffs(bits) - 1);
+ 			dst_idx &= (bits - 1);
+-			fill_op32(dst, dst_idx, pat, width*bpp, bits);
++			fill_op32(p, dst, dst_idx, pat, width*bpp, bits);
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	} else {
+ 		int right;
+ 		int r;
+ 		int rot = (left-dst_idx) % bpp;
+-		void (*fill_op)(unsigned long *dst, int dst_idx,
+-		                unsigned long pat, int left, int right,
+-		                unsigned n, int bits) = NULL;
++		void (*fill_op)(struct fb_info *p, unsigned long *dst,
++				int dst_idx, unsigned long pat, int left,
++				int right, unsigned n, int bits) = NULL;
+ 
+ 		/* rotate pattern to correct start position */
+ 		pat = pat << rot | pat >> (bpp-rot);
+@@ -318,7 +319,7 @@ void sys_fillrect(struct fb_info *p, con
+ 		while (height--) {
+ 			dst += dst_idx >> (ffs(bits) - 1);
+ 			dst_idx &= (bits - 1);
+-			fill_op(dst, dst_idx, pat, left, right,
++			fill_op(p, dst, dst_idx, pat, left, right,
+ 				width*bpp, bits);
+ 			r = (p->fix.line_length*8) % bpp;
+ 			pat = pat << (bpp-r) | pat >> r;
+diff -puN drivers/video/sysimgblt.c~fb-add-support-for-foreign-endianness drivers/video/sysimgblt.c
+--- a/drivers/video/sysimgblt.c~fb-add-support-for-foreign-endianness
++++ a/drivers/video/sysimgblt.c
+@@ -23,30 +23,26 @@
+ #define DPRINTK(fmt, args...)
+ #endif
+ 
+-static const u32 cfb_tab8[] = {
+-#if defined(__BIG_ENDIAN)
++static const u32 cfb_tab8_be[] = {
+     0x00000000,0x000000ff,0x0000ff00,0x0000ffff,
+     0x00ff0000,0x00ff00ff,0x00ffff00,0x00ffffff,
+     0xff000000,0xff0000ff,0xff00ff00,0xff00ffff,
+     0xffff0000,0xffff00ff,0xffffff00,0xffffffff
+-#elif defined(__LITTLE_ENDIAN)
++};
++
++static const u32 cfb_tab8_le[] = {
+     0x00000000,0xff000000,0x00ff0000,0xffff0000,
+     0x0000ff00,0xff00ff00,0x00ffff00,0xffffff00,
+     0x000000ff,0xff0000ff,0x00ff00ff,0xffff00ff,
+     0x0000ffff,0xff00ffff,0x00ffffff,0xffffffff
+-#else
+-#error FIXME: No endianness??
+-#endif
+ };
+ 
+-static const u32 cfb_tab16[] = {
+-#if defined(__BIG_ENDIAN)
++static const u32 cfb_tab16_be[] = {
+     0x00000000, 0x0000ffff, 0xffff0000, 0xffffffff
+-#elif defined(__LITTLE_ENDIAN)
++};
++
++static const u32 cfb_tab16_le[] = {
+     0x00000000, 0xffff0000, 0x0000ffff, 0xffffffff
+-#else
+-#error FIXME: No endianness??
+-#endif
+ };
+ 
+ static const u32 cfb_tab32[] = {
+@@ -72,7 +68,7 @@ static void color_imageblit(const struct
+ 		val = 0;
+ 
+ 		if (start_index) {
+-			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0,
++			u32 start_mask = ~(FB_SHIFT_HIGH(p, ~(u32)0,
+ 							 start_index));
+ 			val = *dst & start_mask;
+ 			shift = start_index;
+@@ -83,20 +79,20 @@ static void color_imageblit(const struct
+ 				color = palette[*src];
+ 			else
+ 				color = *src;
+-			color <<= FB_LEFT_POS(bpp);
+-			val |= FB_SHIFT_HIGH(color, shift);
++			color <<= FB_LEFT_POS(p, bpp);
++			val |= FB_SHIFT_HIGH(p, color, shift);
+ 			if (shift >= null_bits) {
+ 				*dst++ = val;
+ 
+ 				val = (shift == null_bits) ? 0 :
+-					FB_SHIFT_LOW(color, 32 - shift);
++					FB_SHIFT_LOW(p, color, 32 - shift);
+ 			}
+ 			shift += bpp;
+ 			shift &= (32 - 1);
+ 			src++;
+ 		}
+ 		if (shift) {
+-			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
++			u32 end_mask = FB_SHIFT_HIGH(p, ~(u32)0, shift);
+ 
+ 			*dst &= end_mask;
+ 			*dst |= val;
+@@ -125,8 +121,8 @@ static void slow_imageblit(const struct 
+ 	u32 i, j, l;
+ 
+ 	dst2 = dst1;
+-	fgcolor <<= FB_LEFT_POS(bpp);
+-	bgcolor <<= FB_LEFT_POS(bpp);
++	fgcolor <<= FB_LEFT_POS(p, bpp);
++	bgcolor <<= FB_LEFT_POS(p, bpp);
+ 
+ 	for (i = image->height; i--; ) {
+ 		shift = val = 0;
+@@ -137,7 +133,8 @@ static void slow_imageblit(const struct 
+ 
+ 		/* write leading bits */
+ 		if (start_index) {
+-			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0,start_index));
++			u32 start_mask = ~(FB_SHIFT_HIGH(p, ~(u32)0,
++							 start_index));
+ 			val = *dst & start_mask;
+ 			shift = start_index;
+ 		}
+@@ -145,13 +142,13 @@ static void slow_imageblit(const struct 
+ 		while (j--) {
+ 			l--;
+ 			color = (*s & (1 << l)) ? fgcolor : bgcolor;
+-			val |= FB_SHIFT_HIGH(color, shift);
++			val |= FB_SHIFT_HIGH(p, color, shift);
+ 
+ 			/* Did the bitshift spill bits to the next long? */
+ 			if (shift >= null_bits) {
+ 				*dst++ = val;
+ 				val = (shift == null_bits) ? 0 :
+-					FB_SHIFT_LOW(color,32 - shift);
++					FB_SHIFT_LOW(p, color, 32 - shift);
+ 			}
+ 			shift += bpp;
+ 			shift &= (32 - 1);
+@@ -160,7 +157,7 @@ static void slow_imageblit(const struct 
+ 
+ 		/* write trailing bits */
+  		if (shift) {
+-			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
++			u32 end_mask = FB_SHIFT_HIGH(p, ~(u32)0, shift);
+ 
+ 			*dst &= end_mask;
+ 			*dst |= val;
+@@ -199,10 +196,10 @@ static void fast_imageblit(const struct 
+ 
+ 	switch (bpp) {
+ 	case 8:
+-		tab = cfb_tab8;
++		tab = fb_be_math(p) ? cfb_tab8_be : cfb_tab8_le;
+ 		break;
+ 	case 16:
+-		tab = cfb_tab16;
++		tab = fb_be_math(p) ? cfb_tab16_be : cfb_tab16_le;
+ 		break;
+ 	case 32:
+ 	default:
+diff -puN include/linux/fb.h~fb-add-support-for-foreign-endianness include/linux/fb.h
+--- a/include/linux/fb.h~fb-add-support-for-foreign-endianness
++++ a/include/linux/fb.h
+@@ -791,6 +791,17 @@ struct fb_tile_ops {
+  */
+ #define FBINFO_MISC_ALWAYS_SETPAR   0x40000
+ 
++/*
++ * Host and GPU endianness differ.
++ */
++#define FBINFO_FOREIGN_ENDIAN	0x100000
++/*
++ * Big endian math. This is the same flags as above, but with different
++ * meaning, it is set by the fb subsystem depending FOREIGN_ENDIAN flag
++ * and host endianness. Drivers should not use this flag.
++ */
++#define FBINFO_BE_MATH  0x100000
++
+ struct fb_info {
+ 	int node;
+ 	int flags;
+@@ -899,15 +910,11 @@ struct fb_info {
+ 
+ #endif
+ 
+-#if defined (__BIG_ENDIAN)
+-#define FB_LEFT_POS(bpp)          (32 - bpp)
+-#define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
+-#define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
+-#else
+-#define FB_LEFT_POS(bpp)          (0)
+-#define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
+-#define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
+-#endif
++#define FB_LEFT_POS(p, bpp)          (fb_be_math(p) ? (32 - (bpp)) : 0)
++#define FB_SHIFT_HIGH(p, val, bits)  (fb_be_math(p) ? (val) >> (bits) : \
++						      (val) << (bits))
++#define FB_SHIFT_LOW(p, val, bits)   (fb_be_math(p) ? (val) << (bits) : \
++						      (val) >> (bits))
+ 
+     /*
+      *  `Generic' versions of the frame buffer device operations
+@@ -970,6 +977,17 @@ extern void fb_deferred_io_cleanup(struc
+ extern int fb_deferred_io_fsync(struct file *file, struct dentry *dentry,
+ 				int datasync);
+ 
++static inline bool fb_be_math(struct fb_info *info)
++{
++#if defined(CONFIG_FB_FOREIGN_ENDIAN)
++	return info->flags & FBINFO_BE_MATH;
++#elif defined(__BIG_ENDIAN)
++	return true;
++#else
++	return false;
++#endif
++}
++
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
+_
+
