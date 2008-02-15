@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762895AbYBOURd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760413AbYBOUSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762895AbYBOURd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 15:17:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762165AbYBOURF
+	id S1760413AbYBOUSE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 15:18:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755847AbYBOURw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 15:17:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39202 "EHLO mx2.mail.elte.hu"
+	Fri, 15 Feb 2008 15:17:52 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50008 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762081AbYBOURD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 15:17:03 -0500
-Date: Fri, 15 Feb 2008 21:16:40 +0100
+	id S1756594AbYBOURv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 15:17:51 -0500
+Date: Fri, 15 Feb 2008 21:17:30 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: travis@sgi.com
 Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
@@ -17,13 +17,13 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
        linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] x86_64: Fold pda into per cpu area
-Message-ID: <20080215201640.GA6200@elte.hu>
-References: <20080201191414.961558000@sgi.com> <20080201191415.450555000@sgi.com>
+Subject: Re: [PATCH 4/4] x86_64: Cleanup non-smp usage of cpu maps
+Message-ID: <20080215201730.GA7496@elte.hu>
+References: <20080201191414.961558000@sgi.com> <20080201191415.572662000@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080201191415.450555000@sgi.com>
+In-Reply-To: <20080201191415.572662000@sgi.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,11 +40,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * travis@sgi.com <travis@sgi.com> wrote:
 
->  include/asm-generic/vmlinux.lds.h |    2 +
->  include/linux/percpu.h            |    9 ++++-
+> Cleanup references to the early cpu maps for the non-SMP configuration 
+> and remove some functions called for SMP configurations only.
 
-couldnt these two generic bits be done separately (perhaps a preparatory 
-but otherwise NOP patch pushed upstream straight away) to make 
-subsequent patches only touch x86 architecture files?
+thanks, applied.
 
 	Ingo
