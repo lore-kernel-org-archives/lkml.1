@@ -1,170 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764256AbYBOEBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbYBOEsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764256AbYBOEBo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 23:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbYBOEBf
+	id S1757350AbYBOEsd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 23:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbYBOEsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 23:01:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:39124 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753137AbYBOEBd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 23:01:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
-        b=dzG4x+AzZFdgiNDDwtlXyCOw8U/oQ67Wt5BHkmYiMknhGpSYbZatdF6rbDnlCABQf6HMsVViK1H57oak2jEdO4TGWB7Mv5aaWjU46mc6ONu2b5hfB/aK/vWhgsyiyXFywlelQE5EdQcb57mk6OMqRS28FaQ2c6rKbHVMUhMgLoA=
-Message-ID: <76366b180802142001k3b2fb5e3k84ad4726b58d5a86@mail.gmail.com>
-Date: Thu, 14 Feb 2008 23:01:30 -0500
-From: "Andrew Paprocki" <andrew@ishiboo.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] [WATCHDOG] it8712f_wdt support for 16-bit timeout values, WDIOC_GETSTATUS
-Cc: linux-kernel@vger.kernel.org, wim@iguana.be
-In-Reply-To: <20080214135059.b72570f0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_4945_29939554.1203048090155"
-References: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
-	 <20080214135059.b72570f0.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 619e57877c1fc5f3
+	Thu, 14 Feb 2008 23:48:23 -0500
+Received: from mga02.intel.com ([134.134.136.20]:41613 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbYBOEsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 23:48:22 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,356,1199692800"; 
+   d="scan'208";a="340269526"
+Subject: Re: [PATCH] Fix left over EFI cache mapping problems
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <andi@firstfloor.org>, torvalds@osdl.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080214161218.GA28152@elte.hu>
+References: <20080214131317.GA27769@basil.nowhere.org>
+	 <20080214161218.GA28152@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Feb 2008 12:48:06 +0800
+Message-Id: <1203050886.30010.19.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 15 Feb 2008 04:47:05.0737 (UTC) FILETIME=[D0645F90:01C86F8D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_4945_29939554.1203048090155
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, 2008-02-14 at 17:12 +0100, Ingo Molnar wrote: 
+> this is indeed a bug (we change the attributes for a larger area than 
+> needed), but your fix is unclean. Find below a cleaner solution.
+> 
+> Ying, if you agree with this fix could you please test and ACK it before 
+> we push it to Linus? (this fix is also in the latest x86.git#mm)
 
-Sorry, try the attached file. I tried to send via IMAP draft, but I
-suppose it is still not configured right.
+I think the patch following may be better, because it is possible that
+the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
 
-Thanks,
--Andrew
+Best Regards,
+Huang Ying
 
-On Thu, Feb 14, 2008 at 4:50 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Sun, 10 Feb 2008 22:11:15 -0500
->  "Andrew Paprocki" <andrew@ishiboo.com> wrote:
->
->  > This patch adds support for 16-bit watchdog timeout values which are
->  > available in chip revisions >= 0x08. Values <= 65535 are seconds precision,
->  > otherwise minutes precision is used up to a maximum value of 3932100. Added
->  > implementation for WDIOC_GETSTATUS which checks the WDT status bit in the
->  > WDT control register.
->  >
->  > Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
->  > ---
->  >   drivers/watchdog/it8712f_wdt.c |   82
->  > ++++++++++++++++++++++++++++++++--------
->  >   1 files changed, 66 insertions(+), 16 deletions(-)
->  >
->  > diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
->  > index 1b6d7d1..803c699 100644
->  > --- a/drivers/watchdog/it8712f_wdt.c
->  > +++ b/drivers/watchdog/it8712f_wdt.c
->
->  The patch is wordwrapped, space-stuffed and has tabs replaced with spaces.
->  You hit the trifecta!
->
->  Please resend.  If you'd prefer to use an attachment rather than spending
->  half an hour wrestling your email client, feel free to do so ;)
->
->
+-------------------------> 
+The EFI-runtime mapping code changed a larger memory area than it
+should have, due to a pages/bytes parameter mixup.
 
-------=_Part_4945_29939554.1203048090155
-Content-Type: text/plain;
- name=0001-WATCHDOG-it8712f_wdt-support-for-16-bit-timeout-values-WDIOC_GETSTATUS.txt
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fco7k6240
-Content-Disposition: attachment;
- filename=0001-WATCHDOG-it8712f_wdt-support-for-16-bit-timeout-values-WDIOC_GETSTATUS.txt
+noticed by Andi Kleen.
 
-RnJvbSAyM2NlMDRlNTgwZjZmYTJhMjRlMjQ3YzNhZDg1MWRlMGY3ZTZhODc1IE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBBbmRyZXcgUGFwcm9ja2kgPGFuZHJld0Bpc2hpYm9vLmNvbT4K
-RGF0ZTogVGh1LCAxNCBGZWIgMjAwOCAyMjo1Mjo0NCAtMDUwMApTdWJqZWN0OiBbUEFUQ0hdIFtX
-QVRDSERPR10gaXQ4NzEyZl93ZHQgc3VwcG9ydCBmb3IgMTYtYml0IHRpbWVvdXQgdmFsdWVzLCBX
-RElPQ19HRVRTVEFUVVMKClRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IGZvciAxNi1iaXQgd2F0Y2hk
-b2cgdGltZW91dCB2YWx1ZXMgd2hpY2ggYXJlCmF2YWlsYWJsZSBpbiBjaGlwIHJldmlzaW9ucyA+
-PSAweDA4LiBWYWx1ZXMgPD0gNjU1MzUgYXJlIHNlY29uZHMgcHJlY2lzaW9uLApvdGhlcndpc2Ug
-bWludXRlcyBwcmVjaXNpb24gaXMgdXNlZCB1cCB0byBhIG1heGltdW0gdmFsdWUgb2YgMzkzMjEw
-MC4gQWRkZWQKaW1wbGVtZW50YXRpb24gZm9yIFdESU9DX0dFVFNUQVRVUyB3aGljaCBjaGVja3Mg
-dGhlIFdEVCBzdGF0dXMgYml0IGluIHRoZQpXRFQgY29udHJvbCByZWdpc3Rlci4KClNpZ25lZC1v
-ZmYtYnk6IEFuZHJldyBQYXByb2NraSA8YW5kcmV3QGlzaGlib28uY29tPgotLS0KIGRyaXZlcnMv
-d2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyB8ICAgNzggKysrKysrKysrKysrKysrKysrKysrKysrKysr
-KysrKystLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDE0IGRlbGV0
-aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyBiL2Ry
-aXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYwppbmRleCAxYjZkN2QxLi4xZWZjYWQzIDEwMDY0
-NAotLS0gYS9kcml2ZXJzL3dhdGNoZG9nL2l0ODcxMmZfd2R0LmMKKysrIGIvZHJpdmVycy93YXRj
-aGRvZy9pdDg3MTJmX3dkdC5jCkBAIC03LDcgKzcsOCBAQAogICoKICAqCWRyaXZlcnMvY2hhci93
-YXRjaGRvZy9zY3gyMDBfd2R0LmMKICAqCWRyaXZlcnMvaHdtb24vaXQ4Ny5jCi0gKglJVDg3MTJG
-IEVDLUxQQyBJL08gUHJlbGltaW5hcnkgU3BlY2lmaWNhdGlvbiAwLjkuMi5wZGYKKyAqCUlUODcx
-MkYgRUMtTFBDIEkvTyBQcmVsaW1pbmFyeSBTcGVjaWZpY2F0aW9uIDAuOC4yCisgKglJVDg3MTJG
-IEVDLUxQQyBJL08gUHJlbGltaW5hcnkgU3BlY2lmaWNhdGlvbiAwLjkuMwogICoKICAqCVRoaXMg
-cHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IK
-ICAqCW1vZGlmeSBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBM
-aWNlbnNlIGFzCkBAIC00MCw2ICs0MSw3IEBAIE1PRFVMRV9ERVNDUklQVElPTigiSVQ4NzEyRiBX
-YXRjaGRvZyBEcml2ZXIiKTsKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIE1PRFVMRV9BTElBU19N
-SVNDREVWKFdBVENIRE9HX01JTk9SKTsKCitzdGF0aWMgaW50IG1heF91bml0cyA9IDI1NTsKIHN0
-YXRpYyBpbnQgbWFyZ2luID0gNjA7CQkvKiBpbiBzZWNvbmRzICovCiBtb2R1bGVfcGFyYW0obWFy
-Z2luLCBpbnQsIDApOwogTU9EVUxFX1BBUk1fREVTQyhtYXJnaW4sICJXYXRjaGRvZyBtYXJnaW4g
-aW4gc2Vjb25kcyIpOwpAQCAtNTEsNiArNTMsNyBAQCBNT0RVTEVfUEFSTV9ERVNDKG5vd2F5b3V0
-LCAiRGlzYWJsZSB3YXRjaGRvZyBzaHV0ZG93biBvbiBjbG9zZSIpOwogc3RhdGljIHN0cnVjdCBz
-ZW1hcGhvcmUgaXQ4NzEyZl93ZHRfc2VtOwogc3RhdGljIHVuc2lnbmVkIGV4cGVjdF9jbG9zZTsK
-IHN0YXRpYyBzcGlubG9ja190IGlvX2xvY2s7CitzdGF0aWMgdW5zaWduZWQgY2hhciByZXZpc2lv
-bjsKCiAvKiBEb2cgRm9vZCBhZGRyZXNzIC0gV2UgdXNlIHRoZSBnYW1lIHBvcnQgYWRkcmVzcyAq
-Lwogc3RhdGljIHVuc2lnbmVkIHNob3J0IGFkZHJlc3M7CkBAIC0xMDgsNiArMTExLDE1IEBAIHN1
-cGVyaW9faW53KGludCByZWcpCiAJcmV0dXJuIHZhbDsKIH0KCitzdGF0aWMgdm9pZAorc3VwZXJp
-b19vdXR3KGludCB2YWwsIGludCByZWcpCit7CisJb3V0YihyZWcrKywgUkVHKTsKKwlvdXRiKCh2
-YWwgPj4gOCkgJiAweGZmLCBWQUwpOworCW91dGIocmVnLCBSRUcpOworCW91dGIodmFsICYgMHhm
-ZiwgVkFMKTsKK30KKwogc3RhdGljIGlubGluZSB2b2lkCiBzdXBlcmlvX3NlbGVjdChpbnQgbGRu
-KQogewpAQCAtMTQzLDE1ICsxNTUsMzMgQEAgc3RhdGljIHZvaWQKIGl0ODcxMmZfd2R0X3VwZGF0
-ZV9tYXJnaW4odm9pZCkKIHsKIAlpbnQgY29uZmlnID0gV0RUX09VVF9LUlNUIHwgV0RUX09VVF9Q
-V1JPSzsKLQotCXByaW50ayhLRVJOX0lORk8gTkFNRSAiOiB0aW1lciBtYXJnaW4gJWQgc2Vjb25k
-c1xuIiwgbWFyZ2luKTsKLQotCS8qIFRoZSB0aW1lb3V0IHJlZ2lzdGVyIG9ubHkgaGFzIDhiaXRz
-IHdpZGUgKi8KLQlpZiAobWFyZ2luIDwgMjU2KQotCQljb25maWcgfD0gV0RUX1VOSVRfU0VDOwkv
-KiBlbHNlIFVOSVQgYXJlIE1JTlVURVMgKi8KKwlpbnQgdW5pdHMgPSBtYXJnaW47CisKKwkvKiBT
-d2l0Y2ggdG8gbWludXRlcyBwcmVjaXNpb24gaWYgdGhlIGNvbmZpZ3VyZWQgbWFyZ2luCisJICog
-dmFsdWUgZG9lcyBub3QgZml0IHdpdGhpbiB0aGUgcmVnaXN0ZXIgd2lkdGguCisJICovCisJaWYg
-KHVuaXRzIDw9IG1heF91bml0cykgeworCQljb25maWcgfD0gV0RUX1VOSVRfU0VDOyAvKiBlbHNl
-IFVOSVQgaXMgTUlOVVRFUyAqLworCQlwcmludGsoS0VSTl9JTkZPIE5BTUUgIjogdGltZXIgbWFy
-Z2luICVkIHNlY29uZHNcbiIsIHVuaXRzKTsKKwl9IGVsc2UgeworCQl1bml0cyAvPSA2MDsKKwkJ
-cHJpbnRrKEtFUk5fSU5GTyBOQU1FICI6IHRpbWVyIG1hcmdpbiAlZCBtaW51dGVzXG4iLCB1bml0
-cyk7CisJfQogCXN1cGVyaW9fb3V0Yihjb25maWcsIFdEVF9DT05GSUcpOwoKLQlzdXBlcmlvX291
-dGIoKG1hcmdpbiA+IDI1NSkgPyAobWFyZ2luIC8gNjApIDogbWFyZ2luLCBXRFRfVElNRU9VVCk7
-CisJaWYgKHJldmlzaW9uID49IDB4MDgpCisJCXN1cGVyaW9fb3V0dyh1bml0cywgV0RUX1RJTUVP
-VVQpOworCWVsc2UKKwkJc3VwZXJpb19vdXRiKHVuaXRzLCBXRFRfVElNRU9VVCk7Cit9CisKK3N0
-YXRpYyBpbnQKK2l0ODcxMmZfd2R0X2dldF9zdGF0dXModm9pZCkKK3sKKwlpZiAoc3VwZXJpb19p
-bmIoV0RUX0NPTlRST0wpICYgMHgwMSkKKwkJcmV0dXJuIFdESU9GX0NBUkRSRVNFVDsKKwllbHNl
-CisJCXJldHVybiAwOwogfQoKIHN0YXRpYyB2b2lkCkBAIC0yMzQsNyArMjY0LDcgQEAgaXQ4NzEy
-Zl93ZHRfaW9jdGwoc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUsCiAJCS5m
-aXJtd2FyZV92ZXJzaW9uID0gMSwKIAkJLm9wdGlvbnMgPSBXRElPRl9TRVRUSU1FT1VUIHwgV0RJ
-T0ZfS0VFUEFMSVZFUElORywKIAl9OwotCWludCBuZXdfbWFyZ2luOworCWludCB2YWx1ZTsKCiAJ
-c3dpdGNoIChjbWQpIHsKIAlkZWZhdWx0OgpAQCAtMjQ0LDE3ICsyNzQsMjcgQEAgaXQ4NzEyZl93
-ZHRfaW9jdGwoc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUsCiAJCQlyZXR1
-cm4gLUVGQVVMVDsKIAkJcmV0dXJuIDA7CiAJY2FzZSBXRElPQ19HRVRTVEFUVVM6CisJCXN1cGVy
-aW9fZW50ZXIoKTsKKwkJc3VwZXJpb19zZWxlY3QoTEROX0dQSU8pOworCisJCXZhbHVlID0gaXQ4
-NzEyZl93ZHRfZ2V0X3N0YXR1cygpOworCisJCXN1cGVyaW9fZXhpdCgpOworCisJCXJldHVybiBw
-dXRfdXNlcih2YWx1ZSwgcCk7CiAJY2FzZSBXRElPQ19HRVRCT09UU1RBVFVTOgogCQlyZXR1cm4g
-cHV0X3VzZXIoMCwgcCk7CiAJY2FzZSBXRElPQ19LRUVQQUxJVkU6CiAJCWl0ODcxMmZfd2R0X3Bp
-bmcoKTsKIAkJcmV0dXJuIDA7CiAJY2FzZSBXRElPQ19TRVRUSU1FT1VUOgotCQlpZiAoZ2V0X3Vz
-ZXIobmV3X21hcmdpbiwgcCkpCisJCWlmIChnZXRfdXNlcih2YWx1ZSwgcCkpCiAJCQlyZXR1cm4g
-LUVGQVVMVDsKLQkJaWYgKG5ld19tYXJnaW4gPCAxKQorCQlpZiAodmFsdWUgPCAxKQorCQkJcmV0
-dXJuIC1FSU5WQUw7CisJCWlmICh2YWx1ZSA+IChtYXhfdW5pdHMgKiA2MCkpCiAJCQlyZXR1cm4g
-LUVJTlZBTDsKLQkJbWFyZ2luID0gbmV3X21hcmdpbjsKKwkJbWFyZ2luID0gdmFsdWU7CiAJCXN1
-cGVyaW9fZW50ZXIoKTsKIAkJc3VwZXJpb19zZWxlY3QoTEROX0dQSU8pOwoKQEAgLTI2Miw2ICsz
-MDIsNyBAQCBpdDg3MTJmX3dkdF9pb2N0bChzdHJ1Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmls
-ZSAqZmlsZSwKCiAJCXN1cGVyaW9fZXhpdCgpOwogCQlpdDg3MTJmX3dkdF9waW5nKCk7CisJCS8q
-IEZhbGwgdGhyb3VnaCAqLwogCWNhc2UgV0RJT0NfR0VUVElNRU9VVDoKIAkJaWYgKHB1dF91c2Vy
-KG1hcmdpbiwgcCkpCiAJCQlyZXR1cm4gLUVGQVVMVDsKQEAgLTMzNiw5ICszNzcsMTggQEAgaXQ4
-NzEyZl93ZHRfZmluZCh1bnNpZ25lZCBzaG9ydCAqYWRkcmVzcykKIAl9CgogCWVyciA9IDA7Ci0J
-cHJpbnRrKEtFUk5fREVCVUcgTkFNRSAiOiBGb3VuZCBJVCUwNHhGIGNoaXAgcmV2aXNpb24gJWQg
-LSAiCisJcmV2aXNpb24gPSBzdXBlcmlvX2luYihERVZSRVYpICYgMHgwZjsKKworCS8qIExhdGVy
-IHJldmlzaW9ucyBoYXZlIDE2LWJpdCB2YWx1ZXMgcGVyIGRhdGFzaGVldCAwLjkuMSAqLworCWlm
-IChyZXZpc2lvbiA+PSAweDA4KQorCQltYXhfdW5pdHMgPSA2NTUzNTsKKworCWlmIChtYXJnaW4g
-PiAobWF4X3VuaXRzICogNjApKQorCQltYXJnaW4gPSAobWF4X3VuaXRzICogNjApOworCisJcHJp
-bnRrKEtFUk5fSU5GTyBOQU1FICI6IEZvdW5kIElUJTA0eEYgY2hpcCByZXZpc2lvbiAlZCAtICIK
-IAkJInVzaW5nIERvZ0Zvb2QgYWRkcmVzcyAweCV4XG4iLAotCQljaGlwX3R5cGUsIHN1cGVyaW9f
-aW5iKERFVlJFVikgJiAweDBmLCAqYWRkcmVzcyk7CisJCWNoaXBfdHlwZSwgcmV2aXNpb24sICph
-ZGRyZXNzKTsKCiBleGl0OgogCXN1cGVyaW9fZXhpdCgpOwotLQoxLjQuNC40Cgo=
-------=_Part_4945_29939554.1203048090155--
+This patch has been tested on Intel x86 platform with EFI 32/64.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+
+---
+ arch/x86/kernel/efi.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+--- a/arch/x86/kernel/efi.c
++++ b/arch/x86/kernel/efi.c
+@@ -386,12 +386,13 @@ static void __init runtime_code_page_mke
+ 
+ 	/* Make EFI runtime service code area executable */
+ 	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
+-		md = p;
++		unsigned long num_pages;
+ 
++		md = p;
+ 		if (md->type != EFI_RUNTIME_SERVICES_CODE)
+ 			continue;
+-
+-		set_memory_x(md->virt_addr, md->num_pages << EFI_PAGE_SHIFT);
++		num_pages = (md->num_pages << EFI_PAGE_SHIFT) >> PAGE_SHIFT;
++		set_memory_x(md->virt_addr, num_pages);
+ 	}
+ }
+ 
+@@ -434,7 +435,7 @@ void __init efi_enter_virtual_mode(void)
+ 		}
+ 
+ 		if (!(md->attribute & EFI_MEMORY_WB))
+-			set_memory_uc(md->virt_addr, size);
++			set_memory_uc(md->virt_addr, size >> PAGE_SHIFT);
+ 
+ 		systab = (u64) (unsigned long) efi_phys.systab;
+ 		if (md->phys_addr <= systab && systab < end) {
+
