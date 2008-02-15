@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbYBOPld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754702AbYBOPnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbYBOPld (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:41:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751521AbYBOPlZ
+	id S1754702AbYBOPnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbYBOPnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:41:25 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54361 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751490AbYBOPlY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:41:24 -0500
-Date: Fri, 15 Feb 2008 15:31:48 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single
- device DM devices
-Message-ID: <20080215153148.1db2137f@core>
-In-Reply-To: <20080215153439.GB30504@one.firstfloor.org>
-References: <20080215120821.GA8267@basil.nowhere.org>
-	<20080215122002.GM29914@agk.fab.redhat.com>
-	<47B58EAA.8040405@msgid.tls.msk.ru>
-	<20080215142010.GA29552@one.firstfloor.org>
-	<20080215141229.GB1788@agk.fab.redhat.com>
-	<20080215153439.GB30504@one.firstfloor.org>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Feb 2008 10:43:32 -0500
+Received: from mail.issp.bas.bg ([195.96.236.10]:33854 "EHLO mail.issp.bas.bg"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751521AbYBOPnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 10:43:31 -0500
+X-Greylist: delayed 1312 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 Feb 2008 10:43:31 EST
+From: Marin Mitov <mitov@issp.bas.bg>
+To: linux-kernel@vger.kernel.org
+Subject: Is netif_tx_lock() SMP PREEMPT safe?
+Date: Fri, 15 Feb 2008 17:25:05 +0200
+User-Agent: KMail/1.9.7
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200802151725.05424.mitov@issp.bas.bg>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And don't RH distributions install with LVM by default these days?
-> For those it should be the standard case too on all systems with
-> only a single disk.
+Hi all,
 
-Yes - I make a point of turning it off ;)
+As in: include/linux/netdevice.h (kernel-2.6.24.2) one finds:
 
-Alan
+static inline void __netif_tx_lock(struct net_device *dev, int cpu)
+{
+        spin_lock(&dev->_xmit_lock);
+        dev->xmit_lock_owner = cpu;
+}
+
+static inline void netif_tx_lock(struct net_device *dev)
+{
+        __netif_tx_lock(dev, smp_processor_id());
+}
+
+Does netif_tx_lock(struct net_device *dev) expands into:
+
+cpu = smp_processor_id(); 
+<preempt & shift to another cpu (bogus)>
+spin_lock(&dev->_xmit_lock);
+dev->xmit_lock_owner = cpu; /* cpu is not the lock owner */
+
+Or to:
+
+spin_lock(&dev->_xmit_lock);
+dev->xmit_lock_owner = smp_processor_id();
+
+which is correct?
+
+Thanks in advance for your answer.
+
+Regards
+
+Marin Mitov
+
+
