@@ -1,70 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbYBOR5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbYBOR6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760618AbYBOR5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 12:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758214AbYBOR4m
+	id S1760134AbYBOR6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 12:58:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756870AbYBOR6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 12:56:42 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:53200 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756010AbYBOR4l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 12:56:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qk6MeIhd4svW6q3ZAnV3WKcFtwNMBHzJht2XzOLAcjduSnDz9/r/BgbFcnAK+QeC7uzbnI2AQpnchJfbMJsciLJ7D5G1t8pqkR48KKbw62HaydGWF1FDc5Kuh2k6W/e0K/WUsGP8u4G1Kw3EB6xelFb2qNcpctcyDzcaMTovmO8=
-Subject: [PATCH 1/3] sched: add declaration of sched_tail to sched.h
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Jeff Dike <jdike@addtoit.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 09:56:34 -0800
-Message-Id: <1203098194.15275.3.camel@brick>
+	Fri, 15 Feb 2008 12:58:32 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:59340 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756430AbYBOR6b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 12:58:31 -0500
+Date: Fri, 15 Feb 2008 21:01:52 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Miklos Szeredi <mszeredi@suse.cz>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH -mm] mmap_region: cleanup the final vma_merge() related code
+Message-ID: <20080215180152.GA4344@tv-sign.ru>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avoids sparse warnings:
-kernel/sched.c:2170:17: warning: symbol 'schedule_tail' was not declared. Should it be static?
+(textually depends on procfs-task-exe-symlink.patch)
 
-Avoids the need for an external declaration in arch/um/process.c
+It is not easy to actually understand the "if (!file || !vma_merge())" code,
+turn it into "if (file && vma_merge())". This makes immediately obvious that
+the subsequent "if (file)" is superfluous.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/um/kernel/process.c |    2 --
- include/linux/sched.h    |    1 +
- 2 files changed, 1 insertions(+), 2 deletions(-)
+As Hugh Dickins pointed out, we can also factor out the ->i_writecount
+corrections, and add a small comment about that.
 
-diff --git a/arch/um/kernel/process.c b/arch/um/kernel/process.c
-index fc50d2f..e8cb9ff 100644
---- a/arch/um/kernel/process.c
-+++ b/arch/um/kernel/process.c
-@@ -128,8 +128,6 @@ void *get_current(void)
- 	return current;
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+
+--- 25/mm/mmap.c~1_MMAP	2008-02-15 17:48:48.000000000 +0300
++++ 25/mm/mmap.c	2008-02-15 18:23:26.000000000 +0300
+@@ -1070,7 +1070,6 @@ int vma_wants_writenotify(struct vm_area
+ 		mapping_cap_account_dirty(vma->vm_file->f_mapping);
  }
  
--extern void schedule_tail(struct task_struct *prev);
 -
- /*
-  * This is called magically, by its address being stuffed in a jmp_buf
-  * and being longjmp-d to.
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index e217d18..f1d20c0 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -242,6 +242,7 @@ struct task_struct;
+ unsigned long mmap_region(struct file *file, unsigned long addr,
+ 			  unsigned long len, unsigned long flags,
+ 			  unsigned int vm_flags, unsigned long pgoff,
+@@ -1185,24 +1184,22 @@ munmap_back:
+ 	if (vma_wants_writenotify(vma))
+ 		vma->vm_page_prot = vm_get_page_prot(vm_flags & ~VM_SHARED);
  
- extern void sched_init(void);
- extern void sched_init_smp(void);
-+extern asmlinkage void schedule_tail(struct task_struct *prev);
- extern void init_idle(struct task_struct *idle, int cpu);
- extern void init_idle_bootup_task(struct task_struct *idle);
- 
--- 
-1.5.4.1.1278.gc75be
-
+-	if (!file || !vma_merge(mm, prev, addr, vma->vm_end,
++	if (file && vma_merge(mm, prev, addr, vma->vm_end,
+ 			vma->vm_flags, NULL, file, pgoff, vma_policy(vma))) {
+-		file = vma->vm_file;
+-		vma_link(mm, vma, prev, rb_link, rb_parent);
+-		if (correct_wcount)
+-			atomic_inc(&inode->i_writecount);
+-	} else {
+-		if (file) {
+-			if (correct_wcount)
+-				atomic_inc(&inode->i_writecount);
+-			fput(file);
+-			if (vm_flags & VM_EXECUTABLE)
+-				removed_exe_file_vma(mm);
+-		}
+ 		mpol_free(vma_policy(vma));
+ 		kmem_cache_free(vm_area_cachep, vma);
++		fput(file);
++		if (vm_flags & VM_EXECUTABLE)
++			removed_exe_file_vma(mm);
++	} else {
++		vma_link(mm, vma, prev, rb_link, rb_parent);
++		file = vma->vm_file;
+ 	}
+-out:	
++
++	/* Once vma denies write, undo our temporary denial count */
++	if (correct_wcount)
++		atomic_inc(&inode->i_writecount);
++out:
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
 
