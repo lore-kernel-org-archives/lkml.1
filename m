@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762889AbYBOX4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761898AbYBOX7G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762889AbYBOX4p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 18:56:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757627AbYBOX4h
+	id S1761898AbYBOX7G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 18:59:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbYBOX64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 18:56:37 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:26795 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757368AbYBOX4g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 18:56:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=Pbsseq0UOGBUCZJ5Hmul5Zlf8Ej02JWvC6P/WGtzymU14tB/SBlN7oKtIybThJS2qNkdbbQE/bsljCmnDqUQ8FMQBp0MYc6Z/f1cczwITQqTlmOYADYjfIuZgKZnYaYQRul96j5WTo0ysZz0CJh4Rg2fD7sH+Rbs96fsi2PK8+w=
-Date: Sat, 16 Feb 2008 01:54:05 +0200
-To: Andreas Schwab <schwab@suse.de>
-Cc: libc-alpha@sourceware.org, libc-alpha@sources.redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux i386 clone(): %ebx 'frobbing' ?
-Message-ID: <20080215235405.GB8012@ubuntu>
-References: <20080215184228.GA6687@ubuntu> <jewsp69e5t.fsf@sykes.suse.de> <20080215230722.GA8012@ubuntu> <jeir0pajg4.fsf@sykes.suse.de>
-MIME-Version: 1.0
+	Fri, 15 Feb 2008 18:58:56 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2645 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757627AbYBOX6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 18:58:55 -0500
+Date: Fri, 15 Feb 2008 23:58:42 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
+Message-ID: <20080215235842.GA5190@ucw.cz>
+References: <200802111623.38478.elendil@planet.nl> <200802130941.47163.elendil@planet.nl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <jeir0pajg4.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+In-Reply-To: <200802130941.47163.elendil@planet.nl>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 12:28:11AM +0100, Andreas Schwab wrote:
-> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
-> 
-> > Hi Andreas,
-> >
-> > On Fri, Feb 15, 2008, Andreas Schwab wrote:
-> >> "Ahmed S. Darwish" <darwish.07@gmail.com> writes:
-> >> 
-> >> > I don't understand how the `fn' argument reached the child thread
-> >> > in the %ebx register. It's said in the comment that `fn' will be
-> >> > popped to child 'in the ebx frobbing below'. But what does that mean ?
-> >> 
-> >> See "popl %ebx" after "int $0x80".
-> >> 
-> >
-> > I hope I'm not misreading something obvious, but I can't find
-> > the code where FUNC(%esp) is stored in %ebx before %ebx value
-> > got pushed in the stack (and restored in above 'popl' statement).
-> 
-> It is stored in the new stack for the child, as explained in the
-> comment.  The parent has a different stack.
-> 
+Hi!
 
-Ooh great, I got it. Sorry, my mind didn't connect the dots though 
-I read the comment several times. Thanks a lot for bearing with me :).
+> > In general 2.6.25 if looking quite good on my desktop, but there's one
+> > important issue: the system no longer powers off after shutdown.
+> > This works fine with 2.6.24.
+> 
+> I was wrong :-(
+> 
+> I'd not really done any real workkkk under 2.6.25 yet, but now while running 
+> a kernel compile with -j4 (single processor, dual core Pentium D), I see 
+> this behavior. The mouse cursor moves a bit jerky and I sometimes get key 
+> presses repeated.
 
-Regards,
+I see this one, too... x60, too...
 
 -- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
