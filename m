@@ -1,128 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763130AbYBOXeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYBOXiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763130AbYBOXeR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 18:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbYBOXeA
+	id S1759616AbYBOXiU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 18:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754800AbYBOXiL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 18:34:00 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45356 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760500AbYBOXd5 (ORCPT
+	Fri, 15 Feb 2008 18:38:11 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60570 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751835AbYBOXiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 18:33:57 -0500
-Date: Fri, 15 Feb 2008 15:33:12 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, tglx@tglx.de, hpa@zytor.com
-Subject: [PATCH] x86: add CONFIG_CC_STACKPROTECTOR selftest
-Message-ID: <20080215153312.56d580fe@laptopd505.fenrus.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+	Fri, 15 Feb 2008 18:38:09 -0500
+Date: Fri, 15 Feb 2008 15:37:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: greg@kroah.com, torvalds@linux-foundation.org, jeff@garzik.org,
+       davem@davemloft.net, arjan@infradead.org, sfr@canb.auug.org.au,
+       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-Id: <20080215153732.a93caec7.akpm@linux-foundation.org>
+In-Reply-To: <20080215232308.GC31474@flint.arm.linux.org.uk>
+References: <20080212044314.GA4888@kroah.com>
+	<20080211211751.3e265754@laptopd505.fenrus.org>
+	<20080211.221126.230471463.davem@davemloft.net>
+	<47B1CB08.4020101@garzik.org>
+	<alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
+	<20080212174824.GA1919@kroah.com>
+	<alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org>
+	<20080212191552.GA20883@kroah.com>
+	<alpine.LFD.1.00.0802121133210.2920@woody.linux-foundation.org>
+	<20080212204813.GA21650@kroah.com>
+	<20080215232308.GC31474@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(against x86/mm git)
+On Fri, 15 Feb 2008 23:23:08 +0000
+Russell King <rmk+lkml@arm.linux.org.uk> wrote:
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: [PATCH] x86: add CONFIG_CC_STACKPROTECTOR selftest
+> On Tue, Feb 12, 2008 at 12:48:13PM -0800, Greg KH wrote:
+> > I have tried, and successfully done this many times in the past.  The
+> > kobject change was one example: add a new function, migrate all users of
+> > a direct pointer over to that function, after that work is all done and
+> > in, change the structure and do the needed work afterward.  All is
+> > bisectable completly, with no big "flag day" needed.
+> 
+> Incorrect - because this all happened far too quickly.  This is one of
+> the reasons that I ended up having to redo various parts of the ARM tree
+> because stuff broke - set_kset_name() completely vanished introducing
+> compile errors, and iirc some merge issues as well.
+> 
+> I had patches introducing new system objects which use that, and
+> modifications extremely close to other uses in the PXA code.
+> 
+> The end result (through rebuilding the affected parts of my git tree, and
+> asking people for replacement patches) was something that is bisectable -
+> but had I tried to merge stuff as is, it would've been an utter mess, and
+> _was_ unbuildable.
+> 
 
-This patch adds a simple self-test capability to the stackprotector
-feature. The test deliberately overflows a stack buffer and then
-checks if the canary trap function gets called.
+I wonder why I didn't see any of this - I build arm allmodconfig at least
+once a week, usually more frequently.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
----
- kernel/panic.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 57 insertions(+), 0 deletions(-)
+So either the offending patches weren't in my pile or arm allmodconfig is
+worse than I thought :(
 
-diff --git a/kernel/panic.c b/kernel/panic.c
-index b91cac1..c3d7dee 100644
---- a/kernel/panic.c
-+++ b/kernel/panic.c
-@@ -320,14 +320,71 @@ EXPORT_SYMBOL(warn_on_slowpath);
- #endif
- 
- #ifdef CONFIG_CC_STACKPROTECTOR
-+
-+static unsigned long __stack_check_testing;
-+/*
-+ * Self test function for the stack-protector feature.
-+ * This test requires that the local variable absolutely has
-+ * a stack slot, hence the barrier()s.
-+ */
-+static noinline void __stack_chk_test_func(void)
-+{
-+	unsigned long foo;
-+	barrier();
-+	/*
-+	 * we need to make sure we're not about to clobber the return address,
-+	 * while real exploits do this, it's unhealthy on a running system.
-+	 * Besides, if we would, the test is already failed anyway so
-+	 * time to pull the emergency brake on it.
-+	 */
-+	if ((unsigned long)__builtin_return_address(0) == 
-+					*(((unsigned long *)&foo)+2)) {
-+		printk(KERN_ERR "No -fstack-protector-stack-frame!\n");
-+		return;
-+	}
-+	barrier();
-+	memset(&foo, 0, 2*sizeof(foo)); /* deliberate buffer overflow */
-+	barrier();
-+}
-+
-+static int __stack_chk_test(void)
-+{
-+	printk(KERN_INFO "Testing -fstack-protector-all feature\n");
-+	__stack_check_testing = (unsigned long)&__stack_chk_test_func;
-+	__stack_chk_test_func();
-+	if (__stack_check_testing) {
-+		printk(KERN_ERR "-fstack-protector-all test failed\n");
-+		WARN_ON(1);
-+	}
-+	return 0;
-+}
- /*
-  * Called when gcc's -fstack-protector feature is used, and
-  * gcc detects corruption of the on-stack canary value
-  */
- void __stack_chk_fail(void)
- {
-+	if (__stack_check_testing == (unsigned long)&__stack_chk_test_func) {
-+		long delta;
-+
-+		delta = (unsigned long)__builtin_return_address(0) -
-+				__stack_check_testing;
-+		/*
-+		 * The test needs to happen inside the test function, so
-+		 * check if the return address is close to that function.
-+		 * The function is only 2 dozen bytes long, but keep a wide
-+		 * safety margin to avoid panic()s for normal users regardless
-+		 * of the quality of the compiler.
-+		 */
-+		if (delta >= 0 && delta <= 400) {
-+			__stack_check_testing = 0;
-+			return;
-+		}
-+	}
- 	panic("stack-protector: Kernel stack is corrupted in: %p\n",
- 		__builtin_return_address(0));
- }
- EXPORT_SYMBOL(__stack_chk_fail);
-+
-+late_initcall(__stack_chk_test);
- #endif
--- 
-1.5.4.1
+It really is in arch maintainers' best interest to keep their allmodconfig
+in good shape, for this reason.  arm's _isn't_ in good shape: the compile
+fails for several long-standing reasons (eg: no hope of building DRM) and I
+don't think the coverage is very broad either.
 
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
