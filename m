@@ -1,54 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764148AbYBOCR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763724AbYBOCU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764148AbYBOCR4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 21:17:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbYBOCRs
+	id S1763724AbYBOCU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 21:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758852AbYBOCUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 21:17:48 -0500
-Received: from fk-out-0910.google.com ([209.85.128.187]:12557 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756634AbYBOCRr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 21:17:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hexA1CGHY2p67cSBut8jP3eQG88I7kFxKgC750B4bbYoG8qOjQOFHRfCBWYWo/rEamd2IjkRxejdzq2OHXJz9MEB6ETwPUnXGwjz1GA90XnA6DziZ4jy/1n6yWMuPuudrB/RlopJCpBvDRoJPGFqtiZ9hVBVhg7nfN597qF9SMw=
-Message-ID: <12c511ca0802141817i3295e83cxd7c05e07f2c54fea@mail.gmail.com>
-Date: Thu, 14 Feb 2008 18:17:45 -0800
-From: "Tony Luck" <tony.luck@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-Cc: "David Miller" <davem@davemloft.net>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1FE6DD409037234FAB833C420AA843EC97C8B0@orsmsx424.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 14 Feb 2008 21:20:21 -0500
+Received: from mga03.intel.com ([143.182.124.21]:9681 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758800AbYBOCUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 21:20:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,355,1199692800"; 
+   d="scan'208";a="379292690"
+Subject: Re: [PATCH] x86: EFI runtime code mapping enhancement
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Ingo Molnar <mingo@redhat.com>, ThomasGleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <200802141306.17642.ak@suse.de>
+References: <1202894561.5026.14.camel@caritas-dev.intel.com>
+	 <47B2D54F.1000302@suse.de> <1202953580.5026.39.camel@caritas-dev.intel.com>
+	 <200802141306.17642.ak@suse.de>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080213125725.GC6344@elte.hu>
-	 <20080213.050340.64342037.davem@davemloft.net>
-	 <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com>
-	 <20080213.170452.68851396.davem@davemloft.net>
-	 <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com>
-	 <adaprv0rygh.fsf@cisco.com>
-	 <12c511ca0802141327j6e31e8c2tee1d679053b604fc@mail.gmail.com>
-	 <ada7ih7qjoq.fsf@cisco.com>
-	 <1FE6DD409037234FAB833C420AA843EC97C8B0@orsmsx424.amr.corp.intel.com>
+Date: Fri, 15 Feb 2008 10:10:09 +0800
+Message-Id: <1203041409.27930.11.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 15 Feb 2008 02:09:08.0707 (UTC) FILETIME=[BFA45B30:01C86F77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We *ought* to be safe after cpu_init() ... which is called from setup_arch(),
-> which is several calls before sched_init().
+On Thu, 2008-02-14 at 13:06 +0100, Andi Kleen wrote:
+> > For EFI runtime service in virtual mode, using direct mapping is mainly
+> > for kexec, where EFI runtime memory area need to be mapped at same
+> > virtual address across kexec. 
+> 
+> I see. I didn't consider this aspect.
+> 
+> > - Use direct mapping of kernel, clean NX bit from kernel page table
+> > temporarily before/after EFI calling. This needs not split 2M page into
+> > 4K pages, because the region changed is aligned with 2M. And, because
+> > the changing is temporary, a little larger region is not a big issue.
+> 
+> I would just do it permanently. 
 
-Perhaps what is happening is that cpu0 comes online ... safely skips
-over the early printk calls.  Calls cpu_init() which sets up the resources
-*it* needs (ar.k3 points to per-cpu space), and then executes
-sched_init() which marks it safe for all printk's. Then cpu1 comes
-up and does a printk before it gets to cpu_init().
+Because during early boot stage, alloc_page() is not available. If we do
+it there, we must make more pages executable to avoid alloc_page(). It
+may be acceptable for 2M mapping (aligned memory range with 2M), but I
+think it is not acceptable for 1G mapping (aligned memory range with
+1G).
 
-Try with Ingo patch and CONFIG_SMP=n to see if you can come
-up on a uni-processor.
+Maybe it is the better method that always using the fixmap (efi_ioremap)
+to map executable memory area to avoid split large mapping.
 
--Tony
+> > Aligning 
+> > EFI runtime code region with 1G seems not a good idea too. I think a
+> > better method is adding a non-split mode to c_p_a(), where the region
+> > changed is enlarged if necessary to avoid page allocation. This can be
+> > used to implement early_set_memory_xx(). The early_set_memory_xx()
+> > instead of duplicated c_p_a() variant can be used by EFI code.
+> 
+> I attempted something like this with my advisory vs required static
+> protections last week, but it was rejected.
+> 
+> But yes having such a mode would make sense agreed. 
+> 
+> The easiest way (as in least amount of code) to implement it actually 
+> is to just bypass set_memory_*() and just do the lookup_address() yourself 
+> and clear NX and do a global TLB flush. For the special case of NX
+> that is fine because you don't need to worry about fixing up any aliases.
+
+This is the original method. The issue is that it must be synced with
+set_memory_*() and lookup_address() implementation. For example, it
+lacked 1G support when that is added to lookup_address().
+
+Best Regards,
+Huang Ying
+
