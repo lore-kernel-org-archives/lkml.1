@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbYBOQBY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbYBOQBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbYBOQBY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 11:01:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYBOQBE
+	id S1758088AbYBOQBr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 11:01:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYBOQBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 11:01:04 -0500
-Received: from smtp20.orange.fr ([80.12.242.27]:49597 "EHLO smtp20.orange.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbYBOQBB convert rfc822-to-8bit (ORCPT
+	Fri, 15 Feb 2008 11:01:35 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46529 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753854AbYBOQBe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 11:01:01 -0500
-X-ME-UUID: 20080215160058894.DA4C91C000AD@mwinf2007.orange.fr
-Message-ID: <47B5B73F.9050904@cosmosbay.com>
-Date: Fri, 15 Feb 2008 17:01:03 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: Marin Mitov <mitov@issp.bas.bg>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Is netif_tx_lock() SMP PREEMPT safe?
-References: <200802151725.05424.mitov@issp.bas.bg>
-In-Reply-To: <200802151725.05424.mitov@issp.bas.bg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 Feb 2008 11:01:34 -0500
+Date: Fri, 15 Feb 2008 15:53:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Tim Ellis <tim@ngndg.com>, linux-kernel@vger.kernel.org,
+       jeff@garzik.org
+Subject: Re: [PATCH] libata: Add MMIO support to pata_sil680
+Message-ID: <20080215155332.2b89c429@core>
+In-Reply-To: <Pine.LNX.4.64.0802151651340.27735@axis700.grange>
+References: <32334D99-DB01-4645-97DC-88D2E7BA2BE5@ngndg.com>
+	<1202850129.7410.22.camel@pasglop>
+	<Pine.LNX.4.64.0802151651340.27735@axis700.grange>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marin Mitov a écrit :
-> Hi all,
->
-> As in: include/linux/netdevice.h (kernel-2.6.24.2) one finds:
->
-> static inline void __netif_tx_lock(struct net_device *dev, int cpu)
-> {
->         spin_lock(&dev->_xmit_lock);
->         dev->xmit_lock_owner = cpu;
-> }
->
-> static inline void netif_tx_lock(struct net_device *dev)
-> {
->         __netif_tx_lock(dev, smp_processor_id());
-> }
->
-> Does netif_tx_lock(struct net_device *dev) expands into:
->
-> cpu = smp_processor_id(); 
-> <preempt & shift to another cpu (bogus)>
-> spin_lock(&dev->_xmit_lock);
-> dev->xmit_lock_owner = cpu; /* cpu is not the lock owner */
->
-> Or to:
->
-> spin_lock(&dev->_xmit_lock);
-> dev->xmit_lock_owner = smp_processor_id();
->
-> which is correct?
->
->   
-Hi Marin
+> > That's strange though. Somebody with knowledge of that HW (or specs) who
+> > can spot something ? Could it be an issue with timing ?
+> > 
+> > I don't have HW access to this machine. If somebody could send one to me
+> > I could do more investigation.
+> 
+> Ben, would an ssh access to such a machine and to a terminal server 
+> suffice?
 
-This expands to the first version, but netif_tx_lock() is allways called 
-with preemption disabled.
+It says clearly in the code where to start. See the FIXME notes in both
+libata-sff and libata-core about MMIO. Neither the DMA transfer start or
+the probe SRST sequence are correct with MMIO posting and this hasn't
+been fixed as I pointed out was needed when I originally NAKked the
+change.
 
-(Or checks in smp_processor_id() would just trigger)
+Without those being fixed (especially SRST) on any device with heavy PCI
+posting of mmio your controller *wont work*.
 
-
-Eric
-(Cced netdev for network related stuff)
-
-
-
-
-
+Alan
