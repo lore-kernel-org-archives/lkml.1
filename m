@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760557AbYBOLwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbYBOMA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760557AbYBOLwR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 06:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751982AbYBOLwA
+	id S1758903AbYBOMA4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 07:00:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbYBOMAr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 06:52:00 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:46566 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751608AbYBOLv7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 06:51:59 -0500
-Message-Id: <79B050214DA541F9A8B193C7AACC3C7B@nsl.ad.nec.co.jp>
-From: "Takashi Sato" <t-sato@yk.jp.nec.com>
-To: "Christoph Hellwig" <hch@infradead.org>,
-       "Andreas Dilger" <adilger@sun.com>
-Cc: "Theodore Tso" <tytso@MIT.EDU>, <linux-ext4@vger.kernel.org>,
-       <linux-fsdevel@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <01cd01c86a40$21d49410$41a8400a@bsd.tnes.nec.co.jp> <20080208132657.GE3120@webber.adilger.int> <20080208145911.GA4257@infradead.org>
-In-Reply-To: <20080208145911.GA4257@infradead.org>
-Subject: Re: [RFC] ext3 freeze feature
-Date: Fri, 15 Feb 2008 20:51:15 +0900
+	Fri, 15 Feb 2008 07:00:47 -0500
+Received: from mail.suse.de ([195.135.220.2]:58583 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750728AbYBOMAq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 07:00:46 -0500
+To: Matt Mackall <mpm@selenic.com>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Linux-tiny@selenic.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "H. Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Configure out doublefault exception handler (Linux Tiny)
+From: Andi Kleen <andi@firstfloor.org>
+References: <20080212110825.35db27cb@crazy>
+	<20080212130428.GA32757@uranus.ravnborg.org>
+	<20080212150013.57cb954e@crazy>
+	<1202832132.12383.93.camel@cinder.waste.org>
+Date: Fri, 15 Feb 2008 13:00:42 +0100
+In-Reply-To: <1202832132.12383.93.camel@cinder.waste.org> (Matt Mackall's message of "Tue\, 12 Feb 2008 10\:02\:12 -0600")
+Message-ID: <p73tzkazaxh.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6000.16480
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6000.16545
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-Christoph Hellwig wrote:
-> On Fri, Feb 08, 2008 at 08:26:57AM -0500, Andreas Dilger wrote:
->> You may as well make the common ioctl the same as the XFS version,
->> both by number and parameters, so that applications which already
->> understand the XFS ioctl will work on other filesystems.
+Matt Mackall <mpm@selenic.com> writes:
 >
-> Yes.  In facy you should be able to lift the implementations of
-> XFS_IOC_FREEZE and XFS_IOC_THAW to generic code, there's nothing
-> XFS-specific in there.
+> I bet there's some doublefault-handling code hiding somewhere. It's not
+> the sort of thing it'd make sense to take out of the architecture.
 
-According to Documentation/ioctl-number.txt,
-XFS_IOC_XXXs (_IOWR('X', aa, bb)) are defined for XFS like below.
->From Documentation/ioctl-number.txt:
-----------------------------------------------------------------------------
-Code    Seq#    Include File            Comments
-========================================================
-:                 :
-'X'     all     linux/xfs_fs.h
-----------------------------------------------------------------------------
-So XFS_IOC_FREEZE and XFS_IOC_THAW cannot be lifted to generic code simply.
-I think we should create new generic numbers for freeze and thaw
-like FIBMAP as followings.
-linux/fs.h:
-#define FIFREEZE _IO(0x00,3)
-#define FITHAW   _IO(0x00,4)
+The big question is if it makes sense taking out of a kernel at all.
+I still think the answer is no.
 
-And xfs_freeze calls XFS_IOC_FREEZE with a magic number 1, but what is 1?
-Instead, I'd like the sec to timeout on freeze API in order to thaw
-the filesystem automatically.  It can prevent a filesystem from staying
-frozen forever.
-(Because a freezer may cause a deadlock by accessing the frozen filesystem.)
+Or have you considered replacing die() and show_trace() etc. with a single
+panic("the tiny gods say this won't happen") yet? That would be roughly 
+equivalent.
 
-Any comments are very welcome.
-
-Cheers, Takashi 
-
+-Andi
