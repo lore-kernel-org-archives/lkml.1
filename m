@@ -1,112 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933366AbYBOGzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbYBOHJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933366AbYBOGzg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 01:55:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbYBOGzR
+	id S932289AbYBOHJM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 02:09:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762135AbYBOHI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 01:55:17 -0500
-Received: from mx2.suse.de ([195.135.220.15]:57798 "EHLO mx2.suse.de"
+	Fri, 15 Feb 2008 02:08:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59071 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754117AbYBOGzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 01:55:15 -0500
-Date: Thu, 14 Feb 2008 22:59:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Message-ID: <20080215065952.GB8916@suse.de>
-References: <200802111623.38478.elendil@planet.nl> <200802131239.14305.elendil@planet.nl> <20080213165837.GA10129@suse.de> <200802131955.53821.rjw@sisk.pl>
+	id S1761662AbYBOHI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 02:08:57 -0500
+Date: Fri, 15 Feb 2008 08:08:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Andi Kleen <andi@firstfloor.org>, torvalds@osdl.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix left over EFI cache mapping problems
+Message-ID: <20080215070843.GA6975@elte.hu>
+References: <20080214131317.GA27769@basil.nowhere.org> <20080214161218.GA28152@elte.hu> <1203050886.30010.19.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802131955.53821.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1203050886.30010.19.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 07:55:53PM +0100, Rafael J. Wysocki wrote:
-> On Wednesday, 13 of February 2008, Greg KH wrote:
-> > On Wed, Feb 13, 2008 at 12:39:13PM +0100, Frans Pop wrote:
-> > > On Tuesday 12 February 2008, Greg KH wrote:
-> > > > On Tue, Feb 12, 2008 at 09:39:14PM +0100, Frans Pop wrote:
-> > > > > On Monday 11 February 2008, Frans Pop wrote:
-> > > > > > In general 2.6.25 if looking quite good on my desktop, but there's
-> > > > > > one important issue: the system no longer powers off after shutdown.
-> > > > > > This works fine with 2.6.24.
-> > > > >
-> > > > > Don't ask me why, but bisection shows this commit to be the cause of
-> > > > > the failure to power off:
-> > > > > commit c10997f6575f476ff38442fa18fd4a0d80345f9d
-> > > > > Author: Greg Kroah-Hartman <gregkh@suse.de>
-> > > > > Date:   Thu Dec 20 08:13:05 2007 -0800
-> > > > >
-> > > > >     Kobject: convert drivers/* from kobject_unregister() to
-> > > > > kobject_put()
-> > > > >
-> > > > > Because it seemed somewhat unlikely, I have double checked this by
-> > > > > doing an extra compilation for this commit and its predecessor.
-> > > >
-> > > > What is the symptom of not powering off?
-> > > 
-> > > I already noticed yesterday that there's one hunk in that commit that's not
-> > > a straight replacement:
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index 9e102af..5efd555 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -1030,8 +1030,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
-> > > 
-> > >         unlock_policy_rwsem_write(cpu);
-> > > 
-> > > -       kobject_unregister(&data->kobj);
-> > > -
-> > >         kobject_put(&data->kobj);
-> > > 
-> > >         /* we need to make sure that the underlying kobj is actually
-> > > 
-> > > 
-> > > So, just on the off chance, I applied the patch below and bingo, the system
-> > > powers off again. I doubt this will be the correct solution, but just in
-> > > case it is, here's my signed off. A comment why the double put is needed
-> > > would probably be good though.
+
+* Huang, Ying <ying.huang@intel.com> wrote:
+
+> On Thu, 2008-02-14 at 17:12 +0100, Ingo Molnar wrote: 
+> > this is indeed a bug (we change the attributes for a larger area than 
+> > needed), but your fix is unclean. Find below a cleaner solution.
 > > 
-> > There is a bug in the cpufreq kref logic that makes this "double put"
-> > necessary.  A real fix has already been posted to solve this issue, and
-> > I think it should be on it's way to Linus for -rc2 already.
-> > 
-> > Please let me know if -rc2 comes out without this needed fix.
+> > Ying, if you agree with this fix could you please test and ACK it before 
+> > we push it to Linus? (this fix is also in the latest x86.git#mm)
 > 
-> Can you point me to the fix, please?
+> I think the patch following may be better, because it is possible that 
+> the EFI_PAGE_SHIFT and PAGE_SHIFT are different.
 
-I swear someone else sent this in, but my archives don't show it at all.
+right now, EFI page size is 4096:
 
-I think the patch below should solve this, but I need someone to test
-it.
+  include/linux/efi.h:#define EFI_PAGE_SHIFT          12
 
-thanks,
+i doubt we'll ever change PAGE_SIZE on x86 - ia64's variable lowlevel 
+pagesizes are not particularly useful IMO. I think we'll at most have 
+some generic kernel feature that allows a larger PAGE_CACHE_SHIFT - but 
+on the lowlevel MMU level we'll always stay at 4K.
 
-greg k-h
+and i doubt EFI_PAGE_SHIFT would want to (ever) go away from 12 either. 
 
----
- drivers/cpufreq/cpufreq.c |    8 --------
- 1 file changed, 8 deletions(-)
+So perhaps, at least as far as arch/x86/kernel/efi*.c files go, it would 
+be cleaner to just replace EFI_PAGE_SHIFT with PAGE_SHIFT and 
+EFI_PAGE_SIZE with PAGE_SIZE?
 
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -1006,14 +1006,6 @@ static int __cpufreq_remove_dev (struct 
- 	}
- #endif
- 
--
--	if (!kobject_get(&data->kobj)) {
--		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
--		cpufreq_debug_enable_ratelimit();
--		unlock_policy_rwsem_write(cpu);
--		return -EFAULT;
--	}
--
- #ifdef CONFIG_SMP
- 
- #ifdef CONFIG_HOTPLUG_CPU
+	Ingo
