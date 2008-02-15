@@ -1,65 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933312AbYBOPN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYBOPTX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933312AbYBOPN7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:13:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759524AbYBOPNu
+	id S1754665AbYBOPTX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:19:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYBOPTL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:13:50 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:45020 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758239AbYBOPNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:13:49 -0500
-Message-ID: <47B5AC27.1030107@garzik.org>
-Date: Fri, 15 Feb 2008 10:13:43 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 15 Feb 2008 10:19:11 -0500
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:34401 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751406AbYBOPTI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 10:19:08 -0500
+In-Reply-To: <1203009163.19205.42.camel@nimitz.home.sr71.net>
+References: <200802111724.12416.ossthema@de.ibm.com>	 <1202748429.8276.21.camel@nimitz.home.sr71.net>
+	 <200802131617.58646.ossthema@de.ibm.com>	 <OF64B9886B.CE795DED-ONC12573EF.002FFA8B-C12573EF.00301683@de.ibm.com> <1203009163.19205.42.camel@nimitz.home.sr71.net>
+Subject: Re: [PATCH] drivers/base: export gpl (un)register_memory_notifier
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: apw <apw@uk.ibm.com>, Greg KH <greg@kroah.com>,
+       Jan-Bernd Themann <THEMANN@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       netdev <netdev@vger.kernel.org>, ossthema@linux.vnet.ibm.com,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Thomas Q Klein <TKLEIN@de.ibm.com>, tklein@linux.ibm.com
+X-Mailer: Lotus Notes Release 8.0 August 02, 2007
+Message-ID: <OF58A8E0B3.B5CC265E-ONC12573F0.00496E2B-C12573F0.0049850F@de.ibm.com>
+From: Christoph Raisch <RAISCH@de.ibm.com>
+Date: Fri, 15 Feb 2008 14:22:55 +0100
+X-MIMETrack: Serialize by Router on D12ML067/12/M/IBM(Release 7.0.2FP2HF322 | September
+ 26, 2007) at 15/02/2008 16:19:05
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 00/14] [ISDN] HiSax hotplug conversion
-References: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org> <20080215132703.GG1178@uranus.ravnborg.org>
-In-Reply-To: <20080215132703.GG1178@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> On Tue, Jul 17, 2007 at 11:04:04PM -0400, Jeff Garzik wrote:
->> This is a refresh of an on-going work-in-progress:  convert the last
->> remaining users of pci_find_device() to the ISA/PCI/etc.  hotplug APIs
->> now in standard use.  After SCSI's gdth, ISDN's HiSax suite of drivers
->> are just about the last place using the older API.
->>
->> A few rough edges remain, and I'm not sure how much of ISDN userland
->> will explode (I have no ISDN hardware, nor much want any:)), but this
->> should get us almost all the way there.
->>
->> The patches are diff'd against 2.6.25-rc1.
->>
->> Comments/review/testing welcome.  Especially "it works" or "its dead"
->> testing.
-> 
-> Just ran checkpatch for the fun of it:
-> total: 28 errors, 86 warnings, 4896 lines checked
-> Most looks easy to fix.
 
-I'll take a look...  if its checkpatch stuff I caused, I'm happy to fix it.
+Dave Hansen <haveblue@us.ibm.com> wrote on 14.02.2008 18:12:43:
 
-But I'm trying to avoid cleanups for pre-existing conditions, i.e. 
-flagged by checkpatch only because I moved existing code to a new location.
+> On Thu, 2008-02-14 at 09:46 +0100, Christoph Raisch wrote:
+> > Dave Hansen <haveblue@us.ibm.com> wrote on 13.02.2008 18:05:00:
+> > > On Wed, 2008-02-13 at 16:17 +0100, Jan-Bernd Themann wrote:
+> > > > Constraints imposed by HW / FW:
+> > > > - eHEA has own MMU
+> > > > - eHEA  Memory Regions (MRs) are used by the eHEA MMU  to translate
+> > virtual
+> > > >   addresses to absolute addresses (like DMA mapped memory on a PCI
+bus)
+> > > > - The number of MRs is limited (not enough to have one MR per
+packet)
+> > >
+> > > Are there enough to have one per 16MB section?
+> >
+> > Unfortunately this won't work. This was one of our first ideas we
+tossed
+> > out,
+> > but the number of MRs will not be sufficient.
+>
+> Can you give a ballpark of how many there are to work with? 10? 100?
+> 1000?
+>
+It depends on HMC configuration, but in worst case the upper limit is in
+the 2 digits range.
 
-Down that path lies madness and way too much work :)  I didn't sign on 
-to clean up ISDN :)
+> > > But, I'm really not convinced that you can actually keep this map
+> > > yourselves.  It's not as simple as you think.  What happens if you
+get
+> > > on an LPAR with two sections, one 256MB@0x0 and another
+> > > 16MB@0x1000000000000000.  That's quite possible.  I think your
+vmalloc'd
+> > > array will eat all of memory.
+> > I'm glad you mention this part. There are many algorithms out there to
+> > handle this problem,
+> > hashes/trees/... all of these trade speed for smaller memory footprint.
+> > We based the table decission on the existing implementations of the
+> > architecture.
+> > Do you see such a case coming along for the next generation POWER
+systems?
+>
+> Dude.  It exists *TODAY*.  Go take a machine, add tens of gigabytes of
+> memory to it.  Then, remove all of the sections of memory in the middle.
+> You'll be left with a very sparse memory configuration that we *DO*
+> handle today in the core VM.  We handle it quite well, actually.
+>
+> The hypervisor does not shrink memory from the top down.  It pulls
+> things out of the middle and shuffles things around.  In fact, a NUMA
+> node's memory isn't even contiguous.
+>
+> Your code will OOM the machine in this case.  I consider the ehea driver
+> buggy in this regard.
 
-Anyway, thanks for the multiple comments, they will be taken into 
-account in the next update of these patches.
+Your comment indicates that the upper limit for memory to be set on HMC
+does not influence
+the upper limit of the partition physical address space.
+So our base assumption we discussed internally is wrong here.
+(conclusion see below)
+>
+> > I would guess these drastic changes would also require changes in base
+> > kernel.
+>
+> No, we actually solved those a couple years ago.
+>
+> > Will you provide a generic mapping system with a contiguous virtual
+address
+> > space
+> > like the ehea_bmap we can query? This would need to be a "stable" part
+of
+> > the implementation,
+> > including translation functions from kernel to
+nextgen_ehea_generic_bmap
+> > like virt_to_abs.
+>
+> Yes, that's a real possibility, especially if some other users for it
+> come forward.  We could definitely add something like that to the
+> generic code.  But, you'll have to be convincing that what we have now
+> is insufficient.
+>
+> Does this requirement:
+> "- MRs cover a contiguous virtual memory block (no holes)"
+> come from the hardware?
+>
+yes
+> Is that *EACH* MR?  OR all MRs?
+>
+each
+> Where does EHEA_BUSMAP_START come from?  Is that defined in the
+> hardware?  Have you checked to ensure that no other users might want a
+> chunk of memory in that area?
+>
+EHEA_BUSMAP_START is a value which has to match between the wqe
+virtual addresses and the MR used in them.
+Fortunately there's a simple answer on that one. Each MR has a own address
+space,
+so there's no need to check.
+A HEA MR actually has exactly the same attributes as a Infiniband MR with
+this hardware.
+send/receive processing is pretty much comparable to a Infiniband UD queue.
 
-	Jeff
+> Can you query the existing MRs?
+no
+> Not change them in place, but can you
+> query their contents?
+no
+>
+> > > That's why we have SPARSEMEM_EXTREME and SPARSEMEM_VMEMMAP
+implemented
+> > > in the core, so that we can deal with these kinds of problems, once
+and
+> > > *NOT* in every single little driver out there.
+> > >
+> > > > Functions to use while building ehea_bmap + MRs:
+> > > > - Use either the functions that are used by the memory hotplug
+system
+> > as
+> > > >   well, that means using the section defines + functions
+> > (section_nr_to_pfn,
+> > > >   pfn_valid)
+> > >
+> > > Basically, you can't use anything related to sections outside of the
+> > > core code.  You can use things like pfn_valid(), or you can create
+new
+> > > interfaces that are properly abstracted.
+> >
+> > We picked sections instead of PFNs because this keeps the ehea_bmap in
+a
+> > reasonable range
+> > on the existing systems.
+> > But if you provide a abstract method handling exactly the problem we
+> > mention
+> > we'll be happy to use that and dump our private implementation.
+>
+> One thing you can guarantee today is that things are contiguous up to
+> MAX_ORDER_NR_PAGES.  That's a symbol that is unlikely to change and is
+> much more appropriate than using sparsemem.  We could also give you a
+> nice new #define like MINIMUM_CONTIGUOUS_PAGES or something.  I think
+> that's what you really want.
 
+That's definitely the right direction.
+
+>From this mail thread I would conclude....
+memory space can have holes, and drivers shouldn't make any assumption when
+where and how.
+
+A translation from kernel to ehea_bmap space should be fast and predictable
+(ruling out hashes).
+If a driver doesn't know anything else about the mapping structure,
+the normal solution in kernel for this type of problem is a multi level
+look up table
+like pgd->pud->pmd->pte
+This doesn't sound right to be implemented in a device driver.
+
+We didn't see from the existing code that such a mapping to a contiguous
+space already exists.
+Maybe we've missed it.
+
+If the mapping is less random, the translation gets much simpler.
+MAX_ORDER_NR_PAGES helps here, is there more like that?
+
+
+Gruss / Regards
+Christoph Raisch + Jan-Bernd Themann
 
