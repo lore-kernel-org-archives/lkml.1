@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbYBOSwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbYBOSw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761215AbYBOSwk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:52:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760081AbYBOSwW
+	id S1761622AbYBOSw4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:52:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761116AbYBOSwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:52:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54646 "EHLO mail.dvmed.net"
+	Fri, 15 Feb 2008 13:52:39 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:54673 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759824AbYBOSwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:52:20 -0500
-Message-ID: <47B5DF56.9040707@garzik.org>
-Date: Fri, 15 Feb 2008 13:52:06 -0500
+	id S1761068AbYBOSwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 13:52:38 -0500
+Message-ID: <47B5DF74.3020801@garzik.org>
+Date: Fri, 15 Feb 2008 13:52:36 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Mark Lord <mlord@pobox.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>
-Subject: Re: [libata-dev #upstream-fixes] pata_legacy: don't call ata_host_detach()
- after initialization failure
-References: <alpine.LFD.1.00.0802101603240.2920@woody.linux-foundation.org> <20080212081816.GA17820@elte.hu> <20080212071452.5c58ae6d@laptopd505.fenrus.org> <20080213090159.GA21614@elte.hu> <47B2B653.7020408@gmail.com>
-In-Reply-To: <47B2B653.7020408@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Tejun Heo <htejun@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 06/11] ata: sparse fixes for pata_amd.c
+References: <3ad7c41048d88a3f8aad098570b9fac9ff719aff.1202965399.git.harvey.harrison@gmail.com> <1202966060.2748.20.camel@brick>
+In-Reply-To: <1202966060.2748.20.camel@brick>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -33,20 +29,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> ata_host_detach() detaches an attached port and shouldn't be called on
-> a port which hasn't been attached yet.  pata_legacy incorrectly calls
-> ata_host_detach() on unattached port after initialization failure
-> causing oops.  Fix it.
+Harvey Harrison wrote:
+> drop return statement.
+> drivers/ata/pata_amd.c:149:2: warning: returning void-valued expression
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Arjan van de Ven <arjan@infradead.org>
+> Commit ce54d1616302117fa98513ae916bb3333e1c02ea pata_amd: update mode selection for NV PATAs
+> 
+> added the initializer for nv_mode_filter but missed deleting the previously
+> set mode_filter
+> 
+> drivers/ata/pata_amd.c:509:3: warning: Initializer entry defined twice
+> drivers/ata/pata_amd.c:521:3:   also defined here
+> drivers/ata/pata_amd.c:544:3: warning: Initializer entry defined twice
+> drivers/ata/pata_amd.c:556:3:   also defined here
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 > ---
->  drivers/ata/pata_legacy.c |    2 --
->  1 file changed, 2 deletions(-)
+>  drivers/ata/pata_amd.c |    7 ++-----
+>  1 files changed, 2 insertions(+), 5 deletions(-)
 
-applied
+applied 6-10
 
 
