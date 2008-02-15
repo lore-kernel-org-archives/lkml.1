@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932767AbYBOALx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765583AbYBOAYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932767AbYBOALx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbYBOALp
+	id S1765583AbYBOAYS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759915AbYBOAYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 19:11:45 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:48356 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757130AbYBOALn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:11:43 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: a7839e96 (PNP: increase max resources) breaks my ALSA intel8x0 sound card
-Date: Thu, 14 Feb 2008 17:13:22 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       Andrew Morton <akpm@linux-foundation.org>, avuton@gmail.com,
-       yakui.zhao@intel.com, shaohua.li@intel.com, trenn@suse.de,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       alsa-devel@alsa-project.org
-References: <fa.Kmpf0B4W44W1VefIME7+BnfUouY@ifi.uio.no> <alpine.LFD.1.00.0802141456370.6110@woody.linux-foundation.org> <alpine.LFD.1.00.0802141503470.6110@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802141503470.6110@woody.linux-foundation.org>
+	Thu, 14 Feb 2008 19:24:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32860 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759413AbYBOAYA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 19:24:00 -0500
+Date: Fri, 15 Feb 2008 01:23:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] kprobes: remove sparse warnings from x86
+Message-ID: <20080215002344.GA26095@elte.hu>
+References: <1202945433.18204.28.camel@brick> <47B4595D.6030900@redhat.com> <1203012094.2748.51.camel@brick>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802141713.23461.bjorn.helgaas@hp.com>
+In-Reply-To: <1203012094.2748.51.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 February 2008 04:14:45 pm Linus Torvalds wrote:
-> 
-> On Thu, 14 Feb 2008, Linus Torvalds wrote:
+
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
+
+> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 > > 
-> > It should insert the resource to the root resource (or a bridge resource), 
-> > or not at all. If somebody else has already inserted a real device 
-> > resource, we already know about it, and the PnP information is going to be 
-> > just making things worse.
+> > It looks good to me.
+> > 
+> > Acked-by: Masami Hiramatsu <mhiramat@redhat.com>
+> > 
+> > Thank you,
 > 
-> Hmm. The approach I'd take is to always insert the thing into the root 
-> resource. If we do want to let PnP insert it into some lower-level bus, 
-> we'd need to have some way to distinguish "bus" from "device", and we 
-> don't.
-> 
-> So right now, how about just making PnP/ACPI just use
-> 
-> 	root = (flags & IORESOURCE_MEM) ? iomem_resource : ioport_resource;
-> 	request_resource(root, newresource);
-> 
-> which is what we do for the e820 map and the other special resources we 
-> know about (ie the magic resources we make up ourselves like video ram and 
-> our standard PCI/ISA resource lists like the <0x100 DMA/PIC/FPU IO ports 
-> etc)
+> Ingo, could you take this in x86.git?
 
-That makes sense, but ...  there are BIOSes that actually list nested
-resources, e.g., http://bugzilla.kernel.org/show_bug.cgi?id=9514#c29 :
+thanks Harvey, applied.
 
-  [000000290 - 000000294]  Motherboard resources
-  [000000290 - 00000029F]  Motherboard resources
-
-We'd have to make sure we don't start with the 0x290-0x294 resource,
-because then we'll fail when we try to reserve 0x290-0x29f, and we
-really should avoid using the 0x295-0x2f9 piece as well.
-
-And even if we do figure out the "outermost" resources, I'd worry
-that some BIOS will have separate ACPI devices that have overlapping
-resources.  Then Murphy's Law says that we'll find the device with
-the smaller resource first, reserve it, then find a device with an
-enclosing resource, and leave something unreserved.
-
-Maybe that's still better than a quirk; I don't know.  I guess it's
-pretty ugly either way.
-
-Bjorn
+	Ingo
