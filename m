@@ -1,135 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933132AbYBODqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764256AbYBOEBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933132AbYBODqW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 22:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764451AbYBODqF
+	id S1764256AbYBOEBo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 23:01:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbYBOEBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 22:46:05 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:17166 "EHLO
+	Thu, 14 Feb 2008 23:01:35 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:39124 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764158AbYBODqC (ORCPT
+	with ESMTP id S1753137AbYBOEBd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 22:46:02 -0500
+	Thu, 14 Feb 2008 23:01:33 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ltkvir/INcuqLK+vaiMtxKn7lcHMeS/tiO5gczZZluHElmahSKTBchwPjpXeIV1amzA+sTXHShutWXw/1zCbZcYAsKWrnUTqbzclSg16e2TsZ987v9hJlM9jXiYHR/Kr4C2drNsqWb5dxy9RA1CgPvfMBEKUwmIPDfCCPchiyBM=
-Message-ID: <86802c440802141945v85a2754i31bf7908957fe5a@mail.gmail.com>
-Date: Thu, 14 Feb 2008 19:45:58 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [2.6.25-rc1] System no longer powers off after shutdown
-Cc: "Greg KH" <gregkh@suse.de>, "Frans Pop" <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <86802c440802141814t39b8082bx7ceb7eaf37c1142c@mail.gmail.com>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:references:x-google-sender-auth;
+        b=dzG4x+AzZFdgiNDDwtlXyCOw8U/oQ67Wt5BHkmYiMknhGpSYbZatdF6rbDnlCABQf6HMsVViK1H57oak2jEdO4TGWB7Mv5aaWjU46mc6ONu2b5hfB/aK/vWhgsyiyXFywlelQE5EdQcb57mk6OMqRS28FaQ2c6rKbHVMUhMgLoA=
+Message-ID: <76366b180802142001k3b2fb5e3k84ad4726b58d5a86@mail.gmail.com>
+Date: Thu, 14 Feb 2008 23:01:30 -0500
+From: "Andrew Paprocki" <andrew@ishiboo.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] [WATCHDOG] it8712f_wdt support for 16-bit timeout values, WDIOC_GETSTATUS
+Cc: linux-kernel@vger.kernel.org, wim@iguana.be
+In-Reply-To: <20080214135059.b72570f0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200802111623.38478.elendil@planet.nl>
-	 <200802122139.14840.elendil@planet.nl>
-	 <20080212205622.GA21986@suse.de>
-	 <200802131239.14305.elendil@planet.nl>
-	 <20080213165837.GA10129@suse.de>
-	 <86802c440802141538m44d64b6as827426174874979d@mail.gmail.com>
-	 <20080214234832.GA14363@elte.hu>
-	 <86802c440802141814t39b8082bx7ceb7eaf37c1142c@mail.gmail.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_4945_29939554.1203048090155"
+References: <76366b180802101911q2df5dc7i5d77840815252c88@mail.gmail.com>
+	 <20080214135059.b72570f0.akpm@linux-foundation.org>
+X-Google-Sender-Auth: 619e57877c1fc5f3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 6:14 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-> On Thu, Feb 14, 2008 at 3:48 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  >
->  >  * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->  >
->  >  > after disable cpufreq, i got
->  >  >
->  >  > ACPI: Preparing to enter system sleep state S5
->  >  > Disabling non-boot CPUs ...
->  >  > kvm: disabling virtualization on CPU1
->  >  > CPU 1 is now offline
->  >  > CPU1 is down
->  >  > kvm: disabling virtualization on CPU2
->  >  > CPU 2 is now offline
->  >  > ================> hang here.
->  >  >
->  >  > but x86.git/mm could go through down all the cpus....
->  >  >
->  >  > interesting...
->  >
->  >  i suspect some kobject related race, and i have the feeling this all is
->  >  timing dependent.
->  >
->  >  Andrew started seeing reboot hangs roughly around the time when the
->  >  kobject changes went upstream. Given that x86.git had flux in that
->  >  timeframe too i couldnt be sure what caused them.
+------=_Part_4945_29939554.1203048090155
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Sorry, try the attached file. I tried to send via IMAP draft, but I
+suppose it is still not configured right.
+
+Thanks,
+-Andrew
+
+On Thu, Feb 14, 2008 at 4:50 PM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Sun, 10 Feb 2008 22:11:15 -0500
+>  "Andrew Paprocki" <andrew@ishiboo.com> wrote:
 >
->  it seems only happen
->  1. first hang with cpufreq enabled.
->  2. reboot to kernel with cpufreq disable will have problem.
+>  > This patch adds support for 16-bit watchdog timeout values which are
+>  > available in chip revisions >= 0x08. Values <= 65535 are seconds precision,
+>  > otherwise minutes precision is used up to a maximum value of 3932100. Added
+>  > implementation for WDIOC_GETSTATUS which checks the WDT status bit in the
+>  > WDT control register.
+>  >
+>  > Signed-off-by: Andrew Paprocki <andrew@ishiboo.com>
+>  > ---
+>  >   drivers/watchdog/it8712f_wdt.c |   82
+>  > ++++++++++++++++++++++++++++++++--------
+>  >   1 files changed, 66 insertions(+), 16 deletions(-)
+>  >
+>  > diff --git a/drivers/watchdog/it8712f_wdt.c b/drivers/watchdog/it8712f_wdt.c
+>  > index 1b6d7d1..803c699 100644
+>  > --- a/drivers/watchdog/it8712f_wdt.c
+>  > +++ b/drivers/watchdog/it8712f_wdt.c
 >
->  wonder if different cpu freq out sync and next kernel with reboot
->  doesn't have cpufreq so it ....
->  -- with warm reset doesn't do the right job to sync freq again.
+>  The patch is wordwrapped, space-stuffed and has tabs replaced with spaces.
+>  You hit the trifecta!
+>
+>  Please resend.  If you'd prefer to use an attachment rather than spending
+>  half an hour wrestling your email client, feel free to do so ;)
+>
+>
 
-ACPI: Preparing to enter system sleep state S5
-Disabling non-boot CPUs ...
-kvm: disabling virtualization on CPU1
-CPU 1 is now offline
-1
-2
-3
-4
-5
-CPU1 is down
-kvm: disabling virtualization on CPU2
-CPU 2 is now offline
-1
-2
-3
-4
-5
-CPU2 is down
-kvm: disabling virtualization on CPU3
-CPU 3 is now offline
-========> some time later
-Clocksource tsc unstable (delta = 515397918052 ns)
-Time: hpet clocksource has been installed.
+------=_Part_4945_29939554.1203048090155
+Content-Type: text/plain;
+ name=0001-WATCHDOG-it8712f_wdt-support-for-16-bit-timeout-values-WDIOC_GETSTATUS.txt
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fco7k6240
+Content-Disposition: attachment;
+ filename=0001-WATCHDOG-it8712f_wdt-support-for-16-bit-timeout-values-WDIOC_GETSTATUS.txt
 
-
-it hangs in
-
-raw_notifier_call_chain(&cpu_chain, CPU_DEAD | mode, hcpu)== NOTIFY_BAD);
-
-there are several nb, not sure which one cause hang.
-
-8 hrtimer.c        hrtimers_init            1505
-register_cpu_notifier(&hrtimers_nb);
-9 rcuclassic.c     __rcu_init                570 register_cpu_notifier(&rcu_nb);
-a rcupreempt.c     __rcu_init                892
-register_cpu_notifier(&rcu_nb); ===> not used
-b sched.c          migration_init           5951
-register_cpu_notifier(&migration_notifier);
-c softirq.c        spawn_ksoftirqd           645
-register_cpu_notifier(&cpu_nfb);
-d softlockup.c     spawn_softlockup_task     310
-register_cpu_notifier(&cpu_nfb);
-e timer.c          init_timers              1367
-register_cpu_notifier(&timers_nb);
-f page-writeback.c page_writeback_init       775
-register_cpu_notifier(&ratelimit_nb);
-g page_alloc.c     setup_per_cpu_pageset    2744
-register_cpu_notifier(&pageset_notifier);
-h slab.c           kmem_cache_init          1638
-register_cpu_notifier(&cpucache_notifier);  ==> not used
-i slub.c           kmem_cache_init          3036
-register_cpu_notifier(&slab_notifier);
-j vmstat.c         setup_vmstat              855
-register_cpu_notifier(&vmstat_notifier);
-k kvm_main.c       kvm_init                 1328 r =
-register_cpu_notifier(&kvm_cpu_notifier);
-
-maybe the one in softlockup.c?
-
-YH
+RnJvbSAyM2NlMDRlNTgwZjZmYTJhMjRlMjQ3YzNhZDg1MWRlMGY3ZTZhODc1IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBBbmRyZXcgUGFwcm9ja2kgPGFuZHJld0Bpc2hpYm9vLmNvbT4K
+RGF0ZTogVGh1LCAxNCBGZWIgMjAwOCAyMjo1Mjo0NCAtMDUwMApTdWJqZWN0OiBbUEFUQ0hdIFtX
+QVRDSERPR10gaXQ4NzEyZl93ZHQgc3VwcG9ydCBmb3IgMTYtYml0IHRpbWVvdXQgdmFsdWVzLCBX
+RElPQ19HRVRTVEFUVVMKClRoaXMgcGF0Y2ggYWRkcyBzdXBwb3J0IGZvciAxNi1iaXQgd2F0Y2hk
+b2cgdGltZW91dCB2YWx1ZXMgd2hpY2ggYXJlCmF2YWlsYWJsZSBpbiBjaGlwIHJldmlzaW9ucyA+
+PSAweDA4LiBWYWx1ZXMgPD0gNjU1MzUgYXJlIHNlY29uZHMgcHJlY2lzaW9uLApvdGhlcndpc2Ug
+bWludXRlcyBwcmVjaXNpb24gaXMgdXNlZCB1cCB0byBhIG1heGltdW0gdmFsdWUgb2YgMzkzMjEw
+MC4gQWRkZWQKaW1wbGVtZW50YXRpb24gZm9yIFdESU9DX0dFVFNUQVRVUyB3aGljaCBjaGVja3Mg
+dGhlIFdEVCBzdGF0dXMgYml0IGluIHRoZQpXRFQgY29udHJvbCByZWdpc3Rlci4KClNpZ25lZC1v
+ZmYtYnk6IEFuZHJldyBQYXByb2NraSA8YW5kcmV3QGlzaGlib28uY29tPgotLS0KIGRyaXZlcnMv
+d2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyB8ICAgNzggKysrKysrKysrKysrKysrKysrKysrKysrKysr
+KysrKystLS0tLS0tCiAxIGZpbGVzIGNoYW5nZWQsIDY0IGluc2VydGlvbnMoKyksIDE0IGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYyBiL2Ry
+aXZlcnMvd2F0Y2hkb2cvaXQ4NzEyZl93ZHQuYwppbmRleCAxYjZkN2QxLi4xZWZjYWQzIDEwMDY0
+NAotLS0gYS9kcml2ZXJzL3dhdGNoZG9nL2l0ODcxMmZfd2R0LmMKKysrIGIvZHJpdmVycy93YXRj
+aGRvZy9pdDg3MTJmX3dkdC5jCkBAIC03LDcgKzcsOCBAQAogICoKICAqCWRyaXZlcnMvY2hhci93
+YXRjaGRvZy9zY3gyMDBfd2R0LmMKICAqCWRyaXZlcnMvaHdtb24vaXQ4Ny5jCi0gKglJVDg3MTJG
+IEVDLUxQQyBJL08gUHJlbGltaW5hcnkgU3BlY2lmaWNhdGlvbiAwLjkuMi5wZGYKKyAqCUlUODcx
+MkYgRUMtTFBDIEkvTyBQcmVsaW1pbmFyeSBTcGVjaWZpY2F0aW9uIDAuOC4yCisgKglJVDg3MTJG
+IEVDLUxQQyBJL08gUHJlbGltaW5hcnkgU3BlY2lmaWNhdGlvbiAwLjkuMwogICoKICAqCVRoaXMg
+cHJvZ3JhbSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBhbmQvb3IK
+ICAqCW1vZGlmeSBpdCB1bmRlciB0aGUgdGVybXMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBM
+aWNlbnNlIGFzCkBAIC00MCw2ICs0MSw3IEBAIE1PRFVMRV9ERVNDUklQVElPTigiSVQ4NzEyRiBX
+YXRjaGRvZyBEcml2ZXIiKTsKIE1PRFVMRV9MSUNFTlNFKCJHUEwiKTsKIE1PRFVMRV9BTElBU19N
+SVNDREVWKFdBVENIRE9HX01JTk9SKTsKCitzdGF0aWMgaW50IG1heF91bml0cyA9IDI1NTsKIHN0
+YXRpYyBpbnQgbWFyZ2luID0gNjA7CQkvKiBpbiBzZWNvbmRzICovCiBtb2R1bGVfcGFyYW0obWFy
+Z2luLCBpbnQsIDApOwogTU9EVUxFX1BBUk1fREVTQyhtYXJnaW4sICJXYXRjaGRvZyBtYXJnaW4g
+aW4gc2Vjb25kcyIpOwpAQCAtNTEsNiArNTMsNyBAQCBNT0RVTEVfUEFSTV9ERVNDKG5vd2F5b3V0
+LCAiRGlzYWJsZSB3YXRjaGRvZyBzaHV0ZG93biBvbiBjbG9zZSIpOwogc3RhdGljIHN0cnVjdCBz
+ZW1hcGhvcmUgaXQ4NzEyZl93ZHRfc2VtOwogc3RhdGljIHVuc2lnbmVkIGV4cGVjdF9jbG9zZTsK
+IHN0YXRpYyBzcGlubG9ja190IGlvX2xvY2s7CitzdGF0aWMgdW5zaWduZWQgY2hhciByZXZpc2lv
+bjsKCiAvKiBEb2cgRm9vZCBhZGRyZXNzIC0gV2UgdXNlIHRoZSBnYW1lIHBvcnQgYWRkcmVzcyAq
+Lwogc3RhdGljIHVuc2lnbmVkIHNob3J0IGFkZHJlc3M7CkBAIC0xMDgsNiArMTExLDE1IEBAIHN1
+cGVyaW9faW53KGludCByZWcpCiAJcmV0dXJuIHZhbDsKIH0KCitzdGF0aWMgdm9pZAorc3VwZXJp
+b19vdXR3KGludCB2YWwsIGludCByZWcpCit7CisJb3V0YihyZWcrKywgUkVHKTsKKwlvdXRiKCh2
+YWwgPj4gOCkgJiAweGZmLCBWQUwpOworCW91dGIocmVnLCBSRUcpOworCW91dGIodmFsICYgMHhm
+ZiwgVkFMKTsKK30KKwogc3RhdGljIGlubGluZSB2b2lkCiBzdXBlcmlvX3NlbGVjdChpbnQgbGRu
+KQogewpAQCAtMTQzLDE1ICsxNTUsMzMgQEAgc3RhdGljIHZvaWQKIGl0ODcxMmZfd2R0X3VwZGF0
+ZV9tYXJnaW4odm9pZCkKIHsKIAlpbnQgY29uZmlnID0gV0RUX09VVF9LUlNUIHwgV0RUX09VVF9Q
+V1JPSzsKLQotCXByaW50ayhLRVJOX0lORk8gTkFNRSAiOiB0aW1lciBtYXJnaW4gJWQgc2Vjb25k
+c1xuIiwgbWFyZ2luKTsKLQotCS8qIFRoZSB0aW1lb3V0IHJlZ2lzdGVyIG9ubHkgaGFzIDhiaXRz
+IHdpZGUgKi8KLQlpZiAobWFyZ2luIDwgMjU2KQotCQljb25maWcgfD0gV0RUX1VOSVRfU0VDOwkv
+KiBlbHNlIFVOSVQgYXJlIE1JTlVURVMgKi8KKwlpbnQgdW5pdHMgPSBtYXJnaW47CisKKwkvKiBT
+d2l0Y2ggdG8gbWludXRlcyBwcmVjaXNpb24gaWYgdGhlIGNvbmZpZ3VyZWQgbWFyZ2luCisJICog
+dmFsdWUgZG9lcyBub3QgZml0IHdpdGhpbiB0aGUgcmVnaXN0ZXIgd2lkdGguCisJICovCisJaWYg
+KHVuaXRzIDw9IG1heF91bml0cykgeworCQljb25maWcgfD0gV0RUX1VOSVRfU0VDOyAvKiBlbHNl
+IFVOSVQgaXMgTUlOVVRFUyAqLworCQlwcmludGsoS0VSTl9JTkZPIE5BTUUgIjogdGltZXIgbWFy
+Z2luICVkIHNlY29uZHNcbiIsIHVuaXRzKTsKKwl9IGVsc2UgeworCQl1bml0cyAvPSA2MDsKKwkJ
+cHJpbnRrKEtFUk5fSU5GTyBOQU1FICI6IHRpbWVyIG1hcmdpbiAlZCBtaW51dGVzXG4iLCB1bml0
+cyk7CisJfQogCXN1cGVyaW9fb3V0Yihjb25maWcsIFdEVF9DT05GSUcpOwoKLQlzdXBlcmlvX291
+dGIoKG1hcmdpbiA+IDI1NSkgPyAobWFyZ2luIC8gNjApIDogbWFyZ2luLCBXRFRfVElNRU9VVCk7
+CisJaWYgKHJldmlzaW9uID49IDB4MDgpCisJCXN1cGVyaW9fb3V0dyh1bml0cywgV0RUX1RJTUVP
+VVQpOworCWVsc2UKKwkJc3VwZXJpb19vdXRiKHVuaXRzLCBXRFRfVElNRU9VVCk7Cit9CisKK3N0
+YXRpYyBpbnQKK2l0ODcxMmZfd2R0X2dldF9zdGF0dXModm9pZCkKK3sKKwlpZiAoc3VwZXJpb19p
+bmIoV0RUX0NPTlRST0wpICYgMHgwMSkKKwkJcmV0dXJuIFdESU9GX0NBUkRSRVNFVDsKKwllbHNl
+CisJCXJldHVybiAwOwogfQoKIHN0YXRpYyB2b2lkCkBAIC0yMzQsNyArMjY0LDcgQEAgaXQ4NzEy
+Zl93ZHRfaW9jdGwoc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUsCiAJCS5m
+aXJtd2FyZV92ZXJzaW9uID0gMSwKIAkJLm9wdGlvbnMgPSBXRElPRl9TRVRUSU1FT1VUIHwgV0RJ
+T0ZfS0VFUEFMSVZFUElORywKIAl9OwotCWludCBuZXdfbWFyZ2luOworCWludCB2YWx1ZTsKCiAJ
+c3dpdGNoIChjbWQpIHsKIAlkZWZhdWx0OgpAQCAtMjQ0LDE3ICsyNzQsMjcgQEAgaXQ4NzEyZl93
+ZHRfaW9jdGwoc3RydWN0IGlub2RlICppbm9kZSwgc3RydWN0IGZpbGUgKmZpbGUsCiAJCQlyZXR1
+cm4gLUVGQVVMVDsKIAkJcmV0dXJuIDA7CiAJY2FzZSBXRElPQ19HRVRTVEFUVVM6CisJCXN1cGVy
+aW9fZW50ZXIoKTsKKwkJc3VwZXJpb19zZWxlY3QoTEROX0dQSU8pOworCisJCXZhbHVlID0gaXQ4
+NzEyZl93ZHRfZ2V0X3N0YXR1cygpOworCisJCXN1cGVyaW9fZXhpdCgpOworCisJCXJldHVybiBw
+dXRfdXNlcih2YWx1ZSwgcCk7CiAJY2FzZSBXRElPQ19HRVRCT09UU1RBVFVTOgogCQlyZXR1cm4g
+cHV0X3VzZXIoMCwgcCk7CiAJY2FzZSBXRElPQ19LRUVQQUxJVkU6CiAJCWl0ODcxMmZfd2R0X3Bp
+bmcoKTsKIAkJcmV0dXJuIDA7CiAJY2FzZSBXRElPQ19TRVRUSU1FT1VUOgotCQlpZiAoZ2V0X3Vz
+ZXIobmV3X21hcmdpbiwgcCkpCisJCWlmIChnZXRfdXNlcih2YWx1ZSwgcCkpCiAJCQlyZXR1cm4g
+LUVGQVVMVDsKLQkJaWYgKG5ld19tYXJnaW4gPCAxKQorCQlpZiAodmFsdWUgPCAxKQorCQkJcmV0
+dXJuIC1FSU5WQUw7CisJCWlmICh2YWx1ZSA+IChtYXhfdW5pdHMgKiA2MCkpCiAJCQlyZXR1cm4g
+LUVJTlZBTDsKLQkJbWFyZ2luID0gbmV3X21hcmdpbjsKKwkJbWFyZ2luID0gdmFsdWU7CiAJCXN1
+cGVyaW9fZW50ZXIoKTsKIAkJc3VwZXJpb19zZWxlY3QoTEROX0dQSU8pOwoKQEAgLTI2Miw2ICsz
+MDIsNyBAQCBpdDg3MTJmX3dkdF9pb2N0bChzdHJ1Y3QgaW5vZGUgKmlub2RlLCBzdHJ1Y3QgZmls
+ZSAqZmlsZSwKCiAJCXN1cGVyaW9fZXhpdCgpOwogCQlpdDg3MTJmX3dkdF9waW5nKCk7CisJCS8q
+IEZhbGwgdGhyb3VnaCAqLwogCWNhc2UgV0RJT0NfR0VUVElNRU9VVDoKIAkJaWYgKHB1dF91c2Vy
+KG1hcmdpbiwgcCkpCiAJCQlyZXR1cm4gLUVGQVVMVDsKQEAgLTMzNiw5ICszNzcsMTggQEAgaXQ4
+NzEyZl93ZHRfZmluZCh1bnNpZ25lZCBzaG9ydCAqYWRkcmVzcykKIAl9CgogCWVyciA9IDA7Ci0J
+cHJpbnRrKEtFUk5fREVCVUcgTkFNRSAiOiBGb3VuZCBJVCUwNHhGIGNoaXAgcmV2aXNpb24gJWQg
+LSAiCisJcmV2aXNpb24gPSBzdXBlcmlvX2luYihERVZSRVYpICYgMHgwZjsKKworCS8qIExhdGVy
+IHJldmlzaW9ucyBoYXZlIDE2LWJpdCB2YWx1ZXMgcGVyIGRhdGFzaGVldCAwLjkuMSAqLworCWlm
+IChyZXZpc2lvbiA+PSAweDA4KQorCQltYXhfdW5pdHMgPSA2NTUzNTsKKworCWlmIChtYXJnaW4g
+PiAobWF4X3VuaXRzICogNjApKQorCQltYXJnaW4gPSAobWF4X3VuaXRzICogNjApOworCisJcHJp
+bnRrKEtFUk5fSU5GTyBOQU1FICI6IEZvdW5kIElUJTA0eEYgY2hpcCByZXZpc2lvbiAlZCAtICIK
+IAkJInVzaW5nIERvZ0Zvb2QgYWRkcmVzcyAweCV4XG4iLAotCQljaGlwX3R5cGUsIHN1cGVyaW9f
+aW5iKERFVlJFVikgJiAweDBmLCAqYWRkcmVzcyk7CisJCWNoaXBfdHlwZSwgcmV2aXNpb24sICph
+ZGRyZXNzKTsKCiBleGl0OgogCXN1cGVyaW9fZXhpdCgpOwotLQoxLjQuNC40Cgo=
+------=_Part_4945_29939554.1203048090155--
