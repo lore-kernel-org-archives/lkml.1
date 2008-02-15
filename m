@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932772AbYBOJy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933006AbYBOJ4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932772AbYBOJy7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 04:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756843AbYBOJyv
+	id S933006AbYBOJ4O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 04:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbYBOJz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 04:54:51 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41315 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755727AbYBOJyt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 04:54:49 -0500
-Date: Fri, 15 Feb 2008 03:54:45 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Andi Kleen <ak@suse.de>
-Cc: clameter@sgi.com, rientjes@google.com, Lee.Schermerhorn@hp.com,
-       mel@csn.ul.ie, linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       travis@sgi.com
-Subject: Re: [RFC] bitmap relative operator for mempolicy extensions
-Message-Id: <20080215035445.84be9287.pj@sgi.com>
-In-Reply-To: <200802142102.41420.ak@suse.de>
-References: <20080214123528.25274.84387.sendpatchset@jackhammer.engr.sgi.com>
-	<Pine.LNX.4.64.0802141126340.375@schroedinger.engr.sgi.com>
-	<200802142102.41420.ak@suse.de>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Fri, 15 Feb 2008 04:55:59 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4364 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757249AbYBOJz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 04:55:57 -0500
+Date: Fri, 15 Feb 2008 09:55:44 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>, hpa@zytor.com,
+       rjw@sisk.pl, sam@ravnborg.org
+Subject: Re: [patch] move wakeup code to .c
+Message-ID: <20080215095544.GA4667@ucw.cz>
+References: <20080210222723.GA1865@elf.ucw.cz> <200802150135.07127.lenb@kernel.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802150135.07127.lenb@kernel.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi, responding to Christoph, wrote:
-> You're saying the kernel should use these relative masks internally?
+Hi!
 
-In a conversation with Christoph Thursday afternoon, I got the
-impression that he liked the idea of using some more compact
-representation of sparse collections of CPUs (or Nodes) than cpumask_t.
-We end up with some big arrays of big cpumask_t's and nodemask_t's,
-mostly filled with zero bits ... wasting memory.
+> scripts/checkpatch.pl
+> ERROR: do not initialise externals to 0 or NULL
+> #113: FILE: arch/x86/boot/video-mode.c:29:
+> +int do_restore = 0;    /* Screen contents changed during mode flip */
 
-I'll agree with Christoph on that, though I'd agree with you that this
-bitmap relative operator is probably -not- the key to that more compact
-representation.
+We were doing file move with minimal changes.
 
-The place that my thinking grinds to a halt on this is dealing with the
-problem that all the more compact representations of a collection of
-CPU numbers that I can think of either (1) are variable length (usually
-leading to dynamic storage), or (2) impose some artificial restriction
-on how many elements they can represent, or perhaps (3) use some
-complex data structure to enumerate just the actual elements of the
-power set of all cpus (or all nodes) that we actually use, which is
-vastly less than the set of all possible subsets of such.
+> ERROR: need a space before the open parenthesis '('
+> #710: FILE: arch/x86/kernel/acpi/realmode/wakemain.c:70:
+> +               while(1);
 
-You address this artificial restriction yourself, in another message:
-> I would rather just use arrays of integers in this case with a
-> reasonable fixed upper limit (e.g. 16 or 32 -- if there are ever
-> >32 thread x86 CPUs presumably they will require an updated cpufreq
-> driver too...)
+Bogus warning.
 
-That might be the key here.  Perhaps as you suggest we can identify
-some places where we can replace sparse cpumask_t's with (fixed length?)
-arrays of integers, with little or no practical loss of generality, and
-with nice reductions in memory footprint.
-
-Mike Travis <travis@sgi.com> -- do you see some places where replacing
-cpumask_t's with fixed arrays of 16 or 32 CPU numbers would be a big
-enough win to be worth the effort?
-
+I'll fix al but this one, but could we do it as a followup patch? I'm
+currently at holidays, moving .S code into .c is rather
+good/important, and it should get testing ASAP.
+							Pavel
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
