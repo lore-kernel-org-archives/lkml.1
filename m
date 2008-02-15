@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760647AbYBOM5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbYBONIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760647AbYBOM5E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 07:57:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbYBOM4y
+	id S1758705AbYBONIH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 08:08:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbYBONH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 07:56:54 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:37586 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbYBOM4x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 07:56:53 -0500
-Date: Fri, 15 Feb 2008 14:32:38 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Jan Kiszka <jan.kiszka@siemens.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Jan Kiszka <jan.kiszka@web.de>
-Subject: Re: [RFC][PATCH] modular kgdb-light (was: Re: [git pull] kgdb-light -v10)
-Message-ID: <20080215133238.GA28942@one.firstfloor.org>
-References: <20080212100327.GA30873@one.firstfloor.org> <20080212112747.GA1569@elte.hu> <20080212121903.GA419@one.firstfloor.org> <20080212123839.GA15360@elte.hu> <20080212135027.GA1343@one.firstfloor.org> <20080212152846.GC3078@elte.hu> <20080212161152.GA3281@one.firstfloor.org> <alpine.LFD.1.00.0802120811010.2920@woody.linux-foundation.org> <20080212170711.GB4191@one.firstfloor.org> <47B58718.9020105@siemens.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B58718.9020105@siemens.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 15 Feb 2008 08:07:56 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22084 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750995AbYBONH4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 08:07:56 -0500
+Message-ID: <47B58EAA.8040405@msgid.tls.msk.ru>
+Date: Fri, 15 Feb 2008 16:07:54 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Implement barrier support for single device DM devices
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com>
+In-Reply-To: <20080215122002.GM29914@agk.fab.redhat.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 01:35:36PM +0100, Jan Kiszka wrote:
-> Andi Kleen wrote:
-> >> This includes things like having "breakpoint reservations" (discussed 
-> >> earlier) and just generally trying to add lots of infrastructure to make 
-> >> kgdb "fit in" to the kernel.
-> > 
-> > I think that part is actually mostly ok now (old kgdb stubs were
-> > much worse in this regard) 
-> > 
-> > I still think the ultimative proof for this would be working
-> > "modprobe kgdb" though.
-> 
-> To pick up this idea again I did the experimental patch below. It
-> applies against Jason's latest kgdb-light patch queue:
+Alasdair G Kergon wrote:
+> On Fri, Feb 15, 2008 at 01:08:21PM +0100, Andi Kleen wrote:
+>> Implement barrier support for single device DM devices
+>  
+> Thanks.  We've got some (more-invasive) dm patches in the works that
+> attempt to use flushing to emulate barriers where we can't just
+> pass them down like that.
 
-Very nice! If it's that simple then the kgdb integration is really
-clean.
+I wonder if it's worth the effort to try to implement this.
 
-> 
-> http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=shortlog;h=for_ingo
-> 
-> The patch nicely demonstrates what deeper dependencies on kernel
-> services currently exist in kgdb-light. The following symbols were
-> unresolvable:
-> 
+As far as I understand (*), if a filesystem realizes that the
+underlying block device does not support barriers, it will
+switch to using regular flushes instead - isn't it the same
+thing as you're trying to do on an MD level?
 
-Some comments on the specific patch:
+Note that a filesystem must understand barriers/flushes on
+underlying block device, since many disk drives don't support
+barriers anyway.
 
->  o genapic - for send_IPI_allbutself, ie. CPU roundup
+(*) this is, in fact, an interesting question.  I still can't
+find complete information about this.  For example, how safe
+xfs is if barriers are not supported or turned off?  Is it
+"less safe" than with barriers?  Will it use regular cache
+flushes if barriers are not here?  Ditto for ext3fs, but
+here, barriers are not enabled by default.
 
-I would rather export some generic wrapper for that than the full genapic
-structure.
-
->  o machine_emergency_restart - for implementing "R0" gdb packet
-
-Hmm, might be a bit dangerous to call this directly -- there are various
-quirks with e.g. not rebooting on CPU #0 and not resetting APIC 
-state. But ok [this is not directly related to the fact that it's
-exported now, just mentioning this in general]
-
--Andi
-
+/mjt
