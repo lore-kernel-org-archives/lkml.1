@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbYBOPbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbYBOPhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbYBOPbl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 10:31:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbYBOPbd
+	id S1753651AbYBOPhW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 10:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYBOPhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 10:31:33 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:42561 "EHLO pasmtpB.tele.dk"
+	Fri, 15 Feb 2008 10:37:05 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:23239 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbYBOPbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 10:31:32 -0500
-Date: Fri, 15 Feb 2008 16:31:40 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Greg KH <greg@kroah.com>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>, jdmason@kudzu.us, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080215153140.GN1178@uranus.ravnborg.org>
-References: <20080213001506.GA13933@kroah.com> <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com> <20080215071703.GA9022@kroah.com> <20080215074827.GE4334@rhun.haifa.ibm.com> <20080215152008.GA1975@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080215152008.GA1975@kroah.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1750700AbYBOPhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 10:37:03 -0500
+Message-ID: <47B5B19C.9020801@msgid.tls.msk.ru>
+Date: Fri, 15 Feb 2008 18:37:00 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Hugo Mills <hugo@carfax.org.uk>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Spurious completions during NCQ
+References: <20080215134658.GB27745@vlad.carfax.org.uk> <1203087600.25150.5.camel@zem> <20080215150449.GC27745@vlad.carfax.org.uk>
+In-Reply-To: <20080215150449.GC27745@vlad.carfax.org.uk>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 07:20:08AM -0800, Greg KH wrote:
-> On Fri, Feb 15, 2008 at 09:48:27AM +0200, Muli Ben-Yehuda wrote:
-> > In conclusion, our usage doesn't seem lika a good fit for the probe
-> > approach, although it could probably converted provided we got the
-> > ordering right with regards to regular PCI device
-> > initialization. Doesn't seem to be worth the effort.
-> 
-> After reading this, and looking at the code again, I agree.  Thanks for
-> the great explaination, I'll leave the code alone now :)
+Hugo Mills wrote:
+> On Fri, Feb 15, 2008 at 10:00:00AM -0500, Calvin Walton wrote:
+>> On Fri, 2008-02-15 at 13:46 +0000, Hugo Mills wrote:
+>>> I'm getting these on my Dell Latitude D830:
+>>>
+>>> Feb 15 13:06:00 willow kernel: ata1.00: exception Emask 0x2 SAct 0x4 SErr 0x0 action 0x2 frozen
+>>> Feb 15 13:06:00 willow kernel: ata1.00: spurious completions during NCQ issue=0x0 SAct=0x4 FIS=004040a1:00000002
+>>>    In some cases, there are several cmd/res lines listed. It's
+>>> happening about once an hour or so (not correlated with any other
+>>> event that I can see). It doesn't seem to be affecting operation of
+>>> the machine, but it's making me nervous.
 
-Copy the nice explanation from the mail into the code as a comment
-somewhere?
+JFYI: Most probably it is correlated with smartd asking
+the device for it's SMART status.
 
-	Sam
+/mjt
