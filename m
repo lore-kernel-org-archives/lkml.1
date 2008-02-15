@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758698AbYBOTnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760790AbYBOTng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758698AbYBOTnX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYBOTnI
+	id S1760790AbYBOTng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:43:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbYBOTnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:43:08 -0500
-Received: from usermail.globalproof.net ([194.146.153.18]:44668 "EHLO
-	usermail.globalproof.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753116AbYBOTnH (ORCPT
+	Fri, 15 Feb 2008 14:43:15 -0500
+Received: from wr-out-0506.google.com ([64.233.184.238]:37488 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbYBOTnM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:43:07 -0500
-From: "Denys Fedoryshchenko" <denys@visp.net.lb>
-To: "Bart Van Assche" <bart.vanassche@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: BUG/ spinlock lockup, 2.6.24
-Date: Fri, 15 Feb 2008 21:42:47 +0200
-Message-Id: <20080215193854.M55147@visp.net.lb>
-In-Reply-To: <e2e108260802150724k4e5e6089mcb603b524157a9bc@mail.gmail.com>
-References: <20080215150044.M24489@visp.net.lb> <e2e108260802150724k4e5e6089mcb603b524157a9bc@mail.gmail.com>
-X-Mailer: OpenWebMail 2.52 
-X-OriginatingIP: 195.69.208.251 (denys@visp.net.lb)
+	Fri, 15 Feb 2008 14:43:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xH9xs+bxD5b8cG1566SzlFdtlcHpCnUeTUiBEOgOVry3a13gKE/uMXx4pJjXUzczCaIhrtY6L+axTQjoHz2EWLYmAn31sXCpjNnZdr5v+0258e2DM8XVXiGcaMonpt/izvC9QjvQ1CbyP+f6esSz78A0/kdA16e5CNGkk3qXmkY=
+Message-ID: <3cce60f30802151143gc98e3a2l29aa49f8f829e2f6@mail.gmail.com>
+Date: Fri, 15 Feb 2008 11:43:09 -0800
+From: "Shannon Nelson" <shannon.lee.nelson@gmail.com>
+To: "Laurent CORBES" <laurent.corbes@smartjog.com>
+Subject: Re: [BUG] OOPS 2.6.24.2 raid5 write with ioatdma
+Cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       "Nelson, Shannon" <shannon.nelson@intel.com>
+In-Reply-To: <20080215171905.2e5c6bee@smartjog.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=koi8-r
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080215171905.2e5c6bee@smartjog.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This server was working fine under load under FreeBSD, and worked fine before 
-with other tasks under Linux. I dont think it is RAM.
-Additionally it is server hardware (Dell PowerEdge) with ECC, MCE and other 
-layers, who will report about any hardware issue most probably, and i think 
-even better than memtest. 
-Additionally it is very difficult to run test on it, cause it is in another 
-country, and i have limited access to it (i dont have network KVM).
+On Fri, Feb 15, 2008 at 8:19 AM, Laurent CORBES
+<laurent.corbes@smartjog.com> wrote:
+> Hi all,
+>
+>  I got a raid5 oops when trying to write on a raid 5 array, with ioatdma loaded
+>  and without DCA activated in bios:
+>
+[...]
 
-I have similar crashes on completely different hardware with same job (QOS), 
-so i think it is actually some nasty bug in networking.
+Dan's quick patch is likely the right answer.
 
+>
+>  When I enable DCA in system bios I cannot boot, the ioatdma subsystem failed to
+>  initialize, it stalled at:
+>  ioatdma: ioat_dma_test_callback(00008086)
 
-On Fri, 15 Feb 2008 16:24:56 +0100, Bart Van Assche wrote
-> 2008/2/15 Denys Fedoryshchenko <denys@visp.net.lb>:
-> >  I have random crashes, at least once per week. It is very difficult to 
-catch
-> >  error message, and only recently i setup netconsole. Now i got crash, but
-> >  there is no traceback and only single line came over netconsole, 
-mentioned
-> >  before.
-> 
-> Did you already run memtest ? You can run memtest by booting from the
-> Knoppix CD-ROM or DVD. Most Linux distributions also have included
-> memtest on their bootable distribution CD's/DVD's.
-> 
-> Bart Van Assche.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+I don't see this example in the dmesg, but I'm not sure why you think
+this is the case.  If DCA is enabled, you should not see any further
+messages from ioatdma after the ioat_self_test_callback().
 
-
---
-Denys Fedoryshchenko
-Technical Manager
-Virtual ISP S.A.L.
-
+sln
+-- 
+==============================================
+Mr. Shannon Nelson Parents can't afford to be squeamish.
