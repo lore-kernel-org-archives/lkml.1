@@ -1,222 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbYBOBiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbYBOBlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbYBOBiA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 20:38:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbYBOBhv
+	id S1760137AbYBOBlE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 20:41:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751419AbYBOBku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 20:37:51 -0500
-Received: from www.tglx.de ([62.245.132.106]:37064 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751583AbYBOBhu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 20:37:50 -0500
-Date: Fri, 15 Feb 2008 02:36:58 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: adrian.bunk@movial.fi, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       riku.voipio@movial.fi, mikpe@it.uu.se, buytenh@wantstofly.org,
-       rusty@rustcorp.com.au, stable@kernel.org
-Subject: [PATCH 2/2] futex: runtime enable pi and robust functionality
-In-Reply-To: <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.00.0802150223390.12988@apollo.tec.linutronix.de>
-References: <20080211130700.GF27537@movial.fi> <alpine.LFD.1.00.0802111442130.12988@apollo.tec.linutronix.de> <20080214134642.600282f1.akpm@linux-foundation.org> <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 14 Feb 2008 20:40:50 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:36682 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750999AbYBOBks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 20:40:48 -0500
+Message-ID: <47B4ED1B.6070206@ak.jp.nec.com>
+Date: Fri, 15 Feb 2008 10:38:35 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@osdl.org
+CC: "Serge E. Hallyn" <serue@us.ibm.com>,
+       "Andrew G. Morgan" <morgan@kernel.org>, jmorris@namei.org,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       adobriyan@gmail.com
+Subject: [PATCH] exporting capability code/name pairs (try #5)
+References: <47997122.3070504@ak.jp.nec.com> <479990A1.3050103@kernel.org> <4799CAE0.7010400@ak.jp.nec.com> <47A2AB60.5000403@ak.jp.nec.com> <20080204162103.GA20130@sergelap.ibm.com> <47A91B00.9080301@ak.jp.nec.com> <20080206050805.GD3258@sergelap.austin.ibm.com> <47AC23F1.5030300@ak.jp.nec.com> <20080212180859.GA12876@sergelap.austin.ibm.com> <47B2A3F3.8060701@ak.jp.nec.com>
+In-Reply-To: <47B2A3F3.8060701@ak.jp.nec.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not all architectures implement futex_atomic_cmpxchg_inatomic(). The
-default implementation returns -ENOSYS, which is currently not handled
-inside of the futex guts. 
+This patch enables to export code/name of capabilities supported
+on the running kernel.
 
-Futex PI calls and robust list exits with a held futex result in an
-endless loop in the futex code on architectures which have no support.
+A newer kernel sometimes adds new capabilities, like CAP_MAC_ADMIN
+at 2.6.25. However, we have no interface to disclose what capabilities
+are supported on this kernel. Thus, we have to maintain libcap version
+in appropriate one synchronously.
 
-Fixing up every place where futex_atomic_cmpxchg_inatomic() is called
-would add a fair amount of extra if/else constructs to the already
-complex code. It is also not possible to disable the robust feature
-before user space tries to register robust lists.
+This patch enables libcap to collect the list of capabilities on
+run time, and provide them for users.
+It helps to improve portability of library.
 
-Compile time disabling is not a good idea either, as there are already
-architectures with runtime detection of futex_atomic_cmpxchg_inatomic
-support.
+It exports these information as regular files under /sys/kernel/capability.
+The numeric node exports its name, the symbolic node exports its code.
 
-Detect the functionality at runtime instead by calling
-cmpxchg_futex_value_locked() with a NULL pointer from the futex
-initialization code. This is guaranteed to fail, but the call of
-futex_atomic_cmpxchg_inatomic() happens with pagefaults disabled. 
+Please consider to put this patch on the queue of 2.6.25.
 
-On architectures, which use the asm-generic implementation or have a
-runtime CPU feature detection, a -ENOSYS return value disables the
-PI/robust features.
+Thanks,
+===================================================
+[kaigai@saba ~]$ ls -R /sys/kernel/capability/
+/sys/kernel/capability/:
+codes  names  version
 
-On architectures with a working implementation the call returns
--EFAULT and the PI/robust features are enabled.
+/sys/kernel/capability/codes:
+0  10  12  14  16  18  2   21  23  25  27  29  30  32  4  6  8
+1  11  13  15  17  19  20  22  24  26  28  3   31  33  5  7  9
 
-The relevant syscalls return -ENOSYS and the robust list exit code is
-blocked, when the detection fails.
+/sys/kernel/capability/names:
+cap_audit_control    cap_kill              cap_net_raw     cap_sys_nice
+cap_audit_write      cap_lease             cap_setfcap     cap_sys_pacct
+cap_chown            cap_linux_immutable   cap_setgid      cap_sys_ptrace
+cap_dac_override     cap_mac_admin         cap_setpcap     cap_sys_rawio
+cap_dac_read_search  cap_mac_override      cap_setuid      cap_sys_resource
+cap_fowner           cap_mknod             cap_sys_admin   cap_sys_time
+cap_fsetid           cap_net_admin         cap_sys_boot    cap_sys_tty_config
+cap_ipc_lock         cap_net_bind_service  cap_sys_chroot
+cap_ipc_owner        cap_net_broadcast     cap_sys_module
+[kaigai@saba ~]$ cat /sys/kernel/capability/version
+0x20071026
+[kaigai@saba ~]$ cat /sys/kernel/capability/codes/30
+cap_audit_control
+[kaigai@saba ~]$ cat /sys/kernel/capability/names/cap_sys_pacct
+20
+[kaigai@saba ~]$
+===================================================
 
-Fixes http://lkml.org/lkml/2008/2/11/149
-Originally reported by: Lennart Buytenhek
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+--
+ scripts/mkcapnames.sh |   44 +++++++++++++++++++
+ security/Makefile     |    9 ++++
+ security/commoncap.c  |  112 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 165 insertions(+), 0 deletions(-)
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Cc: stable@kernel.org
-
----
- include/linux/futex.h |    1 +
- kernel/futex.c        |   38 ++++++++++++++++++++++++++++++++++----
- kernel/futex_compat.c |    9 +++++++++
- 3 files changed, 44 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/include/linux/futex.h
-===================================================================
---- linux-2.6.orig/include/linux/futex.h
-+++ linux-2.6/include/linux/futex.h
-@@ -167,6 +167,7 @@ union futex_key {
- #ifdef CONFIG_FUTEX
- extern void exit_robust_list(struct task_struct *curr);
- extern void exit_pi_state_list(struct task_struct *curr);
-+extern int futex_cmpxchg_enabled;
- #else
- static inline void exit_robust_list(struct task_struct *curr)
- {
-Index: linux-2.6/kernel/futex.c
-===================================================================
---- linux-2.6.orig/kernel/futex.c
-+++ linux-2.6/kernel/futex.c
-@@ -60,6 +60,8 @@
- 
- #include "rtmutex_common.h"
- 
-+int __read_mostly futex_cmpxchg_enabled;
+diff --git a/scripts/mkcapnames.sh b/scripts/mkcapnames.sh
+index e69de29..5d36d52 100644
+--- a/scripts/mkcapnames.sh
++++ b/scripts/mkcapnames.sh
+@@ -0,0 +1,44 @@
++#!/bin/sh
 +
- #define FUTEX_HASHBITS (CONFIG_BASE_SMALL ? 4 : 8)
- 
- /*
-@@ -469,6 +471,8 @@ void exit_pi_state_list(struct task_stru
- 	struct futex_hash_bucket *hb;
- 	union futex_key key;
- 
-+	if (!futex_cmpxchg_enabled)
-+		return;
- 	/*
- 	 * We are a ZOMBIE and nobody can enqueue itself on
- 	 * pi_state_list anymore, but we have to be careful
-@@ -1870,6 +1874,8 @@ asmlinkage long
- sys_set_robust_list(struct robust_list_head __user *head,
- 		    size_t len)
- {
-+	if (!futex_cmpxchg_enabled)
-+		return -ENOSYS;
- 	/*
- 	 * The kernel knows only one size for now:
- 	 */
-@@ -1894,6 +1900,9 @@ sys_get_robust_list(int pid, struct robu
- 	struct robust_list_head __user *head;
- 	unsigned long ret;
- 
-+	if (!futex_cmpxchg_enabled)
-+		return -ENOSYS;
++#
++# generate a cap_names.h file from include/linux/capability.h
++#
 +
- 	if (!pid)
- 		head = current->robust_list;
- 	else {
-@@ -1997,6 +2006,9 @@ void exit_robust_list(struct task_struct
- 	unsigned long futex_offset;
- 	int rc;
- 
-+	if (!futex_cmpxchg_enabled)
-+		return;
++CAPHEAD="`dirname $0`/../include/linux/capability.h"
++REGEXP='^#define CAP_[A-Z_]+[ 	]+[0-9]+$'
++NUMCAP=`cat "$CAPHEAD" | egrep -c "$REGEXP"`
 +
- 	/*
- 	 * Fetch the list head (which was registered earlier, via
- 	 * sys_set_robust_list()):
-@@ -2051,7 +2063,7 @@ void exit_robust_list(struct task_struct
- long do_futex(u32 __user *uaddr, int op, u32 val, ktime_t *timeout,
- 		u32 __user *uaddr2, u32 val2, u32 val3)
- {
--	int ret;
-+	int ret = -ENOSYS;
- 	int cmd = op & FUTEX_CMD_MASK;
- 	struct rw_semaphore *fshared = NULL;
- 
-@@ -2083,13 +2095,16 @@ long do_futex(u32 __user *uaddr, int op,
- 		ret = futex_wake_op(uaddr, fshared, uaddr2, val, val2, val3);
- 		break;
- 	case FUTEX_LOCK_PI:
--		ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
-+		if (futex_cmpxchg_enabled)
-+			ret = futex_lock_pi(uaddr, fshared, val, timeout, 0);
- 		break;
- 	case FUTEX_UNLOCK_PI:
--		ret = futex_unlock_pi(uaddr, fshared);
-+		if (futex_cmpxchg_enabled)
-+			ret = futex_unlock_pi(uaddr, fshared);
- 		break;
- 	case FUTEX_TRYLOCK_PI:
--		ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
-+		if (futex_cmpxchg_enabled)
-+			ret = futex_lock_pi(uaddr, fshared, 0, timeout, 1);
- 		break;
- 	default:
- 		ret = -ENOSYS;
-@@ -2145,8 +2160,23 @@ static struct file_system_type futex_fs_
- 
- static int __init init(void)
- {
-+	u32 curval;
- 	int i;
- 
-+	/*
-+	 * This will fail and we want it. Some arch implementations do
-+	 * runtime detection of the futex_atomic_cmpxchg_inatomic()
-+	 * functionality. We want to know that before we call in any
-+	 * of the complex code paths. Also we want to prevent
-+	 * registration of robust lists in that case. NULL is
-+	 * guaranteed to fault and we get -EFAULT on functional
-+	 * implementation, the non functional ones will return
-+	 * -ENOSYS.
-+	 */
-+	curval = cmpxchg_futex_value_locked(NULL, 0, 0);
-+	if (curval == -EFAULT)
-+		futex_cmpxchg_enabled = 1;
++echo '#ifndef CAP_NAMES_H'
++echo '#define CAP_NAMES_H'
++echo
++echo '/*'
++echo ' * Do NOT edit this file directly.'
++echo ' * This file is generated from include/linux/capability.h automatically'
++echo ' */'
++echo
++echo '#if !defined(SYSFS_CAP_NAME_ENTRY) || !defined(SYSFS_CAP_CODE_ENTRY)'
++echo '#error cap_names.h should be included from security/capability.c'
++echo '#else'
++echo "#if $NUMCAP != CAP_LAST_CAP + 1"
++echo '#error mkcapnames.sh cannot collect capabilities correctly'
++echo '#else'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("SYSFS_CAP_NAME_ENTRY(%s,%s);\n", tolower($2), $2); }'
++echo
++echo 'static struct attribute *capability_name_attrs[] = {'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("\t&%s_name_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
++echo '};'
 +
- 	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
- 		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
- 		spin_lock_init(&futex_queues[i].lock);
-Index: linux-2.6/kernel/futex_compat.c
-===================================================================
---- linux-2.6.orig/kernel/futex_compat.c
-+++ linux-2.6/kernel/futex_compat.c
-@@ -54,6 +54,9 @@ void compat_exit_robust_list(struct task
- 	compat_long_t futex_offset;
- 	int rc;
- 
-+	if (!futex_cmpxchg_enabled)
-+		return;
++echo
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("SYSFS_CAP_CODE_ENTRY(%s,%s);\n", tolower($2), $2); }'
++echo
++echo 'static struct attribute *capability_code_attrs[] = {'
++cat "$CAPHEAD" | egrep "$REGEXP" \
++    | awk '{ printf("\t&%s_code_attr.attr,\n", tolower($2)); } END { print "\tNULL," }'
++echo '};'
 +
- 	/*
- 	 * Fetch the list head (which was registered earlier, via
- 	 * sys_set_robust_list()):
-@@ -115,6 +118,9 @@ asmlinkage long
- compat_sys_set_robust_list(struct compat_robust_list_head __user *head,
- 			   compat_size_t len)
- {
-+	if (!futex_cmpxchg_enabled)
-+		return -ENOSYS;
++echo '#endif'
++echo '#endif'
++echo '#endif'
+diff --git a/security/Makefile b/security/Makefile
+index 9e8b025..c1ffc00 100644
+--- a/security/Makefile
++++ b/security/Makefile
+@@ -18,3 +18,12 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
+ obj-$(CONFIG_SECURITY_SMACK)		+= commoncap.o smack/built-in.o
+ obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
+ obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
 +
- 	if (unlikely(len != sizeof(*head)))
- 		return -EINVAL;
- 
-@@ -130,6 +136,9 @@ compat_sys_get_robust_list(int pid, comp
- 	struct compat_robust_list_head __user *head;
- 	unsigned long ret;
- 
-+	if (!futex_cmpxchg_enabled)
-+		return -ENOSYS;
++# cap_names.h contains the code/name pair of capabilities.
++# It is generated using include/linux/capability.h automatically.
++$(obj)/commoncap.o: $(obj)/cap_names.h
++quiet_cmd_cap_names  = CAPS    $@
++	cmd_cap_names  = /bin/sh $(src)/../scripts/mkcapnames.sh > $@
++targets += cap_names.h
++$(obj)/cap_names.h: $(src)/../scripts/mkcapnames.sh $(src)/../include/linux/capability.h FORCE
++	$(call if_changed,cap_names)
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 5aba826..896b080 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -24,6 +24,8 @@
+ #include <linux/hugetlb.h>
+ #include <linux/mount.h>
+ #include <linux/sched.h>
++#include <linux/kobject.h>
++#include <linux/sysfs.h>
+
+ /* Global security state */
+
+@@ -637,3 +639,113 @@ int cap_vm_enough_memory(struct mm_struct *mm, long pages)
+ 	return __vm_enough_memory(mm, pages, cap_sys_admin);
+ }
+
++/*
++ * Export the list of capabilities on /sys/kernel/capability
++ */
++static struct kobject *capability_kobj;
 +
- 	if (!pid)
- 		head = current->compat_robust_list;
- 	else {
++struct capability_attribute {
++	struct attribute attr;
++	ssize_t (*show)(struct kobject *kobj,
++			struct capability_attribute *attr,
++			char *buffer);
++	ssize_t (*store)(struct kobject *kobj,
++			 struct capability_attribute *attr,
++			 const char *buffer, size_t count);
++	union {
++		int code;
++		char *name;
++	} c;
++};
++
++static ssize_t capability_name_show(struct kobject *kobj,
++				    struct capability_attribute *attr,
++				    char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "%d\n", attr->c.code);
++}
++
++static ssize_t capability_code_show(struct kobject *kobj,
++				    struct capability_attribute *attr,
++				    char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "%s\n", attr->c.name);
++}
++
++static ssize_t capability_version_show(struct kobject *kobj,
++				       struct capability_attribute *attr,
++				       char *buffer)
++{
++	return scnprintf(buffer, PAGE_SIZE, "0x%08x\n",
++			 _LINUX_CAPABILITY_VERSION);
++}
++
++#define SYSFS_CAP_NAME_ENTRY(_name,_code)	\
++	static struct capability_attribute _name##_name_attr = {	\
++		.attr = { .name = __stringify(_name), .mode = 0444 },	\
++		.show = capability_name_show,				\
++		.c.code = (_code),					\
++	}
++
++#define SYSFS_CAP_CODE_ENTRY(_name,_code)				\
++	static struct capability_attribute _name##_code_attr = {	\
++		.attr = { .name = __stringify(_code), .mode = 0444 },   \
++		.show = capability_code_show,				\
++		.c.name = __stringify(_name),				\
++	}
++/*
++ * capability_attrs[] is generated automatically by scripts/mkcapnames.sh
++ * This script parses include/linux/capability.h
++ */
++#include "cap_names.h"
++
++static struct attribute_group capability_name_attr_group = {
++	.name = "names",
++	.attrs = capability_name_attrs,
++};
++
++static struct attribute_group capability_code_attr_group = {
++	.name = "codes",
++	.attrs = capability_code_attrs,
++};
++
++static struct capability_attribute cap_version_attr = {
++	.attr = { .name = "version", .mode = 0444 },
++	.show = capability_version_show,
++};
++
++static int __init capability_export_names(void)
++{
++	/* make /sys/kernel/capability */
++	capability_kobj = kobject_create_and_add("capability", kernel_kobj);
++	if (!capability_kobj)
++		goto error0;
++
++	/* make /sys/kernel/capability/names */
++	if (sysfs_create_group(capability_kobj,
++			       &capability_name_attr_group))
++		goto error1;
++
++	/* make /sys/kernel/capability/codes */
++	if (sysfs_create_group(capability_kobj,
++			       &capability_code_attr_group))
++		goto error2;
++
++	if (sysfs_create_file(capability_kobj,
++			      &cap_version_attr.attr))
++		goto error3;
++
++	return 0;
++
++error3:
++	sysfs_remove_group(capability_kobj, &capability_code_attr_group);
++error2:
++	sysfs_remove_group(capability_kobj, &capability_name_attr_group);
++error1:
++	kobject_put(capability_kobj);
++error0:
++	printk(KERN_ERR "Unable to export capabilities\n");
++
++	return 0;
++}
++__initcall(capability_export_names);
+
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
