@@ -1,74 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761479AbYBOTTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbYBOTYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761479AbYBOTTN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:19:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753287AbYBOTS7
+	id S1757001AbYBOTYx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:24:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbYBOTYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:18:59 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:56751 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755283AbYBOTS5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:18:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KVUMGOIFFYRrWUnALuYVXjvcvdu3AtHkQSP+kSTJZwBrisfnaN4ljGMifSsS2hX6oMQSXK+PjHSdtRtthI8UX1Iq0I7yRq6aNLlZ9UeUHDIz6/5NI6DCXSUUc0P0k4kGzHtIyjss0A3stE2TpwktQlYgIMLWyhXlrgyWAbzaEVY=
-Message-ID: <19f34abd0802151118k142439e9nc47ea1f7a359fe0f@mail.gmail.com>
-Date: Fri, 15 Feb 2008 20:18:54 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH 4/4] kmemcheck v4
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Daniel Walker" <dwalker@mvista.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Richard Knutsson" <ricknu-0@student.ltu.se>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <20080214214907.GC19473@one.firstfloor.org>
+	Fri, 15 Feb 2008 14:24:45 -0500
+Received: from mail.tmr.com ([64.65.253.246]:40962 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750740AbYBOTYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 14:24:44 -0500
+Message-ID: <47B5E743.3000101@tmr.com>
+Date: Fri, 15 Feb 2008 14:25:55 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Jasper Bryant-Greene <jasper@unix.geek.nz>,
+       rzryyvzy <rzryyvzy@trashmail.net>, linux-kernel@vger.kernel.org
+Subject: Re: Is there a "blackhole" /dev/null directory?
+References: <20080214093051.7240852AB0E31@trashmail.net> <1202981957.10928.17.camel@phobos.jasper.bg> <p73pruz27mk.fsf@bingen.suse.de> <Pine.LNX.4.64.0802141553400.694@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0802141553400.694@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B49DB2.2090402@gmail.com> <47B49E71.4040900@gmail.com>
-	 <20080214214907.GC19473@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 10:49 PM, Andi Kleen <andi@firstfloor.org> wrote:
->  The ifdefs are quite ugly. I would recommend to define standard
->  functions (kmemcheck_init_zero or similar and an own __GFP flag) that can
->  be used without ifdef and easily nop'ed out on !KMEMCHECK kernels.
+Jan Engelhardt wrote:
+> On Feb 14 2008 10:46, Andi Kleen wrote:
+>> Jasper Bryant-Greene <jasper@unix.geek.nz> writes:
+>>> This could be done fairly trivially with FUSE, and IMHO is a good use
+>>> for FUSE because since you're just throwing most data away, performance
+>>> is not a concern.
+> 
+> There is a much more interesting 'problem' with a "/dev/null directory".
+> 
+> Q: Why would you need such a directory?
+> A: To temporarily fool a program into believing it wrote something.
 
-Yes, they are. We do in fact have a flag for this purpose,
-__GFP_NOTRACK (or SLAB_NOTRACK for entire slab caches). I have now
-changed some of the hunks to use this method instead of ifdefs. Thanks
-for pointing this out.
+Also: to let a program believe it was creating files which are used to 
+hold the written data. Otherwise /dev/null would probably be the solution.
+> 
+> Q: Should all files disappear? (e.g. "unlink after open")
+> A: Maybe not, programs may stat() the file right afterwards and
+>    get confused by the "inexistence".
 
-Also note that this patch is not meant to be a part of kmemcheck
-itself; it simply silences some of the (some bogus) warnings.
-Preferably, each one of these call-sites should be carefully audited
-and "fixed" independently of kmemcheck itself. In fact, the patch
-should probably be split, one for the bogus warnings (where the
-bogus-warning fixes are no-ops if kmemcheck is disabled), and the real
-errors in their own patches.
+I think what is going to happen is that files created behave as if they 
+are the result of a mknod resulting in a /dev/null clone.
+> 
+> Q: What if a program attempts to mkdir /dev/nullmnt/foo to just
+>    create a file /dev/nullmnt/foo/barfile?
+> A: /dev/nullmnt/foo must continue to exist or be accepted for a while,
+>    or perhaps for eternity.
 
-There is currently a huge problem with bit-fields. When bit-fields are
-initialized, gcc may use the AND/OR instructions to initialize one
-field at a time (depending on what the C code looks like, of course).
-This is seen by kmemcheck as 1. full 8/16/32-bit read 2. full
-8/16/32-bit write. Therefore the first initialization of (access to) a
-bit-field variable will generally cause a warning from kmemcheck. And
-this is perfectly legal from the compiler point of view.
+The directory structure can persist, it's the writing of data which can 
+be avoided.
 
-Ingo's approach so far has been to initialize all the bit-field
-variables at once. This is probably what the author of the original
-code wants to do anyway, though not in all cases. I admit that I am
-not confident enough with kernel code myself to decide what the
-appropriate fix would be in most cases of kmemcheck warnings.
-Therefore, take this last patch with a grain of salt (for now).
+Real example:
 
-Thank you.
+A program which reads log files and prepares a whole raft of reports in 
+a directory specified. If you just want to see the summary (stdout) and 
+exception notices (stderr) having a nulldir would avoid the disk space 
+and i/o load if you were just looking at the critical output rather than 
+the analysis.
 
+Yes, if this was an original program requirement it would or should have 
+been a feature. Real world cases sometimes use tools in creative ways.
 
-Vegard
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
