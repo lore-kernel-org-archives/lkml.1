@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761488AbYBOTIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760012AbYBOTLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761488AbYBOTIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 14:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbYBOTII
+	id S1760012AbYBOTLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 14:11:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbYBOTLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 14:08:08 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35443 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755819AbYBOTIG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 14:08:06 -0500
-Date: Fri, 15 Feb 2008 19:00:11 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dan Gora" <dan.gora@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: PCI Bursting with PIO
-Message-ID: <20080215190011.56e4080c@core>
-In-Reply-To: <4779de450802151000o2c06df0fq6d0daa22c43b935b@mail.gmail.com>
-References: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
-	<20080215130244.780285cf@core>
-	<4779de450802151000o2c06df0fq6d0daa22c43b935b@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 15 Feb 2008 14:11:48 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46045 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbYBOTLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 14:11:47 -0500
+Date: Fri, 15 Feb 2008 20:11:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 00/14] [ISDN] HiSax hotplug conversion
+Message-ID: <20080215191153.GA3667@uranus.ravnborg.org>
+References: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org> <20080215132703.GG1178@uranus.ravnborg.org> <47B5AC27.1030107@garzik.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B5AC27.1030107@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008 10:00:28 -0800
-"Dan Gora" <dan.gora@gmail.com> wrote:
-
-> On Fri, Feb 15, 2008 at 5:02 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > > Is there any way to get PIO to burst over the PCI bus in the read and
-> >  > write direction?  My device has 4 BAR registers, but the area where I
 > >
-> >  I think you are doign about as well as the X folks did when they spent
-> >  time on trying to optimise pio transfers to and from graphics card RAM.
-> >
+> >Just ran checkpatch for the fun of it:
+> >total: 28 errors, 86 warnings, 4896 lines checked
+> >Most looks easy to fix.
 > 
-> That's good to know.  Do you have a link or anything to their
-> discussion or some key words that I could hunt it down?
+> I'll take a look...  if its checkpatch stuff I caused, I'm happy to fix it.
+> 
+> But I'm trying to avoid cleanups for pre-existing conditions, i.e. 
+> flagged by checkpatch only because I moved existing code to a new location.
+> 
+> Down that path lies madness and way too much work :)  I didn't sign on 
+> to clean up ISDN :)
+> 
+> Anyway, thanks for the multiple comments, they will be taken into 
+> account in the next update of these patches.
 
-It was some time ago but a look at the X tree will find you the code.
-It's basically the same as you did - using MMX.
+I was distracted when halfdone - but I assume that I would just
+repeated myself for the rest of the drivers.
+
+When you post an updated version I will try to take a little
+bit deeper look. I did not get the full picture of the libification
+you have made in hisax.
+
+	Sam
