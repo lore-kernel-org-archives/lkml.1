@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbYBOQf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbYBOQkT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756585AbYBOQf3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 11:35:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754025AbYBOQfU
+	id S1756056AbYBOQkT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 11:40:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753402AbYBOQkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 11:35:20 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:17287 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754022AbYBOQfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 11:35:18 -0500
-Date: Fri, 15 Feb 2008 08:34:28 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alexey Dobriyan <adobriyan@openvz.org>
-Subject: Re: [PATCH] Make sysctl a separate filesystem
-Message-Id: <20080215083428.07246720.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.64.0802151343330.30301@fbirervta.pbzchgretzou.qr>
-References: <47B56BF2.4020600@openvz.org>
-	<p73ejbe1ook.fsf@bingen.suse.de>
-	<18357.30971.334517.722985@harpo.it.uu.se>
-	<Pine.LNX.4.64.0802151343330.30301@fbirervta.pbzchgretzou.qr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 15 Feb 2008 11:40:04 -0500
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2531 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751978AbYBOQkC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 11:40:02 -0500
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+Subject: Re: [PATCH 4/4] Voltage and current regulator framework
+Date: Fri, 15 Feb 2008 17:39:56 +0100
+User-Agent: KMail/1.9.7
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+References: <1203084895.3466.219.camel@localhost.localdomain>
+In-Reply-To: <1203084895.3466.219.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200802151739.57751.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008 13:44:35 +0100 (CET) Jan Engelhardt wrote:
+Hello,
 
-> 
-> On Feb 15 2008 12:35, Mikael Pettersson wrote:
-> >Andi Kleen writes:
-> > > Pavel Emelyanov <xemul@openvz.org> writes:
-> > > >    this subdir;
-> > > > 3. sysctl inodes are now smaller than the procfs ones.
-> > > 
-> > > That's always a good thing.
-> > > 
-> > > > Note: update your initscripts to mount sysctl filesystem 
-> > > > right after the proc is mounted in order not to lose your
-> > > > /etc/sysctl.conf configuration (and optionally fstab).
-> > > 
-> > > That will break about everybody's init scripts I suspect.
-> > > 
-> > > I think you would need to go through some deprecation
-> > > period for this at least, with printks warning people
-> > > to fix their init scripts.
-> > > 
-> > > Or better find some way to do the mount automatically.
-> >
-> >Doing it automatically is the only acceptable way, IMO.
-> 
-> For time being only.
-> 
-> The kernel (currently) only auto-mounts invisible filesystems.
+> Regulator framework core :-
 
-like /root, sysfs, futexfs, pipefs, anon_inodefs, bdev, devpts,
-hugetlbfs, inotifyfs ?
+[ ... snip ... ]
 
----
-~Randy
+> +void regulator_put(struct regulator *regulator)
+> +{
+> +	struct regulator_cdev *rcdev = regulator->rcdev;
+> +
+> +	if (regulator == NULL || IS_ERR(regulator))
+> +		return;
+
+Check after use.
+
+Regards,
+
+	Mariusz
