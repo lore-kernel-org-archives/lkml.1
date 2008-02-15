@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760558AbYBOS4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbYBOS66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760558AbYBOS4F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:56:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYBOSzz
+	id S1760845AbYBOS66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:58:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbYBOS6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 13:55:55 -0500
-Received: from mx.neterion.com ([72.1.205.142]:28223 "EHLO owa.neterion.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757139AbYBOSzz convert rfc822-to-8bit (ORCPT
+	Fri, 15 Feb 2008 13:58:51 -0500
+Received: from py-out-1112.google.com ([64.233.166.176]:43926 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754355AbYBOS6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 13:55:55 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [ofa-general] Re: Demand paging for memory regions
-Date: Fri, 15 Feb 2008 13:53:53 -0500
-Message-ID: <78C9135A3D2ECE4B8162EBDCE82CAD77030E25F1@nekter>
-In-Reply-To: <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ofa-general] Re: Demand paging for memory regions
-Thread-Index: AchwAwj0ZFEAYBH7Qw6U48onZobTHgAACQ/A
-References: <Pine.LNX.4.64.0802081540180.4291@schroedinger.engr.sgi.com>  <ada3arzxgkz.fsf_-_@cisco.com>  <47B2174E.5000708@opengridcomputing.com>  <Pine.LNX.4.64.0802121408150.9591@schroedinger.engr.sgi.com>  <adazlu5vlub.fsf@cisco.com>  <8A71B368A89016469F72CD08050AD334026D5C23@maui.asicdesigners.com>  <47B45994.7010805@opengridcomputing.com>  <Pine.LNX.4.64.0802141137140.500@schroedinger.engr.sgi.com>  <469958e00802141217i3a3d16a1k1232d69b8ba54471@mail.gmail.com>  <Pine.LNX.4.64.0802141219110.1041@schroedinger.engr.sgi.com> <469958e00802141443g33448abcs3efa6d6c4aec2b56@mail.gmail.com> <Pine.LNX.4.64.0802141445570.3298@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E2456@nekter> <Pine.LNX.4.64.0802141836070.4898@schroedinger.engr.sgi.com> <78C9135A3D2ECE4B8162EBDCE82CAD77030E25BA@nekter> <Pine.LNX.4.64.0802151044310.12890@schroedinger.engr.sgi.com>
-From: "Caitlin Bestler" <Caitlin.Bestler@neterion.com>
-To: "Christoph Lameter" <clameter@sgi.com>
-Cc: <linux-kernel@vger.kernel.org>, <avi@qumranet.com>, <linux-mm@kvack.org>,
-       <general@lists.openfabrics.org>, <kvm-devel@lists.sourceforge.net>
+	Fri, 15 Feb 2008 13:58:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=XiQMzm9xMrXXT1IHdRqMZP0d6saO9vvDA36Y2Xu/bGmNM26Z/aq933tEGuRroZ12KEkPMdiFDrJ4y/GDgkFpZFmpljASBLRKbwxvtnzTdCcMliTOC/XvWHMzvasOUx3wuOt6pIQV8Fqo+XFjP3asdohCa41gMTVa5BniZN/IJ00=
+Subject: [RFC-PATCH] fuse: shadowed variable warning
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Miklos Szeredi <miklos@szeredi.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 10:58:22 -0800
+Message-Id: <1203101902.15275.25.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+fs/fuse/dir.c:909:7: warning: symbol 'err' shadows an earlier one
+fs/fuse/dir.c:893:6: originally declared here
+
+This means that an error between lines 909 and 923 will not be
+returned.
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Miklos, could you confirm whether or not you want the err from lines
+909-923 returned or not.  If so, I can respin this patch changing the
+variable name instead which would preserve the current behavior.
+This patch changes behavior.
+
+ fs/fuse/dir.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
+index 7fb514b..c4807b3 100644
+--- a/fs/fuse/dir.c
++++ b/fs/fuse/dir.c
+@@ -906,7 +906,7 @@ static int fuse_permission(struct inode *inode, int mask, struct nameidata *nd)
+ 	}
+ 
+ 	if (fc->flags & FUSE_DEFAULT_PERMISSIONS) {
+-		int err = generic_permission(inode, mask, NULL);
++		err = generic_permission(inode, mask, NULL);
+ 
+ 		/* If permission is denied, try to refresh file
+ 		   attributes.  This is also needed, because the root
+-- 
+1.5.4.1.1278.gc75be
 
 
-> -----Original Message-----
-> From: Christoph Lameter [mailto:clameter@sgi.com]
-> Sent: Friday, February 15, 2008 10:46 AM
-> To: Caitlin Bestler
-> Cc: linux-kernel@vger.kernel.org; avi@qumranet.com;
-linux-mm@kvack.org;
-> general@lists.openfabrics.org; kvm-devel@lists.sourceforge.net
-> Subject: RE: [ofa-general] Re: Demand paging for memory regions
-> 
-> On Fri, 15 Feb 2008, Caitlin Bestler wrote:
-> 
-> > > What does it mean that the "application layer has to be determine
-> what
-> > > pages are registered"? The application does not know which of its
-> > pages
-> > > are currently in memory. It can only force these pages to stay in
-> > > memory if their are mlocked.
-> > >
-> >
-> > An application that advertises an RDMA accessible buffer
-> > to a remote peer *does* have to know that its pages *are*
-> > currently in memory.
-> 
-> Ok that would mean it needs to inform the VM of that issue by mlocking
-> these pages.
-> 
-> > But the more fundamental issue is recognizing that applications
-> > that use direct interfaces need to know that buffers that they
-> > enable truly have committed resources. They need a way to
-> > ask for twenty *real* pages, not twenty pages of address
-> > space. And they need to do it in a way that allows memory
-> > to be rearranged or even migrated with them to a new host.
-> 
-> mlock will force the pages to stay in memory without requiring the OS
-> to keep them where they are.
 
-So that would mean that mlock is used by the application before it 
-registers memory for direct access, and then it is up to the RDMA
-layer and the OS to negotiate actual pinning of the addresses for
-whatever duration is required.
-
-There is no *protocol* barrier to replacing pages within a Memory
-Region as long as it is done in a way that keeps the content of
-those page coherent. But existing devices have their own ideas
-on how this is done and existing devices are notoriously poor at
-learning new tricks.
-
-Merely mlocking pages deals with the end-to-end RDMA semantics.
-What still needs to be addressed is how a fastpath interface
-would dynamically pin and unpin. Yielding pins for short-term
-suspensions (and flushing cached translations) deals with the
-rest. Understanding the range of support that existing devices
-could provide with software updates would be the next step if
-you wanted to pursue this.
