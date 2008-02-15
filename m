@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760995AbYBOSA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761945AbYBOSAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760995AbYBOSA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 13:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760172AbYBOR6p
+	id S1761945AbYBOSAw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 13:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761702AbYBOSAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 12:58:45 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:58483 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760021AbYBOR6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 12:58:43 -0500
-Date: Fri, 15 Feb 2008 21:02:00 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] kill double_spin_lock()
-Message-ID: <20080215180200.GA4353@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Feb 2008 13:00:32 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:47473 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761654AbYBOSA3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 13:00:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JcCPWyHGuS1fZduWNKqP+e/es21VWOKp6fbiNjkostqQ7ZX67uzUGiCtiHn9B11rIQrL52h8B0gu2hUsTYqLd4y5mbT//eF8vM+xhvmn6fqFFNHjZ4cDqkJfvEZFhlpMnTK/niIrcqAbRQMK9Jyix8Tx4Ji+oIxw9avATFu06b4=
+Message-ID: <4779de450802151000o2c06df0fq6d0daa22c43b935b@mail.gmail.com>
+Date: Fri, 15 Feb 2008 10:00:28 -0800
+From: "Dan Gora" <dan.gora@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: PCI Bursting with PIO
+In-Reply-To: <20080215130244.780285cf@core>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+References: <4779de450802141928led16cebkfb989551eb88a8cb@mail.gmail.com>
+	 <20080215130244.780285cf@core>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-double_spin_lock() has no callers, and it can't be used without additional
-lockdep annotations, remove it.
+On Fri, Feb 15, 2008 at 5:02 AM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > Is there any way to get PIO to burst over the PCI bus in the read and
+>  > write direction?  My device has 4 BAR registers, but the area where I
+>
+>  I think you are doign about as well as the X folks did when they spent
+>  time on trying to optimise pio transfers to and from graphics card RAM.
+>
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+That's good to know.  Do you have a link or anything to their
+discussion or some key words that I could hunt it down?
 
---- 25/include/linux/spinlock.h~4_DSL	2008-02-15 16:59:17.000000000 +0300
-+++ 25/include/linux/spinlock.h	2008-02-15 19:52:20.000000000 +0300
-@@ -296,43 +296,6 @@ do {						\
- })
- 
- /*
-- * Locks two spinlocks l1 and l2.
-- * l1_first indicates if spinlock l1 should be taken first.
-- */
--static inline void double_spin_lock(spinlock_t *l1, spinlock_t *l2,
--				    bool l1_first)
--	__acquires(l1)
--	__acquires(l2)
--{
--	if (l1_first) {
--		spin_lock(l1);
--		spin_lock(l2);
--	} else {
--		spin_lock(l2);
--		spin_lock(l1);
--	}
--}
--
--/*
-- * Unlocks two spinlocks l1 and l2.
-- * l1_taken_first indicates if spinlock l1 was taken first and therefore
-- * should be released after spinlock l2.
-- */
--static inline void double_spin_unlock(spinlock_t *l1, spinlock_t *l2,
--				      bool l1_taken_first)
--	__releases(l1)
--	__releases(l2)
--{
--	if (l1_taken_first) {
--		spin_unlock(l2);
--		spin_unlock(l1);
--	} else {
--		spin_unlock(l1);
--		spin_unlock(l2);
--	}
--}
--
--/*
-  * Pull the atomic_t declaration:
-  * (asm-mips/atomic.h needs above definitions)
-  */
+>
+>  > Any ideas would be really appreciated,
+>
+>  Put a DMA controller on it ;)
 
+Ugh.. sadly that's what's coming.  I really don't get why the
+northbridge cannot burst however.  If the memory is mapped
+prefetchable and you have to do a PCI read through 3 PCIe bridges to
+finally get to your device it seems like it would _really_ behoove the
+bridge to do a Memory read multiple and get the whole cache line.  I
+have searched around a lot and there doesn't seem to be any info at
+all on how you can persuade these bridges to do different PCI commands
+or burst.  I don't know why....
+
+thanks again for your help,
+
+dan
