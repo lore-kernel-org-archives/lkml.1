@@ -1,99 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932099AbYBOBWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932343AbYBOBYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932099AbYBOBWI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 20:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865AbYBOBVz
+	id S932343AbYBOBYP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 20:24:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758308AbYBOBX7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 20:21:55 -0500
-Received: from ns2.uludag.org.tr ([193.140.100.220]:48254 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755227AbYBOBVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 20:21:54 -0500
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 12/14] fs/binfmt_aout.c: Use time_* macros
-Date: Fri, 15 Feb 2008 03:19:21 +0200
-User-Agent: KMail/1.9.6 (enterprise 0.20080201.769323)
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-References: <1203003412-11594-13-git-send-email-caglar@pardus.org.tr> <Pine.LNX.4.64.0802142044470.12316@anakin>
-In-Reply-To: <Pine.LNX.4.64.0802142044470.12316@anakin>
+	Thu, 14 Feb 2008 20:23:59 -0500
+Received: from www.tglx.de ([62.245.132.106]:34161 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755850AbYBOBX6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 20:23:58 -0500
+Date: Fri, 15 Feb 2008 02:23:25 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: adrian.bunk@movial.fi, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       riku.voipio@movial.fi, mikpe@it.uu.se, buytenh@wantstofly.org,
+       rusty@rustcorp.com.au, stable@kernel.org
+Subject: [PATCH 1/2] futex: fix init order
+In-Reply-To: <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
+Message-ID: <alpine.LFD.1.00.0802150219370.12988@apollo.tec.linutronix.de>
+References: <20080211130700.GF27537@movial.fi> <alpine.LFD.1.00.0802111442130.12988@apollo.tec.linutronix.de> <20080214134642.600282f1.akpm@linux-foundation.org> <alpine.LFD.1.00.0802150216350.12988@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200802150319.23446.caglar@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-14 Şub 2008 Per tarihinde, Geert Uytterhoeven şunları yazmıştı: 
-> To me these constructs look like good candidates for replacement by
-> printk_ratelimit()?
-> 
-> Gr{oetje,eeting}s,
+When the futex init code fails to initialize the futex pseudo file
+system it returns early without initializing the hash queues. Should
+the boot succeed then a futex syscall which tries to enqueue a waiter
+on the hashqueue will crash due to the unitilialized plist heads.
 
-What about something like following?
+Initialize the hash queues before the filesystem.
 
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-Use printk_ratelimit() instead of jiffies based arithmetic, suggested by Geert Uytterhoeven
+---
+ kernel/futex.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
-Signed-off-by: S.Çağlar Onur <caglar@pardus.org.tr>
-
- fs/binfmt_aout.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index a1bb224..ba4cddb 100644
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -372,21 +372,17 @@ static int load_aout_binary(struct linux_binprm * bprm, struct pt_regs * regs)
- 			 
- 		flush_icache_range(text_addr, text_addr+ex.a_text+ex.a_data);
- 	} else {
--		static unsigned long error_time, error_time2;
- 		if ((ex.a_text & 0xfff || ex.a_data & 0xfff) &&
--		    (N_MAGIC(ex) != NMAGIC) && (jiffies-error_time2) > 5*HZ)
-+		    (N_MAGIC(ex) != NMAGIC) && printk_ratelimit())
- 		{
- 			printk(KERN_NOTICE "executable not page aligned\n");
--			error_time2 = jiffies;
- 		}
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c
++++ linux-2.6/kernel/futex.c
+@@ -2145,8 +2145,14 @@ static struct file_system_type futex_fs_
  
--		if ((fd_offset & ~PAGE_MASK) != 0 &&
--		    (jiffies-error_time) > 5*HZ)
-+		if ((fd_offset & ~PAGE_MASK) != 0 && printk_ratelimit())
- 		{
- 			printk(KERN_WARNING 
- 			       "fd_offset is not page aligned. Please convert program: %s\n",
- 			       bprm->file->f_path.dentry->d_name.name);
--			error_time = jiffies;
- 		}
+ static int __init init(void)
+ {
+-	int i = register_filesystem(&futex_fs_type);
++	int i;
  
- 		if (!bprm->file->f_op->mmap||((fd_offset & ~PAGE_MASK) != 0)) {
-@@ -495,15 +491,13 @@ static int load_aout_library(struct file *file)
- 	start_addr =  ex.a_entry & 0xfffff000;
++	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
++		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
++		spin_lock_init(&futex_queues[i].lock);
++	}
++
++	i = register_filesystem(&futex_fs_type);
+ 	if (i)
+ 		return i;
  
- 	if ((N_TXTOFF(ex) & ~PAGE_MASK) != 0) {
--		static unsigned long error_time;
- 		loff_t pos = N_TXTOFF(ex);
+@@ -2156,10 +2162,6 @@ static int __init init(void)
+ 		return PTR_ERR(futex_mnt);
+ 	}
  
--		if ((jiffies-error_time) > 5*HZ)
-+		if (printk_ratelimit())
- 		{
- 			printk(KERN_WARNING 
- 			       "N_TXTOFF is not page aligned. Please convert library: %s\n",
- 			       file->f_path.dentry->d_name.name);
--			error_time = jiffies;
- 		}
- 		down_write(&current->mm->mmap_sem);
- 		do_brk(start_addr, ex.a_text + ex.a_data + ex.a_bss);
-
-Cheers
--- 
-S.Çağlar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
-
-Linux is like living in a teepee. No Windows, no Gates and an Apache in house!
+-	for (i = 0; i < ARRAY_SIZE(futex_queues); i++) {
+-		plist_head_init(&futex_queues[i].chain, &futex_queues[i].lock);
+-		spin_lock_init(&futex_queues[i].lock);
+-	}
+ 	return 0;
+ }
+ __initcall(init);
