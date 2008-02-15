@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935435AbYBOAor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935087AbYBOApW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935435AbYBOAor (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 19:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbYBOAme
+	id S935087AbYBOApW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 19:45:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934722AbYBOAmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 14 Feb 2008 19:42:36 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:54059 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761071AbYBOAme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 Feb 2008 19:42:34 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:34266 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934698AbYBOAmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 19:42:32 -0500
-Date: Thu, 14 Feb 2008 16:42:29 -0800 (PST)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: torvalds@linux-foundation.org
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: [git pull] slab allocator fixes / cleanups
-Message-ID: <Pine.LNX.4.64.0802141544130.3913@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+Cc: linux-kernel@vger.kernel.org, pcihpd-discuss@lists.sourceforge.net,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       Scott Murray <scottm@somanetworks.com>
+Subject: [PATCH 06/12] PCI Hotplug: make cpcihp driver use modern apis
+Date: Thu, 14 Feb 2008 16:40:04 -0800
+Message-Id: <1203036010-27988-6-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <20080215003909.GA27981@kroah.com>
+References: <20080215003909.GA27981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit e760e716d47b48caf98da348368fd41b4a9b9e7e:
-  Linus Torvalds (1):
-        Merge git://git.kernel.org/.../jejb/scsi-rc-fixes-2.6
+This removes the depandancy of the cpcihp driver from the PCI_LEGACY
+config option by removing its usage of the pci_find_bus() function.
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git slab-linus
+Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Scott Murray <scottm@somanetworks.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/pci/hotplug/Kconfig          |    2 +-
+ drivers/pci/hotplug/cpcihp_generic.c |    8 +++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Adrian Bunk (1):
-      make slub.c:slab_address() static
-
-Christoph Lameter (3):
-      slub: Determine gfpflags once and not every time a slab is allocated
-      slub: Fallback to kmalloc_large for failing higher order allocs
-      slub: Support 4k kmallocs again to compensate for page allocator slowness
-
-Marcin Slusarz (1):
-      slab: avoid double initialization & do initialization in 1 place
-
-Pekka Enberg (1):
-      slub: kmalloc page allocator pass-through cleanup
-
- include/linux/slub_def.h |   15 +++++--
- mm/slab.c                |    3 +-
- mm/slub.c                |   94 
-+++++++++++++++++++++++++++++++---------------
- 3 files changed, 75 insertions(+), 37 deletions(-)
+diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
+index 2cdd832..17fb3d6 100644
+--- a/drivers/pci/hotplug/Kconfig
++++ b/drivers/pci/hotplug/Kconfig
+@@ -119,7 +119,7 @@ config HOTPLUG_PCI_CPCI_ZT5550
+ 
+ config HOTPLUG_PCI_CPCI_GENERIC
+ 	tristate "Generic port I/O CompactPCI Hotplug driver"
+-	depends on HOTPLUG_PCI_CPCI && X86 && PCI_LEGACY
++	depends on HOTPLUG_PCI_CPCI && X86
+ 	help
+ 	  Say Y here if you have a CompactPCI system card that exposes the #ENUM
+ 	  hotswap signal as a bit in a system register that can be read through
+diff --git a/drivers/pci/hotplug/cpcihp_generic.c b/drivers/pci/hotplug/cpcihp_generic.c
+index f3852a6..148fb46 100644
+--- a/drivers/pci/hotplug/cpcihp_generic.c
++++ b/drivers/pci/hotplug/cpcihp_generic.c
+@@ -154,12 +154,18 @@ static int __init cpcihp_generic_init(void)
+ 	if(!r)
+ 		return -EBUSY;
+ 
+-	dev = pci_find_slot(bridge_busnr, PCI_DEVFN(bridge_slot, 0));
++	bus = pci_find_bus(0, bridge_busnr);
++	if (!bus) {
++		err("Invalid bus number %d", bridge_busnr);
++		return -EINVAL;
++	}
++	dev = pci_get_slot(bus, PCI_DEVFN(bridge_slot, 0));
+ 	if(!dev || dev->hdr_type != PCI_HEADER_TYPE_BRIDGE) {
+ 		err("Invalid bridge device %s", bridge);
+ 		return -EINVAL;
+ 	}
+ 	bus = dev->subordinate;
++	pci_dev_put(dev);
+ 
+ 	memset(&generic_hpc, 0, sizeof (struct cpci_hp_controller));
+ 	generic_hpc_ops.query_enum = query_enum;
+-- 
+1.5.4
 
