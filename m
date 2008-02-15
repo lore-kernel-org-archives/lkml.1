@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757251AbYBORPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbYBORQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757251AbYBORPZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 12:15:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYBORPS
+	id S1758073AbYBORQA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 12:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbYBORPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 12:15:18 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:43707 "EHLO fieldses.org"
+	Fri, 15 Feb 2008 12:15:51 -0500
+Received: from mail.suse.de ([195.135.220.2]:42888 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751723AbYBORPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 12:15:16 -0500
-Date: Fri, 15 Feb 2008 12:15:08 -0500
-To: Benny Halevy <bhalevy@panasas.com>
+	id S1752377AbYBORPu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 12:15:50 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] checkpatch.pl: revert wrong --file message
+Date: Fri, 15 Feb 2008 18:15:43 +0100
+User-Agent: KMail/1.9.6
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, jeff@garzik.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linville@tuxdriver.com
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-Message-ID: <20080215171508.GF20826@fieldses.org>
-References: <47B1C9F4.30402@garzik.org> <20080212193754.GC18625@fieldses.org> <alpine.LFD.1.00.0802121156400.2920@woody.linux-foundation.org> <20080212.165014.01238510.davem@davemloft.net> <alpine.LFD.1.00.0802121710510.2920@woody.linux-foundation.org> <20080213042512.GB9766@fieldses.org> <alpine.LFD.1.00.0802122127110.2920@woody.linux-foundation.org> <20080213175212.GB13462@fieldses.org> <47B47BC7.60401@panasas.com>
+       linux-kernel@vger.kernel.org, Andy Whitcroft <andyw@uk.ibm.com>
+References: <20080215165244.GA28358@elte.hu>
+In-Reply-To: <20080215165244.GA28358@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47B47BC7.60401@panasas.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Message-Id: <200802151815.44050.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 14, 2008 at 07:35:03PM +0200, Benny Halevy wrote:
-> One idea that I thought about when debating rebase vs. merge (and it's
-> far far from being fully baked) is versioned commits.  The gist of it
-> is that patches are assigned an hash identifier like today when they
-> are first committed into the tree, but, and this is the main change:
-> if they mutate, e.g. by a rebase, or even git commit --amend, their
-> version is bumped up rather than SHA changed.
 
-The SHA1 is uniquely determined by the contents of that commit--commit
-and author names and times, changelog message, snapshot of the tree at
-that point, and parents--hence, recursively, by the entire history
-leading up to that commit.
+> 
+> In the past few months we frequently mentioned checkpatch.pl --file to 
+> arch/x86 newbies and it's been a great source of cleanup patches and it 
+> has become an integral part of our workflow. Newbies should start with 
+> small baby steps, with trivial patches, they should learn to write clean 
+> code, they should learn how to interact with other Linux developers and 
+> then they'll evolve over time towards larger changes.
 
-Naming objects by their content in that way has a lot of advantages--for
-example, you can sign an entire history by signing just the SHA1 of the
-commit at its tip.  So you can't break that link between the names of
-commits and their contents without ending up with a fundamentally
-different (and probably weaker, in some sense), system.
+I found this doesn't work unfortunately. 
 
-I suspect there's an unavoidable tradeoff--if you want to be able to
-reliably and efficiently determine how two branches are related, then
-you can't just throw away their (possibly messy) history.  The best you
-may be able to do, if you want the advantages of both rebasing and
-merging, is to maintain on your own the messier meta-history as a
-superset of the simpler history that you end up submitting.
+I actively worked with a few people who sent continuous streams of formatting
+only checkpatch.pl patches in the last months trying to get them to graduate to 
+more complex patches and found they always had to little C knowledge to actively 
+contribute something actually useful to the kernel.
 
---b.
+At the end I usually had to give them the honest advice "You need to learn
+more C first, but I'm afraid the kernel is not the best place to learn C
+because it is too unforgiving".
 
-> This way all versions of the commit would be accessible and addressable using
-> their respective SHA *and* version. I think that this can help keep
-> the tree's history in a more intuitive way (since the patches' base identifier
-> won't change, just its version number), and you get a bonus of seeing each
-> commit's history, who changed it, and what was the change.
+I'm all for actively recruiting new developers (and I think I did my fair 
+share on that front), but trying to turn absolute C newbies into
+kernel hackers short term just doesn't work. 
+
+On the other hand I found that people who already know enough C and start 
+hacking code directly do not really need the "white space only" stage.
+They just start hacking code directly. They usually need some education
+on how to properly send patches, but that can be always done with
+real bug fixes or changes they did.
+
+Out of that experience came the checkpatch.pl message.
+
+-Andi
+
