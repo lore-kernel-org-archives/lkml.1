@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbYBPBjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbYBPBtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764116AbYBPBjV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYBPBi6
+	id S1762817AbYBPBtt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:49:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYBPBtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:38:58 -0500
-Received: from e33.co.us.ibm.com ([32.97.110.151]:35881 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762970AbYBPBis (ORCPT
+	Fri, 15 Feb 2008 20:49:39 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:18860 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753095AbYBPBti (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:38:48 -0500
-Subject: [PATCH 2/3] Fixup ntp interval len merges
-From: John Stultz <johnstul@us.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Josip Loncaric <josip@lanl.gov>, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1203125191.6275.20.camel@jstultz-laptop>
-References: <1203125191.6275.20.camel@jstultz-laptop>
+	Fri, 15 Feb 2008 20:49:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=tiWf/32ZXLcj6yeoMneQdJrv+/O/ZHy2paTm1v7OpxmybWsoxtTei6V00RonRGzoTeaPXXoEbKMrlX+guZlx25CKTwoMykuHIRJbUw0HOr/Dxl9+GRUINBHWOJFjsxHnuLtj7y+O2+nCatbuGZA/RljYvGvWJmtEJi2fO1eDI/o=
+Subject: [PATCH] autofs4: fix sparse warning in root.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 15 Feb 2008 17:38:42 -0800
-Message-Id: <1203125922.6275.33.camel@jstultz-laptop>
+Date: Fri, 15 Feb 2008 17:49:32 -0800
+Message-Id: <1203126572.7442.13.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -27,64 +28,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My first version of the ntp_interval/tick_length inconsistent usage
-patch was recently merged as bbe4d18ac2e058c56adb0cd71f49d9ed3216a405
+fs/autofs4/root.c:536:23: warning: symbol 'ino' shadows an earlier one
+fs/autofs4/root.c:510:22: originally declared here
 
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bbe4d18ac2e058c56adb0cd71f49d9ed3216a405
+There is no need to redeclare, we are at the end of the loop and in
+the next iteration of the loop, ino will be reset.
 
-While the fix did greatly improve the situation, Roman correctly pointed
-out that it does have a small bug: If the users change clocksources
-after the system has been running and NTP has made corrections, the
-correctoins made against the old clocksource will be applied against the
-new clocksource, causing error.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/autofs4/root.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-This patch reverts this previous fix. 
-
-
-My second attempt, which corrects the issue in the NTP_INTERVAL_LENGTH
-definition has also made it up-stream as commit
-e13a2e61dd5152f5499d2003470acf9c838eab84
-
-http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e13a2e61dd5152f5499d2003470acf9c838eab84
-
-However, due to the original patch going upstream, the second has no
-effect.  So by reverting the first fix, the second will be in use.
-
-It should be noted that Roman has voiced objections to this second patch
-as well, and we are continuing to work out the details. However, due to
-the severity of the ntp error which both of these patches tries to
-address, I'd recommend the second patch remain in place until we come to
-an agreed solution.
-
-
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 5b11b0f..cb17979 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -187,8 +187,7 @@ static void change_clocksource(void)
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index a54a946..1b43456 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -533,8 +533,8 @@ static struct dentry *autofs4_lookup_unhashed(struct autofs_sb_info *sbi, struct
+ 			goto next;
  
- 	clock->error = 0;
- 	clock->xtime_nsec = 0;
--	clocksource_calculate_interval(clock,
--		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
-+	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+ 		if (d_unhashed(dentry)) {
+-			struct autofs_info *ino = autofs4_dentry_ino(dentry);
+ 			struct inode *inode = dentry->d_inode;
++			ino = autofs4_dentry_ino(dentry);
  
- 	tick_clock_notify();
- 
-@@ -245,8 +244,7 @@ void __init timekeeping_init(void)
- 	ntp_clear();
- 
- 	clock = clocksource_get_next();
--	clocksource_calculate_interval(clock,
--		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
-+	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
- 	clock->cycle_last = clocksource_read(clock);
- 
- 	xtime.tv_sec = sec;
+ 			list_del_init(&ino->rehash);
+ 			dget(dentry);
+-- 
+1.5.4.1.1278.gc75be
+
 
 
