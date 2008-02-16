@@ -1,182 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbYBPTGs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYBPTHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbYBPTGs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 14:06:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbYBPTGf
+	id S1758910AbYBPTHi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 14:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbYBPTHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 14:06:35 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:27989 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757386AbYBPTGd (ORCPT
+	Sat, 16 Feb 2008 14:07:31 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:50412 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755482AbYBPTHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 14:06:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=I1crQYoR2QBcHRcUpfM3d5A3PxWc+SxijcKb2I0Xu+rxfoDbkf61Fm5F77sBOVMZqNbf7Ma22E+guvzMJN+yDCDyz3A18hlnLlXLm8rPk73GUoNQDoENGLT733lqbNAtkhciJOCuFEZYLDkoqavUm598a7lYZADBkVlHEprAr9s=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: Optiarc DVD RW AD-5200A audio playing
-Date: Sat, 16 Feb 2008 20:20:48 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-References: <47B5EDB7.5050709@canonical.com> <200802161923.58313.bzolnier@gmail.com> <20080216184108.GT13446@gollum.tnic>
-In-Reply-To: <20080216184108.GT13446@gollum.tnic>
+	Sat, 16 Feb 2008 14:07:30 -0500
+Date: Sat, 16 Feb 2008 12:07:28 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+Message-ID: <20080216190727.GH7657@parisc-linux.org>
+References: <20080116195949.GO18741@parisc-linux.org> <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com> <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com> <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com> <20080118191430.GD20490@parisc-linux.org> <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802162020.48156.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 February 2008, Borislav Petkov wrote:
-> On Sat, Feb 16, 2008 at 07:23:58PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > On Saturday 16 February 2008, Borislav Petkov wrote:
-> > > On Sat, Feb 16, 2008 at 06:48:24PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > On Saturday 16 February 2008, Borislav Petkov wrote:
-> > > > > On Sat, Feb 16, 2008 at 04:24:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > > > > > 
-> > > > > > Hi,
-> > > > > > 
-> > > > > > On Saturday 16 February 2008, Borislav Petkov wrote:
-> > > > > > > On Fri, Feb 15, 2008 at 02:53:27PM -0500, Stefan Bader wrote:
-> > > > > > > > Hello Borislav,
-> > > > > > > > 
-> > > > > > > > I worked on a problem with an DVD driver (model=Optiarc DVD RW AD-5200A)
-> > > > > > > > which obviously has the same problem as some Matshita drives. The
-> > > > > > > > following patch was reported to enabled audio playing on this drive.
-> > > > > > > > Would this approach be suitable for upstream or are there other
-> > > > > > > > solutions to this problem?
-> > > > > > > > 
-> > > > > > > > Regards,
-> > > > > > > > Stefan
-> > > > > > > > 
-> > > > > > > > --- a/drivers/ide/ide-cd.c
-> > > > > > > > +++ b/drivers/ide/ide-cd.c
-> > > > > > > > @@ -2988,7 +2988,8 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
-> > > > > > > >  	if (strcmp(drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
-> > > > > > > >  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
-> > > > > > > >  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8176") == 0 ||
-> > > > > > > > -	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0)
-> > > > > > > > +	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0 ||
-> > > > > > > > +	    strcmp(drive->id->model, "Optiarc DVD RW AD-5200A") == 0)
-> > > > > > > >  		CDROM_CONFIG_FLAGS(drive)->audio_play = 1;
-> > > > > > > > 
-> > > > > > > >  #if ! STANDARD_ATAPI
-> > > > > > > 
-> > > > > > > Hi Stefan,
-> > > > > > > 
-> > > > > > > just to make sure that the audioplay bit is not set in the capabilities page,
-> > > > > > > can you please try the following patch applied against 2.6.25-rc2 and send me
-> > > > > > > the output. Thanks!
-> > > > > > > 
-> > > > > > > @Bart: by the way, this cdi->mask thingy is kinda unintuitive doing double
-> > > > > > > negation to check whether a feature is supported or not. Yeah, this comes from
-> > > > > > > "above," i.e. uniform cdrom layer. But still, shouldn't we use a cdi->caps_flags
-> > > > > > > or something similar instead, which mirrors the caps page bits setting?
-> > > > > > 
-> > > > > > It seems so (at least having negative flags is very unintuitive) but they
-> > > > > > might be some reason for this ugliness, Jens?
-> > > > > > 
-> > > > > > [ Please also remember that since cdrom layer is _uniform_ it may be not
-> > > > > >   possible and/or desirable to have 1-1 mapping between caps page bits
-> > > > > >   and the future cdi->caps_flags. ]
-> > > > > > 
-> > > > > > > commit 435f0f4496a1b32af2d542f43b2370a890fe2f83
-> > > > > > > Author: Borislav Petkov <petkovbb@gmail.com>
-> > > > > > > Date:   Sat Feb 16 09:56:36 2008 +0100
-> > > > > > > 
-> > > > > > >     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
-> > > > > > >     
-> > > > > > >     Reported-by: Stefan Bader <stefan.bader@canonical.com>
-> > > > > > >     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > > > > > > 
-> > > > > > > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > > > > > > index f77db6b..2c9d06e 100644
-> > > > > > > --- a/drivers/ide/ide-cd.c
-> > > > > > > +++ b/drivers/ide/ide-cd.c
-> > > > > > > @@ -1750,6 +1750,10 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
-> > > > > > >  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
-> > > > > > >  	if (buf[8 + 3] & 0x10)
-> > > > > > >  		cdi->mask &= ~CDC_DVD_R;
-> > > > > > > +	if (!(buf[8 + 4] & 0x01)) {
-> > > > > > 
-> > > > > > Hmm, shouldn't there be '&& (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK)'
-> > > > > > to prevent false positives?
-> > > > > 
-> > > > > I wanted to see whether the caps page reports the audioplay bit off...
-> > > > 
-> > > > we still need IDE_CD_FLAG_PLAY_AUDIO_OK flag to be _set_ to enable the quirk
-> > > > 
-> > > > > > 
-> > > > > > > +		printk(KERN_INFO "ide-cd: audio play not advertised in caps page,"
-> > > > > > 
-> > > > > > Would be nice to also printk() the device name.
-> > > > > 
-> > > > > ... but printing the device model is actually a good idea and this will rule out
-> > > > > false positives, so Stefan, please drop the previous patch and test the updated
-> > > > > one below. Thanks.
-> > > > > 
-> > > > > 
-> > > > > commit 6cc44b0ce5c9270b15d456eb9ffa91b855e4e0d0
-> > > > > Author: Borislav Petkov <petkovbb@gmail.com>
-> > > > > Date:   Sat Feb 16 09:56:36 2008 +0100
-> > > > > 
-> > > > >     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
-> > > > >     
-> > > > >     Reported-by: Stefan Bader <stefan.bader@canonical.com>
-> > > > >     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > > > > 
-> > > > > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > > > > index f77db6b..4c9984f 100644
-> > > > > --- a/drivers/ide/ide-cd.c
-> > > > > +++ b/drivers/ide/ide-cd.c
-> > > > > @@ -1750,6 +1750,11 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
-> > > > >  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
-> > > > >  	if (buf[8 + 3] & 0x10)
-> > > > >  		cdi->mask &= ~CDC_DVD_R;
-> > > > > +	if (!(buf[8 + 4] & 0x01)) {
-> > > > > +		printk(KERN_INFO "ide-cd: audio play not advertised in caps "
-> > > > > +				"page for drive model [%s], enabling quirk.\n",
-> > > > > +				drive->id->model);
-> > > > 
-> > > > if IDE_CD_FLAG_PLAY_AUDIO_OK flag is not set the above message is _bogus_
-> > > > (because the quirk won't be enabled)
-> > > > 
-> > > > [ how's about just deleting the whole printk() to preserve simplicity? ]
-> > > > 
-> > > > > +	}
-> > > > >  	if ((buf[8 + 4] & 0x01) || (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK))
-> > > > >  		cdi->mask &= ~CDC_PLAY_AUDIO;
-> > > > >  
-> > > > > @@ -1929,6 +1934,7 @@ static const struct cd_list_entry ide_cd_quirks_list[] = {
-> > > > >  	{ "MATSHITADVD-ROM SR-8186", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
-> > > > >  	{ "MATSHITADVD-ROM SR-8176", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
-> > > > >  	{ "MATSHITADVD-ROM SR-8174", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
-> > > > > +	{ "Optiarc DVD RW AD-5200A", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK      },
-> > > 
-> > > But the flag _is_ set because the drive is added to the quirk list (line above	^) and
-> >                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> > 
-> > (fortunately) majority of ATAPI drives are not in the quirk list ;-)
-> > 
-> > [ and they may have (buf[8 + 4] & 0x01) == 0 ]
-> 
-> Bart,
-> 
-> i think i probably didn't express myself clear enough before. The patch
-> serves the sole purpose to show exactly whether buf[8 + 4] & 0x01) == 0 and
-> is in no way the final solution. I just wanted to make sure the caps page
-> doesn't set the audioplay bit. The final solution would be to add the drive
-> to the quirks list only, i guess, in case you don't have a better idea.
-> 
-> Sorry for the misunderstanding :=).
+On Tue, Jan 22, 2008 at 12:00:00PM -0800, Christoph Lameter wrote:
+> Patches that I would recommend to test individually if you could do it 
+> (get the series via git pull 
+> git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git performance):
 
-Doh, all the time I thought that it is the final patch to be merged. :-)
+With these patches applied to 2.6.24-rc8, the perf team are seeing
+oopses while running the benchmark.  They're currently trying to narrow
+down which of the patches it is.  I'll get an oops for you to study when
+they've figured that out.
 
-[ I like to merge patches ASAP so please give some hint like putting
-  "Bart: DO NOT APPLY!" after "---" for draft/testing patches. Thanks. ]
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
