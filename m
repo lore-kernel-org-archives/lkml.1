@@ -1,50 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755916AbYBPJXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbYBPJ1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755916AbYBPJXm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 04:23:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbYBPJW6
+	id S1755261AbYBPJ1W (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 04:27:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752426AbYBPJ1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 04:22:58 -0500
-Received: from smtp5-g19.free.fr ([212.27.42.35]:59536 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753091AbYBPJWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 04:22:45 -0500
-Date: Sat, 16 Feb 2008 10:22:46 +0100
-From: FD Cami <francois.cami@free.fr>
-To: "Omar Kilani" <omar.kilani@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: aacraid: Host adapter reset request. SCSI hang ?
-Message-ID: <20080216102246.63d2fc6e@olorin>
-In-Reply-To: <f0cc3e3e0802152238t59498e3bv229d02ee3d96cea7@mail.gmail.com>
-References: <f0cc3e3e0802152238t59498e3bv229d02ee3d96cea7@mail.gmail.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.10.4; x86_64-unknown-linux-gnu)
+	Sat, 16 Feb 2008 04:27:09 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57162
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752344AbYBPJ1H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 04:27:07 -0500
+Date: Sat, 16 Feb 2008 01:27:41 -0800 (PST)
+Message-Id: <20080216.012741.243894500.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Cc: hidave.darkstar@gmail.com
+Subject: Re: + bluetooth-fix-warning-in-net-bluetooth-hci_sysfsc.patch
+ added to -mm tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200802160449.m1G4nX5V009024@imap1.linux-foundation.org>
+References: <200802160449.m1G4nX5V009024@imap1.linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 17:38:13 +1100
-"Omar Kilani" <omar.kilani@gmail.com> wrote:
+From: akpm@linux-foundation.org
+Date: Fri, 15 Feb 2008 20:49:33 -0800
 
-> Hi there,
+> Subject: bluetooth: fix warning in net/bluetooth/hci_sysfs.c
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> We're having issues with our Adaptec RAID controller and I was
-> wondering if anyone would be able to advise on how to go about
-> resolving them. :)
+> net/bluetooth/hci_sysfs.c: In function 'del_conn':
+> net/bluetooth/hci_sysfs.c:339: warning: suggest parentheses around assignment used as truth value
 > 
-> The system:
-> 
-> RHEL 5.1 x86_64
-> Kernel 2.6.18-53.1.4.el5
-> aacraid 1.1-5[2437]-mh4 (The default module shipped with the RHEL kernel)
+> Cc: Dave Young <hidave.darkstar@gmail.com>
+> Cc: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 
-Hi,
-
-Maybe starting there is better :
-https://www.redhat.com/apps/support/
-
-Best,
-
-Francois
+Linus barfed when this exact patch got posted a few weeks
+ago, he said he considers just adding parenthesis to quiet
+this warning awful and explicit NULL test should be used.
