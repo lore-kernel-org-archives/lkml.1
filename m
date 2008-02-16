@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbYBPV7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758984AbYBPWAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbYBPV7p (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 16:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbYBPV7h
+	id S1758984AbYBPWAg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 17:00:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbYBPWA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 16:59:37 -0500
-Received: from www.tglx.de ([62.245.132.106]:50842 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750770AbYBPV7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 16:59:36 -0500
-Date: Sat, 16 Feb 2008 22:59:32 +0100
-From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: What's needed for a PCIe card to be recognized?
-Message-ID: <20080216225932.22460d31@dilbert.local>
-Organization: Linutronix
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Feb 2008 17:00:28 -0500
+Received: from palinux.external.hp.com ([192.25.206.14]:50352 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750797AbYBPWA1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 17:00:27 -0500
+Date: Sat, 16 Feb 2008 15:00:26 -0700
+From: Matthew Wilcox <matthew@wil.cx>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux kernel list <linux-kernel@vger.kernel.org>,
+       andreas.eckstein@gmx.net, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: pci-disable-decoding-during-sizing-of-bars.patch no longer needed
+Message-ID: <20080216220025.GI7657@parisc-linux.org>
+References: <47B75ABB.8000005@gentoo.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B75ABB.8000005@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm playing around with a vanilla 2.6.25-rc1, adding patches to make it
-work on an Asus EeePC. That one has the problem that its Mini PCIe WLAN
-module doesn't show up in lspci. That brought up a few questions that I
-couldn't answer yet:
+On Sat, Feb 16, 2008 at 09:50:51PM +0000, Daniel Drake wrote:
+> Hi,
+> 
+> The patch titled pci-disable-decoding-during-sizing-of-bars.patch in -mm 
+> was previously used as a candidate to fix a boot hang with Intel's Q35 
+> chipset: https://bugs.gentoo.org/show_bug.cgi?id=198810
+> 
+> However, that particular issue is solved by commit a0ca9909609 in Linus 
+> tree:
+> 	PCI x86: always use conf1 to access config space below 256 bytes
+> 
+> So unless there are other reasons for keeping 
+> pci-disable-decoding-during-sizing-of-bars around, I think we can drop it.
 
-How can they "hide" a PCIe card?
-What could be their motive to do that?
-How can I make it appear?
+I agree it should be dropped.
 
-I found some solutions googling around, but they all seem to be funny
-workarounds, like unloading pciehp and then loading it again with
-pciehp_force=1, then switching WLAN off and on again
-(through /proc/acpi/asus/wlan, I've got that one meanwhile)... This
-doesn't look like a clean solution to me, but I must admit that I don't
-know enough about PCIe hotplug to understand what's going on. I'd
-appreciate it if someone could give me a few hints or point me to good
-documentation.
-
-Output of lspci:
-00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML Express Processor to DRAM Controller (rev 04)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 915GM/GMS/910GML Express Graphics Controller (rev 04)
-00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML Express Graphics Controller (rev 04)
-00:1b.0 Audio device: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) High Definition Audio Controller (rev 04)
-00:1c.0 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 1 (rev 04)
-00:1c.1 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 2 (rev 04)
-00:1c.2 PCI bridge: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) PCI Express Port 3 (rev 04)
-00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #1 (rev 04)
-00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #2 (rev 04)
-00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #3 (rev 04)
-00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB UHCI #4 (rev 04)
-00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) USB2 EHCI Controller (rev 04)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev d4)
-00:1f.0 ISA bridge: Intel Corporation 82801FBM (ICH6M) LPC Interface Bridge (rev 04)
-00:1f.2 IDE interface: Intel Corporation 82801FBM (ICH6M) SATA Controller (rev 04)
-00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) SMBus Controller (rev 04)
-03:00.0 Ethernet controller: Attansic Technology Corp. L2 100 Mbit Ethernet Adapter (rev a0)
-
-(The WLAN card should show up at 01:00.0, according to info found on
-the web).
-
-Thanks,
-Hans
-
-
+-- 
+Intel are signing my paycheques ... these opinions are still mine
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
