@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754782AbYBPIr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbYBPIyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754782AbYBPIr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 03:47:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751783AbYBPIrr
+	id S1753952AbYBPIyw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 03:54:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbYBPIym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 03:47:47 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:36086 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751458AbYBPIrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 03:47:46 -0500
-Date: Sat, 16 Feb 2008 10:47:23 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, dipankar@in.ibm.com
-Subject: Re: [PATCH] Add list_for_each_rcu to features-removal list
-Message-ID: <20080216084723.GD9962@cs181133002.pp.htv.fi>
-References: <20080128122500.GA32723@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080128122500.GA32723@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 16 Feb 2008 03:54:42 -0500
+Received: from qb-out-0506.google.com ([72.14.204.229]:32063 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbYBPIyl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 03:54:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=jI66wFrTej3UmzfXasf9FnzOrSGghkcqdstxNIrIsLAiIH7XW3cbfpSrLX8OTHAgubIcDXqIBQQJfu+Dnb+LcGimSoCZiz8FxM/b7/nKwWvN5/zIiSQRdhL/c6w1DRQTkdslRAFyMa5XPGs+MNaLqKJMXuK3Ko00Iu2UP+uzuwc=
+Date: Sat, 16 Feb 2008 16:50:24 +0800 (CST)
+Message-Id: <20080216.165024.199372966.xiyou.wangcong@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [Patch] Fix shadowed variables in fs/binfmt_elf.c
+From: WANG Cong <xiyou.wangcong@gmail.com>
+In-Reply-To: <20080215123459.0a675826.akpm@linux-foundation.org>
+References: <20080215.215802.139099786.xiyou.wangcong@gmail.com>
+	<20080215123459.0a675826.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 04:25:00AM -0800, Paul E. McKenney wrote:
-> Hello!
+From: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Patch] Fix shadowed variables in fs/binfmt_elf.c
+Date: Fri, 15 Feb 2008 12:34:59 -0800
+Message-ID: <20080215123459.0a675826.akpm@linux-foundation.org>
+
+> On Fri, 15 Feb 2008 21:58:02 +0800 (CST)
+> WANG Cong <xiyou.wangcong@gmail.com> wrote:
 > 
-> The list_for_each_entry_rcu() primitive should be used instead of
-> list_for_each_rcu(), as the former is easier to use and provides
-> better type safety.  This patch therefore adds list_for_each_rcu()
-> to the Documentation/feature-removal-schedule.txt file (for mid-2008)
-> and marks its comment header deprecated.
+> > 
+> > Fix these sparse warings:
+> > fs/binfmt_elf.c:1749:29: warning: symbol 'tmp' shadows an earlier one
+> > fs/binfmt_elf.c:1734:28: originally declared here
+> > fs/binfmt_elf.c:2009:26: warning: symbol 'vma' shadows an earlier one
+> > fs/binfmt_elf.c:1892:24: originally declared here
+> > 
+> > Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+> > 
+> > ---
+> > diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+> > index 41a958a..6562563 100644
+> > --- a/fs/binfmt_elf.c
+> > +++ b/fs/binfmt_elf.c
+> > @@ -1746,11 +1746,11 @@ static int fill_note_info(struct elfhdr *elf, int phdrs,
+> >  		while_each_thread(g, p);
+> >  		rcu_read_unlock();
+> >  		list_for_each(t, &info->thread_list) {
+> > -			struct elf_thread_status *tmp;
+> > +			struct elf_thread_status *temp;
+> >  			int sz;
+> >  
+> > -			tmp = list_entry(t, struct elf_thread_status, list);
+> > -			sz = elf_dump_thread_status(signr, tmp);
+> > +			temp = list_entry(t, struct elf_thread_status, list);
+> > +			sz = elf_dump_thread_status(signr, temp);
+> >  			info->thread_status_size += sz;
+> >  		}
+> >  	}
 > 
-> Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> ---
+> `tmp' is an awful identifier, and renaming it to "temp" hardly improves it.
+> Please take any opportunity to fix this sort of thing.
 > 
->  Documentation/feature-removal-schedule.txt |   10 ++++++++++
->  include/linux/list.h                       |    5 ++++-
->  2 files changed, 14 insertions(+), 1 deletion(-)
+> I chose "ets" which is a bit weird but once one understand what it means,
+> it makes the code much easier to follow.
 > 
-> diff -urpNa -X dontdiff linux-2.6.24/Documentation/feature-removal-schedule.txt linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt
-> --- linux-2.6.24/Documentation/feature-removal-schedule.txt	2008-01-24 14:58:37.000000000 -0800
-> +++ linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt	2008-01-28 04:00:49.000000000 -0800
-> @@ -333,3 +333,13 @@ Why:	This driver has been marked obsolet
->  Who:	Stephen Hemminger <shemminger@linux-foundation.org>
->  
->  ---------------------------
-> +
-> +What:	list_for_each_rcu() primitive
-> +When:	July 2008
-> +Files:	include/linux/list.h
-> +Why:	The list_for_each_entry_rcu() primitive should be used instead,
-> +	as it is less error-prone and provides better type safety.
-> +Who:	Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->...
+> Also used the same local for both loops.  There seems little point in
+> instantiating a second one.
 
-Declaring something as deprecated doesn't automatically convert the 
-in-kernel users.
+I agree. The first 'tmp' you showed is really not good, 'ets' is better.
 
-And once there are no in-kernel users left you can kill it immediately.
-
-The only working way for getting rid of list_for_each_rcu() is:
-- send patches for all in-kernel usages to the maintainers of the code
-  in question now
-- once all of these patches have entered Linus' tree (which might not
-  be before the 2.6.26 merge window) you can remove list_for_each_rcu()
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks, Andrew!
