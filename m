@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763062AbYBPAKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbYBPAL3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763062AbYBPAKv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 19:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758895AbYBPAKF
+	id S1763592AbYBPAL3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 19:11:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbYBPALT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 19:10:05 -0500
-Received: from wr-out-0506.google.com ([64.233.184.229]:40457 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758740AbYBPAKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 19:10:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=n+KGWfIGPNxlbAU8sMps0Edqrg1TcmJI8APV7LEaAbbWoR8N6hbUirzvltxiweaiaLUtK61TgYfV/vtWPvysM370jtzPTZtJUCIIKG5BVOocI5YZh+eSSF6xRGx3Cj6stWQQbK9phxKOPxHa5n/2UE7CBt1mbdmnM95b/21brWk=
-Message-ID: <6cf66ee10802151610s1fce556aoec832acac959380f@mail.gmail.com>
-Date: Fri, 15 Feb 2008 14:10:00 -1000
-From: "charles gagalac" <charles.gagalac@gmail.com>
-To: "Chris Holvenstot" <cholvenstot@comcast.net>
-Subject: Re: 2.6.25-rc2 - Missing in Action?
-Cc: "Kernel List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1203119572.6176.13.camel@popeye>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Feb 2008 19:11:19 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:36635 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758232AbYBPALS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 19:11:18 -0500
+Date: Fri, 15 Feb 2008 18:11:14 -0600
+From: Paul Jackson <pj@sgi.com>
+To: David Rientjes <rientjes@google.com>
+Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
+       ak@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
+Message-Id: <20080215181114.e4fb0839.pj@sgi.com>
+In-Reply-To: <alpine.DEB.1.00.0802151548060.30015@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
+	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
+	<20080214040918.d735e920.pj@sgi.com>
+	<alpine.DEB.1.00.0802141336590.6067@chino.kir.corp.google.com>
+	<20080215032748.8b07e5eb.pj@sgi.com>
+	<alpine.DEB.1.00.0802151216330.19332@chino.kir.corp.google.com>
+	<20080215174554.92f14bac.pj@sgi.com>
+	<alpine.DEB.1.00.0802151548060.30015@chino.kir.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203119572.6176.13.camel@popeye>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 1:52 PM, Chris Holvenstot wrote:
-> Per chance is 2.6.25-rc2 missing in action? I see the announcement from
->  about 3 and a half hours ago, but the latest patch that I see is
->  rc1-git4.
->
->  I even took the unheard of action of hitting refresh on my browser.
->
+> Do you know when the patch that adds 
+> bitmap_onto(), which is a name I think I noticed you liking, will be 
+> available?
 
-browse the directory listing of testing.  rc2 is there.
+Thanks in good part to your various questions regarding it, I realized
+a significant error in the central piece of code in that patch, the
+routine lib/bitmap.c:bitmap_onto().  I should be done in a few hours
+reworking it, and will post it then.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
