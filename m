@@ -1,59 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYBPLvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755895AbYBPMEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757993AbYBPLvz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 06:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYBPLvo
+	id S1755895AbYBPMEA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 07:04:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbYBPMDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 06:51:44 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58154 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753849AbYBPLvn (ORCPT
+	Sat, 16 Feb 2008 07:03:50 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:39841 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751774AbYBPMDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 06:51:43 -0500
-Date: Sat, 16 Feb 2008 05:51:38 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [PATCH] KVM swapping with MMU Notifiers V7
-Message-ID: <20080216115138.GA11391@sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080216104827.GI11732@v2.random>
+	Sat, 16 Feb 2008 07:03:49 -0500
+Message-ID: <47B6D11F.8060304@tiscali.nl>
+Date: Sat, 16 Feb 2008 13:03:43 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080216104827.GI11732@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       hidave.darkstar@gmail.com
+Subject: Re: + bluetooth-fix-warning-in-net-bluetooth-hci_sysfsc.patch added
+ to -mm tree
+References: <200802160449.m1G4nX5V009024@imap1.linux-foundation.org>	<20080216.012741.243894500.davem@davemloft.net> <20080216015442.e94dc0ca.akpm@linux-foundation.org>
+In-Reply-To: <20080216015442.e94dc0ca.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 11:48:27AM +0100, Andrea Arcangeli wrote:
-> Those below two patches enable KVM to swap the guest physical memory
-> through Christoph's V7.
+Andrew Morton wrote:
+> On Sat, 16 Feb 2008 01:27:41 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 > 
-> There's one last _purely_theoretical_ race condition I figured out and
-> that I'm wondering how to best fix. The race condition worst case is
-> that a few guest physical pages could remain pinned by sptes. The race
-> can materialize if the linux pte is zapped after get_user_pages
-> returns but before the page is mapped by the spte and tracked by
-> rmap. The invalidate_ calls can also likely be optimized further but
-> it's not a fast path so it's not urgent.
+>> From: akpm@linux-foundation.org
+>> Date: Fri, 15 Feb 2008 20:49:33 -0800
+>>
+>>> Subject: bluetooth: fix warning in net/bluetooth/hci_sysfs.c
+>>> From: Andrew Morton <akpm@linux-foundation.org>
+>>>
+>>> net/bluetooth/hci_sysfs.c: In function 'del_conn':
+>>> net/bluetooth/hci_sysfs.c:339: warning: suggest parentheses around assignment used as truth value
+>>>
+>>> Cc: Dave Young <hidave.darkstar@gmail.com>
+>>> Cc: David S. Miller <davem@davemloft.net>
+>>> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+>> Linus barfed when this exact patch got posted a few weeks
+>> ago, he said he considers just adding parenthesis to quiet
+>> this warning awful and explicit NULL test should be used.
+> 
+> -	while (dev = device_find_child(&conn->dev, NULL, __match_tty)) {
+> +	while ((dev = device_find_child(&conn->dev, NULL, __match_tty))) {
+> 
+> hrm.
+> 
+> box:/usr/src/linux-2.6.25-rc2> grep -r 'while [(][(].*{$' . | wc -l               
+> 1240
+> box:/usr/src/linux-2.6.25-rc2> grep -r 'while [(][(].*{$' . | grep -v NULL | wc -l
+> 867
+> 
+> so two thirds of them presently don't bother testing for NULL.  It's a
+> pretty common idiom.
+> 
+> (adds the != NULL, sees that it reaches column 82, drops patch in disgust)
 
-I am doing this in xpmem with a stack-based structure in the function
-calling get_user_pages.  That structure describes the start and
-end address of the range we are doing the get_user_pages on.  If an
-invalidate_range_begin comes in while we are off to the kernel doing
-the get_user_pages, the invalidate_range_begin marks that structure
-indicating an invalidate came in.  When the get_user_pages gets the
-structures relocked, it checks that flag (really a generation counter)
-and if it is set, retries the get_user_pages.  After 3 retries, it
-returns -EAGAIN and the fault is started over from the remote side.
+Not my results:
 
-Thanks,
-Robin
+# greps for 'while ((x = y(...)))' see below for variables
+
+git-grep -n -A2 "while" | 
+sed -n "s/^\([^\.]*\.[chsS]-[0-9]*-\|\([^\.]*\.[chsS]:[0-9]*:\)$s\)\(.*\)$/\2\3/p" |
+tr "\n" "@" |
+grep -o "@[^@]*while$z($z($z$W$z=$z$W$z($h)$z)$z)" |
+tr "@\t" " " | tr -s " " | wc -l
+262
+
+# while ((x = y(...)) != NULL)
+
+git-grep -n -A2 "while" | 
+sed -n "s/^\([^\.]*\.[chsS]-[0-9]*-\|\([^\.]*\.[chsS]:[0-9]*:\)$s\)\(.*\)$/\2\3/p" |
+tr "\n" "@" |
+grep -o "@[^@]*while$z($z($z$W$z=$z$W$z($h)$z)$z\!=${z}NULL$z)" |
+tr "@\t" " " | tr -s " " | wc -l
+333
+
+# while ((x = y(...)) != 0)
+
+git-grep -n -A2 "while" | 
+sed -n "s/^\([^\.]*\.[chsS]-[0-9]*-\|\([^\.]*\.[chsS]:[0-9]*:\)$s\)\(.*\)$/\2\3/p" |
+tr "\n" "@" |
+grep -o "@[^@]*while$z($z($z$W$z=$z$W$z($h)$z)$z\!=${z}0$z)" |
+tr "@\t" " " | tr -s " " | wc -l
+45
+
+# while (!(x = y(...)))
+
+git-grep -n -A2 "while" | 
+sed -n "s/^\([^\.]*\.[chsS]-[0-9]*-\|\([^\.]*\.[chsS]:[0-9]*:\)$s\)\(.*\)$/\2\3/p" |
+tr "\n" "@" |
+grep -o "@[^@]*while$z($z\!$z($z$W$z=$z$W$z($h)$z)$z)" |
+tr "@\t" " " | tr -s " " | wc -l
+19
+
+
+V="[A-Za-z_]\+[A-Za-z0-9_]*"
+W="$V\(\[$V\]\|\[[0-9]\+\]\|\.$V\|->$V\)*"
+s="[[:space:]]*"
+h="[^()]*\(([^()]*)[^()]*\)*"
+z="[@[:space:]]*"
