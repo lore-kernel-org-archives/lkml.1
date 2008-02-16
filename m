@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbYBPRg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758633AbYBPRk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbYBPRg5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 12:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbYBPRgs
+	id S1758633AbYBPRk3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 12:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbYBPRkV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 12:36:48 -0500
-Received: from main.gmane.org ([80.91.229.2]:33588 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755654AbYBPRgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 12:36:45 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
-Subject: Understanding Block Device Behaviour
-Date: Sat, 16 Feb 2008 18:37:10 +0100
-Message-ID: <fp76uu$9eh$1@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: bras-co-85-197-3-127.westend.de
-User-Agent: KNode/0.10.5
+	Sat, 16 Feb 2008 12:40:21 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:39892 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755339AbYBPRkU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 12:40:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=o1FdWpZNWqUz8D2gVkiFHhWW+vuQXvts6uyqwYqvCk8vEpCOyhV0tvXhQaPeMPI12
+	C1FtVfis+OqurQOqnkxBA==
+Message-ID: <6599ad830802160940g1221b9ebkc8d5bf795da59d38@mail.gmail.com>
+Date: Sat, 16 Feb 2008 09:40:18 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [RFC][PATCH 0/7] CGroup API: More structured API for CGroups control files
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>, balbir@in.ibm.com,
+       pj@sgi.com, "Pavel Emelianov" <xemul@openvz.org>,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <47B6AD86.2060802@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080215204418.535025000@menage.corp.google.com>
+	 <20080216132118.877e769b.kamezawa.hiroyu@jp.fujitsu.com>
+	 <47B6AD86.2060802@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Feb 16, 2008 1:31 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+>
+> I don't quite catch what you mean. Cgoup does support write-only/read-only
+> files. For a write-only file, just set .write and .write_uint to be NULL,
+> similar for a read-only file.
+>
+> Do I miss something?
+>
 
-Maybe someone on this list can shed some light on my following observations.
-I have a machine running Linux (2.6.23 / 2.6.24) as its main OS, a Windows
-XP test installation on a physical primary partition and one logical drive
-formatted as VFAT32 for exchanging data (/dev/sda11 / "d:").
+I suppose we could infer from the lack of any write handlers that we
+should give the file in the filesystem a mode of 444 rather 644.
 
-I'm running the Windows inside QEMU/KVM, using "-hda /dev/sda" to provide my
-physical disk to the VM. Of course, sda11 is never mounted if I start the
-VM.
-
-My expectation was that it should work fine to mount sda11, copy files to
-it, umount sda11, start the VM, and access the files from there.
-
-Short story: To my surprise this doesn't work, and I'd like to know the
-reason, just out of curiosity.
-
-Symptoms are that the freshly copied files do not show up in Windows in the
-VM and chkdsk (sometimes) reports data corruption. (Reminder: sda11 had
-been unmounted before starting the VM.)
-If I shut down the VM and mount sda11 in Linux again, the files are gone
-from there as well.
-
-If I mount sda11 again immediately after copying and umounting and without
-starting the VM in between, the files show up just fine. If I really shut
-of Linux and boot my Windows test installation natively, the files are also
-visible and working ok.
-
-I've both tried to format sda11 using mkdosfs and within Windows itself, and
-made sure to run chkdsk regularily to avoid suprious follow-up filesystem
-errors during my tests.
-
-Why doesn't it work as I expected?
-
-Greetings,
-
-  Gunter
-
+Paul
