@@ -1,48 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbYBPTcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYBPTeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756744AbYBPTcA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 14:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbYBPTbw
+	id S1757344AbYBPTeR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 14:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbYBPTeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 14:31:52 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:47223 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756557AbYBPTbv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 14:31:51 -0500
-Message-ID: <47B73A22.60806@zytor.com>
-Date: Sat, 16 Feb 2008 11:31:46 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 16 Feb 2008 14:34:05 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:58960 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751113AbYBPTeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 14:34:04 -0500
+Date: Sat, 16 Feb 2008 11:34:03 -0800 (PST)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matthew Wilcox <matthew@wil.cx>
+cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB: Increasing partial pages
+In-Reply-To: <20080216190727.GH7657@parisc-linux.org>
+Message-ID: <Pine.LNX.4.64.0802161133000.25573@schroedinger.engr.sgi.com>
+References: <20080116195949.GO18741@parisc-linux.org>
+ <Pine.LNX.4.64.0801161219050.9694@schroedinger.engr.sgi.com>
+ <20080116214127.GA11559@parisc-linux.org> <Pine.LNX.4.64.0801161347160.11353@schroedinger.engr.sgi.com>
+ <20080116221618.GB11559@parisc-linux.org> <Pine.LNX.4.64.0801161421240.12024@schroedinger.engr.sgi.com>
+ <20080118191430.GD20490@parisc-linux.org> <Pine.LNX.4.64.0801221142330.27692@schroedinger.engr.sgi.com>
+ <20080216190727.GH7657@parisc-linux.org>
 MIME-Version: 1.0
-To: Roel Kluin <12o3l@tiscali.nl>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] kernel/{exit.c, signal.c, power/process.c}: replace
- !likely(x) by likely(!x)
-References: <47B70810.5030608@tiscali.nl> <47B732EF.4050504@zytor.com> <47B739AA.6070108@tiscali.nl>
-In-Reply-To: <47B739AA.6070108@tiscali.nl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> H. Peter Anvin wrote:
->> Roel Kluin wrote:
->>> Not entirely sure who to send this to
->>> ---
->>> Replace !likely(x) by likely(!x)
->> Whoa...
->>
->> Are you sure this is correct?
->>
->> !likely(x) is equivalent to unlikely(!x), not the opposite, so this is a
->> functional change...
->>
-> You are right, sorry, Need more caffeine. I will send the right patch later.
+On Sat, 16 Feb 2008, Matthew Wilcox wrote:
 
-Note I didn't say it was wrong, I just wanted a bit more explanation 
-about why it's right, if it is.
+> On Tue, Jan 22, 2008 at 12:00:00PM -0800, Christoph Lameter wrote:
+> > Patches that I would recommend to test individually if you could do it 
+> > (get the series via git pull 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/christoph/vm.git performance):
+> 
+> With these patches applied to 2.6.24-rc8, the perf team are seeing
+> oopses while running the benchmark.  They're currently trying to narrow
+> down which of the patches it is.  I'll get an oops for you to study when
+> they've figured that out.
 
-	-hpa
+There is also new code upstream now with significant changes that 
+affect performance. It may not be worthwhile to continue with 2.6.24-rc8 
++ patches.
+
