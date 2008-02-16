@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYBPXSg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753818AbYBPXiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755951AbYBPXSg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 18:18:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYBPXS1
+	id S1753818AbYBPXiK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 18:38:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751778AbYBPXhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 18:18:27 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:59935 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751126AbYBPXS0 (ORCPT
+	Sat, 16 Feb 2008 18:37:55 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:31627 "EHLO
+	mk-filter-2-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751363AbYBPXhy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 18:18:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=x8vwvUF9A965rh0ziwIyZqC6AQ1p27x0HI0YZ0KjPFSB6z/RWQOmgHpp2+5nPbXl9lgwiZnEGJZ4L8Vm6kEXZj4jKIH0KKHwg7Y3f+V+ZarW+JXFXvC1va2zfGssBTIYqwpIcC8ws7WAjPCCUlLej9I+krhV5xwFzaCSTNoNwPM=
-Message-ID: <3d8471ca0802161518h3fe87f5encc83e7cc976ccef9@mail.gmail.com>
-Date: Sun, 17 Feb 2008 00:18:08 +0100
-From: "Guillaume Chazarain" <guichaz@gmail.com>
-To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-Subject: Re: 2.6.25-rc2: wpa_supplicant BUGs kernel in rwlock recursion
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Laszlo Attila Toth" <panther@balabit.hu>,
-       "David Miller" <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>
-In-Reply-To: <5a4c581d0802160914m7778cf3av5c01c54374f26f5b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 16 Feb 2008 18:37:54 -0500
+X-Trace: 673086712/mk-filter-2.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
+X-SBRS: None
+X-RemoteIP: 81.1.89.66
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAHoCt0dRAVlC/2dsb2JhbACBWapEgXo
+Subject: [PATCH] maple: remove unused variable
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: linux-sh <linux-sh@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 16 Feb 2008 23:37:33 +0000
+Message-Id: <1203205053.6737.17.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5a4c581d0802160914m7778cf3av5c01c54374f26f5b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 16, 2008 6:14 PM, Alessandro Suardi <alessandro.suardi@gmail.com> wrote:
-> Feb 16 16:51:49 sandman kernel: BUG: rwlock recursion on CPU#0,
+Remove an unused variable from the definition of struct maple_device
 
-Same thing here, bisected it to:
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
-commit 45b503548210fe6f23e92b856421c2a3f05fd034
-Author: Laszlo Attila Toth <panther <at> balabit.hu>
-Date:   Tue Feb 12 22:42:09 2008 -0800
+diff -ruN a/include/linux/maple.h b/include/linux/maple.h
+--- a/include/linux/maple.h	2008-02-16 20:52:09.000000000 +0000
++++ b/include/linux/maple.h	2008-02-16 21:42:06.000000000 +0000
+@@ -64,7 +64,6 @@
+ 	int (*connect) (struct maple_device * dev);
+ 	void (*disconnect) (struct maple_device * dev);
+ 	struct device_driver drv;
+-	int registered;
+ };
+ 
 
-    [RTNETLINK]: Send a single notification on device state changes.
 
-The revert applies cleanly and fixes the problem.
-Rafael has more details in http://lkml.org/lkml/2008/2/15/542.
-
--- 
-Guillaume
