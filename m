@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759879AbYBPAqO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbYBPAuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759879AbYBPAqO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 19:46:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYBPAp6
+	id S1761576AbYBPAuI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 19:50:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754188AbYBPAt6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 19:45:58 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50674 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752625AbYBPAp5 (ORCPT
+	Fri, 15 Feb 2008 19:49:58 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:55903 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751814AbYBPAt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 19:45:57 -0500
-Date: Fri, 15 Feb 2008 16:45:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-Id: <20080215164543.e8a808ba.akpm@linux-foundation.org>
-In-Reply-To: <20080216003136.GG31474@flint.arm.linux.org.uk>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	<20080216000943.GD31474@flint.arm.linux.org.uk>
-	<20080215162121.317c7c1c.akpm@linux-foundation.org>
-	<20080216003136.GG31474@flint.arm.linux.org.uk>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 15 Feb 2008 19:49:57 -0500
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Theodore Tso <tytso@MIT.EDU>
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, miklos@szeredi.hu, akpm@osdl.org
+In-Reply-To: <20080216003219.GA26734@mit.edu>
+References: <20080215223721.9E0A088A@kernel>
+	 <20080215223730.90A85F4A@kernel>  <20080216003219.GA26734@mit.edu>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 16:49:39 -0800
+Message-Id: <1203122979.13230.3.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 00:31:36 +0000
-Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+On Fri, 2008-02-15 at 19:32 -0500, Theodore Tso wrote:
+> On Fri, Feb 15, 2008 at 02:37:30PM -0800, Dave Hansen wrote:
+> > 
+> > This patch adds two function mnt_want_write() and mnt_drop_write().
+> > These are used like a lock pair around and fs operations that might
+> > cause a write to the filesystem.
+> 
+> Argh, is there some reason why this couldn't have gotten merged in
+> -rc1, ahead of the rest of the patch series?  This one is going to
+> cause more cross-tree merge pain with any filesystem tree that have
+> changes to fs/*/ioctl.c.
 
-> > so would a stupid `for i in arch/arm/configs/*' script be sufficient
-> > coverage?
->
-> It will certainly improve the situation significantly, and pick up
-> on some non-ARM problems like (badge4_defconfig, since 2.6.24-git2):
+I wasn't meaning for this to hit the 2.6.25-rc series.  We had some
+review comments just when the merge window opened, and I was expecting
+them to get stuck back in -mm for another round.
 
-OK, I'll toss something together.
+-- Dave
 
->  the latter seems to be because the PCMCIA changes were lost
-> on the linux-pcmcia list and the trizeps folk have probably given up.
-
-I appear to be pcmcia maintainer lately so if someone wants to dust them
-off and send them over we can see what we can do?
