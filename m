@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbYBPQPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYBPQQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbYBPQPh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:15:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753623AbYBPQPa
+	id S1758678AbYBPQQS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYBPQQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:15:30 -0500
-Received: from minas.ics.muni.cz ([147.251.4.40]:40288 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753118AbYBPQP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:15:29 -0500
-Date: Sat, 16 Feb 2008 17:15:26 +0100
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Paulo Marques <pmarques@grupopie.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disk schedulers
-Message-ID: <20080216161526.GH4269@ics.muni.cz>
-References: <20080214162104.GA5347@ics.muni.cz> <47B5CAE4.1000905@grupopie.com>
+	Sat, 16 Feb 2008 11:16:07 -0500
+Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44664 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755080AbYBPQQF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 11:16:05 -0500
+Message-ID: <47B70C3A.4050600@linux.vnet.ibm.com>
+Date: Sat, 16 Feb 2008 21:45:54 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: [BUG] 2.6.25-rc2-mm1 - kernel oops while bootup on s390x
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <47B5CAE4.1000905@grupopie.com>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@anubis.fi.muni.cz
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sat, 16 Feb 2008 17:15:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 05:24:52PM +0000, Paulo Marques wrote:
-> If you want to take advantage of all that memory to buffer disk writes,  
-> so that the reads can proceed better, you might want to tweak your  
-> /proc/sys/vm/dirty_ratio amd /proc/sys/vm/dirty_background_ratio to more  
-> appropriate values. (maybe also dirty_writeback_centisecs and  
-> dirty_expire_centisecs)
+Hi Andrew,
 
-I don't feel like to have my whole memory eaten by a single file which is not
-to be read again and thus it is pretty useless. Instead, I would like to see
-slowdown of scp so that other processes can also access disk. Why is this
-possible with kernel process scheduler and not with IO scheduler?
+The 2.6.25-rc2-mm1 kernel panic's while boot up on the s390x
+
+Unable to handle kernel pointer dereference at virtual kernel address 0000000000
+000000
+Oops: 0004 #1¨ SMP
+Modules linked in:
+CPU: 0 Not tainted 2.6.25-rc2-mm1-autotest #1
+Process swapper (pid: 1, task: 000000003f830000, ksp: 000000003f83ba48)
+Krnl PSW : 0704a00180000000 000000000024b2be (futex_atomic_cmpxchg_std+0x12/0x28
+)
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:2 CC:2 PM:0 EA:3
+Krnl GPRS: 0000000000000074 00000000fffffff2 0000000000000000 0000000000000000
+           0000000000000000 0000000000000001 0000000000000000 00000000004d0764
+           0000000000000000 00000000004d8768 0000000000000000 000000003f83bdb0
+           0000000000000040 0000000000343950 00000000000627e4 000000003f83bdb0
+Krnl Code: 000000000024b2b2: b90400bf           lgr     %r11,%r15
+           000000000024b2b6: a718fff2           lhi     %r1,-14
+           000000000024b2ba: b2790100           sacf    256
+          >000000000024b2be: ba342000           cs      %r3,%r4,0(%r2)
+           000000000024b2c2: 1813               lr      %r1,%r3
+           000000000024b2c4: b2790000           sacf    0
+           000000000024b2c8: b9140021           lgfr    %r2,%r1
+           000000000024b2cc: e3b0b0700004       lg      %r11,112(%r11)
+Call Trace:
+(<000000003f83bda8>¨ 0x3f83bda8)
+ <00000000004bdeec>¨ init+0x30/0x104
+ <00000000004b0c40>¨ kernel_init+0x1e0/0x370
+ <000000000001a5c6>¨ kernel_thread_starter+0x6/0xc
+ <000000000001a5c0>¨ kernel_thread_starter+0x0/0xc
+
+ <4>--- end trace 561bb236c800851f ¨---
+note: swapper1¨ exited with preempt_count 1
+Kernel panic - not syncing: Attempted to kill init!
 
 -- 
-Luk� Hejtm�nek
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
