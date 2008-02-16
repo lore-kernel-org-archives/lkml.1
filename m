@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762817AbYBPBtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYBPBwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762817AbYBPBtt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:49:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbYBPBtj
+	id S1763549AbYBPBwr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:52:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbYBPBwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:49:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:18860 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753095AbYBPBti (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:49:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tiWf/32ZXLcj6yeoMneQdJrv+/O/ZHy2paTm1v7OpxmybWsoxtTei6V00RonRGzoTeaPXXoEbKMrlX+guZlx25CKTwoMykuHIRJbUw0HOr/Dxl9+GRUINBHWOJFjsxHnuLtj7y+O2+nCatbuGZA/RljYvGvWJmtEJi2fO1eDI/o=
-Subject: [PATCH] autofs4: fix sparse warning in root.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ian Kent <raven@themaw.net>, Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 17:49:32 -0800
-Message-Id: <1203126572.7442.13.camel@brick>
+	Fri, 15 Feb 2008 20:52:40 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:33615 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754608AbYBPBwj (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 20:52:39 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: Re: Driver removals
+In-Reply-To: Your message of "Fri, 15 Feb 2008 20:08:13 EST."
+             <47B6377D.4050502@tmr.com>
+From: Valdis.Kletnieks@vt.edu
+References: <fp08q7$jv0$1@ger.gmane.org> <20080214082547.GJ12383@cs181133002.pp.htv.fi> <47B5E2FD.9060908@tmr.com> <20080215222830.GA9962@cs181133002.pp.htv.fi>
+            <47B6377D.4050502@tmr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1203126746_2934P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Fri, 15 Feb 2008 20:52:27 -0500
+Message-ID: <26601.1203126747@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/autofs4/root.c:536:23: warning: symbol 'ino' shadows an earlier one
-fs/autofs4/root.c:510:22: originally declared here
+--==_Exmh_1203126746_2934P
+Content-Type: text/plain; charset=us-ascii
 
-There is no need to redeclare, we are at the end of the loop and in
-the next iteration of the loop, ino will be reset.
+On Fri, 15 Feb 2008 20:08:13 EST, Bill Davidsen said:
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/autofs4/root.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> can never make you see why technological extortion is evil. People have 
+> always moved to new drivers without pushing because they were *better*, 
+> guess that model is dead.
 
-diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
-index a54a946..1b43456 100644
---- a/fs/autofs4/root.c
-+++ b/fs/autofs4/root.c
-@@ -533,8 +533,8 @@ static struct dentry *autofs4_lookup_unhashed(struct autofs_sb_info *sbi, struct
- 			goto next;
- 
- 		if (d_unhashed(dentry)) {
--			struct autofs_info *ino = autofs4_dentry_ino(dentry);
- 			struct inode *inode = dentry->d_inode;
-+			ino = autofs4_dentry_ino(dentry);
- 
- 			list_del_init(&ino->rehash);
- 			dget(dentry);
--- 
-1.5.4.1.1278.gc75be
+And the drivers get better because the Code Fairy comes and sprinkles magic
+bugfix dust all over them? And the Code Fairy knows where to sprinkle bugfix
+dust because it can see where the Bugreport Fairy sprinkled Bugreport Dust?
 
+Yes, people will move without pushing when the drivers are better.  However,
+remember that a major cultural motivation for the GPL is the concept of "give
+back".  And if a user can't be bothered to even give back enough to say
+"wow, this blows, my Frobnozz9800 doesn't work with this driver", that's a
+problem with the user.  They're getting it for free, they should at least
+give the developers the kindness of a bug report if something is broken...
 
+<insert diatribe about users who just want free-as-in-beer>....
 
+--==_Exmh_1203126746_2934P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.8 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFHtkHacC3lWbTT17ARAk8kAKDglpj4+fnRUUDEJ2E1djRMifRGbQCg5KdK
+Xd37j8ro4nPLw3+rLtNfkrQ=
+=CmfT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1203126746_2934P--
