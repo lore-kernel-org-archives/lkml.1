@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbYBPGXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbYBPGYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760195AbYBPGXt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbYBPGXl
+	id S1762196AbYBPGYN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYBPGXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sat, 16 Feb 2008 01:23:41 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:35427 "EHLO
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:35430 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752331AbYBPGXk (ORCPT
+	with ESMTP id S1752483AbYBPGXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Feb 2008 01:23:40 -0500
-Date: Sat, 16 Feb 2008 01:21:49 -0500
-Message-ID: <87y79lzaiq.wl%ysato@users.sourceforge.jp>
+Date: Sat, 16 Feb 2008 01:22:43 -0500
+Message-ID: <87ve4pzah8.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@osdl.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/6] h8300 signal.c typo fix.
-In-Reply-To: <87ejbdo2dx.wl%ysato@users.sourceforge.jp>
-References: <87ejbdo2dx.wl%ysato@users.sourceforge.jp>
+Subject: Re: [PATCH 3/6] h8300 setup.c initrd support fix
+In-Reply-To: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
+References: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.1
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -27,41 +27,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry.
-I forget Signed-off.
-
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
-At Sat, 16 Feb 2008 01:12:58 -0500,
+At Sat, 16 Feb 2008 01:13:37 -0500,
 Yoshinori Sato wrote:
 > 
-> typo fix.
+> initrd setting fix.
 > 
->  arch/h8300/kernel/signal.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  arch/h8300/kernel/setup.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/h8300/kernel/signal.c b/arch/h8300/kernel/signal.c
-> index 62ea12d..cf3472f 100644
-> --- a/arch/h8300/kernel/signal.c
-> +++ b/arch/h8300/kernel/signal.c
-> @@ -352,7 +352,7 @@ static void setup_frame (int sig, struct k_sigaction *ka,
->  		ret = (unsigned char *)(ka->sa.sa_restorer);
->  	else {
->  		/* sub.l er0,er0; mov.b #__NR_sigreturn,r0l; trapa #0 */
-> -		err != __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
-> +		err |= __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
->  				  (unsigned long *)(frame->retcode + 0));
->  		err |= __put_user(0x5700, (unsigned short *)(frame->retcode + 4));
->  	}
-> @@ -428,7 +428,7 @@ static void setup_rt_frame (int sig, struct k_sigaction *ka, siginfo_t *info,
->  		ret = (unsigned char *)(ka->sa.sa_restorer);
->  	else {
->  		/* sub.l er0,er0; mov.b #__NR_sigreturn,r0l; trapa #0 */
-> -		err != __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
-> +		err |= __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
->  				  (unsigned long *)(frame->retcode + 0));
->  		err |= __put_user(0x5700, (unsigned short *)(frame->retcode + 4));
->  	}
+> diff --git a/arch/h8300/kernel/setup.c b/arch/h8300/kernel/setup.c
+> index b1f25c2..75712ec 100644
+> --- a/arch/h8300/kernel/setup.c
+> +++ b/arch/h8300/kernel/setup.c
+> @@ -57,6 +57,7 @@ extern int _stext, _etext, _sdata, _edata, _sbss, _ebss, _end;
+>  extern int _ramstart, _ramend;
+>  extern char _target_name[];
+>  extern void h8300_gpio_init(void);
+> +extern void *initrd_start, *initrd_end;
+>  
+>  #if (defined(CONFIG_H8300H_SIM) || defined(CONFIG_H8S_SIM)) \
+>      && defined(CONFIG_GDB_MAGICPRINT)
+> @@ -99,8 +100,8 @@ void __init setup_arch(char **cmdline_p)
+>  	/* allow for ROMFS on the end of the kernel */
+>  	if (memcmp((void *)memory_start, "-rom1fs-", 8) == 0) {
+>  #if defined(CONFIG_BLK_DEV_INITRD)
+> -		initrd_start = memory_start;
+> -		initrd_end = memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]);
+> +		initrd_start = (void *)memory_start;
+> +		initrd_end = (void *)(memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]));
+>  #else
+>  		memory_start += be32_to_cpu(((unsigned long *) memory_start)[2]);
+>  #endif
 > -- 
 > 1.5.4.1
 > 
