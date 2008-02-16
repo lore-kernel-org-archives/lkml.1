@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760217AbYBPUOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760316AbYBPUOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760217AbYBPUOK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 15:14:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759489AbYBPUMh
+	id S1760316AbYBPUOf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 15:14:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759560AbYBPUMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 15:12:37 -0500
-Received: from fk-out-0910.google.com ([209.85.128.185]:14552 "EHLO
+	Sat, 16 Feb 2008 15:12:43 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:14715 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759386AbYBPUMf (ORCPT
+	with ESMTP id S1759536AbYBPUMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 15:12:35 -0500
+	Sat, 16 Feb 2008 15:12:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=OJVbNPFNRfrm8aq4geoWpoAqgmleADn/ecwZB1CCi+5fG+zhrPyg5OL66xkQ55neVIkc2FNV68jk+VpEsxGPr+i5xbeX0guSXJIPItb4NAfzwzGFK5Jmhc5kkl2w9JV4yhPyptA/xnpmgJ6SD/E+/EK6M345fQZyVA6rpo2AN6M=
+        b=fvxLENRyLuD+B7g8g3kuRkvSnzsqAX612CG+NTCfbU/AB8NWRAGDIXtuiV/g5mAFlsTdcfjKskmspGJQP3G9QQ8h8L1iVcJ+yQz764lzTZjc2obc8ASL9e5xPhMsFMVLEKDUeOqjhMOWbyfLsZ+C4i1bJoQqb2C5p+8+8vpmxM4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 16 Feb 2008 21:27:08 +0100
-Message-Id: <20080216202708.25536.95262.sendpatchset@localhost.localdomain>
+Date: Sat, 16 Feb 2008 21:27:15 +0100
+Message-Id: <20080216202715.25536.60906.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080216202634.25536.78915.sendpatchset@localhost.localdomain>
 References: <20080216202634.25536.78915.sendpatchset@localhost.localdomain>
-Subject: [PATCH 6/9] umc8672: don't use ide_hwifs[] in umc_set_pio_mode()
+Subject: [PATCH 7/9] ht6560b: use driver name for resource allocation
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/legacy/umc8672.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/ide/legacy/ht6560b.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Index: b/drivers/ide/legacy/umc8672.c
+Index: b/drivers/ide/legacy/ht6560b.c
 ===================================================================
---- a/drivers/ide/legacy/umc8672.c
-+++ b/drivers/ide/legacy/umc8672.c
-@@ -105,13 +105,13 @@ static void umc_set_speeds (u8 speeds[])
+--- a/drivers/ide/legacy/ht6560b.c
++++ b/drivers/ide/legacy/ht6560b.c
+@@ -32,6 +32,7 @@
+  *  Try:  http://www.maf.iki.fi/~maf/ht6560b/
+  */
  
- static void umc_set_pio_mode(ide_drive_t *drive, const u8 pio)
- {
-+	ide_hwif_t *hwif = drive->hwif;
- 	unsigned long flags;
--	ide_hwgroup_t *hwgroup = ide_hwifs[HWIF(drive)->index^1].hwgroup;
++#define DRV_NAME	"ht6560b"
+ #define HT6560B_VERSION "v0.07"
  
- 	printk("%s: setting umc8672 to PIO mode%d (speed %d)\n",
- 		drive->name, pio, pio_to_umc[pio]);
- 	spin_lock_irqsave(&ide_lock, flags);
--	if (hwgroup && hwgroup->handler != NULL) {
-+	if (hwif->mate && hwif->mate->hwgroup->handler) {
- 		printk(KERN_ERR "umc8672: other interface is busy: exiting tune_umc()\n");
- 	} else {
- 		current_speeds[drive->name[2] - 'a'] = pio_to_umc[pio];
+ #include <linux/module.h>
+@@ -339,7 +340,7 @@ static int __init ht6560b_init(void)
+ 	hwif = &ide_hwifs[0];
+ 	mate = &ide_hwifs[1];
+ 
+-	if (!request_region(HT_CONFIG_PORT, 1, hwif->name)) {
++	if (!request_region(HT_CONFIG_PORT, 1, DRV_NAME)) {
+ 		printk(KERN_NOTICE "%s: HT_CONFIG_PORT not found\n",
+ 			__FUNCTION__);
+ 		return -ENODEV;
