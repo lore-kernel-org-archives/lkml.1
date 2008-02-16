@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbYBPGYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbYBPGYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762196AbYBPGYN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbYBPGXl
+	id S1763269AbYBPGYb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYBPGXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:23:41 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:35430 "EHLO
+	Sat, 16 Feb 2008 01:23:42 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:42612 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752483AbYBPGXk (ORCPT
+	with ESMTP id S1752410AbYBPGXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Feb 2008 01:23:40 -0500
-Date: Sat, 16 Feb 2008 01:22:43 -0500
-Message-ID: <87ve4pzah8.wl%ysato@users.sourceforge.jp>
+Date: Sat, 16 Feb 2008 01:22:17 -0500
+Message-ID: <87wsp5zahy.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@osdl.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/6] h8300 setup.c initrd support fix
-In-Reply-To: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
-References: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
+Subject: Re: [PATCH 2/6] h8300 uaccess.h update
+In-Reply-To: <87d4qxo2d4.wl%ysato@users.sourceforge.jp>
+References: <87d4qxo2d4.wl%ysato@users.sourceforge.jp>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.1
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -29,37 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
-At Sat, 16 Feb 2008 01:13:37 -0500,
+At Sat, 16 Feb 2008 01:13:27 -0500,
 Yoshinori Sato wrote:
 > 
-> initrd setting fix.
+> get_user const *ptr access fix.
 > 
->  arch/h8300/kernel/setup.c |    5 +++--
->  1 files changed, 3 insertions(+), 2 deletions(-)
+>  include/asm-h8300/uaccess.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/h8300/kernel/setup.c b/arch/h8300/kernel/setup.c
-> index b1f25c2..75712ec 100644
-> --- a/arch/h8300/kernel/setup.c
-> +++ b/arch/h8300/kernel/setup.c
-> @@ -57,6 +57,7 @@ extern int _stext, _etext, _sdata, _edata, _sbss, _ebss, _end;
->  extern int _ramstart, _ramend;
->  extern char _target_name[];
->  extern void h8300_gpio_init(void);
-> +extern void *initrd_start, *initrd_end;
->  
->  #if (defined(CONFIG_H8300H_SIM) || defined(CONFIG_H8S_SIM)) \
->      && defined(CONFIG_GDB_MAGICPRINT)
-> @@ -99,8 +100,8 @@ void __init setup_arch(char **cmdline_p)
->  	/* allow for ROMFS on the end of the kernel */
->  	if (memcmp((void *)memory_start, "-rom1fs-", 8) == 0) {
->  #if defined(CONFIG_BLK_DEV_INITRD)
-> -		initrd_start = memory_start;
-> -		initrd_end = memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]);
-> +		initrd_start = (void *)memory_start;
-> +		initrd_end = (void *)(memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]));
->  #else
->  		memory_start += be32_to_cpu(((unsigned long *) memory_start)[2]);
->  #endif
+> diff --git a/include/asm-h8300/uaccess.h b/include/asm-h8300/uaccess.h
+> index ebe58c6..a22350e 100644
+> --- a/include/asm-h8300/uaccess.h
+> +++ b/include/asm-h8300/uaccess.h
+> @@ -91,7 +91,7 @@ extern int __put_user_bad(void);
+>  #define get_user(x, ptr)					\
+>  ({								\
+>      int __gu_err = 0;						\
+> -    typeof(*(ptr)) __gu_val = 0;				\
+> +    uint32_t __gu_val = 0;				\
+>      switch (sizeof(*(ptr))) {					\
+>      case 1:							\
+>      case 2:							\
+> @@ -106,7 +106,7 @@ extern int __put_user_bad(void);
+>  	__gu_err = __get_user_bad();				\
+>  	break;							\
+>      }								\
+> -    (x) = __gu_val;						\
+> +    (x) = (typeof(*(ptr)))__gu_val;				\
+>      __gu_err;							\
+>  })
+>  #define __get_user(x, ptr) get_user(x, ptr)
 > -- 
 > 1.5.4.1
 > 
