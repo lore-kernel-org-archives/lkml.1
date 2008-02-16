@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbYBPOOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbYBPOa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757928AbYBPOOE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 09:14:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbYBPONx
+	id S1757246AbYBPOa7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 09:30:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbYBPOat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 09:13:53 -0500
-Received: from rtr.ca ([76.10.145.34]:3486 "EHLO mail.rtr.ca"
+	Sat, 16 Feb 2008 09:30:49 -0500
+Received: from www.tglx.de ([62.245.132.106]:38748 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544AbYBPONw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 09:13:52 -0500
-Message-ID: <47B6EF9D.5090804@rtr.ca>
-Date: Sat, 16 Feb 2008 09:13:49 -0500
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752108AbYBPOas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 09:30:48 -0500
+Date: Sat, 16 Feb 2008 15:29:07 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       buytenh@wantstofly.org, mingo@elte.hu, riku.voipio@movial.fi,
+       stable@kernel.org, schwidefsky@de.ibm.com
+Subject: Re: + futex-runtime-enable-pi-and-robust-functionality.patch added
+ to -mm tree
+In-Reply-To: <20080216140444.GC4900@osiris.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.1.00.0802161525530.7583@apollo.tec.linutronix.de>
+References: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org> <20080216124248.GA4900@osiris.boeblingen.de.ibm.com> <alpine.LFD.1.00.0802161346350.7583@apollo.tec.linutronix.de> <20080216134155.GB4900@osiris.boeblingen.de.ibm.com>
+ <alpine.LFD.1.00.0802161444510.7583@apollo.tec.linutronix.de> <20080216140444.GC4900@osiris.boeblingen.de.ibm.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, jengelh@computergmbh.de, matthew@wil.cx,
-       randy.dunlap@oracle.com, daniel.ritz-ml@swissonline.ch,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCHSET] printk: implement printk_header() and merging printk,
- take #3
-References: <12028937731333-git-send-email-htejun@gmail.com>	<20080213155701.48871761.akpm@linux-foundation.org>	<47B38E13.1060503@gmail.com>	<20080213170950.86945835.akpm@linux-foundation.org>	<47B398B3.40308@gmail.com>	<47B4EFAB.2040102@gmail.com>	<20080214182700.a9a706e9.akpm@linux-foundation.org>	<47B4FA9C.9080809@gmail.com> <20080214185003.9ca9a640.akpm@linux-foundation.org> <47B50420.3060403@gmail.com>
-In-Reply-To: <47B50420.3060403@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Andrew Morton wrote:
->>> So, I guess it's NACK w/o suggested alternatives, right?
->> I wouldn't nack without good reasons, and I have none here.  I don't have
->> very strong opinions either way.
+On Sat, 16 Feb 2008, Heiko Carstens wrote:
+
+> On Sat, Feb 16, 2008 at 02:48:17PM +0100, Thomas Gleixner wrote:
+> > On Sat, 16 Feb 2008, Heiko Carstens wrote:
+> > 
+> > > > Well, NULL pointer dereferencing is supposed to fail, isn't it ?
+> > >
+> > > I wasn't sure that this is true for all architectures, but...
+> > 
+> > It's an requirement for futex support.
 > 
-> I was just wondering whether I should just go with snprintf dancing in
-> eh_link_report, which does make sense if not many need merging printk.
-..
+> To be more precise: dereferencing alone won't cause an exception for
+> NULL pointers on s390. Only writes will do so.
+> That is very architecture specific since we cannot unmap page 0,
+> it contains per-cpu data -- like exception pointers and all such stuff
+> that the cpu needs.
+> Just in case there is any code that relies on the fact that also reads
+> via a NULL pointer are supposed to failed.
 
-Any chance you could poke through snprintf() and look for the off-by-one bug
-on the return result?  (I think it happens when "n" is exceeded).
+Hmm, not sure whether there is such code, but then it would be not too bad
+to add
 
-:)
+   if (!p)
+      return -EFAULT;
+
+to the S390 implementations which only read data and have an exception
+fixup.
+
+Thanks,
+
+	tglx
