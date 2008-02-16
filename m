@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764135AbYBPDv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbYBPD4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764135AbYBPDv1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 22:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYBPDvU
+	id S1763666AbYBPD4k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 22:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYBPD4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 22:51:20 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:33495 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbYBPDvT (ORCPT
+	Fri, 15 Feb 2008 22:56:32 -0500
+Received: from rv-out-0910.google.com ([209.85.198.186]:9440 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751838AbYBPD4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 22:51:19 -0500
-Message-ID: <47B65E35.8020905@keyaccess.nl>
-Date: Sat, 16 Feb 2008 04:53:25 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org
-Subject: Re: 2.6.25-rc2 vdso_install breaks user "make install"
-References: <47B6592A.6030200@keyaccess.nl> <20080216034211.8DD03270193@magilla.localdomain>
-In-Reply-To: <20080216034211.8DD03270193@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 15 Feb 2008 22:56:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=AtVW1RvIr0xC0Hl+/atNDQZNYrtEnmx0NoUyUKgFZp17zFbIqRdRlI8D+JMXx/XOIfmP7oA8Vp4ISuBAgc3gPQrEx31C7IsxtZ4wThhTXiYLpTCsoYKnHaoNjxjc3sc311/n/BWwHRKMQhY2H+aUoSCrMg+Kq39j8DHddsUc7Rk=
+Subject: [PATCH] udf: fix sparse warning in namei.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 19:56:30 -0800
+Message-Id: <1203134190.7442.42.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 16-02-08 04:42, Roland McGrath wrote:
+Let's use bsize instead.
+fs/udf/namei.c:960:12: warning: symbol 'elen' shadows an earlier one
+fs/udf/namei.c:937:15: originally declared here
 
-> Perhaps it makes more sense to have vdso_install be a dependency of 
-> modules_install rather than install, since they both put things in
-> /lib/modules.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/udf/namei.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Would work for me -- modules_install ofcourse runs as root.
+diff --git a/fs/udf/namei.c b/fs/udf/namei.c
+index 112a5fb..e1c1492 100644
+--- a/fs/udf/namei.c
++++ b/fs/udf/namei.c
+@@ -957,7 +957,7 @@ static int udf_symlink(struct inode *dir, struct dentry *dentry,
+ 
+ 	if (iinfo->i_alloc_type != ICBTAG_FLAG_AD_IN_ICB) {
+ 		kernel_lb_addr eloc;
+-		uint32_t elen;
++		uint32_t bsize;
+ 
+ 		block = udf_new_block(inode->i_sb, inode,
+ 				iinfo->i_location.partitionReferenceNum,
+@@ -970,9 +970,9 @@ static int udf_symlink(struct inode *dir, struct dentry *dentry,
+ 		eloc.logicalBlockNum = block;
+ 		eloc.partitionReferenceNum =
+ 				iinfo->i_location.partitionReferenceNum;
+-		elen = inode->i_sb->s_blocksize;
+-		iinfo->i_lenExtents = elen;
+-		udf_add_aext(inode, &epos, eloc, elen, 0);
++		bsize = inode->i_sb->s_blocksize;
++		iinfo->i_lenExtents = bsize;
++		udf_add_aext(inode, &epos, eloc, bsize, 0);
+ 		brelse(epos.bh);
+ 
+ 		block = udf_get_pblock(inode->i_sb, block,
+-- 
+1.5.4.1.1278.gc75be
 
-> The installed vdso images are potentially useful for a kernel when you 
-> aren't bothering to build or install any modules, but those images are
-> only ever useful for sophisticated debugging uses anyway.
-> 
-> Sam, any thoughts?  (See arch/x86/Makefile and arch/powerpc/Makefile.)
 
-Or maybe update the installkernel "protocol" to add these in?
 
-> The only kind of install runs I actually care about are for packaging 
-> system builds.  There the packaged build does 'make vdso_install' 
-> explicitly anyway (at least Fedora rpms' .spec does).  So if the
-> consensus is just to drop the dependency on vdso_install completely, I
-> don't object.
-
-Did that for now...
-
-Rene.
