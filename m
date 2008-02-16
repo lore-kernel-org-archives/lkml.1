@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbYBPGER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbYBPGJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbYBPGER (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:04:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbYBPGEG
+	id S1758119AbYBPGJY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYBPGJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:04:06 -0500
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:49894 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbYBPGEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:04:04 -0500
-Date: Sat, 16 Feb 2008 15:03:43 +0900
-To: davem@davemloft.net
-Cc: fujita.tomonori@lab.ntt.co.jp, tomof@acm.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: more iommu sg merging fallout
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <20080211.214036.154985035.davem@davemloft.net>
-References: <20080206.160147.25411834.davem@davemloft.net>
-	<20080207103801T.fujita.tomonori@lab.ntt.co.jp>
-	<20080211.214036.154985035.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 16 Feb 2008 01:09:16 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:6714 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbYBPGJP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 01:09:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tn2MfCqHWqlUIX05m1HMqrh0xFwIEoyhekRRNW71FRhsxk5OE1xQd3zB9raDuZoH/7pCzEAgIe7eDiO0VvMH8QGPvzAtQCEna4QRQiXZYFYY3k+a4a28e/S152ZpP7LZNPiuuVtpekc59U3DU9bJWjE1UNPXkTGuzOEZyUT+VOA=
+Message-ID: <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
+Date: Fri, 15 Feb 2008 22:09:12 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Greg KH" <greg@kroah.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <47B67A0E.7060605@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080216150341A.tomof@acm.org>
-X-Dispatcher: imput version 20040704(IM147)
+Content-Disposition: inline
+References: <fa.LKjQjbOw482S/QFVaQ9fSrM+IFw@ifi.uio.no>
+	 <fa.wuwhrqFp6CufvpAJxShHqIaOPdI@ifi.uio.no> <47B67A0E.7060605@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for the late response,
+On Fri, Feb 15, 2008 at 9:52 PM, Robert Hancock <hancockr@shaw.ca> wrote:
+> Andi Kleen wrote:
+>
+> > Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+>  >> [akpm@linux-foundation.org: many fixes and cleanups]
+>  >> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+>  >> Signed-off-by: Andi Kleen <ak@suse.de>
+>  >> Tested-by: Andi Kleen <ak@suse.de>
+>  >
+>  > iirc it really was
+>  > Tested-and-didnt-pass-test-by: Andi Kleen
+>  > unfortunately. I have not rechecked recently, but on the one Intel
+>  > box the original patch and the other mcfg heuristics removed didn't work.
+>
+>  With just this patch you will have this problem. You need either the
+>  patch to disable decode during BAR sizing, or the patch to use MMCONFIG
+>  for extended config space only, if you don't have them already.
 
-On Mon, 11 Feb 2008 21:40:36 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+linus already apply the the patch to "use MMCONFIG for extended config
+space only" to mainline. the last two near 2.6.25-rc1.
 
-> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> Date: Thu, 07 Feb 2008 10:38:01 +0900
-> 
-> > Great, thanks! SPARC IOMMUs use bitmap for the free area management
-> > like POWER IOMMUs so it could use lib/iommu-helper as POWER does.
-> 
-> Please look at Linus's current tree, I believe I have things
-> in a working state, and the DMA mask portions should be easier
-> to add now.
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a0ca9909609470ad779b9b9cc68ce96e975afff7
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b6ce068a1285a24185b01be8a49021827516b3e1
 
-Thanks! It looks great.
+Andi,
+can you double check this patch with your test system?
 
-iommu->page_table_map_base is on IO_PAGE_SIZE boundary? If so, the
-following patch works, I think (sorry, it's only compile tested
-again).
-
-Thanks,
-
-=
->From 91af83802c30d071f98444846e85310a8d58ab3d Mon Sep 17 00:00:00 2001
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Date: Sat, 16 Feb 2008 14:29:02 +0900
-Subject: [PATCH] sparc64: make IOMMU code respect the segment boundary limits
-
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/sparc64/kernel/iommu.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/sparc64/kernel/iommu.c b/arch/sparc64/kernel/iommu.c
-index d3276eb..ffefbf7 100644
---- a/arch/sparc64/kernel/iommu.c
-+++ b/arch/sparc64/kernel/iommu.c
-@@ -134,7 +134,8 @@ unsigned long iommu_range_alloc(struct device *dev,
- 	else
- 		boundary_size = ALIGN(1UL << 32, 1 << IO_PAGE_SHIFT);
- 
--	n = iommu_area_alloc(arena->map, limit, start, npages, 0,
-+	n = iommu_area_alloc(arena->map, limit, start, npages,
-+			     iommu->page_table_map_base >> IO_PAGE_SHIFT,
- 			     boundary_size >> IO_PAGE_SHIFT, 0);
- 	if (n == -1) {
- 		if (likely(pass < 1)) {
--- 
-1.5.3.4
-
-
+YH
