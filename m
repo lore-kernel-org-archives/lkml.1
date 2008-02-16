@@ -1,252 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbYBPXoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbYBPXsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754225AbYBPXoW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 18:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYBPXoD
+	id S1753752AbYBPXsS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 18:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYBPXsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 18:44:03 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:38398 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751363AbYBPXoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 18:44:00 -0500
-X-Trace: 666894568/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAEwEt0dRAVlC/2dsb2JhbACBWZAMmj2Beg
-Subject: [PATCH] maple: allow removal and reinsertion of keyboard driver
-	module
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-sh <linux-sh@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 23:43:40 +0000
-Message-Id: <1203205420.6737.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Feb 2008 18:48:06 -0500
+Received: from www.tglx.de ([62.245.132.106]:39872 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751637AbYBPXsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 18:48:04 -0500
+Date: Sun, 17 Feb 2008 00:47:42 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andy Whitcroft <andyw@uk.ibm.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] checkpatch.pl: revert wrong --file message
+In-Reply-To: <20080216225637.GE24479@shadowen.org>
+Message-ID: <alpine.LFD.1.00.0802170009510.7583@apollo.tec.linutronix.de>
+References: <20080215165244.GA28358@elte.hu> <200802151815.44050.ak@suse.de> <alpine.LFD.1.00.0802161026550.7583@apollo.tec.linutronix.de> <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com> <20080216225637.GE24479@shadowen.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow the removal (and subsequent reinsertion) of the maple_keyb (maple keyboard) driver by adding a working removal function.
+On Sat, 16 Feb 2008, Andy Whitcroft wrote:
+> On Sat, Feb 16, 2008 at 12:27:33PM +0200, Pekka Enberg wrote:
+> > Hi,
+> > 
+> > On Feb 16, 2008 12:18 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > People, who do cleanups - I'm not talking about running lindent here -
+> > > read through the code while they fix it up.
+> > >
+> > > Actually they find bugs that way or at least come up with useful
+> > > questions about code which is not obvious in the first place.
+> > >
+> > > Discouraging such cleanups with a pretty offensive warning is
+> > > counterproductive.
+> > 
+> > Well, it's not just about cleanup patches submitted by "newbies". I
+> > use checkpatch for development too and the warning is real PITA for
+> > that.
+> 
+> The warning is suppressed on -q as its a pain indeed if one is using it
+> to check files and you are not intending a single file cleanup.
+> 
+> Is the concensus the warning is useful, or unhelpful.
 
-Also tidy long lines.
+The warning is wrong and annoying. It reflects the personal opinion of
+Andi and imposes it on everybody else. 
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+There was and is no consenus about the usefulness of such patches and
+probably never will be. It's up to the maintainer of a particular
+subsystem to accept or reject such patches.
 
----
+It's definitely not the decision of a single kernel developer who has
+his own definition of checkpatch.pl correctness:
 
+<http://lkml.org/lkml/2008/1/4/98>
 
+> Please run your patches through checkpatch.pl.
+> 
+> ERROR: use tabs not spaces
+> #48: FILE: arch/x86/kernel/alternative.c:360:
 
-diff -ruN a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
---- a/drivers/input/keyboard/maple_keyb.c	2008-02-16 20:51:49.000000000 +0000
-+++ b/drivers/input/keyboard/maple_keyb.c	2008-02-16 21:41:52.000000000 +0000
-@@ -2,7 +2,7 @@
-  * SEGA Dreamcast keyboard driver
-  * Based on drivers/usb/usbkbd.c
-  * Copyright YAEGASHI Takeshi, 2001
-- * Porting to 2.6 Copyright Adrian McMenamin, 2007
-+ * Porting to 2.6 Copyright Adrian McMenamin, 2007, 2008
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -46,39 +46,51 @@
- };
- 
- static const unsigned short dc_kbd_keycode[NR_SCANCODES] = {
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_A, KEY_B, KEY_C, KEY_D,
--	KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J, KEY_K, KEY_L,
--	KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T,
--	KEY_U, KEY_V, KEY_W, KEY_X, KEY_Y, KEY_Z, KEY_1, KEY_2,
--	KEY_3, KEY_4, KEY_5, KEY_6, KEY_7, KEY_8, KEY_9, KEY_0,
--	KEY_ENTER, KEY_ESC, KEY_BACKSPACE, KEY_TAB, KEY_SPACE, KEY_MINUS, KEY_EQUAL, KEY_LEFTBRACE,
--	KEY_RIGHTBRACE, KEY_BACKSLASH, KEY_BACKSLASH, KEY_SEMICOLON, KEY_APOSTROPHE, KEY_GRAVE, KEY_COMMA,
--	KEY_DOT, KEY_SLASH, KEY_CAPSLOCK, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_A, KEY_B,
-+	KEY_C, KEY_D, KEY_E, KEY_F, KEY_G, KEY_H, KEY_I, KEY_J, KEY_K, KEY_L,
-+	KEY_M, KEY_N, KEY_O, KEY_P, KEY_Q, KEY_R, KEY_S, KEY_T, KEY_U, KEY_V,
-+	KEY_W, KEY_X, KEY_Y, KEY_Z, KEY_1, KEY_2, KEY_3, KEY_4, KEY_5, KEY_6,
-+	KEY_7, KEY_8, KEY_9, KEY_0, KEY_ENTER, KEY_ESC, KEY_BACKSPACE,
-+	KEY_TAB, KEY_SPACE, KEY_MINUS, KEY_EQUAL, KEY_LEFTBRACE,
-+	KEY_RIGHTBRACE, KEY_BACKSLASH, KEY_BACKSLASH, KEY_SEMICOLON,
-+	KEY_APOSTROPHE, KEY_GRAVE, KEY_COMMA, KEY_DOT, KEY_SLASH,
-+	KEY_CAPSLOCK, KEY_F1, KEY_F2, KEY_F3, KEY_F4, KEY_F5, KEY_F6,
- 	KEY_F7, KEY_F8, KEY_F9, KEY_F10, KEY_F11, KEY_F12, KEY_SYSRQ,
--	KEY_SCROLLLOCK, KEY_PAUSE, KEY_INSERT, KEY_HOME, KEY_PAGEUP, KEY_DELETE,
--	KEY_END, KEY_PAGEDOWN, KEY_RIGHT, KEY_LEFT, KEY_DOWN, KEY_UP,
--	KEY_NUMLOCK, KEY_KPSLASH, KEY_KPASTERISK, KEY_KPMINUS, KEY_KPPLUS, KEY_KPENTER, KEY_KP1, KEY_KP2,
--	KEY_KP3, KEY_KP4, KEY_KP5, KEY_KP6, KEY_KP7, KEY_KP8, KEY_KP9, KEY_KP0, KEY_KPDOT,
--	KEY_102ND, KEY_COMPOSE, KEY_POWER, KEY_KPEQUAL, KEY_F13, KEY_F14, KEY_F15,
--	KEY_F16, KEY_F17, KEY_F18, KEY_F19, KEY_F20,
--	KEY_F21, KEY_F22, KEY_F23, KEY_F24, KEY_OPEN, KEY_HELP, KEY_PROPS, KEY_FRONT,
--	KEY_STOP, KEY_AGAIN, KEY_UNDO, KEY_CUT, KEY_COPY, KEY_PASTE, KEY_FIND, KEY_MUTE,
--	KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_KPCOMMA, KEY_RESERVED, KEY_RO, KEY_KATAKANAHIRAGANA , KEY_YEN,
--	KEY_HENKAN, KEY_MUHENKAN, KEY_KPJPCOMMA, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_HANGEUL, KEY_HANJA, KEY_KATAKANA, KEY_HIRAGANA, KEY_ZENKAKUHANKAKU, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
--	KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_LEFTALT, KEY_LEFTMETA, KEY_RIGHTCTRL, KEY_RIGHTSHIFT, KEY_RIGHTALT, KEY_RIGHTMETA,
--	KEY_PLAYPAUSE, KEY_STOPCD, KEY_PREVIOUSSONG, KEY_NEXTSONG, KEY_EJECTCD, KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_MUTE,
--	KEY_WWW, KEY_BACK, KEY_FORWARD, KEY_STOP, KEY_FIND, KEY_SCROLLUP, KEY_SCROLLDOWN, KEY_EDIT, KEY_SLEEP,
--	KEY_SCREENLOCK, KEY_REFRESH, KEY_CALC, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED
-+	KEY_SCROLLLOCK, KEY_PAUSE, KEY_INSERT, KEY_HOME, KEY_PAGEUP,
-+	KEY_DELETE, KEY_END, KEY_PAGEDOWN, KEY_RIGHT, KEY_LEFT, KEY_DOWN,
-+	KEY_UP, KEY_NUMLOCK, KEY_KPSLASH, KEY_KPASTERISK, KEY_KPMINUS,
-+	KEY_KPPLUS, KEY_KPENTER, KEY_KP1, KEY_KP2, KEY_KP3, KEY_KP4, KEY_KP5,
-+	KEY_KP6, KEY_KP7, KEY_KP8, KEY_KP9, KEY_KP0, KEY_KPDOT, KEY_102ND,
-+	KEY_COMPOSE, KEY_POWER, KEY_KPEQUAL, KEY_F13, KEY_F14, KEY_F15,
-+	KEY_F16, KEY_F17, KEY_F18, KEY_F19, KEY_F20, KEY_F21, KEY_F22,
-+	KEY_F23, KEY_F24, KEY_OPEN, KEY_HELP, KEY_PROPS, KEY_FRONT, KEY_STOP,
-+	KEY_AGAIN, KEY_UNDO, KEY_CUT, KEY_COPY, KEY_PASTE, KEY_FIND, KEY_MUTE,
-+	KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_KPCOMMA, KEY_RESERVED, KEY_RO, KEY_KATAKANAHIRAGANA , KEY_YEN,
-+	KEY_HENKAN, KEY_MUHENKAN, KEY_KPJPCOMMA, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_HANGEUL, KEY_HANJA, KEY_KATAKANA, KEY_HIRAGANA,
-+	KEY_ZENKAKUHANKAKU, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED,
-+	KEY_RESERVED, KEY_RESERVED, KEY_LEFTCTRL, KEY_LEFTSHIFT, KEY_LEFTALT,
-+	KEY_LEFTMETA, KEY_RIGHTCTRL, KEY_RIGHTSHIFT, KEY_RIGHTALT,
-+	KEY_RIGHTMETA, KEY_PLAYPAUSE, KEY_STOPCD, KEY_PREVIOUSSONG,
-+	KEY_NEXTSONG, KEY_EJECTCD, KEY_VOLUMEUP, KEY_VOLUMEDOWN, KEY_MUTE,
-+	KEY_WWW, KEY_BACK, KEY_FORWARD, KEY_STOP, KEY_FIND, KEY_SCROLLUP,
-+	KEY_SCROLLDOWN, KEY_EDIT, KEY_SLEEP, KEY_SCREENLOCK, KEY_REFRESH,
-+	KEY_CALC, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED, KEY_RESERVED
- };
- 
- static void dc_scan_kbd(struct dc_kbd *kbd)
-@@ -152,14 +164,15 @@
- 	struct dc_kbd *kbd;
- 	struct input_dev *dev;
- 
--	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
--		return -EINVAL;
--
- 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
-+	if (!kbd) {
-+		error = -ENOMEM;
-+		goto fail_kbd;
-+	}
- 	dev = input_allocate_device();
--	if (!kbd || !dev) {
-+	if (!dev) {
- 		error = -ENOMEM;
--		goto fail;
-+		goto fail_dev;
- 	}
- 
- 	mdev->private_data = kbd;
-@@ -170,7 +183,7 @@
- 	dev->name = mdev->product_name;
- 	dev->evbit[0] = BIT(EV_KEY) | BIT(EV_REP);
- 	dev->keycode = kbd->keycode;
--	dev->keycodesize = sizeof (unsigned short);
-+	dev->keycodesize = sizeof(unsigned short);
- 	dev->keycodemax = ARRAY_SIZE(kbd->keycode);
- 	dev->id.bustype = BUS_HOST;
- 	dev->dev.parent = &mdev->dev;
-@@ -187,12 +200,15 @@
- 		goto fail;
- 
- 	/* Maple polling is locked to VBLANK - which may be just 50/s */
--	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50, MAPLE_FUNC_KEYBOARD);
-+	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
-+		MAPLE_FUNC_KEYBOARD);
- 	return 0;
- 
-- fail:
-+fail:
- 	input_free_device(dev);
-+fail_dev:
- 	kfree(kbd);
-+fail_kbd:
- 	mdev->private_data = NULL;
- 	return error;
- }
-@@ -202,7 +218,7 @@
- 	struct dc_kbd *kbd;
- 
- 	mutex_lock(&maple_keyb_mutex);
--
-+	mdev->callback = NULL;
- 	kbd = mdev->private_data;
- 	mdev->private_data = NULL;
- 	input_unregister_device(kbd->dev);
-@@ -223,11 +239,18 @@
- 		return error;
- 
- 	mdev->driver = mdrv;
--	mdev->registered = 1;
- 
- 	return 0;
- }
- 
-+static int remove_maple_kbd(struct device *dev)
-+{
-+	struct maple_device *mdev = to_maple_dev(dev);
-+
-+	dc_kbd_disconnect(mdev);
-+	return 0;
-+}
-+
- static struct maple_driver dc_kbd_driver = {
- 	.function = MAPLE_FUNC_KEYBOARD,
- 	.connect = dc_kbd_connect,
-@@ -235,9 +258,23 @@
- 	.drv = {
- 		.name = "Dreamcast_keyboard",
- 		.probe = probe_maple_kbd,
-+		.remove = remove_maple_kbd,
-        },
- };
- 
-+static int unplug_maple_keyb(struct device *dev, void *ignored)
-+{
-+	/* Please DO NOT really unplug your keyboard */
-+	struct maple_device *mdev;
-+
-+	mdev = to_maple_dev(dev);
-+	if ((mdev->function & MAPLE_FUNC_KEYBOARD)
-+		&& (mdev->driver == &dc_kbd_driver))
-+		remove_maple_kbd(dev);
-+
-+	return 0;
-+}
-+
- static int __init dc_kbd_init(void)
- {
- 	return maple_driver_register(&dc_kbd_driver.drv);
-@@ -245,6 +282,7 @@
- 
- static void __exit dc_kbd_exit(void)
- {
-+	bus_for_each_dev(&maple_bus_type, NULL, NULL, unplug_maple_keyb);
- 	driver_unregister(&dc_kbd_driver.drv);
- }
- 
+I saw a lot of these warnings, but disregarded them as obviously
+silly. I don't have plans to redo all the patches for that.
+
+</http://lkml.org/lkml/2008/1/4/98>
 
 
+Thanks,
+
+	tglx
