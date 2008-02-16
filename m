@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYBPK1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbYBPKmI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYBPK1r (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 05:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbYBPK1h
+	id S1753265AbYBPKmI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 05:42:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbYBPKl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 05:27:37 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:47988 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752965AbYBPK1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 05:27:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=KEfqxcfTZ2are8Lv0Xd12KJAhgCIRFHFBR1f4LlOxicpzDjmsPAq5wR48KeOy3n4UUsycS2NRWpQLRwEIt6eACcirdJX9MAZPjvxfo/CuZJz7fBuf53MhFD7B9I07c5nR+5tMozjRU0B4nrhjPBQfivvrv7szsIVzVfNUM+cfUs=
-Message-ID: <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com>
-Date: Sat, 16 Feb 2008 12:27:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Thomas Gleixner" <tglx@linutronix.de>
-Subject: Re: [patch] checkpatch.pl: revert wrong --file message
-Cc: "Andi Kleen" <ak@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Andy Whitcroft" <andyw@uk.ibm.com>
-In-Reply-To: <alpine.LFD.1.00.0802161026550.7583@apollo.tec.linutronix.de>
+	Sat, 16 Feb 2008 05:41:56 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:43040 "EHLO smtp3-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbYBPKl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 05:41:56 -0500
+Message-ID: <47B6BDDF.90502@inria.fr>
+Date: Sat, 16 Feb 2008 11:41:35 +0100
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
 MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+References: <20080215064859.384203497@sgi.com>	<20080215064932.371510599@sgi.com> <20080215193719.262c03a1.akpm@linux-foundation.org>
+In-Reply-To: <20080215193719.262c03a1.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080215165244.GA28358@elte.hu> <200802151815.44050.ak@suse.de>
-	 <alpine.LFD.1.00.0802161026550.7583@apollo.tec.linutronix.de>
-X-Google-Sender-Auth: 4d80b15f832a31b5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Feb 16, 2008 12:18 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> People, who do cleanups - I'm not talking about running lindent here -
-> read through the code while they fix it up.
+Andrew Morton wrote:
+> What is the status of getting infiniband to use this facility?
 >
-> Actually they find bugs that way or at least come up with useful
-> questions about code which is not obvious in the first place.
+> How important is this feature to KVM?
 >
-> Discouraging such cleanups with a pretty offensive warning is
-> counterproductive.
+> To xpmem?
+>
+> Which other potential clients have been identified and how important it it
+> to those?
+>   
 
-Well, it's not just about cleanup patches submitted by "newbies". I
-use checkpatch for development too and the warning is real PITA for
-that.
+As I said when Andrea posted the first patch series, I used something
+very similar for non-RDMA-based HPC about 4 years ago. I haven't had
+time yet to look in depth and try the latest proposed API but my feeling
+is that it looks good.
+
+Brice
+
