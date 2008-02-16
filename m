@@ -1,72 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761831AbYBPBFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762737AbYBPBH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761831AbYBPBFE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:05:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbYBPBEz
+	id S1762737AbYBPBH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756486AbYBPBHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:04:55 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48827 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbYBPBEy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:04:54 -0500
-Date: Fri, 15 Feb 2008 16:57:35 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jonas Bonn <jonas@southpole.se>, linux-kernel@vger.kernel.org
-Subject: Re: pci_device_id definition cleanups
-Message-ID: <20080216005735.GA21034@kroah.com>
-References: <1203117700.16761.9.camel@satguru> <20080216000512.GA18925@kroah.com> <47B6346B.3050300@garzik.org>
+	Fri, 15 Feb 2008 20:07:19 -0500
+Received: from mail.tmr.com ([64.65.253.246]:41158 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754768AbYBPBHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 20:07:18 -0500
+Message-ID: <47B6377D.4050502@tmr.com>
+Date: Fri, 15 Feb 2008 20:08:13 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B6346B.3050300@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Driver removals
+References: <fp08q7$jv0$1@ger.gmane.org> <20080214082547.GJ12383@cs181133002.pp.htv.fi> <47B5E2FD.9060908@tmr.com> <20080215222830.GA9962@cs181133002.pp.htv.fi>
+In-Reply-To: <20080215222830.GA9962@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 07:55:07PM -0500, Jeff Garzik wrote:
-> Greg KH wrote:
->> On Sat, Feb 16, 2008 at 12:21:40AM +0100, Jonas Bonn wrote:
->>> I've done some work on cleaning up the definitions of pci_device_id to
->>> make them "static const" (where possible) and to make sure they go into
->>> __devinitconst.  There are about 350 changes of the type shown in the
->>> diff at the end of this mail.
+Adrian Bunk wrote:
+> On Fri, Feb 15, 2008 at 02:07:41PM -0500, Bill Davidsen wrote:
+>   
+>> Adrian Bunk wrote:
+>>     
+>>> On Wed, Feb 13, 2008 at 09:26:26PM -0500, Bill Davidsen wrote:
+>>>       
+>>>> ...
+>>>> In general, if a driver works and is being used, until it *needs*   
+>>>> attention I see no reason to replace it. I don't agree that "it 
+>>>> forces  people to try the new driver" is a valid reason, being 
+>>>> unmaintained is  only a problem if it needs maintenance. I am not 
+>>>> going to reopen that  topic, I'm simply noting a general opposition 
+>>>> to unfunded mandates, and  requiring changes to kernel, module and/or 
+>>>> rc.local config is just that.
+>>>>         
+>>> Keeping a working unmaintained driver in the tree is not a big deal - 
+>>> we have hundreds of them.
 >>>
->>> ???All these changes are in my public GIT tree at:
+>>> But you miss the main point that removal of an obsolete driver with a  
+>>> new replacement driver forces people to finally report their problems  
+>>> with the new driver, thus making the new driver better.
 >>>
->>> git://www.southpole.se/~jonas/git/linux.git
->>>
->>> (Based on 2.6.25-rc2)
->>>
->>> In addition to these pci_device_id changes, there are a few changesets
->>> that move "const" data from __devinitdata to __devinitconst.
->>>
->>> The tree above builds with both allmodconfig and allyesconfig.
->> Hm, does this save us any memory on any type of configuration?
->> What about drivers that end up writing to these structures (I know some
->> USB drivers do, not sure about PCI ones.)
+>>>       
+>> You sure are proud of that new driver! People won't use it because the  
+>> old one is working fine, so you think it's fine to force them to make  
+>> changes in their system to use the new driver.
+>>     
 >
-> I don't recall ever seeing a PCI driver do that... and if it exists on the 
-> PCI side, I would be motivated to create patches to "fix" such behavior :)
+> Sometimes what is best in the global picture is not what everyone
+> subjectively considers to be the best thing for him.
 >
-> That information is exported to utilities that expect that table to be 
-> static.  Messing around with it is just hacky, and bound to produce 
-> unwanted edge cases.
+> Well, our whole society is based on this principle...
+>
+>   
+>> Best case is it works  
+>> after costing the user some time, worst case it doesn't and breaks their  
+>> system, so they stop upgrading the kernel and don't get security fixes.
+>> ...
+>>     
+>
+> Instead of sending a bug report?
+>   
 
-Well, the USB drivers used to add an additional NULL entry at the end of
-the list, and then populate it based on module parameters.  That way the
-userspace tools would always work just fine, and you could add
-additional device ids at run-time.
+To get the system working.
+> When removing an obsolete driver adult people suddenly start whining
+> "the new driver didn't work for me when I tried it one year ago".
+>
+> And when asking where they reported the bug in the new driver the answer 
+> is that they didn't report it.
+>
+> Driver development heavily relies on getting bug reports when something 
+> doesn't work.
 
-Now we have a way to do this for all USB and PCI drivers through sysfs,
-so it's not needed, but we have to keep the backwards compatiblity for a
-while in a number of USB drivers.
+If you don't see an ethical problem in removing a working driver which 
+is not taking support resources, in order to force people to test and 
+debug a driver they don't now and never would need, so that it might in 
+time offer them the same functionality those users already had... then I 
+can never make you see why technological extortion is evil. People have 
+always moved to new drivers without pushing because they were *better*, 
+guess that model is dead.
 
-Hopefully PCI drivers didn't do the same thing, but I haven't looked at
-all of them to verify this or not :)
+-- 
+Bill Davidsen <davidsen@tmr.com>
+  "Woe unto the statesman who makes war without a reason that will still
+  be valid when the war is over..." Otto von Bismark 
 
-thanks,
 
-greg k-h
