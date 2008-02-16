@@ -1,79 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbYBPF3E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbYBPFpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755270AbYBPF3E (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 00:29:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbYBPF2z
+	id S1754864AbYBPFpN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 00:45:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbYBPFpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 00:28:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36100 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750828AbYBPF2y (ORCPT
+	Sat, 16 Feb 2008 00:45:00 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:46763 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbYBPFo6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 00:28:54 -0500
-Date: Fri, 15 Feb 2008 21:28:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: marcin.slusarz@gmail.com, LKML <linux-kernel@vger.kernel.org>,
-       Evgeniy Dushistov <dushistov@mail.ru>
-Subject: Re: [PATCH] ufs: [bl]e*_add_cpu conversion
-Message-Id: <20080215212815.26117a19.akpm@linux-foundation.org>
-In-Reply-To: <47B2BB58.5040401@tiscali.nl>
-References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com>
-	<1202857582-15450-18-git-send-email-marcin.slusarz@gmail.com>
-	<47B2BB58.5040401@tiscali.nl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 16 Feb 2008 00:44:58 -0500
+Message-ID: <47B6784E.2090401@linux.vnet.ibm.com>
+Date: Sat, 16 Feb 2008 11:14:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linux-ext4@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] Linux 2.6.25-rc2 - Kernel Ooops while running dbench
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008 10:41:44 +0100 Roel Kluin <12o3l@tiscali.nl> wrote:
+Hi,
 
-> you may also want these:
-> ---
-> [bl]e_add_cpu conversion in return
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/fs/ufs/swab.h b/fs/ufs/swab.h
-> index 1683d2b..a1e3000 100644
-> --- a/fs/ufs/swab.h
-> +++ b/fs/ufs/swab.h
-> @@ -44,18 +44,22 @@ static __inline u32
->  fs64_add(struct super_block *sbp, u32 *n, int d)
->  {
->  	if (UFS_SB(sbp)->s_bytesex == BYTESEX_LE)
-> -		return *n = cpu_to_le64(le64_to_cpu(*n)+d);
-> +		le64_add_cpu(n, d);
->  	else
-> -		return *n = cpu_to_be64(be64_to_cpu(*n)+d);
-> +		be64_add_cpu(n, d);
-> +
-> +	return *n;
->  }
->  
->  static __inline u32
->  fs64_sub(struct super_block *sbp, u32 *n, int d)
->  {
->  	if (UFS_SB(sbp)->s_bytesex == BYTESEX_LE)
-> -		return *n = cpu_to_le64(le64_to_cpu(*n)-d);
-> +		le64_add_cpu(n, -d);
->  	else
-> -		return *n = cpu_to_be64(be64_to_cpu(*n)-d);
-> +		be64_add_cpu(n, -d);
-> +
-> +	return *n;
->  }
->  
->  static __inline u32
+The 2.6.25-rc2 kernel oopses while running dbench on ext3 filesystem
+mounted with mount -o data=writeback,nobh option on the x86_64 box
 
-upsets powerpc (at least):
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+PGD 1f6860067 PUD 1f5d64067 PMD 0 
+Oops: 0000 [1] SMP 
+CPU 3 
+Modules linked in:
+Pid: 4271, comm: dbench Not tainted 2.6.25-rc2-autotest #1
+RIP: 0010:[<ffffffff80274972>]  [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+RSP: 0000:ffff8101fb041dc8  EFLAGS: 00010246
+RAX: 0000000000000000 RBX: ffff810180033c00 RCX: ffffffff8027b269
+RDX: 0000000000000000 RSI: 00000000000080d0 RDI: ffffffff80632d70
+RBP: 00000000000080d0 R08: 0000000000000001 R09: 0000000000000000
+R10: ffff8101feb36e50 R11: 0000000000000190 R12: 0000000000000001
+R13: 0000000000000000 R14: ffff8101f8f38000 R15: 00000000ffffff9c
+FS:  0000000000000000(0000) GS:ffff8101fff0f000(0063) knlGS:00000000f7e41460
+CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+CR2: 0000000000000000 CR3: 00000001f5620000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process dbench (pid: 4271, threadinfo ffff8101fb040000, task ffff8101fb180000)
+Stack:  0000000000000001 ffff8101fb041ea8 0000000000000001 ffffffff8027b269
+ ffff8101fb041ea8 ffffffff80281fe8 0000000000000001 0000000000000000
+ ffff8101fb041ea8 00000000ffffff9c 000000000000000b 0000000000000001
+Call Trace:
+ [<ffffffff8027b269>] get_empty_filp+0x55/0xf9
+ [<ffffffff80281fe8>] __path_lookup_intent_open+0x22/0x8f
+ [<ffffffff80282853>] open_namei+0x86/0x5a7
+ [<ffffffff8027d019>] vfs_stat_fd+0x3c/0x4a
+ [<ffffffff80279ab1>] do_filp_open+0x1c/0x3d
+ [<ffffffff80279c2c>] get_unused_fd_flags+0x79/0x111
+ [<ffffffff80279dce>] do_sys_open+0x46/0xca
+ [<ffffffff80221c82>] ia32_sysret+0x0/0xa
 
-fs/ufs/swab.h: In function `fs64_add':
-fs/ufs/swab.h:47: warning: passing arg 1 of `le64_add_cpu' from incompatible pointer type
-fs/ufs/swab.h:49: warning: passing arg 1 of `be64_add_cpu' from incompatible pointer type
-fs/ufs/swab.h: In function `fs64_sub':
-fs/ufs/swab.h:58: warning: passing arg 1 of `le64_add_cpu' from incompatible pointer type
-fs/ufs/swab.h:60: warning: passing arg 1 of `be64_add_cpu' from incompatible pointer type
+
+Code: 24 00 00 00 48 98 48 8b 9c c7 d8 02 00 00 48 8b 13 f6 c2 01 74 12 83 ca ff 49 89 d8 89 ee e8 1f fb ff ff 48 89 c2 eb 13 8b 43 14 <48> 8b 34 c2 48 89 d0 48 0f b1 33 48 39 d0 75 d3 c1 ed 0f 31 c0 
+RIP  [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+ RSP <ffff8101fb041dc8>
+CR2: 0000000000000000
+BUG: unable to handle kernel paging request at 00000000f51f3e1c
+IP: [<ffffffff80417d02>] tg3_poll+0x10c/0x82e
+PGD 1f6860067 PUD 1f37a5067 PMD 0 
+Oops: 0000 [2] SMP 
+CPU 3 
+Modules linked in:
+Pid: 4271, comm: dbench Tainted: G      D  2.6.25-rc2-autotest #1
+RIP: 0010:[<ffffffff80417d02>]  [<ffffffff80417d02>] tg3_poll+0x10c/0x82e
+RSP: 0000:ffff8100e3b6fe60  EFLAGS: 00010206
+RAX: 00000000f51f3e18 RBX: ffff8101ff1d4f50 RCX: 00000000000032e1
+RDX: 00000000000032e1 RSI: 0000000000000246 RDI: ffffffff806aaad8
+RBP: ffff8101ff67e6c0 R08: ffff8100e3b6fedc R09: ffff8100e3b6fee0
+R10: 0000000000000282 R11: 0000000000000282 R12: 000000000000014f
+R13: ffff8101f51f3d80 R14: 0000000000000000 R15: 000000000000014f
+FS:  0000000000000000(0000) GS:ffff8101fff0f000(0063) knlGS:00000000f7e41460
+CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
+CR2: 00000000f51f3e1c CR3: 00000001f5620000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process dbench (pid: 4271, threadinfo ffff8101fb040000, task ffff8101fb180000)
+Stack:  ffff8101fb041d18 ffff8101feb83040 ffff8100e3b6ff20 ffffffff80228bd0
+ ffff8100e3b6feec 00000000fff0ff80 ffff8101ff0c4000 0000000000000246
+ ffff8101ff0c4000 0000004000000000 ffff8101ff67e758 ffff8101ff67e758
+Call Trace:
+ <IRQ>  [<ffffffff80228bd0>] run_rebalance_domains+0x162/0x432
+ [<ffffffff80477b5e>] net_rx_action+0x75/0x14a
+ [<ffffffff80233ef0>] __do_softirq+0x50/0xbb
+ [<ffffffff8020c33c>] call_softirq+0x1c/0x28
+ [<ffffffff8020e4b7>] do_softirq+0x2f/0x84
+ [<ffffffff8021b8a8>] smp_apic_timer_interrupt+0x8b/0x9e
+ [<ffffffff8020bde6>] apic_timer_interrupt+0x66/0x70
+ <EOI>  [<ffffffff8021e3c0>] flat_send_IPI_mask+0x0/0x4c
+ [<ffffffff8020cca6>] oops_end+0x38/0x6a
+ [<ffffffff802200dd>] do_page_fault+0x716/0x7bf
+ [<ffffffff804ebab9>] error_exit+0x0/0x51
+ [<ffffffff8027b269>] get_empty_filp+0x55/0xf9
+ [<ffffffff80274972>] kmem_cache_alloc+0x3a/0x6c
+ [<ffffffff8027b269>] get_empty_filp+0x55/0xf9
+ [<ffffffff80281fe8>] __path_lookup_intent_open+0x22/0x8f
+ [<ffffffff80282853>] open_namei+0x86/0x5a7
+ [<ffffffff8027d019>] vfs_stat_fd+0x3c/0x4a
+ [<ffffffff80279ab1>] do_filp_open+0x1c/0x3d
+ [<ffffffff80279c2c>] get_unused_fd_flags+0x79/0x111
+ [<ffffffff80279dce>] do_sys_open+0x46/0xca
+ [<ffffffff80221c82>] ia32_sysret+0x0/0xa
+
+
+Code: 8b 05 a3 2e 29 00 41 ff c4 45 31 f6 41 81 e4 ff 01 00 00 ff 50 28 48 c7 03 00 00 00 00 41 8b 85 a0 00 00 00 49 03 85 a8 00 00 00 <0f> b7 40 04 39 44 24 2c 0f 8d 95 00 00 00 44 89 e0 48 6b d8 18 
+RIP  [<ffffffff80417d02>] tg3_poll+0x10c/0x82e
+ RSP <ffff8100e3b6fe60>
+CR2: 00000000f51f3e1c
+
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
