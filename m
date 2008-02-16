@@ -1,50 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbYBPCxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbYBPDNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763990AbYBPCxU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 21:53:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbYBPCxM
+	id S1758081AbYBPDNj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 22:13:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751357AbYBPDN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 21:53:12 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:43462 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756635AbYBPCxL (ORCPT
+	Fri, 15 Feb 2008 22:13:27 -0500
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:47082 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750982AbYBPDNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 21:53:11 -0500
-Message-ID: <47B64FE9.3000304@zytor.com>
-Date: Fri, 15 Feb 2008 18:52:25 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 15 Feb 2008 22:13:25 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett Packard
+To: casey@schaufler-ca.com
+Subject: Re: [PATCH] (02/15/08 Linus git) Smack unlabeled outgoing ambient packets - v4
+Date: Fri, 15 Feb 2008 22:13:11 -0500
+User-Agent: KMail/1.9.7
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <47B61F29.3040203@schaufler-ca.com>
+In-Reply-To: <47B61F29.3040203@schaufler-ca.com>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: linux-kernel@vger.kernel.org, miltonm@bga.com,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Remove the new perl dependency from build.
-References: <200802152010.05505.rob@landley.net>
-In-Reply-To: <200802152010.05505.rob@landley.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802152213.11661.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> 
-> Removed the special case "canned" logic from the perl script (it always requires
-> Math::bigint when it runs now).  Moved the list of canned values into
-> kernel/Makefile.  (It's already a selection menu in kconfig, so you can't
-> just feed arbitrary values into it anyway.  If you add a new value to kconfig,
-> add it to kernel/Makefile as well and delete kernel/timeconst.h so the build
-> recreates it.)
-> 
+On Friday 15 February 2008 6:24:25 pm Casey Schaufler wrote:
+> From: Casey Schaufler <casey@schaufler-ca.com>
+>
+> Smack uses CIPSO labeling, but allows for unlabeled packets
+> by specifying an "ambient" label that is applied to incoming
+> unlabeled packets. Because the other end of the connection
+> may dislike IP options, and ssh is one know application that
+> behaves thus, it is prudent to respond in kind. This patch
+> changes the network labeling behavior such that an outgoing
+> packet that would be given a CIPSO label that matches the
+> ambient label is left unlabeled. An "unlbl" domain is added
+> and the netlabel defaulting mechanism invoked rather than
+> assuming that everything is CIPSO. Locking has been added
+> around changes to the ambient label as the mechanisms used
+> to do so are more involved.
+>
+> Cleaned up some issues noted in review.
+> Make smk_cipso_doi() static.
+> Create a hook for the new security_secctx_to_secid()
+> using existing underlying code.
+> Fill in audit data for netlbl domain calls.
+> Collapse unnecessary multiple assignments.
+>
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-The problem is that for at least one architecture, CONFIG_HZ is settable 
-to arbitrary values, so you need a way to invoke the generic code if you 
-don't have a pre-canned value available.
+Looks good to me, thanks for making those changes.
 
-I have to admit to having very little interest in this kind of 
-minimality exercises, which seem to have pretty much academic value only 
--- in reality, people cross-compile the kernel to go onto this kind of 
-minimal boxes.
+Acked-by: Paul Moore <paul.moore@hp.com>
 
-	-hpa
+> ---
+>
+>  security/smack/smack_lsm.c |   36 ++++++++++++++++----
+>  security/smack/smackfs.c   |   61 ++++++++++++++++++++++++++---------
+>  2 files changed, 74 insertions(+), 23 deletions(-)
+>
+> diff -uprN -X linux-2.6.25-g0215-base//Documentation/dontdiff
+> linux-2.6.25-g0215-base/security/smack/smackfs.c
+> linux-2.6.25-g0215/security/smack/smackfs.c ---
+> linux-2.6.25-g0215-base/security/smack/smackfs.c	2008-02-15
+> 14:25:37.000000000 -0800 +++
+> linux-2.6.25-g0215/security/smack/smackfs.c	2008-02-15 14:30:36.000000000
+> -0800 @@ -24,6 +24,7 @@
+>  #include <net/cipso_ipv4.h>
+>  #include <linux/seq_file.h>
+>  #include <linux/ctype.h>
+> +#include <linux/audit.h>
+>  #include "smack.h"
+>
+>  /*
+> @@ -45,6 +46,7 @@ enum smk_inos {
+>   */
+>  static DEFINE_MUTEX(smack_list_lock);
+>  static DEFINE_MUTEX(smack_cipso_lock);
+> +static DEFINE_MUTEX(smack_ambient_lock);
+>
+>  /*
+>   * This is the "ambient" label for network traffic.
+> @@ -342,6 +344,9 @@ void smk_cipso_doi(void)
+>  	struct cipso_v4_doi *doip;
+>  	struct netlbl_audit audit_info;
+>
+> +	audit_info.loginuid = audit_get_loginuid(current);
+> +	audit_info.secid = smack_to_secid(current->security);
+> +
+>  	rc = netlbl_cfg_map_del(NULL, &audit_info);
+>  	if (rc != 0)
+>  		printk(KERN_WARNING "%s:%d remove rc = %d\n",
+> @@ -363,6 +368,30 @@ void smk_cipso_doi(void)
+>  		       __func__, __LINE__, rc);
+>  }
+>
+> +/**
+> + * smk_unlbl_ambient - initialize the unlabeled domain
+> + */
+> +void smk_unlbl_ambient(char *oldambient)
+> +{
+> +	int rc;
+> +	struct netlbl_audit audit_info;
+> +
+> +	audit_info.loginuid = audit_get_loginuid(current);
+> +	audit_info.secid = smack_to_secid(current->security);
+> +
+> +	if (oldambient != NULL) {
+> +		rc = netlbl_cfg_map_del(oldambient, &audit_info);
+> +		if (rc != 0)
+> +			printk(KERN_WARNING "%s:%d remove rc = %d\n",
+> +			       __func__, __LINE__, rc);
+> +	}
+> +
+> +	rc = netlbl_cfg_unlbl_add_map(smack_net_ambient, &audit_info);
+> +	if (rc != 0)
+> +		printk(KERN_WARNING "%s:%d add rc = %d\n",
+> +		       __func__, __LINE__, rc);
+> +}
+> +
+>  /*
+>   * Seq_file read operations for /smack/cipso
+>   */
+> @@ -709,7 +738,6 @@ static ssize_t smk_read_ambient(struct f
+>  				size_t cn, loff_t *ppos)
+>  {
+>  	ssize_t rc;
+> -	char out[SMK_LABELLEN];
+>  	int asize;
+>
+>  	if (*ppos != 0)
+> @@ -717,23 +745,18 @@ static ssize_t smk_read_ambient(struct f
+>  	/*
+>  	 * Being careful to avoid a problem in the case where
+>  	 * smack_net_ambient gets changed in midstream.
+> -	 * Since smack_net_ambient is always set with a value
+> -	 * from the label list, including initially, and those
+> -	 * never get freed, the worst case is that the pointer
+> -	 * gets changed just after this strncpy, in which case
+> -	 * the value passed up is incorrect. Locking around
+> -	 * smack_net_ambient wouldn't be any better than this
+> -	 * copy scheme as by the time the caller got to look
+> -	 * at the ambient value it would have cleared the lock
+> -	 * and been changed.
+>  	 */
+> -	strncpy(out, smack_net_ambient, SMK_LABELLEN);
+> -	asize = strlen(out) + 1;
+> +	mutex_lock(&smack_ambient_lock);
+>
+> -	if (cn < asize)
+> -		return -EINVAL;
+> +	asize = strlen(smack_net_ambient) + 1;
+> +
+> +	if (cn >= asize)
+> +		rc = simple_read_from_buffer(buf, cn, ppos,
+> +					     smack_net_ambient, asize);
+> +	else
+> +		rc = -EINVAL;
+>
+> -	rc = simple_read_from_buffer(buf, cn, ppos, out, asize);
+> +	mutex_unlock(&smack_ambient_lock);
+>
+>  	return rc;
+>  }
+> @@ -751,6 +774,7 @@ static ssize_t smk_write_ambient(struct
+>  				 size_t count, loff_t *ppos)
+>  {
+>  	char in[SMK_LABELLEN];
+> +	char *oldambient;
+>  	char *smack;
+>
+>  	if (!capable(CAP_MAC_ADMIN))
+> @@ -766,7 +790,13 @@ static ssize_t smk_write_ambient(struct
+>  	if (smack == NULL)
+>  		return -EINVAL;
+>
+> +	mutex_lock(&smack_ambient_lock);
+> +
+> +	oldambient = smack_net_ambient;
+>  	smack_net_ambient = smack;
+> +	smk_unlbl_ambient(oldambient);
+> +
+> +	mutex_unlock(&smack_ambient_lock);
+>
+>  	return count;
+>  }
+> @@ -974,6 +1004,7 @@ static int __init init_smk_fs(void)
+>
+>  	sema_init(&smack_write_sem, 1);
+>  	smk_cipso_doi();
+> +	smk_unlbl_ambient(NULL);
+>
+>  	return err;
+>  }
+> diff -uprN -X linux-2.6.25-g0215-base//Documentation/dontdiff
+> linux-2.6.25-g0215-base/security/smack/smack_lsm.c
+> linux-2.6.25-g0215/security/smack/smack_lsm.c ---
+> linux-2.6.25-g0215-base/security/smack/smack_lsm.c	2008-02-15
+> 14:25:37.000000000 -0800 +++
+> linux-2.6.25-g0215/security/smack/smack_lsm.c	2008-02-15 14:31:21.000000000
+> -0800 @@ -1251,9 +1251,8 @@ static void smack_to_secattr(char *smack
+>
+>  	switch (smack_net_nltype) {
+>  	case NETLBL_NLTYPE_CIPSOV4:
+> -		nlsp->domain = NULL;
+> -		nlsp->flags = NETLBL_SECATTR_DOMAIN;
+> -		nlsp->flags |= NETLBL_SECATTR_MLS_LVL;
+> +		nlsp->domain = kstrdup(smack, GFP_ATOMIC);
+> +		nlsp->flags = NETLBL_SECATTR_DOMAIN | NETLBL_SECATTR_MLS_LVL;
+>
+>  		rc = smack_to_cipso(smack, &cipso);
+>  		if (rc == 0) {
+> @@ -1282,15 +1281,14 @@ static int smack_netlabel(struct sock *s
+>  {
+>  	struct socket_smack *ssp;
+>  	struct netlbl_lsm_secattr secattr;
+> -	int rc = 0;
+> +	int rc;
+>
+>  	ssp = sk->sk_security;
+>  	netlbl_secattr_init(&secattr);
+>  	smack_to_secattr(ssp->smk_out, &secattr);
+> -	if (secattr.flags != NETLBL_SECATTR_NONE)
+> -		rc = netlbl_sock_setattr(sk, &secattr);
+> -
+> +	rc = netlbl_sock_setattr(sk, &secattr);
+>  	netlbl_secattr_destroy(&secattr);
+> +
+>  	return rc;
+>  }
+>
+> @@ -1313,6 +1311,7 @@ static int smack_inode_setsecurity(struc
+>  	struct inode_smack *nsp = inode->i_security;
+>  	struct socket_smack *ssp;
+>  	struct socket *sock;
+> +	int rc = 0;
+>
+>  	if (value == NULL || size > SMK_LABELLEN)
+>  		return -EACCES;
+> @@ -1341,7 +1340,10 @@ static int smack_inode_setsecurity(struc
+>  		ssp->smk_in = sp;
+>  	else if (strcmp(name, XATTR_SMACK_IPOUT) == 0) {
+>  		ssp->smk_out = sp;
+> -		return smack_netlabel(sock->sk);
+> +		rc = smack_netlabel(sock->sk);
+> +		if (rc != 0)
+> +			printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
+> +			       __func__, -rc);
+>  	} else
+>  		return -EOPNOTSUPP;
+>
+> @@ -2214,6 +2216,9 @@ static void smack_sock_graft(struct sock
+>  	ssp->smk_packet[0] = '\0';
+>
+>  	rc = smack_netlabel(sk);
+> +	if (rc != 0)
+> +		printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
+> +		       __func__, -rc);
+>  }
+>
+>  /**
+> @@ -2346,6 +2351,20 @@ static int smack_secid_to_secctx(u32 sec
+>  }
+>
+>  /*
+> + * smack_secctx_to_secid - return the secid for a smack label
+> + * @secdata: smack label
+> + * @seclen: how long result is
+> + * @secid: outgoing integer
+> + *
+> + * Exists for audit and networking code.
+> + */
+> +static int smack_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
+> +{
+> +	*secid = smack_to_secid(secdata);
+> +	return 0;
+> +}
+> +
+> +/*
+>   * smack_release_secctx - don't do anything.
+>   * @key_ref: unused
+>   * @context: unused
+> @@ -2475,6 +2494,7 @@ static struct security_operations smack_
+>  	.key_permission = 		smack_key_permission,
+>  #endif /* CONFIG_KEYS */
+>  	.secid_to_secctx = 		smack_secid_to_secctx,
+> +	.secctx_to_secid = 		smack_secctx_to_secid,
+>  	.release_secctx = 		smack_release_secctx,
+>  };
+
+
+
+-- 
+paul moore
+linux security @ hp
