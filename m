@@ -1,33 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763592AbYBPAL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbYBPAMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763592AbYBPAL3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 19:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbYBPALT
+	id S1763350AbYBPAMy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 19:12:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbYBPAMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 19:11:19 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:36635 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758232AbYBPALS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 19:11:18 -0500
-Date: Fri, 15 Feb 2008 18:11:14 -0600
-From: Paul Jackson <pj@sgi.com>
-To: David Rientjes <rientjes@google.com>
-Cc: akpm@linux-foundation.org, clameter@sgi.com, Lee.Schermerhorn@hp.com,
-       ak@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] mempolicy: add MPOL_F_STATIC_NODES flag
-Message-Id: <20080215181114.e4fb0839.pj@sgi.com>
-In-Reply-To: <alpine.DEB.1.00.0802151548060.30015@chino.kir.corp.google.com>
-References: <alpine.DEB.1.00.0802101506130.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507210.11145@chino.kir.corp.google.com>
-	<alpine.DEB.1.00.0802101507400.11145@chino.kir.corp.google.com>
-	<20080214040918.d735e920.pj@sgi.com>
-	<alpine.DEB.1.00.0802141336590.6067@chino.kir.corp.google.com>
-	<20080215032748.8b07e5eb.pj@sgi.com>
-	<alpine.DEB.1.00.0802151216330.19332@chino.kir.corp.google.com>
-	<20080215174554.92f14bac.pj@sgi.com>
-	<alpine.DEB.1.00.0802151548060.30015@chino.kir.corp.google.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+	Fri, 15 Feb 2008 19:12:43 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42876 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758174AbYBPAMm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 19:12:42 -0500
+Date: Fri, 15 Feb 2008 16:12:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: rmk+lkml@arm.linux.org.uk, greg@kroah.com, torvalds@linux-foundation.org,
+       jeff@garzik.org, davem@davemloft.net, arjan@infradead.org,
+       sfr@canb.auug.org.au, linux-kernel@vger.kernel.org,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
+Message-Id: <20080215161208.3b1e015a.akpm@linux-foundation.org>
+In-Reply-To: <20080215154724.132ad4f3.randy.dunlap@oracle.com>
+References: <20080212044314.GA4888@kroah.com>
+	<20080211211751.3e265754@laptopd505.fenrus.org>
+	<20080211.221126.230471463.davem@davemloft.net>
+	<47B1CB08.4020101@garzik.org>
+	<alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
+	<20080212174824.GA1919@kroah.com>
+	<alpine.LFD.1.00.0802121011280.2920@woody.linux-foundation.org>
+	<20080212191552.GA20883@kroah.com>
+	<alpine.LFD.1.00.0802121133210.2920@woody.linux-foundation.org>
+	<20080212204813.GA21650@kroah.com>
+	<20080215232308.GC31474@flint.arm.linux.org.uk>
+	<20080215153732.a93caec7.akpm@linux-foundation.org>
+	<20080215154724.132ad4f3.randy.dunlap@oracle.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -35,16 +41,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Do you know when the patch that adds 
-> bitmap_onto(), which is a name I think I noticed you liking, will be 
-> available?
+On Fri, 15 Feb 2008 15:47:24 -0800
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Thanks in good part to your various questions regarding it, I realized
-a significant error in the central piece of code in that patch, the
-routine lib/bitmap.c:bitmap_onto().  I should be done in a few hours
-reworking it, and will post it then.
+> On Fri, 15 Feb 2008 15:37:32 -0800 Andrew Morton wrote:
+> 
+> > On Fri, 15 Feb 2008 23:23:08 +0000
+> > Russell King <rmk+lkml@arm.linux.org.uk> wrote:
+> > 
+> > > On Tue, Feb 12, 2008 at 12:48:13PM -0800, Greg KH wrote:
+> > > > I have tried, and successfully done this many times in the past.  The
+> > > > kobject change was one example: add a new function, migrate all users of
+> > > > a direct pointer over to that function, after that work is all done and
+> > > > in, change the structure and do the needed work afterward.  All is
+> > > > bisectable completly, with no big "flag day" needed.
+> > > 
+> > > Incorrect - because this all happened far too quickly.  This is one of
+> > > the reasons that I ended up having to redo various parts of the ARM tree
+> > > because stuff broke - set_kset_name() completely vanished introducing
+> > > compile errors, and iirc some merge issues as well.
+> > > 
+> > > I had patches introducing new system objects which use that, and
+> > > modifications extremely close to other uses in the PXA code.
+> > > 
+> > > The end result (through rebuilding the affected parts of my git tree, and
+> > > asking people for replacement patches) was something that is bisectable -
+> > > but had I tried to merge stuff as is, it would've been an utter mess, and
+> > > _was_ unbuildable.
+> > > 
+> > 
+> > I wonder why I didn't see any of this - I build arm allmodconfig at least
+> > once a week, usually more frequently.
+> > 
+> > So either the offending patches weren't in my pile or arm allmodconfig is
+> > worse than I thought :(
+> > 
+> > It really is in arch maintainers' best interest to keep their allmodconfig
+> > in good shape, for this reason.  arm's _isn't_ in good shape: the compile
+> > fails for several long-standing reasons (eg: no hope of building DRM) and I
+> > don't think the coverage is very broad either.
+> 
+> I think that Russell has said that allmodconfig isn't very realistic
+> for ARM, with its 70+ config files.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+You'd need to pick one board support and enable everything else you
+possibly can.
+
