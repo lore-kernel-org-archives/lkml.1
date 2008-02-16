@@ -1,54 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757989AbYBPWzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYBPXLn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757989AbYBPWzz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 17:55:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbYBPWzr
+	id S1754981AbYBPXLn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 18:11:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYBPXLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 17:55:47 -0500
-Received: from mtagate1.uk.ibm.com ([195.212.29.134]:63082 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752600AbYBPWzq (ORCPT
+	Sat, 16 Feb 2008 18:11:33 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:2008 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751089AbYBPXLc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 17:55:46 -0500
-Date: Sat, 16 Feb 2008 22:56:37 +0000
-From: Andy Whitcroft <andyw@uk.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] checkpatch.pl: revert wrong --file message
-Message-ID: <20080216225637.GE24479@shadowen.org>
-References: <20080215165244.GA28358@elte.hu> <200802151815.44050.ak@suse.de> <alpine.LFD.1.00.0802161026550.7583@apollo.tec.linutronix.de> <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com>
+	Sat, 16 Feb 2008 18:11:32 -0500
+Date: Sat, 16 Feb 2008 18:11:31 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Andrew Buehler <abuehler.kernel@gmail.com>
+cc: Oliver Pinter <oliver.pntr@gmail.com>, <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       <linux-scsi@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: USB regression (and other failures) in 2.6.2[45]*
+In-Reply-To: <47B756B5.7070901@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0802161756330.3753-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 12:27:33PM +0200, Pekka Enberg wrote:
-> Hi,
+On Sat, 16 Feb 2008, Andrew Buehler wrote:
+
+> > For another, getting two copies of a message is no big deal --
 > 
-> On Feb 16, 2008 12:18 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > People, who do cleanups - I'm not talking about running lindent here -
-> > read through the code while they fix it up.
-> >
-> > Actually they find bugs that way or at least come up with useful
-> > questions about code which is not obvious in the first place.
-> >
-> > Discouraging such cleanups with a pretty offensive warning is
-> > counterproductive.
+> I disagree.
+
+Everyone has his own taste.  Obviously there's no world-wide consensus,
+possibly because different people have different workflow habits and so
+are affected by duplicate messages to varying extents.
+
+> When I receive a message sent directly to me in a discussion which is on
+> a list, I expect that it is because someone either considered it
+> important enough to warrant making certain it came to my attention
+> specifically, or wanted to continue the discussion but felt that it
+> should not continue to take place on the mailing list.
+
+Sometimes that is the case but often it isn't.  Your expectations are
+at variance with other people's behavior; you shouldn't expect everyone
+else to change just to match your personal ideals.
+
+On the other hand, I would be perfectly happy to edit your name out of 
+the reply list -- but since you said you aren't receiving all the 
+messages in this thread via the list that might not be a good thing to 
+do at the moment...
+
+
+> > People on LKML who are more familiar with interrupt routing problems
+> > might be able to offer more help.  For now, you can try things like
+> > turning on CONFIG_USB_DEBUG, posting the output from dmesg, posting
+> > the contents of /proc/interrupts (say before and after a new USB
+> > device is plugged in).
 > 
-> Well, it's not just about cleanup patches submitted by "newbies". I
-> use checkpatch for development too and the warning is real PITA for
-> that.
+> In my current testing kernel, which I believe is the one with which I
+> captured the sole successful non-2.6.23.1 dmesg so far, CONFIG_USB_DEBUG
+> is on. The associated dmesg (obtained yesterday from booting with the
+> Flash drive connected) is attached. (The flood of 'no version magic,
+> tainting kernel' messages between line 600 and line 1160 are a side
+> effect of Novell's custom environment which I have not yet made the
+> effort to fix; the boot scripts attempt to detect the network card by
+> modprobing every network driver available until they find one which
+> works. Here, because the correct one fails, they wind up trying each one
+> twice.)
 
-The warning is suppressed on -q as its a pain indeed if one is using it
-to check files and you are not intending a single file cleanup.
+The line saying:
 
-Is the concensus the warning is useful, or unhelpful.
+> ehci_hcd 0000:00:1d.7: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
 
--apw
+is an indication that interrupt routing is indeed not working right.  
+Or possibly your EHCI controller isn't working.  You could try 
+blacklisting or unloading ehci-hcd to see if that helps.  Of course 
+then none of your USB devices would be able to run at high speed.
+
+> I have transcribed the contents of /proc/interrupts both before and
+> after plugging in the Flash drive I have been using for testing, and
+> they are also attached. I have been as careful as I could to be sure
+> that the contents of the attached 'r61-interrupts-[12].txt' files is the
+> same as what was shown on the laptop, but cannot absolutely guarantee
+> that I have not missed something. For the record, the '1' is from before
+> connecting the drive, and the '2' is from after.
+
+Notice that the interrupt count for IRQ 11 doesn't change when you plug 
+in the device.  Obviously something is wrong there.
+
+In fact, it's a little surprising that almost all the USB controllers
+are routed to the same IRQ.  However this is beyond my area of 
+expertise.  You could try posting a message on the linux-acpi mailing 
+list; the people there should know a lot more about these issues.
+
+
+> > Assuming that the 2.6.23 kernel works on your computer, you can go
+> > the extreme route of installing git and doing a bisection to find the
+> > first patch causing your difficulty.
+> 
+> That would require me to learn enough of how git works, as distinct from
+> more traditional VCSes, to be able to use it with some confidence. This
+> is not impossible - indeed I want to do it at some point - but for the
+> time being I have no idea where to start, and indeed I am not especially
+> clear on exactly what (from a user's perspective) the differences been
+> git and e.g. CVS or Subversion are. I know that the entire concept
+> relies around a lack of centralization, but I have not been able to get
+> my head around what that means in a practical sense.
+
+There are some excellent tutorials on the web, with detailed
+explanations of how to do a bisection to track down a kernel bug.
+
+Alan Stern
+
