@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYBPOtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbYBPOt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbYBPOtZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 09:49:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754897AbYBPOtP
+	id S1755365AbYBPOt5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 09:49:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYBPOtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 09:49:15 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:34090 "EHLO mgw1.diku.dk"
+	Sat, 16 Feb 2008 09:49:45 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34107 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbYBPOtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 09:49:14 -0500
-Date: Sat, 16 Feb 2008 15:49:07 +0100 (MET)
+	id S1753917AbYBPOtn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 09:49:43 -0500
+Date: Sat, 16 Feb 2008 15:49:39 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/4] : More use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802161548370.1185@pc-041.diku.dk>
+To: adaplas@gmail.com, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/4] : More use DIV_ROUND_UP or roundup
+Message-ID: <Pine.LNX.4.58.0802161549110.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,81 +66,52 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/ide/arm/palm_bk3710.c b/drivers/ide/arm/palm_bk3710.c
---- a/drivers/ide/arm/palm_bk3710.c 2008-02-13 20:42:50.000000000 +0100
-+++ b/drivers/ide/arm/palm_bk3710.c 2008-02-15 22:25:33.000000000 +0100
-@@ -96,11 +96,11 @@ static void palm_bk3710_setudmamode(void
- 	u16 val16;
+diff -u -p a/drivers/video/atafb.c b/drivers/video/atafb.c
+--- a/drivers/video/atafb.c 2007-11-08 18:33:49.000000000 +0100
++++ b/drivers/video/atafb.c 2008-02-15 22:31:30.000000000 +0100
+@@ -1270,7 +1270,7 @@ again:
 
- 	/* DMA Data Setup */
--	t0 = (palm_bk3710_udmatimings[mode].cycletime + ide_palm_clk - 1)
--			/ ide_palm_clk - 1;
--	tenv = (20 + ide_palm_clk - 1) / ide_palm_clk - 1;
--	trp = (palm_bk3710_udmatimings[mode].rptime + ide_palm_clk - 1)
--			/ ide_palm_clk - 1;
-+	t0 = DIV_ROUND_UP(palm_bk3710_udmatimings[mode].cycletime,
-+			  ide_palm_clk) - 1;
-+	tenv = DIV_ROUND_UP(20, ide_palm_clk) - 1;
-+	trp = DIV_ROUND_UP(palm_bk3710_udmatimings[mode].rptime,
-+			   ide_palm_clk) - 1;
-
- 	/* udmatim Register */
- 	val16 = readw(base + BK3710_UDMATIM) & (dev ? 0xFF0F : 0xFFF0);
-@@ -141,8 +141,8 @@ static void palm_bk3710_setdmamode(void
- 	cycletime = max_t(int, t->cycle, min_cycle);
-
- 	/* DMA Data Setup */
--	t0 = (cycletime + ide_palm_clk - 1) / ide_palm_clk;
--	td = (t->active + ide_palm_clk - 1) / ide_palm_clk;
-+	t0 = DIV_ROUND_UP(cycletime, ide_palm_clk);
-+	td = DIV_ROUND_UP(t->active, ide_palm_clk);
- 	tkw = t0 - td - 1;
- 	td -= 1;
-
-@@ -168,9 +168,9 @@ static void palm_bk3710_setpiomode(void
- 	struct ide_timing *t;
-
- 	/* PIO Data Setup */
--	t0 = (cycletime + ide_palm_clk - 1) / ide_palm_clk;
--	t2 = (ide_timing_find_mode(XFER_PIO_0 + mode)->active +
--	      ide_palm_clk - 1)	/ ide_palm_clk;
-+	t0 = DIV_ROUND_UP(cycletime, ide_palm_clk);
-+	t2 = DIV_ROUND_UP(ide_timing_find_mode(XFER_PIO_0 + mode)->active,
-+			  ide_palm_clk);
-
- 	t2i = t0 - t2 - 1;
- 	t2 -= 1;
-@@ -192,8 +192,8 @@ static void palm_bk3710_setpiomode(void
-
- 	/* TASKFILE Setup */
- 	t = ide_timing_find_mode(XFER_PIO_0 + mode);
--	t0 = (t->cyc8b + ide_palm_clk - 1) / ide_palm_clk;
--	t2 = (t->act8b + ide_palm_clk - 1) / ide_palm_clk;
-+	t0 = DIV_ROUND_UP(t->cyc8b, ide_palm_clk);
-+	t2 = DIV_ROUND_UP(t->act8b, ide_palm_clk);
-
- 	t2i = t0 - t2 - 1;
- 	t2 -= 1;
-diff -u -p a/drivers/ide/pci/cmd640.c b/drivers/ide/pci/cmd640.c
---- a/drivers/ide/pci/cmd640.c 2008-02-08 08:58:12.000000000 +0100
-+++ b/drivers/ide/pci/cmd640.c 2008-02-15 22:25:38.000000000 +0100
-@@ -584,15 +584,15 @@ static void cmd640_set_mode (unsigned in
- 	active_time = ide_pio_timings[pio_mode].active_time;
- 	recovery_time = cycle_time - (setup_time + active_time);
- 	clock_time = 1000 / bus_speed;
--	cycle_count = (cycle_time + clock_time - 1) / clock_time;
-+	cycle_count = DIV_ROUND_UP(cycle_time, clock_time);
-
--	setup_count = (setup_time + clock_time - 1) / clock_time;
-+	setup_count = DIV_ROUND_UP(setup_time, clock_time);
-
--	active_count = (active_time + clock_time - 1) / clock_time;
-+	active_count = DIV_ROUND_UP(active_time, clock_time);
- 	if (active_count < 2)
- 		active_count = 2; /* minimum allowed by cmd640 */
-
--	recovery_count = (recovery_time + clock_time - 1) / clock_time;
-+	recovery_count = DIV_ROUND_UP(recovery_time, clock_time);
- 	recovery_count2 = cycle_count - (setup_count + active_count);
- 	if (recovery_count2 > recovery_count)
- 		recovery_count = recovery_count2;
+ 	gstart = (prescale / 2 + plen * left_margin) / prescale;
+ 	/* gend1 is for hde (gend-gstart multiple of align), shifter's xres */
+-	gend1 = gstart + ((xres + align - 1) / align) * align * plen / prescale;
++	gend1 = gstart + roundup(xres, align) * plen / prescale;
+ 	/* gend2 is for hbb, visible xres (rest to gend1 is cut off by hblank) */
+ 	gend2 = gstart + xres * plen / prescale;
+ 	par->HHT = plen * (left_margin + xres + right_margin) /
+diff -u -p a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+--- a/drivers/video/cirrusfb.c 2007-11-08 18:33:49.000000000 +0100
++++ b/drivers/video/cirrusfb.c 2008-02-15 22:31:35.000000000 +0100
+@@ -3117,7 +3117,7 @@ static void bestclock(long freq, long *b
+ 				}
+ 			}
+ 		}
+-		d = ((143181 * n) + f - 1) / f;
++		d = DIV_ROUND_UP(143181 * n, f);
+ 		if ((d >= 7) && (d <= 63)) {
+ 			if (d > 31)
+ 				d = (d / 2) * 2;
+diff -u -p a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c 2008-02-08 08:58:16.000000000 +0100
++++ b/drivers/video/console/fbcon.c 2008-02-15 22:31:36.000000000 +0100
+@@ -620,8 +620,7 @@ static void fbcon_prepare_logo(struct vc
+ 	if (fb_get_color_depth(&info->var, &info->fix) == 1)
+ 		erase &= ~0x400;
+ 	logo_height = fb_prepare_logo(info, ops->rotate);
+-	logo_lines = (logo_height + vc->vc_font.height - 1) /
+-		vc->vc_font.height;
++	logo_lines = DIV_ROUND_UP(logo_height, vc->vc_font.height);
+ 	q = (unsigned short *) (vc->vc_origin +
+ 				vc->vc_size_row * rows);
+ 	step = logo_lines * cols;
+diff -u -p a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
+--- a/drivers/video/gxt4500.c 2007-11-08 18:33:50.000000000 +0100
++++ b/drivers/video/gxt4500.c 2008-02-15 22:31:41.000000000 +0100
+@@ -238,7 +238,7 @@ static int calc_pll(int period_ps, struc
+ 	for (pdiv1 = 1; pdiv1 <= 8; ++pdiv1) {
+ 		for (pdiv2 = 1; pdiv2 <= pdiv1; ++pdiv2) {
+ 			postdiv = pdiv1 * pdiv2;
+-			pll_period = (period_ps + postdiv - 1) / postdiv;
++			pll_period = DIV_ROUND_UP(period_ps, postdiv);
+ 			/* keep pll in range 350..600 MHz */
+ 			if (pll_period < 1666 || pll_period > 2857)
+ 				continue;
