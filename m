@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbYBPGJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbYBPGKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758119AbYBPGJY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYBPGJQ
+	id S1759285AbYBPGKx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:10:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbYBPGKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:09:16 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:6714 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751699AbYBPGJP (ORCPT
+	Sat, 16 Feb 2008 01:10:46 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:40773 "EHLO
+	e28esmtp05.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751860AbYBPGKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:09:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tn2MfCqHWqlUIX05m1HMqrh0xFwIEoyhekRRNW71FRhsxk5OE1xQd3zB9raDuZoH/7pCzEAgIe7eDiO0VvMH8QGPvzAtQCEna4QRQiXZYFYY3k+a4a28e/S152ZpP7LZNPiuuVtpekc59U3DU9bJWjE1UNPXkTGuzOEZyUT+VOA=
-Message-ID: <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
-Date: Fri, 15 Feb 2008 22:09:12 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Robert Hancock" <hancockr@shaw.ca>
-Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
-Cc: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Greg KH" <greg@kroah.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47B67A0E.7060605@shaw.ca>
+	Sat, 16 Feb 2008 01:10:44 -0500
+Message-ID: <47B67E5E.4010001@linux.vnet.ibm.com>
+Date: Sat, 16 Feb 2008 11:40:38 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1 softlockup
+ while bootup on powerpc
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.LKjQjbOw482S/QFVaQ9fSrM+IFw@ifi.uio.no>
-	 <fa.wuwhrqFp6CufvpAJxShHqIaOPdI@ifi.uio.no> <47B67A0E.7060605@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 9:52 PM, Robert Hancock <hancockr@shaw.ca> wrote:
-> Andi Kleen wrote:
->
-> > Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
->  >> [akpm@linux-foundation.org: many fixes and cleanups]
->  >> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
->  >> Signed-off-by: Andi Kleen <ak@suse.de>
->  >> Tested-by: Andi Kleen <ak@suse.de>
->  >
->  > iirc it really was
->  > Tested-and-didnt-pass-test-by: Andi Kleen
->  > unfortunately. I have not rechecked recently, but on the one Intel
->  > box the original patch and the other mcfg heuristics removed didn't work.
->
->  With just this patch you will have this problem. You need either the
->  patch to disable decode during BAR sizing, or the patch to use MMCONFIG
->  for extended config space only, if you don't have them already.
+Hi,
 
-linus already apply the the patch to "use MMCONFIG for extended config
-space only" to mainline. the last two near 2.6.25-rc1.
+The softlockup is seen from 2.6.25-rc1-git{1,3} and is visible in the 2.6.24-rc2 kernel,
+While booting up with the 2.6.25-rc1-git{1,3} and 2.6.25-rc2 kernel(s) on the powerbox
 
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a0ca9909609470ad779b9b9cc68ce96e975afff7
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b6ce068a1285a24185b01be8a49021827516b3e1
-
-Andi,
-can you double check this patch with your test system?
-
-YH
+Loading st.ko module
+BUG: soft lockup - CPU#1 stuck for 61s! [insmod:379]
+NIP: c0000000001b0620 LR: c0000000001a5dcc CTR: 0000000000000040
+REGS: c00000077caab8a0 TRAP: 0901   Not tainted  (2.6.25-rc2-autotest)
+MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 84004088  XER: 20000000
+TASK = c00000077cb450a0[379] 'insmod' THREAD: c00000077caa8000 CPU: 1
+GPR00: c00000077c9d4000 c00000077caabb20 c000000000538a40 000000000000000b 
+GPR04: ffc0000000000000 c00000077e0c0000 0000000000000036 000000000000000a 
+GPR08: 0040000000000000 c00000077c9d4250 c000000000000000 0000000000000000 
+GPR12: c00000077c9d4230 c000000000481d00 
+NIP [c0000000001b0620] .radix_tree_gang_lookup+0x100/0x1e4
+LR [c0000000001a5dcc] .call_for_each_cic+0x50/0x10c
+Call Trace:
+[c00000077caabb20] [c0000000001a5e2c] .call_for_each_cic+0xb0/0x10c (unreliable)
+[c00000077caabc60] [c00000000019dba4] .exit_io_context+0xf0/0x110
+[c00000077caabcf0] [c000000000061e38] .do_exit+0x820/0x850
+[c00000077caabda0] [c000000000061f34] .do_group_exit+0xcc/0xe8
+[c00000077caabe30] [c00000000000872c] syscall_exit+0x0/0x40
+Instruction dump:
+7d296214 39290018 e8090000 7caa2038 39290008 2fa00000 409e0018 7caa4215 
+396b0001 418200cc 424000b8 4bffffdc <79691f24> 7d296214 e9690018 2fab0000 
+INFO: task insmod:387 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+insmod        D 000000001000e144 12144   387      1
+Call Trace:
+[c00000077cb97600] [c0000000008fae80] 0xc0000000008fae80 (unreliable)
+[c00000077cb977d0] [c000000000010c7c] .__switch_to+0x11c/0x154
+[c00000077cb97860] [c000000000344498] .schedule+0x5d0/0x6b0
+[c00000077cb97950] [c0000000003447d8] .schedule_timeout+0x3c/0xe8
+[c00000077cb97a20] [c000000000343d34] .wait_for_common+0x150/0x22c
+[c00000077cb97ae0] [c00000000008ef00] .__stop_machine_run+0xbc/0xf0
+[c00000077cb97bb0] [c00000000008ef70] .stop_machine_run+0x3c/0x80
+[c00000077cb97c50] [c0000000000891f0] .sys_init_module+0x14e4/0x1af4
+[c00000077cb97e30] [c00000000000872c] syscall_exit+0x0/0x40
+-- 0:conmux-control -- time-stamp -- Feb/15/08 16:04:12 --
+INFO: task insmod:387 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+insmod        D 000000001000e144 12144   387      1
+Call Trace:
+[c00000077cb97600] [c0000000008fae80] 0xc0000000008fae80 (unreliable)
+[c00000077cb977d0] [c000000000010c7c] .__switch_to+0x11c/0x154
+[c00000077cb97860] [c000000000344498] .schedule+0x5d0/0x6b0
+[c00000077cb97950] [c0000000003447d8] .schedule_timeout+0x3c/0xe8
+[c00000077cb97a20] [c000000000343d34] .wait_for_common+0x150/0x22c
+[c00000077cb97ae0] [c00000000008ef00] .__stop_machine_run+0xbc/0xf0
+[c00000077cb97bb0] [c00000000008ef70] .stop_machine_run+0x3c/0x80
+[c00000077cb97c50] [c0000000000891f0] .sys_init_module+0x14e4/0x1af4
+[c00000077cb97e30] [c00000000000872c] syscall_exit+0x0/0x40
+-- 0:conmux-control -- time-stamp -- Feb/15/08 16:06:21 --
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
