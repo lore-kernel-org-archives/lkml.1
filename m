@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYBPGcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762595AbYBPGdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbYBPGcb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:32:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYBPGcY
+	id S1762595AbYBPGdQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYBPGdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:32:24 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45246 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751703AbYBPGcX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:32:23 -0500
-Date: Fri, 15 Feb 2008 22:32:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yoshinori Sato <ysato@users.sourceforge.jp>
-Cc: lkml <linux-kernel@vger.kernel.org>, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 4/6] h8300 CONFIG_KALLSYMS fix
-Message-Id: <20080215223201.c0d08ce6.akpm@linux-foundation.org>
-In-Reply-To: <87abm1o2ck.wl%ysato@users.sourceforge.jp>
-References: <87abm1o2ck.wl%ysato@users.sourceforge.jp>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 16 Feb 2008 01:33:00 -0500
+Received: from verein.lst.de ([213.95.11.210]:55456 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbYBPGc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 01:32:59 -0500
+Date: Sat, 16 Feb 2008 07:31:29 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Theodore Tso <tytso@MIT.EDU>, haveblue@us.ibm.com,
+       linux-kernel@vger.kernel.org, hch@lst.de, miklos@szeredi.hu
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+Message-ID: <20080216063129.GA8592@lst.de>
+References: <20080215223721.9E0A088A@kernel> <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu> <1203122979.13230.3.camel@nimitz.home.sr71.net> <20080216010030.GC26734@mit.edu> <20080215171119.578bd302.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080215171119.578bd302.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 01:13:47 -0500 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
-
-> Please comment "C_SYMBOL_PREFIX".
+On Fri, Feb 15, 2008 at 05:11:19PM -0800, Andrew Morton wrote:
+> > It would be nice if an initial patch which introduces the new
+> > functionality you need for r/o bind mounts could get introduced into
+> > mainline *first*, and then people could add patches that call
+> > mnt_want_write(), et. al into their trees gradually.
 > 
->  Makefile           |    3 ++-
->  arch/h8300/Kconfig |    4 ++++
->  2 files changed, 6 insertions(+), 1 deletions(-)
+> Yes, I expect that merging a handful of do-nothing mnt_foo_write()
+> functions into mainline right now would ease life.
 > 
-> diff --git a/Makefile b/Makefile
-> index c162370..745e31f 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -751,7 +751,8 @@ endef
->  # Generate .S file with all kernel symbols
->  quiet_cmd_kallsyms = KSYM    $@
->        cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
-> -                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
-> +                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) \
-> +                     $(if $(CONFIG_C_SYMBOL_PREFIX),--symbol-prefix='_') > $@
->  
->  .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
->  	$(call if_changed_dep,as_o_S)
-> diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
-> index 085dc6e..2804edd 100644
-> --- a/arch/h8300/Kconfig
-> +++ b/arch/h8300/Kconfig
-> @@ -87,6 +87,10 @@ config HZ
->  	int
->  	default 100
->  
-> +config C_SYMBOL_PREFIX
-> +	bool
-> +	default y
-> +
->  source "init/Kconfig"
->  
->  source "arch/h8300/Kconfig.cpu"
-> -- 
+> > otherwise akpm gets grumpy
+> 
+> itym "less than usually cheery"
 
-Sam looks after that code.
+Haha,
 
-None of these patches added your Signed-off-by:.  Please confirm that it
-is OK if I add it.
+once we put pieces in the first three patches would be useful aswell,
+to easily catch additions in the next cycle that might be adding
+NULL-vfsmount calls to dentry_open.
