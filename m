@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbYBPLgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756900AbYBPLiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbYBPLgT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 06:36:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753260AbYBPLgG
+	id S1756900AbYBPLiR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 06:38:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbYBPLiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 06:36:06 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:41033 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbYBPLgB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 06:36:01 -0500
-Date: Sat, 16 Feb 2008 12:36:10 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Rene Herman <rene.herman@keyaccess.nl>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-kbuild@vger.kernel.org
-Subject: Re: 2.6.25-rc2 vdso_install breaks user "make install"
-Message-ID: <20080216113610.GB11362@uranus.ravnborg.org>
-References: <47B6592A.6030200@keyaccess.nl> <20080216034211.8DD03270193@magilla.localdomain>
-Mime-Version: 1.0
+	Sat, 16 Feb 2008 06:38:03 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:28401 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752512AbYBPLiB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 06:38:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=hKoWTdt3XTQzZ00j4wzRw9l6Z3kc9qZcZWL7yRTU3Hpbhj9p5CoQxghK1sG0tHozRUKOkIOd3YV27GZLSiGyrRCEhQi9g0Ff9/WZotvPBlVd97w4UPmuCIVLXqiv9nDjCiQ71bBZNeWfntah/ZaKapEcuualU19lU9WwD0B2oPw=
+Date: Sat, 16 Feb 2008 12:37:26 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Russell Leidich <rml@google.com>, Pavel Machek <pavel@suse.cz>
+Subject: Re: 2.6.25-rc2-mm1: build failure (x86)
+Message-ID: <20080216113722.GA9041@joi>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080216105737.GA6561@joi> <20080216030949.5b11ba4c.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080216034211.8DD03270193@magilla.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080216030949.5b11ba4c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 07:42:11PM -0800, Roland McGrath wrote:
-> Perhaps it makes more sense to have vdso_install be a dependency of
-> modules_install rather than install, since they both put things in /lib/modules.
-> The installed vdso images are potentially useful for a kernel when you
-> aren't bothering to build or install any modules, but those images are only
-> ever useful for sophisticated debugging uses anyway.
+On Sat, Feb 16, 2008 at 03:09:49AM -0800, Andrew Morton wrote:
+> On Sat, 16 Feb 2008 11:59:07 +0100 Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
 > 
-> Sam, any thoughts?  (See arch/x86/Makefile and arch/powerpc/Makefile.)
+> > arch/x86/kernel/built-in.o: In function `amd_smp_thermal_interrupt':
+> > (.text+0xe03b): undefined reference to `mce_log_therm_throt_event'
+> > arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
+> > (.text+0x12239): undefined reference to `setup_trampoline'
+> > 
+> > #
+> > # Automatically generated make config: don't edit
+> > # Linux kernel version: 2.6.25-rc2-mm1
+> > # Sat Feb 16 11:32:49 2008
+> 
+> ho hum, thanks.  I think I'll drop x86-amd-thermal-interrupt-support.patch.
+>  I don't think it's the final version anwyay.
+> 
+Ok, I had to revert x86-remove-pt_regs-arg-from-smp_thermal_interrupt before x86-amd-thermal-interrupt-support.
 
-Installing the vdso files as aprt of modules_install would be
-unintuitive as this has nothing to do with modules.
-
-And since you wrote:
-> useful for sophisticated debugging uses anyway
-I suggest to make the vdso_install step independent as
-in following patch.
-[Note: help docs needs to mention the new target].
-
-This solves the issue at ahnd and still gives us the posibility
-to install the files should they be needed.
-
-	Sam
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 6845482..1c6ce35 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -176,7 +176,7 @@ define archhelp
-   @echo '  *_defconfig     - Select default config from arch/$(ARCH)/configs'
- endef
- 
--install: vdso_install
-+install:
- 	$(Q)$(MAKE) $(build)=$(boot) install
- 
- vdso_install:
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 204af43..f1e739a 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -229,7 +229,7 @@ zdisk bzdisk: vmlinux
- fdimage fdimage144 fdimage288 isoimage: vmlinux
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) $@
- 
--install: vdso_install
-+install:
- 	$(Q)$(MAKE) $(build)=$(boot) BOOTIMAGE=$(KBUILD_IMAGE) install
- 
- PHONY += vdso_install
+Second error vanished when I reverted "suspend: wakeup code in C".
