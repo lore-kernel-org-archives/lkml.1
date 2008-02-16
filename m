@@ -1,48 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757168AbYBPQiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757934AbYBPQkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757168AbYBPQiM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:38:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbYBPQh7
+	id S1757934AbYBPQkR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbYBPQkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:37:59 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:46760 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753403AbYBPQh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:37:58 -0500
-Date: Sat, 16 Feb 2008 09:37:57 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sergio Luis <sergio@larces.uece.br>,
-       Achim Leubner <achim_leubner@adaptec.com>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c into using pci_get device
-Message-ID: <20080216163756.GG7657@parisc-linux.org>
-References: <47B1ADCE.40202@larces.uece.br> <1202833354.3137.19.camel@localhost.localdomain> <47B1CF45.5070407@panasas.com> <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain> <47B2B101.3090106@panasas.com>
+	Sat, 16 Feb 2008 11:40:05 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:58230 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754011AbYBPQkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 11:40:04 -0500
+Date: Sat, 16 Feb 2008 18:39:39 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, dipankar@in.ibm.com
+Subject: Re: [PATCH] Add list_for_each_rcu to features-removal list
+Message-ID: <20080216163939.GJ9962@cs181133002.pp.htv.fi>
+References: <20080128122500.GA32723@linux.vnet.ibm.com> <20080216084723.GD9962@cs181133002.pp.htv.fi> <20080216161958.GC27468@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <47B2B101.3090106@panasas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20080216161958.GC27468@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 10:57:37AM +0200, Boaz Harrosh wrote:
-> I still don't have a card for testing myself. Again anyone
-> wants to send me a card. Intel people anybody home?
+On Sat, Feb 16, 2008 at 08:19:58AM -0800, Paul E. McKenney wrote:
+> On Sat, Feb 16, 2008 at 10:47:23AM +0200, Adrian Bunk wrote:
+> > On Mon, Jan 28, 2008 at 04:25:00AM -0800, Paul E. McKenney wrote:
+> > > Hello!
+> > > 
+> > > The list_for_each_entry_rcu() primitive should be used instead of
+> > > list_for_each_rcu(), as the former is easier to use and provides
+> > > better type safety.  This patch therefore adds list_for_each_rcu()
+> > > to the Documentation/feature-removal-schedule.txt file (for mid-2008)
+> > > and marks its comment header deprecated.
+> > > 
+> > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > ---
+> > > 
+> > >  Documentation/feature-removal-schedule.txt |   10 ++++++++++
+> > >  include/linux/list.h                       |    5 ++++-
+> > >  2 files changed, 14 insertions(+), 1 deletion(-)
+> > > 
+> > > diff -urpNa -X dontdiff linux-2.6.24/Documentation/feature-removal-schedule.txt linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt
+> > > --- linux-2.6.24/Documentation/feature-removal-schedule.txt	2008-01-24 14:58:37.000000000 -0800
+> > > +++ linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt	2008-01-28 04:00:49.000000000 -0800
+> > > @@ -333,3 +333,13 @@ Why:	This driver has been marked obsolet
+> > >  Who:	Stephen Hemminger <shemminger@linux-foundation.org>
+> > >  
+> > >  ---------------------------
+> > > +
+> > > +What:	list_for_each_rcu() primitive
+> > > +When:	July 2008
+> > > +Files:	include/linux/list.h
+> > > +Why:	The list_for_each_entry_rcu() primitive should be used instead,
+> > > +	as it is less error-prone and provides better type safety.
+> > > +Who:	Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > >...
+> > 
+> > Declaring something as deprecated doesn't automatically convert the 
+> > in-kernel users.
+> 
+> Understood.
+> 
+> > And once there are no in-kernel users left you can kill it immediately.
+> 
+> Hmmm...  What is the purpose of Documentation/feature-removal-schedule.txt
+> in that case?
 
-Apparently Intel sold this line of cards to Adaptec.  The copyright
-notice in the file backs this up:
+I don't see any reason for not userspace visible things to be listed in
+feature-removal-schedule.txt (with module names counted as being 
+userspace visible) - they can be removed as soon as the last in-kernel 
+user is gone.
 
- * Copyright (C) 1995-06 ICP vortex GmbH, Achim Leubner                 *
- * Copyright (C) 2002-04 Intel Corporation                              *
- * Copyright (C) 2003-06 Adaptec Inc.                                   *
- * <achim_leubner@adaptec.com>                                          *
+> > The only working way for getting rid of list_for_each_rcu() is:
+> > - send patches for all in-kernel usages to the maintainers of the code
+> >   in question now
+> 
+> That has happened at least once.
+
+Resend the patches (with a Cc to linux-kernel) until all of them got 
+picked up...
+
+> > - once all of these patches have entered Linus' tree (which might not
+> >   be before the 2.6.26 merge window) you can remove list_for_each_rcu()
+> 
+> So your approach would be to mark the macro obsolete to prevent additional
+> uses in the meantime?
+
+That can't harm.
+
+But realistically, the only way to prevent additional uses is to 
+completely remove it...
+
+> 							Thanx, Paul
+
+cu
+Adrian
 
 -- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+
+  An architecture specific patch that breaks the one architecture it 
+  touches at the first file being compiled is even for kernel standards 
+  unusually bad...
+                                Me about a recent commit in Linus' tree
+
