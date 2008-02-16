@@ -1,80 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbYBPRRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbYBPRTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbYBPRRU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 12:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbYBPRRB
+	id S1756503AbYBPRTY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 12:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbYBPRTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 12:17:01 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:37542 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752923AbYBPRRA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 12:17:00 -0500
-Date: Sat, 16 Feb 2008 12:16:58 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       <linux-scsi@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]*
-In-Reply-To: <47B71372.5050804@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0802161207160.3828-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 16 Feb 2008 12:19:16 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:33380 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752923AbYBPRTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 12:19:16 -0500
+Date: Sat, 16 Feb 2008 20:23:01 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] cleanup_workqueue_thread: remove the unneeded "cpu" parameter
+Message-ID: <20080216172301.GA18527@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008, Andrew Buehler wrote:
+cleanup_workqueue_thread() doesn't need the second argument, remove it.
 
-> (Note: I consider it blatantly incorrect to send a reply both to a
-> mailing list and directly to the address of someone who is subscribed to
-> that list unless you have reason to believe that that someone will not
-> see the message otherwise, but in this case I am doing so anyway because
-> I see no way to avoid it and still make sure all relevant people receive
-> the message.)
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-I (and a lot of other people as well, to judge by the email I receive) 
-don't think this is incorrect.  For one thing, it's not always possible 
-to tell whether or not the recipient is subscribed to any of the lists.  
-For another, getting two copies of a message is no big deal -- more 
-irritating (IMO) is getting a rejection message as a result of replying 
-to message which was cross-posted to a closed list.  But in each case, 
-hitting the "d" key will delete the unwanted message.
-
-In fact, the thing that bothers me the most is when people reply to a 
-long email with just a few lines of new text but don't bother to prune 
-the long message down to its essential parts.  This forces me to read 
-through hundreds of lines containing nothing new or of interest in 
-order to obtain a minimal amount of useful information.
-
-> On 2/16/2008 10:20 AM, Alan Stern wrote:
-
-> > To make a long story short, the USB symptoms you describe indicate a
-> > problem with interrupt routing.  This could well explain the other
-> > difficulties too.  There are various kernel parameters you can try
-> > putting on the boot command line to work around it:  acpi=noirq or
-> > acpi=off or pci=noacpi or a few others.
-> 
-> I have now tried all three of these, with no apparent effect; the USB
-> drive is still not detected when plugged in after boot. A naive search
-> on Google provides no indication of other possible parameters to try;
-> the only list I have found of ACPI-related kernel parameters includes no
-> others which seem likely to be helpful without more knowledge of the
-> specifics of the situation (and the subsystem) than I have.
-> 
-> What would the next step be?
-
-People on LKML who are more familiar with interrupt routing problems 
-might be able to offer more help.  For now, you can try things like 
-turning on CONFIG_USB_DEBUG, posting the output from dmesg, posting the 
-contents of /proc/interrupts (say before and after a new USB device is 
-plugged in).
-
-Assuming that the 2.6.23 kernel works on your computer, you can go the 
-extreme route of installing git and doing a bisection to find the first 
-patch causing your difficulty.
-
-Alan Stern
+--- 25/kernel/workqueue.c~2_CWT_CPU	2008-02-16 19:33:03.000000000 +0300
++++ 25/kernel/workqueue.c	2008-02-16 20:02:51.000000000 +0300
+@@ -770,7 +770,7 @@ struct workqueue_struct *__create_workqu
+ }
+ EXPORT_SYMBOL_GPL(__create_workqueue_key);
+ 
+-static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
++static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
+ {
+ 	/*
+ 	 * Our caller is either destroy_workqueue() or CPU_DEAD,
+@@ -806,7 +806,6 @@ static void cleanup_workqueue_thread(str
+ void destroy_workqueue(struct workqueue_struct *wq)
+ {
+ 	const cpumask_t *cpu_map = wq_cpu_map(wq);
+-	struct cpu_workqueue_struct *cwq;
+ 	int cpu;
+ 
+ 	get_online_cpus();
+@@ -814,10 +813,8 @@ void destroy_workqueue(struct workqueue_
+ 	list_del(&wq->list);
+ 	spin_unlock(&workqueue_lock);
+ 
+-	for_each_cpu_mask(cpu, *cpu_map) {
+-		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+-		cleanup_workqueue_thread(cwq, cpu);
+-	}
++	for_each_cpu_mask(cpu, *cpu_map)
++		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
+ 	put_online_cpus();
+ 
+ 	free_percpu(wq->cpu_wq);
+@@ -858,7 +855,7 @@ static int __devinit workqueue_cpu_callb
+ 		case CPU_UP_CANCELED:
+ 			start_workqueue_thread(cwq, -1);
+ 		case CPU_DEAD:
+-			cleanup_workqueue_thread(cwq, cpu);
++			cleanup_workqueue_thread(cwq);
+ 			break;
+ 		}
+ 	}
 
