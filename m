@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbYBPMnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755352AbYBPMwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755564AbYBPMnF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 07:43:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752000AbYBPMmx
+	id S1755352AbYBPMwZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 07:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbYBPMwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 07:42:53 -0500
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:53525 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751871AbYBPMmv (ORCPT
+	Sat, 16 Feb 2008 07:52:15 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:30304 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbYBPMwO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 07:42:51 -0500
-Date: Sat, 16 Feb 2008 13:42:48 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mm-commits@vger.kernel.org, tglx@linutronix.de, buytenh@wantstofly.org,
-       mingo@elte.hu, riku.voipio@movial.fi, stable@kernel.org,
-       schwidefsky@de.ibm.com
-Subject: Re: + futex-runtime-enable-pi-and-robust-functionality.patch added
-	to -mm tree
-Message-ID: <20080216124248.GA4900@osiris.boeblingen.de.ibm.com>
-References: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org>
+	Sat, 16 Feb 2008 07:52:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=A0ngWcE/lCSvU3BHsRHUW/JD9kpqPuKQp8+IRBFX36bnZQd3ur8dbE4/e6gZGWDk3gtNj54DlTfc5GMZ/PYDsdo/gyPtZ2ZnZCtUrUB7cCqomf4X0X6PMov3KABKC1XFZOvSKRyv/ZJwMF7ABLRH+3pyarG1dM96j+9b2RC0wKA=
+Message-ID: <47B6DC7A.3040308@gmail.com>
+Date: Sat, 16 Feb 2008 13:52:10 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Stephan Rose <stephan@eciinternational.de>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: PL2303 Driver missing support for USB to Serial Cable
+References: <1203001060.8420.11.camel@software>
+In-Reply-To: <1203001060.8420.11.camel@software>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Thomas Gleixner <tglx@linutronix.de>
+On 02/14/2008 03:57 PM, Stephan Rose wrote:
+> I recently purchased a USB->Com Port serial cable from Radio Shack
+> (Model number 26-183) which did no seem to want to work. After looking
+> into it I discovered that it is based on the Prolific chipset using the
+> PL2303 driver. 
 > 
-> Not all architectures implement futex_atomic_cmpxchg_inatomic().  The default
-> implementation returns -ENOSYS, which is currently not handled inside of the
-> futex guts.
+> I then checked the Vendor and Product ID against the list in the drive
+> and sure enough, the IDs were missing in the driver.
 > 
-> Futex PI calls and robust list exits with a held futex result in an endless
-> loop in the futex code on architectures which have no support.
+> So here are my modifications to the PL2303 driver which have been
+> working flawlessly on my system the whole week:
 > 
-> Fixing up every place where futex_atomic_cmpxchg_inatomic() is called would
-> add a fair amount of extra if/else constructs to the already complex code.  It
-> is also not possible to disable the robust feature before user space tries to
-> register robust lists.
+> drivers/usb/serial/pl2303.h
+> --------
 > 
-> Compile time disabling is not a good idea either, as there are already
-> architectures with runtime detection of futex_atomic_cmpxchg_inatomic support.
+> /* Radio Shack 26-183 */
+> #define RADIOSHACK26183_VENDOR_ID 0x05ad
+> #define RADIOSHACK26183_PRODUCT_ID 0x0fba
 > 
-> Detect the functionality at runtime instead by calling
-> cmpxchg_futex_value_locked() with a NULL pointer from the futex initialization
-> code.  This is guaranteed to fail, but the call of
-> futex_atomic_cmpxchg_inatomic() happens with pagefaults disabled.
+> drivers/usb/serial/pl2303.c
+> --------
 > 
-> On architectures, which use the asm-generic implementation or have a runtime
-> CPU feature detection, a -ENOSYS return value disables the PI/robust features.
+> Added to struct usb_device_id id_table
 > 
-> On architectures with a working implementation the call returns -EFAULT and
-> the PI/robust features are enabled.
+> { USB_DEVICE(RADIOSHACK26183_VENDOR_ID RADIOSHACK26183_PRODUCT_ID) }
 > 
-> The relevant syscalls return -ENOSYS and the robust list exit code is blocked,
-> when the detection fails.
+> I still have to manually modprobe the module as the kernel won't
+> automatically load it when I connect the device, no idea what I would
+> need to change where for that to happen.
 > 
-> Fixes http://lkml.org/lkml/2008/2/11/149
-> Originally reported by: Lennart Buytenhek
+> The above though does successfully add support for that serial cable so
+> I thought I'd share it with the kernel list so that it can possibly be
+> added to the kernel and I can stop having to re-compile the driver every
+> kernel update. :)
 
-[...]
-
->  static int __init init(void)
->  {
-> +	u32 curval;
->  	int i;
-> 
-> +	/*
-> +	 * This will fail and we want it. Some arch implementations do
-> +	 * runtime detection of the futex_atomic_cmpxchg_inatomic()
-> +	 * functionality. We want to know that before we call in any
-> +	 * of the complex code paths. Also we want to prevent
-> +	 * registration of robust lists in that case. NULL is
-> +	 * guaranteed to fault and we get -EFAULT on functional
-> +	 * implementation, the non functional ones will return
-> +	 * -ENOSYS.
-> +	 */
-> +	curval = cmpxchg_futex_value_locked(NULL, 0, 0);
-> +	if (curval == -EFAULT)
-> +		futex_cmpxchg_enabled = 1;
-> +
-
-Why should that fail? You're accessing a kernel space address here and no
-user space address.
-Indeed it does fail with an Oops on s390 since we enable low address
-protection in the kernel so we get an exception if something within the
-kernel writes to the first 512 bytes of the kernel address space.
-Otherwise it would have silently passed the test...
+Well, would you mind creating, testing and posting a patch?
