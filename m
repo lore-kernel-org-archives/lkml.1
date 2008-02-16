@@ -1,156 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbYBPRl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbYBPRnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759285AbYBPRl1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 12:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbYBPRkz
+	id S1758859AbYBPRnA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 12:43:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbYBPRmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 12:40:55 -0500
-Received: from mu-out-0910.google.com ([209.85.134.189]:7673 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758732AbYBPRkw (ORCPT
+	Sat, 16 Feb 2008 12:42:52 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54324 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755944AbYBPRmv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 12:40:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=iTO59lHJfddYx/lc1QagoDilIS3wsYcZiqYq7SdyQwJ0OAQtqQQBaJQ8KER300ZrQuE5ZWNwOns8RKm06sVYW+OVqmV4kmTR5lIV2sGWb6Zvh0HkOIgSEcdILihxc/+Qb3permfaxKhEuB2ALdqtxiMZ+nm0dK9fd40NU1p/vX8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ide-pmac: use ide_find_port()
-Date: Sat, 16 Feb 2008 18:54:27 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 16 Feb 2008 12:42:51 -0500
+Date: Sat, 16 Feb 2008 09:42:26 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Roel Kluin <12o3l@tiscali.nl>, geoffrey.levand@am.sony.com,
+       linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080216094226.1e8eede1@laptopd505.fenrus.org>
+In-Reply-To: <20080216173315.GU8953@1wt.eu>
+References: <47B70A61.9030306@tiscali.nl>
+	<20080216092552.325e5726@laptopd505.fenrus.org>
+	<20080216173315.GU8953@1wt.eu>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802161854.28117.bzolnier@gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ppc/pmac.c |   44 +++++++++++++++++++-------------------------
- 1 file changed, 19 insertions(+), 25 deletions(-)
+On Sat, 16 Feb 2008 18:33:16 +0100
+Willy Tarreau <w@1wt.eu> wrote:
 
-Index: b/drivers/ide/ppc/pmac.c
-===================================================================
---- a/drivers/ide/ppc/pmac.c
-+++ b/drivers/ide/ppc/pmac.c
-@@ -1086,38 +1086,34 @@ pmac_ide_macio_attach(struct macio_dev *
- {
- 	void __iomem *base;
- 	unsigned long regbase;
--	int irq;
- 	ide_hwif_t *hwif;
- 	pmac_ide_hwif_t *pmif;
--	int i, rc;
-+	int irq, rc;
- 	hw_regs_t hw;
- 
- 	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
- 	if (pmif == NULL)
- 		return -ENOMEM;
- 
--	i = 0;
--	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] != 0))
--		++i;
--	if (i >= MAX_HWIFS) {
-+	hwif = ide_find_port();
-+	if (hwif == NULL) {
- 		printk(KERN_ERR "ide-pmac: MacIO interface attach with no slot\n");
- 		printk(KERN_ERR "          %s\n", mdev->ofdev.node->full_name);
- 		rc = -ENODEV;
- 		goto out_free_pmif;
- 	}
- 
--	hwif = &ide_hwifs[i];
--
- 	if (macio_resource_count(mdev) == 0) {
--		printk(KERN_WARNING "ide%d: no address for %s\n",
--		       i, mdev->ofdev.node->full_name);
-+		printk(KERN_WARNING "ide-pmac: no address for %s\n",
-+				    mdev->ofdev.node->full_name);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
- 
- 	/* Request memory resource for IO ports */
- 	if (macio_request_resource(mdev, 0, "ide-pmac (ports)")) {
--		printk(KERN_ERR "ide%d: can't request mmio resource !\n", i);
-+		printk(KERN_ERR "ide-pmac: can't request MMIO resource for "
-+				"%s!\n", mdev->ofdev.node->full_name);
- 		rc = -EBUSY;
- 		goto out_free_pmif;
- 	}
-@@ -1128,8 +1124,8 @@ pmac_ide_macio_attach(struct macio_dev *
- 	 * where that happens though...
- 	 */
- 	if (macio_irq_count(mdev) == 0) {
--		printk(KERN_WARNING "ide%d: no intrs for device %s, using 13\n",
--			i, mdev->ofdev.node->full_name);
-+		printk(KERN_WARNING "ide-pmac: no intrs for device %s, using "
-+				    "13\n", mdev->ofdev.node->full_name);
- 		irq = irq_create_mapping(NULL, 13);
- 	} else
- 		irq = macio_irq(mdev, 0);
-@@ -1147,7 +1143,9 @@ pmac_ide_macio_attach(struct macio_dev *
- #ifdef CONFIG_BLK_DEV_IDEDMA_PMAC
- 	if (macio_resource_count(mdev) >= 2) {
- 		if (macio_request_resource(mdev, 1, "ide-pmac (dma)"))
--			printk(KERN_WARNING "ide%d: can't request DMA resource !\n", i);
-+			printk(KERN_WARNING "ide-pmac: can't request DMA "
-+					    "resource for %s!\n",
-+					    mdev->ofdev.node->full_name);
- 		else
- 			pmif->dma_regs = ioremap(macio_resource_start(mdev, 1), 0x1000);
- 	} else
-@@ -1222,7 +1220,7 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- 	pmac_ide_hwif_t *pmif;
- 	void __iomem *base;
- 	unsigned long rbase, rlen;
--	int i, rc;
-+	int rc;
- 	hw_regs_t hw;
- 
- 	np = pci_device_to_OF_node(pdev);
-@@ -1235,29 +1233,25 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- 	if (pmif == NULL)
- 		return -ENOMEM;
- 
--	i = 0;
--	while (i < MAX_HWIFS && (ide_hwifs[i].io_ports[IDE_DATA_OFFSET] != 0))
--		++i;
--	if (i >= MAX_HWIFS) {
-+	hwif = ide_find_port();
-+	if (hwif == NULL) {
- 		printk(KERN_ERR "ide-pmac: PCI interface attach with no slot\n");
- 		printk(KERN_ERR "          %s\n", np->full_name);
- 		rc = -ENODEV;
- 		goto out_free_pmif;
- 	}
- 
--	hwif = &ide_hwifs[i];
--
- 	if (pci_enable_device(pdev)) {
--		printk(KERN_WARNING "ide%i: Can't enable PCI device for %s\n",
--			i, np->full_name);
-+		printk(KERN_WARNING "ide-pmac: Can't enable PCI device for "
-+				    "%s\n", np->full_name);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
- 	pci_set_master(pdev);
- 			
- 	if (pci_request_regions(pdev, "Kauai ATA")) {
--		printk(KERN_ERR "ide%d: Cannot obtain PCI resources for %s\n",
--			i, np->full_name);
-+		printk(KERN_ERR "ide-pmac: Cannot obtain PCI resources for "
-+				"%s\n", np->full_name);
- 		rc = -ENXIO;
- 		goto out_free_pmif;
- 	}
+> On Sat, Feb 16, 2008 at 09:25:52AM -0800, Arjan van de Ven wrote:
+> > On Sat, 16 Feb 2008 17:08:01 +0100
+> > Roel Kluin <12o3l@tiscali.nl> wrote:
+> > 
+> > > The patch below was not yet tested. If it's correct as it is,
+> > > please comment. ---
+> > > Fix Unlikely(x) == y
+> > > 
+> > 
+> > you found a great set of bugs..
+> > but to be honest... I suspect it's just best to remove unlikely
+> > altogether for these cases; unlikely() is almost a
+> > go-faster-stripes thing, and if you don't know how to use it you
+> > shouldn't be using it... so just removing it for all wrong cases is
+> > actually the best thing to do imo.
+> 
+> Well, eventhough the author may not know how to use it, "unlikely" at
+> least indicates the intention of the author, or his knowledge of what
+> should happen here. I'd suggest leaving it where it is because the
+> authot of this code is in best position to know that this branch is
+> unlikely to happen, eventhough he does not correctly use the macro.
+>
+
+you have more faith in the authors knowledge of how his code actually behaves than I think is warranted  :)
+Or faith in that he knows what "unlikely" means.
+I should write docs about this; but unlikely() means:
+1) It happens less than 0.01% of the cases.
+2) The compiler couldn't have figured this out by itself
+   (NULL pointer checks are compiler done already, same for some other conditions)
+3) It's a hot codepath where shaving 0.5 cycles (less even on x86) matters
+   (and the author is ok with taking a 500 cycles hit if he's wrong)
+
+If you think unlikely() means something else, we should fix what it maps to towards gcc ;)
+(to.. be empty ;)
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
