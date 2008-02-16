@@ -1,163 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbYBPBch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761578AbYBPBim@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932388AbYBPBch (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:32:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYBPBc1
+	id S1761578AbYBPBim (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:38:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYBPBie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:32:27 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:55805 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755443AbYBPBcZ (ORCPT
+	Fri, 15 Feb 2008 20:38:34 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:1169 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754565AbYBPBid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:32:25 -0500
-Subject: [PATCH] r/o bind mounts: stub functions
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: hch@lst.de, miklos@szeredi.hu, akpm@osdl.org,
-       Dave Hansen <haveblue@us.ibm.com>, viro <viro@zeniv.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Theodore Tso <tytso@MIT.EDU>
-X-Sieve: CMU Sieve 2.3
-X-Spam-Hammy-Tokens: 0.000-+--struct, 0.000-+--diff, 0.000-+--insertions, 
-	0.000-+--char, 0.000-+--sk:linux2, 0.000-+--sk:linux-2,  0.000-+--const,
-	0.000-+--extern, 0.000-+--christoph,  0.000-+--Christoph
-X-Spam-Spammy-Tokens: 0.997-+--H*p:D*us.ibm.com, 0.971-+--U*haveblue, 
-	0.971-+--haveblueusibmcom, 0.971-+--haveblue@us.ibm.com,  0.967-+--amounts,
-	0.964-+--H*p:D*ibm.com, 0.959-+--sk:haveblu,  0.946-+--H*Ad:U*haveblue
-X-Spam-TestScore: BAYES_00=-2.599,DNS_FROM_RFC_ABUSE=0.2
-X-Spam-TokenSummary: Tokens: new, 64; hammy, 143; neutral, 143; spammy, 8.
-X-Spam-Relay-Country: US ** US US US ** US **
-References: <20080215223721.9E0A088A@kernel>
-In-Reply-To: <20080215223721.9E0A088A@kernel>
-X-Xagent-From: haveblue@us.ibm.com
-X-Xagent-To: haveblue@linux.vnet.ibm.com
-X-Xagent-Gateway: vmsdvm6.vnet.ibm.com (XAGENTU at VMSDVM6)
-X-Fetchmail-Warning: no recipient addresses matched declared local names
-Content-Type: text/plain
-Date: Fri, 15 Feb 2008 17:32:16 -0800
-Message-Id: <1203125536.13230.16.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Fri, 15 Feb 2008 20:38:33 -0500
+Message-ID: <47B63E95.6090005@ct.jp.nec.com>
+Date: Fri, 15 Feb 2008 17:38:29 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [RFC v3 PATCH] RTTIME watchdog timer proc interface
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-We've been causing Ted a lot of pain having to keep different copies of
-his patches for mainline and for -mm since -mm has these functions and
-mainline doesn't.  I'm pretty darn sure at that these are the right API
-and we just need another run in -mm to make sure that the reset of the
-series in in good shape.
+Introduce new proc interface for RTTIME watchdog.
+It makes administrator able to set RTTIME watchdog to existing real-time
+applications without impact. It's useful we don't want to change software
+stack, but use RTTIME watchdog for that software.
 
-Could we bump this one in a bit ahead of the rest to ease Ted's pain?  I
-think the odds of this breaking anything by itself are pretty low.
+New proc files:
+ /proc/<pid>/rttime
+ /proc/<pid>/task/<tid>/rttime
+these files has same content.
 
+$ cat /proc/<pid>/rttime
+10000000 20000000
+It shows current RLIMIT_RTTIME values, and the unit is nsec.
+If the value is RLIM_INFINITY, it prints "unlmited".
+
+$ echo "10000000" > /proc/<pid>/rttime
+It sets RTTIME current value to 10000000.
+
+$ echo "10000000 20000000" > /proc/<pid>/rttime
+It sets RTTIME current value to 10000000 and max value to 20000000.
+
+$ echo "0 0" > /proc/<pid>/rttime
+It sets RTTIME values to unlimited.
+
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 ---
+ fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 103 insertions(+), 0 deletions(-)
 
-This patch adds two functions: mnt_want_write() and mnt_drop_write().
-These are used like a lock pair around and fs operations that might
-cause a write to the filesystem.
-
-Note that these will replace many of the uses of IS_RDONLY(inode)
-currently in the kernel.
-
-Before these can become useful, we must first cover each place in the VFS
-where writes are performed with a want/drop pair.  When that is complete, we
-can actually introduce code that will safely check the counts before allowing
-r/w<->r/o transitions to occur.
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
-Signed-off-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
----
-
- linux-2.6.git-dave/fs/namespace.c        |   54 +++++++++++++++++++++++++++++++
- linux-2.6.git-dave/include/linux/mount.h |    3 +
- 2 files changed, 57 insertions(+)
-
-diff -puN fs/namespace.c~r-o-bind-mounts-stub-functions fs/namespace.c
---- linux-2.6.git/fs/namespace.c~r-o-bind-mounts-stub-functions	2008-02-15 13:25:45.000000000 -0800
-+++ linux-2.6.git-dave/fs/namespace.c	2008-02-15 13:25:45.000000000 -0800
-@@ -80,6 +80,60 @@ struct vfsmount *alloc_vfsmnt(const char
- 	return mnt;
- }
-
-+/*
-+ * Most r/o checks on a fs are for operations that take
-+ * discrete amounts of time, like a write() or unlink().
-+ * We must keep track of when those operations start
-+ * (for permission checks) and when they end, so that
-+ * we can determine when writes are able to occur to
-+ * a filesystem.
-+ */
-+/**
-+ * mnt_want_write - get write access to a mount
-+ * @mnt: the mount on which to take a write
-+ *
-+ * This tells the low-level filesystem that a write is
-+ * about to be performed to it, and makes sure that
-+ * writes are allowed before returning success.  When
-+ * the write operation is finished, mnt_drop_write()
-+ * must be called.  This is effectively a refcount.
-+ */
-+int mnt_want_write(struct vfsmount *mnt)
+diff --git a/fs/proc/base.c b/fs/proc/base.c
+index 88f8edf..34b485e 100644
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -381,6 +381,107 @@ static const struct file_operations proc_lstats_operations = {
+ 
+ #endif
+ 
++static int rttime_show_proc(struct seq_file *m, void *v)
 +{
-+	if (__mnt_is_readonly(mnt))
-+		return -EROFS;
++	struct inode *inode = m->private;
++	struct task_struct *task = get_proc_task(inode);
++	struct rlimit *rt;
++
++	if (!task)
++		return -ESRCH;
++
++	rt = &task->signal->rlim[RLIMIT_RTTIME];
++
++	if (rt->rlim_cur == RLIM_INFINITY)
++		seq_printf(m, "unlimited ");
++	else
++		seq_printf(m, "%lu ", rt->rlim_cur);
++
++	if (rt->rlim_max == RLIM_INFINITY)
++		seq_printf(m, "unlimited\n");
++	else
++		seq_printf(m, "%lu\n", rt->rlim_max);
++
++	put_task_struct(task);
++
 +	return 0;
 +}
-+EXPORT_SYMBOL_GPL(mnt_want_write);
 +
-+/**
-+ * mnt_drop_write - give up write access to a mount
-+ * @mnt: the mount on which to give up write access
-+ *
-+ * Tells the low-level filesystem that we are done
-+ * performing writes to it.  Must be matched with
-+ * mnt_want_write() call above.
-+ */
-+void mnt_drop_write(struct vfsmount *mnt)
++static int rttime_open(struct inode *inode, struct file *file)
 +{
++	return single_open(file, rttime_show_proc, inode);
 +}
-+EXPORT_SYMBOL_GPL(mnt_drop_write);
 +
-+/*
-+ * __mnt_is_readonly: check whether a mount is read-only
-+ * @mnt: the mount to check for its write status
-+ *
-+ * This shouldn't be used directly ouside of the VFS.
-+ * It does not guarantee that the filesystem will stay
-+ * r/w, just that it is right *now*.  This can not and
-+ * should not be used in place of IS_RDONLY(inode).
-+ */
-+int __mnt_is_readonly(struct vfsmount *mnt)
++static ssize_t rttime_do_write(struct task_struct *task,
++			       const char __user *buf,
++			       size_t count)
 +{
-+	return (mnt->mnt_sb->s_flags & MS_RDONLY);
-+}
-+EXPORT_SYMBOL_GPL(__mnt_is_readonly);
++	char buffer[PROC_NUMBUF], *end;
++	struct rlimit new_rlim, *old_rlim;
++	size_t bufsz;
++	int ret;
 +
- int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
- {
- 	mnt->mnt_sb = sb;
-diff -puN include/linux/mount.h~r-o-bind-mounts-stub-functions include/linux/mount.h
---- linux-2.6.git/include/linux/mount.h~r-o-bind-mounts-stub-functions	2008-02-15 13:25:45.000000000 -0800
-+++ linux-2.6.git-dave/include/linux/mount.h	2008-02-15 13:25:45.000000000 -0800
-@@ -70,9 +70,12 @@ static inline struct vfsmount *mntget(st
- 	return mnt;
- }
-
-+extern int mnt_want_write(struct vfsmount *mnt);
-+extern void mnt_drop_write(struct vfsmount *mnt);
- extern void mntput_no_expire(struct vfsmount *mnt);
- extern void mnt_pin(struct vfsmount *mnt);
- extern void mnt_unpin(struct vfsmount *mnt);
-+extern int __mnt_is_readonly(struct vfsmount *mnt);
-
- static inline void mntput(struct vfsmount *mnt)
- {
-_
++	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
++	new_rlim = *old_rlim;
++	memset(buffer, 0, sizeof(buffer));
++	bufsz = min(count, sizeof(buffer) - 1);
++	if (copy_from_user(buffer, buf, bufsz))
++		return -EFAULT;
++	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
++	if (end - buffer == 0)
++		return -EINVAL;
++	/* 0 means unlimited */
++	if (new_rlim.rlim_cur == 0)
++		new_rlim.rlim_cur = RLIM_INFINITY;
++	if (*end == ' ') {
++		++end;
++		buf += end - buffer;
++		memset(buffer, 0, sizeof(buffer));
++		bufsz = min(count - (end - buffer), sizeof(buffer) - 1);
++		if (copy_from_user(buffer, buf, bufsz))
++			return -EFAULT;
++		ret = strict_strtoul(buffer, 0, &new_rlim.rlim_max);
++		if (ret)
++			return ret;
++		/* 0 means unlimited */
++		if (new_rlim.rlim_max == 0)
++			new_rlim.rlim_max = RLIM_INFINITY;
++	}
++	if (new_rlim.rlim_cur > new_rlim.rlim_max)
++		return -EINVAL;
++	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
++	    !__capable(task, CAP_SYS_RESOURCE))
++		return -EPERM;
++	task_lock(task->group_leader);
++	*old_rlim = new_rlim;
++	task_unlock(task->group_leader);
++
++	return count;
++}
++
++static ssize_t rttime_write(struct file *file,
++			    const char __user *buf,
++			    size_t count,
++			    loff_t *ppos)
++{
++	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
++	int ret;
++
++	if (!task)
++		return -ESRCH;
++	ret = rttime_do_write(task, buf, count);
++	put_task_struct(task);
++	return ret;
++}
++
++static const struct file_operations proc_rttime_operations = {
++	.open		= rttime_open,
++	.read		= seq_read,
++	.write		= rttime_write,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ /* The badness from the OOM killer */
+ unsigned long badness(struct task_struct *p, unsigned long uptime);
+ static int proc_oom_score(struct task_struct *task, char *buffer)
+@@ -2293,6 +2394,7 @@ static const struct pid_entry tgid_base_stuff[] = {
+ 	LNK("exe",        exe),
+ 	REG("mounts",     S_IRUGO, mounts),
+ 	REG("mountstats", S_IRUSR, mountstats),
++	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",      S_IRUGO, smaps),
+@@ -2623,6 +2725,7 @@ static const struct pid_entry tid_base_stuff[] = {
+ 	LNK("root",      root),
+ 	LNK("exe",       exe),
+ 	REG("mounts",    S_IRUGO, mounts),
++	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
+ #ifdef CONFIG_PROC_PAGE_MONITOR
+ 	REG("clear_refs", S_IWUSR, clear_refs),
+ 	REG("smaps",     S_IRUGO, smaps),
+-- 
+1.5.3.8
 
