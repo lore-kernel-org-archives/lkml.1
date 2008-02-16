@@ -1,46 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757239AbYBPLuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757780AbYBPLvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757239AbYBPLuf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 06:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753646AbYBPLu2
+	id S1757780AbYBPLvT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 06:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbYBPLvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 06:50:28 -0500
-Received: from gate.crashing.org ([63.228.1.57]:43086 "EHLO gate.crashing.org"
+	Sat, 16 Feb 2008 06:51:01 -0500
+Received: from www.tglx.de ([62.245.132.106]:37218 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753557AbYBPLu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 06:50:27 -0500
-Subject: Re: [PATCH 1/2] fb: add support for foreign endianness
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: adaplas@gmail.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <20080205154432.GA8749@localhost.localdomain>
-References: <20080205154432.GA8749@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 22:49:58 +1100
-Message-Id: <1203162598.22915.48.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1753721AbYBPLvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 06:51:00 -0500
+Date: Sat, 16 Feb 2008 12:50:37 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jiri Kosina <jkosina@suse.cz>
+cc: Quel Qun <kelk1@comcast.net>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Kernel oops with bluetooth usb dongle
+In-Reply-To: <Pine.LNX.4.64.0802161204010.7699@twin.jikos.cz>
+Message-ID: <alpine.LFD.1.00.0802161229350.7583@apollo.tec.linutronix.de>
+References: <021620080041.476.47B631500001264E000001DC2200761438CE05040A05@comcast.net> <Pine.LNX.4.64.0802161204010.7699@twin.jikos.cz>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 16 Feb 2008, Jiri Kosina wrote:
+> [ Ingo and Thomas added to CC, as this is apparently nohz stuff ]
 
-On Tue, 2008-02-05 at 18:44 +0300, Anton Vorontsov wrote:
-> This patch adds support for the framebuffers with non-native
-> endianness. This is done via FBINFO_FOREIGN_ENDIAN flag that will
-> be used by the drivers. Depending on the host endianness this flag
-> will be overwritten by FBINFO_BE_MATH internal flag, or cleared.
-> 
-> Tested to work on MPC8360E-RDK (BE) + Fujitsu MINT framebuffer (LE).
+Well, it explodes there :) I can not exactly decode the source line,
+but it's either list corruption or something is fiddling with an
+enqueued timer.
 
-Good luck running X on that thing :-)
+> Quel, does the problem go away when you boot with nohz=off?
 
-The base server seems to cope.. until you start using render operations
-or that sort of things, and then things blow up. There's shitload of
-stuff that seems to assume native fb endianness..
+Quel, can you please compile the kernel with CONFIG_DEBUG_INFO=y ?
 
-Ben.
+Then after a crash, pick the address:
+ 
+> > IP: [<c0131f3e>] get_next_timer_interrupt+0xfe/0x210
+----------^^^^^^^^
+and run it through:
 
+# addr2line -e vmlinux c0131f3e
 
+Please also enable CONFIG_DEBUG_LIST=y, which should catch the place
+where a list corruption happens.
+ 
+Thanks,
+
+	tglx
