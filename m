@@ -1,23 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762562AbYBPB1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932388AbYBPBch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762562AbYBPB1L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:27:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYBPB06
+	id S932388AbYBPBch (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:32:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756880AbYBPBc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:26:58 -0500
-Received: from e32.co.us.ibm.com ([32.97.110.150]:39237 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754713AbYBPB05 (ORCPT
+	Fri, 15 Feb 2008 20:32:27 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:55805 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755443AbYBPBcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:26:57 -0500
-Subject: [PATCH 1/3] split clocksource mult into mult and mult_adj
-From: John Stultz <johnstul@us.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Josip Loncaric <josip@lanl.gov>, Roman Zippel <zippel@linux-m68k.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+	Fri, 15 Feb 2008 20:32:25 -0500
+Subject: [PATCH] r/o bind mounts: stub functions
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: hch@lst.de, miklos@szeredi.hu, akpm@osdl.org,
+       Dave Hansen <haveblue@us.ibm.com>, viro <viro@zeniv.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Theodore Tso <tytso@MIT.EDU>
+X-Sieve: CMU Sieve 2.3
+X-Spam-Hammy-Tokens: 0.000-+--struct, 0.000-+--diff, 0.000-+--insertions, 
+	0.000-+--char, 0.000-+--sk:linux2, 0.000-+--sk:linux-2,  0.000-+--const,
+	0.000-+--extern, 0.000-+--christoph,  0.000-+--Christoph
+X-Spam-Spammy-Tokens: 0.997-+--H*p:D*us.ibm.com, 0.971-+--U*haveblue, 
+	0.971-+--haveblueusibmcom, 0.971-+--haveblue@us.ibm.com,  0.967-+--amounts,
+	0.964-+--H*p:D*ibm.com, 0.959-+--sk:haveblu,  0.946-+--H*Ad:U*haveblue
+X-Spam-TestScore: BAYES_00=-2.599,DNS_FROM_RFC_ABUSE=0.2
+X-Spam-TokenSummary: Tokens: new, 64; hammy, 143; neutral, 143; spammy, 8.
+X-Spam-Relay-Country: US ** US US US ** US **
+References: <20080215223721.9E0A088A@kernel>
+In-Reply-To: <20080215223721.9E0A088A@kernel>
+X-Xagent-From: haveblue@us.ibm.com
+X-Xagent-To: haveblue@linux.vnet.ibm.com
+X-Xagent-Gateway: vmsdvm6.vnet.ibm.com (XAGENTU at VMSDVM6)
+X-Fetchmail-Warning: no recipient addresses matched declared local names
 Content-Type: text/plain
-Date: Fri, 15 Feb 2008 17:26:31 -0800
-Message-Id: <1203125191.6275.20.camel@jstultz-laptop>
+Date: Fri, 15 Feb 2008 17:32:16 -0800
+Message-Id: <1203125536.13230.16.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -25,133 +43,121 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The clocksource frequency is represented by
-clocksource->mult/2^(clocksource->shift). Currently, when NTP makes
-adjustments to the clock frequency, they are made directly to the mult
-value.
+Linus,
 
-This has the drawback that once changed, we cannot know what the orignal
-mult value was, or how much adjustment has been applied.
+We've been causing Ted a lot of pain having to keep different copies of
+his patches for mainline and for -mm since -mm has these functions and
+mainline doesn't.  I'm pretty darn sure at that these are the right API
+and we just need another run in -mm to make sure that the reset of the
+series in in good shape.
 
-This property causes problems in calculating proper ntp intervals when
-switching back and forth between clocksources. 
+Could we bump this one in a bit ahead of the rest to ease Ted's pain?  I
+think the odds of this breaking anything by itself are pretty low.
 
-This patch separates the current mult value into a mult and mult_adj
-pair. The mult value stays constant, while the ntp clocksource
-adjustments are done only to the mult_adj value.
+---
 
-This allows for correct ntp interval calculation and additionally lays
-the groundwork for a new notion of time, what I'm calling the
-monotonic-raw time, which is introduced in a following patch.
+This patch adds two functions: mnt_want_write() and mnt_drop_write().
+These are used like a lock pair around and fs operations that might
+cause a write to the filesystem.
 
-Thoughts or comments would be appreciated.
+Note that these will replace many of the uses of IS_RDONLY(inode)
+currently in the kernel.
 
-thanks
--john
+Before these can become useful, we must first cover each place in the VFS
+where writes are performed with a want/drop pair.  When that is complete, we
+can actually introduce code that will safely check the counts before allowing
+r/w<->r/o transitions to occur.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
+Signed-off-by: Christoph Hellwig <hch@infradead.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+---
 
-diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
-index 17fda52..37851e1 100644
---- a/arch/ia64/kernel/time.c
-+++ b/arch/ia64/kernel/time.c
-@@ -357,7 +357,7 @@ void update_vsyscall(struct timespec *wall, struct clocksource *c)
- 
-         /* copy fsyscall clock data */
-         fsyscall_gtod_data.clk_mask = c->mask;
--        fsyscall_gtod_data.clk_mult = c->mult;
-+        fsyscall_gtod_data.clk_mult = c->mult + c->mult_adj;
-         fsyscall_gtod_data.clk_shift = c->shift;
-         fsyscall_gtod_data.clk_fsys_mmio = c->fsys_mmio;
-         fsyscall_gtod_data.clk_cycle_last = c->cycle_last;
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 3b26fbd..36aa8da 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -814,7 +814,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 
- 	/* XXX this assumes clock->shift == 22 */
- 	/* 4611686018 ~= 2^(20+64-22) / 1e9 */
--	t2x = (u64) clock->mult * 4611686018ULL;
-+	t2x = (u64) (clock->mult + clock->mult_adj) * 4611686018ULL;
- 	stamp_xsec = (u64) xtime.tv_nsec * XSEC_PER_SEC;
- 	do_div(stamp_xsec, 1000000000);
- 	stamp_xsec += (u64) xtime.tv_sec * XSEC_PER_SEC;
-diff --git a/arch/x86/kernel/vsyscall_64.c b/arch/x86/kernel/vsyscall_64.c
-index 3f82427..14afd48 100644
---- a/arch/x86/kernel/vsyscall_64.c
-+++ b/arch/x86/kernel/vsyscall_64.c
-@@ -83,7 +83,7 @@ void update_vsyscall(struct timespec *wall_time, struct clocksource *clock)
- 	vsyscall_gtod_data.clock.vread = clock->vread;
- 	vsyscall_gtod_data.clock.cycle_last = clock->cycle_last;
- 	vsyscall_gtod_data.clock.mask = clock->mask;
--	vsyscall_gtod_data.clock.mult = clock->mult;
-+	vsyscall_gtod_data.clock.mult = clock->mult + clock->mult_adj;
- 	vsyscall_gtod_data.clock.shift = clock->shift;
- 	vsyscall_gtod_data.wall_time_sec = wall_time->tv_sec;
- 	vsyscall_gtod_data.wall_time_nsec = wall_time->tv_nsec;
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 85778a4..e917a30 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -45,7 +45,8 @@ struct clocksource;
-  * @read:		returns a cycle value
-  * @mask:		bitmask for two's complement
-  *			subtraction of non 64 bit counters
-- * @mult:		cycle to nanosecond multiplier
-+ * @mult:		cycle to nanosecond multiplier (unadjusted)
-+ * @mult_adj:		NTP adjustment factor added to the multiplier
-  * @shift:		cycle to nanosecond divisor (power of two)
-  * @flags:		flags describing special properties
-  * @vread:		vsyscall based read
-@@ -63,6 +64,7 @@ struct clocksource {
- 	cycle_t (*read)(void);
- 	cycle_t mask;
- 	u32 mult;
-+	s32 mult_adj;
- 	u32 shift;
- 	unsigned long flags;
- 	cycle_t (*vread)(void);
-@@ -179,7 +181,7 @@ static inline cycle_t clocksource_read(struct clocksource *cs)
- static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
- {
- 	u64 ret = (u64)cycles;
--	ret = (ret * cs->mult) >> cs->shift;
-+	ret = (ret * (cs->mult + cs->mult_adj)) >> cs->shift;
- 	return ret;
+ linux-2.6.git-dave/fs/namespace.c        |   54 +++++++++++++++++++++++++++++++
+ linux-2.6.git-dave/include/linux/mount.h |    3 +
+ 2 files changed, 57 insertions(+)
+
+diff -puN fs/namespace.c~r-o-bind-mounts-stub-functions fs/namespace.c
+--- linux-2.6.git/fs/namespace.c~r-o-bind-mounts-stub-functions	2008-02-15 13:25:45.000000000 -0800
++++ linux-2.6.git-dave/fs/namespace.c	2008-02-15 13:25:45.000000000 -0800
+@@ -80,6 +80,60 @@ struct vfsmount *alloc_vfsmnt(const char
+ 	return mnt;
  }
- 
-@@ -199,7 +201,7 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
- {
- 	u64 tmp;
- 
--	/* XXX - All of this could use a whole lot of optimization */
-+	/* Do the ns -> cycle conversion first, ignoring mult_adj */
- 	tmp = length_nsec;
- 	tmp <<= c->shift;
- 	tmp += c->mult/2;
-@@ -209,7 +211,8 @@ static inline void clocksource_calculate_interval(struct clocksource *c,
- 	if (c->cycle_interval == 0)
- 		c->cycle_interval = 1;
- 
--	c->xtime_interval = (u64)c->cycle_interval * c->mult;
-+	/* Go back from cycles -> shifted ns, this time include mult_adj */
-+	c->xtime_interval = (u64)c->cycle_interval * (c->mult + c->mult_adj);
- }
- 
- 
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 1af9fb0..5b11b0f 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -426,7 +426,7 @@ static void clocksource_adjust(s64 offset)
- 	} else
- 		return;
- 
--	clock->mult += adj;
-+	clock->mult_adj += adj;
- 	clock->xtime_interval += interval;
- 	clock->xtime_nsec -= offset;
- 	clock->error -= (interval - offset) <<
 
++/*
++ * Most r/o checks on a fs are for operations that take
++ * discrete amounts of time, like a write() or unlink().
++ * We must keep track of when those operations start
++ * (for permission checks) and when they end, so that
++ * we can determine when writes are able to occur to
++ * a filesystem.
++ */
++/**
++ * mnt_want_write - get write access to a mount
++ * @mnt: the mount on which to take a write
++ *
++ * This tells the low-level filesystem that a write is
++ * about to be performed to it, and makes sure that
++ * writes are allowed before returning success.  When
++ * the write operation is finished, mnt_drop_write()
++ * must be called.  This is effectively a refcount.
++ */
++int mnt_want_write(struct vfsmount *mnt)
++{
++	if (__mnt_is_readonly(mnt))
++		return -EROFS;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mnt_want_write);
++
++/**
++ * mnt_drop_write - give up write access to a mount
++ * @mnt: the mount on which to give up write access
++ *
++ * Tells the low-level filesystem that we are done
++ * performing writes to it.  Must be matched with
++ * mnt_want_write() call above.
++ */
++void mnt_drop_write(struct vfsmount *mnt)
++{
++}
++EXPORT_SYMBOL_GPL(mnt_drop_write);
++
++/*
++ * __mnt_is_readonly: check whether a mount is read-only
++ * @mnt: the mount to check for its write status
++ *
++ * This shouldn't be used directly ouside of the VFS.
++ * It does not guarantee that the filesystem will stay
++ * r/w, just that it is right *now*.  This can not and
++ * should not be used in place of IS_RDONLY(inode).
++ */
++int __mnt_is_readonly(struct vfsmount *mnt)
++{
++	return (mnt->mnt_sb->s_flags & MS_RDONLY);
++}
++EXPORT_SYMBOL_GPL(__mnt_is_readonly);
++
+ int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+ {
+ 	mnt->mnt_sb = sb;
+diff -puN include/linux/mount.h~r-o-bind-mounts-stub-functions include/linux/mount.h
+--- linux-2.6.git/include/linux/mount.h~r-o-bind-mounts-stub-functions	2008-02-15 13:25:45.000000000 -0800
++++ linux-2.6.git-dave/include/linux/mount.h	2008-02-15 13:25:45.000000000 -0800
+@@ -70,9 +70,12 @@ static inline struct vfsmount *mntget(st
+ 	return mnt;
+ }
+
++extern int mnt_want_write(struct vfsmount *mnt);
++extern void mnt_drop_write(struct vfsmount *mnt);
+ extern void mntput_no_expire(struct vfsmount *mnt);
+ extern void mnt_pin(struct vfsmount *mnt);
+ extern void mnt_unpin(struct vfsmount *mnt);
++extern int __mnt_is_readonly(struct vfsmount *mnt);
+
+ static inline void mntput(struct vfsmount *mnt)
+ {
+_
 
