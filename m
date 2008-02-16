@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758678AbYBPQQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYBPQQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758678AbYBPQQS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:16:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYBPQQH
+	id S1755609AbYBPQQn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:16:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYBPQQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:16:07 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:44664 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755080AbYBPQQF (ORCPT
+	Sat, 16 Feb 2008 11:16:31 -0500
+Received: from smtp-out3.tiscali.nl ([195.241.79.178]:55147 "EHLO
+	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbYBPQQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:16:05 -0500
-Message-ID: <47B70C3A.4050600@linux.vnet.ibm.com>
-Date: Sat, 16 Feb 2008 21:45:54 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Sat, 16 Feb 2008 11:16:30 -0500
+Message-ID: <47B70C5A.8070202@tiscali.nl>
+Date: Sat, 16 Feb 2008 17:16:26 +0100
+From: Roel Kluin <12o3l@tiscali.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: [BUG] 2.6.25-rc2-mm1 - kernel oops while bootup on s390x
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+To: schwidefsky@de.ibm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linux390@de.ibm.com
+CC: linux-s390@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/3] drivers/s390/block/dcssblk.c: Fix Unlikely(x) != y
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+The patch below was not yet tested. If it's correct as it is, please comment.
+---
+Fix Unlikely(x) != y
 
-The 2.6.25-rc2-mm1 kernel panic's while boot up on the s390x
-
-Unable to handle kernel pointer dereference at virtual kernel address 0000000000
-000000
-Oops: 0004 #1¨ SMP
-Modules linked in:
-CPU: 0 Not tainted 2.6.25-rc2-mm1-autotest #1
-Process swapper (pid: 1, task: 000000003f830000, ksp: 000000003f83ba48)
-Krnl PSW : 0704a00180000000 000000000024b2be (futex_atomic_cmpxchg_std+0x12/0x28
-)
-           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:2 CC:2 PM:0 EA:3
-Krnl GPRS: 0000000000000074 00000000fffffff2 0000000000000000 0000000000000000
-           0000000000000000 0000000000000001 0000000000000000 00000000004d0764
-           0000000000000000 00000000004d8768 0000000000000000 000000003f83bdb0
-           0000000000000040 0000000000343950 00000000000627e4 000000003f83bdb0
-Krnl Code: 000000000024b2b2: b90400bf           lgr     %r11,%r15
-           000000000024b2b6: a718fff2           lhi     %r1,-14
-           000000000024b2ba: b2790100           sacf    256
-          >000000000024b2be: ba342000           cs      %r3,%r4,0(%r2)
-           000000000024b2c2: 1813               lr      %r1,%r3
-           000000000024b2c4: b2790000           sacf    0
-           000000000024b2c8: b9140021           lgfr    %r2,%r1
-           000000000024b2cc: e3b0b0700004       lg      %r11,112(%r11)
-Call Trace:
-(<000000003f83bda8>¨ 0x3f83bda8)
- <00000000004bdeec>¨ init+0x30/0x104
- <00000000004b0c40>¨ kernel_init+0x1e0/0x370
- <000000000001a5c6>¨ kernel_thread_starter+0x6/0xc
- <000000000001a5c0>¨ kernel_thread_starter+0x0/0xc
-
- <4>--- end trace 561bb236c800851f ¨---
-note: swapper1¨ exited with preempt_count 1
-Kernel panic - not syncing: Attempted to kill init!
-
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+---
+diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
+index 3faf053..e6c94db 100644
+--- a/drivers/s390/block/dcssblk.c
++++ b/drivers/s390/block/dcssblk.c
+@@ -666,7 +666,7 @@ dcssblk_make_request(struct request_queue *q, struct bio *bio)
+ 		page_addr = (unsigned long)
+ 			page_address(bvec->bv_page) + bvec->bv_offset;
+ 		source_addr = dev_info->start + (index<<12) + bytes_done;
+-		if (unlikely(page_addr & 4095) != 0 || (bvec->bv_len & 4095) != 0)
++		if (unlikely((page_addr & 4095) != 0) || (bvec->bv_len & 4095) != 0)
+ 			// More paranoia.
+ 			goto fail;
+ 		if (bio_data_dir(bio) == READ) {
