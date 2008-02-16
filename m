@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932270AbYBPDk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbYBPDk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932270AbYBPDk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 22:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762895AbYBPDjE
+	id S1765286AbYBPDk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 22:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763871AbYBPDjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 22:39:04 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51582 "EHLO
+	Fri, 15 Feb 2008 22:39:06 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48378 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760921AbYBPDi7 (ORCPT
+	by vger.kernel.org with ESMTP id S1762614AbYBPDi7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 Feb 2008 22:38:59 -0500
-Date: Fri, 15 Feb 2008 19:37:46 -0800
+Date: Fri, 15 Feb 2008 19:37:30 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Christoph Lameter <clameter@sgi.com>
 Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
@@ -21,12 +21,12 @@ Cc: Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
        Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
        steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        daniel.blueman@quadrics.com
-Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps
- (f.e. for XPmem)
-Message-Id: <20080215193746.5d823092.akpm@linux-foundation.org>
-In-Reply-To: <20080215064933.376635032@sgi.com>
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+ ranges
+Message-Id: <20080215193730.709c67ea.akpm@linux-foundation.org>
+In-Reply-To: <20080215064932.620773824@sgi.com>
 References: <20080215064859.384203497@sgi.com>
-	<20080215064933.376635032@sgi.com>
+	<20080215064932.620773824@sgi.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -35,107 +35,82 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 22:49:04 -0800 Christoph Lameter <clameter@sgi.com> wrote:
+On Thu, 14 Feb 2008 22:49:01 -0800 Christoph Lameter <clameter@sgi.com> wrote:
 
-> These special additional callbacks are required because XPmem (and likely
-> other mechanisms) do use their own rmap (multiple processes on a series
-> of remote Linux instances may be accessing the memory of a process).
-> F.e. XPmem may have to send out notifications to remote Linux instances
-> and receive confirmation before a page can be freed.
+> The invalidation of address ranges in a mm_struct needs to be
+> performed when pages are removed or permissions etc change.
+
+hm.  Do they?  Why?  If I'm in the process of zero-copy writing a hunk of
+memory out to hardware then do I care if someone write-protects the ptes?
+
+Spose so, but some fleshing-out of the various scenarios here would clarify
+things.
+
+> If invalidate_range_begin() is called with locks held then we
+> pass a flag into invalidate_range() to indicate that no sleeping is
+> possible. Locks are only held for truncate and huge pages.
+
+This is so bad.
+
+I supposed in the restricted couple of cases which you're focussed on it
+works OK.  But is it generally suitable?  What if IO is in progress?  What
+if other cluster nodes need to be talked to?  Does it suit RDMA?
+
+> In two cases we use invalidate_range_begin/end to invalidate
+> single pages because the pair allows holding off new references
+> (idea by Robin Holt).
+
+Assuming that there is a missing "within the range" in this description, I
+assume that all clients will just throw up theior hands in horror and will
+disallow all references to all parts of the mm.
+
+Of course, to do that they will need to take a sleeping lock to prevent
+other threads from establishing new references.  whoops.
+
+> do_wp_page(): We hold off new references while we update the pte.
 > 
-> So we handle this like an additional Linux reverse map that is walked after
-> the existing rmaps have been walked. We leave the walking to the driver that
-> is then able to use something else than a spinlock to walk its reverse
-> maps. So we can actually call the driver without holding spinlocks while
-> we hold the Pagelock.
+> xip_unmap: We are not taking the PageLock so we cannot
+> use the invalidate_page mmu_rmap_notifier. invalidate_range_begin/end
+> stands in.
+
+What does "stands in" mean?
+
+> Signed-off-by: Andrea Arcangeli <andrea@qumranet.com>
+> Signed-off-by: Robin Holt <holt@sgi.com>
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 > 
-> However, we cannot determine the mm_struct that a page belongs to at
-> that point. The mm_struct can only be determined from the rmaps by the
-> device driver.
+> ---
+>  mm/filemap_xip.c |    5 +++++
+>  mm/fremap.c      |    3 +++
+>  mm/hugetlb.c     |    3 +++
+>  mm/memory.c      |   35 +++++++++++++++++++++++++++++------
+>  mm/mmap.c        |    2 ++
+>  mm/mprotect.c    |    3 +++
+>  mm/mremap.c      |    7 ++++++-
+>  7 files changed, 51 insertions(+), 7 deletions(-)
 > 
-> We add another pageflag (PageExternalRmap) that is set if a page has
-> been remotely mapped (f.e. by a process from another Linux instance).
-> We can then only perform the callbacks for pages that are actually in
-> remote use.
-> 
-> Rmap notifiers need an extra page bit and are only available
-> on 64 bit platforms. This functionality is not available on 32 bit!
-> 
-> A notifier that uses the reverse maps callbacks does not need to provide
-> the invalidate_page() method that is called when locks are held.
-> 
-
-hrm.
-
-> +#define mmu_rmap_notifier(function, args...)				\
-> +	do {								\
-> +		struct mmu_rmap_notifier *__mrn;			\
-> +		struct hlist_node *__n;					\
-> +									\
-> +		rcu_read_lock();					\
-> +		hlist_for_each_entry_rcu(__mrn, __n,			\
-> +				&mmu_rmap_notifier_list, hlist)		\
-> +			if (__mrn->ops->function)			\
-> +				__mrn->ops->function(__mrn, args);	\
-> +		rcu_read_unlock();					\
-> +	} while (0);
-> +
-
-buggy macro: use locals.
-
-> +#define mmu_rmap_notifier(function, args...)				\
-> +	do {								\
-> +		if (0) {						\
-> +			struct mmu_rmap_notifier *__mrn;		\
-> +									\
-> +			__mrn = (struct mmu_rmap_notifier *)(0x00ff);	\
-> +			__mrn->ops->function(__mrn, args);		\
-> +		}							\
-> +	} while (0);
-> +
-
-Same observation as in the other patch.
-
+> Index: linux-2.6/mm/fremap.c
 > ===================================================================
-> --- linux-2.6.orig/mm/mmu_notifier.c	2008-02-14 21:17:51.000000000 -0800
-> +++ linux-2.6/mm/mmu_notifier.c	2008-02-14 21:21:04.000000000 -0800
-> @@ -74,3 +74,37 @@ void mmu_notifier_unregister(struct mmu_
->  }
->  EXPORT_SYMBOL_GPL(mmu_notifier_unregister);
+> --- linux-2.6.orig/mm/fremap.c	2008-02-14 18:43:31.000000000 -0800
+> +++ linux-2.6/mm/fremap.c	2008-02-14 18:45:07.000000000 -0800
+> @@ -15,6 +15,7 @@
+>  #include <linux/rmap.h>
+>  #include <linux/module.h>
+>  #include <linux/syscalls.h>
+> +#include <linux/mmu_notifier.h>
 >  
-> +#ifdef CONFIG_64BIT
-> +static DEFINE_SPINLOCK(mmu_notifier_list_lock);
-> +HLIST_HEAD(mmu_rmap_notifier_list);
-> +
-> +void mmu_rmap_notifier_register(struct mmu_rmap_notifier *mrn)
-> +{
-> +	spin_lock(&mmu_notifier_list_lock);
-> +	hlist_add_head_rcu(&mrn->hlist, &mmu_rmap_notifier_list);
-> +	spin_unlock(&mmu_notifier_list_lock);
-> +}
-> +EXPORT_SYMBOL(mmu_rmap_notifier_register);
-> +
-> +void mmu_rmap_notifier_unregister(struct mmu_rmap_notifier *mrn)
-> +{
-> +	spin_lock(&mmu_notifier_list_lock);
-> +	hlist_del_rcu(&mrn->hlist);
-> +	spin_unlock(&mmu_notifier_list_lock);
-> +}
-> +EXPORT_SYMBOL(mmu_rmap_notifier_unregister);
->
-> +/*
-> + * Export a page.
-> + *
-> + * Pagelock must be held.
-> + * Must be called before a page is put on an external rmap.
-> + */
-> +void mmu_rmap_export_page(struct page *page)
-> +{
-> +	BUG_ON(!PageLocked(page));
-> +	SetPageExternalRmap(page);
-> +}
-> +EXPORT_SYMBOL(mmu_rmap_export_page);
+>  #include <asm/mmu_context.h>
+>  #include <asm/cacheflush.h>
+> @@ -214,7 +215,9 @@ asmlinkage long sys_remap_file_pages(uns
+>  		spin_unlock(&mapping->i_mmap_lock);
+>  	}
+>  
+> +	mmu_notifier(invalidate_range_begin, mm, start, start + size, 0);
+>  	err = populate_range(mm, vma, start, size, pgoff);
+> +	mmu_notifier(invalidate_range_end, mm, start, start + size, 0);
 
-The other patch used EXPORT_SYMBOL_GPL.
+To avoid off-by-one confusion the changelogs, documentation and comments
+should be very careful to tell the reader whether the range includes the
+byte at start+size.  I don't thik that was done?
 
 
