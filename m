@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbYBPIJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbYBPIM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbYBPIJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 03:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751474AbYBPIJL
+	id S1754219AbYBPIM6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 03:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbYBPIMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 03:09:11 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45849 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbYBPIJJ (ORCPT
+	Sat, 16 Feb 2008 03:12:49 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:58422 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbYBPIMs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 03:09:09 -0500
-Date: Sat, 16 Feb 2008 08:08:41 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-Message-ID: <20080216080841.GA19396@flint.arm.linux.org.uk>
-Mail-Followup-To: Alexey Dobriyan <adobriyan@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>, sfr@canb.auug.org.au,
-	linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-	linux-arch@vger.kernel.org, torvalds@linux-foundation.org
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080216000943.GD31474@flint.arm.linux.org.uk> <20080215162121.317c7c1c.akpm@linux-foundation.org> <20080216004249.GA3263@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 16 Feb 2008 03:12:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent:from;
+        b=jW3UvOXb3MELw6whYXOpEkkLo9wFlXxNfBTZWl5wWwsSnnIidUuzMjq7GNql7zZgglPOZGChdaEPInaWdHyCAcxEw71Wxu36aFzvQYJRmznOtHFY+2WFALFYAOOpSadTzFICkZXRCyPmVebbOTAsmLhTj/zlSIBLmB9bjkib1ok=
+Date: Sat, 16 Feb 2008 09:12:39 +0100
+To: bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: [PATCH] MAINTAINERS: update ide-cd maintainer's email address
+Message-ID: <20080216081239.GJ13446@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, bzolnier@gmail.com,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080216004249.GA3263@martell.zuzino.mipt.ru>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 03:42:49AM +0300, Alexey Dobriyan wrote:
-> On Fri, Feb 15, 2008 at 04:21:21PM -0800, Andrew Morton wrote:
-> > On Sat, 16 Feb 2008 00:09:43 +0000
-> > Russell King <rmk+lkml@arm.linux.org.uk> wrote:
-> > 
-> > > For reference, even _I_ don't build test the entire set of ARM defconfigs -
-> > > at about 7 minutes a build, 75 defconfigs, that's about 9 hours...  I
-> > > just build those which are important to myself, hope that the others are
-> > > fine, and rely on kautobuild finding any breakage.
-> > > 
-> > 
-> > you need a better box ;)
-> > 
-> > cerfcube_defconfig:				35 seconds
-> > carmeva_defconfig:				23 seconds
-> > spitz_defconfig (one of the biggest):		45 seconds
-> > 
-> > so would a stupid `for i in arch/arm/configs/*' script be sufficient
-> > coverage?
-> 
-> I do this wildcard together with 
-> 
-> 	yes '' | make ARCH=arm ... oldconfig
-> 	make
-> 
-> Sans toolchain issues, it's pretty good -- Russell larts you when some
-> defconfig becomes broken anyway. :^)
+commit c65b97fdbb9f3075a37f711aa6b388a48a27d3f4
+Author: Borislav Petkov <petkovbb@gmail.com>
+Date:   Sat Feb 16 09:10:46 2008 +0100
 
-Only when I check the kautobuild website - which I've not been doing
-regularly since about end of November, and it only covers Linus'
-kernels.
+    MAINTAINERS: update ide-cd maintainer's email address
+    
+    Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 1d2edb4..082d1ee 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1924,7 +1924,7 @@ S:	Maintained
+ 
+ IDE/ATAPI CDROM DRIVER
+ P:	Borislav Petkov
+-M:	bbpetkov@yahoo.de
++M:	petkovbb@gmail.com
+ L:	linux-ide@vger.kernel.org
+ S:	Maintained
+ 
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Regards/Gruﬂ,
+    Boris.
