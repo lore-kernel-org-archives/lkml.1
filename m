@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbYBPCLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbYBPCYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764484AbYBPCLw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 21:11:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764450AbYBPCKn
+	id S1762319AbYBPCYR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 21:24:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbYBPCYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 21:10:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60468 "EHLO ogre.sisk.pl"
+	Fri, 15 Feb 2008 21:24:06 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55346 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764363AbYBPCKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 21:10:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc2
-Date: Sat, 16 Feb 2008 03:08:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Laszlo Attila Toth <panther@balabit.hu>,
-       David Miller <davem@davemloft.net>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	id S1757941AbYBPCYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 21:24:05 -0500
+Date: Sat, 16 Feb 2008 03:23:36 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jonas Bonn <jonas@southpole.se>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: pci_device_id definition cleanups
+Message-ID: <20080216022336.GA7740@uranus.ravnborg.org>
+References: <1203117700.16761.9.camel@satguru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200802160308.52294.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1203117700.16761.9.camel@satguru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 15 of February 2008, Linus Torvalds wrote:
+On Sat, Feb 16, 2008 at 12:21:40AM +0100, Jonas Bonn wrote:
+> I've done some work on cleaning up the definitions of pci_device_id to
+> make them "static const" (where possible) and to make sure they go into
+> __devinitconst.  There are about 350 changes of the type shown in the
+> diff at the end of this mail.
 > 
-> Ok,
->  this kernel is a winner.
+> ﻿All these changes are in my public GIT tree at:
 > 
-> Just to show how _much_ of a winner it is, it's been awarded a coveted 
-> "weasel" series name, which should tell you just how good it's going to 
-> be. It's a name revered in Linux kernel history, and as such this brings 
-> back the good old days where if you find a bug, you're almost certainly 
-> simply mistaken, and you probably just did something wrong.
+> git://www.southpole.se/~jonas/git/linux.git
 > 
-> But hey, you can try to prove me wrong.  I dare you.
+> (Based on 2.6.25-rc2)
+> 
+> In addition to these pci_device_id changes, there are a few changesets
+> that move "const" data from __devinitdata to __devinitconst.
+> 
+> The tree above builds with both allmodconfig and allyesconfig.
 
-Here you go.
+Hi Jonas.
 
-commit 45b503548210fe6f23e92b856421c2a3f05fd034
-Author: Laszlo Attila Toth <panther@balabit.hu>
-Date:   Tue Feb 12 22:42:09 2008 -0800
+Can I ask you to try the same with ARCH=powerpc
+(or alpha or ia64).
+Becasue it is for these architectures we see issues with
+defining data const.
 
-    [RTNETLINK]: Send a single notification on device state changes.
-
-contains the following gem:
-
-        if (tb[IFLA_LINKMODE]) {
--               write_lock_bh(&dev_base_lock);
--               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
--               write_unlock_bh(&dev_base_lock);
-+               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
-+                       write_lock_bh(&dev_base_lock);
-+                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
-+                       write_lock_bh(&dev_base_lock);
-+                       modified = 1;
-+               }
-        }
-
-and even with that fixed it breaks NetworkManager (on my test box it apparently
-can't get the IP address using DHCP).  Reverting this commit makes things
-work again.
-
-Well, it looks like this patch went to you untested and unreviewed, so may I
-gently request that it be reverted from your tree, pretty please?
-
-Thanks,
-Rafael
+	Sam
