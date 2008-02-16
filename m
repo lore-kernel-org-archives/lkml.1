@@ -1,189 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761578AbYBPBim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764116AbYBPBjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761578AbYBPBim (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYBPBie
+	id S1764116AbYBPBjV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:39:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYBPBi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:38:34 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:1169 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754565AbYBPBid (ORCPT
+	Fri, 15 Feb 2008 20:38:58 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35881 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762970AbYBPBis (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:38:33 -0500
-Message-ID: <47B63E95.6090005@ct.jp.nec.com>
-Date: Fri, 15 Feb 2008 17:38:29 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC v3 PATCH] RTTIME watchdog timer proc interface
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 Feb 2008 20:38:48 -0500
+Subject: [PATCH 2/3] Fixup ntp interval len merges
+From: John Stultz <johnstul@us.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Josip Loncaric <josip@lanl.gov>, Roman Zippel <zippel@linux-m68k.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1203125191.6275.20.camel@jstultz-laptop>
+References: <1203125191.6275.20.camel@jstultz-laptop>
+Content-Type: text/plain
+Date: Fri, 15 Feb 2008 17:38:42 -0800
+Message-Id: <1203125922.6275.33.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+My first version of the ntp_interval/tick_length inconsistent usage
+patch was recently merged as bbe4d18ac2e058c56adb0cd71f49d9ed3216a405
 
-Introduce new proc interface for RTTIME watchdog.
-It makes administrator able to set RTTIME watchdog to existing real-time
-applications without impact. It's useful we don't want to change software
-stack, but use RTTIME watchdog for that software.
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bbe4d18ac2e058c56adb0cd71f49d9ed3216a405
 
-New proc files:
- /proc/<pid>/rttime
- /proc/<pid>/task/<tid>/rttime
-these files has same content.
+While the fix did greatly improve the situation, Roman correctly pointed
+out that it does have a small bug: If the users change clocksources
+after the system has been running and NTP has made corrections, the
+correctoins made against the old clocksource will be applied against the
+new clocksource, causing error.
 
-$ cat /proc/<pid>/rttime
-10000000 20000000
-It shows current RLIMIT_RTTIME values, and the unit is nsec.
-If the value is RLIM_INFINITY, it prints "unlmited".
+This patch reverts this previous fix. 
 
-$ echo "10000000" > /proc/<pid>/rttime
-It sets RTTIME current value to 10000000.
 
-$ echo "10000000 20000000" > /proc/<pid>/rttime
-It sets RTTIME current value to 10000000 and max value to 20000000.
+My second attempt, which corrects the issue in the NTP_INTERVAL_LENGTH
+definition has also made it up-stream as commit
+e13a2e61dd5152f5499d2003470acf9c838eab84
 
-$ echo "0 0" > /proc/<pid>/rttime
-It sets RTTIME values to unlimited.
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e13a2e61dd5152f5499d2003470acf9c838eab84
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- fs/proc/base.c |  103 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 103 insertions(+), 0 deletions(-)
+However, due to the original patch going upstream, the second has no
+effect.  So by reverting the first fix, the second will be in use.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 88f8edf..34b485e 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -381,6 +381,107 @@ static const struct file_operations proc_lstats_operations = {
+It should be noted that Roman has voiced objections to this second patch
+as well, and we are continuing to work out the details. However, due to
+the severity of the ntp error which both of these patches tries to
+address, I'd recommend the second patch remain in place until we come to
+an agreed solution.
+
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 5b11b0f..cb17979 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -187,8 +187,7 @@ static void change_clocksource(void)
  
- #endif
+ 	clock->error = 0;
+ 	clock->xtime_nsec = 0;
+-	clocksource_calculate_interval(clock,
+-		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
++	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
  
-+static int rttime_show_proc(struct seq_file *m, void *v)
-+{
-+	struct inode *inode = m->private;
-+	struct task_struct *task = get_proc_task(inode);
-+	struct rlimit *rt;
-+
-+	if (!task)
-+		return -ESRCH;
-+
-+	rt = &task->signal->rlim[RLIMIT_RTTIME];
-+
-+	if (rt->rlim_cur == RLIM_INFINITY)
-+		seq_printf(m, "unlimited ");
-+	else
-+		seq_printf(m, "%lu ", rt->rlim_cur);
-+
-+	if (rt->rlim_max == RLIM_INFINITY)
-+		seq_printf(m, "unlimited\n");
-+	else
-+		seq_printf(m, "%lu\n", rt->rlim_max);
-+
-+	put_task_struct(task);
-+
-+	return 0;
-+}
-+
-+static int rttime_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, rttime_show_proc, inode);
-+}
-+
-+static ssize_t rttime_do_write(struct task_struct *task,
-+			       const char __user *buf,
-+			       size_t count)
-+{
-+	char buffer[PROC_NUMBUF], *end;
-+	struct rlimit new_rlim, *old_rlim;
-+	size_t bufsz;
-+	int ret;
-+
-+	old_rlim = task->signal->rlim + RLIMIT_RTTIME;
-+	new_rlim = *old_rlim;
-+	memset(buffer, 0, sizeof(buffer));
-+	bufsz = min(count, sizeof(buffer) - 1);
-+	if (copy_from_user(buffer, buf, bufsz))
-+		return -EFAULT;
-+	new_rlim.rlim_cur = simple_strtoul(buffer, &end, 0);
-+	if (end - buffer == 0)
-+		return -EINVAL;
-+	/* 0 means unlimited */
-+	if (new_rlim.rlim_cur == 0)
-+		new_rlim.rlim_cur = RLIM_INFINITY;
-+	if (*end == ' ') {
-+		++end;
-+		buf += end - buffer;
-+		memset(buffer, 0, sizeof(buffer));
-+		bufsz = min(count - (end - buffer), sizeof(buffer) - 1);
-+		if (copy_from_user(buffer, buf, bufsz))
-+			return -EFAULT;
-+		ret = strict_strtoul(buffer, 0, &new_rlim.rlim_max);
-+		if (ret)
-+			return ret;
-+		/* 0 means unlimited */
-+		if (new_rlim.rlim_max == 0)
-+			new_rlim.rlim_max = RLIM_INFINITY;
-+	}
-+	if (new_rlim.rlim_cur > new_rlim.rlim_max)
-+		return -EINVAL;
-+	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
-+	    !__capable(task, CAP_SYS_RESOURCE))
-+		return -EPERM;
-+	task_lock(task->group_leader);
-+	*old_rlim = new_rlim;
-+	task_unlock(task->group_leader);
-+
-+	return count;
-+}
-+
-+static ssize_t rttime_write(struct file *file,
-+			    const char __user *buf,
-+			    size_t count,
-+			    loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
-+	int ret;
-+
-+	if (!task)
-+		return -ESRCH;
-+	ret = rttime_do_write(task, buf, count);
-+	put_task_struct(task);
-+	return ret;
-+}
-+
-+static const struct file_operations proc_rttime_operations = {
-+	.open		= rttime_open,
-+	.read		= seq_read,
-+	.write		= rttime_write,
-+	.llseek		= seq_lseek,
-+	.release	= single_release,
-+};
-+
- /* The badness from the OOM killer */
- unsigned long badness(struct task_struct *p, unsigned long uptime);
- static int proc_oom_score(struct task_struct *task, char *buffer)
-@@ -2293,6 +2394,7 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	LNK("exe",        exe),
- 	REG("mounts",     S_IRUGO, mounts),
- 	REG("mountstats", S_IRUSR, mountstats),
-+	REG("rttime",     S_IRUSR|S_IWUSR, rttime),
- #ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",      S_IRUGO, smaps),
-@@ -2623,6 +2725,7 @@ static const struct pid_entry tid_base_stuff[] = {
- 	LNK("root",      root),
- 	LNK("exe",       exe),
- 	REG("mounts",    S_IRUGO, mounts),
-+	REG("rttime",    S_IRUSR|S_IWUSR, rttime),
- #ifdef CONFIG_PROC_PAGE_MONITOR
- 	REG("clear_refs", S_IWUSR, clear_refs),
- 	REG("smaps",     S_IRUGO, smaps),
--- 
-1.5.3.8
+ 	tick_clock_notify();
+ 
+@@ -245,8 +244,7 @@ void __init timekeeping_init(void)
+ 	ntp_clear();
+ 
+ 	clock = clocksource_get_next();
+-	clocksource_calculate_interval(clock,
+-		(unsigned long)(current_tick_length()>>TICK_LENGTH_SHIFT));
++	clocksource_calculate_interval(clock, NTP_INTERVAL_LENGTH);
+ 	clock->cycle_last = clocksource_read(clock);
+ 
+ 	xtime.tv_sec = sec;
+
 
