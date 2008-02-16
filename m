@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbYBPGZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbYBPGaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755796AbYBPGZu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759090AbYBPGYq
+	id S1760431AbYBPGaT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbYBPGaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:24:46 -0500
-Received: from mail.vyatta.com ([216.93.170.194]:42028 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763597AbYBPGYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:24:43 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -2.342
-Message-ID: <47B681A4.80803@vyatta.com>
-Date: Fri, 15 Feb 2008 22:24:36 -0800
-From: Stephen Hemminger <stephen.hemminger@vyatta.com>
-Organization: Vyatta
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Kyle Moffett <kyle@moffetthome.net>
-CC: Linux NetDev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] Best method to control a "transmit-only" mode on fiber
- NICs (specifically sky2)
-References: <f73f7ab80802151941x5daf34e3scd0f42a05291db51@mail.gmail.com>
-In-Reply-To: <f73f7ab80802151941x5daf34e3scd0f42a05291db51@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 16 Feb 2008 01:30:05 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57332 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752410AbYBPGaD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 01:30:03 -0500
+Date: Fri, 15 Feb 2008 22:29:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/6] h8300 setup.c initrd support fix
+Message-Id: <20080215222949.a22ca18e.akpm@linux-foundation.org>
+In-Reply-To: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
+References: <87bq6ho2cu.wl%ysato@users.sourceforge.jp>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> Hi,
->
-> The company I'm working for has an unusual fiber NIC configuration
-> that we use for one of our network appliances.  We connect only a
-> single fiber from the TX port on one NIC to the RX port on another
-> NIC, providing a physically-one-way path for enhanced security.
-> Unfortunately this doesn't work with most NIC drivers, as even with
-> auto-negotiation off they look for link probe pulses before they
-> consider the link "up" and are willing to send packets.  We have been
-> able to use Myricom 10GigE NICs with a custom firmware image.  More
-> recently we have patched the sky2 driver to turn on the FIB_FORCE_LNK
-> flag in the PHY control register; this seems to work on the
-> Marvell-chipset boards we have here.
->
-> What would be the preferred way to control this "force link" flag?
-> Right now we are accessing it using ethtool; we have added an
-> additional "duplex" mode: "DUPLEX_TXONLY", with a value of 2.  When
-> you specify a speed and turn off autonegotiation ("./patched-ethtool
-> -s eth2 speed 1000 autoneg off duplex txonly"), it will turn on the
-> specified bit in the PHY control register and the link will
-> automatically come up.  We also have one related bug-fix^Wdirty hack
-> for sky2 to reset the PHY a second time during netif-up after enabling
-> interrupts; otherwise the immediate "link up" interrupt gets lost.
-> Once I get approval from the company I will patch the post itself for
-> review.
->
-> I look forward to your comments and suggestions
->
-> Cheers,
-> Kyle Moffett
->   
-For the second problem, you could just change the code to check the 
-status immediately,
-by calling the same code the irq does. It might need some refactoring 
-but should only be minor surgery.
-I was thinking about doing that anyway for the forced link (no 
-negotiation case).
+On Sat, 16 Feb 2008 01:13:37 -0500 Yoshinori Sato <ysato@users.sourceforge.jp> wrote:
+
+> initrd setting fix.
+> 
+>  arch/h8300/kernel/setup.c |    5 +++--
+>  1 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/h8300/kernel/setup.c b/arch/h8300/kernel/setup.c
+> index b1f25c2..75712ec 100644
+> --- a/arch/h8300/kernel/setup.c
+> +++ b/arch/h8300/kernel/setup.c
+> @@ -57,6 +57,7 @@ extern int _stext, _etext, _sdata, _edata, _sbss, _ebss, _end;
+>  extern int _ramstart, _ramend;
+>  extern char _target_name[];
+>  extern void h8300_gpio_init(void);
+> +extern void *initrd_start, *initrd_end;
+>  
+>  #if (defined(CONFIG_H8300H_SIM) || defined(CONFIG_H8S_SIM)) \
+>      && defined(CONFIG_GDB_MAGICPRINT)
+> @@ -99,8 +100,8 @@ void __init setup_arch(char **cmdline_p)
+>  	/* allow for ROMFS on the end of the kernel */
+>  	if (memcmp((void *)memory_start, "-rom1fs-", 8) == 0) {
+>  #if defined(CONFIG_BLK_DEV_INITRD)
+> -		initrd_start = memory_start;
+> -		initrd_end = memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]);
+> +		initrd_start = (void *)memory_start;
+> +		initrd_end = (void *)(memory_start += be32_to_cpu(((unsigned long *) (memory_start))[2]));
+>  #else
+>  		memory_start += be32_to_cpu(((unsigned long *) memory_start)[2]);
+>  #endif
+
+But include/linux/initrd.h declares:
+
+	extern unsigned long initrd_start, initrd_end;
 
