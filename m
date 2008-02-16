@@ -1,86 +1,338 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759720AbYBPVuX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbYBPVyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759720AbYBPVuX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 16:50:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757024AbYBPVuL
+	id S1759518AbYBPVyV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 16:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbYBPVyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 16:50:11 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:56997 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755593AbYBPVuH convert rfc822-to-8bit (ORCPT
+	Sat, 16 Feb 2008 16:54:14 -0500
+Received: from mga07.intel.com ([143.182.124.22]:9753 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757303AbYBPVyM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 16:50:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ArSOIwjerPV2ZQWL+9LCHsUBkySczN1N1v+TpBXXPlHhhFK2nneR5Jq5NoGcaxQpoBvCKUVdDILeFpf5svT4WTEUOFZLPIUOxJ3Nyz6F+ZJizI4PMe3b+mUW7gc1PzAWELM3180Eu+9mUM8NCcFJsDCoXBwmTznPISorWwsg5JI=
-From: Alon Bar-Lev <alon.barlev@gmail.com>
-To: "Dave Young" <hidave.darkstar@gmail.com>
-Subject: Re: [BUG] rfcomm
-Date: Sat, 16 Feb 2008 23:49:58 +0200
-User-Agent: KMail/1.9.7
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       marcel@holtmann.org, bluez-devel@lists.sourceforge.net
-References: <200710231950.31313.alon.barlev@gmail.com> <a8e1da0802141928yabfd87ajfed0b009e1e79018@mail.gmail.com> <a8e1da0802151513p34ad118i54ddd8f00e6e136@mail.gmail.com>
-In-Reply-To: <a8e1da0802151513p34ad118i54ddd8f00e6e136@mail.gmail.com>
+	Sat, 16 Feb 2008 16:54:12 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,363,1199692800"; 
+   d="scan'208";a="379965802"
+Message-ID: <47B75B10.3070700@linux.intel.com>
+Date: Sat, 16 Feb 2008 13:52:16 -0800
+From: Arjan van de Ven <arjan@linux.intel.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802162349.59780.alon.barlev@gmail.com>
+To: Laurent Riffard <laurent.riffard@free.fr>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Stuart Bennett <sb476@cam.ac.uk>, "Brown, Len" <len.brown@intel.com>
+Subject: Re: 2.6.25-rc2-mm1: WARNING at arch/x86/mm/ioremap.c:129
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7553D.5040601@free.fr>
+In-Reply-To: <47B7553D.5040601@free.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 February 2008, Dave Young wrote:
-> Hi, alon
+Laurent Riffard wrote:
+> Le 16.02.2008 09:25, Andrew Morton a écrit :
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/ 
+>>
 > 
-> Please try the attached patch, hope it fixes your problem.
+> Got this in dmesg output:
 > 
-> Regards
-> dave
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/mm/ioremap.c:129 __ioremap+0xc7/0x182()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25-rc2-mm1 #40
+> [<c0118955>] warn_on_slowpath+0x41/0x6d
+> [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+> [<c01fdd89>] ? acpi_os_release_object+0x8/0xc
+> [<c02188d4>] ? acpi_ut_delete_object_desc+0x39/0x3e
+> [<c0217f05>] ? acpi_ut_delete_internal_obj+0x2c1/0x2c9
+> [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+> [<c0131cde>] ? trace_hardirqs_on_caller+0xdf/0x100
+> [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+> [<c01129c5>] __ioremap+0xc7/0x182
+> [<c0112a99>] ioremap_nocache+0xa/0xc
+> [<c02a6877>] acpi_os_map_memory+0x11/0x1a
+> [<c020b697>] acpi_ex_system_memory_space_handler+0xd3/0x228
+> [<c0203bd8>] ? acpi_ev_address_space_dispatch+0x142/0x1a8
+> [<c020b5c4>] ? acpi_ex_system_memory_space_handler+0x0/0x228
+> [<c0203bfd>] acpi_ev_address_space_dispatch+0x167/0x1a8
+> [<c02083dd>] acpi_ex_access_region+0x1e4/0x270
+> [<c02085bc>] acpi_ex_field_datum_io+0x153/0x2a1
+> [<c0158ac0>] ? cache_alloc_debugcheck_after+0xe9/0x165
+> [<c020879b>] acpi_ex_extract_from_field+0x91/0x224
+> [<c0206bcf>] ? acpi_ex_read_data_from_field+0x163/0x1b0
+> [<c0206bec>] acpi_ex_read_data_from_field+0x180/0x1b0
+> [<c020d256>] acpi_ex_resolve_node_to_value+0x1aa/0x230
+> [<c0207a32>] acpi_ex_resolve_to_value+0x270/0x2aa
+> [<c0209e47>] acpi_ex_resolve_operands+0x24e/0x52f
+> [<c0200827>] acpi_ds_exec_end_op+0xb7/0x4f4
+> [<c0212d51>] acpi_ps_parse_loop+0x5e5/0x79c
+> [<c02120dc>] acpi_ps_parse_aml+0xb2/0x2dd
+> [<c021350c>] acpi_ps_execute_method+0x13d/0x20d
+> [<c020fb72>] acpi_ns_evaluate+0x10e/0x1b0
+> [<c02164ca>] acpi_ut_evaluate_object+0x57/0x1a1
+> [<c02166ce>] acpi_ut_execute_STA+0x22/0x7b
+> [<c0218d61>] ? acpi_ut_release_mutex+0x85/0x8f
+> [<c020f45d>] acpi_ns_get_device_callback+0x5a/0x121
+> [<c021173e>] acpi_ns_walk_namespace+0xfa/0x114
+> [<c020f381>] acpi_get_devices+0x47/0x5d
+> [<c020f403>] ? acpi_ns_get_device_callback+0x0/0x121
+> [<c021ce4a>] ? ec_parse_device+0x0/0x6e
+> [<c03a4460>] acpi_ec_ecdt_probe+0xaa/0x10a
+> [<c03a404b>] acpi_init+0x73/0x21e
+> [<c023e5bb>] ? class_create+0x4b/0x64
+> [<c0390652>] kernel_init+0xa3/0x1f3
+> [<c0103a4e>] ? restore_nocheck_notrace+0x0/0xe
+> [<c03905af>] ? kernel_init+0x0/0x1f3
+> [<c03905af>] ? kernel_init+0x0/0x1f3
+> [<c01045a7>] kernel_thread_helper+0x7/0x10
+> =======================
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> 
+> The offending code in arch/x86/mm/ioremap.c is:
+> 101 static void __iomem *__ioremap(unsigned long phys_addr, unsigned 
+> long size,
+> 102                                enum ioremap_mode mode)
+> 103 {
+> ...
+> 119         /*
+> 120          * Don't allow anybody to remap normal RAM that we're using..
+> 121          */
+> 122         for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
+> 123              (pfn << PAGE_SHIFT) < last_addr; pfn++) {
+> 124                 if (page_is_ram(pfn) && pfn_valid(pfn) &&
+> 125                     !PageReserved(pfn_to_page(pfn)))
+> 126                         return NULL;
+> 127         }
+> 128 129         WARN_ON_ONCE(page_is_ram(pfn));
+> 130
+> The WARN_ON was introduced by git-agpgart.patch.
+> 
+> CC'd Stuart Bennett and Arjan van dev Ven.
+> 
+> attached: full dmesg and config.
+> ~~
+> laurent
+> 
+> 
+> ------------------------------------------------------------------------
+> 
+> Linux version 2.6.25-rc2-mm1 (laurent@calimero) (gcc version 4.1.3 20070929 (prerelease) (Ubuntu 4.1.2-16ubuntu2)) #40 PREEMPT Sat Feb 16 21:34:19 CET 2008
+> BIOS-provided physical RAM map:
+>  BIOS-e820: 0000000000000000 - 000000000009fc00 (usable)
+>  BIOS-e820: 000000000009fc00 - 00000000000a0000 (reserved)
+>  BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+>  BIOS-e820: 0000000000100000 - 000000001ffec000 (usable)
+>  BIOS-e820: 000000001ffec000 - 000000001ffef000 (ACPI data)
+>  BIOS-e820: 000000001ffef000 - 000000001ffff000 (reserved)
+>  BIOS-e820: 000000001ffff000 - 0000000020000000 (ACPI NVS)
+>  BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+> 511MB LOWMEM available.
+> Scan SMP from c0000000 for 1024 bytes.
+> Scan SMP from c009fc00 for 1024 bytes.
+> Scan SMP from c00f0000 for 65536 bytes.
+> Scan SMP from c009fc00 for 1024 bytes.
+> Entering add_active_range(0, 0, 131052) 0 entries of 256 used
+> sizeof(struct page) = 32
+> Zone PFN ranges:
+>   DMA             0 ->     4096
+>   Normal       4096 ->   131052
+> Movable zone start PFN for each node
+> early_node_map[1] active PFN ranges
+>     0:        0 ->   131052
+> On node 0 totalpages: 131052
+> Node 0 memmap at 0xc1000000 size 4194304 first pfn 0xc1000000
+>   DMA zone: 32 pages used for memmap
+>   DMA zone: 0 pages reserved
+>   DMA zone: 4064 pages, LIFO batch:0
+>   Normal zone: 991 pages used for memmap
+>   Normal zone: 125965 pages, LIFO batch:31
+>   Movable zone: 0 pages used for memmap
+> DMI 2.3 present.
+> ACPI: RSDP 000F6A80, 0014 (r0 ASUS  )
+> ACPI: RSDT 1FFEC000, 002C (r1 ASUS   A7V133-C 30303031 MSFT 31313031)
+> ACPI: FACP 1FFEC080, 0074 (r1 ASUS   A7V133-C 30303031 MSFT 31313031)
+> ACPI: DSDT 1FFEC100, 2CE1 (r1   ASUS A7V133-C     1000 MSFT  100000B)
+> ACPI: FACS 1FFFF000, 0040
+> ACPI: BOOT 1FFEC040, 0028 (r1 ASUS   A7V133-C 30303031 MSFT 31313031)
+> ACPI: PM-Timer IO Port: 0xe408
+> Allocating PCI resources starting at 30000000 (gap: 20000000:dfff0000)
+> PM: Registered nosave memory: 000000000009f000 - 00000000000a0000
+> PM: Registered nosave memory: 00000000000a0000 - 00000000000f0000
+> PM: Registered nosave memory: 00000000000f0000 - 0000000000100000
+> Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 130029
+> Kernel command line: root=/dev/mapper/vglinux1-lv_ubuntu2 ro locale=fr_FR video=radeonfb:1280x1024@60 resume=/dev/mapper/vglinux1-lvswap
+> Local APIC disabled by BIOS -- you can enable it with "lapic"
+> mapped APIC to ffffb000 (01406000)
+> Enabling fast FPU save and restore... done.
+> Enabling unmasked SIMD FPU exception support... done.
+> Initializing CPU#0
+> Preemptible RCU implementation.
+> CPU 0 irqstacks, hard=c03c6000 soft=c03c5000
+> PID hash table entries: 2048 (order: 11, 8192 bytes)
+> Detected 1410.240 MHz processor.
+> Console: colour VGA+ 80x25
+> console [tty0] enabled
+> Lock dependency validator: Copyright (c) 2006 Red Hat, Inc., Ingo Molnar
+> ... MAX_LOCKDEP_SUBCLASSES:    8
+> ... MAX_LOCK_DEPTH:          30
+> ... MAX_LOCKDEP_KEYS:        2048
+> ... CLASSHASH_SIZE:           1024
+> ... MAX_LOCKDEP_ENTRIES:     8192
+> ... MAX_LOCKDEP_CHAINS:      16384
+> ... CHAINHASH_SIZE:          8192
+>  memory used by lock dependency info: 992 kB
+>  per task-struct memory footprint: 1200 bytes
+> ------------------------
+> | Locking API testsuite:
+> ----------------------------------------------------------------------------
+>                                  | spin |wlock |rlock |mutex | wsem | rsem |
+>   --------------------------------------------------------------------------
+>                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
+>   --------------------------------------------------------------------------
+>               recursive read-lock:             |  ok  |             |  ok  |
+>            recursive read-lock #2:             |  ok  |             |  ok  |
+>             mixed read-write-lock:             |  ok  |             |  ok  |
+>             mixed write-read-lock:             |  ok  |             |  ok  |
+>   --------------------------------------------------------------------------
+>      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+>      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
+>      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+>      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
+>        sirq-safe-A => hirqs-on/12:  ok  |  ok  |  ok  |
+>        sirq-safe-A => hirqs-on/21:  ok  |  ok  |  ok  |
+>          hard-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+>          soft-safe-A + irqs-on/12:  ok  |  ok  |  ok  |
+>          hard-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+>          soft-safe-A + irqs-on/21:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
+>     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+>     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
+>       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
+>       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
+>       hard-irq read-recursion/123:  ok  |
+>       soft-irq read-recursion/123:  ok  |
+>       hard-irq read-recursion/132:  ok  |
+>       soft-irq read-recursion/132:  ok  |
+>       hard-irq read-recursion/213:  ok  |
+>       soft-irq read-recursion/213:  ok  |
+>       hard-irq read-recursion/231:  ok  |
+>       soft-irq read-recursion/231:  ok  |
+>       hard-irq read-recursion/312:  ok  |
+>       soft-irq read-recursion/312:  ok  |
+>       hard-irq read-recursion/321:  ok  |
+>       soft-irq read-recursion/321:  ok  |
+> -------------------------------------------------------
+> Good, all 218 testcases passed! |
+> ---------------------------------
+> Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
+> Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
+> Memory: 510712k/524208k available (1723k kernel code, 12936k reserved, 895k data, 200k init, 0k highmem)
+> virtual kernel memory layout:
+>     fixmap  : 0xfffb5000 - 0xfffff000   ( 296 kB)
+>     vmalloc : 0xe0800000 - 0xfffb3000   ( 503 MB)
+>     lowmem  : 0xc0000000 - 0xdffec000   ( 511 MB)
+>       .init : 0xc0390000 - 0xc03c2000   ( 200 kB)
+>       .data : 0xc02aecc8 - 0xc038eca0   ( 895 kB)
+>       .text : 0xc0100000 - 0xc02aecc8   (1723 kB)
+> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+> CPA: page pool initialized 16 of 16 pages preallocated
+> Calibrating delay using timer specific routine.. 2824.66 BogoMIPS (lpj=5649325)
+> Mount-cache hash table entries: 512
+> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+> CPU: L2 Cache: 256K (64 bytes/line)
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#0.
+> Compat vDSO mapped to ffffe000.
+> CPU: AMD Athlon(TM) XP 1600+ stepping 02
+> Checking 'hlt' instruction... OK.
+> Freeing SMP alternatives: 0k freed
+> ACPI: Core revision 20070126
+> Parsing all Control Methods:
+> Table [DSDT](id 0001) - 356 Objects with 38 Devices 115 Methods 24 Regions
+>  tbxface-0598 [00] tb_load_namespace     : ACPI Tables successfully acquired
+> ACPI: setting ELCR to 0200 (from 0820)
+> evxfevnt-0091 [00] enable                : Transition to ACPI mode successful
+> khelper used greatest stack depth: 3144 bytes left
+> net_namespace: 304 bytes
+> NET: Registered protocol family 16
+> ACPI: bus type pci registered
+> khelper used greatest stack depth: 3032 bytes left
+> PCI: PCI BIOS revision 2.10 entry at 0xf1180, last bus=1
+> PCI: Using configuration type 1
+> Setting up standard PCI resources
+> evgpeblk-0956 [00] ev_create_gpe_block   : GPE 00 to 0F [_GPE] 2 regs on int 0x9
+> evgpeblk-1052 [00] ev_initialize_gpe_bloc: Found 4 Wake, Enabled 0 Runtime GPEs in this block
+> ACPI: EC: Look up EC in DSDT
+> ------------[ cut here ]------------
+> WARNING: at arch/x86/mm/ioremap.c:129 __ioremap+0xc7/0x182()
+> Modules linked in:
+> Pid: 1, comm: swapper Not tainted 2.6.25-rc2-mm1 #40
+>  [<c0118955>] warn_on_slowpath+0x41/0x6d
+>  [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+>  [<c01fdd89>] ? acpi_os_release_object+0x8/0xc
+>  [<c02188d4>] ? acpi_ut_delete_object_desc+0x39/0x3e
+>  [<c0217f05>] ? acpi_ut_delete_internal_obj+0x2c1/0x2c9
+>  [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+>  [<c0131cde>] ? trace_hardirqs_on_caller+0xdf/0x100
+>  [<c0131d0a>] ? trace_hardirqs_on+0xb/0xd
+>  [<c01129c5>] __ioremap+0xc7/0x182
+>  [<c0112a99>] ioremap_nocache+0xa/0xc
+>  [<c02a6877>] acpi_os_map_memory+0x11/0x1a
+>  [<c020b697>] acpi_ex_system_memory_space_handler+0xd3/0x228
+>  [<c0203bd8>] ? acpi_ev_address_space_dispatch+0x142/0x1a8
+>  [<c020b5c4>] ? acpi_ex_system_memory_space_handler+0x0/0x228
+>  [<c0203bfd>] acpi_ev_address_space_dispatch+0x167/0x1a8
+>  [<c02083dd>] acpi_ex_access_region+0x1e4/0x270
+>  [<c02085bc>] acpi_ex_field_datum_io+0x153/0x2a1
+>  [<c0158ac0>] ? cache_alloc_debugcheck_after+0xe9/0x165
+>  [<c020879b>] acpi_ex_extract_from_field+0x91/0x224
+>  [<c0206bcf>] ? acpi_ex_read_data_from_field+0x163/0x1b0
+>  [<c0206bec>] acpi_ex_read_data_from_field+0x180/0x1b0
+>  [<c020d256>] acpi_ex_resolve_node_to_value+0x1aa/0x230
+>  [<c0207a32>] acpi_ex_resolve_to_value+0x270/0x2aa
+>  [<c0209e47>] acpi_ex_resolve_operands+0x24e/0x52f
 
-Does not work... :(
-
-Alon.
-
-Feb 16 23:41:33 alon1 usb 3-1: configuration #1 chosen from 1 choice
-Feb 16 23:41:33 alon1 BUG: unable to handle kernel NULL pointer dereference at virtual address 00000008
-Feb 16 23:41:33 alon1 printing eip: c01b2db6 *pde = 00000000 
-Feb 16 23:41:33 alon1 Oops: 0000 [#1] PREEMPT 
-Feb 16 23:41:33 alon1 Modules linked in: ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async rfcomm l2cap hci_usb vmnet(P) vmmon(P) tun radeon drm autofs4 ipv6 aes_generic crypto_algapi ieee80211_crypt_ccmp nf_nat_irc nf_nat_ftp nf_conntrack_irc nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat ipt_REJECT xt_tcpudp ipt_LOG xt_limit xt_state nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables x_tables snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device bluetooth ppp_generic slhc ioatdma dca cfq_iosched cpufreq_powersave cpufreq_ondemand cpufreq_conservative acpi_cpufreq freq_table uinput fan af_packet nls_cp1255 nls_iso8859_1 nls_utf8 nls_base pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm nsc_ircc snd_timer ipw2200 thinkpad_acpi irda snd ehci_hcd yenta_socket uhci_hcd psmouse ieee80211 soundcore intel_agp hwmon rsrc_nonstatic pcspkr e1000 crc_ccitt snd_page_alloc i2c_i801 ieee80211_crypt pcmcia_core agpgart thermal battery nvram rtc sr_mod ac sg firmware_class button processor cdrom unix usbcore evdev ext3 jbd ext2 mbcache loop ata_piix libata sd_mod scsi_mod
-Feb 16 23:41:33 alon1 
-Feb 16 23:41:33 alon1 Pid: 4, comm: events/0 Tainted: P        (2.6.24-gentoo-r2 #1)
-Feb 16 23:41:33 alon1 EIP: 0060:[<c01b2db6>] EFLAGS: 00010282 CPU: 0
-Feb 16 23:41:33 alon1 EIP is at sysfs_get_dentry+0x26/0x80
-Feb 16 23:41:33 alon1 EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: f48a2210
-Feb 16 23:41:33 alon1 ESI: f72eb900 EDI: f4803ae0 EBP: f4803ae0 ESP: f7c49efc
-Feb 16 23:41:33 alon1 hcid[7004]: HCI dev 0 registered
-Feb 16 23:41:33 alon1 DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
-Feb 16 23:41:33 alon1 Process events/0 (pid: 4, ti=f7c48000 task=f7c3efc0 task.ti=f7c48000)
-Feb 16 23:41:33 alon1 Stack: f7cb6140 f4822668 f7e71e10 c01b304d ffffffff ffffffff fffffffe c030ba9c 
-Feb 16 23:41:33 alon1 f7cb6140 f4822668 f6da6720 f7cb6140 f4822668 f6da6720 c030ba8e c01ce20b 
-Feb 16 23:41:33 alon1 f6e9dd00 c030ba8e f6da6720 f6e9dd00 f6e9dd00 00000000 f4822600 00000000 
-Feb 16 23:41:33 alon1 Call Trace:
-Feb 16 23:41:33 alon1 [<c01b304d>] sysfs_move_dir+0x3d/0x1f0
-Feb 16 23:41:33 alon1 [<c01ce20b>] kobject_move+0x9b/0x120
-Feb 16 23:41:33 alon1 [<c0241711>] device_move+0x51/0x110
-Feb 16 23:41:33 alon1 [<f9aaed80>] del_conn+0x0/0x70 [bluetooth]
-Feb 16 23:41:33 alon1 [<f9aaed99>] del_conn+0x19/0x70 [bluetooth]
-Feb 16 23:41:33 alon1 [<c012c1a1>] run_workqueue+0x81/0x140
-Feb 16 23:41:33 alon1 [<c02c0c88>] schedule+0x168/0x2e0
-Feb 16 23:41:33 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
-Feb 16 23:41:33 alon1 [<c012c9cb>] worker_thread+0x9b/0xf0
-Feb 16 23:41:33 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
-Feb 16 23:41:33 alon1 [<c012c930>] worker_thread+0x0/0xf0
-Feb 16 23:41:33 alon1 [<c012f962>] kthread+0x42/0x70
-Feb 16 23:41:33 alon1 [<c012f920>] kthread+0x0/0x70
-Feb 16 23:41:33 alon1 [<c0104c2f>] kernel_thread_helper+0x7/0x18
-Feb 16 23:41:33 alon1 =======================
-Feb 16 23:41:33 alon1 Code: 26 00 00 00 00 57 89 c7 a1 50 1b 3a c0 56 53 8b 70 38 85 f6 74 08 8b 0e 85 c9 74 58 ff 06 8b 56 50 39 fa 74 47 89 fb eb 02 89 c3 <8b> 43 08 39 c2 75 f7 8b 46 08 83 c0 68 e8 98 e7 10 00 8b 43 10 
-Feb 16 23:41:33 alon1 EIP: [<c01b2db6>] sysfs_get_dentry+0x26/0x80 SS:ESP 0068:f7c49efc
-Feb 16 23:41:33 alon1 ---[ end trace aae864e9592acc1d ]---
-Feb 16 23:41:33 alon1 hcid[7004]: HCI dev 0 up
-Feb 16 23:41:33 alon1 hcid[7004]: Device hci0 has been added
-Feb 16 23:41:33 alon1 hcid[7004]: Starting security manager 0
+Len: This WARN_ON says that ACPI is trying to call ioremap() on memory that the e820_table
+lists as "kernel owned". Do you know why ACPI would do this? Would ACPI get upset if
+the kernel would tell it to take a hike?
