@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765447AbYBPDmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764292AbYBPDox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765447AbYBPDmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 22:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbYBPDmS
+	id S1764292AbYBPDox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 22:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbYBPDop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 22:42:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38565 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764925AbYBPDmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 22:42:15 -0500
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 Feb 2008 22:44:45 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:24770 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755585AbYBPDoo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 Feb 2008 22:44:44 -0500
+Subject: [PATCH 1/2] Preempt realtime Oops syslog
+From: Min Zhang <mzhang@mvista.com>
+Reply-To: mzhang@mvista.com
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Monta Vista
+Date: Fri, 15 Feb 2008 19:44:43 -0800
+Message-Id: <1203133483.10893.25.camel@dhcp140.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2.1 (2.8.2.1-3.fc6) 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-X-Fcc: ~/Mail/linus
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kbuild@vger.kernel.org
-Subject: Re: 2.6.25-rc2 vdso_install breaks user "make install"
-In-Reply-To: Rene Herman's message of  Saturday, 16 February 2008 04:31:54 +0100 <47B6592A.6030200@keyaccess.nl>
-References: <47B6592A.6030200@keyaccess.nl>
-X-Zippy-Says: I'll eat ANYTHING that's BRIGHT BLUE!!
-Message-Id: <20080216034211.8DD03270193@magilla.localdomain>
-Date: Fri, 15 Feb 2008 19:42:11 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Perhaps it makes more sense to have vdso_install be a dependency of
-modules_install rather than install, since they both put things in /lib/modules.
-The installed vdso images are potentially useful for a kernel when you
-aren't bothering to build or install any modules, but those images are only
-ever useful for sophisticated debugging uses anyway.
+Add bust_spinlocks when kernel die from do_trap to flush Oops
+dump to syslog immediatly. Oops is missing from syslog if it is from
+non-preemptible section, because on PREEMPT_RT kernel, Oops printk
+doesn't wake up klogd from non-preemptible context; see
+release_console_sem in kernel/printk.c. 
 
-Sam, any thoughts?  (See arch/x86/Makefile and arch/powerpc/Makefile.)
+Tested by Oops in module_init and insmod that kernel module. The
+Oops is in non-preemptive context because modules are loaded from 
+inside a realtime priority thread in a preemptive realtime kernel. 
 
-The only kind of install runs I actually care about are for packaging
-system builds.  There the packaged build does 'make vdso_install'
-explicitly anyway (at least Fedora rpms' .spec does).  So if the consensus
-is just to drop the dependency on vdso_install completely, I don't object.
+Only apply to PPC arch because bust_spinlocks has already been used 
+by x86 and other architectures
+
+Signed-off-by: Min Zhang <mzhang@mvista.com>
+
+Index: rt-2.6/arch/ppc/kernel/traps.c
+===================================================================
+--- rt-2.6.orig/arch/ppc/kernel/traps.c
++++ rt-2.6/arch/ppc/kernel/traps.c
+@@ -92,6 +92,7 @@ int die(const char * str, struct pt_regs
+ 	if (nl)
+ 		printk("\n");
+ 	show_regs(fp);
++	bust_spinlocks(0);
+ 	add_taint(TAINT_DIE);
+ 	spin_unlock_irq(&die_lock);
+ 	/* do_exit() should take care of panic'ing from an interrupt
 
 
-Thanks,
-Roland
