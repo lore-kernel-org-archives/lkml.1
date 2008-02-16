@@ -1,115 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbYBPOws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbYBPPCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758484AbYBPOws (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 09:52:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbYBPOwi
+	id S1757392AbYBPPCh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 10:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbYBPPC1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 09:52:38 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:34234 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753312AbYBPOwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 09:52:36 -0500
-Date: Sat, 16 Feb 2008 15:52:33 +0100 (MET)
-From: Julia Lawall <julia@diku.dk>
-To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 4/4] : More use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802161552070.1185@pc-041.diku.dk>
+	Sat, 16 Feb 2008 10:02:27 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34935 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbYBPPC0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 10:02:26 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <47B6FADB.1090203@s5r6.in-berlin.de>
+Date: Sat, 16 Feb 2008 16:01:47 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jarod Wilson <jwilson@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH 11/9 update] firewire: fw-sbp2: enforce a retry of __scsi_add_device
+ if bus generation changed
+References: <tkrat.f34e34fd91a0695f@s5r6.in-berlin.de> <47ACB449.3060200@s5r6.in-berlin.de> <tkrat.e02d667ba3320993@s5r6.in-berlin.de> <200802101336.57689.jwilson@redhat.com>
+In-Reply-To: <200802101336.57689.jwilson@redhat.com>
+X-Enigmail-Version: 0.95.3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Jarod Wilson wrote on 2008-02-10:
+> Now *this* does the trick. I get the 'READ CAPACITY failed' as before, 
+> then 'firewire_sbp2: fw1.0: error status: 0:4', followed by a new login and 
+> SCSI probe, both of which are successful this time, disk is available for use 
+> and all that good stuff.
 
-The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
-(d)) but is perhaps more readable.
-
-An extract of the semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@haskernel@
-@@
-
-#include <linux/kernel.h>
-
-@depends on haskernel@
-expression n,d;
-@@
-
-(
-- (n + d - 1) / d
-+ DIV_ROUND_UP(n,d)
-|
-- (n + (d - 1)) / d
-+ DIV_ROUND_UP(n,d)
-)
-
-@depends on haskernel@
-expression n,d;
-@@
-
-- DIV_ROUND_UP((n),d)
-+ DIV_ROUND_UP(n,d)
-
-@depends on haskernel@
-expression n,d;
-@@
-
-- DIV_ROUND_UP(n,(d))
-+ DIV_ROUND_UP(n,d)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
---- a/drivers/s390/net/claw.c 2008-02-02 15:28:31.000000000 +0100
-+++ b/drivers/s390/net/claw.c 2008-02-15 22:29:44.000000000 +0100
-@@ -2114,8 +2114,7 @@ init_ccw_bk(struct net_device *dev)
-         */
-         ccw_blocks_perpage= PAGE_SIZE /  CCWBK_SIZE;
-         ccw_pages_required=
--		(ccw_blocks_required+ccw_blocks_perpage -1) /
--			 ccw_blocks_perpage;
-+		DIV_ROUND_UP(ccw_blocks_required, ccw_blocks_perpage);
-
- #ifdef DEBUGMSG
-         printk(KERN_INFO "%s: %s() > ccw_blocks_perpage=%d\n",
-@@ -2133,12 +2132,12 @@ init_ccw_bk(struct net_device *dev)
-          */
-         if (privptr->p_env->read_size < PAGE_SIZE) {
-             claw_reads_perpage= PAGE_SIZE / privptr->p_env->read_size;
--            claw_read_pages= (privptr->p_env->read_buffers +
--	    	claw_reads_perpage -1) / claw_reads_perpage;
-+	     claw_read_pages=
-+		DIV_ROUND_UP(privptr->p_env->read_buffers, claw_reads_perpage);
-          }
-          else {       /* > or equal  */
-             privptr->p_buff_pages_perread=
--	    	(privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
-+		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
-             claw_read_pages=
- 	    	privptr->p_env->read_buffers * privptr->p_buff_pages_perread;
-          }
-@@ -2146,13 +2145,13 @@ init_ccw_bk(struct net_device *dev)
-             claw_writes_perpage=
- 	    	PAGE_SIZE / privptr->p_env->write_size;
-             claw_write_pages=
--	    	(privptr->p_env->write_buffers + claw_writes_perpage -1) /
--			claw_writes_perpage;
-+		DIV_ROUND_UP(privptr->p_env->write_buffers,
-+			     claw_writes_perpage);
-
-         }
-         else {      /* >  or equal  */
-             privptr->p_buff_pages_perwrite=
--	    	 (privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
-+		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
-             claw_write_pages=
- 	     	privptr->p_env->write_buffers * privptr->p_buff_pages_perwrite;
-         }
+FYI, I now committed this patch to linux1394-2.6.git after folding patch
+ "firewire: fw-sbp2: retry login if scsi_device was offlined early" into it.
+-- 
+Stefan Richter
+-=====-==--- --=- =----
+http://arcgraph.de/sr/
