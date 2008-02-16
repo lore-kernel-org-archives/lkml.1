@@ -1,288 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932167AbYBPBBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932544AbYBPBBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932167AbYBPBBF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 20:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbYBPBAw
+	id S932544AbYBPBBg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 20:01:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932254AbYBPBBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 20:00:52 -0500
-Received: from smtp117.plus.mail.mud.yahoo.com ([209.191.106.148]:48652 "HELO
-	smtp117.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757165AbYBPBAu (ORCPT
+	Fri, 15 Feb 2008 20:01:16 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:62632 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932117AbYBPBBC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 20:00:50 -0500
-X-YMail-OSG: waULzVgVM1nMe94QuZ6NaN_M12l5l4iiZQZ5R0j590PGNhco_iaWDPWrOeDMISNQWw.z5M9Jqw--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <47B61F29.3040203@schaufler-ca.com>
-Date: Fri, 15 Feb 2008 15:24:25 -0800
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 15 Feb 2008 20:01:02 -0500
+Date: Fri, 15 Feb 2008 20:00:30 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hch@lst.de, miklos@szeredi.hu, akpm@osdl.org
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+Message-ID: <20080216010030.GC26734@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Dave Hansen <haveblue@us.ibm.com>, linux-kernel@vger.kernel.org,
+	hch@lst.de, miklos@szeredi.hu, akpm@osdl.org
+References: <20080215223721.9E0A088A@kernel> <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu> <1203122979.13230.3.camel@nimitz.home.sr71.net>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, paul.moore@hp.com,
-       casey@schaufler-ca.com
-Subject: [PATCH] (02/15/08 Linus git) Smack unlabeled outgoing ambient packets
- - v4
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203122979.13230.3.camel@nimitz.home.sr71.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Casey Schaufler <casey@schaufler-ca.com>
+On Fri, Feb 15, 2008 at 04:49:39PM -0800, Dave Hansen wrote:
+> On Fri, 2008-02-15 at 19:32 -0500, Theodore Tso wrote:
+> > On Fri, Feb 15, 2008 at 02:37:30PM -0800, Dave Hansen wrote:
+> > > 
+> > > This patch adds two function mnt_want_write() and mnt_drop_write().
+> > > These are used like a lock pair around and fs operations that might
+> > > cause a write to the filesystem.
+> > 
+> > Argh, is there some reason why this couldn't have gotten merged in
+> > -rc1, ahead of the rest of the patch series?  This one is going to
+> > cause more cross-tree merge pain with any filesystem tree that have
+> > changes to fs/*/ioctl.c.
+> 
+> I wasn't meaning for this to hit the 2.6.25-rc series.  We had some
+> review comments just when the merge window opened, and I was expecting
+> them to get stuck back in -mm for another round.
 
-Smack uses CIPSO labeling, but allows for unlabeled packets
-by specifying an "ambient" label that is applied to incoming
-unlabeled packets. Because the other end of the connection
-may dislike IP options, and ssh is one know application that
-behaves thus, it is prudent to respond in kind. This patch
-changes the network labeling behavior such that an outgoing
-packet that would be given a CIPSO label that matches the
-ambient label is left unlabeled. An "unlbl" domain is added
-and the netlabel defaulting mechanism invoked rather than
-assuming that everything is CIPSO. Locking has been added
-around changes to the ambient label as the mechanisms used
-to do so are more involved.
+Yeah, but it means that I need one set of patches for -mm, and another
+set of patches for Linus's mainline.  I notice that your patchset is
+currently missing changes for fs/ext4/ioctl.c --- I think because you
+dropped them when Mingming picked them up, and then I dropped them
+when I was trying to prepare the set of patches to push to Linus.
 
-Cleaned up some issues noted in review.
-Make smk_cipso_doi() static.
-Create a hook for the new security_secctx_to_secid()
-using existing underlying code.
-Fill in audit data for netlbl domain calls.
-Collapse unnecessary multiple assignments.
+No problem, I'm sure I can ressurect them, but it's still the same
+basic problem that when there are patchsets such as yours which touch
+multiple trees in -mm, there are almost inevitably patch conflicts.
 
-Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
+It would be nice if an initial patch which introduces the new
+functionality you need for r/o bind mounts could get introduced into
+mainline *first*, and then people could add patches that call
+mnt_want_write(), et. al into their trees gradually.
 
----
+As it is, I can't see a way around this other than maintaining two
+separate patch sets, one that works with r/o bind mounts, and one for
+mainline, since otherwise akpm gets grumpy and starts dropping either
+your patchset or the ext4 patchset because *he* has to manually fix up
+the patch conflicts.  (So instead I have to deal with it by hand, and
+then *I* get grumpy.  :-/)
 
- security/smack/smack_lsm.c |   36 ++++++++++++++++----
- security/smack/smackfs.c   |   61 ++++++++++++++++++++++++++---------
- 2 files changed, 74 insertions(+), 23 deletions(-)
-
-diff -uprN -X linux-2.6.25-g0215-base//Documentation/dontdiff linux-2.6.25-g0215-base/security/smack/smackfs.c linux-2.6.25-g0215/security/smack/smackfs.c
---- linux-2.6.25-g0215-base/security/smack/smackfs.c	2008-02-15 14:25:37.000000000 -0800
-+++ linux-2.6.25-g0215/security/smack/smackfs.c	2008-02-15 14:30:36.000000000 -0800
-@@ -24,6 +24,7 @@
- #include <net/cipso_ipv4.h>
- #include <linux/seq_file.h>
- #include <linux/ctype.h>
-+#include <linux/audit.h>
- #include "smack.h"
- 
- /*
-@@ -45,6 +46,7 @@ enum smk_inos {
-  */
- static DEFINE_MUTEX(smack_list_lock);
- static DEFINE_MUTEX(smack_cipso_lock);
-+static DEFINE_MUTEX(smack_ambient_lock);
- 
- /*
-  * This is the "ambient" label for network traffic.
-@@ -342,6 +344,9 @@ void smk_cipso_doi(void)
- 	struct cipso_v4_doi *doip;
- 	struct netlbl_audit audit_info;
- 
-+	audit_info.loginuid = audit_get_loginuid(current);
-+	audit_info.secid = smack_to_secid(current->security);
-+
- 	rc = netlbl_cfg_map_del(NULL, &audit_info);
- 	if (rc != 0)
- 		printk(KERN_WARNING "%s:%d remove rc = %d\n",
-@@ -363,6 +368,30 @@ void smk_cipso_doi(void)
- 		       __func__, __LINE__, rc);
- }
- 
-+/**
-+ * smk_unlbl_ambient - initialize the unlabeled domain
-+ */
-+void smk_unlbl_ambient(char *oldambient)
-+{
-+	int rc;
-+	struct netlbl_audit audit_info;
-+
-+	audit_info.loginuid = audit_get_loginuid(current);
-+	audit_info.secid = smack_to_secid(current->security);
-+
-+	if (oldambient != NULL) {
-+		rc = netlbl_cfg_map_del(oldambient, &audit_info);
-+		if (rc != 0)
-+			printk(KERN_WARNING "%s:%d remove rc = %d\n",
-+			       __func__, __LINE__, rc);
-+	}
-+
-+	rc = netlbl_cfg_unlbl_add_map(smack_net_ambient, &audit_info);
-+	if (rc != 0)
-+		printk(KERN_WARNING "%s:%d add rc = %d\n",
-+		       __func__, __LINE__, rc);
-+}
-+
- /*
-  * Seq_file read operations for /smack/cipso
-  */
-@@ -709,7 +738,6 @@ static ssize_t smk_read_ambient(struct f
- 				size_t cn, loff_t *ppos)
- {
- 	ssize_t rc;
--	char out[SMK_LABELLEN];
- 	int asize;
- 
- 	if (*ppos != 0)
-@@ -717,23 +745,18 @@ static ssize_t smk_read_ambient(struct f
- 	/*
- 	 * Being careful to avoid a problem in the case where
- 	 * smack_net_ambient gets changed in midstream.
--	 * Since smack_net_ambient is always set with a value
--	 * from the label list, including initially, and those
--	 * never get freed, the worst case is that the pointer
--	 * gets changed just after this strncpy, in which case
--	 * the value passed up is incorrect. Locking around
--	 * smack_net_ambient wouldn't be any better than this
--	 * copy scheme as by the time the caller got to look
--	 * at the ambient value it would have cleared the lock
--	 * and been changed.
- 	 */
--	strncpy(out, smack_net_ambient, SMK_LABELLEN);
--	asize = strlen(out) + 1;
-+	mutex_lock(&smack_ambient_lock);
- 
--	if (cn < asize)
--		return -EINVAL;
-+	asize = strlen(smack_net_ambient) + 1;
-+
-+	if (cn >= asize)
-+		rc = simple_read_from_buffer(buf, cn, ppos,
-+					     smack_net_ambient, asize);
-+	else
-+		rc = -EINVAL;
- 
--	rc = simple_read_from_buffer(buf, cn, ppos, out, asize);
-+	mutex_unlock(&smack_ambient_lock);
- 
- 	return rc;
- }
-@@ -751,6 +774,7 @@ static ssize_t smk_write_ambient(struct 
- 				 size_t count, loff_t *ppos)
- {
- 	char in[SMK_LABELLEN];
-+	char *oldambient;
- 	char *smack;
- 
- 	if (!capable(CAP_MAC_ADMIN))
-@@ -766,7 +790,13 @@ static ssize_t smk_write_ambient(struct 
- 	if (smack == NULL)
- 		return -EINVAL;
- 
-+	mutex_lock(&smack_ambient_lock);
-+
-+	oldambient = smack_net_ambient;
- 	smack_net_ambient = smack;
-+	smk_unlbl_ambient(oldambient);
-+
-+	mutex_unlock(&smack_ambient_lock);
- 
- 	return count;
- }
-@@ -974,6 +1004,7 @@ static int __init init_smk_fs(void)
- 
- 	sema_init(&smack_write_sem, 1);
- 	smk_cipso_doi();
-+	smk_unlbl_ambient(NULL);
- 
- 	return err;
- }
-diff -uprN -X linux-2.6.25-g0215-base//Documentation/dontdiff linux-2.6.25-g0215-base/security/smack/smack_lsm.c linux-2.6.25-g0215/security/smack/smack_lsm.c
---- linux-2.6.25-g0215-base/security/smack/smack_lsm.c	2008-02-15 14:25:37.000000000 -0800
-+++ linux-2.6.25-g0215/security/smack/smack_lsm.c	2008-02-15 14:31:21.000000000 -0800
-@@ -1251,9 +1251,8 @@ static void smack_to_secattr(char *smack
- 
- 	switch (smack_net_nltype) {
- 	case NETLBL_NLTYPE_CIPSOV4:
--		nlsp->domain = NULL;
--		nlsp->flags = NETLBL_SECATTR_DOMAIN;
--		nlsp->flags |= NETLBL_SECATTR_MLS_LVL;
-+		nlsp->domain = kstrdup(smack, GFP_ATOMIC);
-+		nlsp->flags = NETLBL_SECATTR_DOMAIN | NETLBL_SECATTR_MLS_LVL;
- 
- 		rc = smack_to_cipso(smack, &cipso);
- 		if (rc == 0) {
-@@ -1282,15 +1281,14 @@ static int smack_netlabel(struct sock *s
- {
- 	struct socket_smack *ssp;
- 	struct netlbl_lsm_secattr secattr;
--	int rc = 0;
-+	int rc;
- 
- 	ssp = sk->sk_security;
- 	netlbl_secattr_init(&secattr);
- 	smack_to_secattr(ssp->smk_out, &secattr);
--	if (secattr.flags != NETLBL_SECATTR_NONE)
--		rc = netlbl_sock_setattr(sk, &secattr);
--
-+	rc = netlbl_sock_setattr(sk, &secattr);
- 	netlbl_secattr_destroy(&secattr);
-+
- 	return rc;
- }
- 
-@@ -1313,6 +1311,7 @@ static int smack_inode_setsecurity(struc
- 	struct inode_smack *nsp = inode->i_security;
- 	struct socket_smack *ssp;
- 	struct socket *sock;
-+	int rc = 0;
- 
- 	if (value == NULL || size > SMK_LABELLEN)
- 		return -EACCES;
-@@ -1341,7 +1340,10 @@ static int smack_inode_setsecurity(struc
- 		ssp->smk_in = sp;
- 	else if (strcmp(name, XATTR_SMACK_IPOUT) == 0) {
- 		ssp->smk_out = sp;
--		return smack_netlabel(sock->sk);
-+		rc = smack_netlabel(sock->sk);
-+		if (rc != 0)
-+			printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
-+			       __func__, -rc);
- 	} else
- 		return -EOPNOTSUPP;
- 
-@@ -2214,6 +2216,9 @@ static void smack_sock_graft(struct sock
- 	ssp->smk_packet[0] = '\0';
- 
- 	rc = smack_netlabel(sk);
-+	if (rc != 0)
-+		printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
-+		       __func__, -rc);
- }
- 
- /**
-@@ -2346,6 +2351,20 @@ static int smack_secid_to_secctx(u32 sec
- }
- 
- /*
-+ * smack_secctx_to_secid - return the secid for a smack label
-+ * @secdata: smack label
-+ * @seclen: how long result is
-+ * @secid: outgoing integer
-+ *
-+ * Exists for audit and networking code.
-+ */
-+static int smack_secctx_to_secid(char *secdata, u32 seclen, u32 *secid)
-+{
-+	*secid = smack_to_secid(secdata);
-+	return 0;
-+}
-+
-+/*
-  * smack_release_secctx - don't do anything.
-  * @key_ref: unused
-  * @context: unused
-@@ -2475,6 +2494,7 @@ static struct security_operations smack_
- 	.key_permission = 		smack_key_permission,
- #endif /* CONFIG_KEYS */
- 	.secid_to_secctx = 		smack_secid_to_secctx,
-+	.secctx_to_secid = 		smack_secctx_to_secid,
- 	.release_secctx = 		smack_release_secctx,
- };
- 
- 
-
-
+						- Ted
