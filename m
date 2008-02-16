@@ -1,96 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYBPQ03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbYBPQ0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbYBPQ03 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:26:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbYBPQYy
+	id S1759363AbYBPQ0n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:26:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbYBPQZF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:24:54 -0500
-Received: from an-out-0708.google.com ([209.85.132.240]:5772 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758724AbYBPQYw (ORCPT
+	Sat, 16 Feb 2008 11:25:05 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:28570 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758791AbYBPQZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:24:52 -0500
+	Sat, 16 Feb 2008 11:25:00 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Sb21DJRgeWwNjw0tH33LnKQQZUC7LgTUOyq9Kcki7QvxJLnrLaSB3oeksxRBMPBlOxKidfQvNmvuDg9vAPb04xElc5A/AawFv4OUkqvnFlTJ0Uv36+ZtOHDvXX6iGW97jotg2M01DStUxgiZWumvKgR0BT972T8rAdoM99Bi0Ag=
+        b=dpMrG6VqUCZqDxKiDmRIztWpm0zFeQgJsFsi9Gy54TvjNLYqa3u3w3W2noNda9sYJpRyXZD4utm84BP3xz/TK3XCaZPxEqEyRXFzT0/0nO1I7R/vwt99FYQLIYolM+Ra+pguhbyiMFPX9K4u1QZuK1TPXOKAINBCSykWpdGwDrA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 16 Feb 2008 17:39:25 +0100
-Message-Id: <20080216163925.10174.64230.sendpatchset@localhost.localdomain>
+Date: Sat, 16 Feb 2008 17:39:32 +0100
+Message-Id: <20080216163932.10174.87755.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080216163856.10174.72546.sendpatchset@localhost.localdomain>
 References: <20080216163856.10174.72546.sendpatchset@localhost.localdomain>
-Subject: [PATCH 05/12] cmd640: init hwif->{io_ports,irq} explicitly
+Subject: [PATCH 06/12] ide: limit legacy VLB host drivers to alpha, x86 and mips
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do explicit port setup instead of depending on init_ide_data().
+These host drivers indirectly depend on CONFIG_IDE_ARCH_OBSOLETE_DEFAULTS=y
+which is defined only on alpha, x86, ia64, m32r, mips and ppc32.
 
-This way hwif->io_ports[] and hwif->irq are always correctly set
-regardless of CONFIG_PCI / CONFIG_BLK_DEV_IDEPCI.
+Moreover:
 
-[ Remember to not break "idex=noprobe" parameter. ]
+- on ia64 there is no ISA
 
-While at it fix printk().
+- m32r is too new for VLB
+
+- on ppc32 ISA is available only on PPC_CHRP (no default IDE ports)
+  and PPC_PREP (marked as BROKEN)
+
+[ the common sense tells me that VLB was only used on x86 but there
+  are urban legends that one of these host drivers was needed on some
+  other arch - thus the extra care ]
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/cmd640.c |   23 ++++++++++++++++++++---
- 1 file changed, 20 insertions(+), 3 deletions(-)
+ drivers/ide/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: b/drivers/ide/pci/cmd640.c
+Index: b/drivers/ide/Kconfig
 ===================================================================
---- a/drivers/ide/pci/cmd640.c
-+++ b/drivers/ide/pci/cmd640.c
-@@ -712,8 +712,9 @@ static int __init cmd640x_init(void)
- 	int second_port_cmd640 = 0;
- 	const char *bus_type, *port2;
- 	unsigned int index;
--	u8 b, cfr;
-+	u8 b, cfr, oldnoprobe;
- 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
-+	hw_regs_t hw[2];
+--- a/drivers/ide/Kconfig
++++ b/drivers/ide/Kconfig
+@@ -1031,7 +1031,7 @@ config IDE_EXT_DIRECT
+ endchoice
  
- 	if (cmd640_vlb && probe_for_cmd640_vlb()) {
- 		bus_type = "VLB";
-@@ -752,12 +753,25 @@ static int __init cmd640x_init(void)
- 		return 0;
- 	}
+ # no isa -> no vlb
+-if ISA
++if ISA && (ALPHA || X86 || MIPS)
  
-+	memset(&hw, 0, sizeof(hw));
-+
-+	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
-+	hw[0].irq = 14;
-+
-+	ide_std_init_ports(&hw[1], 0x170, 0x376);
-+	hw[1].irq = 15;
-+
-+	printk(KERN_INFO "cmd640: buggy cmd640%c interface on %s, config=0x%02x"
-+			 "\n", 'a' + cmd640_chip_version - 1, bus_type, cfr);
-+
- 	/*
- 	 * Initialize data for primary port
- 	 */
- 	setup_device_ptrs ();
--	printk("%s: buggy cmd640%c interface on %s, config=0x%02x\n",
--	       cmd_hwif0->name, 'a' + cmd640_chip_version - 1, bus_type, cfr);
-+
-+	oldnoprobe = cmd_hwif0->noprobe;
-+	ide_init_port_hw(cmd_hwif0, &hw[0]);
-+	cmd_hwif0->noprobe = oldnoprobe;
- #ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
- 	cmd_hwif0->set_pio_mode = &cmd640_set_pio_mode;
- #endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
-@@ -809,6 +823,9 @@ static int __init cmd640x_init(void)
- 	 * Initialize data for secondary cmd640 port, if enabled
- 	 */
- 	if (second_port_cmd640) {
-+		oldnoprobe = cmd_hwif1->noprobe;
-+		ide_init_port_hw(cmd_hwif1, &hw[1]);
-+		cmd_hwif1->noprobe = oldnoprobe;
- #ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
- 		cmd_hwif1->set_pio_mode = &cmd640_set_pio_mode;
- #endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
+ comment "Other IDE chipsets support"
+ comment "Note: most of these also require special kernel boot parameters"
