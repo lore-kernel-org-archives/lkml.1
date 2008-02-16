@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbYBPPOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbYBPPQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbYBPPOt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 10:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbYBPPOj
+	id S1758124AbYBPPQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 10:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbYBPPQN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 10:14:39 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:42186 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753486AbYBPPOh (ORCPT
+	Sat, 16 Feb 2008 10:16:13 -0500
+Received: from wx-out-0506.google.com ([66.249.82.229]:39119 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbYBPPQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 10:14:37 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-In-Reply-To: <20080215120222.b3263e4a.sfr@canb.auug.org.au>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	 <adalk5np1h5.fsf@cisco.com>  <20080215120222.b3263e4a.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 09:14:32 -0600
-Message-Id: <1203174872.3182.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Sat, 16 Feb 2008 10:16:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=pLRiu5DbipWuTWKzo9YqTqWe8Ep3Ia73DID7efBzF1TCsZ4txli46f0i+6hk5RM5fKOVnR3p14aI6f1xSmbPbXjj79QpKroFLvMy3lfKADSdIKT542XcrsJ8Lsrueps0WMglKMtfiRzQMVw5LnzQXKJO7lL/BHUHM4DuhS5Udo4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH] MAINTAINERS: update ide-cd maintainer's email address
+Date: Sat, 16 Feb 2008 15:44:55 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20080216081239.GJ13446@gollum.tnic>
+In-Reply-To: <20080216081239.GJ13446@gollum.tnic>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802161544.55240.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-15 at 12:02 +1100, Stephen Rothwell wrote:
-> Hi Roland,
+On Saturday 16 February 2008, Borislav Petkov wrote:
+> commit c65b97fdbb9f3075a37f711aa6b388a48a27d3f4
+> Author: Borislav Petkov <petkovbb@gmail.com>
+> Date:   Sat Feb 16 09:10:46 2008 +0100
 > 
-> On Thu, 14 Feb 2008 15:22:46 -0800 Roland Dreier <rdreier@cisco.com> wrote:
-> >
-> > For InfiniBand/RDMA, the tree is:
-> > 
-> >     master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-next
-> > 
-> > or via git protocol:
-> > 
-> >     git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-next
-> > 
-> > contact addresses (me plus a mailing list):
-> > 
-> >     rolandd@cisco.com
-> >     general@lists.openfabrics.org
-> 
-> Added, thanks.
+>     MAINTAINERS: update ide-cd maintainer's email address
+>     
+>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-Do you have the tree and build logs available anywhere?  I'd like to
-turn off the merge tree builds when this is able to replace it.
-
-James
-
-
+applied
