@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759082AbYBPQ0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbYBPQ03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759082AbYBPQ0A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:26:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758612AbYBPQYr
+	id S1759225AbYBPQ03 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:26:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbYBPQYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:24:47 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:28570 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758587AbYBPQYp (ORCPT
+	Sat, 16 Feb 2008 11:24:54 -0500
+Received: from an-out-0708.google.com ([209.85.132.240]:5772 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758724AbYBPQYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:24:45 -0500
+	Sat, 16 Feb 2008 11:24:52 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=WXZQD4APKEt7b64AMyELBtczBj7Mu46zCEaSpHH93j5ewrKCuvCYMzEwuxfInXl4U332VFWLWQFi0JetxyYVtL6DH614Dvi0d0GmwGXjIi0lEpHAKwZ3B0L74wgw2WoEec9uQugUEKrkqSorcqcEuTB+/Rv2bFplB4AhxKO/4j0=
+        b=Sb21DJRgeWwNjw0tH33LnKQQZUC7LgTUOyq9Kcki7QvxJLnrLaSB3oeksxRBMPBlOxKidfQvNmvuDg9vAPb04xElc5A/AawFv4OUkqvnFlTJ0Uv36+ZtOHDvXX6iGW97jotg2M01DStUxgiZWumvKgR0BT972T8rAdoM99Bi0Ag=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Sat, 16 Feb 2008 17:39:18 +0100
-Message-Id: <20080216163918.10174.58524.sendpatchset@localhost.localdomain>
+Date: Sat, 16 Feb 2008 17:39:25 +0100
+Message-Id: <20080216163925.10174.64230.sendpatchset@localhost.localdomain>
 In-Reply-To: <20080216163856.10174.72546.sendpatchset@localhost.localdomain>
 References: <20080216163856.10174.72546.sendpatchset@localhost.localdomain>
-Subject: [PATCH 04/12] cmd640: cleanup setup_device_ptrs()
+Subject: [PATCH 05/12] cmd640: init hwif->{io_ports,irq} explicitly
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This loop is no longer needed.
+Do explicit port setup instead of depending on init_ide_data().
+
+This way hwif->io_ports[] and hwif->irq are always correctly set
+regardless of CONFIG_PCI / CONFIG_BLK_DEV_IDEPCI.
+
+[ Remember to not break "idex=noprobe" parameter. ]
+
+While at it fix printk().
 
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/pci/cmd640.c |   14 ++------------
- 1 file changed, 2 insertions(+), 12 deletions(-)
+ drivers/ide/pci/cmd640.c |   23 ++++++++++++++++++++---
+ 1 file changed, 20 insertions(+), 3 deletions(-)
 
 Index: b/drivers/ide/pci/cmd640.c
 ===================================================================
 --- a/drivers/ide/pci/cmd640.c
 +++ b/drivers/ide/pci/cmd640.c
-@@ -409,19 +409,9 @@ static void __init check_prefetch (unsig
-  */
- static void __init setup_device_ptrs (void)
- {
--	unsigned int i;
-+	cmd_hwif0 = &ide_hwifs[0];
-+	cmd_hwif1 = &ide_hwifs[1];
+@@ -712,8 +712,9 @@ static int __init cmd640x_init(void)
+ 	int second_port_cmd640 = 0;
+ 	const char *bus_type, *port2;
+ 	unsigned int index;
+-	u8 b, cfr;
++	u8 b, cfr, oldnoprobe;
+ 	u8 idx[4] = { 0xff, 0xff, 0xff, 0xff };
++	hw_regs_t hw[2];
  
--	cmd_hwif0 = &ide_hwifs[0]; /* default, if not found below */
--	cmd_hwif1 = &ide_hwifs[1]; /* default, if not found below */
--	for (i = 0; i < MAX_HWIFS; i++) {
--		ide_hwif_t *hwif = &ide_hwifs[i];
--		if (hwif->chipset == ide_unknown) {
--			if (hwif->io_ports[IDE_DATA_OFFSET] == 0x1f0)
--				cmd_hwif0 = hwif;
--			else if (hwif->io_ports[IDE_DATA_OFFSET] == 0x170)
--				cmd_hwif1 = hwif;
--		}
--	}
- 	cmd_drives[0] = &cmd_hwif0->drives[0];
- 	cmd_drives[1] = &cmd_hwif0->drives[1];
- 	cmd_drives[2] = &cmd_hwif1->drives[0];
+ 	if (cmd640_vlb && probe_for_cmd640_vlb()) {
+ 		bus_type = "VLB";
+@@ -752,12 +753,25 @@ static int __init cmd640x_init(void)
+ 		return 0;
+ 	}
+ 
++	memset(&hw, 0, sizeof(hw));
++
++	ide_std_init_ports(&hw[0], 0x1f0, 0x3f6);
++	hw[0].irq = 14;
++
++	ide_std_init_ports(&hw[1], 0x170, 0x376);
++	hw[1].irq = 15;
++
++	printk(KERN_INFO "cmd640: buggy cmd640%c interface on %s, config=0x%02x"
++			 "\n", 'a' + cmd640_chip_version - 1, bus_type, cfr);
++
+ 	/*
+ 	 * Initialize data for primary port
+ 	 */
+ 	setup_device_ptrs ();
+-	printk("%s: buggy cmd640%c interface on %s, config=0x%02x\n",
+-	       cmd_hwif0->name, 'a' + cmd640_chip_version - 1, bus_type, cfr);
++
++	oldnoprobe = cmd_hwif0->noprobe;
++	ide_init_port_hw(cmd_hwif0, &hw[0]);
++	cmd_hwif0->noprobe = oldnoprobe;
+ #ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
+ 	cmd_hwif0->set_pio_mode = &cmd640_set_pio_mode;
+ #endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
+@@ -809,6 +823,9 @@ static int __init cmd640x_init(void)
+ 	 * Initialize data for secondary cmd640 port, if enabled
+ 	 */
+ 	if (second_port_cmd640) {
++		oldnoprobe = cmd_hwif1->noprobe;
++		ide_init_port_hw(cmd_hwif1, &hw[1]);
++		cmd_hwif1->noprobe = oldnoprobe;
+ #ifdef CONFIG_BLK_DEV_CMD640_ENHANCED
+ 		cmd_hwif1->set_pio_mode = &cmd640_set_pio_mode;
+ #endif /* CONFIG_BLK_DEV_CMD640_ENHANCED */
