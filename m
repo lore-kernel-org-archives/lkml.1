@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759115AbYBPVil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbYBPVpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759115AbYBPVil (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 16:38:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756958AbYBPVie
+	id S1758762AbYBPVpe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 16:45:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYBPVpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 16:38:34 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:17954 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756929AbYBPVid (ORCPT
+	Sat, 16 Feb 2008 16:45:25 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:47077 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755593AbYBPVpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 16:38:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zng4GNhZOscRFwwPFyGK6Hm+52tGfpLgM03mikP5Ak4CQdhL9Zo8hKWsx/H2i1mSzexOqsvMJLT7D36T1RDxSKRsiGZtvwKnJ6E23XmucnfcuScJ3cX1Dx/OU3upblfbiNKJqAC8Ng2Vv92rfpzxJMo6ZZPGNjsVgzB+B3EG75k=
-Message-ID: <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
-Date: Sat, 16 Feb 2008 22:38:28 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.25-rc2
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 Feb 2008 16:45:24 -0500
+Subject: Re: [PATCH 2/3] sched: trivial sparse warning in sched.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080216212747.GC6753@cvg>
+References: <1203098196.15275.5.camel@brick>
+	 <1203196289.6301.20.camel@lappy>  <20080216212747.GC6753@cvg>
+Content-Type: text/plain
+Date: Sat, 16 Feb 2008 22:45:14 +0100
+Message-Id: <1203198314.6298.6.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 15, 2008 10:23 PM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> Ok,
->  this kernel is a winner.
 
-Sadly not for me:
-[ 5282.056415] ------------[ cut here ]------------
-[ 5282.059757] kernel BUG at lib/list_debug.c:33!
-[ 5282.062055] invalid opcode: 0000 [1] SMP
-[ 5282.062055] CPU 3
-[ 5282.062055] Modules linked in: radeon drm w83792d ipv6 tuner
-tea5767 tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx tea5761
-tvaudio msp3400 bttv videodev v4l1_compat ir_common compat_ioctl32
-v4l2_common videobuf_dma_sg videobuf_core btcx_risc tveeprom usbhid
-pata_amd i2c_nforce2 hid sg
-[ 5282.062055] Pid: 12937, comm: sed Not tainted 2.6.25-rc2 #1
-[ 5282.062055] RIP: 0010:[<ffffffff803bffe4>]
--> then the output from the serial console stopped. I was in X, so I
-could not see, if there was anything more on the real console.
+On Sun, 2008-02-17 at 00:27 +0300, Cyrill Gorcunov wrote:
+> [Peter Zijlstra - Sat, Feb 16, 2008 at 10:11:29PM +0100]
+> | 
+> | On Fri, 2008-02-15 at 09:56 -0800, Harvey Harrison wrote:
+> | > kernel/sched.c:3680:3: warning: returning void-valued expression
+> | 
+> | I'm wondering,... why is this wrong?
+> | 
+> | > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> | > ---
+> | >  kernel/sched.c |    6 ++++--
+> | >  1 files changed, 4 insertions(+), 2 deletions(-)
+> | > 
+> | > diff --git a/kernel/sched.c b/kernel/sched.c
+> | > index f28f19e..824d5a9 100644
+> | > --- a/kernel/sched.c
+> | > +++ b/kernel/sched.c
+> | > @@ -3676,8 +3676,10 @@ void account_system_time(struct task_struct *p, int hardirq_offset,
+> | >  	struct rq *rq = this_rq();
+> | >  	cputime64_t tmp;
+> | >  
+> | > -	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0))
+> | > -		return account_guest_time(p, cputime);
+> | > +	if ((p->flags & PF_VCPU) && (irq_count() - hardirq_offset == 0)) {
+> | > +		account_guest_time(p, cputime);
+> | > +		return;
+> | > +	}
+> | >  
+> | >  	p->stime = cputime_add(p->stime, cputime);
+> | >  
+> 
+> Hi Peter,
+> 
+> dont you find 'return (void)foo();' statement a bit strange (as it was in
+> original code)? ;) Am I wrong? /it's night here, so half a brain already
+> tuned off ;)/
 
-(gdb) list *0xffffffff803bffe4
-0xffffffff803bffe4 is in __list_add (lib/list_debug.c:33).
-28              }
-29              if (unlikely(prev->next != next)) {
-30                      printk(KERN_ERR "list_add corruption.
-prev->next should be "
-31                              "next (%p), but was %p. (prev=%p).\n",
-32                              next, prev->next, prev);
-33                      BUG();
-34              }
-35              next->prev = new;
-36              new->next = next;
-37              new->prev = prev;
+void foo(void);
 
-For more on this problem see http://marc.info/?l=linux-kernel&m=120293042005445
+void bar(void)
+{
+	return foo();
+}
 
-I will now try 2.6.25-rc2-mm1.
+Maybe I'm just weird an twisted, but no, I don't find it odd. In my mind
+its consistent with how all other return types function.
 
-Torsten
+Not sure what the C std text says on the matter though.
+
+
