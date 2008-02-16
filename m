@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbYBPGwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754055AbYBPHTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbYBPGwY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:52:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBPGwM
+	id S1754055AbYBPHTk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 02:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbYBPHTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:52:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40198 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750719AbYBPGwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:52:10 -0500
-Date: Fri, 15 Feb 2008 22:46:08 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Theodore Tso <tytso@MIT.EDU>, haveblue@us.ibm.com,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu
-Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
-Message-Id: <20080215224608.fb5d11b7.akpm@linux-foundation.org>
-In-Reply-To: <20080216063129.GA8592@lst.de>
-References: <20080215223721.9E0A088A@kernel>
-	<20080215223730.90A85F4A@kernel>
-	<20080216003219.GA26734@mit.edu>
-	<1203122979.13230.3.camel@nimitz.home.sr71.net>
-	<20080216010030.GC26734@mit.edu>
-	<20080215171119.578bd302.akpm@linux-foundation.org>
-	<20080216063129.GA8592@lst.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 Feb 2008 02:19:31 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:39467 "EHLO smtp4.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbYBPHTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 02:19:30 -0500
+Date: Sat, 16 Feb 2008 09:19:08 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Driver removals
+Message-ID: <20080216071908.GC9962@cs181133002.pp.htv.fi>
+References: <fp08q7$jv0$1@ger.gmane.org> <20080214082547.GJ12383@cs181133002.pp.htv.fi> <47B5E2FD.9060908@tmr.com> <20080215222830.GA9962@cs181133002.pp.htv.fi> <47B6377D.4050502@tmr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47B6377D.4050502@tmr.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 07:31:29 +0100 Christoph Hellwig <hch@lst.de> wrote:
+On Fri, Feb 15, 2008 at 08:08:13PM -0500, Bill Davidsen wrote:
+>...
+> If you don't see an ethical problem in removing a working driver which  
+> is not taking support resources, in order to force people to test and  
+> debug a driver they don't now and never would need, so that it might in  
+> time offer them the same functionality those users already had... then I  
+> can never make you see why technological extortion is evil.
+>...
 
-> On Fri, Feb 15, 2008 at 05:11:19PM -0800, Andrew Morton wrote:
-> > > It would be nice if an initial patch which introduces the new
-> > > functionality you need for r/o bind mounts could get introduced into
-> > > mainline *first*, and then people could add patches that call
-> > > mnt_want_write(), et. al into their trees gradually.
-> > 
-> > Yes, I expect that merging a handful of do-nothing mnt_foo_write()
-> > functions into mainline right now would ease life.
-> > 
-> > > otherwise akpm gets grumpy
-> > 
-> > itym "less than usually cheery"
-> 
-> Haha,
-> 
-> once we put pieces in the first three patches would be useful aswell,
-> to easily catch additions in the next cycle that might be adding
-> NULL-vfsmount calls to dentry_open.
+You miss one basic principle of free software:
 
-hrm, well, how about putting up a complete and suitably-changelogged patch
-series for Linus to look at?  That's be a Dave thing I guess.
+Forks are allowed, so when you don't like the way some software is 
+developed you can always release a version of the software that is in 
+your eyes better.
 
-I wasn't overawed by the initial patch - why not make those stubs inlined
-to truly add zero cost??
+And that's nothing evil, after all each distribution kernel is a fork of 
+the upstream kernel.
 
+Hey, you can even use the 2.6.16 branch *I* do maintain to avoid what 
+you claim was an "ethical problem".
+
+And if you don't like 2.6.16 either for whatever reason there's still no 
+ethical problem but only the technical problem of you not getting your 
+ass up and doing whatever is "better" in your opinion.
+
+After all, free software is not driven by people whining but by people 
+doing stuff.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
