@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbYBPGNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbYBPGNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbYBPGNQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:13:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYBPGND
+	id S1760567AbYBPGNl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:13:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757335AbYBPGN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:13:03 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:40469 "EHLO
+	Sat, 16 Feb 2008 01:13:29 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:56713 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbYBPGNA (ORCPT
+	with ESMTP id S1757112AbYBPGN2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:13:00 -0500
-Date: Sat, 16 Feb 2008 01:12:58 -0500
-Message-ID: <87ejbdo2dx.wl%ysato@users.sourceforge.jp>
+	Sat, 16 Feb 2008 01:13:28 -0500
+Date: Sat, 16 Feb 2008 01:13:27 -0500
+Message-ID: <87d4qxo2d4.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@osdl.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/6] h8300 signal.c typo fix.
+Subject: [PATCH 2/6] h8300 uaccess.h update
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.1
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -25,33 +25,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-typo fix.
+get_user const *ptr access fix.
 
- arch/h8300/kernel/signal.c |    4 ++--
+ include/asm-h8300/uaccess.h |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/h8300/kernel/signal.c b/arch/h8300/kernel/signal.c
-index 62ea12d..cf3472f 100644
---- a/arch/h8300/kernel/signal.c
-+++ b/arch/h8300/kernel/signal.c
-@@ -352,7 +352,7 @@ static void setup_frame (int sig, struct k_sigaction *ka,
- 		ret = (unsigned char *)(ka->sa.sa_restorer);
- 	else {
- 		/* sub.l er0,er0; mov.b #__NR_sigreturn,r0l; trapa #0 */
--		err != __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
-+		err |= __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
- 				  (unsigned long *)(frame->retcode + 0));
- 		err |= __put_user(0x5700, (unsigned short *)(frame->retcode + 4));
- 	}
-@@ -428,7 +428,7 @@ static void setup_rt_frame (int sig, struct k_sigaction *ka, siginfo_t *info,
- 		ret = (unsigned char *)(ka->sa.sa_restorer);
- 	else {
- 		/* sub.l er0,er0; mov.b #__NR_sigreturn,r0l; trapa #0 */
--		err != __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
-+		err |= __put_user(0x1a80f800 + (__NR_sigreturn & 0xff),
- 				  (unsigned long *)(frame->retcode + 0));
- 		err |= __put_user(0x5700, (unsigned short *)(frame->retcode + 4));
- 	}
+diff --git a/include/asm-h8300/uaccess.h b/include/asm-h8300/uaccess.h
+index ebe58c6..a22350e 100644
+--- a/include/asm-h8300/uaccess.h
++++ b/include/asm-h8300/uaccess.h
+@@ -91,7 +91,7 @@ extern int __put_user_bad(void);
+ #define get_user(x, ptr)					\
+ ({								\
+     int __gu_err = 0;						\
+-    typeof(*(ptr)) __gu_val = 0;				\
++    uint32_t __gu_val = 0;				\
+     switch (sizeof(*(ptr))) {					\
+     case 1:							\
+     case 2:							\
+@@ -106,7 +106,7 @@ extern int __put_user_bad(void);
+ 	__gu_err = __get_user_bad();				\
+ 	break;							\
+     }								\
+-    (x) = __gu_val;						\
++    (x) = (typeof(*(ptr)))__gu_val;				\
+     __gu_err;							\
+ })
+ #define __get_user(x, ptr) get_user(x, ptr)
 -- 
 1.5.4.1
 
