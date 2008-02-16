@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbYBPGiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbYBPGwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759629AbYBPGiY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbYBPGiP
+	id S1753663AbYBPGwY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:52:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBPGwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:38:15 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:60588 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbYBPGiO (ORCPT
+	Sat, 16 Feb 2008 01:52:12 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40198 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750719AbYBPGwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 01:38:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=l7NGB8AVSWz2qQQC10mOl5UqX+qqtyc1HMJG2vXhePggeT/qGl6RK0uSxp0e8x0s6MHVrXet/laxZdjDu8FJWHEk7Y0qCZGPQ3KQ61xF+UgBhcIC8IZIwDlhOTOw2j6zaFZbpp1WKSWIuBzkZ5hUYMFhz7r79rQnOlNj1AiBRlI=
-Message-ID: <f0cc3e3e0802152238t59498e3bv229d02ee3d96cea7@mail.gmail.com>
-Date: Sat, 16 Feb 2008 17:38:13 +1100
-From: "Omar Kilani" <omar.kilani@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: aacraid: Host adapter reset request. SCSI hang ?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 Feb 2008 01:52:10 -0500
+Date: Fri, 15 Feb 2008 22:46:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Theodore Tso <tytso@MIT.EDU>, haveblue@us.ibm.com,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+Message-Id: <20080215224608.fb5d11b7.akpm@linux-foundation.org>
+In-Reply-To: <20080216063129.GA8592@lst.de>
+References: <20080215223721.9E0A088A@kernel>
+	<20080215223730.90A85F4A@kernel>
+	<20080216003219.GA26734@mit.edu>
+	<1203122979.13230.3.camel@nimitz.home.sr71.net>
+	<20080216010030.GC26734@mit.edu>
+	<20080215171119.578bd302.akpm@linux-foundation.org>
+	<20080216063129.GA8592@lst.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
+On Sat, 16 Feb 2008 07:31:29 +0100 Christoph Hellwig <hch@lst.de> wrote:
 
-We're having issues with our Adaptec RAID controller and I was
-wondering if anyone would be able to advise on how to go about
-resolving them. :)
+> On Fri, Feb 15, 2008 at 05:11:19PM -0800, Andrew Morton wrote:
+> > > It would be nice if an initial patch which introduces the new
+> > > functionality you need for r/o bind mounts could get introduced into
+> > > mainline *first*, and then people could add patches that call
+> > > mnt_want_write(), et. al into their trees gradually.
+> > 
+> > Yes, I expect that merging a handful of do-nothing mnt_foo_write()
+> > functions into mainline right now would ease life.
+> > 
+> > > otherwise akpm gets grumpy
+> > 
+> > itym "less than usually cheery"
+> 
+> Haha,
+> 
+> once we put pieces in the first three patches would be useful aswell,
+> to easily catch additions in the next cycle that might be adding
+> NULL-vfsmount calls to dentry_open.
 
-The system:
+hrm, well, how about putting up a complete and suitably-changelogged patch
+series for Linus to look at?  That's be a Dave thing I guess.
 
-RHEL 5.1 x86_64
-Kernel 2.6.18-53.1.4.el5
-aacraid 1.1-5[2437]-mh4 (The default module shipped with the RHEL kernel)
+I wasn't overawed by the initial patch - why not make those stubs inlined
+to truly add zero cost??
 
-The controller:
 
-Adaptec 3405 + BBU
-
-BIOS : 5.2-0 (12415)
-Firmware : 5.2-0 (12415)
-Driver : 1.1-5 (2437)
-Boot Flash : 5.2-0 (12415)
-
-The disks:
-
-4x Seagate ST373455SS (Firmware 0002) in a RAID10
-
-The issue:
-
-We continually get what seem to be adapter lockups with the error:
-
-aacraid: Host adapter abort request (3,0,0,0)
-aacraid: Host adapter reset request. SCSI hang ?
-
-The controller hangs for a while, recovers, and everything continues normally.
-
-We've tried a replacement controller and a replacement set of disks
-(we swapped out all 4 disks) to no avail.
-
-The problem seems (?) to happen during spikes of IO -- like when the
-PostgreSQL autovacuum daemon kicks in. But not always.
-
->From searching around LKML and Google, this seems to be a fairly
-common issue, but I'm not quite clear on the cause (hardware?
-software? firmware?) or the resolution.
-
-Any help would be greatly appreciated.
-
-Thanks!
-
-Regards,
-Omar
