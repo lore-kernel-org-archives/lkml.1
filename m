@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbYBPGYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761167AbYBPGYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763269AbYBPGYb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 01:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbYBPGXm
+	id S1761167AbYBPGYy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 01:24:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYBPGXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 01:23:42 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:42612 "EHLO
+	Sat, 16 Feb 2008 01:23:43 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:57232 "EHLO
 	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbYBPGXk (ORCPT
+	with ESMTP id S1752546AbYBPGXk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 16 Feb 2008 01:23:40 -0500
-Date: Sat, 16 Feb 2008 01:22:17 -0500
-Message-ID: <87wsp5zahy.wl%ysato@users.sourceforge.jp>
+Date: Sat, 16 Feb 2008 01:23:00 -0500
+Message-ID: <87tzk9zagr.wl%ysato@users.sourceforge.jp>
 From: Yoshinori Sato <ysato@users.sourceforge.jp>
 To: Andrew Morton <akpm@osdl.org>
 Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/6] h8300 uaccess.h update
-In-Reply-To: <87d4qxo2d4.wl%ysato@users.sourceforge.jp>
-References: <87d4qxo2d4.wl%ysato@users.sourceforge.jp>
+Subject: Re: [PATCH 4/6] h8300 CONFIG_KALLSYMS fix
+In-Reply-To: <87abm1o2ck.wl%ysato@users.sourceforge.jp>
+References: <87abm1o2ck.wl%ysato@users.sourceforge.jp>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.9 (=?ISO-8859-4?Q?Goj=F2?=) APEL/10.7 Emacs/22.1
  (x86_64-pc-linux-gnu) MULE/5.0 (SAKAKI)
@@ -29,36 +29,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 
-At Sat, 16 Feb 2008 01:13:27 -0500,
+At Sat, 16 Feb 2008 01:13:47 -0500,
 Yoshinori Sato wrote:
 > 
-> get_user const *ptr access fix.
+> Please comment "C_SYMBOL_PREFIX".
 > 
->  include/asm-h8300/uaccess.h |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+>  Makefile           |    3 ++-
+>  arch/h8300/Kconfig |    4 ++++
+>  2 files changed, 6 insertions(+), 1 deletions(-)
 > 
-> diff --git a/include/asm-h8300/uaccess.h b/include/asm-h8300/uaccess.h
-> index ebe58c6..a22350e 100644
-> --- a/include/asm-h8300/uaccess.h
-> +++ b/include/asm-h8300/uaccess.h
-> @@ -91,7 +91,7 @@ extern int __put_user_bad(void);
->  #define get_user(x, ptr)					\
->  ({								\
->      int __gu_err = 0;						\
-> -    typeof(*(ptr)) __gu_val = 0;				\
-> +    uint32_t __gu_val = 0;				\
->      switch (sizeof(*(ptr))) {					\
->      case 1:							\
->      case 2:							\
-> @@ -106,7 +106,7 @@ extern int __put_user_bad(void);
->  	__gu_err = __get_user_bad();				\
->  	break;							\
->      }								\
-> -    (x) = __gu_val;						\
-> +    (x) = (typeof(*(ptr)))__gu_val;				\
->      __gu_err;							\
->  })
->  #define __get_user(x, ptr) get_user(x, ptr)
+> diff --git a/Makefile b/Makefile
+> index c162370..745e31f 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -751,7 +751,8 @@ endef
+>  # Generate .S file with all kernel symbols
+>  quiet_cmd_kallsyms = KSYM    $@
+>        cmd_kallsyms = $(NM) -n $< | $(KALLSYMS) \
+> -                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) > $@
+> +                     $(if $(CONFIG_KALLSYMS_ALL),--all-symbols) \
+> +                     $(if $(CONFIG_C_SYMBOL_PREFIX),--symbol-prefix='_') > $@
+>  
+>  .tmp_kallsyms1.o .tmp_kallsyms2.o .tmp_kallsyms3.o: %.o: %.S scripts FORCE
+>  	$(call if_changed_dep,as_o_S)
+> diff --git a/arch/h8300/Kconfig b/arch/h8300/Kconfig
+> index 085dc6e..2804edd 100644
+> --- a/arch/h8300/Kconfig
+> +++ b/arch/h8300/Kconfig
+> @@ -87,6 +87,10 @@ config HZ
+>  	int
+>  	default 100
+>  
+> +config C_SYMBOL_PREFIX
+> +	bool
+> +	default y
+> +
+>  source "init/Kconfig"
+>  
+>  source "arch/h8300/Kconfig.cpu"
 > -- 
 > 1.5.4.1
 > 
