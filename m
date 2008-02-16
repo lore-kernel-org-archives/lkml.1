@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbYBPQQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757743AbYBPQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbYBPQQn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 11:16:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754352AbYBPQQb
+	id S1757743AbYBPQUS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:20:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753886AbYBPQUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 11:16:31 -0500
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:55147 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbYBPQQa (ORCPT
+	Sat, 16 Feb 2008 11:20:05 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60251 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753647AbYBPQUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 11:16:30 -0500
-Message-ID: <47B70C5A.8070202@tiscali.nl>
-Date: Sat, 16 Feb 2008 17:16:26 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 16 Feb 2008 11:20:01 -0500
+Date: Sat, 16 Feb 2008 08:19:58 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net, dipankar@in.ibm.com
+Subject: Re: [PATCH] Add list_for_each_rcu to features-removal list
+Message-ID: <20080216161958.GC27468@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080128122500.GA32723@linux.vnet.ibm.com> <20080216084723.GD9962@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: schwidefsky@de.ibm.com, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       linux390@de.ibm.com
-CC: linux-s390@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] drivers/s390/block/dcssblk.c: Fix Unlikely(x) != y
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080216084723.GD9962@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch below was not yet tested. If it's correct as it is, please comment.
----
-Fix Unlikely(x) != y
+On Sat, Feb 16, 2008 at 10:47:23AM +0200, Adrian Bunk wrote:
+> On Mon, Jan 28, 2008 at 04:25:00AM -0800, Paul E. McKenney wrote:
+> > Hello!
+> > 
+> > The list_for_each_entry_rcu() primitive should be used instead of
+> > list_for_each_rcu(), as the former is easier to use and provides
+> > better type safety.  This patch therefore adds list_for_each_rcu()
+> > to the Documentation/feature-removal-schedule.txt file (for mid-2008)
+> > and marks its comment header deprecated.
+> > 
+> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > ---
+> > 
+> >  Documentation/feature-removal-schedule.txt |   10 ++++++++++
+> >  include/linux/list.h                       |    5 ++++-
+> >  2 files changed, 14 insertions(+), 1 deletion(-)
+> > 
+> > diff -urpNa -X dontdiff linux-2.6.24/Documentation/feature-removal-schedule.txt linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt
+> > --- linux-2.6.24/Documentation/feature-removal-schedule.txt	2008-01-24 14:58:37.000000000 -0800
+> > +++ linux-2.6.24-dep-lfeRCU/Documentation/feature-removal-schedule.txt	2008-01-28 04:00:49.000000000 -0800
+> > @@ -333,3 +333,13 @@ Why:	This driver has been marked obsolet
+> >  Who:	Stephen Hemminger <shemminger@linux-foundation.org>
+> >  
+> >  ---------------------------
+> > +
+> > +What:	list_for_each_rcu() primitive
+> > +When:	July 2008
+> > +Files:	include/linux/list.h
+> > +Why:	The list_for_each_entry_rcu() primitive should be used instead,
+> > +	as it is less error-prone and provides better type safety.
+> > +Who:	Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> >...
+> 
+> Declaring something as deprecated doesn't automatically convert the 
+> in-kernel users.
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
----
-diff --git a/drivers/s390/block/dcssblk.c b/drivers/s390/block/dcssblk.c
-index 3faf053..e6c94db 100644
---- a/drivers/s390/block/dcssblk.c
-+++ b/drivers/s390/block/dcssblk.c
-@@ -666,7 +666,7 @@ dcssblk_make_request(struct request_queue *q, struct bio *bio)
- 		page_addr = (unsigned long)
- 			page_address(bvec->bv_page) + bvec->bv_offset;
- 		source_addr = dev_info->start + (index<<12) + bytes_done;
--		if (unlikely(page_addr & 4095) != 0 || (bvec->bv_len & 4095) != 0)
-+		if (unlikely((page_addr & 4095) != 0) || (bvec->bv_len & 4095) != 0)
- 			// More paranoia.
- 			goto fail;
- 		if (bio_data_dir(bio) == READ) {
+Understood.
+
+> And once there are no in-kernel users left you can kill it immediately.
+
+Hmmm...  What is the purpose of Documentation/feature-removal-schedule.txt
+in that case?
+
+> The only working way for getting rid of list_for_each_rcu() is:
+> - send patches for all in-kernel usages to the maintainers of the code
+>   in question now
+
+That has happened at least once.
+
+> - once all of these patches have entered Linus' tree (which might not
+>   be before the 2.6.26 merge window) you can remove list_for_each_rcu()
+
+So your approach would be to mark the macro obsolete to prevent additional
+uses in the meantime?
+
+							Thanx, Paul
