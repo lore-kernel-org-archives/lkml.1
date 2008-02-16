@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbYBPNZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbYBPNbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbYBPNZi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 08:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbYBPNZK
+	id S1756117AbYBPNbR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 08:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbYBPNbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 08:25:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45071 "EHLO
+	Sat, 16 Feb 2008 08:31:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54154 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752866AbYBPNZH (ORCPT
+	with ESMTP id S1753078AbYBPNbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 08:25:07 -0500
-Date: Sat, 16 Feb 2008 08:25:02 -0500
+	Sat, 16 Feb 2008 08:31:03 -0500
+Date: Sat, 16 Feb 2008 08:31:01 -0500
 From: Christoph Hellwig <hch@infradead.org>
-To: Takashi Sato <t-sato@yk.jp.nec.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Andreas Dilger <adilger@sun.com>,
-       Theodore Tso <tytso@MIT.EDU>, linux-ext4@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature
-Message-ID: <20080216132502.GB1344@infradead.org>
-References: <20080125195938t-sato@mail.jp.nec.com> <20080125121851.GA3361@dmon-lap.sw.ru> <20080125133329.GB8184@mit.edu> <01cd01c86a40$21d49410$41a8400a@bsd.tnes.nec.co.jp> <20080208132657.GE3120@webber.adilger.int> <20080208145911.GA4257@infradead.org> <79B050214DA541F9A8B193C7AACC3C7B@nsl.ad.nec.co.jp>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH] sysv: [bl]e*_add_cpu conversion
+Message-ID: <20080216133101.GA26249@infradead.org>
+References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com> <1202857582-15450-17-git-send-email-marcin.slusarz@gmail.com> <20080214070437.GA15395@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <79B050214DA541F9A8B193C7AACC3C7B@nsl.ad.nec.co.jp>
+In-Reply-To: <20080214070437.GA15395@infradead.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -30,24 +28,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 08:51:15PM +0900, Takashi Sato wrote:
-> So XFS_IOC_FREEZE and XFS_IOC_THAW cannot be lifted to generic code simply.
-> I think we should create new generic numbers for freeze and thaw
+On Thu, Feb 14, 2008 at 02:04:37AM -0500, Christoph Hellwig wrote:
+> > diff --git a/fs/sysv/sysv.h b/fs/sysv/sysv.h
+> > index 42d51d1..38ebe3f 100644
+> > --- a/fs/sysv/sysv.h
+> > +++ b/fs/sysv/sysv.h
+> > @@ -217,9 +217,9 @@ static inline __fs32 fs32_add(struct sysv_sb_info *sbi, __fs32 *n, int d)
+> >  	if (sbi->s_bytesex == BYTESEX_PDP)
+> >  		*(__u32*)n = PDP_swab(PDP_swab(*(__u32*)n)+d);
+> >  	else if (sbi->s_bytesex == BYTESEX_LE)
+> > -		*(__le32*)n = cpu_to_le32(le32_to_cpu(*(__le32*)n)+d);
+> > +		le32_add_cpu((__le32 *)n, d);
+> >  	else
+> > -		*(__be32*)n = cpu_to_be32(be32_to_cpu(*(__be32*)n)+d);
+> > +		be32_add_cpu((__be32 *)n, d);
+> >  	return *n;
+> 
+> but now that you've named the be and le primitives *_add_cpu it would
+> be nice if you could submit a second patch to sysv to rename fs*_add
+> to fs*_add_cpu aswell.
 
-Actually we've lifted specific ioctls to the generic layer before all
-the time in drivers.  That's the only way to make functionality that was
-specific to a single driver (or in this case filesystem) generic.  If
-the numbering issues confuses you make sure to add a big comment
-describing it
-
-> And xfs_freeze calls XFS_IOC_FREEZE with a magic number 1, but what is 1?
-
-As Eric said it's ignored.
-
-> Instead, I'd like the sec to timeout on freeze API in order to thaw
-> the filesystem automatically.  It can prevent a filesystem from staying
-> frozen forever.
-> (Because a freezer may cause a deadlock by accessing the frozen filesystem.)
-
-Timeout based locking is generally a horrible idea, there's a reason
-we don't have any primitives for that in the kernel :)
+Btw, the same applies to ufs aswell as it's using the same construct.
