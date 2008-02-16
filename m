@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYBPOwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbYBPOws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbYBPOwR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 09:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbYBPOwF
+	id S1758484AbYBPOws (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 09:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758077AbYBPOwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 09:52:05 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:34199 "EHLO mgw1.diku.dk"
+	Sat, 16 Feb 2008 09:52:38 -0500
+Received: from mgw1.diku.dk ([130.225.96.91]:34234 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751916AbYBPOwD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 09:52:03 -0500
-Date: Sat, 16 Feb 2008 15:51:59 +0100 (MET)
+	id S1753312AbYBPOwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 09:52:36 -0500
+Date: Sat, 16 Feb 2008 15:52:33 +0100 (MET)
 From: Julia Lawall <julia@diku.dk>
-To: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+To: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/4] : More use DIV_ROUND_UP
-Message-ID: <Pine.LNX.4.58.0802161549420.1185@pc-041.diku.dk>
+Subject: [PATCH 4/4] : More use DIV_ROUND_UP
+Message-ID: <Pine.LNX.4.58.0802161552070.1185@pc-041.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -66,64 +67,49 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/drivers/usb/host/r8a66597-hcd.c b/drivers/usb/host/r8a66597-hcd.c
---- a/drivers/usb/host/r8a66597-hcd.c 2007-12-31 08:43:30.000000000 +0100
-+++ b/drivers/usb/host/r8a66597-hcd.c 2008-02-15 22:31:12.000000000 +0100
-@@ -959,9 +959,9 @@ static void prepare_packet_read(struct r
- 				r8a66597_write(r8a66597, TRCLR,
- 						td->pipe->pipetre);
- 				r8a66597_write(r8a66597,
--						(urb->transfer_buffer_length
--						+ td->maxpacket - 1)
--						/ td->maxpacket,
-+						DIV_ROUND_UP
-+						  (urb->transfer_buffer_length,
-+						   td->maxpacket),
- 						td->pipe->pipetrn);
- 				r8a66597_bset(r8a66597, TRENB,
- 						td->pipe->pipetre);
-diff -u -p a/drivers/usb/misc/usbtest.c b/drivers/usb/misc/usbtest.c
---- a/drivers/usb/misc/usbtest.c 2008-02-02 15:28:32.000000000 +0100
-+++ b/drivers/usb/misc/usbtest.c 2008-02-15 22:31:16.000000000 +0100
-@@ -1403,7 +1403,7 @@ static struct urb *iso_alloc_urb (
- 		return NULL;
- 	maxp = 0x7ff & le16_to_cpu(desc->wMaxPacketSize);
- 	maxp *= 1 + (0x3 & (le16_to_cpu(desc->wMaxPacketSize) >> 11));
--	packets = (bytes + maxp - 1) / maxp;
-+	packets = DIV_ROUND_UP(bytes, maxp);
+diff -u -p a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
+--- a/drivers/s390/net/claw.c 2008-02-02 15:28:31.000000000 +0100
++++ b/drivers/s390/net/claw.c 2008-02-15 22:29:44.000000000 +0100
+@@ -2114,8 +2114,7 @@ init_ccw_bk(struct net_device *dev)
+         */
+         ccw_blocks_perpage= PAGE_SIZE /  CCWBK_SIZE;
+         ccw_pages_required=
+-		(ccw_blocks_required+ccw_blocks_perpage -1) /
+-			 ccw_blocks_perpage;
++		DIV_ROUND_UP(ccw_blocks_required, ccw_blocks_perpage);
 
- 	urb = usb_alloc_urb (packets, GFP_KERNEL);
- 	if (!urb)
-diff -u -p a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
---- a/drivers/usb/serial/ftdi_sio.c 2008-02-02 15:28:32.000000000 +0100
-+++ b/drivers/usb/serial/ftdi_sio.c 2008-02-15 22:31:19.000000000 +0100
-@@ -1380,7 +1380,7 @@ static void ftdi_write_bulk_callback (st
- 	data_offset = priv->write_offset;
- 	if (data_offset > 0) {
- 		/* Subtract the control bytes */
--		countback -= (data_offset * ((countback + (PKTSZ - 1)) / PKTSZ));
-+		countback -= (data_offset * DIV_ROUND_UP(countback, PKTSZ));
- 	}
- 	spin_lock_irqsave(&priv->tx_lock, flags);
- 	--priv->tx_outstanding_urbs;
-@@ -1480,7 +1480,7 @@ static void ftdi_read_bulk_callback (str
+ #ifdef DEBUGMSG
+         printk(KERN_INFO "%s: %s() > ccw_blocks_perpage=%d\n",
+@@ -2133,12 +2132,12 @@ init_ccw_bk(struct net_device *dev)
+          */
+         if (privptr->p_env->read_size < PAGE_SIZE) {
+             claw_reads_perpage= PAGE_SIZE / privptr->p_env->read_size;
+-            claw_read_pages= (privptr->p_env->read_buffers +
+-	    	claw_reads_perpage -1) / claw_reads_perpage;
++	     claw_read_pages=
++		DIV_ROUND_UP(privptr->p_env->read_buffers, claw_reads_perpage);
+          }
+          else {       /* > or equal  */
+             privptr->p_buff_pages_perread=
+-	    	(privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
++		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
+             claw_read_pages=
+ 	    	privptr->p_env->read_buffers * privptr->p_buff_pages_perread;
+          }
+@@ -2146,13 +2145,13 @@ init_ccw_bk(struct net_device *dev)
+             claw_writes_perpage=
+ 	    	PAGE_SIZE / privptr->p_env->write_size;
+             claw_write_pages=
+-	    	(privptr->p_env->write_buffers + claw_writes_perpage -1) /
+-			claw_writes_perpage;
++		DIV_ROUND_UP(privptr->p_env->write_buffers,
++			     claw_writes_perpage);
 
- 	/* count data bytes, but not status bytes */
- 	countread = urb->actual_length;
--	countread -= 2 * ((countread + (PKTSZ - 1)) / PKTSZ);
-+	countread -= 2 * DIV_ROUND_UP(countread, PKTSZ);
- 	spin_lock_irqsave(&priv->rx_lock, flags);
- 	priv->rx_bytes += countread;
- 	spin_unlock_irqrestore(&priv->rx_lock, flags);
-diff -u -p a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
---- a/drivers/usb/serial/io_ti.c 2008-02-02 15:28:32.000000000 +0100
-+++ b/drivers/usb/serial/io_ti.c 2008-02-15 22:31:21.000000000 +0100
-@@ -655,7 +655,7 @@ static void TIChasePort(struct edgeport_
- 	/* (TIIsTxActive doesn't seem to wait for the last byte) */
- 	if ((baud_rate=port->baud_rate) == 0)
- 		baud_rate = 50;
--	msleep(max(1,(10000+baud_rate-1)/baud_rate));
-+	msleep(max(1, DIV_ROUND_UP(10000, baud_rate)));
- }
-
- static int TIChooseConfiguration (struct usb_device *dev)
+         }
+         else {      /* >  or equal  */
+             privptr->p_buff_pages_perwrite=
+-	    	 (privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
++		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
+             claw_write_pages=
+ 	     	privptr->p_env->write_buffers * privptr->p_buff_pages_perwrite;
+         }
