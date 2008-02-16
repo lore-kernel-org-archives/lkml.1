@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbYBPUQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbYBPUUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbYBPUQO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 15:16:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757242AbYBPUP4
+	id S1759265AbYBPUUh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 15:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYBPUUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 15:15:56 -0500
-Received: from fallback.mail.ru ([194.67.57.14]:9511 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757122AbYBPUPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 15:15:55 -0500
-Date: Sat, 16 Feb 2008 23:16:53 +0300
-From: Evgeniy Dushistov <dushistov@mail.ru>
-To: Roel Kluin <12o3l@tiscali.nl>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fs/ufs/util.h 2nd parameter of fs32_to_cpu is not
-	boolean
-Message-ID: <20080216201650.GA18444@rain>
-Mail-Followup-To: Roel Kluin <12o3l@tiscali.nl>,
-	lkml <linux-kernel@vger.kernel.org>,
-	Mark Fortescue <mark@mtfhpc.demon.co.uk>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <47B73BA7.1000004@tiscali.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B73BA7.1000004@tiscali.nl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-Spam: Not detected
+	Sat, 16 Feb 2008 15:20:30 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35713 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750756AbYBPUU3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 15:20:29 -0500
+Date: Sat, 16 Feb 2008 20:12:06 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.25-rc2 regression: LVM cannot find volume group
+Message-ID: <20080216201206.1452cfe7@core>
+In-Reply-To: <47B73616.9050303@imap.cc>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	<47B73616.9050303@imap.cc>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 08:38:15PM +0100, Roel Kluin wrote:
-> from: fs/befs/endian.h +33
-> static inline u32
-> fs32_to_cpu(const struct super_block *sb, fs32 n)
-> {
->         if (BEFS_SB(sb)->byte_order == BEFS_BYTESEX_LE)
->                 return le32_to_cpu((__force __le32)n);
->         else
->                 return be32_to_cpu((__force __be32)n);
-> }
-> 
-> The 2nd parameter is not boolean
-> ---
-> Test the return value, rather than passing a boolean
-> 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-> ---
-> diff --git a/fs/ufs/util.h b/fs/ufs/util.h
-> index b26fc4d..23ceed8 100644
-> --- a/fs/ufs/util.h
-> +++ b/fs/ufs/util.h
-> @@ -58,7 +58,7 @@ ufs_set_fs_state(struct super_block *sb, struct ufs_super_block_first *usb1,
->  {
->  	switch (UFS_SB(sb)->s_flags & UFS_ST_MASK) {
->  	case UFS_ST_SUNOS:
-> -		if (fs32_to_cpu(sb, usb3->fs_postblformat == UFS_42POSTBLFMT)) {
-> +		if (fs32_to_cpu(sb, usb3->fs_postblformat) == UFS_42POSTBLFMT) {
->  			usb1->fs_u0.fs_sun.fs_state = cpu_to_fs32(sb, value);
->  			break;
->  		}
+On Sat, 16 Feb 2008 20:14:30 +0100
+Tilman Schmidt <tilman@imap.cc> wrote:
 
-Yeah, in origin patch, which introduced this code was the similar
-misprint. It is sad that after review only one was fixed,
-and the second go to mainline.
+> 2.6.25-rc2 fails to bring up my openSUSE 10.3 PC because LVM
+> cannot find the volume group containing the root file system.
+> 2.6.25-rc1 has the same problem, 2.6.24 works fine.
 
-Acked-by: Evgeniy Dushistov <dushistov@mail.ru>
-
--- 
-/Evgeniy
-
+Compile in SCSI disk support. Modular even if loaded in initrd it seems
+to have broken somewhere.
