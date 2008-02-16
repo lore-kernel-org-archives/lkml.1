@@ -1,103 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbYBPSj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbYBPSlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbYBPSj6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 13:39:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYBPSju
+	id S1759584AbYBPSlf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 13:41:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756630AbYBPSlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 13:39:50 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45822 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbYBPSjt (ORCPT
+	Sat, 16 Feb 2008 13:41:25 -0500
+Received: from fk-out-0910.google.com ([209.85.128.185]:8018 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756336AbYBPSlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 13:39:49 -0500
-Date: Sat, 16 Feb 2008 10:39:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Willy Tarreau <w@1wt.eu>, Roel Kluin <12o3l@tiscali.nl>,
-       linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080216103927.2a02352b@laptopd505.fenrus.org>
-In-Reply-To: <47B72BFE.9060302@am.sony.com>
-References: <47B70A61.9030306@tiscali.nl>
-	<20080216092552.325e5726@laptopd505.fenrus.org>
-	<20080216173315.GU8953@1wt.eu>
-	<20080216094226.1e8eede1@laptopd505.fenrus.org>
-	<47B72BFE.9060302@am.sony.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 16 Feb 2008 13:41:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
+        b=sFgN1eHI04wf75YX6YIovo0UZJZD0T5rJrDCnn6tQHXwOzxnem7HY8Ur96OzDPR3+gUXfFfn+QeMhikrV29dKM4mCd7BHG0sYK2MGP1aBsmhGXpp3hIVpERxMz2rDp6rnyQnJ+LKdjHU+gTIzbbfhQ9ZoxQTlpB7HvGJSILcgYY=
+Date: Sat, 16 Feb 2008 19:41:08 +0100
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Optiarc DVD RW AD-5200A audio playing
+Message-ID: <20080216184108.GT13446@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Stefan Bader <stefan.bader@canonical.com>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	Jens Axboe <jens.axboe@oracle.com>
+References: <47B5EDB7.5050709@canonical.com> <200802161848.24475.bzolnier@gmail.com> <20080216180406.GR13446@gollum.tnic> <200802161923.58313.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802161923.58313.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+From: Borislav Petkov <petkovbb@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 10:31:26 -0800
-Geoff Levand <geoffrey.levand@am.sony.com> wrote:
-
-> On 02/16/2008 09:42 AM, Arjan van de Ven wrote:
-> > On Sat, 16 Feb 2008 18:33:16 +0100
-> > Willy Tarreau <w@1wt.eu> wrote:
+On Sat, Feb 16, 2008 at 07:23:58PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> On Saturday 16 February 2008, Borislav Petkov wrote:
+> > On Sat, Feb 16, 2008 at 06:48:24PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > On Saturday 16 February 2008, Borislav Petkov wrote:
+> > > > On Sat, Feb 16, 2008 at 04:24:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > > > > 
+> > > > > Hi,
+> > > > > 
+> > > > > On Saturday 16 February 2008, Borislav Petkov wrote:
+> > > > > > On Fri, Feb 15, 2008 at 02:53:27PM -0500, Stefan Bader wrote:
+> > > > > > > Hello Borislav,
+> > > > > > > 
+> > > > > > > I worked on a problem with an DVD driver (model=Optiarc DVD RW AD-5200A)
+> > > > > > > which obviously has the same problem as some Matshita drives. The
+> > > > > > > following patch was reported to enabled audio playing on this drive.
+> > > > > > > Would this approach be suitable for upstream or are there other
+> > > > > > > solutions to this problem?
+> > > > > > > 
+> > > > > > > Regards,
+> > > > > > > Stefan
+> > > > > > > 
+> > > > > > > --- a/drivers/ide/ide-cd.c
+> > > > > > > +++ b/drivers/ide/ide-cd.c
+> > > > > > > @@ -2988,7 +2988,8 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
+> > > > > > >  	if (strcmp(drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
+> > > > > > >  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
+> > > > > > >  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8176") == 0 ||
+> > > > > > > -	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0)
+> > > > > > > +	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0 ||
+> > > > > > > +	    strcmp(drive->id->model, "Optiarc DVD RW AD-5200A") == 0)
+> > > > > > >  		CDROM_CONFIG_FLAGS(drive)->audio_play = 1;
+> > > > > > > 
+> > > > > > >  #if ! STANDARD_ATAPI
+> > > > > > 
+> > > > > > Hi Stefan,
+> > > > > > 
+> > > > > > just to make sure that the audioplay bit is not set in the capabilities page,
+> > > > > > can you please try the following patch applied against 2.6.25-rc2 and send me
+> > > > > > the output. Thanks!
+> > > > > > 
+> > > > > > @Bart: by the way, this cdi->mask thingy is kinda unintuitive doing double
+> > > > > > negation to check whether a feature is supported or not. Yeah, this comes from
+> > > > > > "above," i.e. uniform cdrom layer. But still, shouldn't we use a cdi->caps_flags
+> > > > > > or something similar instead, which mirrors the caps page bits setting?
+> > > > > 
+> > > > > It seems so (at least having negative flags is very unintuitive) but they
+> > > > > might be some reason for this ugliness, Jens?
+> > > > > 
+> > > > > [ Please also remember that since cdrom layer is _uniform_ it may be not
+> > > > >   possible and/or desirable to have 1-1 mapping between caps page bits
+> > > > >   and the future cdi->caps_flags. ]
+> > > > > 
+> > > > > > commit 435f0f4496a1b32af2d542f43b2370a890fe2f83
+> > > > > > Author: Borislav Petkov <petkovbb@gmail.com>
+> > > > > > Date:   Sat Feb 16 09:56:36 2008 +0100
+> > > > > > 
+> > > > > >     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
+> > > > > >     
+> > > > > >     Reported-by: Stefan Bader <stefan.bader@canonical.com>
+> > > > > >     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> > > > > > 
+> > > > > > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> > > > > > index f77db6b..2c9d06e 100644
+> > > > > > --- a/drivers/ide/ide-cd.c
+> > > > > > +++ b/drivers/ide/ide-cd.c
+> > > > > > @@ -1750,6 +1750,10 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
+> > > > > >  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
+> > > > > >  	if (buf[8 + 3] & 0x10)
+> > > > > >  		cdi->mask &= ~CDC_DVD_R;
+> > > > > > +	if (!(buf[8 + 4] & 0x01)) {
+> > > > > 
+> > > > > Hmm, shouldn't there be '&& (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK)'
+> > > > > to prevent false positives?
+> > > > 
+> > > > I wanted to see whether the caps page reports the audioplay bit off...
+> > > 
+> > > we still need IDE_CD_FLAG_PLAY_AUDIO_OK flag to be _set_ to enable the quirk
+> > > 
+> > > > > 
+> > > > > > +		printk(KERN_INFO "ide-cd: audio play not advertised in caps page,"
+> > > > > 
+> > > > > Would be nice to also printk() the device name.
+> > > > 
+> > > > ... but printing the device model is actually a good idea and this will rule out
+> > > > false positives, so Stefan, please drop the previous patch and test the updated
+> > > > one below. Thanks.
+> > > > 
+> > > > 
+> > > > commit 6cc44b0ce5c9270b15d456eb9ffa91b855e4e0d0
+> > > > Author: Borislav Petkov <petkovbb@gmail.com>
+> > > > Date:   Sat Feb 16 09:56:36 2008 +0100
+> > > > 
+> > > >     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
+> > > >     
+> > > >     Reported-by: Stefan Bader <stefan.bader@canonical.com>
+> > > >     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> > > > 
+> > > > diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> > > > index f77db6b..4c9984f 100644
+> > > > --- a/drivers/ide/ide-cd.c
+> > > > +++ b/drivers/ide/ide-cd.c
+> > > > @@ -1750,6 +1750,11 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
+> > > >  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
+> > > >  	if (buf[8 + 3] & 0x10)
+> > > >  		cdi->mask &= ~CDC_DVD_R;
+> > > > +	if (!(buf[8 + 4] & 0x01)) {
+> > > > +		printk(KERN_INFO "ide-cd: audio play not advertised in caps "
+> > > > +				"page for drive model [%s], enabling quirk.\n",
+> > > > +				drive->id->model);
+> > > 
+> > > if IDE_CD_FLAG_PLAY_AUDIO_OK flag is not set the above message is _bogus_
+> > > (because the quirk won't be enabled)
+> > > 
+> > > [ how's about just deleting the whole printk() to preserve simplicity? ]
+> > > 
+> > > > +	}
+> > > >  	if ((buf[8 + 4] & 0x01) || (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK))
+> > > >  		cdi->mask &= ~CDC_PLAY_AUDIO;
+> > > >  
+> > > > @@ -1929,6 +1934,7 @@ static const struct cd_list_entry ide_cd_quirks_list[] = {
+> > > >  	{ "MATSHITADVD-ROM SR-8186", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
+> > > >  	{ "MATSHITADVD-ROM SR-8176", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
+> > > >  	{ "MATSHITADVD-ROM SR-8174", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
+> > > > +	{ "Optiarc DVD RW AD-5200A", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK      },
 > > 
-> >> On Sat, Feb 16, 2008 at 09:25:52AM -0800, Arjan van de Ven wrote:
-> >> > On Sat, 16 Feb 2008 17:08:01 +0100
-> >> > Roel Kluin <12o3l@tiscali.nl> wrote:
-> >> > 
-> >> > > The patch below was not yet tested. If it's correct as it is,
-> >> > > please comment. ---
-> >> > > Fix Unlikely(x) == y
-> >> > > 
-> >> > 
-> >> > you found a great set of bugs..
-> >> > but to be honest... I suspect it's just best to remove unlikely
-> >> > altogether for these cases; unlikely() is almost a
-> >> > go-faster-stripes thing, and if you don't know how to use it you
-> >> > shouldn't be using it... so just removing it for all wrong cases
-> >> > is actually the best thing to do imo.
-> >> 
-> >> Well, eventhough the author may not know how to use it, "unlikely"
-> >> at least indicates the intention of the author, or his knowledge
-> >> of what should happen here. I'd suggest leaving it where it is
-> >> because the authot of this code is in best position to know that
-> >> this branch is unlikely to happen, eventhough he does not
-> >> correctly use the macro.
-> >>
-> > 
-> > you have more faith in the authors knowledge of how his code
-> > actually behaves than I think is warranted  :) Or faith in that he
-> > knows what "unlikely" means. I should write docs about this; but
-> > unlikely() means: 1) It happens less than 0.01% of the cases.
-> > 2) The compiler couldn't have figured this out by itself
-> >    (NULL pointer checks are compiler done already, same for some
-> > other conditions) 3) It's a hot codepath where shaving 0.5 cycles
-> > (less even on x86) matters (and the author is ok with taking a 500
-> > cycles hit if he's wrong)
-> > 
-> > If you think unlikely() means something else, we should fix what it
-> > maps to towards gcc ;) (to.. be empty ;)
+> > But the flag _is_ set because the drive is added to the quirk list (line above	^) and
+>                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 > 
-> Well, I didn't consider what today's compiler does, but used it as a
-> general indicator, because I think that code will be around a long
-> time.  If you show me some test results that prove it causes harm I
-> might consider removing it. 
+> (fortunately) majority of ATAPI drives are not in the quirk list ;-)
+> 
+> [ and they may have (buf[8 + 4] & 0x01) == 0 ]
 
-for mordern (last 10 years) x86 cpus... the cpu branchpredictor is better
-than the coder in general. Same for most other architectures.
+Bart,
 
-unlikely() creates bigger code as well.
+i think i probably didn't express myself clear enough before. The patch
+serves the sole purpose to show exactly whether buf[8 + 4] & 0x01) == 0 and
+is in no way the final solution. I just wanted to make sure the caps page
+doesn't set the audioplay bit. The final solution would be to add the drive
+to the quirks list only, i guess, in case you don't have a better idea.
 
-Now... we're talking about your super duper hotpath function here right?
-One where you care about 0.5 cycle speed improvement? (less on modern
-systems ;)
+Sorry for the misunderstanding :=).
 
-Because if not, the bigger code and general "compiler second guessing" is just
-more harmful than good, shown already here by the fact that the code was just incorrect
-as a virtue of having the unlikely() in.
+> 
+> > ide_cdrom_setup() calls ide_cd_flags() to set the proper flags for cd->cd_flags and later on
+> > ide_cdrom_probe_capabilities() works on the same cd->cd_flags for testing
+> > IDE_CD_FLAG_PLAY_AUDIO_OK, or have i gone blind completely...?
+> > 
+> > > >  	{ NULL, NULL, 0 }
+> > > >  };
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Regards/Gruﬂ,
+    Boris.
