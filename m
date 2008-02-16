@@ -1,115 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbYBPXLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755951AbYBPXSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbYBPXLn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 18:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYBPXLd
+	id S1755951AbYBPXSg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 18:18:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbYBPXS1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 18:11:33 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2008 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751089AbYBPXLc (ORCPT
+	Sat, 16 Feb 2008 18:18:27 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:59935 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751126AbYBPXS0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 18:11:32 -0500
-Date: Sat, 16 Feb 2008 18:11:31 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-cc: Oliver Pinter <oliver.pntr@gmail.com>, <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       <linux-scsi@vger.kernel.org>, <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]*
-In-Reply-To: <47B756B5.7070901@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0802161756330.3753-100000@netrider.rowland.org>
+	Sat, 16 Feb 2008 18:18:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=x8vwvUF9A965rh0ziwIyZqC6AQ1p27x0HI0YZ0KjPFSB6z/RWQOmgHpp2+5nPbXl9lgwiZnEGJZ4L8Vm6kEXZj4jKIH0KKHwg7Y3f+V+ZarW+JXFXvC1va2zfGssBTIYqwpIcC8ws7WAjPCCUlLej9I+krhV5xwFzaCSTNoNwPM=
+Message-ID: <3d8471ca0802161518h3fe87f5encc83e7cc976ccef9@mail.gmail.com>
+Date: Sun, 17 Feb 2008 00:18:08 +0100
+From: "Guillaume Chazarain" <guichaz@gmail.com>
+To: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+Subject: Re: 2.6.25-rc2: wpa_supplicant BUGs kernel in rwlock recursion
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Laszlo Attila Toth" <panther@balabit.hu>,
+       "David Miller" <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>
+In-Reply-To: <5a4c581d0802160914m7778cf3av5c01c54374f26f5b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5a4c581d0802160914m7778cf3av5c01c54374f26f5b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008, Andrew Buehler wrote:
+On Feb 16, 2008 6:14 PM, Alessandro Suardi <alessandro.suardi@gmail.com> wrote:
+> Feb 16 16:51:49 sandman kernel: BUG: rwlock recursion on CPU#0,
 
-> > For another, getting two copies of a message is no big deal --
-> 
-> I disagree.
+Same thing here, bisected it to:
 
-Everyone has his own taste.  Obviously there's no world-wide consensus,
-possibly because different people have different workflow habits and so
-are affected by duplicate messages to varying extents.
+commit 45b503548210fe6f23e92b856421c2a3f05fd034
+Author: Laszlo Attila Toth <panther <at> balabit.hu>
+Date:   Tue Feb 12 22:42:09 2008 -0800
 
-> When I receive a message sent directly to me in a discussion which is on
-> a list, I expect that it is because someone either considered it
-> important enough to warrant making certain it came to my attention
-> specifically, or wanted to continue the discussion but felt that it
-> should not continue to take place on the mailing list.
+    [RTNETLINK]: Send a single notification on device state changes.
 
-Sometimes that is the case but often it isn't.  Your expectations are
-at variance with other people's behavior; you shouldn't expect everyone
-else to change just to match your personal ideals.
+The revert applies cleanly and fixes the problem.
+Rafael has more details in http://lkml.org/lkml/2008/2/15/542.
 
-On the other hand, I would be perfectly happy to edit your name out of 
-the reply list -- but since you said you aren't receiving all the 
-messages in this thread via the list that might not be a good thing to 
-do at the moment...
-
-
-> > People on LKML who are more familiar with interrupt routing problems
-> > might be able to offer more help.  For now, you can try things like
-> > turning on CONFIG_USB_DEBUG, posting the output from dmesg, posting
-> > the contents of /proc/interrupts (say before and after a new USB
-> > device is plugged in).
-> 
-> In my current testing kernel, which I believe is the one with which I
-> captured the sole successful non-2.6.23.1 dmesg so far, CONFIG_USB_DEBUG
-> is on. The associated dmesg (obtained yesterday from booting with the
-> Flash drive connected) is attached. (The flood of 'no version magic,
-> tainting kernel' messages between line 600 and line 1160 are a side
-> effect of Novell's custom environment which I have not yet made the
-> effort to fix; the boot scripts attempt to detect the network card by
-> modprobing every network driver available until they find one which
-> works. Here, because the correct one fails, they wind up trying each one
-> twice.)
-
-The line saying:
-
-> ehci_hcd 0000:00:1d.7: Unlink after no-IRQ?  Controller is probably using the wrong IRQ.
-
-is an indication that interrupt routing is indeed not working right.  
-Or possibly your EHCI controller isn't working.  You could try 
-blacklisting or unloading ehci-hcd to see if that helps.  Of course 
-then none of your USB devices would be able to run at high speed.
-
-> I have transcribed the contents of /proc/interrupts both before and
-> after plugging in the Flash drive I have been using for testing, and
-> they are also attached. I have been as careful as I could to be sure
-> that the contents of the attached 'r61-interrupts-[12].txt' files is the
-> same as what was shown on the laptop, but cannot absolutely guarantee
-> that I have not missed something. For the record, the '1' is from before
-> connecting the drive, and the '2' is from after.
-
-Notice that the interrupt count for IRQ 11 doesn't change when you plug 
-in the device.  Obviously something is wrong there.
-
-In fact, it's a little surprising that almost all the USB controllers
-are routed to the same IRQ.  However this is beyond my area of 
-expertise.  You could try posting a message on the linux-acpi mailing 
-list; the people there should know a lot more about these issues.
-
-
-> > Assuming that the 2.6.23 kernel works on your computer, you can go
-> > the extreme route of installing git and doing a bisection to find the
-> > first patch causing your difficulty.
-> 
-> That would require me to learn enough of how git works, as distinct from
-> more traditional VCSes, to be able to use it with some confidence. This
-> is not impossible - indeed I want to do it at some point - but for the
-> time being I have no idea where to start, and indeed I am not especially
-> clear on exactly what (from a user's perspective) the differences been
-> git and e.g. CVS or Subversion are. I know that the entire concept
-> relies around a lack of centralization, but I have not been able to get
-> my head around what that means in a practical sense.
-
-There are some excellent tutorials on the web, with detailed
-explanations of how to do a bisection to track down a kernel bug.
-
-Alan Stern
-
+-- 
+Guillaume
