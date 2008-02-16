@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764236AbYBPDXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764532AbYBPDY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764236AbYBPDXz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 22:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759491AbYBPDWu
+	id S1764532AbYBPDY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 22:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbYBPDYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 22:22:50 -0500
-Received: from rv-out-0910.google.com ([209.85.198.188]:24358 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbYBPDWU (ORCPT
+	Fri, 15 Feb 2008 22:24:11 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:35467 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753460AbYBPDYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 22:22:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Ns8gNw2iXaEWxuvMCzvjUUJtKJ2NZd2FMtZg1Hh1caxt3xYErWzR1yulRNrxaukdC4VtkAgd4XyjtQOc9mHp7ygXhXWWCshWz0k98Pb8sQTglhJPacf4C1wJYIE+exLJbNtpcKJSqyEG4MVkNpw7K4UnXpjE9ai6xAXHzeWvXLg=
-Subject: [PATCH 3/4] jffs2: fix sparse warning in write.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
+	Fri, 15 Feb 2008 22:24:09 -0500
+X-Sasl-enc: 3cbH7AGCp1FpFqzol7f1bq7GYu01Pm41FghwteoNI3f+ 1203132248
+Subject: Re: [PATCHv2] autofs4: fix sparse warning in root.c
+From: Ian Kent <raven@themaw.net>
+To: Harvey Harrison <harvey.harrison@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1203130296.7442.22.camel@brick>
+References: <1203126572.7442.13.camel@brick>
+	 <1203130061.3172.8.camel@raven.themaw.net> <1203130296.7442.22.camel@brick>
 Content-Type: text/plain
-Date: Fri, 15 Feb 2008 19:22:16 -0800
-Message-Id: <1203132136.7442.33.camel@brick>
+Date: Sat, 16 Feb 2008 12:23:53 +0900
+Message-Id: <1203132233.3172.33.camel@raven.themaw.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/jffs2/write.c:585:28: warning: symbol 'fd' shadows an earlier one
-fs/jffs2/write.c:536:27: originally declared here
 
-No need to redeclare fd, use the original one, after this point,
-fd is always reassigned before it used again.
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- fs/jffs2/write.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/jffs2/write.c b/fs/jffs2/write.c
-index 776f13c..beade55 100644
---- a/fs/jffs2/write.c
-+++ b/fs/jffs2/write.c
-@@ -582,9 +582,9 @@ int jffs2_do_unlink(struct jffs2_sb_info *c, struct jffs2_inode_info *dir_f,
- 		jffs2_add_fd_to_list(c, fd, &dir_f->dents);
- 		up(&dir_f->sem);
- 	} else {
--		struct jffs2_full_dirent *fd = dir_f->dents;
- 		uint32_t nhash = full_name_hash(name, namelen);
- 
-+		fd = dir_f->dents;
- 		/* We don't actually want to reserve any space, but we do
- 		   want to be holding the alloc_sem when we write to flash */
- 		down(&c->alloc_sem);
--- 
-1.5.4.1.1278.gc75be
-
+On Fri, 2008-02-15 at 18:51 -0800, Harvey Harrison wrote:
+> fs/autofs4/root.c:536:23: warning: symbol 'ino' shadows an earlier one
+> fs/autofs4/root.c:510:22: originally declared here
+> 
+> There is no need to redeclare, we are at the end of the loop and in
+> the next iteration of the loop, ino will be reset.
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Acked-by: Ian Kent <raven@themaw.net>
+> ---
+>  fs/autofs4/root.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+> index a54a946..aa4c5ff 100644
+> --- a/fs/autofs4/root.c
+> +++ b/fs/autofs4/root.c
+> @@ -533,9 +533,9 @@ static struct dentry *autofs4_lookup_unhashed(struct autofs_sb_info *sbi, struct
+>  			goto next;
+>  
+>  		if (d_unhashed(dentry)) {
+> -			struct autofs_info *ino = autofs4_dentry_ino(dentry);
+>  			struct inode *inode = dentry->d_inode;
+>  
+> +			ino = autofs4_dentry_ino(dentry);
+>  			list_del_init(&ino->rehash);
+>  			dget(dentry);
+>  			/*
 
