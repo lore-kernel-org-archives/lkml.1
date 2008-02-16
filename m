@@ -1,118 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757390AbYBPP6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYBPQAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757390AbYBPP6W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 10:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbYBPP6P
+	id S1757310AbYBPQAB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 11:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYBPP7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 10:58:15 -0500
-Received: from smtp-out3.tiscali.nl ([195.241.79.178]:50938 "EHLO
-	smtp-out3.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbYBPP6O (ORCPT
+	Sat, 16 Feb 2008 10:59:51 -0500
+Received: from qb-out-0506.google.com ([72.14.204.239]:16766 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbYBPP7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 10:58:14 -0500
-Message-ID: <47B70810.5030608@tiscali.nl>
-Date: Sat, 16 Feb 2008 16:58:08 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: hpa@zytor.com
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] kernel/{exit.c, signal.c, power/process.c}: replace !likely(x)
- by likely(!x)
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 Feb 2008 10:59:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:message-id:to:cc:subject:from:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=gG3pzQikH7Gz49AHxRrTWS3sb4NhQ5Cd3YtshMFUoYX3e6+vmB4I5KBgXlZlxKr0adefrTFbJA/egU+jVUEFGgNtS3LgY5JJoFMvSwDJYVDJjbiAvYtZXxdE1ukw5Cyq2qLiHpXGb/zmdh+jtM8Gch6bDtR9CSNl7/SgmWu0IyA=
+Date: Sat, 16 Feb 2008 23:55:34 +0800 (CST)
+Message-Id: <20080216.235534.237382205.xiyou.wangcong@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       David Miller <davem@davemloft.net>, Andrew Morton <akpm@osdl.org>,
+       netdev@vger.kernel.org
+Subject: [Patch]net/xfrm/xfrm_policy.c: replace timer with delayed_work
+From: WANG Cong <xiyou.wangcong@gmail.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not entirely sure who to send this to
----
-Replace !likely(x) by likely(!x)
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+As suggested by Herbert, using workqueue is better than timer
+for net/xfrm/xfrm_policy.c, so replace them with delayed_work.
+
+Note that, this patch is not fully tested, just compile and
+run as a whole on an Intel Core Duo matchine. So should be
+in -mm first.
+
+Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>
+
 ---
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 506a957..df207fc 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1497,7 +1497,7 @@ repeat:
- 				/*
- 				 * We don't reap group leaders with subthreads.
- 				 */
--				if (!likely(options & WEXITED))
-+				if (likely(!(options & WEXITED)))
- 					continue;
- 				retval = wait_task_zombie(p,
- 						(options & WNOWAIT), infop,
-@@ -1508,7 +1508,7 @@ repeat:
- 				 * exit, stop, or stop and then continue.
- 				 */
- 				flag = 1;
--				if (!unlikely(options & WCONTINUED))
-+				if (unlikely(!(options & WCONTINUED)))
- 					continue;
- 				retval = wait_task_continued(p,
- 						(options & WNOWAIT), infop,
-diff --git a/kernel/power/process.c b/kernel/power/process.c
-index 7c2118f..b42254b 100644
---- a/kernel/power/process.c
-+++ b/kernel/power/process.c
-@@ -36,7 +36,7 @@ static inline int freezeable(struct task_struct * p)
-  */
- static inline void frozen_process(void)
- {
--	if (!unlikely(current->flags & PF_NOFREEZE)) {
-+	if (unlikely(!(current->flags & PF_NOFREEZE))) {
- 		current->flags |= PF_FROZEN;
- 		wmb();
- 	}
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 84917fe..1155e16 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1308,7 +1308,7 @@ int send_sigqueue(int sig, struct sigqueue *q, struct task_struct *p)
- 	 */
- 	rcu_read_lock();
+diff --git a/include/net/xfrm.h b/include/net/xfrm.h
+index ac72116..53f4794 100644
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -430,7 +430,7 @@ struct xfrm_policy
+ 	/* This lock only affects elements except for entry. */
+ 	rwlock_t		lock;
+ 	atomic_t		refcnt;
+-	struct timer_list	timer;
++	struct delayed_work	work;
  
--	if (!likely(lock_task_sighand(p, &flags))) {
-+	if (likely(!lock_task_sighand(p, &flags))) {
- 		ret = -1;
- 		goto out_err;
- 	}
-@@ -1548,7 +1548,7 @@ static void do_notify_parent_cldstop(struct task_struct *tsk, int why)
- 
- static inline int may_ptrace_stop(void)
- {
--	if (!likely(current->ptrace & PT_PTRACED))
-+	if (likely(!(current->ptrace & PT_PTRACED)))
- 		return 0;
- 	/*
- 	 * Are we in the middle of do_coredump?
-@@ -1574,7 +1574,7 @@ static int sigkill_pending(struct task_struct *tsk)
- {
- 	return ((sigismember(&tsk->pending.signal, SIGKILL) ||
- 		 sigismember(&tsk->signal->shared_pending.signal, SIGKILL)) &&
--		!unlikely(sigismember(&tsk->blocked, SIGKILL)));
-+		 unlikely(!sigismember(&tsk->blocked, SIGKILL)));
+ 	u32			priority;
+ 	u32			index;
+diff --git a/net/xfrm/xfrm_policy.c b/net/xfrm/xfrm_policy.c
+index 47219f9..58066f0 100644
+--- a/net/xfrm/xfrm_policy.c
++++ b/net/xfrm/xfrm_policy.c
+@@ -126,9 +126,10 @@ static inline unsigned long make_jiffies(long secs)
+ 		return secs*HZ;
  }
  
- /*
-@@ -1625,7 +1625,7 @@ static void ptrace_stop(int exit_code, int clear_code, siginfo_t *info)
- 	spin_unlock_irq(&current->sighand->siglock);
- 	try_to_freeze();
- 	read_lock(&tasklist_lock);
--	if (!unlikely(killed) && may_ptrace_stop()) {
-+	if (unlikely(!killed) && may_ptrace_stop()) {
- 		do_notify_parent_cldstop(current, CLD_TRAPPED);
- 		read_unlock(&tasklist_lock);
- 		schedule();
-@@ -1717,7 +1717,7 @@ static int do_signal_stop(int signr)
- 	} else {
- 		struct task_struct *t;
+-static void xfrm_policy_timer(unsigned long data)
++static void xfrm_policy_worker(struct work_struct *w)
+ {
+-	struct xfrm_policy *xp = (struct xfrm_policy*)data;
++	struct xfrm_policy *xp =
++		container_of((struct delayed_work *)w, struct xfrm_policy, work);
+ 	unsigned long now = get_seconds();
+ 	long next = LONG_MAX;
+ 	int warn = 0;
+@@ -181,7 +182,7 @@ static void xfrm_policy_timer(unsigned long data)
+ 	if (warn)
+ 		km_policy_expired(xp, dir, 0, 0);
+ 	if (next != LONG_MAX &&
+-	    !mod_timer(&xp->timer, jiffies + make_jiffies(next)))
++	    !schedule_delayed_work(&xp->work, make_jiffies(next)))
+ 		xfrm_pol_hold(xp);
  
--		if (!likely(sig->flags & SIGNAL_STOP_DEQUEUED) ||
-+		if (likely(!(sig->flags & SIGNAL_STOP_DEQUEUED)) ||
- 		    unlikely(sig->group_exit_task))
- 			return 0;
- 		/*
-
+ out:
+@@ -208,12 +209,11 @@ struct xfrm_policy *xfrm_policy_alloc(gfp_t gfp)
+ 	policy = kzalloc(sizeof(struct xfrm_policy), gfp);
+ 
+ 	if (policy) {
++		INIT_DELAYED_WORK(&policy->work, xfrm_policy_worker);
+ 		INIT_HLIST_NODE(&policy->bydst);
+ 		INIT_HLIST_NODE(&policy->byidx);
+ 		rwlock_init(&policy->lock);
+ 		atomic_set(&policy->refcnt, 1);
+-		setup_timer(&policy->timer, xfrm_policy_timer,
+-				(unsigned long)policy);
+ 	}
+ 	return policy;
+ }
+@@ -227,7 +227,7 @@ void xfrm_policy_destroy(struct xfrm_policy *policy)
+ 
+ 	BUG_ON(policy->bundles);
+ 
+-	if (del_timer(&policy->timer))
++	if (cancel_delayed_work(&policy->work))
+ 		BUG();
+ 
+ 	security_xfrm_policy_free(policy);
+@@ -244,7 +244,7 @@ static void xfrm_policy_gc_kill(struct xfrm_policy *policy)
+ 		dst_free(dst);
+ 	}
+ 
+-	if (del_timer(&policy->timer))
++	if (cancel_delayed_work(&policy->work))
+ 		atomic_dec(&policy->refcnt);
+ 
+ 	if (atomic_read(&policy->refcnt) > 1)
+@@ -566,7 +566,7 @@ int xfrm_policy_insert(int dir, struct xfrm_policy *policy, int excl)
+ 	hlist_add_head(&policy->byidx, xfrm_policy_byidx+idx_hash(policy->index));
+ 	policy->curlft.add_time = get_seconds();
+ 	policy->curlft.use_time = 0;
+-	if (!mod_timer(&policy->timer, jiffies + HZ))
++	if (!schedule_delayed_work(&policy->work, HZ))
+ 		xfrm_pol_hold(policy);
+ 	write_unlock_bh(&xfrm_policy_lock);
+ 
