@@ -1,67 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbYBPEgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYBPEzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbYBPEgY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 Feb 2008 23:36:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753419AbYBPEgN
+	id S1758611AbYBPEzH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 Feb 2008 23:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbYBPEyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 Feb 2008 23:36:13 -0500
-Received: from web36608.mail.mud.yahoo.com ([209.191.85.25]:20002 "HELO
-	web36608.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752860AbYBPEgL (ORCPT
+	Fri, 15 Feb 2008 23:54:54 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:54057 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754533AbYBPEyx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 Feb 2008 23:36:11 -0500
-X-YMail-OSG: f0KYJDUVM1k82IXDCG8mF9phhyKT0eUGOe0rvLMz6E2461_OGUCDY6LahOebvjJlIQ--
-X-RocketYMMF: rancidfat
-Date: Fri, 15 Feb 2008 20:36:10 -0800 (PST)
-From: Casey Schaufler <casey@schaufler-ca.com>
-Reply-To: casey@schaufler-ca.com
-Subject: Re: [PATCH] (02/15/08 Linus git) Smack unlabeled outgoing ambient packets - v4
-To: Paul Moore <paul.moore@hp.com>, casey@schaufler-ca.com
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <200802152213.11661.paul.moore@hp.com>
+	Fri, 15 Feb 2008 23:54:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OahJxEi5aD6nj3DQgR57klHeukO6VHTJpFTDBN0z5aF0p59MweWB4DIIi8Aiwrc1U/SBBJeQnpff8G1A+mH589VYjuB+Cn20Yvi9oj9M5g0lSeBkUtppmXs/M/6Hm2ySAs5YM/34PimKl0SxKaCIGzIzIwi4fSTVu+cNqHpENmE=
+Message-ID: <8bd0f97a0802152054l6d6a9b0aq8226c168006834b8@mail.gmail.com>
+Date: Fri, 15 Feb 2008 23:54:51 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: common watchdog interface: handling of suspend/resume
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <998774.580.qm@web36608.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+i'm not sure if it is possible to integrate this into the common code
+(be great if we could), but we should codify the expected behavior for
+the suspend/resume functions.  from looking at the 8 that implement
+the pm functions, they seem to all do:
+suspend(): turn off the watchdog
+resume(): turn on the watchdog if it was running
 
---- Paul Moore <paul.moore@hp.com> wrote:
-
-> On Friday 15 February 2008 6:24:25 pm Casey Schaufler wrote:
-> > From: Casey Schaufler <casey@schaufler-ca.com>
-> >
-> > Smack uses CIPSO labeling, but allows for unlabeled packets
-> > by specifying an "ambient" label that is applied to incoming
-> > unlabeled packets. Because the other end of the connection
-> > may dislike IP options, and ssh is one know application that
-> > behaves thus, it is prudent to respond in kind. This patch
-> > changes the network labeling behavior such that an outgoing
-> > packet that would be given a CIPSO label that matches the
-> > ambient label is left unlabeled. An "unlbl" domain is added
-> > and the netlabel defaulting mechanism invoked rather than
-> > assuming that everything is CIPSO. Locking has been added
-> > around changes to the ambient label as the mechanisms used
-> > to do so are more involved.
-> >
-> > Cleaned up some issues noted in review.
-> > Make smk_cipso_doi() static.
-> > Create a hook for the new security_secctx_to_secid()
-> > using existing underlying code.
-> > Fill in audit data for netlbl domain calls.
-> > Collapse unnecessary multiple assignments.
-> >
-> > Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
-> 
-> Looks good to me, thanks for making those changes.
-> 
-> Acked-by: Paul Moore <paul.moore@hp.com>
-
-Thank you for the insights.
-
-
-Casey Schaufler
-casey@schaufler-ca.com
+some other issues raised:
+ - this device should not be able to be selective suspended ... in
+other words, you only want to "suspend" the watchdog if the whole
+system is going to be suspend
+ - should the nowayout option be checked at all ?
+-mike
