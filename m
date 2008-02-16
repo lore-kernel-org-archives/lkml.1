@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbYBTLd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbYBTLeF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752629AbYBTLd2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 06:33:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751126AbYBTLdT
+	id S1754543AbYBTLeF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 06:34:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYBTLdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 06:33:19 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:60815 "EHLO relay.sgi.com"
+	Wed, 20 Feb 2008 06:33:53 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4736 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751119AbYBTLdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 06:33:18 -0500
-Date: Wed, 20 Feb 2008 05:33:13 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v6
-Message-ID: <20080220113313.GD11364@sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random>
-MIME-Version: 1.0
+	id S1751126AbYBTLdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 06:33:51 -0500
+Date: Sat, 16 Feb 2008 17:20:49 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Disk schedulers
+Message-ID: <20080216172048.GB3979@ucw.cz>
+References: <20080214162104.GA5347@ics.muni.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220103942.GU7128@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080214162104.GA5347@ics.muni.cz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 11:39:42AM +0100, Andrea Arcangeli wrote:
-> Given Nick's comments I ported my version of the mmu notifiers to
-> latest mainline. There are no known bugs AFIK and it's obviously safe
-> (nothing is allowed to schedule inside rcu_read_lock taken by
-> mmu_notifier() with my patch).
+Hi!
+
+> whom should I blame about disk schedulers?
 > 
-> XPMEM simply can't use RCU for the registration locking if it wants to
-> schedule inside the mmu notifier calls. So I guess it's better to add
-> the XPMEM invalidate_range_end/begin/external-rmap as a whole
-> different subsystem that will have to use a mutex (not RCU) to
-> serialize, and at the same time that CONFIG_XPMEM will also have to
-> switch the i_mmap_lock to a mutex. I doubt xpmem fits inside a
-> CONFIG_MMU_NOTIFIER anymore, or we'll all run a bit slower because of
-> it. It's really a call of how much we want to optimize the MMU
-> notifier, by keeping things like RCU for the registration.
+> I have the following setup:
+> 1Gb network
+> 2GB RAM
+> disk write speed about 20MB/s
+> 
+> If I'm scping file (about 500MB) from the network (which is faster than the
+> local disk), any process is totally unable to read anything from the local disk
+> till the scp finishes. It is not caused by low free memory, while scping
+> I have 500MB of free memory (not cached or buffered).
+> 
+> I tried cfq and anticipatory scheduler, none is different.
 
-But won't that other "subsystem" cause us to have two seperate callouts
-that do equivalent things and therefore force a removal of this and go
-back to what Christoph has currently proposed?
+Is cat /dev/zero > file enough to reproduce this?
 
-Robin
+ext3 filesystem?
+
+Will cat /etc/passwd work while machine is unresponsive?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
