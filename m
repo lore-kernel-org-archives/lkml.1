@@ -1,98 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYBQXCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757510AbYBQXDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbYBQXCj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 18:02:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYBQXCa
+	id S1757510AbYBQXDe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 18:03:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYBQXD0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 18:02:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:30813 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbYBQXC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 18:02:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=ZuC0QqWFFrV7oYE1E2LYrRsuHFGRkgobKDIbnTpFdORy6FUAWjpXth53S+MippJJlQsctWzEH9C9oc//2kXvZuOxCiUP43biexT1O8bgQq6APbBfuui/N0SLNcInXo7ouvKjRg+Uo7m04FLUpZ2UdqkZW7Zadse0RqQpgu4WttU=
-Date: Mon, 18 Feb 2008 00:59:54 +0200
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH x86] i8259A_32: Remove redundant irq_desc[NR_IRQ]
-	initialization
-Message-ID: <20080217225954.GA3020@ubuntu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Sun, 17 Feb 2008 18:03:26 -0500
+Received: from www.tglx.de ([62.245.132.106]:44145 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754103AbYBQXDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 18:03:25 -0500
+Date: Mon, 18 Feb 2008 00:03:12 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: What's needed for a PCIe card to be recognized?
+Message-ID: <20080218000312.0b38efd5@dilbert.local>
+In-Reply-To: <47B8B0A3.2070005@rtr.ca>
+References: <20080216225932.22460d31@dilbert.local>
+	<20080216143946.6d532a41@laptopd505.fenrus.org>
+	<20080217015453.2a4e4142@dilbert.local>
+	<20080216182939.061c7246@laptopd505.fenrus.org>
+	<20080217133753.661cd98d@bluebox.local>
+	<20080217072927.4b6c5964@laptopd505.fenrus.org>
+	<20080217174728.76e4231a@bluebox.local>
+	<47B8AFAA.30101@rtr.ca>
+	<47B8B0A3.2070005@rtr.ca>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Am Sun, 17 Feb 2008 17:09:39 -0500
+schrieb Mark Lord <lkml@rtr.ca>:
 
-Remove redundant irq_desc[NR_IRQS] element initialization in 
-init_ISA_irqs(). irq_desc[NR_IRQS] is already statically 
-initialized with the same values in kernel/irq/handle.c .
+> Mark Lord wrote:
+> > Hans J. Koch wrote:
+> ..
+> >> Really? Unbelievable what these guys do to make my live harder...
+> >> So, they might use some undocumented GPIO to turn the power on, and
+> ...
+> 
+> GPIO lines are not usually very difficult to trace,
+> and programming them is pretty easy, too ...
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
+I know :-) I'll do that as soon as I've got some spare time (very rare
+ATM).
 
- i8259_32.c |   26 ++++++--------------------
- 1 file changed, 6 insertions(+), 20 deletions(-)
+> 
+> If I had an EeePC here, I'd do that for you (and everyone else),
+> but I'm waiting for a lower-power (fanless) unit to be introduced
+> first.
 
-Tested only on a UP machine with an i8259A PIC.
+Admirable. I didn't have that patience ;-)
 
-diff --git a/arch/x86/kernel/i8259_32.c b/arch/x86/kernel/i8259_32.c
-index 2d25b77..0fea87d 100644
---- a/arch/x86/kernel/i8259_32.c
-+++ b/arch/x86/kernel/i8259_32.c
-@@ -26,8 +26,6 @@
-  * present in the majority of PC/AT boxes.
-  * plus some generic x86 specific things if generic specifics makes
-  * any sense at all.
-- * this file should become arch/i386/kernel/irq.c when the old irq.c
-- * moves to arch independent land
-  */
- 
- static int i8259A_auto_eoi;
-@@ -362,24 +360,12 @@ void __init init_ISA_irqs (void)
- #endif
- 	init_8259A(0);
- 
--	for (i = 0; i < NR_IRQS; i++) {
--		irq_desc[i].status = IRQ_DISABLED;
--		irq_desc[i].action = NULL;
--		irq_desc[i].depth = 1;
--
--		if (i < 16) {
--			/*
--			 * 16 old-style INTA-cycle interrupts:
--			 */
--			set_irq_chip_and_handler_name(i, &i8259A_chip,
--						      handle_level_irq, "XT");
--		} else {
--			/*
--			 * 'high' PCI IRQs filled in on demand
--			 */
--			irq_desc[i].chip = &no_irq_chip;
--		}
--	}
-+	/*
-+	 * 16 old-style INTA-cycle interrupts:
-+	 */
-+	for (i = 0; i < 16; i++)
-+		set_irq_chip_and_handler_name(i, &i8259A_chip,
-+					      handle_level_irq, "XT");
- }
- 
- /* Overridden in paravirt.c */
+> 
+> >> refuse that if they don't find the original card? Looks like I
+> >> can't have WLAN on an EeePC (I won't run a tainted kernel). Stupid
+> >> thing to sell a PC with Linux preinstalled but with hardware not
+> >> supported in mainline.
+> > ..
+> > 
+> > Try it again with 2.6.25-rc2 and this module option:
+> > 
+> >    options pciehp pciehp_force=1
+> > 
+> > Just a thin hope, really, but it might work.
 
-Regards,
+I'll give it a try.
 
--- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
-
+Thanks for your hints,
+Hans
