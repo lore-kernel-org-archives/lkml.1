@@ -1,38 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753517AbYBQSUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbYBQSUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753517AbYBQSUH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 13:20:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751072AbYBQST4
+	id S1755289AbYBQSUe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 13:20:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbYBQSUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 13:19:56 -0500
-Received: from iabervon.org ([66.92.72.58]:46310 "EHLO iabervon.org"
+	Sun, 17 Feb 2008 13:20:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58651 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751011AbYBQST4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 13:19:56 -0500
-Date: Sun, 17 Feb 2008 13:19:55 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION 2.6.23] no vga console and no messages
-In-Reply-To: <alpine.LNX.1.00.0802171250480.5496@iabervon.org>
-Message-ID: <alpine.LNX.1.00.0802171316120.5816@iabervon.org>
-References: <alpine.LNX.1.00.0802162042130.6093@iabervon.org> <E1JQe5R-0001cW-1a@faramir.fjphome.nl> <alpine.LNX.1.00.0802171134350.5496@iabervon.org> <200802171848.16969.elendil@planet.nl> <alpine.LNX.1.00.0802171250480.5496@iabervon.org>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
+	id S1751072AbYBQSUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 13:20:20 -0500
+Date: Sun, 17 Feb 2008 19:20:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Carlos Corbacho <carlos@strangeworlds.co.uk>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 0/2] x86 - Move laptop drivers out of x86 Kconfig
+Message-ID: <20080217182008.GZ6006@elte.hu>
+References: <20080208124721.16369.76502.stgit@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080208124721.16369.76502.stgit@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As far as I can tell, the only differences in either dmesg or lspci 
-between the broken one and the working one are the phrasing of messages, 
-not what's happening.
 
-Out of curiousity, what do you see for the "Console: " line when you boot? 
-It's possible that the VGA console code somehow got broken for both of 
-us in 2.6.23, and this means that (a) my console doesn't work, since I'm 
-trying to use it, and (b) if your framebuffer console tries to match your 
-VGA console, it'll break, because your VGA console is broken.
+* Carlos Corbacho <carlos@strangeworlds.co.uk> wrote:
 
-	-Daniel
-*This .sig left intentionally blank*
+> The following patch series moves the two laptop drivers from x86 
+> Kconfig (i8k and toshiba) to drivers/char, which is where the source 
+> for them lives anyway.
+> 
+> Given they are not x86 processor features, the x86 Kconfig menu is not 
+> really an appropriate place for them to live.
+> 
+> This is against Linus latest tree, since x86 git seems to be missing 
+> an earlier Kconfig patch for I8K that dropped the x86_32 limitation.
+
+the x86 bits:
+
+  Acked-by: Ingo Molnar <mingo@elte.hu>
+
+i suspect this should be merged by the char driver tree which is 
+affected by the addition of these new entries.
+
+	Ingo
