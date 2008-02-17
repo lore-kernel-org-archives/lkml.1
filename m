@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYBQHx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbYBQIRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbYBQHx4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 02:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYBQHxp
+	id S1755885AbYBQIRK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:17:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYBQIQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 02:53:45 -0500
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:44473 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbYBQHxo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 02:53:44 -0500
-Date: Sun, 17 Feb 2008 09:53:36 +0200
-From: Muli Ben-Yehuda <muli@il.ibm.com>
-To: Greg KH <greg@kroah.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, jdmason@kudzu.us, bzolnier@gmail.com,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: pci_get_device_reverse(), why does Calgary need this?
-Message-ID: <20080217075336.GG3385@rhun.haifa.ibm.com>
-References: <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com> <20080215071703.GA9022@kroah.com> <20080215074827.GE4334@rhun.haifa.ibm.com> <20080215152008.GA1975@kroah.com> <20080215153140.GN1178@uranus.ravnborg.org> <20080215182822.GA5675@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 17 Feb 2008 03:16:57 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36784 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753146AbYBQIQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:16:56 -0500
+Date: Sun, 17 Feb 2008 10:16:30 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Nick Piggin <npiggin@suse.de>, viro@zeniv.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [2.6 patch] make fs/buffer.c:cont_expand_zero() static
+Message-ID: <20080217081630.GA3848@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080215182822.GA5675@kroah.com>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 10:28:22AM -0800, Greg KH wrote:
+cont_expand_zero() can become static.
 
-> That would be nice.  Muli, want to make a patch for this?
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Sure, I'll put something together.
+---
 
-Cheers,
-Muli
+This patch has been sent on:
+- 15 Jun 2007
+
+--- linux-2.6.22-rc4-mm2/fs/buffer.c.old	2007-06-14 01:51:08.000000000 +0200
++++ linux-2.6.22-rc4-mm2/fs/buffer.c	2007-06-14 01:51:42.000000000 +0200
+@@ -2181,8 +2181,8 @@
+ 	return err;
+ }
+ 
+-int cont_expand_zero(struct file *file, struct address_space *mapping,
+-			loff_t pos, loff_t *bytes)
++static int cont_expand_zero(struct file *file, struct address_space *mapping,
++			    loff_t pos, loff_t *bytes)
+ {
+ 	struct inode *inode = mapping->host;
+ 	unsigned blocksize = 1 << inode->i_blkbits;
+
