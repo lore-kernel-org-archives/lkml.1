@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbYBQQ6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbYBQRAK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755227AbYBQQ6S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbYBQQ6B
+	id S1756081AbYBQRAK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:00:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751272AbYBQQ76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:58:01 -0500
-Received: from www.tglx.de ([62.245.132.106]:36397 "EHLO www.tglx.de"
+	Sun, 17 Feb 2008 11:59:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35115 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751224AbYBQQ6A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:58:00 -0500
-Date: Sun, 17 Feb 2008 17:57:28 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: =?UTF-8?Q?S=2E=C3=87a=C4=9Flar_Onur?= <caglar@pardus.org.tr>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 13/14] kernel/irq/spurious.c: Use time_* macros
-In-Reply-To: <1203003412-11594-14-git-send-email-caglar@pardus.org.tr>
-Message-ID: <alpine.LFD.1.00.0802171757020.7583@apollo.tec.linutronix.de>
-References: y <1203003412-11594-14-git-send-email-caglar@pardus.org.tr>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1751259AbYBQQ76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:59:58 -0500
+Date: Sun, 17 Feb 2008 17:59:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH] kprobes: remove sparse warnings from x86
+Message-ID: <20080217165938.GM6006@elte.hu>
+References: <1202945433.18204.28.camel@brick> <47B4595D.6030900@redhat.com> <1203012094.2748.51.camel@brick>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-783684684-1203267450=:7583"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203012094.2748.51.camel@brick>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-783684684-1203267450=:7583
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+* Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-On Thu, 14 Feb 2008, S.Çağlar Onur wrote:
+> Ingo, could you take this in x86.git?
 
-> The functions time_before, time_before_eq, time_after, and time_after_eq are more robust for comparing jiffies against other values.
-> 
-> So following patch implements usage of the time_after() macro, defined at linux/jiffies.h, which deals with wrapping correctly
+yeah - and Thomas has beaten me at picking it up :-)
 
-Applied. Thanks,
-
-	 tglx
---8323328-783684684-1203267450=:7583--
+	Ingo
