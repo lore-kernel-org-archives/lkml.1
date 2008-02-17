@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbYBQRLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756920AbYBQRL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757616AbYBQRLk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYBQRKk
+	id S1756920AbYBQRL6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754922AbYBQRKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:10:40 -0500
-Received: from nf-out-0910.google.com ([64.233.182.190]:20534 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753593AbYBQRKh (ORCPT
+	Sun, 17 Feb 2008 12:10:43 -0500
+Received: from emerald.lightlink.com ([205.232.34.14]:4216 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754256AbYBQRKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:10:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=fpxjfCx6OrL571Y6DJd+1KMA36k+z4+FV5bV4OOP+uvt7d9sW1bQBqZrivs0KuDmtNONLZHUQqJgIEazy/jnxPCcSZq/BjhkV/BNORH+FKevx9hozBvTTD2jv+nkj2kTS2voqlM/kY5nFDMwiQCNfW29Iw8joIcyQ4rkSXhqBa4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 1/4] : More use DIV_ROUND_UP
-Date: Sun, 17 Feb 2008 18:17:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.58.0802161548370.1185@pc-041.diku.dk>
-In-Reply-To: <Pine.LNX.4.58.0802161548370.1185@pc-041.diku.dk>
+	Sun, 17 Feb 2008 12:10:41 -0500
+Date: Sun, 17 Feb 2008 12:07:08 -0500
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [PATCH 14/27] hwmon: fix section mismatch in coretemp
+Message-ID: <20080217170708.GB2916@jupiter.solarsys.private>
+References: <20080217121255.GA10519@uranus.ravnborg.org> <1203250984-11285-14-git-send-email-sam@ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802171817.48155.bzolnier@gmail.com>
+In-Reply-To: <1203250984-11285-14-git-send-email-sam@ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 February 2008, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1) /
-> (d)) but is perhaps more readable.
-> 
-> An extract of the semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @haskernel@
-> @@
-> 
-> #include <linux/kernel.h>
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> (
-> - (n + d - 1) / d
-> + DIV_ROUND_UP(n,d)
-> |
-> - (n + (d - 1)) / d
-> + DIV_ROUND_UP(n,d)
-> )
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> - DIV_ROUND_UP((n),d)
-> + DIV_ROUND_UP(n,d)
-> 
-> @depends on haskernel@
-> expression n,d;
-> @@
-> 
-> - DIV_ROUND_UP(n,(d))
-> + DIV_ROUND_UP(n,d)
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+Hi Sam:
 
-applied, thanks
+* Sam Ravnborg <sam@ravnborg.org> [2008-02-17 13:22:51 +0100]:
+> Fix following warning:
+> WARNING: vmlinux.o(.text+0xebfd04): Section mismatch in reference from the function coretemp_cpu_callback() to the function .cpuinit.text:coretemp_device_add()
+> 
+> coretemp_cpu_callback() are only used inside a
+> HOTPLUG_CPU block so annotate it __cpuinit.
+> The notifier referencing the function are annotated
+> __refdata to silence warning from the exit function.
+> The unregister function do not use the embedded pointer
+> but clears the variable so the annotation is OK.
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+> ---
+>  drivers/hwmon/coretemp.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+> index 3ee60d2..1439432 100644
+> --- a/drivers/hwmon/coretemp.c
+> +++ b/drivers/hwmon/coretemp.c
+> @@ -330,7 +330,7 @@ static void coretemp_device_remove(unsigned int cpu)
+>  	mutex_unlock(&pdev_list_mutex);
+>  }
+>  
+> -static int coretemp_cpu_callback(struct notifier_block *nfb,
+> +static int __cpuinit coretemp_cpu_callback(struct notifier_block *nfb,
+>  				 unsigned long action, void *hcpu)
+>  {
+>  	unsigned int cpu = (unsigned long) hcpu;
+> @@ -347,7 +347,7 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+>  	return NOTIFY_OK;
+>  }
+>  
+> -static struct notifier_block coretemp_cpu_notifier = {
+> +static struct notifier_block coretemp_cpu_notifier __refdata = {
+>  	.notifier_call = coretemp_cpu_callback,
+>  };
+>  #endif				/* !CONFIG_HOTPLUG_CPU */
+> -- 
+> 1.5.4.rc3.14.g44397
+
+This rings a bell... hmmm, commit 59a35bafb223bbb0553ba1a3bb9280bda668a8d8.
+AFAICT the warning is a false positive, but whatever.
+
+Applied to hwmon-2.6.git/testing, thanks.
+
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
+
