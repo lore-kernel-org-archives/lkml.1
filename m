@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbYBQDA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbYBQDAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758955AbYBQDA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:00:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755204AbYBQC6G
+	id S1759301AbYBQDAq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757442AbYBQC6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 21:58:06 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36301 "EHLO
+	Sat, 16 Feb 2008 21:58:13 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36325 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757322AbYBQC6B (ORCPT
+	with ESMTP id S1755219AbYBQC6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 21:58:01 -0500
+	Sat, 16 Feb 2008 21:58:10 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
-       Erez Zadok <ezk@cs.sunysb.edu>, Hugh Dickins <hugh@veritas.com>
-Subject: [PATCH 04/17] Unionfs: uninline unionfs_copy_attr_times and unionfs_copy_attr_all
-Date: Sat, 16 Feb 2008 21:57:13 -0500
-Message-Id: <1203217048358-git-send-email-ezk@cs.sunysb.edu>
+       Erez Zadok <ezk@cs.sunysb.edu>
+Subject: [PATCH 17/17] VFS/Unionfs: use generic path_get/path_put functions
+Date: Sat, 16 Feb 2008 21:57:26 -0500
+Message-Id: <1203217056421-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12032170461107-git-send-email-ezk@cs.sunysb.edu>
@@ -26,147 +26,140 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reduces text size by about 6k.
-
-Cc: Hugh Dickins <hugh@veritas.com>
+Remove unionfs's versions thereof.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/fanout.h |   50 --------------------------------------------------
- fs/unionfs/subr.c   |   50 ++++++++++++++++++++++++++++++++++++++++++++++++++
- fs/unionfs/union.h  |    2 ++
- 3 files changed, 52 insertions(+), 50 deletions(-)
+ fs/unionfs/main.c     |   10 +++++-----
+ fs/unionfs/super.c    |   27 ++++++++++++++-------------
+ include/linux/namei.h |   12 ------------
+ 3 files changed, 19 insertions(+), 30 deletions(-)
 
-diff --git a/fs/unionfs/fanout.h b/fs/unionfs/fanout.h
-index 4d9a45f..29d42fb 100644
---- a/fs/unionfs/fanout.h
-+++ b/fs/unionfs/fanout.h
-@@ -313,54 +313,4 @@ static inline void verify_locked(struct dentry *d)
- 	BUG_ON(!mutex_is_locked(&UNIONFS_D(d)->lock));
+diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
+index 3585b29..8f59fb5 100644
+--- a/fs/unionfs/main.c
++++ b/fs/unionfs/main.c
+@@ -230,11 +230,11 @@ void unionfs_reinterpose(struct dentry *dentry)
+ int check_branch(struct nameidata *nd)
+ {
+ 	/* XXX: remove in ODF code -- stacking unions allowed there */
+-	if (!strcmp(nd->dentry->d_sb->s_type->name, UNIONFS_NAME))
++	if (!strcmp(nd->path.dentry->d_sb->s_type->name, UNIONFS_NAME))
+ 		return -EINVAL;
+-	if (!nd->dentry->d_inode)
++	if (!nd->path.dentry->d_inode)
+ 		return -ENOENT;
+-	if (!S_ISDIR(nd->dentry->d_inode->i_mode))
++	if (!S_ISDIR(nd->path.dentry->d_inode->i_mode))
+ 		return -ENOTDIR;
+ 	return 0;
+ }
+@@ -375,8 +375,8 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
+ 			goto out;
+ 		}
+ 
+-		lower_root_info->lower_paths[bindex].dentry = nd.dentry;
+-		lower_root_info->lower_paths[bindex].mnt = nd.mnt;
++		lower_root_info->lower_paths[bindex].dentry = nd.path.dentry;
++		lower_root_info->lower_paths[bindex].mnt = nd.path.mnt;
+ 
+ 		set_branchperms(sb, bindex, perms);
+ 		set_branch_count(sb, bindex, 0);
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 773623e..fba1598 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -231,8 +231,8 @@ static noinline int do_remount_mode_option(char *optarg, int cur_branches,
+ 		goto out;
+ 	}
+ 	for (idx = 0; idx < cur_branches; idx++)
+-		if (nd.mnt == new_lower_paths[idx].mnt &&
+-		    nd.dentry == new_lower_paths[idx].dentry)
++		if (nd.path.mnt == new_lower_paths[idx].mnt &&
++		    nd.path.dentry == new_lower_paths[idx].dentry)
+ 			break;
+ 	path_put(&nd.path);	/* no longer needed */
+ 	if (idx == cur_branches) {
+@@ -274,8 +274,8 @@ static noinline int do_remount_del_option(char *optarg, int cur_branches,
+ 		goto out;
+ 	}
+ 	for (idx = 0; idx < cur_branches; idx++)
+-		if (nd.mnt == new_lower_paths[idx].mnt &&
+-		    nd.dentry == new_lower_paths[idx].dentry)
++		if (nd.path.mnt == new_lower_paths[idx].mnt &&
++		    nd.path.dentry == new_lower_paths[idx].dentry)
+ 			break;
+ 	path_put(&nd.path);	/* no longer needed */
+ 	if (idx == cur_branches) {
+@@ -358,8 +358,8 @@ static noinline int do_remount_add_option(char *optarg, int cur_branches,
+ 		goto out;
+ 	}
+ 	for (idx = 0; idx < cur_branches; idx++)
+-		if (nd.mnt == new_lower_paths[idx].mnt &&
+-		    nd.dentry == new_lower_paths[idx].dentry)
++		if (nd.path.mnt == new_lower_paths[idx].mnt &&
++		    nd.path.dentry == new_lower_paths[idx].dentry)
+ 			break;
+ 	path_put(&nd.path);	/* no longer needed */
+ 	if (idx == cur_branches) {
+@@ -425,10 +425,10 @@ found_insertion_point:
+ 		memmove(&new_lower_paths[idx+1], &new_lower_paths[idx],
+ 			(cur_branches - idx) * sizeof(struct path));
+ 	}
+-	new_lower_paths[idx].dentry = nd.dentry;
+-	new_lower_paths[idx].mnt = nd.mnt;
++	new_lower_paths[idx].dentry = nd.path.dentry;
++	new_lower_paths[idx].mnt = nd.path.mnt;
+ 
+-	new_data[idx].sb = nd.dentry->d_sb;
++	new_data[idx].sb = nd.path.dentry->d_sb;
+ 	atomic_set(&new_data[idx].open_files, 0);
+ 	new_data[idx].branchperms = perms;
+ 	new_data[idx].branch_id = ++*high_branch_id; /* assign new branch ID */
+@@ -577,7 +577,7 @@ static int unionfs_remount_fs(struct super_block *sb, int *flags,
+ 	memcpy(tmp_lower_paths, UNIONFS_D(sb->s_root)->lower_paths,
+ 	       cur_branches * sizeof(struct path));
+ 	for (i = 0; i < cur_branches; i++)
+-		pathget(&tmp_lower_paths[i]); /* drop refs at end of fxn */
++		path_get(&tmp_lower_paths[i]); /* drop refs at end of fxn */
+ 
+ 	/*******************************************************************
+ 	 * For each branch command, do path_lookup on the requested branch,
+@@ -1008,9 +1008,10 @@ static int unionfs_show_options(struct seq_file *m, struct vfsmount *mnt)
+ 
+ 	seq_printf(m, ",dirs=");
+ 	for (bindex = bstart; bindex <= bend; bindex++) {
+-		path = d_path(unionfs_lower_dentry_idx(sb->s_root, bindex),
+-			      unionfs_lower_mnt_idx(sb->s_root, bindex),
+-			      tmp_page, PAGE_SIZE);
++		struct path p;
++		p.dentry = unionfs_lower_dentry_idx(sb->s_root, bindex);
++		p.mnt = unionfs_lower_mnt_idx(sb->s_root, bindex);
++		path = d_path(&p, tmp_page, PAGE_SIZE);
+ 		if (IS_ERR(path)) {
+ 			ret = PTR_ERR(path);
+ 			goto out;
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 7ffeb21..24d88e9 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -93,16 +93,4 @@ static inline char *nd_get_link(struct nameidata *nd)
+ 	return nd->saved_names[nd->depth];
  }
  
--/* copy a/m/ctime from the lower branch with the newest times */
--static inline void unionfs_copy_attr_times(struct inode *upper)
+-static inline void pathget(struct path *path)
 -{
--	int bindex;
--	struct inode *lower;
--
--	if (!upper || ibstart(upper) < 0)
--		return;
--	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
--		lower = unionfs_lower_inode_idx(upper, bindex);
--		if (!lower)
--			continue; /* not all lower dir objects may exist */
--		if (unlikely(timespec_compare(&upper->i_mtime,
--					      &lower->i_mtime) < 0))
--			upper->i_mtime = lower->i_mtime;
--		if (unlikely(timespec_compare(&upper->i_ctime,
--					      &lower->i_ctime) < 0))
--			upper->i_ctime = lower->i_ctime;
--		if (unlikely(timespec_compare(&upper->i_atime,
--					      &lower->i_atime) < 0))
--			upper->i_atime = lower->i_atime;
--	}
+-	mntget(path->mnt);
+-	dget(path->dentry);
 -}
 -
--/*
-- * A unionfs/fanout version of fsstack_copy_attr_all.  Uses a
-- * unionfs_get_nlinks to properly calcluate the number of links to a file.
-- * Also, copies the max() of all a/m/ctimes for all lower inodes (which is
-- * important if the lower inode is a directory type)
-- */
--static inline void unionfs_copy_attr_all(struct inode *dest,
--					 const struct inode *src)
+-static inline void pathput(struct path *path)
 -{
--	dest->i_mode = src->i_mode;
--	dest->i_uid = src->i_uid;
--	dest->i_gid = src->i_gid;
--	dest->i_rdev = src->i_rdev;
--
--	unionfs_copy_attr_times(dest);
--
--	dest->i_blkbits = src->i_blkbits;
--	dest->i_flags = src->i_flags;
--
--	/*
--	 * Update the nlinks AFTER updating the above fields, because the
--	 * get_links callback may depend on them.
--	 */
--	dest->i_nlink = unionfs_get_nlinks(dest);
+-	dput(path->dentry);
+-	mntput(path->mnt);
 -}
 -
- #endif	/* not _FANOUT_H */
-diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
-index 0a0fce9..68a6280 100644
---- a/fs/unionfs/subr.c
-+++ b/fs/unionfs/subr.c
-@@ -240,3 +240,53 @@ char *alloc_whname(const char *name, int len)
- 
- 	return buf;
- }
-+
-+/* copy a/m/ctime from the lower branch with the newest times */
-+void unionfs_copy_attr_times(struct inode *upper)
-+{
-+	int bindex;
-+	struct inode *lower;
-+
-+	if (!upper || ibstart(upper) < 0)
-+		return;
-+	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
-+		lower = unionfs_lower_inode_idx(upper, bindex);
-+		if (!lower)
-+			continue; /* not all lower dir objects may exist */
-+		if (unlikely(timespec_compare(&upper->i_mtime,
-+					      &lower->i_mtime) < 0))
-+			upper->i_mtime = lower->i_mtime;
-+		if (unlikely(timespec_compare(&upper->i_ctime,
-+					      &lower->i_ctime) < 0))
-+			upper->i_ctime = lower->i_ctime;
-+		if (unlikely(timespec_compare(&upper->i_atime,
-+					      &lower->i_atime) < 0))
-+			upper->i_atime = lower->i_atime;
-+	}
-+}
-+
-+/*
-+ * A unionfs/fanout version of fsstack_copy_attr_all.  Uses a
-+ * unionfs_get_nlinks to properly calcluate the number of links to a file.
-+ * Also, copies the max() of all a/m/ctimes for all lower inodes (which is
-+ * important if the lower inode is a directory type)
-+ */
-+void unionfs_copy_attr_all(struct inode *dest,
-+			   const struct inode *src)
-+{
-+	dest->i_mode = src->i_mode;
-+	dest->i_uid = src->i_uid;
-+	dest->i_gid = src->i_gid;
-+	dest->i_rdev = src->i_rdev;
-+
-+	unionfs_copy_attr_times(dest);
-+
-+	dest->i_blkbits = src->i_blkbits;
-+	dest->i_flags = src->i_flags;
-+
-+	/*
-+	 * Update the nlinks AFTER updating the above fields, because the
-+	 * get_links callback may depend on them.
-+	 */
-+	dest->i_nlink = unionfs_get_nlinks(dest);
-+}
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 786c4be..0e0ccde 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -199,6 +199,8 @@ struct unionfs_dir_state {
- 
- /* externs needed for fanout.h or sioq.h */
- extern int unionfs_get_nlinks(const struct inode *inode);
-+extern void unionfs_copy_attr_times(struct inode *upper);
-+extern void unionfs_copy_attr_all(struct inode *dest, const struct inode *src);
- 
- /* include miscellaneous macros */
- #include "fanout.h"
+ #endif /* _LINUX_NAMEI_H */
 -- 
 1.5.2.2
 
