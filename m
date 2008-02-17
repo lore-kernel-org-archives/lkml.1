@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbYBQDBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbYBQDCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759897AbYBQDBq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbYBQC6b
+	id S1760041AbYBQDCB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbYBQC6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 21:58:31 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36356 "EHLO
+	Sat, 16 Feb 2008 21:58:34 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36363 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757617AbYBQC60 (ORCPT
+	with ESMTP id S1757697AbYBQC6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 21:58:26 -0500
+	Sat, 16 Feb 2008 21:58:30 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 10/17] Unionfs: factor out revalidation routine
-Date: Sat, 16 Feb 2008 21:57:19 -0500
-Message-Id: <1203217051613-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 08/17] Unionfs: improve debugging in copy_attr_times
+Date: Sat, 16 Feb 2008 21:57:17 -0500
+Message-Id: <1203217050889-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12032170461107-git-send-email-ezk@cs.sunysb.edu>
@@ -26,137 +26,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To be used by rest of revalidation code, as well a callers who already
-locked the child and parent dentry branch-configurations.
-
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/dentry.c |   87 +++++++++++++++++++++++++++++++-------------------
- fs/unionfs/union.h  |    3 ++
- 2 files changed, 57 insertions(+), 33 deletions(-)
+ fs/unionfs/subr.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index afa2120..3bd2dfb 100644
---- a/fs/unionfs/dentry.c
-+++ b/fs/unionfs/dentry.c
-@@ -285,6 +285,59 @@ void purge_sb_data(struct super_block *sb)
- }
+diff --git a/fs/unionfs/subr.c b/fs/unionfs/subr.c
+index 68a6280..1a40f63 100644
+--- a/fs/unionfs/subr.c
++++ b/fs/unionfs/subr.c
+@@ -247,8 +247,14 @@ void unionfs_copy_attr_times(struct inode *upper)
+ 	int bindex;
+ 	struct inode *lower;
  
- /*
-+ * Revalidate a single file/symlink/special dentry.  Assume that info nodes
-+ * of the dentry and its parent are locked.  Assume that parent(s) are all
-+ * valid already, but the child may not yet be valid.  Returns true if
-+ * valid, false otherwise.
-+ */
-+bool __unionfs_d_revalidate_one_locked(struct dentry *dentry,
-+				       struct nameidata *nd,
-+				       bool willwrite)
-+{
-+	bool valid = false;	/* default is invalid */
-+	int sbgen, dgen, bindex;
-+
-+	verify_locked(dentry);
-+	verify_locked(dentry->d_parent);
-+
-+	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
-+	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
-+
-+	if (unlikely(is_newer_lower(dentry))) {
-+		/* root dentry special case as aforementioned */
-+		if (IS_ROOT(dentry)) {
-+			unionfs_copy_attr_times(dentry->d_inode);
-+		} else {
-+			/*
-+			 * reset generation number to zero, guaranteed to be
-+			 * "old"
-+			 */
-+			dgen = 0;
-+			atomic_set(&UNIONFS_D(dentry)->generation, dgen);
-+		}
-+		if (!willwrite)
-+			purge_inode_data(dentry->d_inode);
+-	if (!upper || ibstart(upper) < 0)
++	if (!upper)
+ 		return;
++	if (ibstart(upper) < 0) {
++#ifdef CONFIG_UNION_FS_DEBUG
++		WARN_ON(ibstart(upper) < 0);
++#endif /* CONFIG_UNION_FS_DEBUG */
++		return;
 +	}
-+	valid = __unionfs_d_revalidate_one(dentry, nd);
-+
-+	/*
-+	 * If __unionfs_d_revalidate_one() succeeded above, then it will
-+	 * have incremented the refcnt of the mnt's, but also the branch
-+	 * indices of the dentry will have been updated (to take into
-+	 * account any branch insertions/deletion.  So the current
-+	 * dbstart/dbend match the current, and new, indices of the mnts
-+	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
-+	 * test below does not depend on whether chain_len was 0 or greater.
-+	 */
-+	if (!valid || sbgen == dgen)
-+		goto out;
-+	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++)
-+		unionfs_mntput(dentry, bindex);
-+out:
-+	return valid;
-+}
-+
-+/*
-  * Revalidate a parent chain of dentries, then the actual node.
-  * Assumes that dentry is locked, but will lock all parents if/when needed.
-  *
-@@ -404,42 +457,10 @@ out_this:
- 	if (dentry != dentry->d_parent)
- 		unionfs_lock_dentry(dentry->d_parent,
- 				    UNIONFS_DMUTEX_REVAL_PARENT);
--	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
--
--	if (unlikely(is_newer_lower(dentry))) {
--		/* root dentry special case as aforementioned */
--		if (IS_ROOT(dentry)) {
--			unionfs_copy_attr_times(dentry->d_inode);
--		} else {
--			/*
--			 * reset generation number to zero, guaranteed to be
--			 * "old"
--			 */
--			dgen = 0;
--			atomic_set(&UNIONFS_D(dentry)->generation, dgen);
--		}
--		if (!willwrite)
--			purge_inode_data(dentry->d_inode);
--	}
--	valid = __unionfs_d_revalidate_one(dentry, nd);
-+	valid = __unionfs_d_revalidate_one_locked(dentry, nd, willwrite);
- 	if (dentry != dentry->d_parent)
- 		unionfs_unlock_dentry(dentry->d_parent);
- 
--	/*
--	 * If __unionfs_d_revalidate_one() succeeded above, then it will
--	 * have incremented the refcnt of the mnt's, but also the branch
--	 * indices of the dentry will have been updated (to take into
--	 * account any branch insertions/deletion.  So the current
--	 * dbstart/dbend match the current, and new, indices of the mnts
--	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
--	 * test below does not depend on whether chain_len was 0 or greater.
--	 */
--	if (valid && sbgen != dgen)
--		for (bindex = dbstart(dentry);
--		     bindex <= dbend(dentry);
--		     bindex++)
--			unionfs_mntput(dentry, bindex);
--
- out_free:
- 	/* unlock/dput all dentries in chain and return status */
- 	if (chain_len > 0) {
-diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
-index 0e0ccde..5001b07 100644
---- a/fs/unionfs/union.h
-+++ b/fs/unionfs/union.h
-@@ -368,6 +368,9 @@ extern int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- extern int unionfs_unlink(struct inode *dir, struct dentry *dentry);
- extern int unionfs_rmdir(struct inode *dir, struct dentry *dentry);
- 
-+extern bool __unionfs_d_revalidate_one_locked(struct dentry *dentry,
-+					      struct nameidata *nd,
-+					      bool willwrite);
- extern bool __unionfs_d_revalidate_chain(struct dentry *dentry,
- 					 struct nameidata *nd, bool willwrite);
- extern bool is_newer_lower(const struct dentry *dentry);
+ 	for (bindex = ibstart(upper); bindex <= ibend(upper); bindex++) {
+ 		lower = unionfs_lower_inode_idx(upper, bindex);
+ 		if (!lower)
 -- 
 1.5.2.2
 
