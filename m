@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYBQFxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbYBQGHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbYBQFxj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 00:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYBQFx2
+	id S1754625AbYBQGHi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 01:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbYBQGH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 00:53:28 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41486
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751755AbYBQFx1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 00:53:27 -0500
-Date: Sat, 16 Feb 2008 21:54:01 -0800 (PST)
-Message-Id: <20080216.215401.20463603.davem@davemloft.net>
-To: akpm@linux-foundation.org
-Cc: dada1@cosmosbay.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: include/linux/pcounter.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080216112618.ec450f9b.akpm@linux-foundation.org>
-References: <20080216025051.751b4a86.akpm@linux-foundation.org>
-	<47B6D12A.3090401@cosmosbay.com>
-	<20080216112618.ec450f9b.akpm@linux-foundation.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 01:07:29 -0500
+Received: from pip23.gyao.ne.jp ([125.63.38.249]:45345 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752005AbYBQGH2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 01:07:28 -0500
+Date: Sun, 17 Feb 2008 15:06:07 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] h8300 add sci.h
+Message-ID: <20080217060606.GA7780@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+References: <878x1k2o0o.wl%ysato@users.sourceforge.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <878x1k2o0o.wl%ysato@users.sourceforge.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrew Morton <akpm@linux-foundation.org>
-Date: Sat, 16 Feb 2008 11:26:18 -0800
-
-> On Sat, 16 Feb 2008 13:03:54 +0100 Eric Dumazet <dada1@cosmosbay.com> wrote:
+On Sat, Feb 16, 2008 at 11:41:11PM -0500, Yoshinori Sato wrote:
+> This file require sh-sci
 > 
-> > Yes, per connection basis. Some workloads want to open/close more than 1000 
-> > sockets per second.
+> Signed-off-by: Yoshinori Sato <ysato@users.sourceforge.jp>
 > 
-> ie: slowpath
-
-Definitely not slow path in the networking.
-
-Connection rates are definitely as, or more, important than packet
-rates for certain workloads.
+>  include/asm-h8300/sci.h |   34 ++++++++++++++++++++++++++++++++++
+>  1 files changed, 34 insertions(+), 0 deletions(-)
+>  create mode 100644 include/asm-h8300/sci.h
+> 
+Let's just move it to include/linux instead of doing a 100% duplication
+for H8..
