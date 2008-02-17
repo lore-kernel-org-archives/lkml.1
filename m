@@ -1,34 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbYBQHiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbYBQHx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752723AbYBQHiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 02:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbYBQHhl
+	id S1755448AbYBQHx4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 02:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbYBQHxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 02:37:41 -0500
-Received: from hpsmtp-eml18.kpnxchange.com ([213.75.38.118]:20652 "EHLO
-	hpsmtp-eml18.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755186AbYBQHhX (ORCPT
+	Sun, 17 Feb 2008 02:53:45 -0500
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:44473 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbYBQHxo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 02:37:23 -0500
-To: Daniel Barkalow <barkalow@iabervon.org>
-Subject: Re: [REGRESSION 2.6.23] no vga console and no messages
-Cc: linux-kernel@vger.kernel.org
-In-reply-To: <alpine.LNX.1.00.0802162042130.6093@iabervon.org>
-References: <alpine.LNX.1.00.0802162042130.6093@iabervon.org>
-Message-Id: <E1JQe5R-0001cW-1a@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Sun, 17 Feb 2008 08:37:21 +0100
-X-OriginalArrivalTime: 17 Feb 2008 07:37:21.0407 (UTC) FILETIME=[EE3B68F0:01C87137]
+	Sun, 17 Feb 2008 02:53:44 -0500
+Date: Sun, 17 Feb 2008 09:53:36 +0200
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Greg KH <greg@kroah.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, jdmason@kudzu.us, bzolnier@gmail.com,
+       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, discuss@x86-64.org
+Subject: Re: pci_get_device_reverse(), why does Calgary need this?
+Message-ID: <20080217075336.GG3385@rhun.haifa.ibm.com>
+References: <20080213001638.GB13933@kroah.com> <20080213093225.GA16985@rhun.haifa.ibm.com> <20080213173203.GC10733@kroah.com> <20080213174711.GB22274@rhun.haifa.ibm.com> <20080213181459.GA8960@kroah.com> <20080215071703.GA9022@kroah.com> <20080215074827.GE4334@rhun.haifa.ibm.com> <20080215152008.GA1975@kroah.com> <20080215153140.GN1178@uranus.ravnborg.org> <20080215182822.GA5675@kroah.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080215182822.GA5675@kroah.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Barkalow wrote:
-> For some reason I can't see and don't know how to debug, in 2.6.23 on my
-> server I don't get the vga console, but only get the dummy console.
+On Fri, Feb 15, 2008 at 10:28:22AM -0800, Greg KH wrote:
 
-Please check if this bug report matches the issue you are seeing:
-http://bugzilla.kernel.org/show_bug.cgi?id=9310
+> That would be nice.  Muli, want to make a patch for this?
+
+Sure, I'll put something together.
 
 Cheers,
-FJP
+Muli
