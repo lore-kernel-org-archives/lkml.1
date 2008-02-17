@@ -1,129 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757522AbYBQXbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYBQXb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757522AbYBQXbV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 18:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYBQXbN
+	id S1757270AbYBQXb7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 18:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYBQXbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 18:31:13 -0500
-Received: from styx.suse.cz ([82.119.242.94]:40486 "EHLO mail.suse.cz"
+	Sun, 17 Feb 2008 18:31:50 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:34036 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754736AbYBQXbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 18:31:11 -0500
-Date: Mon, 18 Feb 2008 00:31:09 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-cc: linux-kernel@vger.kernel.org, Laszlo Attila Toth <panther@balabit.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       =?ISO-8859-2?Q?Fran=E7ois_Valenduc?= 
-	<francois.valenduc@tvcablenet.be>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, netdev@vger.kernel.org
-Subject: Subject: [PATCH] Revert "[RTNETLINK]: Send a single notification on
- device state changes."
-Message-ID: <Pine.LNX.4.64.0802180027331.30955@jikos.suse.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1754891AbYBQXbt (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 18:31:49 -0500
+Date: Mon, 18 Feb 2008 10:31:23 +1100
+From: David Chinner <dgc@sgi.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Andi Kleen <andi@firstfloor.org>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Implement barrier support for single device DM devices
+Message-ID: <20080217233123.GA155407@sgi.com>
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B58EAA.8040405@msgid.tls.msk.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This reverts commit 45b503548210fe6f23e92b856421c2a3f05fd034.
+On Fri, Feb 15, 2008 at 04:07:54PM +0300, Michael Tokarev wrote:
+> Alasdair G Kergon wrote:
+> > On Fri, Feb 15, 2008 at 01:08:21PM +0100, Andi Kleen wrote:
+> >> Implement barrier support for single device DM devices
+> >  
+> > Thanks.  We've got some (more-invasive) dm patches in the works that
+> > attempt to use flushing to emulate barriers where we can't just
+> > pass them down like that.
+> 
+> I wonder if it's worth the effort to try to implement this.
+> 
+> As far as I understand (*), if a filesystem realizes that the
+> underlying block device does not support barriers, it will
+> switch to using regular flushes instead
 
-It contains deadlock, and breaks userspace applications (wpa_supplicant,
-networkmanager). References:
+No, typically the filesystems won't issue flushes, either.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=10002
-http://bugzilla.kernel.org/show_bug.cgi?id=10002
----
- net/core/rtnetlink.c |   36 ++++++++++--------------------------
- 1 files changed, 10 insertions(+), 26 deletions(-)
+> - isn't it the same
+> thing as you're trying to do on an MD level?
+> 
+> Note that a filesystem must understand barriers/flushes on
+> underlying block device, since many disk drives don't support
+> barriers anyway.
+> 
+> (*) this is, in fact, an interesting question.  I still can't
+> find complete information about this.  For example, how safe
+> xfs is if barriers are not supported or turned off?  Is it
+> "less safe" than with barriers?  Will it use regular cache
+> flushes if barriers are not here?
 
-diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
-index ecb02af..61ac8d0 100644
---- a/net/core/rtnetlink.c
-+++ b/net/core/rtnetlink.c
-@@ -504,7 +504,7 @@ int rtnl_put_cacheinfo(struct sk_buff *skb, struct dst_entry *dst, u32 id,
- 
- EXPORT_SYMBOL_GPL(rtnl_put_cacheinfo);
- 
--static int set_operstate(struct net_device *dev, unsigned char transition, bool send_notification)
-+static void set_operstate(struct net_device *dev, unsigned char transition)
- {
- 	unsigned char operstate = dev->operstate;
- 
-@@ -527,12 +527,8 @@ static int set_operstate(struct net_device *dev, unsigned char transition, bool
- 		write_lock_bh(&dev_base_lock);
- 		dev->operstate = operstate;
- 		write_unlock_bh(&dev_base_lock);
--
--		if (send_notification)
--			netdev_state_change(dev);
--		return 1;
--	} else
--		return 0;
-+		netdev_state_change(dev);
-+	}
- }
- 
- static void copy_rtnl_link_stats(struct rtnl_link_stats *a,
-@@ -826,7 +822,6 @@ static int do_setlink(struct net_device *dev, struct ifinfomsg *ifm,
- 	if (tb[IFLA_BROADCAST]) {
- 		nla_memcpy(dev->broadcast, tb[IFLA_BROADCAST], dev->addr_len);
- 		send_addr_notify = 1;
--		modified = 1;
- 	}
- 
- 	if (ifm->ifi_flags || ifm->ifi_change) {
-@@ -839,23 +834,16 @@ static int do_setlink(struct net_device *dev, struct ifinfomsg *ifm,
- 		dev_change_flags(dev, flags);
- 	}
- 
--	if (tb[IFLA_TXQLEN]) {
--		if (dev->tx_queue_len != nla_get_u32(tb[IFLA_TXQLEN])) {
--			dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
--			modified = 1;
--		}
--	}
-+	if (tb[IFLA_TXQLEN])
-+		dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
- 
- 	if (tb[IFLA_OPERSTATE])
--		modified |= set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]), false);
-+		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]));
- 
- 	if (tb[IFLA_LINKMODE]) {
--		if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
--			write_lock_bh(&dev_base_lock);
--			dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
--			write_lock_bh(&dev_base_lock);
--			modified = 1;
--		}
-+		write_lock_bh(&dev_base_lock);
-+		dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
-+		write_unlock_bh(&dev_base_lock);
- 	}
- 
- 	err = 0;
-@@ -869,10 +857,6 @@ errout:
- 
- 	if (send_addr_notify)
- 		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
--
--	if (modified)
--		netdev_state_change(dev);
--
- 	return err;
- }
- 
-@@ -990,7 +974,7 @@ struct net_device *rtnl_create_link(struct net *net, char *ifname,
- 	if (tb[IFLA_TXQLEN])
- 		dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
- 	if (tb[IFLA_OPERSTATE])
--		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]), true);
-+		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]));
- 	if (tb[IFLA_LINKMODE])
- 		dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
- 
+Try reading at the XFS FAQ:
+
+http://oss.sgi.com/projects/xfs/faq/#wcache
+
+Cheers,
+
+Dave.
 -- 
-1.5.2.4
-
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
