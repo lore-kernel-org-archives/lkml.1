@@ -1,45 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbYBQUNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYBQUN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbYBQUNF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:13:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbYBQUMU
+	id S1757974AbYBQUN3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYBQUMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:12:20 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:43278 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755813AbYBQUMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:12:18 -0500
-Date: Sun, 17 Feb 2008 21:11:59 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Sergio Luis <sergio@larces.uece.br>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-In-Reply-To: <47B83F90.7000203@larces.uece.br>
-Message-ID: <alpine.DEB.1.00.0802172109590.6469@sheep.housecafe.de>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de> <47B83F90.7000203@larces.uece.br>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Sun, 17 Feb 2008 15:12:50 -0500
+Received: from emerald.lightlink.com ([205.232.34.14]:22831 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757625AbYBQUMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 15:12:48 -0500
+Date: Sun, 17 Feb 2008 15:02:50 -0500
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH] adt7473: New driver for Analog Devices
+	ADT7473 sensor chip
+Message-ID: <20080217200250.GD2916@jupiter.solarsys.private>
+References: <20071219034116.GM6870@tree.beaverton.ibm.com> <20071219154759.7be5025c@hyperion.delvare> <20071219231437.GR6870@tree.beaverton.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20071219231437.GR6870@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Sergio Luis wrote:
-> It doesn't fix the problem totally. If we select
-> Virtualization->Linux hypervisor example code (CONFIG_LGUEST)
-> as a module, we will get the same build errors,
+Hi Darrick:
 
-Confirmed, the build errors persist with CONFIG_LGUEST=m and Rusty's patch 
-applied.
+Sorry this took forever for me to review.  Just a few little things...
 
-thanks,
-Christian.
+* Darrick J. Wong <djwong@us.ibm.com> [2007-12-19 15:14:38 -0800]:
+> This driver also had that funny alarm1/alarm2 thing; here's a revision
+> of yesterday's patch with that straightened out.
+> ---
+> This driver reports voltage, temperature and fan sensor readings
+> on an ADT7473 chip.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  drivers/hwmon/Kconfig   |   10 
+>  drivers/hwmon/Makefile  |    1 
+>  drivers/hwmon/adt7473.c | 1161 +++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 1172 insertions(+), 0 deletions(-)
+> 
+
+Documentation/hwmon/adt7473 would be nice.
+
+> new file mode 100644
+> index 0000000..5528d5c
+> --- /dev/null
+> +++ b/drivers/hwmon/adt7473.c
+> @@ -0,0 +1,1161 @@
+
+(snip)
+
+> +/*
+> + * On this chip, voltages are given as a count of steps between a minimum
+> + * and maximum voltage, not a direct voltage.
+> + */
+> +static int volt_convert_table[][2] = {
+> +	{2997, 3},
+> +	{4395, 4},
+> +};
+
+That should be const.
+
+(snip)
+
+> +static ssize_t show_pwm_auto_temp(struct device *dev,
+> +				  struct device_attribute *devattr,
+> +				  char *buf)
+> +{
+> +	struct sensor_device_attribute *attr = to_sensor_dev_attr(devattr);
+> +	struct adt7473_data *data = adt7473_update_device(dev);
+> +	int bhvr = data->pwm_behavior[attr->index] >> ADT7473_PWM_BHVR_SHIFT;
+> +
+> +	switch (bhvr) {
+> +	case 3:
+> +	case 4:
+> +	case 7:
+> +		return sprintf(buf, "0\n");
+> +	case 0:
+> +	case 1:
+> +	case 5:
+> +	case 6:
+> +		return sprintf(buf, "%d\n", bhvr + 1);
+> +	case 2:
+> +		return sprintf(buf, "4\n");
+> +	}
+> +	BUG();
+
+Given ADT7473_PWM_BHVR_SHIFT is 5, this BUG() is obviously impossible.
+But I guess it's not obvious to GCC.
+
+(snip)
+
+> +static int adt7473_attach_adapter(struct i2c_adapter *adapter)
+> +{
+> +	/*
+> +	 * Some NVIDIA cards have an adt7473 attached to the on-board
+> +	 * i2c controller, but the i2c adapter driver in the binary
+> +	 * nvidia superblob driver sets class to 0.
+> +	 */
+> +	if (!(adapter->class & I2C_CLASS_HWMON) && adapter->class)
+> +		return 0;
+
+NACK on that comment and associated code:  Jean Delvare submitted a
+patch to NVIDIA over two years ago to fix their bug.  Apparently some
+distros even carry his patch.  So, I don't want to encourage such a
+hack to persist.  Please just do the standard check here.
+
+> +	return i2c_probe(adapter, &addr_data, adt7473_detect);
+> +}
+
+(snip)
+
+Thanks & regards,
+
 -- 
-BOFH excuse #283:
+Mark M. Hoffman
+mhoffman@lightlink.com
 
-Lawn mower blade in your fan need sharpening
