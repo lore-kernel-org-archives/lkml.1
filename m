@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbYBQIVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759634AbYBQIWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758891AbYBQIVv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758312AbYBQITK
+	id S1759634AbYBQIWQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757825AbYBQIUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:19:10 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59678 "EHLO smtp4.pp.htv.fi"
+	Sun, 17 Feb 2008 03:20:07 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36926 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758292AbYBQITI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:19:08 -0500
-Date: Sun, 17 Feb 2008 10:18:42 +0200
+	id S1758826AbYBQIUB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:20:01 -0500
+Date: Sun, 17 Feb 2008 10:19:35 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: viro@zeniv.linux.org.uk
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make vfs_ioctl() static
-Message-ID: <20080217081842.GM3848@cs181133002.pp.htv.fi>
+To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
+Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080217081935.GN3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,41 +23,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global vfs_ioctl() static.
+This patch contains the following cleanups:
+- make the following needlessly global function static:
+  - journal_check_used_features()
+- remove the following unused EXPORT_SYMBOL's:
+  - journal_set_features
+  - journal_update_superblock
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- fs/ioctl.c         |    4 ++--
- include/linux/fs.h |    1 -
- 2 files changed, 2 insertions(+), 3 deletions(-)
+This patch has been sent on:
+- 16 May 2006
+- 1 May 2006
+- 23 Apr 2006
 
-18bc247a745a825238208f88fbe1b86ba1ef304e diff --git a/fs/ioctl.c b/fs/ioctl.c
-index f32fbde..7db32b3 100644
---- a/fs/ioctl.c
-+++ b/fs/ioctl.c
-@@ -28,8 +28,8 @@
-  *
-  * Returns 0 on success, -errno on error.
-  */
--long vfs_ioctl(struct file *filp, unsigned int cmd,
--	       unsigned long arg)
-+static long vfs_ioctl(struct file *filp, unsigned int cmd,
-+		      unsigned long arg)
+ fs/jbd/journal.c    |    9 ++++-----
+ include/linux/jbd.h |    2 --
+ 2 files changed, 4 insertions(+), 7 deletions(-)
+
+4b48b0ddcc5e710bbc1e89e219db69000225ee28 diff --git a/fs/jbd/journal.c b/fs/jbd/journal.c
+index 3943a89..b230288 100644
+--- a/fs/jbd/journal.c
++++ b/fs/jbd/journal.c
+@@ -62,13 +62,10 @@ EXPORT_SYMBOL(journal_revoke);
+ EXPORT_SYMBOL(journal_init_dev);
+ EXPORT_SYMBOL(journal_init_inode);
+ EXPORT_SYMBOL(journal_update_format);
+-EXPORT_SYMBOL(journal_check_used_features);
+ EXPORT_SYMBOL(journal_check_available_features);
+-EXPORT_SYMBOL(journal_set_features);
+ EXPORT_SYMBOL(journal_create);
+ EXPORT_SYMBOL(journal_load);
+ EXPORT_SYMBOL(journal_destroy);
+-EXPORT_SYMBOL(journal_update_superblock);
+ EXPORT_SYMBOL(journal_abort);
+ EXPORT_SYMBOL(journal_errno);
+ EXPORT_SYMBOL(journal_ack_err);
+@@ -1174,8 +1171,10 @@ void journal_destroy(journal_t *journal)
+  * features.  Return true (non-zero) if it does.
+  **/
+ 
+-int journal_check_used_features (journal_t *journal, unsigned long compat,
+-				 unsigned long ro, unsigned long incompat)
++static int journal_check_used_features(journal_t *journal,
++				       unsigned long compat,
++				       unsigned long ro,
++				       unsigned long incompat)
  {
- 	int error = -ENOTTY;
+ 	journal_superblock_t *sb;
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index b84b848..23528b8 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1919,7 +1919,6 @@ extern int vfs_stat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_lstat_fd(int dfd, char __user *, struct kstat *);
- extern int vfs_fstat(unsigned int, struct kstat *);
- 
--extern long vfs_ioctl(struct file *filp, unsigned int cmd, unsigned long arg);
- extern int do_vfs_ioctl(struct file *filp, unsigned int fd, unsigned int cmd,
- 		    unsigned long arg);
- 
+diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+index b18fd3b..e8f81ab 100644
+--- a/include/linux/jbd.h
++++ b/include/linux/jbd.h
+@@ -909,8 +909,6 @@ extern journal_t * journal_init_dev(struct block_device *bdev,
+ 				int start, int len, int bsize);
+ extern journal_t * journal_init_inode (struct inode *);
+ extern int	   journal_update_format (journal_t *);
+-extern int	   journal_check_used_features
+-		   (journal_t *, unsigned long, unsigned long, unsigned long);
+ extern int	   journal_check_available_features
+ 		   (journal_t *, unsigned long, unsigned long, unsigned long);
+ extern int	   journal_set_features
 
