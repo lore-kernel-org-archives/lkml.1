@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752348AbYBQR5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbYBQR5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752348AbYBQR5V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYBQR5K
+	id S1754815AbYBQR5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751535AbYBQR5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:57:10 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:59007 "EHLO mgw1.diku.dk"
+	Sun, 17 Feb 2008 12:57:39 -0500
+Received: from mgw2.diku.dk ([130.225.96.92]:56482 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbYBQR5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:57:08 -0500
-Date: Sun, 17 Feb 2008 18:56:52 +0100 (CET)
+	id S1751220AbYBQR5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 12:57:38 -0500
+Date: Sun, 17 Feb 2008 18:57:30 +0100 (CET)
 From: Julia Lawall <julia@diku.dk>
-To: dhowells@redhat.com, linux-kernel@vger.kernel.org,
+To: perex@suse.cz, linux-kernel@vger.kernel.org,
        kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/7] net/rxrpc: Use BUG_ON
-Message-ID: <Pine.LNX.4.64.0802171856240.28055@ask.diku.dk>
+Subject: [PATCH 6/7] sound: Use BUG_ON
+Message-ID: <Pine.LNX.4.64.0802171856530.28055@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -53,29 +53,59 @@ Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
 
-diff -u -p a/net/rxrpc/ar-accept.c b/net/rxrpc/ar-accept.c
---- a/net/rxrpc/ar-accept.c 2007-06-02 22:32:46.000000000 +0200
-+++ b/net/rxrpc/ar-accept.c 2008-02-17 16:42:48.000000000 +0100
-@@ -156,8 +156,7 @@ static int rxrpc_accept_incoming_call(st
- 						  false);
- 			spin_unlock(&call->lock);
- 			notification = NULL;
--			if (ret < 0)
+diff -u -p a/sound/core/seq/oss/seq_oss_synth.c b/sound/core/seq/oss/seq_oss_synth.c
+--- a/sound/core/seq/oss/seq_oss_synth.c 2006-11-30 19:05:47.000000000 +0100
++++ b/sound/core/seq/oss/seq_oss_synth.c 2008-02-17 16:43:24.000000000 +0100
+@@ -245,8 +245,7 @@ snd_seq_oss_synth_setup(struct seq_oss_d
+ 		info->nr_voices = rec->nr_voices;
+ 		if (info->nr_voices > 0) {
+ 			info->ch = kcalloc(info->nr_voices, sizeof(struct seq_oss_chinfo), GFP_KERNEL);
+-			if (!info->ch)
 -				BUG();
-+			BUG_ON(ret < 0);
++			BUG_ON(!info->ch);
+ 			reset_channels(info);
  		}
- 		spin_unlock(&call->conn->state_lock);
+ 		debug_printk(("synth %d assigned\n", i));
+diff -u -p a/sound/oss/trident.c b/sound/oss/trident.c
+--- a/sound/oss/trident.c 2008-02-10 22:34:18.000000000 +0100
++++ b/sound/oss/trident.c 2008-02-17 16:43:27.000000000 +0100
+@@ -3076,8 +3076,7 @@ ali_ac97_get(struct trident_card *card, 
+ 	u16 wcontrol;
+ 	unsigned long flags;
  
-diff -u -p a/net/rxrpc/ar-ack.c b/net/rxrpc/ar-ack.c
---- a/net/rxrpc/ar-ack.c 2007-06-02 22:32:46.000000000 +0200
-+++ b/net/rxrpc/ar-ack.c 2008-02-17 16:42:54.000000000 +0100
-@@ -814,8 +814,7 @@ static int rxrpc_post_message(struct rxr
- 		spin_lock_bh(&call->lock);
- 		ret = rxrpc_queue_rcv_skb(call, skb, true, fatal);
- 		spin_unlock_bh(&call->lock);
--		if (ret < 0)
--			BUG();
-+		BUG_ON(ret < 0);
- 	}
+-	if (!card)
+-		BUG();
++	BUG_ON(!card);
  
- 	return 0;
+ 	address = ALI_AC97_READ;
+ 	if (card->revision == ALI_5451_V02) {
+@@ -3148,8 +3147,7 @@ ali_ac97_set(struct trident_card *card, 
+ 
+ 	data = ((u32) val) << 16;
+ 
+-	if (!card)
+-		BUG();
++	BUG_ON(!card);
+ 
+ 	address = ALI_AC97_WRITE;
+ 	mask = ALI_AC97_WRITE_ACTION | ALI_AC97_AUDIO_BUSY;
+@@ -3213,8 +3211,7 @@ ali_ac97_read(struct ac97_codec *codec, 
+ 	struct trident_card *card = NULL;
+ 
+ 	/* Added by Matt Wu */
+-	if (!codec)
+-		BUG();
++	BUG_ON(!codec);
+ 
+ 	card = (struct trident_card *) codec->private_data;
+ 
+@@ -3240,8 +3237,7 @@ ali_ac97_write(struct ac97_codec *codec,
+ 	struct trident_card *card;
+ 
+ 	/*  Added by Matt Wu */
+-	if (!codec)
+-		BUG();
++	BUG_ON(!codec);
+ 
+ 	card = (struct trident_card *) codec->private_data;
+ 
