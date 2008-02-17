@@ -1,57 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbYBQJpe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbYBQJvJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbYBQJpe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 04:45:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbYBQJp0
+	id S1755507AbYBQJvJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 04:51:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbYBQJuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 04:45:26 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:17539 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbYBQJpY (ORCPT
+	Sun, 17 Feb 2008 04:50:55 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:50633 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753655AbYBQJuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 04:45:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BCBN30SUXXkQgBS0LqZpUWosWdIXk20Dtruga8iq4jW9GjXFn9K3tr1IyhcTF4BLQgfhu1XBiqtwJk1EdDMfQdNB7PkAwCWGQQ8an7ay7WCkJu4HPBjTRsXt7L2qD072ENp/oF/tYERbjnUuoz3N289fFdEkvaDM792wqhqZzzg=
-Message-ID: <de8d50360802170145u4bd60f76x9662b66c63bdf41d@mail.gmail.com>
-Date: Sun, 17 Feb 2008 01:45:23 -0800
-From: "Andrew Pinski" <pinskia@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: Re: [Cbe-oss-dev] [PATCH 1/3] Fix Unlikely(x) == y
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linuxppc-dev@ozlabs.org,
-       "Roel Kluin" <12o3l@tiscali.nl>, cbe-oss-dev@ozlabs.org,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080216175849.GA25636@1wt.eu>
+	Sun, 17 Feb 2008 04:50:54 -0500
+Date: Sun, 17 Feb 2008 10:50:52 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] MAINTAINERS: linux-fbdev is moderated
+Message-ID: <Pine.LNX.4.64.0802171050220.6848@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B70A61.9030306@tiscali.nl>
-	 <20080216092552.325e5726@laptopd505.fenrus.org>
-	 <20080216173315.GU8953@1wt.eu>
-	 <20080216094226.1e8eede1@laptopd505.fenrus.org>
-	 <20080216175849.GA25636@1wt.eu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 16, 2008 9:58 AM, Willy Tarreau <w@1wt.eu> wrote:
-> Last but not least, gcc 4 tends to emit stupid checks, to the point that I
-> have replaced unlikely(x) with (x) in my code when gcc >= 4 is detected. What
-> I observe is that the following code :
->
->     if (unlikely(p == NULL)) ...
->
-> often gets coded like this :
->
->     reg1 = (p == NULL)
->     if (reg1 != 0) ...
->
-> ... which clobbers reg1 for nothing and performs a double test.
+While linux-fbdev is subscribers-only, non-subscribers are not plainly
+rejected, but moderated, so the casual patch/comment/question comes through.
 
-This really only can happen in GCC 4.0.x and 4.1.x and cannot happen
-for 4.2 or 4.3 really because of the way __builtin_expect is handled
-for those two.
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ MAINTAINERS |   22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
--- Pinski
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -697,7 +697,7 @@ S:	Supported
+ ATMEL LCDFB DRIVER
+ P:	Nicolas Ferre
+ M:	nicolas.ferre@atmel.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ ATMEL MACB ETHERNET DRIVER
+@@ -1202,7 +1202,7 @@ S:	Maintained
+ CYBLAFB FRAMEBUFFER DRIVER
+ P:	Knut Petersen
+ M:	Knut_Petersen@t-online.de
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ CYCLADES 2X SYNC CARD DRIVER
+@@ -1580,7 +1580,7 @@ S:	Supported
+ FRAMEBUFFER LAYER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ W:	http://linux-fbdev.sourceforge.net/
+ S:	Maintained
+ 
+@@ -1965,7 +1965,7 @@ L:	linux1394-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+ IMS TWINTURBO FRAMEBUFFER DRIVER
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Orphan
+ 
+ INFINIBAND SUBSYSTEM
+@@ -1999,13 +1999,13 @@ S:	Maintained
+ INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
+ P:	Sylvain Meyer
+ M:	sylvain.meyer@worldonline.fr
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ INTEL 810/815 FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ INTEL IA32 MICROCODE UPDATE SUPPORT
+@@ -2601,7 +2601,7 @@ S:	Odd Fixes for 2.4; Maintained for 2.6
+ MATROX FRAMEBUFFER DRIVER
+ P:	Petr Vandrovec
+ M:	vandrove@vc.cvut.cz
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ MAX6650 HARDWARE MONITOR AND FAN CONTROLLER DRIVER
+@@ -2910,7 +2910,7 @@ S:	Maintained
+ NVIDIA (rivafb and nvidiafb) FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ OPENCORES I2C BUS DRIVER
+@@ -3239,13 +3239,13 @@ S:	Maintained
+ RADEON FRAMEBUFFER DISPLAY DRIVER
+ P:	Benjamin Herrenschmidt
+ M:	benh@kernel.crashing.org
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ RAGE128 FRAMEBUFFER DISPLAY DRIVER
+ P:	Paul Mackerras
+ M:	paulus@samba.org
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ RAYLINK/WEBGEAR 802.11 WIRELESS LAN DRIVER
+@@ -3350,7 +3350,7 @@ S:	Maintained
+ S3 SAVAGE FRAMEBUFFER DRIVER
+ P:	Antonino Daplas
+ M:	adaplas@gmail.com
+-L:	linux-fbdev-devel@lists.sourceforge.net (subscribers-only)
++L:	linux-fbdev-devel@lists.sourceforge.net (moderated for non-subscribers)
+ S:	Maintained
+ 
+ S390
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
