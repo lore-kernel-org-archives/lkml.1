@@ -1,115 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755474AbYBQDf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbYBQDlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755474AbYBQDf0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbYBQDfJ
+	id S1755972AbYBQDlF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:41:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYBQDkz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 22:35:09 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:2228 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751212AbYBQDfG (ORCPT
+	Sat, 16 Feb 2008 22:40:55 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:37805 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752004AbYBQDky (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 22:35:06 -0500
-Date: Sat, 16 Feb 2008 22:35:04 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-cc: Oliver Pinter <oliver.pntr@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]*
-In-Reply-To: <47B78A08.1020502@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0802162210110.13745-100000@netrider.rowland.org>
+	Sat, 16 Feb 2008 22:40:54 -0500
+Message-ID: <47B7ACBE.1090904@linux.vnet.ibm.com>
+Date: Sun, 17 Feb 2008 09:10:46 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux390@de.ibm.com, linux-s390@vger.kernel.org,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUG] 2.6.25-rc2-mm1 - kernel oops while bootup on s390x
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B70C3A.4050600@linux.vnet.ibm.com> <20080216114527.48408288.akpm@linux-foundation.org> <alpine.LFD.1.00.0802162048120.7583@apollo.tec.linutronix.de> <alpine.LFD.1.00.0802162050020.7583@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802162050020.7583@apollo.tec.linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008, Andrew Buehler wrote:
+Thomas Gleixner wrote:
+> On Sat, 16 Feb 2008, Thomas Gleixner wrote:
+>> On Sat, 16 Feb 2008, Andrew Morton wrote:
+>>>> The 2.6.25-rc2-mm1 kernel panic's while boot up on the s390x
+>>>>
+>>>> Unable to handle kernel pointer dereference at virtual kernel address 0000000000
+>>>> 000000
+>>>> Oops: 0004 #1¨ SMP
+>>> First question is: does this happen in current mainline?
 
-> Messages sent to my address directly are explicitly not filtered into
-> the folders I have set up for various mailing lists, so that if someone
-> does send me a "heads up" reply for a specific topic on a list to which
-> I am subscribed it does not get caught by the list filter and fail to
-> come to my attention. If a message fails to be filtered into any
-> mailing-list folder, then I should be able to conclude that it is
-> specifically intended for me, and not part of normal mailing-list
-> traffic. The practice of sending replies to both addresses renders this
-> an invalid conclusion. I do not think that it is unreasonable to expect
-> that conclusion to be valid.
-
-It's not unreasonable.  Neither is Aristotelian physics.  Nevertheless, 
-neither one is a good match to reality.
-
-Why not arrange instead that messages sent from a mailing list server
-_do_ get filtered into the corresponding folder, even if they were also
-sent to your address?  This certainly should make your assumption (that
-messages not filtered into any mailing-list folder are specifically
-intended for you) much more valid than it is now.
-
-> It's not that I'm not receiving all of this thread's messages via the
-> list - it's that I'm not receiving *any* of them via the list, and I
-> suspect that the reason is that my address is in both the To:/Cc: and
-> the list itself. Something is filtering it such that I do not receive
-> "duplicate" replies in this way, but it is doing so by filtering out the
-> list copy rather than the direct copy. I have seen mailing lists which
-> do this before, but I see no other indication that the LKML is one of
-> them, and I would not be in the least surprised if this turned out to be
-> yet one more problem with gmail.
-
-Well, I _am_ receiving your messages by way of linux-usb as well as
-directly, for whatever that's worth.
-
-
-> > is an indication that interrupt routing is indeed not working right.
-> > Or possibly your EHCI controller isn't working.  You could try
-> > blacklisting or unloading ehci-hcd to see if that helps.  Of course
-> > then none of your USB devices would be able to run at high speed.
+This is not happening with the current mainline 2.6.24.{1,2}.
+>>>
+>>> If not, it would be useful if someone could test futex-fix-init-order.patch
+>>> and futex-runtime-enable-pi-and-robust-functionality.patch on curent
+>>> mainline, because those are planned for 2.6.25.
+>> See: http://lkml.org/lkml/2008/2/16/109
+>>
+>> It unearthed a BUG in the S390 exception fixup tables :)
 > 
-> ehci-hcd is not modular in my current kernel, and if there is a way to
-> turn it off without its being modular I am not aware of it.
+> Oops, wrong reference.
+> 
+>       http://lkml.org/lkml/2008/2/16/95
+> 
+> Thanks,
+> 	tglx
 
-Go into the /sys/bus/pci/drivers/ehci_hcd directory.  Then for each 
-symbolic link to a controller device listed there, write the device's 
-name (with "echo -n") to the "unbind" file.  For example,
+To conform the patches causing the panic, I tested the 2.6.24.2 kernel with the futex-fix-init-order.patch and
+futex-runtime-enable-pi-and-robust-functionality.patch applied and they seem to cause the kernel
+panic.
 
-	echo -n 0000:00:1d.7 >unbind
+Unable to handle kernel pointer dereference at virtual kernel address 0000000000
+000000
+Oops: 0004 #1¨ SMP
+Modules linked in:
+CPU: 0 Not tainted 2.6.25-rc2-mm1-autotest #1
+Process swapper (pid: 1, task: 000000003f830000, ksp: 000000003f83ba48)
+Krnl PSW : 0704a00180000000 000000000024b2be (futex_atomic_cmpxchg_std+0x12/0x28
+)
+           R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:2 CC:2 PM:0 EA:3
+Krnl GPRS: 0000000000000074 00000000fffffff2 0000000000000000 0000000000000000
+           0000000000000000 0000000000000001 0000000000000000 00000000004d0764
+           0000000000000000 00000000004d8768 0000000000000000 000000003f83bdb0
+           0000000000000040 0000000000343950 00000000000627e4 000000003f83bdb0
+Krnl Code: 000000000024b2b2: b90400bf           lgr     %r11,%r15
+           000000000024b2b6: a718fff2           lhi     %r1,-14
+           000000000024b2ba: b2790100           sacf    256
+          >000000000024b2be: ba342000           cs      %r3,%r4,0(%r2)
+           000000000024b2c2: 1813               lr      %r1,%r3
+           000000000024b2c4: b2790000           sacf    0
+           000000000024b2c8: b9140021           lgfr    %r2,%r1
+           000000000024b2cc: e3b0b0700004       lg      %r11,112(%r11)
+Call Trace:
+(<000000003f83bda8>¨ 0x3f83bda8)
+ <00000000004bdeec>¨ init+0x30/0x104
+ <00000000004b0c40>¨ kernel_init+0x1e0/0x370
+ <000000000001a5c6>¨ kernel_thread_starter+0x6/0xc
+ <000000000001a5c0>¨ kernel_thread_starter+0x0/0xc
 
-That will have nearly the same effect as unloading ehci-hcd.
+ <4>--- end trace 561bb236c800851f ¨---
+note: swapper1¨ exited with preempt_count 1
+Kernel panic - not syncing: Attempted to kill init!
 
-> Until this thread, I was not even aware that ACPI was related to USB; I
-> had largely conflated it with a similar acronym which I think is related
-> to power management and which I can suddenly not even find in my kernel
-> config. I will, however, look into linux-acpi.
-
-ACPI isn't directly related to USB; rather it has to do with
-transferring information between the OS and the
-BIOS/vendor-specific-hardware.  Power management is example where such
-a transfer is needed.  In your case, the relevant information is which
-IRQ is connected to which motherboard device.  If you don't have ACPI
-enabled in your configuration, then perhaps that's the problem -- try
-enabling it.
-
-> That will not be helpful for the other two problems, however, since
-> neither of them was ever working as far as I am aware. That also leaves
-> me hesitant to conclude that they are rooted in the same IRQ issue as
-> the USB problem appears to be.
-
-Maybe they aren't.  But when you have multiple bugs, you have to fix
-them one at a time.
-
-> Which lists or other addresses would be appropriate for reporting
-> problems with AHCI/libata and with networking, specifically with the
-> e1000/e1000e drivers? I see a mailing list for e1000 in MAINTAINERS, but
-> only the maintainer's address for SATA/libata/whatever else may be
-> involved there, and I am reflexively reluctant to bother a maintainer
-> directly with as little information as I presently have.
-
-I don't know, but you should wait until the simpler problem is sorted 
-out before tackling the more complicated ones.
-
-Alan Stern
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
