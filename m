@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756566AbYBQD5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbYBQD7C@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756566AbYBQD5q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbYBQD5i
+	id S1754530AbYBQD7C (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:59:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYBQD6x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 22:57:38 -0500
-Received: from rtr.ca ([76.10.145.34]:4091 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752530AbYBQD5h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 22:57:37 -0500
-Message-ID: <47B7B0AD.2080100@rtr.ca>
-Date: Sat, 16 Feb 2008 22:57:33 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sat, 16 Feb 2008 22:58:53 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:39291 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752699AbYBQD6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 Feb 2008 22:58:53 -0500
+Message-ID: <47B7B0CE.7000701@zytor.com>
+Date: Sat, 16 Feb 2008 19:58:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-References: <jelk5k62uy.fsf@sykes.suse.de> <47B77B3F.1000909@garzik.org> <je1w7c5rx5.fsf@sykes.suse.de>
-In-Reply-To: <je1w7c5rx5.fsf@sykes.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       pavel@suse.cz, Len Brown <lenb@kernel.org>, sam@ravnborg.org
+Subject: Re: 2.6.25-rc2-mm1 (wakeup)
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>	<20080216094844.3e5224f0.randy.dunlap@oracle.com>	<200802170218.08770.rjw@sisk.pl>	<47B78C6C.6040905@zytor.com> <20080216181918.3f2a1665.randy.dunlap@oracle.com>
+In-Reply-To: <20080216181918.3f2a1665.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab wrote:
-> Jeff Garzik <jeff@garzik.org> writes:
+Randy Dunlap wrote:
 > 
->> Andreas Schwab wrote:
->>> Since commit aaa04c28cb9a1efd42541fdb7ab648231c2a2263 [blk_end_request:
->>> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the
->>> following error from wodim:
->>>
->>> Errno: 0 (Success), write_g1 scsi sendcmd: no error
->>> CDB:  2A 00 00 00 00 00 00 00 1F 00
->>> status: 0x2 (CHECK CONDITION)
->>> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00
->>> Sense Key: 0x5 Illegal Request, Segment 0
->>> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0
->>> Sense flags: Blk 0 (not valid) resid: 63488
->> Does libata on the same hardware work?
+> Yes, adding -m32 to the X86_32 config ccflags (as is done for the
+> X86_64 case) makes it build for me.  (like patch below)
 > 
-> There is no libata driver for ide-pmac.
-..
 
-What chipset is that..  CMD646 ?
+It's wrong, though, because you can't assume a 32-bit compiler knows 
+about -m32.
+
+You need $(call cc-option,-m32).
+
+	-hpa
