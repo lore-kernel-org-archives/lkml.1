@@ -1,116 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756415AbYBQQlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYBQQmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756415AbYBQQlm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:41:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBQQlf
+	id S1756757AbYBQQmu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:42:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYBQQmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:41:35 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:17219 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752638AbYBQQle (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:41:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:content-type;
-        b=vWq9fDhffyM5DC1Z6f6pd3hQXQFlEl7xfphqsjuQGMHuUEDPcP+XIqM4X+c/QvUoMSttf/4l+6avyaGqmsPOzQihxEjdmheBXodtP3mAuWp/S/pIJxHnRybmMkzA3dhQi/YFkMtHrmAZmoS9tBAjMP67iGnts48y4ddx5c0wmCQ=
-Message-ID: <47B863A9.5070206@gmail.com>
-Date: Sun, 17 Feb 2008 18:41:13 +0200
-From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
+	Sun, 17 Feb 2008 11:42:42 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50684 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752823AbYBQQml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:42:41 -0500
+Date: Sun, 17 Feb 2008 17:42:24 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Robert Hancock <hancockr@shaw.ca>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
+Message-ID: <20080217164224.GK6006@elte.hu>
+References: <fa.LKjQjbOw482S/QFVaQ9fSrM+IFw@ifi.uio.no> <fa.wuwhrqFp6CufvpAJxShHqIaOPdI@ifi.uio.no> <47B67A0E.7060605@shaw.ca> <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
 MIME-Version: 1.0
-To: xfs@oss.sgi.com
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: xfsaild causing 30+ wakeups/s on an idle system since 2.6.25-rcX
-Content-Type: multipart/mixed;
- boundary="------------030908040306020509010605"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030908040306020509010605
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Hi,
+* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
 
-xfsaild is causing many wakeups, a quick investigation shows
-xfsaild_push is always
-returning 30 msecs timeout value.
-
-This is on an idle system, running only gnome, and gnome-terminal.
-
-I suggest changing the timeout logic in xfsaild to be more power
-consumption friendly.
-
-See below my original report to the powerTOP mailing list.
-
-Best regards,
---Edwin
-
---------------030908040306020509010605
-Content-Type: message/rfc822;
- name="Re: new offender in 2.6.25-git: xfsaild.eml"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline;
- filename="Re: new offender in 2.6.25-git: xfsaild.eml"
-
-Delivered-To: edwintorok@gmail.com
-Received: by 10.143.122.5 with SMTP id z5cs139388wfm;
-        Sun, 17 Feb 2008 08:09:47 -0800 (PST)
-Received: by 10.140.82.38 with SMTP id f38mr3238281rvb.30.1203264587861;
-        Sun, 17 Feb 2008 08:09:47 -0800 (PST)
-Return-Path: <arjan@linux.intel.com>
-Received: from orsmga101.jf.intel.com (mga06.intel.com [134.134.136.21])
-        by mx.google.com with ESMTP id f28si7517524rvb.35.2008.02.17.08.09.47;
-        Sun, 17 Feb 2008 08:09:47 -0800 (PST)
-Received-SPF: pass (google.com: domain of arjan@linux.intel.com designates 134.134.136.21 as permitted sender) client-ip=134.134.136.21;
-Authentication-Results: mx.google.com; spf=pass (google.com: domain of arjan@linux.intel.com designates 134.134.136.21 as permitted sender) smtp.mail=arjan@linux.intel.com
-Received: from orsmga002.jf.intel.com ([10.7.209.21])
-  by orsmga101.jf.intel.com with ESMTP; 17 Feb 2008 08:09:47 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,366,1199692800"; 
-   d="scan'208";a="258320829"
-Received: from jf-86862470-dhcp-client.jf.intel.com (HELO [134.134.36.112]) ([134.134.36.112])
-  by orsmga002.jf.intel.com with ESMTP; 17 Feb 2008 08:09:47 -0800
-Message-ID: <47B85C22.3070504@linux.intel.com>
-Date: Sun, 17 Feb 2008 08:09:06 -0800
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
-MIME-Version: 1.0
-To: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-CC: power@bughost.org
-Subject: Re: new offender in 2.6.25-git: xfsaild
-References: <47B5D405.409@gmail.com> <47B8538F.7060209@gmail.com>
-In-Reply-To: <47B8538F.7060209@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Török Edwin wrote:
-> Török Edwin wrote:
->> Hi,
->>
->> On latest -git of 2.6.25 I am getting lots of wakeups from xfsaild.
->>   23.5% ( 33.3)           xfsaild : schedule_timeout (process_timeout)
->>   
+> linus already apply the the patch to "use MMCONFIG for extended config 
+> space only" to mainline. the last two near 2.6.25-rc1.
 > 
-> [Should I Cc: xfs mailing list / lkml on this?]
-> 
-> The problem seems to be with the timeout logic in xfsaild_push, which
-> can return 3 timeout values (msecs): 1000, 10, 20, 30.
-> I inserted a marker and attached a probe function, schedule_timeout
-> always got called with 9 jiffies (which is 30 msecs, I have HZ=300).
-> 
-> Changing xfs_trans_ail.c:270 from "tout += 20" to "tout = 1000", made
-> xfsaild only do 1 wakeup/s instead of 33!
-> 
-> For some reason xfs_aild always thinks it has work (I/O) to do, and
-> never chooses the 1000 msec sleep value.
-> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a0ca9909609470ad779b9b9cc68ce96e975afff7
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b6ce068a1285a24185b01be8a49021827516b3e1
 
-sounds like an XFS bug... worth reporting to the xfs/lkml folks for sure.
+FYI, we've applied your patches to x86.git, they certainly look 
+sensible.
 
-
---------------030908040306020509010605--
+	Ingo
