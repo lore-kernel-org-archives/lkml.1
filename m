@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYBQOWF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYBQO2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758545AbYBQOWF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 09:22:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbYBQOVy
+	id S1757959AbYBQO2F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 09:28:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbYBQO1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 09:21:54 -0500
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:58743 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755951AbYBQOVx (ORCPT
+	Sun, 17 Feb 2008 09:27:52 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:35133 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755474AbYBQO1v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 09:21:53 -0500
-Message-Id: <5BDDEEF9-D2AC-4112-83EB-43D02E8C4E6C@tranquility.fsbusiness.co.uk>
-From: Andrew Smith <asmith@tranquility.fsbusiness.co.uk>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Sun, 17 Feb 2008 09:27:51 -0500
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
+       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+In-Reply-To: <20080217162559.d0b01760.sfr@canb.auug.org.au>
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
+	 <adalk5np1h5.fsf@cisco.com> <20080215120222.b3263e4a.sfr@canb.auug.org.au>
+	 <1203174872.3182.16.camel@localhost.localdomain>
+	 <20080217162559.d0b01760.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Sun, 17 Feb 2008 08:27:45 -0600
+Message-Id: <1203258465.3082.13.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: PROBLEM: Corruption problems in pata_via for Via NanoBook owners (Cloudbook, EasyNote XS etc.)
-Date: Sun, 17 Feb 2008 14:21:45 +0000
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One Line : Changes in 2.24 have rendered the ide handling on the Via  
-NanoBook unstable resulting in data loss under heavy load.
+On Sun, 2008-02-17 at 16:25 +1100, Stephen Rothwell wrote:
+> Hi James,
+> 
+> On Sat, 16 Feb 2008 09:14:32 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> >
+> > Do you have the tree and build logs available anywhere?  I'd like to
+> > turn off the merge tree builds when this is able to replace it.
+> 
+> The tree is at
+> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git - or did
+> you mean the logs of creating the tree.
 
-Keywords : modules, pata_via, viac82xxxx
+Yes, the logs of creating the tree.
 
-Kernel version : 2.24
+>   I currently ceate the tree
+> fairly manually (as I slowly script what can be) and so have no logs of
+> that process.
 
-Environment : Packard Bell Easynote XS - based on Via Nanobook  
-reference platform. (same as Everex Cloudbook in the USA).
+Um, well, I've already pointed to tools that currently do this bit
+automatically.  Do you have a list of input trees anywhere?
 
-Detail:
+> The build logs that I have some control over are at
+> http://kisskb.ellerman.id.au/kisskb/branch/9/.  I am hoping to expand on
+> the arch/config combinations over time (I have to convince my tame cross
+> compiler builder :-)).  I also hope that others will build this tree for
+> themselves and publish the results.
 
-In v2.23 Kernel the following patch could be applied to viac82xxxx  
-(see end of document), this works stably.
+Oh, OK ... by build I mean combine the trees and quilts into the actual
+tree.  Compiling is nice, but it's the tree construction logs I want to
+see to make sure there aren't any impending merge problems.  Most people
+verify on a fairly constant basis that their own trees actually build.
+The only problems we have are edge configurations (like arm and sparc,
+which have SCSI drivers that don't build except on those architectures).
 
-In 2.24 the device ID 0x581 for Vendor VIA was added to the pata_via  
-driver causing some problems.
+James
 
-It builds fine and seems to start up OK, however, on large IOs then  
-the kernel starts to throw errors about MULTICMDs (I think that was  
-the term) returning an invalid response.
-
-I have lost 2 builds so far (disk corruption) and have reverted to  
-2.23 with the attached patch which does work fine (and gives UDMA133).
-
-Suggestions:
-
-Re-implement 0x581 handling in via82xxxx based on patch shown below.
-
-Drop 0x581 support from pata_ide unless it is known to work with other  
-hardware variants reliably.
-
-If 0x581 is more desirable in pata_ide then make the via82cxxxx and  
-pata_ide drivers mutually exclusive in a kernel configuration.
-
-
-Regards,
-
--Andy Smith
-
-*** linux-2.6.23/drivers/ide/pci/via82cxxx.c	2007-10-09  
-22:31:38.000000000 +0200
---- linux-2.6.23-via-patch/drivers/ide/pci/via82cxxx.c	2007-11-02  
-01:03:57.000000000 +0100
-***************
-*** 61,66 ****
---- 61,68 ----
-   #define VIA_NO_UNMASK		0x08 /* Doesn't work with IRQ unmasking on */
-   #define VIA_BAD_ID		0x10 /* Has wrong vendor ID (0x1107) */
-   #define VIA_BAD_AST		0x20 /* Don't touch Address Setup Timing */
-+ #define PCI_DEVICE_ID_VIA_CX700 0x8324
-+ #define PCI_DEVICE_ID_VIA_CX700_IDE 0x0581
-
-   /*
-    * VIA SouthBridge chips.
-***************
-*** 545,550 ****
---- 547,553 ----
-   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C576_1, PCI_ANY_ID,  
-PCI_ANY_ID, 0, 0, 0},
-   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, PCI_ANY_ID,  
-PCI_ANY_ID, 0, 0, 0},
-   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_6410,     PCI_ANY_ID,  
-PCI_ANY_ID, 0, 0, 1},
-+ 	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_CX700_IDE, PCI_ANY_ID,  
-PCI_ANY_ID, 0, 0, 0},
-   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_SATA_EIDE,     PCI_ANY_ID,  
-PCI_ANY_ID, 0, 0, 1},
-   	{ 0, },
-   };
 
