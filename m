@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbYBQOGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbYBQOGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbYBQOGS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 09:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbYBQOGG
+	id S1758089AbYBQOGv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 09:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbYBQOGm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 09:06:06 -0500
-Received: from an-out-0708.google.com ([209.85.132.250]:44777 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755530AbYBQOGF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 09:06:05 -0500
-Message-ID: <47B83F90.7000203@larces.uece.br>
-Date: Sun, 17 Feb 2008 11:07:12 -0300
-From: Sergio Luis <sergio@larces.uece.br>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 17 Feb 2008 09:06:42 -0500
+Received: from www.tglx.de ([62.245.132.106]:42658 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755527AbYBQOGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 09:06:41 -0500
+Date: Sun, 17 Feb 2008 15:06:16 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
+In-Reply-To: <200802150127.21247.yinghai.lu@sun.com>
+Message-ID: <alpine.LFD.1.00.0802171505510.7583@apollo.tec.linutronix.de>
+References: <200802150127.21247.yinghai.lu@sun.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Mon, 4 Feb 2008, Rusty Russell wrote:
+On Fri, 15 Feb 2008, Yinghai Lu wrote:
+> From: Robert Hancock <hancockr@shaw.ca>
 > 
->> On Saturday 02 February 2008 04:05:51 Ingo Molnar wrote:
->>> looks similar to the previous one so i guess my quick fix attempt was a
->>> bit too quick. Will turn lguest off again. And i'm willing to test
->>> patches as well :)
->> Hi Ingo,
->>
->>    OK, this problem was caused by asm-offsets.c only having the offsets when
->> lguest *guest* support was set, not lguest host (host support used to imply
->> guest support, so now they're separate these bugs come out).
->>
->> Can you throw this patch into your tree for testing?
->>
->> Thanks,
->> Rusty.
+> This path adds validation of the MMCONFIG table against the ACPI reserved
+> motherboard resources.  If the MMCONFIG table is found to be reserved in
+> ACPI, we don't bother checking the E820 table.  The PCI Express firmware
+> spec apparently tells BIOS developers that reservation in ACPI is required
+> and E820 reservation is optional, so checking against ACPI first makes
+> sense.  Many BIOSes don't reserve the MMCONFIG region in E820 even though
+> it is perfectly functional, the existing check needlessly disables MMCONFIG
+> in these cases.
 > 
-> Applied. Thanks,
+> In order to do this, MMCONFIG setup has been split into two phases.  If PCI
+> configuration type 1 is not available then MMCONFIG is enabled early as
+> before.  Otherwise, it is enabled later after the ACPI interpreter is
+> enabled, since we need to be able to execute control methods in order to
+> check the ACPI reserved resources.  Presently this is just triggered off
+> the end of ACPI interpreter initialization.
 > 
-> 	 tglx
->  
+> There are a few other behavioral changes here:
+> 
+> - Validate all MMCONFIG configurations provided, not just the first one.
+> 
+> - Validate the entire required length of each configuration according to
+>   the provided ending bus number is reserved, not just the minimum required
+>   allocation.
+> 
+> - Validate that the area is reserved even if we read it from the chipset
+>   directly and not from the MCFG table.  This catches the case where the
+>   BIOS didn't set the location properly in the chipset and has mapped it
+>   over other things it shouldn't have.
+> 
+> This also cleans up the MMCONFIG initialization functions so that they
+> simply do nothing if MMCONFIG is not compiled in.
+> 
+> Based on an original patch by Rajesh Shah from Intel.
 
-It doesn't fix the problem totally. If we select 
-Virtualization->Linux hypervisor example code (CONFIG_LGUEST) 
-as a module, we will get the same build errors, since the related
-offsets won't be generated in include/asm-x86/asm-offset.h
->From arch/x86/kernel/asm_offsets_32.c
-[...]
-#ifdef CONFIG_LGUEST
-        BLANK();
-        OFFSET(LGUEST_PAGES_host_gdt_desc, lguest_pages, state.host_gdt_desc);
-        OFFSET(LGUEST_PAGES_host_idt_desc, lguest_pages, state.host_idt_desc);
-        OFFSET(LGUEST_PAGES_host_cr3, lguest_pages, state.host_cr3);
-        OFFSET(LGUEST_PAGES_host_sp, lguest_pages, state.host_sp);
-        OFFSET(LGUEST_PAGES_guest_gdt_desc, lguest_pages,state.guest_gdt_desc);
-        OFFSET(LGUEST_PAGES_guest_idt_desc, lguest_pages,state.guest_idt_desc);
-        OFFSET(LGUEST_PAGES_guest_gdt, lguest_pages, state.guest_gdt);
-        OFFSET(LGUEST_PAGES_regs_trapnum, lguest_pages, regs.trapnum);
-        OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
-        OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
-#endif
-[...]
+Applied. Thanks,
 
--sergio
-	
->> Lguest guest support and host support are separate config options: they used
->> to be tied together.  Sort out which parts of asm-offsets are needed for Guest
->> and Host.
->>
->> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
->>
->> diff -r 7d5a5c7a4b95 arch/x86/kernel/asm-offsets_32.c
->> --- a/arch/x86/kernel/asm-offsets_32.c	Sat Feb 02 23:13:05 2008 +1100
->> +++ b/arch/x86/kernel/asm-offsets_32.c	Sun Feb 03 10:13:19 2008 +1100
->> @@ -20,10 +20,8 @@
->>  
->>  #include <xen/interface/xen.h>
->>  
->> -#ifdef CONFIG_LGUEST_GUEST
->>  #include <linux/lguest.h>
->>  #include "../../../drivers/lguest/lg.h"
->> -#endif
->>  
->>  #define DEFINE(sym, val) \
->>          asm volatile("\n->" #sym " %0 " #val : : "i" (val))
->> @@ -134,6 +132,10 @@ void foo(void)
->>  	BLANK();
->>  	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
->>  	OFFSET(LGUEST_DATA_pgdir, lguest_data, pgdir);
->> +#endif
->> +
->> +#ifdef CONFIG_LGUEST
->> +	BLANK();
->>  	OFFSET(LGUEST_PAGES_host_gdt_desc, lguest_pages, state.host_gdt_desc);
->>  	OFFSET(LGUEST_PAGES_host_idt_desc, lguest_pages, state.host_idt_desc);
->>  	OFFSET(LGUEST_PAGES_host_cr3, lguest_pages, state.host_cr3);
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+	 tglx
