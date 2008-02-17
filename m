@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYBQOVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758545AbYBQOWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbYBQOVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 09:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbYBQOVF
+	id S1758545AbYBQOWF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 09:22:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbYBQOVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 09:21:05 -0500
-Received: from defiant.darkvoyage.org.uk ([81.187.177.18]:33660 "EHLO
-	defiant.darkvoyage.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755622AbYBQOVE (ORCPT
+	Sun, 17 Feb 2008 09:21:54 -0500
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:58743 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755951AbYBQOVx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 09:21:04 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 09:21:03 EST
-Message-ID: <47B8413A.80105@lkml.darkvoyage.org.uk>
-Date: Sun, 17 Feb 2008 14:14:18 +0000
-From: Iain Paton <ilp@lkml.darkvoyage.org.uk>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
-CC: Jordan Crouse <jordan.crouse@amd.com>,
-       Andres Salomon <dilinger@queued.net>, marc.jones@amd.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, wim@iguana.be
-Subject: Re: Geode GX/LX watchdog timer (RESEND)
-References: <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080119010624.GA25328@cosmic.amd.com> <47934B2E.3020707@i4.informatik.rwth-aachen.de> <20080121170700.GC6884@cosmic.amd.com> <4794E664.6020209@i4.informatik.rwth-aachen.de>
-In-Reply-To: <4794E664.6020209@i4.informatik.rwth-aachen.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sun, 17 Feb 2008 09:21:53 -0500
+Message-Id: <5BDDEEF9-D2AC-4112-83EB-43D02E8C4E6C@tranquility.fsbusiness.co.uk>
+From: Andrew Smith <asmith@tranquility.fsbusiness.co.uk>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: PROBLEM: Corruption problems in pata_via for Via NanoBook owners (Cloudbook, EasyNote XS etc.)
+Date: Sun, 17 Feb 2008 14:21:45 +0000
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Hannemann wrote:
+One Line : Changes in 2.24 have rendered the ide handling on the Via  
+NanoBook unstable resulting in data loss under heavy load.
 
-> I can confirm that it is still working fine :-)
+Keywords : modules, pata_via, viac82xxxx
 
-Hi,
+Kernel version : 2.24
 
-Has anyone managed to build this as a module against the full 2.6.24 
-release ?
+Environment : Packard Bell Easynote XS - based on Via Nanobook  
+reference platform. (same as Everex Cloudbook in the USA).
 
-I am seeing the following error:
+Detail:
 
-   CC [M]  lib/zlib_inflate/infutil.o
-   CC [M]  lib/zlib_inflate/inftrees.o
-   CC [M]  lib/zlib_inflate/inflate_syms.o
-   LD [M]  lib/zlib_inflate/zlib_inflate.o
-   Building modules, stage 2.
-   MODPOST 251 modules
-ERROR: "geode_mfgpt_toggle_event" [drivers/watchdog/geodewdt.ko] undefined!
-ERROR: "geode_mfgpt_alloc_timer" [drivers/watchdog/geodewdt.ko] undefined!
-make[1]: *** [__modpost] Error 1
-make: *** [modules] Error 2
+In v2.23 Kernel the following patch could be applied to viac82xxxx  
+(see end of document), this works stably.
+
+In 2.24 the device ID 0x581 for Vendor VIA was added to the pata_via  
+driver causing some problems.
+
+It builds fine and seems to start up OK, however, on large IOs then  
+the kernel starts to throw errors about MULTICMDs (I think that was  
+the term) returning an invalid response.
+
+I have lost 2 builds so far (disk corruption) and have reverted to  
+2.23 with the attached patch which does work fine (and gives UDMA133).
+
+Suggestions:
+
+Re-implement 0x581 handling in via82xxxx based on patch shown below.
+
+Drop 0x581 support from pata_ide unless it is known to work with other  
+hardware variants reliably.
+
+If 0x581 is more desirable in pata_ide then make the via82cxxxx and  
+pata_ide drivers mutually exclusive in a kernel configuration.
 
 
-arch/x86/kernel/mfgpt_32.c where these are defined seems to have been 
-built ok and they appear in System.map.
+Regards,
 
-The only other thing I've done is to add "[PATCH] pata_cs5536 Fix 
-secondary port configuration" recently posted by Martin K. Petersen but 
-I don't believe that would cause this.
+-Andy Smith
 
-.config is available at http://pastebin.ca/907299
+*** linux-2.6.23/drivers/ide/pci/via82cxxx.c	2007-10-09  
+22:31:38.000000000 +0200
+--- linux-2.6.23-via-patch/drivers/ide/pci/via82cxxx.c	2007-11-02  
+01:03:57.000000000 +0100
+***************
+*** 61,66 ****
+--- 61,68 ----
+   #define VIA_NO_UNMASK		0x08 /* Doesn't work with IRQ unmasking on */
+   #define VIA_BAD_ID		0x10 /* Has wrong vendor ID (0x1107) */
+   #define VIA_BAD_AST		0x20 /* Don't touch Address Setup Timing */
++ #define PCI_DEVICE_ID_VIA_CX700 0x8324
++ #define PCI_DEVICE_ID_VIA_CX700_IDE 0x0581
 
-Iain
-
+   /*
+    * VIA SouthBridge chips.
+***************
+*** 545,550 ****
+--- 547,553 ----
+   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C576_1, PCI_ANY_ID,  
+PCI_ANY_ID, 0, 0, 0},
+   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_82C586_1, PCI_ANY_ID,  
+PCI_ANY_ID, 0, 0, 0},
+   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_6410,     PCI_ANY_ID,  
+PCI_ANY_ID, 0, 0, 1},
++ 	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_CX700_IDE, PCI_ANY_ID,  
+PCI_ANY_ID, 0, 0, 0},
+   	{ PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_SATA_EIDE,     PCI_ANY_ID,  
+PCI_ANY_ID, 0, 0, 1},
+   	{ 0, },
+   };
 
