@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758425AbYBQMYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757993AbYBQMYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758425AbYBQMYd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755825AbYBQMXA
+	id S1757993AbYBQMYu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbYBQMXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:00 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55049 "EHLO pasmtpB.tele.dk"
+	Sun, 17 Feb 2008 07:23:03 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38331 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755133AbYBQMW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755203AbYBQMW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Feb 2008 07:22:56 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Len Brown <len.brown@intel.com>
-Subject: [PATCH 11/27] acpi: fix section mismatch in processor_core.c:acpi_processor_hotplug_notify
-Date: Sun, 17 Feb 2008 13:22:48 +0100
-Message-Id: <1203250984-11285-11-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Gautham R Shenoy <ego@in.ibm.com>
+Subject: [PATCH 06/27] cpu: fix section mismatch warning in unregister_cpu_notifier
+Date: Sun, 17 Feb 2008 13:22:43 +0100
+Message-Id: <1203250984-11285-6-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
 References: <20080217121255.GA10519@uranus.ravnborg.org>
@@ -24,33 +24,33 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Fix following warning:
-WARNING: vmlinux.o(.text+0x55586c): Section mismatch in reference from the function acpi_processor_hotplug_notify() to the function .cpuinit.text:acpi_processor_start()
+WARNING: vmlinux.o(.text+0x75f4e): Section mismatch in reference from the function unregister_cpu_notifier() to the variable .cpuinit.data:cpu_chain
 
-acpi_processor_hotplug_notify() may safely reference __cpuinit
-stuff as it ids defined inside an ACPI_HOTPLUG_CPU block.
-So annotate it __ref to silence the warning.
+We know that unregister_cpu_notifier is using HOTPLUG_CPU
+stuff - so ignore these references.
+Annotating unregister_cpu_notifier had been another option
+but this caused far more warnings since not all callers were
+annotated __cpuinit.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Len Brown <len.brown@intel.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>
 ---
- drivers/acpi/processor_core.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/cpu.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
-index 75ccf5d..d3cc07f 100644
---- a/drivers/acpi/processor_core.c
-+++ b/drivers/acpi/processor_core.c
-@@ -881,8 +881,8 @@ int acpi_processor_device_add(acpi_handle handle, struct acpi_device **device)
- 	return 0;
- }
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 2eff3f6..cdebf33 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -149,7 +149,7 @@ int __cpuinit register_cpu_notifier(struct notifier_block *nb)
  
--static void
--acpi_processor_hotplug_notify(acpi_handle handle, u32 event, void *data)
-+static void __ref acpi_processor_hotplug_notify(acpi_handle handle,
-+						u32 event, void *data)
+ EXPORT_SYMBOL(register_cpu_notifier);
+ 
+-void unregister_cpu_notifier(struct notifier_block *nb)
++void __ref unregister_cpu_notifier(struct notifier_block *nb)
  {
- 	struct acpi_processor *pr;
- 	struct acpi_device *device = NULL;
+ 	cpu_maps_update_begin();
+ 	raw_notifier_chain_unregister(&cpu_chain, nb);
 -- 
 1.5.4.rc3.14.g44397
 
