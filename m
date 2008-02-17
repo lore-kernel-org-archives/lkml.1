@@ -1,124 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbYBQLuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756370AbYBQLwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755764AbYBQLuU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 06:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbYBQLuI
+	id S1756370AbYBQLwR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 06:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754488AbYBQLwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 06:50:08 -0500
-Received: from ozlabs.org ([203.10.76.45]:59928 "EHLO ozlabs.org"
+	Sun, 17 Feb 2008 06:52:04 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:40009 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754464AbYBQLuG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 06:50:06 -0500
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>, linuxppc-dev@ozlabs.org,
-       Roel Kluin <12o3l@tiscali.nl>, Willy Tarreau <w@1wt.eu>,
-       lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org
-In-Reply-To: <20080216103927.2a02352b@laptopd505.fenrus.org>
-References: <47B70A61.9030306@tiscali.nl>
-	 <20080216092552.325e5726@laptopd505.fenrus.org>
-	 <20080216173315.GU8953@1wt.eu>
-	 <20080216094226.1e8eede1@laptopd505.fenrus.org>
-	 <47B72BFE.9060302@am.sony.com>
-	 <20080216103927.2a02352b@laptopd505.fenrus.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Bw+OjBsWfZC8CV3ijKEj"
-Date: Sun, 17 Feb 2008 22:50:03 +1100
-Message-Id: <1203249003.6718.24.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	id S1753168AbYBQLwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 06:52:01 -0500
+Date: Sun, 17 Feb 2008 12:52:15 +0100
+From: Matthias Kaehlcke <matthias@kaehlcke.net>
+To: kas@fi.muni.cz
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] COSA/SRP: Convert channel_data.rsem to mutex
+Message-ID: <20080217115215.GA21818@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias@kaehlcke.net>, kas@fi.muni.cz,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+COSA/SRP driver: The semaphore channel_data.rsem is used as a mutex,
+convert it to the mutex API
 
---=-Bw+OjBsWfZC8CV3ijKEj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-On Sat, 2008-02-16 at 10:39 -0800, Arjan van de Ven wrote:
-> > >> > you found a great set of bugs..
-> > >> > but to be honest... I suspect it's just best to remove unlikely
-> > >> > altogether for these cases; unlikely() is almost a
-> > >> > go-faster-stripes thing, and if you don't know how to use it you
-> > >> > shouldn't be using it... so just removing it for all wrong cases
-> > >> > is actually the best thing to do imo.
+--
 
-Hi Arjan,
+Index: linux-2.6/drivers/net/wan/cosa.c
+===================================================================
+--- linux-2.6.orig/drivers/net/wan/cosa.c	2008-02-17 12:41:34.000000000 +0100
++++ linux-2.6/drivers/net/wan/cosa.c	2008-02-17 12:42:37.000000000 +0100
+@@ -90,6 +90,7 @@
+ #include <linux/ioport.h>
+ #include <linux/netdevice.h>
+ #include <linux/spinlock.h>
++#include <linux/mutex.h>
+ #include <linux/device.h>
+ 
+ #undef COSA_SLOW_IO	/* for testing purposes only */
+@@ -127,7 +128,8 @@
+ 	int (*tx_done)(struct channel_data *channel, int size);
+ 
+ 	/* Character device parts */
+-	struct semaphore rsem, wsem;
++	struct mutex rlock;
++	struct semaphore wsem;
+ 	char *rxdata;
+ 	int rxsize;
+ 	wait_queue_head_t txwaitq, rxwaitq;
+@@ -807,7 +809,7 @@
+ 
+ static void chardev_channel_init(struct channel_data *chan)
+ {
+-	init_MUTEX(&chan->rsem);
++	mutex_init(&chan->rlock);
+ 	init_MUTEX(&chan->wsem);
+ }
+ 
+@@ -825,12 +827,12 @@
+ 			cosa->name, cosa->firmware_status);
+ 		return -EPERM;
+ 	}
+-	if (down_interruptible(&chan->rsem))
++	if (mutex_lock_interruptible(&chan->rlock))
+ 		return -ERESTARTSYS;
+ 	
+ 	if ((chan->rxdata = kmalloc(COSA_MTU, GFP_DMA|GFP_KERNEL)) == NULL) {
+ 		printk(KERN_INFO "%s: cosa_read() - OOM\n", cosa->name);
+-		up(&chan->rsem);
++		mutex_unlock(&chan->rlock);
+ 		return -ENOMEM;
+ 	}
+ 
+@@ -848,7 +850,7 @@
+ 			remove_wait_queue(&chan->rxwaitq, &wait);
+ 			current->state = TASK_RUNNING;
+ 			spin_unlock_irqrestore(&cosa->lock, flags);
+-			up(&chan->rsem);
++			mutex_unlock(&chan->rlock);
+ 			return -ERESTARTSYS;
+ 		}
+ 	}
+@@ -857,7 +859,7 @@
+ 	kbuf = chan->rxdata;
+ 	count = chan->rxsize;
+ 	spin_unlock_irqrestore(&cosa->lock, flags);
+-	up(&chan->rsem);
++	mutex_unlock(&chan->rlock);
+ 
+ 	if (copy_to_user(buf, kbuf, count)) {
+ 		kfree(kbuf);
 
-In general I agree with you that unlikely() is overused, and often in
-inappropriate places.
+-- 
+Matthias Kaehlcke
+Linux System Developer
+Barcelona
 
-> for mordern (last 10 years) x86 cpus... the cpu branchpredictor is better
-> than the coder in general. Same for most other architectures.
->=20
-> unlikely() creates bigger code as well.
->=20
-> Now... we're talking about your super duper hotpath function here right?
-> One where you care about 0.5 cycle speed improvement? (less on modern
-> systems ;)
-
-The first patch was to platforms/ps3 code, which runs on the Cell, in
-particular the PPE ... which is not an x86 :)
-
-eg:
-
-[michael@schoenaich ~]$ cat branch.c
-#include <stdio.h>
-int main(void)
-{
-        int i, j;
-
-        for (i =3D 0, j =3D 0; i < 1000000000; i++)
-                if (i % 4 =3D=3D 0)
-                        j++;
-
-        printf("j =3D %d\n", j);
-        return 0;
-}
-[michael@schoenaich ~]$ ppu-gcc -Wall -O3 -o branch branch.c
-[michael@schoenaich ~]$ time ./branch
-real    0m5.172s
-
-[michael@schoenaich ~]$ cat branch.c
-..
-        for (i =3D 0, j =3D 0; i < 1000000000; i++)
-                if (__builtin_expect(i % 4 =3D=3D 0, 0))
-                        j++;
-..
-[michael@schoenaich ~]$ ppu-gcc -Wall -O3 -o branch branch.c
-[michael@schoenaich ~]$ time ./branch
-real    0m3.762s
-
-
-Which looks as though unlikely() is helping. Admittedly we don't have a
-lot of kernel code that looks like that, but at least unlikely is doing
-what we want it to.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Bw+OjBsWfZC8CV3ijKEj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBHuB9rdSjSd0sB4dIRAlc3AKCSqznNR2VGMc0CJgu09lg5TF8oPQCgvPJ9
-Y9eLdFTtOKF/JB5EtEzwSGI=
-=9rV7
------END PGP SIGNATURE-----
-
---=-Bw+OjBsWfZC8CV3ijKEj--
-
+            Nothing is more despicable than respect based on fear
+                              (Albert Camus)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
