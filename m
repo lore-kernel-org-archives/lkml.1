@@ -1,73 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYBQUj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbYBQUjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbYBQUj0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYBQUjF
+	id S1757324AbYBQUjk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:39:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756298AbYBQUjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:39:05 -0500
-Received: from monty.telenet-ops.be ([195.130.132.56]:50948 "EHLO
-	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753950AbYBQUjD (ORCPT
+	Sun, 17 Feb 2008 15:39:15 -0500
+Received: from atlanta.zankel.net ([69.61.78.146]:4508 "EHLO
+	atlanta.zankel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755884AbYBQUjN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:39:03 -0500
-Date: Sun, 17 Feb 2008 21:38:55 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: setup_usemap() must be __meminit
-In-Reply-To: <20080217194320.GL14588@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0802172138010.6172@anakin>
-References: <Pine.LNX.4.64.0802171317230.10451@anakin>
- <Pine.LNX.4.64.0802171329400.6172@anakin> <20080217194320.GL14588@uranus.ravnborg.org>
+	Sun, 17 Feb 2008 15:39:13 -0500
+X-Greylist: delayed 532 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 15:39:13 EST
+Message-ID: <47B89946.8010409@zankel.net>
+Date: Sun, 17 Feb 2008 12:29:58 -0800
+From: Chris Zankel <chris@zankel.net>
+User-Agent: Thunderbird 1.5.0.14 (Macintosh/20071210)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Adrian Bunk <bunk@kernel.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: git-xtensa doesn't like my cross compiler
+References: <20080216104648.GH9962@cs181133002.pp.htv.fi>
+In-Reply-To: <20080216104648.GH9962@cs181133002.pp.htv.fi>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Sam Ravnborg wrote:
-> On Sun, Feb 17, 2008 at 01:31:14PM +0100, Geert Uytterhoeven wrote:
-> > On Sun, 17 Feb 2008, Geert Uytterhoeven wrote:
-> > > On m68k (CONFIG_SPARSEMEM is not set), I get:
-> > > 
-> > >     WARNING: vmlinux.o(.meminit.text+0x36c): Section mismatch in reference from the function free_area_init_core() to the function .init.text:setup_usemap()
-> > >     The function __meminit free_area_init_core() references
-> > >     a function __init setup_usemap().
-> > >     If free_area_init_core is only used by setup_usemap then
-> > >     annotate free_area_init_core with a matching annotation.
-> > > 
-> > > If CONFIG_SPARSEMEM is set, the problem is  not noticed because setup_usemap()
-> > > is always inlined.
-> > > 
-> > > Properly annotating setup_usemap() and usemap_size() fixes it.
-> > 
-> > Woops, hit the send button too soon.
-> > 
-> > setup_usemap() calls alloc_bootmem_node(), causing a whole new
-> > avalanche of warnings to be fixed up :-(
+Hi Adrian,
+
+Thanks for pointing this out. I'm working on a fix.
+
+BTW, which branch do you use? release or testing?
+
+Thanks,
+-CHris
+
+Adrian Bunk wrote:
+> With git-xtensa I'm getting:
 > 
-> Something you like me to help with?
+> <--  snip  -->
+> 
+> ...
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/xtensa/Makefile:30: *** No Xtensa toolchain found on PATH..  Stop.
+> make: *** [sub-make] Error 2
+> 
+> <--  snip  -->
+> 
+> My xtensa cross toolchain is prefixed xtensa-linux- and 
+> arch/xtensa/Makefile shouldn't make any assumptions regarding how the 
+> cross compiler is named.
+> 
+> cu
+> Adrian
+> 
 
-Yes, that would be nice.
-
-> I would need a config where the mismatch triggers for one
-> of the more popular architectures (as in where I have a toolchain).
-
-That was with plain m68k defconfig.
-
-> I could not reproduce it with x86 64bit - not even with -fno-inline-functions
-
-If it helps, my cross-compiler is gcc version 4.1.2 20061115 (prerelease)
-(Debian 4.1.1-21).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
