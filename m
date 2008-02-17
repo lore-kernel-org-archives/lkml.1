@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbYBQDBE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbYBQDB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbYBQDBE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:01:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757473AbYBQC6Q
+	id S1759630AbYBQDB1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYBQC61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 21:58:16 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36327 "EHLO
+	Sat, 16 Feb 2008 21:58:27 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36355 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755448AbYBQC6L (ORCPT
+	with ESMTP id S1757583AbYBQC6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 21:58:11 -0500
+	Sat, 16 Feb 2008 21:58:24 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       viro@ftp.linux.org.uk, hch@infradead.org, Jan Blunck <jblunck@suse.de>,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+       viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 16/17] Unionfs: use the new path_put
-Date: Sat, 16 Feb 2008 21:57:25 -0500
-Message-Id: <1203217054264-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 12/17] Unionfs: branch management/configuration fixes
+Date: Sat, 16 Feb 2008 21:57:21 -0500
+Message-Id: <12032170521740-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12032170461107-git-send-email-ezk@cs.sunysb.edu>
@@ -28,96 +26,126 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <jblunck@suse.de>
+Remove unnecessary calls to update branch m/ctimes, and use them only when
+needed.  Update branch vfsmounts after operations that could cause a copyup.
 
-* Add path_put() functions for releasing a reference to the dentry and
-  vfsmount of a struct path in the right order
-
-* Switch from path_release(nd) to path_put(&nd->path)
-
-* Rename dput_path() to path_put_conditional()
-
-Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Acked-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/main.c  |    2 +-
- fs/unionfs/super.c |   12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ fs/unionfs/commonfops.c |    9 +++------
+ fs/unionfs/copyup.c     |    3 ++-
+ fs/unionfs/dentry.c     |    1 +
+ fs/unionfs/mmap.c       |   17 ++++-------------
+ fs/unionfs/rename.c     |    7 +++++--
+ 5 files changed, 15 insertions(+), 22 deletions(-)
 
-diff --git a/fs/unionfs/main.c b/fs/unionfs/main.c
-index 4bc2c66..3585b29 100644
---- a/fs/unionfs/main.c
-+++ b/fs/unionfs/main.c
-@@ -371,7 +371,7 @@ static int parse_dirs_option(struct super_block *sb, struct unionfs_dentry_info
- 		if (err) {
- 			printk(KERN_ERR "unionfs: lower directory "
- 			       "'%s' is not a valid branch\n", name);
--			path_release(&nd);
-+			path_put(&nd.path);
- 			goto out;
- 		}
+diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
+index 491e2ff..2add167 100644
+--- a/fs/unionfs/commonfops.c
++++ b/fs/unionfs/commonfops.c
+@@ -604,6 +604,7 @@ out:
+ 	}
+ out_nofree:
+ 	if (!err) {
++		unionfs_postcopyup_setmnt(dentry);
+ 		unionfs_copy_attr_times(inode);
+ 		unionfs_check_file(file);
+ 		unionfs_check_inode(inode);
+@@ -839,13 +840,9 @@ int unionfs_flush(struct file *file, fl_owner_t id)
  
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index b71fc2a..773623e 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -234,7 +234,7 @@ static noinline int do_remount_mode_option(char *optarg, int cur_branches,
- 		if (nd.mnt == new_lower_paths[idx].mnt &&
- 		    nd.dentry == new_lower_paths[idx].dentry)
- 			break;
--	path_release(&nd);	/* no longer needed */
-+	path_put(&nd.path);	/* no longer needed */
- 	if (idx == cur_branches) {
- 		err = -ENOENT;	/* err may have been reset above */
- 		printk(KERN_ERR "unionfs: branch \"%s\" "
-@@ -277,7 +277,7 @@ static noinline int do_remount_del_option(char *optarg, int cur_branches,
- 		if (nd.mnt == new_lower_paths[idx].mnt &&
- 		    nd.dentry == new_lower_paths[idx].dentry)
- 			break;
--	path_release(&nd);	/* no longer needed */
-+	path_put(&nd.path);	/* no longer needed */
- 	if (idx == cur_branches) {
- 		printk(KERN_ERR "unionfs: branch \"%s\" "
- 		       "not found\n", optarg);
-@@ -296,7 +296,7 @@ static noinline int do_remount_del_option(char *optarg, int cur_branches,
- 	 * new_data and new_lower_paths one to the left.  Finally, adjust
- 	 * cur_branches.
- 	 */
--	pathput(&new_lower_paths[idx]);
-+	path_put(&new_lower_paths[idx]);
- 
- 	if (idx < cur_branches - 1) {
- 		/* if idx==cur_branches-1, we delete last branch: easy */
-@@ -361,7 +361,7 @@ static noinline int do_remount_add_option(char *optarg, int cur_branches,
- 		if (nd.mnt == new_lower_paths[idx].mnt &&
- 		    nd.dentry == new_lower_paths[idx].dentry)
- 			break;
--	path_release(&nd);	/* no longer needed */
-+	path_put(&nd.path);	/* no longer needed */
- 	if (idx == cur_branches) {
- 		printk(KERN_ERR "unionfs: branch \"%s\" "
- 		       "not found\n", optarg);
-@@ -408,7 +408,7 @@ found_insertion_point:
- 	if (err) {
- 		printk(KERN_ERR "unionfs: lower directory "
- 		       "\"%s\" is not a valid branch\n", optarg);
--		path_release(&nd);
-+		path_put(&nd.path);
- 		goto out;
  	}
  
-@@ -818,7 +818,7 @@ out_release:
- 	/* no need to cleanup/release anything in tmp_data */
- 	if (tmp_lower_paths)
- 		for (i = 0; i < new_branches; i++)
--			pathput(&tmp_lower_paths[i]);
-+			path_put(&tmp_lower_paths[i]);
- out_free:
- 	kfree(tmp_lower_paths);
- 	kfree(tmp_data);
+-	/* on success, update our times */
+-	unionfs_copy_attr_times(dentry->d_inode);
+-	/* parent time could have changed too (async) */
+-	unionfs_copy_attr_times(dentry->d_parent->d_inode);
+-
+ out:
+-	unionfs_check_file(file);
++	if (!err)
++		unionfs_check_file(file);
+ 	unionfs_unlock_dentry(file->f_path.dentry);
+ 	unionfs_read_unlock(dentry->d_sb);
+ 	return err;
+diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
+index 9beac01..f71bddf 100644
+--- a/fs/unionfs/copyup.c
++++ b/fs/unionfs/copyup.c
+@@ -819,7 +819,8 @@ begin:
+ 	 * update times of this dentry, but also the parent, because if
+ 	 * we changed, the parent may have changed too.
+ 	 */
+-	unionfs_copy_attr_times(parent_dentry->d_inode);
++	fsstack_copy_attr_times(parent_dentry->d_inode,
++				lower_parent_dentry->d_inode);
+ 	unionfs_copy_attr_times(child_dentry->d_inode);
+ 
+ 	parent_dentry = child_dentry;
+diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
+index 17b297d..a956b94 100644
+--- a/fs/unionfs/dentry.c
++++ b/fs/unionfs/dentry.c
+@@ -482,6 +482,7 @@ static int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
+ 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
+ 	err = __unionfs_d_revalidate_chain(dentry, nd, false);
+ 	if (likely(err > 0)) { /* true==1: dentry is valid */
++		unionfs_postcopyup_setmnt(dentry);
+ 		unionfs_check_dentry(dentry);
+ 		unionfs_check_nd(nd);
+ 	}
+diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
+index ad770ac..d6ac61e 100644
+--- a/fs/unionfs/mmap.c
++++ b/fs/unionfs/mmap.c
+@@ -227,20 +227,11 @@ static int unionfs_prepare_write(struct file *file, struct page *page,
+ 	int err;
+ 
+ 	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
+-	/*
+-	 * This is the only place where we unconditionally copy the lower
+-	 * attribute times before calling unionfs_file_revalidate.  The
+-	 * reason is that our ->write calls do_sync_write which in turn will
+-	 * call our ->prepare_write and then ->commit_write.  Before our
+-	 * ->write is called, the lower mtimes are in sync, but by the time
+-	 * the VFS calls our ->commit_write, the lower mtimes have changed.
+-	 * Therefore, the only reasonable time for us to sync up from the
+-	 * changed lower mtimes, and avoid an invariant violation warning,
+-	 * is here, in ->prepare_write.
+-	 */
+-	unionfs_copy_attr_times(file->f_path.dentry->d_inode);
+ 	err = unionfs_file_revalidate(file, true);
+-	unionfs_check_file(file);
++	if (!err) {
++		unionfs_copy_attr_times(file->f_path.dentry->d_inode);
++		unionfs_check_file(file);
++	}
+ 	unionfs_read_unlock(file->f_path.dentry->d_sb);
+ 
+ 	return err;
+diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
+index 5ab13f9..cc16eb2 100644
+--- a/fs/unionfs/rename.c
++++ b/fs/unionfs/rename.c
+@@ -138,6 +138,11 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 	err = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
+ 			 lower_new_dir_dentry->d_inode, lower_new_dentry);
+ out_err_unlock:
++	if (!err) {
++		/* update parent dir times */
++		fsstack_copy_attr_times(old_dir, lower_old_dir_dentry->d_inode);
++		fsstack_copy_attr_times(new_dir, lower_new_dir_dentry->d_inode);
++	}
+ 	unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
+ 	lockdep_on();
+ 
+@@ -526,8 +531,6 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 		}
+ 	}
+ 	/* if all of this renaming succeeded, update our times */
+-	unionfs_copy_attr_times(old_dir);
+-	unionfs_copy_attr_times(new_dir);
+ 	unionfs_copy_attr_times(old_dentry->d_inode);
+ 	unionfs_copy_attr_times(new_dentry->d_inode);
+ 	unionfs_check_inode(old_dir);
 -- 
 1.5.2.2
 
