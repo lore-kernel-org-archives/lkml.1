@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYBQWge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbYBQWkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYBQWge (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 17:36:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbYBQWgP
+	id S1756284AbYBQWkR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 17:40:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754058AbYBQWkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 17:36:15 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:35536 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754891AbYBQWgO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 17:36:14 -0500
-Date: Sun, 17 Feb 2008 23:36:23 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] mm: setup_usemap() must be __meminit
-Message-ID: <20080217223623.GA16053@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0802171317230.10451@anakin> <Pine.LNX.4.64.0802171329400.6172@anakin> <20080217194320.GL14588@uranus.ravnborg.org> <Pine.LNX.4.64.0802172138010.6172@anakin>
+	Sun, 17 Feb 2008 17:40:04 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49769 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753972AbYBQWkC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 17:40:02 -0500
+Date: Sun, 17 Feb 2008 22:31:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Willy Tarreau <w@1wt.eu>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] libata: implement 32-bit transfers for PIO mode
+Message-ID: <20080217223134.1c61809b@core>
+In-Reply-To: <20080217211810.GA15001@1wt.eu>
+References: <20080217211810.GA15001@1wt.eu>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802172138010.6172@anakin>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> > I would need a config where the mismatch triggers for one
-> > of the more popular architectures (as in where I have a toolchain).
-> 
-> That was with plain m68k defconfig.
-> 
-> > I could not reproduce it with x86 64bit - not even with -fno-inline-functions
-> 
-> If it helps, my cross-compiler is gcc version 4.1.2 20061115 (prerelease)
-> (Debian 4.1.1-21).
+> Thus, I have implemented the 32-bit mode to bring the performance back
+> to the level of the old IDE driver. I jumped from 1.5 MB/s to 2.5 MB/s,
+> which is an important difference at this level of performance, especially
+> when large files are read. The 32-bit mode is enabled using the ioctl
+> which is already implemented but only accepts a null value.
 
-I could build a m68k toolchin using crosstool.
-I will take a look one of the next days - too late now.
+Excellent, that has been on my TODO list for some time and I'd only
+gotten as far as putting into the ISA/VLB drivers rather than generally
+testing.
 
-	Sam
+I'm not however sure this should be a DFLAG but should be an alernative
+ata_data_xfer method - I say that because VLB needs to wrap it and some
+controllers have quirky rules for 32bit xfers. (Also some small number of
+pre ATA disks can't handle the different timing cycles from a 32bit ISA
+I/O being redirected their way).
+
+Alan
