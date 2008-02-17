@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbYBQLZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbYBQL2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755764AbYBQLZU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 06:25:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbYBQLZI
+	id S1756490AbYBQL2S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 06:28:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbYBQL2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 06:25:08 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37405 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbYBQLZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 06:25:07 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: 2.6.25-rc2-mm1 (build failure)
-Date: Sun, 17 Feb 2008 12:23:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       len.brown@intel.com
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080216213225.f5f71c35.randy.dunlap@oracle.com>
-In-Reply-To: <20080216213225.f5f71c35.randy.dunlap@oracle.com>
+	Sun, 17 Feb 2008 06:28:01 -0500
+Received: from master.altlinux.org ([62.118.250.235]:2623 "EHLO
+	master.altlinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753751AbYBQL2A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 06:28:00 -0500
+X-Greylist: delayed 1956 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 06:27:59 EST
+Date: Sun, 17 Feb 2008 13:55:20 +0300
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: Andrew Buehler <abuehler.kernel@gmail.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Pinter <oliver.pntr@gmail.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: USB regression (and other failures) in 2.6.2[45]*
+Message-ID: <20080217105520.GA4628@atlas.home>
+References: <Pine.LNX.4.44L0.0802161207160.3828-100000@iolanthe.rowland.org> <47B756B5.7070901@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LQksG6bCIzRHxTLp"
 Content-Disposition: inline
-Message-Id: <200802171223.10466.rjw@sisk.pl>
+In-Reply-To: <47B756B5.7070901@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of February 2008, Randy Dunlap wrote:
-> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
-> 
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
-> 
-> When SMP=n, x86_64 build gets:
-> 
-> arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
-> (.text+0xfd7f): undefined reference to `setup_trampoline'
-> make[1]: *** [.tmp_vmlinux1] Error 1
 
-Please try the patch at http://lkml.org/lkml/2008/2/16/301 .
+--LQksG6bCIzRHxTLp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks,
-Rafael
+On Sat, Feb 16, 2008 at 04:33:41PM -0500, Andrew Buehler wrote:
+> The associated dmesg (obtained yesterday from booting with the
+> Flash drive connected) is attached.
 
+This dmesg shows that ACPI is not enabled in your kernel config - most
+likely this is the problem.  Try to enable it:
+
+ 1) In the "Power management options" submenu enable the "Power
+    Management support" option (CONFIG_PM) - if this option is
+    disabled, you will not see the option to enable ACPI below.
+
+ 2) In the same submenu enable the "ACPI (Advanced Configuration and
+    Power Interface) Support" option (CONFIG_ACPI).
+
+Without ACPI support the kernel can use legacy interrupt routing
+tables from BIOS, but on new systems these tables are often broken due
+to lack of testing (because all modern operating systems use ACPI
+instead of these legacy tables).
+
+--LQksG6bCIzRHxTLp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFHuBKYW82GfkQfsqIRAn7lAKCLI1Hqzb3ZLL6MCaRjfOAIJSknRwCdGUxG
+3FPtUeL7NNA+fI9UNNrp0jA=
+=CI1M
+-----END PGP SIGNATURE-----
+
+--LQksG6bCIzRHxTLp--
