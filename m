@@ -1,97 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYBQTaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754009AbYBQTb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbYBQTaN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 14:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYBQT37
+	id S1754009AbYBQTb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 14:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751793AbYBQTbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 14:29:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:61640 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752195AbYBQT35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 14:29:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=BTbxwu/0KqPnX7CSwCGE6qbmvUOcmRuZ2rlyi7tKVJ8KOBMM5yl8MRNSI1/PnjUXJJ2fhXk/Cax7VCYY2nDg1RmicgU0AOI35zd849nyy6NDthGLiCykzIyi9vVkczzHu+iB4jPx81AqKtkG7Ilf3UJfF8/CE4UD+XMUfG+55os=
-Date: Sun, 17 Feb 2008 20:29:02 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: bfennema@falcon.csc.calpoly.edu, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 4/7] fs/udf/truncate.c: Use BUG_ON
-Message-ID: <20080217192858.GA9162@joi>
-References: <Pine.LNX.4.64.0802171855510.28055@ask.diku.dk>
-MIME-Version: 1.0
+	Sun, 17 Feb 2008 14:31:50 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41101 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbYBQTbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 14:31:49 -0500
+Date: Sun, 17 Feb 2008 20:31:59 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kbuild@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] modpost: Fix reversed symbol name order
+Message-ID: <20080217193159.GI14588@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0802171411400.19269@anakin>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802171855510.28055@ask.diku.dk>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <Pine.LNX.4.64.0802171411400.19269@anakin>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 06:56:18PM +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Sun, Feb 17, 2008 at 02:12:10PM +0100, Geert Uytterhoeven wrote:
+> XXXINIT_TO_INIT and XXXEXIT_TO_EXIT warnings use the reversed symbol name order
+> in the suggestion, e.g.:
 > 
-> if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
-> side-effects to allow a definition of BUG_ON that drops the code completely.
+>     WARNING: vmlinux.o(.meminit.text+0x36c): Section mismatch in reference from the function free_area_init_core() to the function .init.text:setup_usemap()
+>     The function __meminit free_area_init_core() references
+>     a function __init setup_usemap().
+>     If free_area_init_core is only used by setup_usemap then
+>     annotate free_area_init_core with a matching annotation.
+> 
 
-The same change is in my patch which is waiting for inclusion.
+Ups - applied.
 
-http://lkml.org/lkml/2008/1/30/512
+Thanks,
 
-> The semantic patch that makes this change is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @ disable unlikely @ expression E,f; @@
-> 
-> (
->   if (<... f(...) ...>) { BUG(); }
-> |
-> - if (unlikely(E)) { BUG(); }
-> + BUG_ON(E);
-> )
-> 
-> @@ expression E,f; @@
-> 
-> (
->   if (<... f(...) ...>) { BUG(); }
-> |
-> - if (E) { BUG(); }
-> + BUG_ON(E);
-> )
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> 
-> ---
-> 
-> diff -u -p a/fs/udf/truncate.c b/fs/udf/truncate.c
-> --- a/fs/udf/truncate.c 2008-02-10 22:34:15.000000000 +0100
-> +++ b/fs/udf/truncate.c 2008-02-17 16:41:19.000000000 +0100
-> @@ -224,8 +224,7 @@ void udf_truncate_extents(struct inode *
->  				if (indirect_ext_len) {
->  					/* We managed to free all extents in the
->  					 * indirect extent - free it too */
-> -					if (!epos.bh)
-> -						BUG();
-> +					BUG_ON(!epos.bh);
->  					udf_free_blocks(sb, inode, epos.block,
->  							0, indirect_ext_len);
->  				} else {
-> @@ -272,8 +271,7 @@ void udf_truncate_extents(struct inode *
->  		}
->  
->  		if (indirect_ext_len) {
-> -			if (!epos.bh)
-> -				BUG();
-> +			BUG_ON(!epos.bh);
->  			udf_free_blocks(sb, inode, epos.block, 0,
->  					indirect_ext_len);
->  		} else {
-> -
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+	Sam
