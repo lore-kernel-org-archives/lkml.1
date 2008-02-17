@@ -1,51 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbYBQWlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbYBQWsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757190AbYBQWlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 17:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbYBQWlH
+	id S1756242AbYBQWsS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 17:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbYBQWsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 17:41:07 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49773 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753967AbYBQWlE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 17:41:04 -0500
-Date: Sun, 17 Feb 2008 22:32:39 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Willy Tarreau <w@1wt.eu>
-Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] libata: implement support for 32-bit PIO transfers
-Message-ID: <20080217223239.1f04e095@core>
-In-Reply-To: <20080217212004.GB15327@1wt.eu>
-References: <20080217211810.GA15001@1wt.eu>
-	<20080217212004.GB15327@1wt.eu>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sun, 17 Feb 2008 17:48:00 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:58263 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753976AbYBQWr6 (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 17:47:58 -0500
+Date: Mon, 18 Feb 2008 09:47:36 +1100
+From: David Chinner <dgc@sgi.com>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>, xfs@oss.sgi.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Christoph Lameter <clameter@sgi.com>, David Chinner <dgc@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: xfsaild causing 30+ wakeups/s on an idle system since 2.6.25-rcX
+Message-ID: <20080217224736.GX155407@sgi.com>
+References: <47B863A9.5070206@gmail.com> <6101e8c40802170851w73db8130t9bcfdc5cf053f0dc@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <6101e8c40802170851w73db8130t9bcfdc5cf053f0dc@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 22:20:04 +0100
-Willy Tarreau <w@1wt.eu> wrote:
+On Sun, Feb 17, 2008 at 05:51:08PM +0100, Oliver Pinter wrote:
+> On 2/17/08, Török Edwin <edwintorok@gmail.com> wrote:
+> > Hi,
+> >
+> > xfsaild is causing many wakeups, a quick investigation shows
+> > xfsaild_push is always
+> > returning 30 msecs timeout value.
 
-> 
-> >From 4ea313fe6a3c46a90226cf40d0e3ece4b36b48f9 Mon Sep 17 00:00:00 2001
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Sun, 17 Feb 2008 21:28:25 +0100
-> Subject: [PATCH 2/2] libata: implement support for 32-bit PIO transfers
-> 
-> When ATA_DFLAG_32BIT_PIO is set in ata flags, PIO transfers
-> will be performed in 32-bit, just like with the plain old IDE
-> drivers.
+That's a bug, and has nothing to do with power consumption. ;)
 
-Acked-by: Alan Cox <alan@redhat.com>
+I can see that there is a dirty item in the filesystem:
 
-Although I think ata_data_xfer_32() would be safer and easier to add to
-controllers as we check the docs. But that can be a follow up improvement.
+Entering kdb (current=0xe00000b8f4fe0000, pid 30046) on processor 3 due to Breakpoint @ 0xa000000100454fc0
+[3]kdb> bt
+Stack traceback for pid 30046
+0xe00000b8f4fe0000    30046        2  1    3   R  0xe00000b8f4fe0340 *xfsaild
+0xa000000100454fc0 xfsaild_push
+        args (0xe00000b8ffff9090, 0xe00000b8f4fe7e30, 0x31b)
+....
+[3]kdb> xail 0xe00000b8ffff9090
+AIL for mp 0xe00000b8ffff9090, oldest first
+[0] type buf flags: 0x1 <in ail >   lsn [1:13133]
+   buf 0xe00000b880258800 blkno 0x0 flags: 0x2 <dirty >
+   Superblock (at 0xe00000b8f9b3c000)
+[3]kdb>
 
-Alan
+the superblock is dirty, and the lsn is well beyond the target
+of the xfsaild hence it *should* be idling. However, it isn't
+idling because there is a dirty item in the list and the idle trigger
+of "is list empty" is not tripping.
+
+I only managed to reproduce this on a lazy superblock counter
+filesystem (i.e.  new mkfs and recent kernel), as it logs the
+superblock every so often, and that is probably what is keeping the
+fs dirty like this.
+
+Can you see if the patch below fixes the problem.
+
+---
+
+Idle state is not being detected properly by the xfsaild push
+code. The current idle state is detected by an empty list
+which may never happen with mostly idle filesystem or one
+using lazy superblock counters. A single dirty item in the
+list will result repeated looping to push everything past
+the target when everything because it fails to check if we
+managed to push anything.
+
+Fix by considering a dirty list with everything past the target
+as an idle state and set the timeout appropriately.
+
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+---
+ fs/xfs/xfs_trans_ail.c |   15 +++++++++------
+ 1 file changed, 9 insertions(+), 6 deletions(-)
+
+Index: 2.6.x-xfs-new/fs/xfs/xfs_trans_ail.c
+===================================================================
+--- 2.6.x-xfs-new.orig/fs/xfs/xfs_trans_ail.c	2008-02-18 09:14:34.000000000 +1100
++++ 2.6.x-xfs-new/fs/xfs/xfs_trans_ail.c	2008-02-18 09:18:52.070682570 +1100
+@@ -261,14 +261,17 @@ xfsaild_push(
+ 		xfs_log_force(mp, (xfs_lsn_t)0, XFS_LOG_FORCE);
+ 	}
+ 
+-	/*
+-	 * We reached the target so wait a bit longer for I/O to complete and
+-	 * remove pushed items from the AIL before we start the next scan from
+-	 * the start of the AIL.
+-	 */
+-	if ((XFS_LSN_CMP(lsn, target) >= 0)) {
++	if (count && (XFS_LSN_CMP(lsn, target) >= 0)) {
++		/*
++		 * We reached the target so wait a bit longer for I/O to
++		 * complete and remove pushed items from the AIL before we
++		 * start the next scan from the start of the AIL.
++		 */
+ 		tout += 20;
+ 		last_pushed_lsn = 0;
++	} else if (!count) {
++		/* We're past our target or empty, so idle */
++		tout = 1000;
+ 	} else if ((restarts > XFS_TRANS_PUSH_AIL_RESTARTS) ||
+ 		   (count && ((stuck * 100) / count > 90))) {
+ 		/*
