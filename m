@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbYBQN4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbYBQN4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757745AbYBQN4V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 08:56:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYBQN4K
+	id S1758234AbYBQN4p (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:56:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757695AbYBQN4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 08:56:10 -0500
-Received: from www.tglx.de ([62.245.132.106]:55996 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754996AbYBQN4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 08:56:07 -0500
-Date: Sun, 17 Feb 2008 14:55:26 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Roland McGrath <roland@redhat.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] x86: make mxcsr_feature_mask static again
-In-Reply-To: <20080213212933.GE3383@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.00.0802171454560.7583@apollo.tec.linutronix.de>
-References: <20080213212933.GE3383@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 17 Feb 2008 08:56:34 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:46686 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755096AbYBQN4c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 08:56:32 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 17 Feb 2008 14:56:19 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: fw-sbp2: fix NULL pointer deref in slave_alloc
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Message-ID: <tkrat.e8f3d31fb5f9fe01@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 Feb 2008, Adrian Bunk wrote:
+Fix a kernel bug when running rescan-scsi-bus while a FireWire disk is
+connected:  http://bugzilla.kernel.org/show_bug.cgi?id=10008
 
-> mxcsr_feature_mask needlessly became global.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Applied along with the other x86 ones.
-
-Thanks,
-	tglx
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -1473,6 +1473,10 @@ static int sbp2_scsi_slave_alloc(struct 
+ {
+ 	struct sbp2_logical_unit *lu = sdev->hostdata;
  
-> ---
-> 
->  arch/x86/kernel/i387.c |    2 +-
->  include/asm-x86/i387.h |    1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
-> 
-> 76adc866d04ed20a5b2eb548920f93ad87268cbd 
-> diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
-> index 26719bd..763dfc4 100644
-> --- a/arch/x86/kernel/i387.c
-> +++ b/arch/x86/kernel/i387.c
-> @@ -39,7 +39,7 @@
->  #define HAVE_HWFP 1
->  #endif
->  
-> -unsigned int mxcsr_feature_mask __read_mostly = 0xffffffffu;
-> +static unsigned int mxcsr_feature_mask __read_mostly = 0xffffffffu;
->  
->  void mxcsr_feature_mask_init(void)
->  {
-> diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
-> index ba8105c..4c7706a 100644
-> --- a/include/asm-x86/i387.h
-> +++ b/include/asm-x86/i387.h
-> @@ -19,7 +19,6 @@
->  #include <asm/uaccess.h>
->  
->  extern void fpu_init(void);
-> -extern unsigned int mxcsr_feature_mask;
->  extern void mxcsr_feature_mask_init(void);
->  extern void init_fpu(struct task_struct *child);
->  extern asmlinkage void math_state_restore(void);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
++	/* (Re-)Adding logical units via the SCSI stack is not supported. */
++	if (!lu)
++		return -ENOSYS;
++
+ 	sdev->allow_restart = 1;
+ 
+ 	/*
+
+-- 
+Stefan Richter
+-=====-==--- --=- =---=
+http://arcgraph.de/sr/
+
