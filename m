@@ -1,42 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756849AbYBQVIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755069AbYBQVRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756849AbYBQVIY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 16:08:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBQVIN
+	id S1755069AbYBQVRV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 16:17:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbYBQVRL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 16:08:13 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:37231 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752778AbYBQVIM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 16:08:12 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <47B8A232.9080605@s5r6.in-berlin.de>
-Date: Sun, 17 Feb 2008 22:08:02 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.11) Gecko/20071216 SeaMonkey/1.1.7
+	Sun, 17 Feb 2008 16:17:11 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39482 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753083AbYBQVRK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 16:17:10 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+Subject: Re: Suspend doesn't work when SD card is inserted
+Date: Sun, 17 Feb 2008 22:15:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>
+References: <c4e36d110802170300t51e45613t4b45c921377bcfd7@mail.gmail.com>
+In-Reply-To: <c4e36d110802170300t51e45613t4b45c921377bcfd7@mail.gmail.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] ieee1394: sbp2: fix rescan-scsi-bus
-References: <tkrat.e8f3d31fb5f9fe01@s5r6.in-berlin.de>	 <tkrat.e66f8acfe9d89925@s5r6.in-berlin.de> <1203264186.3082.33.camel@localhost.localdomain> <47B875CA.8070900@s5r6.in-berlin.de>
-In-Reply-To: <47B875CA.8070900@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802172215.36991.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> On Sun, 2008-02-17 at 14:57 +0100, Stefan Richter wrote:
->>> rescan-scsi-bus used to add SBP-2 targets which weren't there.
+On Sunday, 17 of February 2008, Zdenek Kabelac wrote:
+> Hello
 
-PS:  It probably wasn't clear:  rescan-scsi-bus.sh is *not* necessary
-for sbp2 (under Linux 2.6, that is).  The patch merely prevents weird
-things from happening if the user runs rescan-scsi-bus.sh on a 2.6 box
-with sbp2 driven shosts present.
--- 
-Stefan Richter
--=====-==--- --=- =---=
-http://arcgraph.de/sr/
+Hi,
+
+Thanks for the report.
+
+> I've noticed that my system (T61) doesn't want to suspend when SD card
+> is in the card reader slot with 2.6.25-rc2  (no problem when the card
+> is outside)
+> Also the card is not even mounted, it's just in the slot and suspend locks.
+> 2.6.24 worked correctly.
+> 
+> Bisection games showed this patch as the source of problem:
+> 
+> 775b64d2b6ca37697de925f70799c710aab5849a is first bad commit
+> 
+> Hope this helps
+
+Yes, thanks.
+
+Most probably the SD driver does something it's not supposed to do in its
+.suspend() or .resume() routine.
+
+I've created the Bugzilla entry at
+http://bugzilla.kernel.org/show_bug.cgi?id=10030
+for this problem, please add yourself to the CC list in there.
+
+I'll be looking at this problem in the next few days.
+
+Thanks,
+Rafael
