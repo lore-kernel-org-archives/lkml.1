@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbYBQRRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbYBQRTE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbYBQRRf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:17:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752695AbYBQRR1
+	id S1757310AbYBQRTE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:19:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbYBQRSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:17:27 -0500
-Received: from astoria.ccjclearline.com ([64.235.106.9]:34277 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752340AbYBQRR0 (ORCPT
+	Sun, 17 Feb 2008 12:18:54 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:2412 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752789AbYBQRSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:17:26 -0500
-Date: Sun, 17 Feb 2008 12:17:20 -0500 (EST)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] linux/hdsmart.h: fix goofups
-In-Reply-To: <200802171807.57983.bzolnier@gmail.com>
-Message-ID: <alpine.LFD.1.00.0802171214380.3515@localhost.localdomain>
-References: <200802171807.57983.bzolnier@gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Sun, 17 Feb 2008 12:18:53 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=c/VXN9kef/p8BmRFHPsa683tRy1kDPHfbxOmH4Y8uIQyAGvgFWP6BRr3jJgCTvObF
+	MaIrI//zEM7ejE785NF/Q==
+Message-ID: <6599ad830802170918q4c748f7fs32e5b8ea63e49f15@mail.gmail.com>
+Date: Sun, 17 Feb 2008 09:18:44 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC][PATCH 7/7] CGroup API: Update cpusets to use cgroup structured file API
+Cc: balbir@in.ibm.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080216212901.70fe35ce.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080215204418.535025000@menage.corp.google.com>
+	 <20080215204821.778088000@menage.corp.google.com>
+	 <20080216212901.70fe35ce.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Bartlomiej Zolnierkiewicz wrote:
-
-> Fix goofups of commit 76166952bbc81dda1c8a8c14e75a2aa06f6c052c
-> ("<linux/hdsmart.h> is not used by kernel code").
+On Feb 16, 2008 7:29 PM, Paul Jackson <pj@sgi.com> wrote:
 >
-> Reported-by: "Robert P. J. Day" <rpjday@crashcourse.ca>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> From: Paul Jackson <pj@sgi.com>
+>
+> Strip all trailing whitespace (such as carriage returns)
+> when parsing integer writes to cgroup files, not just
+> one trailing newline if present.
+
+Sounds like a good idea to me. Thanks for this.
+
+>
+> Signed-off-by: Paul Jackson <pj@sgi.com>
+> Cc: Paul Menage <menage@google.com>
+
+Acked-by: Paul Menage <menage@google.com>
+
+>
 > ---
->  include/linux/hdsmart.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  kernel/cgroup.c |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
 >
-> Index: b/include/linux/hdsmart.h
-> ===================================================================
-> --- a/include/linux/hdsmart.h
-> +++ b/include/linux/hdsmart.h
-> @@ -17,7 +17,7 @@
->  #ifndef _LINUX_HDSMART_H
->  #define _LINUX_HDSMART_H
+> --- 2.6.24-mm1.orig/kernel/cgroup.c     2008-02-16 04:20:33.000000000 -0800
+> +++ 2.6.24-mm1/kernel/cgroup.c  2008-02-16 19:00:41.207478218 -0800
+> @@ -1321,10 +1321,7 @@ static ssize_t cgroup_write_uint(struct
+>                 return -EFAULT;
 >
-> -#ifndef __KERNEL
-> +#ifndef __KERNEL__
->  #define OFFLINE_FULL_SCAN		0
->  #define SHORT_SELF_TEST			1
->  #define EXTEND_SELF_TEST		2
-> @@ -121,6 +121,6 @@ typedef struct ata_smart_selftestlog_s {
->  	unsigned char			resevered[2];
->  	unsigned char			chksum;
->  } __attribute__ ((packed)) ata_smart_selftestlog_t;
-> -#endif /* __KERNEL__ *
-> +#endif /* __KERNEL__ */
+>         buffer[nbytes] = 0;     /* nul-terminate */
+> -
+> -       /* strip newline if necessary */
+> -       if (nbytes && (buffer[nbytes-1] == '\n'))
+> -               buffer[nbytes-1] = 0;
+> +       strstrip(buffer);       /* strip -just- trailing whitespace */
+>         val = simple_strtoull(buffer, &end, 0);
+>         if (*end)
+>                 return -EINVAL;
 >
->  #endif	/* _LINUX_HDSMART_H */
-
-if that header file isn't used by any kernel code, why bother having a
-check for __KERNEL__ in the first place?  it's being exported to
-userspace unchecked:
-
-  include/linux/Kbuild:header-y += hdsmart.h
-
-so why not just toss that check entirely?  otherwise, you're going to
-get a header file exported to userspace that has a superfluous
-__KERNEL__ test in it.
-
-rday
---
-
-
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry:
-    Have classroom, will lecture.
-
-http://crashcourse.ca                          Waterloo, Ontario, CANADA
-========================================================================
+>
+> --
+>                   I won't rest till it's the best ...
+>                   Programmer, Linux Scalability
+>                   Paul Jackson <pj@sgi.com> 1.940.382.4214
+>
