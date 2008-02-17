@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbYBQREV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbYBQRHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbYBQREV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbYBQREJ
+	id S1755616AbYBQRHc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:07:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752031AbYBQRHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:04:09 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33745 "EHLO mx2.mail.elte.hu"
+	Sun, 17 Feb 2008 12:07:24 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56949 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751567AbYBQREI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:04:08 -0500
-Date: Sun, 17 Feb 2008 18:03:42 +0100
+	id S1751716AbYBQRHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 12:07:23 -0500
+Date: Sun, 17 Feb 2008 18:07:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Anvin" <hpa@zytor.com>,
-       Matt Mackall <mpm@selenic.com>, zwane@arm.linux.org.uk,
-       Linux-tiny@selenic.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Configure out TSC support
-Message-ID: <20080217170342.GN6006@elte.hu>
-References: <20080213170016.7fb3dd87@crazy>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 2/2] x86: apic: Extended interrupt LVT support for AMD
+	Barcelona (32bit)
+Message-ID: <20080217170707.GO6006@elte.hu>
+References: <20080213151811.804698000@amd.com> <20080213151841.586864000@amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080213170016.7fb3dd87@crazy>
+In-Reply-To: <20080213151841.586864000@amd.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,16 +36,14 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Thomas Petazzoni <thomas.petazzoni@free-electrons.com> wrote:
+* Robert Richter <robert.richter@amd.com> wrote:
 
-> The following patch allows to remove the code needed to support the 
-> TSC timer on x86 32 bits. The TSC seems to be mandatory on x86 64 
-> bits. The patch adds a X86_TSC_TIMER option to enable/disable the 
-> support.
-> 
-> A X86_TSC option already exists, but it is not an option, it's simply 
-> set to true when the processor has a TSC. However, the purpose of the 
-> patch is to disable the TSC support even if the processor has it.
+>  /*
+> + * Setup extended LVT, AMD specific (K8, family 10h)
+> + *
+> + * Vector mappings are hard coded. On K8 only offset 0 (APIC500) and
+> + * MCE interrupts are supported. Thus MCE offset must be set to 0.
+> + */
 
 thanks, applied.
 
