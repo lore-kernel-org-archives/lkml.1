@@ -1,87 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756316AbYBQUl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYBQUrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756316AbYBQUl5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbYBQUlq
+	id S1754856AbYBQUrh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:47:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYBQUra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:41:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:39315 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbYBQUlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:41:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH v2] Re: 2.6.25-rc2-mm1 (wakeup)
-Date: Sun, 17 Feb 2008 21:40:15 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       pavel@suse.cz, Len Brown <lenb@kernel.org>, sam@ravnborg.org
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7B9AF.2030006@zytor.com> <47B7BC4C.8070502@oracle.com>
-In-Reply-To: <47B7BC4C.8070502@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 17 Feb 2008 15:47:30 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44350 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbYBQUr2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 15:47:28 -0500
+Date: Sun, 17 Feb 2008 12:46:50 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Unable to continue testing of 2.6.25
+Message-ID: <20080217124650.576990ce@laptopd505.fenrus.org>
+In-Reply-To: <200802171025.30590.elendil@planet.nl>
+References: <200802171025.30590.elendil@planet.nl>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802172140.16055.rjw@sisk.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 17 of February 2008, Randy Dunlap wrote:
-> H. Peter Anvin wrote:
-> > Randy Dunlap wrote:
-> >> On Sat, 16 Feb 2008 19:58:06 -0800 H. Peter Anvin wrote:
-> >>
-> >>> Randy Dunlap wrote:
-> >>>> Yes, adding -m32 to the X86_32 config ccflags (as is done for the
-> >>>> X86_64 case) makes it build for me.  (like patch below)
-> >>>>
-> >>> It's wrong, though, because you can't assume a 32-bit compiler knows 
-> >>> about -m32.
-> >>>
-> >>> You need $(call cc-option,-m32).
-> >>
-> >> -cflags-$(CONFIG_X86_32) :=
-> >> +cflags-$(CONFIG_X86_32) := $(call cc-option, -m32)
-> >>  cflags-$(CONFIG_X86_64) := -m32
-> > 
-> > I think this works for both; that's what we do for arch/x86/boot.
+On Sun, 17 Feb 2008 10:25:30 +0100
+Frans Pop <elendil@planet.nl> wrote:
+
+> Yesterday, after spending quite a few hours over the last days on
+> bisecting some serious regressions and finding workarounds for them,
+> I thought I could start using 2.6.25-rc2 as the new kernel for my
+> desktop. Unfortunately I found that I cannot because it would make my
+> other main activity - working on the Debian installation system -
+> impossible.
 > 
-> OK, that makes sense.  I think I'll let Rafael complete it.
+> For my work on the Debian Installer I heavily rely on emulators to
+> run test installs and ATM my emulator of choice is VirtualBox (the
+> fully open "ose" version). This requires the vboxdrv kernel module,
+> but unfortunately: vboxdrv: Unknown symbol change_page_attr
+> 
+> At first I traced this to:
+> e1271f68
+>  x86: deprecate change_page_attr() for drivers
+>  With the introduction of the new API, no driver or non-archcore code
+> needs to use c-p-a anymore, so this patch also deprecates the
+> EXPORT_SYMBOL of CPA (it's a horrible API after all).
+> which had:
+> -EXPORT_SYMBOL(change_page_attr);
+> +EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
+> 
+> Which seemed entirely reasonable but left me wondering about the
+> error I got.
+> 
+> But then I found:
+> d1028a15
+>  x86: make various pageattr.c functions static
+>  change_page_attr_add is only used in pageattr.c now, so we can
+>  make this function static.
+>  change_page_attr() isn't used anywere at all anymore; this function
+>  is a really bad API anyway so just remove the bloat entirely.
+> 
+> Which removed the entire function (without even properly mentioning
+> it in the shortlog).
+> 
 
-OK, so that would be the appended patch.
+the initial plan was for a depreciation period. Sadly it was untenable since the API
+was changing entirely to fix bugs and add a really important feature
+(the ability to clflush the exact range rather than wbinvd'ing the caches of all cpus in the system), 
+at which point we had to pull the function right away.
 
-Still, since there are several fixes against the "move the wakeup code to C"
-patch, I'll probably fold them all into a new version of this patch and resend
-it.
+As for virtualbox; a fix for that already exists, and it consists of removing 25 lines of workarounds
+for c-p-a bugs, and just using set_memory_x / set_memory_nx.
 
-Thanks,
-Rafael
 
----
- arch/x86/kernel/acpi/realmode/Makefile |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux-2.6/arch/x86/kernel/acpi/realmode/Makefile
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/realmode/Makefile
-+++ linux-2.6/arch/x86/kernel/acpi/realmode/Makefile
-@@ -27,8 +27,6 @@ bootsrc		:= $(src)/../../../boot
- # How to compile the 16-bit code.  Note we always compile for -march=i386,
- # that way we can complain to the user if the CPU is insufficient.
- # Compile with _SETUP since this is similar to the boot-time setup code.
--cflags-$(CONFIG_X86_32) :=
--cflags-$(CONFIG_X86_64) := -m32
- KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os -D_SETUP -D_WAKEUP -D__KERNEL__ \
- 		   -I$(srctree)/$(bootsrc) \
- 		   $(cflags-y) \
-@@ -41,6 +39,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 			$(call cc-option, -fno-unit-at-a-time)) \
- 		   $(call cc-option, -fno-stack-protector) \
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
-+KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
- 
- WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
