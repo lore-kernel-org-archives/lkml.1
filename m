@@ -1,153 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbYBQMca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbYBQMcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761195AbYBQMca (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:32:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbYBQMXa
+	id S1761321AbYBQMcr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758601AbYBQMYq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:30 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38355 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 07:22:57 -0500
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>
-Subject: [PATCH 25/27] pci: fix section mismatch warning in pci_scan_child_bus
-Date: Sun, 17 Feb 2008 13:23:02 +0100
-Message-Id: <1203250984-11285-25-git-send-email-sam@ravnborg.org>
-X-Mailer: git-send-email 1.5.4.1.143.ge7e51
-In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
-References: <20080217121255.GA10519@uranus.ravnborg.org>
+	Sun, 17 Feb 2008 07:24:46 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48516 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758581AbYBQMYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 07:24:44 -0500
+Date: Sun, 17 Feb 2008 06:24:38 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 1/6] mmu_notifier: Core code
+Message-ID: <20080217122438.GB11391@sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.371510599@sgi.com> <20080215193719.262c03a1.akpm@linux-foundation.org> <Pine.LNX.4.64.0802161103101.25573@schroedinger.engr.sgi.com> <20080217030120.GO11732@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080217030120.GO11732@v2.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warning:
-WARNING: vmlinux.o(.text+0x47bdb1): Section mismatch in reference from the function pci_scan_child_bus() to the function .devinit.text:pcibios_fixup_bus()
+On Sun, Feb 17, 2008 at 04:01:20AM +0100, Andrea Arcangeli wrote:
+> On Sat, Feb 16, 2008 at 11:21:07AM -0800, Christoph Lameter wrote:
+> > On Fri, 15 Feb 2008, Andrew Morton wrote:
+> > 
+> > > What is the status of getting infiniband to use this facility?
+> > 
+> > Well we are talking about this it seems.
+> 
+> It seems the IB folks think allowing RDMA over virtual memory is not
+> interesting, their argument seem to be that RDMA is only interesting
+> on RAM (and they seem not interested in allowing RDMA over a ram+swap
+> backed _virtual_ memory allocation). They've just to decide if
+> ram+swap allocation for RDMA is useful or not.
 
-We had plenty of functions that could be annotated __devinit but
-due to the former restriction that annotated symbols could not
-be annotated they were not so.
-So annotate these function and fix the references from the
-pci/hotplug/* code to silence the resuting warnings.
+I don't think that is a completely fair characterization.  It would be
+more fair to say that the changes required to their library/user api
+would be too significant to allow an adaptation to any scheme which
+allowed removal of physical memory below a virtual mapping.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Greg KH <greg@kroah.com>
----
- drivers/pci/hotplug-pci.c              |    2 +-
- drivers/pci/hotplug/acpiphp_glue.c     |    2 +-
- drivers/pci/hotplug/cpci_hotplug_pci.c |    2 +-
- drivers/pci/hotplug/pciehp_pci.c       |    2 +-
- drivers/pci/hotplug/shpchp_pci.c       |    2 +-
- drivers/pci/probe.c                    |    8 ++++----
- 6 files changed, 9 insertions(+), 9 deletions(-)
+I agree with the IB folks when they say it is impossible with their
+current scheme.  The fact that any consumer of their endpoint identifier
+can use any identifier without notifying the kernel prior to its use
+certainly makes any implementation under any scheme impossible.
 
-diff --git a/drivers/pci/hotplug-pci.c b/drivers/pci/hotplug-pci.c
-index a590ef6..4d4a644 100644
---- a/drivers/pci/hotplug-pci.c
-+++ b/drivers/pci/hotplug-pci.c
-@@ -4,7 +4,7 @@
- #include "pci.h"
- 
- 
--unsigned int pci_do_scan_bus(struct pci_bus *bus)
-+unsigned int __devinit pci_do_scan_bus(struct pci_bus *bus)
- {
- 	unsigned int max;
- 
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index cf22f9e..5e50008 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -1085,7 +1085,7 @@ static int acpiphp_bus_trim(acpi_handle handle)
-  * This function should be called per *physical slot*,
-  * not per each slot object in ACPI namespace.
-  */
--static int enable_device(struct acpiphp_slot *slot)
-+static int __ref enable_device(struct acpiphp_slot *slot)
- {
- 	struct pci_dev *dev;
- 	struct pci_bus *bus = slot->bridge->pci_bus;
-diff --git a/drivers/pci/hotplug/cpci_hotplug_pci.c b/drivers/pci/hotplug/cpci_hotplug_pci.c
-index 5e9be44..dddac96 100644
---- a/drivers/pci/hotplug/cpci_hotplug_pci.c
-+++ b/drivers/pci/hotplug/cpci_hotplug_pci.c
-@@ -250,7 +250,7 @@ int cpci_led_off(struct slot* slot)
-  * Device configuration functions
-  */
- 
--int cpci_configure_slot(struct slot* slot)
-+int __ref cpci_configure_slot(struct slot* slot)
- {
- 	struct pci_bus *parent;
- 	int fn;
-diff --git a/drivers/pci/hotplug/pciehp_pci.c b/drivers/pci/hotplug/pciehp_pci.c
-index dd50713..9372a84 100644
---- a/drivers/pci/hotplug/pciehp_pci.c
-+++ b/drivers/pci/hotplug/pciehp_pci.c
-@@ -167,7 +167,7 @@ static void program_fw_provided_values(struct pci_dev *dev)
- 	}
- }
- 
--static int pciehp_add_bridge(struct pci_dev *dev)
-+static int __ref pciehp_add_bridge(struct pci_dev *dev)
- {
- 	struct pci_bus *parent = dev->bus;
- 	int pass, busnr, start = parent->secondary;
-diff --git a/drivers/pci/hotplug/shpchp_pci.c b/drivers/pci/hotplug/shpchp_pci.c
-index 0a6b25e..a69a215 100644
---- a/drivers/pci/hotplug/shpchp_pci.c
-+++ b/drivers/pci/hotplug/shpchp_pci.c
-@@ -96,7 +96,7 @@ static void program_fw_provided_values(struct pci_dev *dev)
- 	}
- }
- 
--int shpchp_configure_device(struct slot *p_slot)
-+int __ref shpchp_configure_device(struct slot *p_slot)
- {
- 	struct pci_dev *dev;
- 	struct pci_bus *parent = p_slot->ctrl->pci_dev->subordinate;
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 4d23b9f..5ffd610 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -286,7 +286,7 @@ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
- 	}
- }
- 
--void pci_read_bridge_bases(struct pci_bus *child)
-+void __devinit pci_read_bridge_bases(struct pci_bus *child)
- {
- 	struct pci_dev *dev = child->self;
- 	u8 io_base_lo, io_limit_lo;
-@@ -472,7 +472,7 @@ static void pci_fixup_parent_subordinate_busnr(struct pci_bus *child, int max)
-  * them, we proceed to assigning numbers to the remaining buses in
-  * order to avoid overlaps between old and new bus numbers.
-  */
--int pci_scan_bridge(struct pci_bus *bus, struct pci_dev * dev, int max, int pass)
-+int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev * dev, int max, int pass)
- {
- 	struct pci_bus *child;
- 	int is_cardbus = (dev->hdr_type == PCI_HEADER_TYPE_CARDBUS);
-@@ -1008,7 +1008,7 @@ int pci_scan_slot(struct pci_bus *bus, int devfn)
- 	return nr;
- }
- 
--unsigned int pci_scan_child_bus(struct pci_bus *bus)
-+unsigned int __devinit pci_scan_child_bus(struct pci_bus *bus)
- {
- 	unsigned int devfn, pass, max = bus->secondary;
- 	struct pci_dev *dev;
-@@ -1116,7 +1116,7 @@ err_out:
- 	return NULL;
- }
- 
--struct pci_bus *pci_scan_bus_parented(struct device *parent,
-+struct pci_bus * __devinit pci_scan_bus_parented(struct device *parent,
- 		int bus, struct pci_ops *ops, void *sysdata)
- {
- 	struct pci_bus *b;
--- 
-1.5.4.rc3.14.g44397
+I guess we could possibly make things work for IB if we did some heavy
+work.  Let's assume, instead of passing around the physical endpoint
+identifiers, they passed around a handle.  In order for any IB endpoint
+to commuicate, it would need to request the kernel translate a handle
+into an endpoint identifier.  In order for the kernel to put a TLB
+entry into the processes address space allowing the process access to
+the _CARD_, it would need to ensure all the current endpoint identifiers
+for this process were "active" meaning we have verified with the other
+endpoint that all pages are faulted and TLB/PFN information is in the
+owning card's TLB/PFN tables.  Once all of a processes endoints are
+"active" we would drop in the PFN for the adapter into the pages tables.
+Any time pages are being revoked from under an active handle, we would
+shoot-down the IB adapter card TLB entries for all the remote users of
+this handle and quiesce the cards state to ensure transfers are either
+complete or terminated.  When their are no active transfers, we would
+respond back to the owner and they could complete the source process
+page table cleaning.  Any time all of the pages for a handle can not be
+mapped from virtual to physical, the remote process would be SIGBUS'd
+instead of having it IB adapter TLB installed.
 
+This is essentially how XPMEM does it except we have the benefit of
+working on individual pages.
+
+Again, not knowing what I am talking about, but under the assumption that
+MPI IB use is contained to a library, I would hope the changes could be
+contained under the MPI-to-IB library interface and would not need any
+changes at the MPI-user library interface.
+
+We do keep track of the virtual address ranges within a handle that
+are being used.  I assume the IB folks will find that helpful as well.
+Otherwise, I think they could make things operate this way.  XPMEM has
+the advantage of not needing to have virtual-to-physical at all times,
+but otherwise it is essentially the same.
+
+Thanks,
+Robin
