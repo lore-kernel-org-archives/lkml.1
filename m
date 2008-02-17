@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754142AbYBQTtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754687AbYBQTvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754142AbYBQTtg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 14:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbYBQTt2
+	id S1754687AbYBQTvR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 14:51:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYBQTvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 14:49:28 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:60017 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751603AbYBQTt2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 14:49:28 -0500
-Message-ID: <47B88FAA.9080603@zytor.com>
-Date: Sun, 17 Feb 2008 11:48:58 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sun, 17 Feb 2008 14:51:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42775 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751712AbYBQTvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 14:51:03 -0500
+Date: Sun, 17 Feb 2008 20:50:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ian Campbell <ijc@hellion.org.uk>, Matt Mackall <mpm@selenic.com>,
+       Linux Mailing List <linux-kernel@vger.kernel.org>,
+       "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: arch/x86/mm/ioremap unification grew by 10x
+Message-ID: <20080217195041.GA20850@elte.hu>
+References: <1203107155.12383.230.camel@cinder.waste.org> <20080215203228.GA4295@uranus.ravnborg.org> <1203110488.12383.231.camel@cinder.waste.org> <1203117425.12383.238.camel@cinder.waste.org> <1203275382.27987.20.camel@localhost.localdomain> <20080217192840.GH14588@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-CC: Sam Ravnborg <sam@ravnborg.org>, ak@suse.de, mingo@elte.hu,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/2] x86: lds - Use THREAD_SIZE instead of numeric	constant
-References: <20080217151716.274134094@gmail.com> <20080217151925.402628615@gmail.com> <20080217185936.GB14588@uranus.ravnborg.org> <20080217190801.GC31968@cvg>
-In-Reply-To: <20080217190801.GC31968@cvg>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080217192840.GH14588@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cyrill Gorcunov wrote:
-> 
-> Yes Sam, I've read Peter and Ingo comments on this patch
-> (actually I sent the same patch maybe week ago and Peter
-> and Ingo told me that we use %fs,%gs now for stack) but
-> as I pointed in comment - this alignment is still using
-> by Xen and lguest and even x86. So - it would be really
-> usefull for me if someone give me the last point - YES we
-> use such an alignment for stack, NO - we don't use it at all.
-> I was trying to hadle this myself - but I'm not a specialist
-> in this area you know ;)
-> 
 
-It bugs me quite a bit that paravirt clients contain this hack 
-open-coded, but that's not *your* fault.  There probably should be a 
-macro to encapsulate the stack pointer location for a specific thread.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-	-hpa
+> >  static __initdata int after_paging_init;
+> > -static __initdata pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)]
+> > -				__attribute__((aligned(PAGE_SIZE)));
+> > +static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)]
+> 
+> Replace
+> > +		__attribute__((__section__(".bss.page_aligned")));
+> 
+> with the shorter form:
+> > +		__section(.bss.page_aligned)));
+
+i've picked up Ian's patch into x86.git and have done the above change. 
+Thanks,
+
+	Ingo
