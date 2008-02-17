@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760312AbYBQIXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYBQIYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760312AbYBQIXy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759129AbYBQIU4
+	id S1757860AbYBQIYX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:24:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYBQIVC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:20:56 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37004 "EHLO smtp6.pp.htv.fi"
+	Sun, 17 Feb 2008 03:21:02 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:59741 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759114AbYBQIUy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:20:54 -0500
-Date: Sun, 17 Feb 2008 10:20:28 +0200
+	id S1759151AbYBQIVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:21:00 -0500
+Date: Sun, 17 Feb 2008 10:20:34 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: hch@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/freevxfs/: proper externs
-Message-ID: <20080217082028.GS3848@cs181133002.pp.htv.fi>
+To: swhiteho@redhat.com
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] proper extern for gfs2/locking/dlm/mount.c:gdlm_ops
+Message-ID: <20080217082034.GT3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,67 +23,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch moves the extern declarations of several structs to vxfs_extern.h
+This patch adds a proper extern declaration for gdlm_ops in 
+fs/gfs2/locking/dlm/lock_dlm.h
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/freevxfs/vxfs_extern.h |    5 +++++
- fs/freevxfs/vxfs_immed.c  |    1 +
- fs/freevxfs/vxfs_inode.c  |    5 -----
- 3 files changed, 6 insertions(+), 5 deletions(-)
+ fs/gfs2/locking/dlm/lock_dlm.h |    5 +++++
+ fs/gfs2/locking/dlm/main.c     |    2 --
+ fs/gfs2/locking/dlm/sysfs.c    |    2 --
+ 3 files changed, 5 insertions(+), 4 deletions(-)
 
-d5e4ab16e3f3550022ee77df02a0602bc03642ee diff --git a/fs/freevxfs/vxfs_extern.h b/fs/freevxfs/vxfs_extern.h
-index 2b46064..50ab5ee 100644
---- a/fs/freevxfs/vxfs_extern.h
-+++ b/fs/freevxfs/vxfs_extern.h
-@@ -50,7 +50,11 @@ extern daddr_t			vxfs_bmap1(struct inode *, long);
- /* vxfs_fshead.c */
- extern int			vxfs_read_fshead(struct super_block *);
- 
-+/* vxfs_immed.c */
-+extern const struct inode_operations vxfs_immed_symlink_iops;
+b4ac811ad577cd6039fdd1395cfa910294b8efdc diff --git a/fs/gfs2/locking/dlm/lock_dlm.h b/fs/gfs2/locking/dlm/lock_dlm.h
+index 9e8265d..58fcf8c 100644
+--- a/fs/gfs2/locking/dlm/lock_dlm.h
++++ b/fs/gfs2/locking/dlm/lock_dlm.h
+@@ -183,5 +183,10 @@ int gdlm_plock_get(void *, struct lm_lockname *, struct file *,
+ 		struct file_lock *);
+ int gdlm_punlock(void *, struct lm_lockname *, struct file *,
+ 		struct file_lock *);
 +
- /* vxfs_inode.c */
-+extern const struct address_space_operations vxfs_immed_aops;
- extern struct kmem_cache	*vxfs_inode_cachep;
- extern void			vxfs_dumpi(struct vxfs_inode_info *, ino_t);
- extern struct inode *		vxfs_get_fake_inode(struct super_block *,
-@@ -69,6 +73,7 @@ extern const struct file_operations	vxfs_dir_operations;
- extern int			vxfs_read_olt(struct super_block *, u_long);
++/* mount.c */
++
++extern const struct lm_lockops gdlm_ops;
++
+ #endif
  
- /* vxfs_subr.c */
-+extern const struct address_space_operations vxfs_aops;
- extern struct page *		vxfs_get_page(struct address_space *, u_long);
- extern void			vxfs_put_page(struct page *);
- extern struct buffer_head *	vxfs_bread(struct inode *, int);
-diff --git a/fs/freevxfs/vxfs_immed.c b/fs/freevxfs/vxfs_immed.c
-index 8a5959a..c36aeaf 100644
---- a/fs/freevxfs/vxfs_immed.c
-+++ b/fs/freevxfs/vxfs_immed.c
-@@ -35,6 +35,7 @@
- #include <linux/namei.h>
+diff --git a/fs/gfs2/locking/dlm/main.c b/fs/gfs2/locking/dlm/main.c
+index a0e7eda..36a2258 100644
+--- a/fs/gfs2/locking/dlm/main.c
++++ b/fs/gfs2/locking/dlm/main.c
+@@ -11,8 +11,6 @@
  
- #include "vxfs.h"
-+#include "vxfs_extern.h"
- #include "vxfs_inode.h"
+ #include "lock_dlm.h"
  
- 
-diff --git a/fs/freevxfs/vxfs_inode.c b/fs/freevxfs/vxfs_inode.c
-index ad88d23..9f3f2ce 100644
---- a/fs/freevxfs/vxfs_inode.c
-+++ b/fs/freevxfs/vxfs_inode.c
-@@ -41,11 +41,6 @@
- #include "vxfs_extern.h"
- 
- 
--extern const struct address_space_operations vxfs_aops;
--extern const struct address_space_operations vxfs_immed_aops;
+-extern struct lm_lockops gdlm_ops;
 -
--extern const struct inode_operations vxfs_immed_symlink_iops;
+ static int __init init_lock_dlm(void)
+ {
+ 	int error;
+diff --git a/fs/gfs2/locking/dlm/sysfs.c b/fs/gfs2/locking/dlm/sysfs.c
+index a87b098..8479da4 100644
+--- a/fs/gfs2/locking/dlm/sysfs.c
++++ b/fs/gfs2/locking/dlm/sysfs.c
+@@ -12,8 +12,6 @@
+ 
+ #include "lock_dlm.h"
+ 
+-extern struct lm_lockops gdlm_ops;
 -
- struct kmem_cache		*vxfs_inode_cachep;
- 
- 
+ static ssize_t proto_name_show(struct gdlm_ls *ls, char *buf)
+ {
+ 	return sprintf(buf, "%s\n", gdlm_ops.lm_proto_name);
 
