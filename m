@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbYBQIZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbYBQIZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbYBQIZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbYBQIVP
+	id S1759411AbYBQIZs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:25:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757706AbYBQIVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:21:15 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34088 "EHLO smtp5.pp.htv.fi"
+	Sun, 17 Feb 2008 03:21:24 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:37031 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758007AbYBQIVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:21:14 -0500
-Date: Sun, 17 Feb 2008 10:20:48 +0200
+	id S1759260AbYBQIVX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:21:23 -0500
+Date: Sun, 17 Feb 2008 10:20:57 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/proc/kmsg.c should #include <linux/proc_fs.h>
-Message-ID: <20080217082048.GW3848@cs181133002.pp.htv.fi>
+To: npiggin@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/ramfs/ extern cleanup
+Message-ID: <20080217082057.GX3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,22 +23,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs its global 
-code (in this case for struct proc_kmsg_operations).
+This patch contains the following cleanups:
+- internal.h shouldn't duplicate the extern declaration for
+  ramfs_file_operations already in include/linux/ramfs.h
+- file-mmu.c needs two #include's for seeing the extern declarations
+  of it's global struct's
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-b6f818ea9e2dd76d3fd7dbec2382240cabe66a6b diff --git a/fs/proc/kmsg.c b/fs/proc/kmsg.c
-index ff3b90b..9fa3a3d 100644
---- a/fs/proc/kmsg.c
-+++ b/fs/proc/kmsg.c
-@@ -11,6 +11,7 @@
- #include <linux/kernel.h>
- #include <linux/poll.h>
- #include <linux/fs.h>
-+#include <linux/proc_fs.h>
+
+ fs/ramfs/file-mmu.c |    3 +++
+ fs/ramfs/internal.h |    1 -
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+157e8cf4ac47a1f31fb68273f09425fcbf7dbb0d diff --git a/fs/ramfs/file-mmu.c b/fs/ramfs/file-mmu.c
+index b41a514..9590b90 100644
+--- a/fs/ramfs/file-mmu.c
++++ b/fs/ramfs/file-mmu.c
+@@ -26,6 +26,9 @@
  
- #include <asm/uaccess.h>
- #include <asm/io.h>
+ #include <linux/fs.h>
+ #include <linux/mm.h>
++#include <linux/ramfs.h>
++
++#include "internal.h"
+ 
+ const struct address_space_operations ramfs_aops = {
+ 	.readpage	= simple_readpage,
+diff --git a/fs/ramfs/internal.h b/fs/ramfs/internal.h
+index af7cc07..6b33063 100644
+--- a/fs/ramfs/internal.h
++++ b/fs/ramfs/internal.h
+@@ -11,5 +11,4 @@
+ 
+ 
+ extern const struct address_space_operations ramfs_aops;
+-extern const struct file_operations ramfs_file_operations;
+ extern const struct inode_operations ramfs_file_inode_operations;
 
