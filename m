@@ -1,121 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbYBQEJz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbYBQEKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbYBQEJz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 23:09:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYBQEJp
+	id S1757056AbYBQEKt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 23:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYBQEKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 23:09:45 -0500
-Received: from qmta10.westchester.pa.mail.comcast.net ([76.96.62.17]:40579
-	"EHLO QMTA10.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752723AbYBQEJp (ORCPT
+	Sat, 16 Feb 2008 23:10:40 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:49388 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbYBQEKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 23:09:45 -0500
-X-Authority-Analysis: v=1.0 c=1 a=TEGKNp2qDdgA:10 a=-OlqAyLnqZn_GlqvNswA:9
- a=SkjHRjF2a_BR8Nv6wMLQLVaJdUAA:4 a=uv1ck3d6JtEA:10
-Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: elendil@planet.nl, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
-References: <1203123219.6176.36.camel@popeye>
-	 <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
-	 <1203163503.6124.5.camel@popeye>
-	 <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
-Content-Type: text/plain
-Date: Sat, 16 Feb 2008 22:09:32 -0600
-Message-Id: <1203221372.6124.29.camel@popeye>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Sat, 16 Feb 2008 23:10:39 -0500
+Message-ID: <47B7B3B9.2090706@linux.vnet.ibm.com>
+Date: Sun, 17 Feb 2008 09:40:33 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, oleg@tv-sign.ru, roland@redhat.com,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: [BUG] 2.6.25-rc2-mm1 - Kernel panic while bootup caused by signal_group_exit()
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri - 
+Hi Andrew,
 
-This is just to confirm that I have been running all day on a kernel
-built with CONFIG_GROUP_SCHED turned 'off' and have not seen the problem
-with my keyboard (I never noticed a problem with the mouse as others
-have)
+The signals-do_signal_stop-use-signal_group_exit.patch is causing the
+kernel panic, while booting in to the 2.6.25-rc2-mm1 kernel on x86.
 
-At slack moments through the day I have taken the oppertunity to perform
-7 boots and could not recreate the failure (see my previous note which
-has some lame speculation that the conditions for the failure are seeded
-at boot time)
+There has been discussion on the patch for this panic on http://lkml.org/lkml/2008/2/16/99 
 
-If there is anything else you would like to have performed in an attempt
-to further isolate this issue I will try my best to provide it.  This
-includes going back to a 2.6.25-rc2 kernel with CONFIG_GROUP_SCHED
-turned 'on' if you think that further confirmation of the problem is
-required or would be useful. 
+[   25.512919] BUG: unable to handle kernel paging request at 9d74e37b
+[   25.514926] IP: [<c04a8fac>] proc_flush_task+0x5b/0x223
+[   25.516934] Oops: 0000 [#1] SMP 
+[   25.517918] last sysfs file: /sys/block/hdc/removable
+[   25.517918] Modules linked in: dm_mirror dm_mod video output sbs sbshc battery ac parport_pc lp parport floppy sg serio_raw ide_cd_mod cdrom scb2_flash mtd chipreg button i2c_piix4 i2c_core pcspkr tg3 mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+[   25.517918] 
+[   25.517918] Pid: 1, comm: init Not tainted (2.6.25-rc2-mm1-autotest #1)
+[   25.517918] EIP: 0060:[<c04a8fac>] EFLAGS: 00010282 CPU: 2
+[   25.517918] EIP is at proc_flush_task+0x5b/0x223
+[   25.517918] EAX: 9d74e35b EBX: f7881ef0 ECX: f7a5ed84 EDX: a56b6b6b
+[   25.517918] ESI: f74f76f8 EDI: a56b6b6b EBP: f7881f08 ESP: f7881ec0
+[   25.517918]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+[   25.517918] Process init (pid: 1, ti=f7881000 task=f788adf0 task.ti=f7881000)
+[   25.517918] Stack: f7a5ed84 00000001 f7a5ed58 f7a5ed58 00000000 a56b6b6b f7852750 f7a5ed68 
+[   25.517918]        35881ef4 00003130 f788b4a4 f788adf0 0012d6c5 00000003 f7881ee3 00000003 
+[   25.517918]        f7a72df0 f7a72df0 f7881f1c c042676d 00000003 000001f5 f7a72df0 f7881f78 
+[   25.517918] Call Trace:
+[   25.517918]  [<c042676d>] release_task+0x19/0x2d5
+[   25.517918]  [<c042701b>] do_wait+0x5f2/0x8fc
+[   25.517918]  [<c041d9e7>] default_wake_function+0x0/0xd
+[   25.517918]  [<c042739d>] sys_wait4+0x78/0x8e
+[   25.517918]  [<c04273c6>] sys_waitpid+0x13/0x15
+[   25.517918]  [<c04039ba>] sysenter_past_esp+0x5f/0x99
+[   25.517918]  =======================
+[   25.517918] Code: 1c 89 4d d4 89 4d c4 89 55 b8 e9 b5 01 00 00 31 ff 83 7d c4 00 74 06 8b 45 d4 8b 78 1c 8b 55 b8 8b 4d b8 8b 12 89 55 cc 8b 41 04 <8b> 40 20 52 68 33 cd 6f c0 6a 0d 89 45 d0 8d 45 db 50 89 45 f0 
+[   25.517918] EIP: [<c04a8fac>] proc_flush_task+0x5b/0x223 SS:ESP 0068:f7881ec0
+[   25.517939] ---[ end trace d0df919a64605019 ]---
+[   25.518925] Kernel panic - not syncing: Attempted to kill init!
 
-Once again, thank you for taking the lead on this issue.
-
-Chris
-
-
-
-
-On Sat, 2008-02-16 at 19:08 +0100, Jiri Kosina wrote:
-> [ Peter and Ingo added to CC, as this is apparently another instance of 
->   CONFIG_GROUP_SCHED causing mouse/keyboard misbehavior ]
-> 
-> Thanks for testing, Chris.
-> 
-> On Sat, 16 Feb 2008, Chris Holvenstot wrote:
-> 
-> > Jiri - 
-> > 
-> > 
-> > Sorry for the delay in getting this information back to you. I am now up
-> > and running on 2.6.25-rc2 with CONFIG_GROUP_SCHED not set (and for the
-> > record, I did NOT use the nohpet directive when booting)
-> > 
-> > 
-> > A copy of the dot-config file from this build has been inserted below. 
-> > 
-> > 
-> > So far everything is working nicely with CONFIG_GROUP_SCHED not set.
-> > However I have one observation to make, and I am very likely missing
-> > something here, is that over the past few days while I have been trying
-> > to isolate a broke / not broke point with git bisect it would seem that
-> > the conditions which lead to the repeating key failure are seeded at the
-> > time of the boot.
-> > 
-> > 
-> > By this I mean that given a specific kernel configuration I can boot it
-> > 'x' number of times - out of all those boot cycles I may get one
-> > instance of the failure. The rest of the time it works fine.
-> > 
-> > 
-> > On those occasions when I do get the repeating key failure it would
-> > appear that the failure lives for the lifespan of the boot. Twice now
-> > when I have had the failure I have tried restarting X to see if it
-> > clears, but so far I have not had any luck with that.
-> > 
-> > 
-> > I have compared the dmesg output from a good boot to that of a boot
-> > where I see the repeating key issue and except for the expected minor
-> > differences in the timestamps nothing jumps out at me.
-> > 
-> > 
-> > I built the kernel you requested with the '-j2' option to load up the
-> > CPU - I thought that the suggestion made earlier by someone else about
-> > this failure happening while the CPU was loaded had some merit - it was
-> > one factor I did not take into consideration during my efforts and might
-> > explain why I was getting inconsistent results. 
-> > 
-> > 
-> > However, even though both cores were running along at nearly 100% during
-> > this build, I did not see the problem. At this point I am about ready to
-> > select a previously unused section of wall to bang my head against.
-> > 
-> > 
-> > Thank you for your continued support - 
-> > 
-> > 
-> > Chris
-> > 
-
-
+-- 
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
