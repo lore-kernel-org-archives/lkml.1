@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbYBQPaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbYBQPgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbYBQPaS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 10:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbYBQPaG
+	id S1757369AbYBQPgt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 10:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbYBQPgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 10:30:06 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:56930 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbYBQPaF (ORCPT
+	Sun, 17 Feb 2008 10:36:39 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:48053
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753874AbYBQPgj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 10:30:05 -0500
-Date: Sun, 17 Feb 2008 07:29:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: What's needed for a PCIe card to be recognized?
-Message-ID: <20080217072927.4b6c5964@laptopd505.fenrus.org>
-In-Reply-To: <20080217133753.661cd98d@bluebox.local>
-References: <20080216225932.22460d31@dilbert.local>
-	<20080216143946.6d532a41@laptopd505.fenrus.org>
-	<20080217015453.2a4e4142@dilbert.local>
-	<20080216182939.061c7246@laptopd505.fenrus.org>
-	<20080217133753.661cd98d@bluebox.local>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Feb 2008 10:36:39 -0500
+Message-ID: <47B85485.2020000@qumranet.com>
+Date: Sun, 17 Feb 2008 17:36:37 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: linux-kernel <linux-kernel@vger.kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>
+Subject: 2.6.25-rc2, Problem running 'make install' as root with different
+ gcc
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 13:37:53 +0100
-"Hans J. Koch" <hjk@linutronix.de> wrote:
-> > Of course there's no driver for the wlan, but that's a different
-> > story ;)
-> 
-> I replaced that unsupported Atheros 5007 card with an ipw3945, so I
-> haven't got that problem.
+Trying to install a built 2.5.25-rc2 on a machine with a different gcc 
+installed fails with
 
-oh but then you have a MUCH bigger problem ;(
-The bios of that animal is hardcoded to the 5007 (or at least Atheros).
-If you stick your own card in, for FCC reasons, the bios refuses the card.
-(this is not unique to Asus; all notebooks do this for cards they're
-not certified with. This apparently  has to do with the antenna being
-part of the laptop, and thus part of the radio in FCC speak)
+  LDS     arch/x86/vdso/vdso.lds
+cc1: fatal error: opening output file arch/x86/vdso/vdso.lds: Permission 
+denied
+compilation terminated.
+make[1]: *** [arch/x86/vdso/vdso.lds] Error 1
+make: *** [vdso_install] Error 2
 
+I believe this is due to arch/x86/vdso/.vdso.lds.cmd containing
+
+cmd_arch/x86/vdso/vdso.lds := gcc -E -Wp,-MD,arch/x86/vdso/.vdso.lds.d  
+-nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.1.1/include 
+-D__KERNEL__ -Iinclude  -include include/linux/autoconf.h   -P -C 
+-D__ASSEMBLY__ -o arch/x86/vdso/vdso.lds arch/x86/vdso/vdso.lds.S
+
+'-isystem /usr/lib/gcc/x86_64-redhat-linux/4.1.1/include' changes with 
+the gcc version, triggering the recompilation attempt, which fails since 
+my home directory is nfs mounted.
+
+This didn't trigger with previous versions, and I have no idea how to 
+fix it.
 
 -- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+error compiling committee.c: too many arguments to function
+
