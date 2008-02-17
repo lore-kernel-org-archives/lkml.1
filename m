@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbYBQMmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756633AbYBQNEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758491AbYBQMmy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:42:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755297AbYBQMmo
+	id S1756633AbYBQNEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYBQNEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:42:44 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:51125 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755203AbYBQMmm (ORCPT
+	Sun, 17 Feb 2008 08:04:09 -0500
+Received: from phoenix.slamd64.com ([217.10.145.2]:41130 "EHLO
+	phoenix.slamd64.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbYBQNEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 07:42:42 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream :-))
-From: David Woodhouse <dwmw2@infradead.org>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       arjan@infradead.org, greg@kroah.com, sfr@canb.auug.org.au,
-       linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-arch@vger.kernel.org, akpm@linux-foundation.org,
-       linville@tuxdriver.com
-In-Reply-To: <1202840682.3137.83.camel@localhost.localdomain>
-References: <20080211203146.3d28d1a0@laptopd505.fenrus.org>
-	 <20080212044314.GA4888@kroah.com>
-	 <20080211211751.3e265754@laptopd505.fenrus.org>
-	 <20080211.221126.230471463.davem@davemloft.net>
-	 <47B1CB08.4020101@garzik.org>
-	 <alpine.LFD.1.00.0802120847500.2920@woody.linux-foundation.org>
-	 <1202838082.3137.54.camel@localhost.localdomain>
-	 <alpine.LFD.1.00.0802120945290.2920@woody.linux-foundation.org>
-	 <1202840682.3137.83.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 17 Feb 2008 12:42:27 +0000
-Message-Id: <1203252147.31173.193.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
+	Sun, 17 Feb 2008 08:04:08 -0500
+From: Carlos Corbacho <carlos@strangeworlds.co.uk>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 17/27] acer-wmi: fix section mismatch warnings
+Date: Sun, 17 Feb 2008 13:03:55 +0000
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Len Brown <len.brown@intel.com>
+References: <20080217121255.GA10519@uranus.ravnborg.org> <1203250984-11285-17-git-send-email-sam@ravnborg.org>
+In-Reply-To: <1203250984-11285-17-git-send-email-sam@ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200802171303.56229.carlos@strangeworlds.co.uk>
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (phoenix.slamd64.com [217.10.145.2]); Sun, 17 Feb 2008 13:05:19 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-12 at 12:24 -0600, James Bottomley wrote:
-> Hm ... I think net is a counter example to this.  Rebases certainly work
-> for them. 
+On Sunday 17 February 2008 12:22:54 Sam Ravnborg wrote:
+> Fix following warnings:
+> WARNING: vmlinux.o(.text+0x672615): Section mismatch in reference from the
+> function acer_platform_remove() to the function
+> .exit.text:acer_backlight_exit() WARNING: vmlinux.o(.devinit.text+0x1e859):
+> Section mismatch in reference from the function acer_platform_probe() to
+> the function .init.text:acer_led_init() WARNING:
+> vmlinux.o(.devinit.text+0x1e878): Section mismatch in reference from the
+> function acer_platform_probe() to the function
+> .init.text:acer_backlight_init()
+>
+> Remove __exit annotation from acer_backlight_exit(). We cannot reference
+> a __exit annotated function from non __exit functions.
+>
+> acer_led_init() and acer_backlight_init() where both annotated __init but
+> used from a __devinit function. This would result in an oops should
+> gcc drop their inlining and the module are hot plugged.
+>
+> Fix by annotating acer_led_init() and acer_backlight_init() __devinit.
+>
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
 
-That's a matter of opinion. 
+Signed-off-by: Carlos Corbacho <carlos@strangeworlds.co.uk>
 
-I'm working on cleaning up the libertas driver as and when I have time,
-and the constant rebasing of the git trees effectively means that I
-can't just use git as it was intended; I feel that I'm being forced back
-into the 1990s by having to deal with sequences of patches instead.
+> Cc: Len Brown <len.brown@intel.com>
 
-It's such a pain that I'm seriously tempted to push my changes directly
-to Linus instead of through the subsystem maintainers.
+Len, can you apply this to acpi-test? (Unless Andrew wants to take all these 
+through -mm?)
 
+-Carlos
 -- 
-dwmw2
-
+E-Mail: carlos@strangeworlds.co.uk
+Web: strangeworlds.co.uk
+GPG Key ID: 0x23EE722D
