@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbYBQT30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbYBQTaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbYBQT30 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 14:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751507AbYBQT3T
+	id S1755030AbYBQTaN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 14:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbYBQT37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 14:29:19 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:27304 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbYBQT3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 14:29:18 -0500
-Date: Sun, 17 Feb 2008 20:29:13 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Andy Whitcroft <apw@shadowen.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1 softlockup  while bootup on powerpc
-Message-ID: <20080217192913.GO23197@kernel.dk>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <47B67E5E.4010001@linux.vnet.ibm.com>
+	Sun, 17 Feb 2008 14:29:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:61640 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752195AbYBQT35 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 14:29:57 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=BTbxwu/0KqPnX7CSwCGE6qbmvUOcmRuZ2rlyi7tKVJ8KOBMM5yl8MRNSI1/PnjUXJJ2fhXk/Cax7VCYY2nDg1RmicgU0AOI35zd849nyy6NDthGLiCykzIyi9vVkczzHu+iB4jPx81AqKtkG7Ilf3UJfF8/CE4UD+XMUfG+55os=
+Date: Sun, 17 Feb 2008 20:29:02 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: bfennema@falcon.csc.calpoly.edu, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/7] fs/udf/truncate.c: Use BUG_ON
+Message-ID: <20080217192858.GA9162@joi>
+References: <Pine.LNX.4.64.0802171855510.28055@ask.diku.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47B67E5E.4010001@linux.vnet.ibm.com>
+In-Reply-To: <Pine.LNX.4.64.0802171855510.28055@ask.diku.dk>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16 2008, Kamalesh Babulal wrote:
-> Hi,
+On Sun, Feb 17, 2008 at 06:56:18PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> The softlockup is seen from 2.6.25-rc1-git{1,3} and is visible in the 2.6.24-rc2 kernel,
-> While booting up with the 2.6.25-rc1-git{1,3} and 2.6.25-rc2 kernel(s) on the powerbox
+> if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
+> side-effects to allow a definition of BUG_ON that drops the code completely.
+
+The same change is in my patch which is waiting for inclusion.
+
+http://lkml.org/lkml/2008/1/30/512
+
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
-> Loading st.ko module
-> BUG: soft lockup - CPU#1 stuck for 61s! [insmod:379]
-> NIP: c0000000001b0620 LR: c0000000001a5dcc CTR: 0000000000000040
-> REGS: c00000077caab8a0 TRAP: 0901   Not tainted  (2.6.25-rc2-autotest)
-> MSR: 8000000000009032 <EE,ME,IR,DR>  CR: 84004088  XER: 20000000
-> TASK = c00000077cb450a0[379] 'insmod' THREAD: c00000077caa8000 CPU: 1
-> GPR00: c00000077c9d4000 c00000077caabb20 c000000000538a40 000000000000000b 
-> GPR04: ffc0000000000000 c00000077e0c0000 0000000000000036 000000000000000a 
-> GPR08: 0040000000000000 c00000077c9d4250 c000000000000000 0000000000000000 
-> GPR12: c00000077c9d4230 c000000000481d00 
-> NIP [c0000000001b0620] .radix_tree_gang_lookup+0x100/0x1e4
-> LR [c0000000001a5dcc] .call_for_each_cic+0x50/0x10c
-> Call Trace:
-> [c00000077caabb20] [c0000000001a5e2c] .call_for_each_cic+0xb0/0x10c (unreliable)
-> [c00000077caabc60] [c00000000019dba4] .exit_io_context+0xf0/0x110
-> [c00000077caabcf0] [c000000000061e38] .do_exit+0x820/0x850
-> [c00000077caabda0] [c000000000061f34] .do_group_exit+0xcc/0xe8
-> [c00000077caabe30] [c00000000000872c] syscall_exit+0x0/0x40
-> Instruction dump:
-> 7d296214 39290018 e8090000 7caa2038 39290008 2fa00000 409e0018 7caa4215 
-> 396b0001 418200cc 424000b8 4bffffdc <79691f24> 7d296214 e9690018 2fab0000 
-
-It's odd stuff. Could you perhaps try and add some printks to
-block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
-from radix_tree_gang_lookup() and the pointer value of cics[i] in the
-for() loop after the lookup?
-
-How many SCSI devices are online?
-
--- 
-Jens Axboe
-
+> // <smpl>
+> @ disable unlikely @ expression E,f; @@
+> 
+> (
+>   if (<... f(...) ...>) { BUG(); }
+> |
+> - if (unlikely(E)) { BUG(); }
+> + BUG_ON(E);
+> )
+> 
+> @@ expression E,f; @@
+> 
+> (
+>   if (<... f(...) ...>) { BUG(); }
+> |
+> - if (E) { BUG(); }
+> + BUG_ON(E);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> 
+> ---
+> 
+> diff -u -p a/fs/udf/truncate.c b/fs/udf/truncate.c
+> --- a/fs/udf/truncate.c 2008-02-10 22:34:15.000000000 +0100
+> +++ b/fs/udf/truncate.c 2008-02-17 16:41:19.000000000 +0100
+> @@ -224,8 +224,7 @@ void udf_truncate_extents(struct inode *
+>  				if (indirect_ext_len) {
+>  					/* We managed to free all extents in the
+>  					 * indirect extent - free it too */
+> -					if (!epos.bh)
+> -						BUG();
+> +					BUG_ON(!epos.bh);
+>  					udf_free_blocks(sb, inode, epos.block,
+>  							0, indirect_ext_len);
+>  				} else {
+> @@ -272,8 +271,7 @@ void udf_truncate_extents(struct inode *
+>  		}
+>  
+>  		if (indirect_ext_len) {
+> -			if (!epos.bh)
+> -				BUG();
+> +			BUG_ON(!epos.bh);
+>  			udf_free_blocks(sb, inode, epos.block, 0,
+>  					indirect_ext_len);
+>  		} else {
+> -
+> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
