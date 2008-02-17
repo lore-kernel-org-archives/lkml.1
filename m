@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbYBQUwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbYBQUy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbYBQUwb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:52:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYBQUwX
+	id S1756260AbYBQUy5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:54:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYBQUyt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:52:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:37543 "EHLO
+	Sun, 17 Feb 2008 15:54:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37563 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbYBQUwW (ORCPT
+	with ESMTP id S1752867AbYBQUys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:52:22 -0500
-Date: Sun, 17 Feb 2008 12:51:39 -0800
+	Sun, 17 Feb 2008 15:54:48 -0500
+Date: Sun, 17 Feb 2008 12:54:07 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Paul Jackson <pj@sgi.com>
-Cc: Adrian Bunk <bunk@kernel.org>, tilman@imap.cc, elendil@planet.nl,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: Unable to continue testing of 2.6.25
-Message-ID: <20080217125139.287c880f@laptopd505.fenrus.org>
-In-Reply-To: <20080217143851.c21a9cc4.pj@sgi.com>
-References: <200802171025.30590.elendil@planet.nl>
-	<20080217131611.GA1403@cs181133002.pp.htv.fi>
-	<47B88A08.2070902@imap.cc>
-	<20080217194447.GD1403@cs181133002.pp.htv.fi>
-	<20080217143851.c21a9cc4.pj@sgi.com>
+To: allied internet ag- Stefan Priebe <s.priebe@allied-internet.ag>
+Cc: Christian Kujau <lists@nerdbynature.de>,
+       LKML <linux-kernel@vger.kernel.org>, jirislaby@gmail.com
+Subject: Re: getting uninterruptible sleep processes after upgrade from
+ 2.6.20.20 to 2.6.24.2
+Message-ID: <20080217125407.5b76a052@laptopd505.fenrus.org>
+In-Reply-To: <47B89DC6.4070906@allied-internet.ag>
+References: <47B892B9.7060205@allied-internet.ag>
+	<alpine.DEB.1.00.0802172133470.6469@sheep.housecafe.de>
+	<47B89DC6.4070906@allied-internet.ag>
 Organization: Intel
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -34,48 +33,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 14:38:51 -0600
-Paul Jackson <pj@sgi.com> wrote:
+On Sun, 17 Feb 2008 21:49:10 +0100
+allied internet ag- Stefan Priebe <s.priebe@allied-internet.ag> wrote:
 
-> Adrian wrote:
-> > So let's fix the problem (kernel lacks functionality)
+>  >> One week ago we upgraded about 300 servers from 2.6.20.20 to
+>  >> 2.6.24.2.
+>  >
+>  > Painfull.
 > 
-> That's the problem as understood by Adrian.
+> OK not really - i've tested the new kernel on all models. And it
+> works fine... the DN state only comes sometimes - absolutely not
+> reproducable. So my tests went OK and then we've done the update.
+> I've now seen 5 servers in 7 days having this problem.
 > 
-> I hear another problem as well ... 
-> 
-> Frans wrote:
-> > Please allow external users some decent period for transitioning.
-> > The initial plan to "remove the old function in 2.6.27" was
-> > entirely sensible. It's a pity it was not followed through.
-> 
-> That seems plain enough to me.  It's not just the lack of
-> functionality, but that such lack apparently happened with too little
-> warning.
-> 
-> If this is a fair representation of what happened, then seems to me
-> that we could have left that EXPORT_UNUSED_SYMBOL(change_page_attr)
-> in place a bit longer.
-> 
+>  >> Now we get sometimes dozent of processes in state DN. The system
+>  >> is completely idle - but the load is 20 or 90 or whatever. And it
+>  >> can only be "repaired" by rebooting the system.
+>  >
+>  > please post sysrq-t (echo t > /proc/sysrq-trigger) output.
+> Sorry what key is sysrq? Can i also do this via SSH Console?
 
-it's not a fair repersentation. Again.. this export was unkeepable due to the
-API being nasty and having to be fixed anyway ;(.
+just do the echo above and it'll have the same effect as the key, and yes
+you can do this via ssh just fine (I do that all the time)
 
-One of the problems was that the c-p-a api has to be followed by a cache flush function call.
-Sadly that does a TOTAL flush of the caches of all cpus in the system. As part of the -rc1
-changes, it is now done only on the exact pages that need to be flushed (so you no longer
-flush 12Mb of caches when you only needed to flush 4Kb), but to achieve that, it was no longer
-an option to keep this as 2 separate function calls.
-Add to this that some very fundemanteal bugs couldn't be fixed without the function underlying
-cpa changing prototype and behavior, so the function had to go.
-
-> Or at least, if we really did have to make Frans life difficult like
-> this, we could offer more appreciation for how things might look from
-> his perspective.
-
-I understand where he's coming from; at the same time it's a very small change to virtualbox to fix this
-and has been done already... in minutes. Frans should take that up with the virtual box support forum, I'm sure
-they have the patch available there. (it's mostly removing workarounds for cpa bugs and then just calling set_memory_x / set_memory_nx).
 
 -- 
 If you want to reach me at my work email, use arjan@linux.intel.com
