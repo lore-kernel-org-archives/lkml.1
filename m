@@ -1,192 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbYBQJPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYBQJZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbYBQJPc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 04:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbYBQJPP
+	id S1756096AbYBQJZy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 04:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYBQJZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 04:15:15 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:33791 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753793AbYBQJPK convert rfc822-to-8bit (ORCPT
+	Sun, 17 Feb 2008 04:25:38 -0500
+Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:15054 "EHLO
+	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752384AbYBQJZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 04:15:10 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.4.2
-References: <7vodapgk9s.fsf@gitster.siamese.dyndns.org>
-cc: linux-kernel@vger.kernel.org
-Date: Sun, 17 Feb 2008 01:14:54 -0800
-In-Reply-To: <7vodapgk9s.fsf@gitster.siamese.dyndns.org> (Junio C. Hamano's
- message of "Sun, 10 Feb 2008 02:47:59 -0800")
-Message-ID: <7vfxvs2bch.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sun, 17 Feb 2008 04:25:34 -0500
+From: Frans Pop <elendil@planet.nl>
+To: linux-kernel@vger.kernel.org
+Subject: Unable to continue testing of 2.6.25
+Date: Sun, 17 Feb 2008 10:25:30 +0100
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802171025.30590.elendil@planet.nl>
+X-OriginalArrivalTime: 17 Feb 2008 09:25:32.0932 (UTC) FILETIME=[0B7B8440:01C87147]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.4.2 is available at the
-usual places:
+Yesterday, after spending quite a few hours over the last days on bisecting 
+some serious regressions and finding workarounds for them, I thought I 
+could start using 2.6.25-rc2 as the new kernel for my desktop. 
+Unfortunately I found that I cannot because it would make my other main 
+activity - working on the Debian installation system - impossible.
 
-  http://www.kernel.org/pub/software/scm/git/
+For my work on the Debian Installer I heavily rely on emulators to run test 
+installs and ATM my emulator of choice is VirtualBox (the fully open "ose" 
+version). This requires the vboxdrv kernel module, but unfortunately:
+   vboxdrv: Unknown symbol change_page_attr
 
-  git-1.5.4.2.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.4.2.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.4.2.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.4.2-1.$arch.rpm	(RPM)
+At first I traced this to:
+e1271f68
+ x86: deprecate change_page_attr() for drivers
+ With the introduction of the new API, no driver or non-archcore code needs
+ to use c-p-a anymore, so this patch also deprecates the EXPORT_SYMBOL of
+ CPA (it's a horrible API after all).
+which had:
+-EXPORT_SYMBOL(change_page_attr);
++EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
 
-----------------------------------------------------------------
+Which seemed entirely reasonable but left me wondering about the error I 
+got.
 
-GIT v1.5.4.2 Release Notes
-==========================
+But then I found:
+d1028a15
+ x86: make various pageattr.c functions static
+ change_page_attr_add is only used in pageattr.c now, so we can
+ make this function static.
+ change_page_attr() isn't used anywere at all anymore; this function
+ is a really bad API anyway so just remove the bloat entirely.
 
-Fixes since v1.5.4
-------------------
+Which removed the entire function (without even properly mentioning it in 
+the shortlog).
 
- * The configuration parser was not prepared to see string
-   valued variables misspelled as boolean and segfaulted.
 
- * Temporary files left behind due to interrupted object
-   transfers were not cleaned up with "git prune".
+OF COURSE it is up to the VirtualBox developers to adjust to the new 
+interface (and based on past experience I expect they will with their next 
+version). And it may very well be that they were totally braindead to use 
+the function in the first place. I don't know and I really don't care.
+The important fact for me is that I can no longer use a piece of software 
+that is essential to me and thereby lose the motivation to do any work on 
+the kernel.
 
- * "git config --unset" was confused when the unset variables
-   were spelled with continuation lines in the config file.
+Lesson of the day: thinking only about in-kernel users of published API when 
+doing restructuring is going to lose you testers who do MORE with their 
+systems than just kernel development.
 
- * The merge message detection in "git cvsimport" did not catch
-   a message that began with "Merge...".
+Please allow external users some decent period for transitioning. The 
+initial plan to "remove the old function in 2.6.27" was entirely sensible. 
+It's a pity it was not followed through.
 
- * "git status" suggests "git rm --cached" for unstaging the
-   earlier "git add" before the initial commit.
+Thanks,
+FJP
 
- * "git status" output was incorrect during a partial commit.
-
- * "git bisect" refused to start when the HEAD was detached.
-
- * "git bisect" allowed a wildcard character in the commit
-   message expanded while writing its log file.
-
- * Manual pages were not formatted correctly with docbook xsl
-   1.72; added a workaround.
-
- * "git-commit -C $tag" used to work but rewrite in C done in
-   1.5.4 broke it.  This was fixed in 1.5.4.1.
-
- * An entry in the .gitattributes file that names a pattern in a
-   subdirectory of the directory it is in did not match
-   correctly (e.g. pattern "b/*.c" in "a/.gitattributes" should
-   match "a/b/foo.c" but it didn't).  This was fixed in 1.5.4.1.
-
- * Customized color specification was parsed incorrectly when
-   numeric color values are used.  This was fixed in 1.5.4.1.
-
- * http transport misbehaved when linked with curl-gnutls.
-
-----------------------------------------------------------------
-
-Changes since v1.5.4.1 are as follows:
-
-Christian Couder (8):
-      config: add test cases for empty value and no value config variables.
-      diff.c: replace a 'strdup' with 'xstrdup'.
-      diff.c: remove useless check for value != NULL
-      config: add 'git_config_string' to refactor string config variables.
-      Add "const" qualifier to "char *pager_program".
-      Add "const" qualifier to "char *editor_program".
-      Add "const" qualifier to "char *excludes_file".
-      diff.c: add "const" qualifier to "char *cmd" member of "struct ll_diff_driver"
-
-Daniel Barkalow (1):
-      Validate nicknames of remote branches to prohibit confusing ones
-
-David Steven Tweed (1):
-      Make git prune remove temporary packs that look like write failures
-
-Frank Lichtenheld (1):
-      config: Fix --unset for continuation lines
-
-Gerrit Pape (2):
-      builtin-commit: remove .git/SQUASH_MSG upon successful commit
-      cvsimport: have default merge regex also match beginning of commit message
-
-James Bowes (1):
-      Add a BuildRequires for gettext in the spec file.
-
-Jay Soffian (1):
-      mailinfo: feed only one line to handle_filter() for QP input
-
-Jeff King (2):
-      status: suggest "git rm --cached" to unstage for initial commit
-      commit: discard index after setting up partial commit
-
-Johannes Schindelin (3):
-      bisect: allow starting with a detached HEAD
-      Document that the default of branch.autosetupmerge is true
-      bisect: use verbatim commit subject in the bisect log
-
-Johannes Sixt (1):
-      upload-pack: Initialize the exec-path.
-
-Jonas Fonseca (1):
-      man pages are littered with .ft C and others
-
-Junio C Hamano (31):
-      git-pull documentation: fix markup
-      archive-tar.c: guard config parser from value=NULL
-      Add config_error_nonbool() helper function
-      builtin-apply.c: guard config parser from value=NULL
-      builtin-branch.c: guard config parser from value=NULL
-      builtin-commit.c: guard config parser from value=NULL
-      builtin-config.c: guard config parser from value=NULL
-      builtin-log.c: guard config parser from value=NULL
-      builtin-reflog.c: guard config parser from value=NULL
-      builtin-show-branch.c: guard config parser from value=NULL
-      builtin-tag.c: guard config parser from value=NULL
-      connect.c: guard config parser from value=NULL
-      convert.c: guard config parser from value=NULL
-      diff.c: guard config parser from value=NULL
-      git.c: guard config parser from value=NULL
-      help.c: guard config parser from value=NULL
-      http.c: guard config parser from value=NULL
-      merge-recursive.c: guard config parser from value=NULL
-      remote.c: guard config parser from value=NULL
-      setup.c: guard config parser from value=NULL
-      wt-status.c: guard config parser from value=NULL
-      imap-send.c: guard config parser from value=NULL
-      builtin-log.c: guard config parser from value=NULL
-      config.c: guard config parser from value=NULL
-      Revert "pack-objects: only throw away data during memory pressure"
-      Protect get_author_ident_from_commit() from filenames in work tree
-      diff.c: fixup garding of config parser from value=NULL
-      diff: Fix miscounting of --check output
-      filter-branch: handle filenames that need quoting
-      Documentation/git-reset:
-      GIT 1.5.4.2
-
-Martin Koegler (1):
-      pack-objects: only throw away data during memory pressure
-
-Mike Hommey (1):
-      Work around curl-gnutls not liking to be reinitialized
-
-Miklos Vajna (2):
-      builtin-gc.c: guard config parser from value=NULL
-      git clone -s documentation: force a new paragraph for the NOTE
-
-Pieter de Bie (2):
-      Documentation/git-reset: don't mention --mixed for selected-paths reset
-      Documentation/git-reset: Add an example of resetting selected paths
-
-Sergei Organov (1):
-      git-cvsimport.txt: fix '-M' description.
-
-Shawn O. Pearce (1):
-      fast-import: check return value from unpack_entry()
-
-Stelian Pop (1):
-      hg-to-git: fix parent analysis
-
-Uwe Kleine-K旦nig (1):
-      rebase -i: accept -m as advertised in the man page
-
+P.S. Of course I _will_ follow up on issues that I've already reported. I 
+will just not be doing any new testing.
