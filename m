@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757875AbYBQVTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbYBQVU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757875AbYBQVTk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 16:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYBQVT3
+	id S1757200AbYBQVU0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 16:20:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbYBQVUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 16:19:29 -0500
-Received: from 1wt.eu ([62.212.114.60]:2015 "EHLO 1wt.eu"
+	Sun, 17 Feb 2008 16:20:11 -0500
+Received: from 1wt.eu ([62.212.114.60]:2017 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753611AbYBQVT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 16:19:28 -0500
-Date: Sun, 17 Feb 2008 22:19:22 +0100
+	id S1753154AbYBQVUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 16:20:08 -0500
+Date: Sun, 17 Feb 2008 22:20:04 +0100
 From: Willy Tarreau <w@1wt.eu>
 To: jeff@garzik.org
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] libata: implement ATA_IOC_GET_IO32/ATA_IOC_SET_IO32 ioctls
-Message-ID: <20080217211922.GA15327@1wt.eu>
+Subject: [PATCH 2/2] libata: implement support for 32-bit PIO transfers
+Message-ID: <20080217212004.GB15327@1wt.eu>
 References: <20080217211810.GA15001@1wt.eu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -26,123 +26,109 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->From 40a8174d27cb9d93b859bc073c8f075b9ff71578 Mon Sep 17 00:00:00 2001
+>From 4ea313fe6a3c46a90226cf40d0e3ece4b36b48f9 Mon Sep 17 00:00:00 2001
 From: Willy Tarreau <w@1wt.eu>
-Date: Sun, 17 Feb 2008 21:11:46 +0100
-Subject: [PATCH 1/2] libata: implement ATA_IOC_GET_IO32/ATA_IOC_SET_IO32 ioctls
+Date: Sun, 17 Feb 2008 21:28:25 +0100
+Subject: [PATCH 2/2] libata: implement support for 32-bit PIO transfers
 
-This patch implements the aforementionned ioctls and get/set the
-new ATA_DFLAG_32BIT_PIO ata flag accordingly for the device. It
-only supports values 0 and 1 (disable/enable), as I have no plan
-to implement the sync VLB transfers.
+When ATA_DFLAG_32BIT_PIO is set in ata flags, PIO transfers
+will be performed in 32-bit, just like with the plain old IDE
+drivers.
+
+16-bit transfers in libata are as slow as 16-bit transfers in
+plain old IDE drivers, which are about 35% slower than 32-bit
+transfers with various CF and DOM. This patch restores the
+performance to pre-libata level, which is a nice improvement
+for many small systems relying on such hardware.
+
+This patch relies on previous patch which implements the
+ATA_DFLAG_32BIT_PIO ioctl.
+
+To enable 32-bit transfers, simply proceed like before with
+IDE :
+
+  # hdparm -c 1 /dev/sda
 
 Signed-off-by: Willy Tarreau <w@1wt.eu>
 ---
- drivers/ata/libata-scsi.c |   70 +++++++++++++++++++++++++++++++++++++++-----
- include/linux/libata.h    |    1 +
- 2 files changed, 63 insertions(+), 8 deletions(-)
+ drivers/ata/libata-core.c |   46 +++++++++++++++++++++++++++++++-------------
+ 1 files changed, 32 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index 1cea18f..8b4ca45 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -448,22 +448,76 @@ int ata_task_ioctl(struct scsi_device *scsidev, void __user *arg)
- 	return rc;
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index beaa3a9..2651130 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -4936,7 +4936,7 @@ void swap_buf_le16(u16 *buf, unsigned int buf_words)
  }
  
-+/**
-+ *	ata_get_io32 - Handler for ATA_IOC_GET_IO32 ioctl
-+ *	@sdev: SCSI device to get identify data for
-+ *	@arg: User buffer area for return value
-+ *
-+ *	LOCKING:
-+ *	Defined by the SCSI layer.  We don't really care.
-+ *
-+ *	RETURNS:
-+ *	Zero on success, negative errno on error.
-+ */
-+static int ata_get_io32(struct scsi_device *sdev, void __user *arg)
-+{
-+	struct ata_port *ap = ata_shost_to_port(sdev->host);
-+	struct ata_device *dev = ata_scsi_find_dev(ap, sdev);
-+	int val;
-+
-+	if (!dev)
-+		return -ENOMSG;
-+
-+	val = (dev->flags & ATA_DFLAG_32BIT_PIO) != 0;
-+	if (copy_to_user(arg, &val, 1))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+/**
-+ *	ata_set_io32 - Handler for ATA_IOC_SET_IO32 ioctl
-+ *	@sdev: SCSI device to get identify data for
-+ *	@arg: boolean integer value passed by user
-+ *
-+ *	LOCKING:
-+ *	Defined by the SCSI layer.  We don't really care.
-+ *
-+ *	RETURNS:
-+ *	Zero on success, negative errno on error.
-+ */
-+static int ata_set_io32(struct scsi_device *sdev, void __user *arg)
-+{
-+	struct ata_port *ap = ata_shost_to_port(sdev->host);
-+	struct ata_device *dev = ata_scsi_find_dev(ap, sdev);
-+
-+	if (!dev)
-+		return -ENOMSG;
-+
-+	switch ((unsigned long) arg) {
-+	case 0:
-+		dev->flags &= ~ATA_DFLAG_32BIT_PIO;
-+		return 0;
-+	case 1:
-+		dev->flags |=  ATA_DFLAG_32BIT_PIO;
-+		return 0;
-+	default:
-+		break;
-+	}
-+
-+	return -EFAULT;
-+}
-+
- int ata_scsi_ioctl(struct scsi_device *scsidev, int cmd, void __user *arg)
+ /**
+- *	ata_data_xfer - Transfer data by PIO
++ *	ata_data_xfer - Transfer data by PIO (16 or 32-bit)
+  *	@dev: device to target
+  *	@buf: data buffer
+  *	@buflen: buffer length
+@@ -4955,30 +4955,48 @@ unsigned int ata_data_xfer(struct ata_device *dev, unsigned char *buf,
  {
- 	int val = -EINVAL, rc = -EINVAL;
+ 	struct ata_port *ap = dev->link->ap;
+ 	void __iomem *data_addr = ap->ioaddr.data_addr;
+-	unsigned int words = buflen >> 1;
++	unsigned int words;
  
- 	switch (cmd) {
- 	case ATA_IOC_GET_IO32:
--		val = 0;
--		if (copy_to_user(arg, &val, 1))
--			return -EFAULT;
--		return 0;
-+		return ata_get_io32(scsidev, arg);
+-	/* Transfer multiple of 2 bytes */
+-	if (rw == READ)
+-		ioread16_rep(data_addr, buf, words);
+-	else
+-		iowrite16_rep(data_addr, buf, words);
++	if (dev->flags & ATA_DFLAG_32BIT_PIO) {
++		/* Transfer in 32-bit words */
++		words = buflen >> 2;
++		if (rw == READ)
++			ioread32_rep(data_addr, buf, words);
++		else
++			iowrite32_rep(data_addr, buf, words);
++		words <<= 2;
++	} else {
++		/* Transfer in 16-bit words */
++		words = buflen >> 1;
++		if (rw == READ)
++			ioread16_rep(data_addr, buf, words);
++		else
++			iowrite16_rep(data_addr, buf, words);
++		words <<= 1;
++	}
  
- 	case ATA_IOC_SET_IO32:
--		val = (unsigned long) arg;
--		if (val != 0)
--			return -EINVAL;
--		return 0;
-+		return ata_set_io32(scsidev, arg);
+-	/* Transfer trailing 1 byte, if any. */
+-	if (unlikely(buflen & 0x01)) {
++	/* Transfer trailing 1, 2 or 3 bytes, if any. We know how many bytes
++	 * remain because <words> now contains the number of bytes transferred.
++	 */
++	while (buflen > words) {
+ 		__le16 align_buf[1] = { 0 };
+-		unsigned char *trailing_buf = buf + buflen - 1;
++		unsigned char *trailing_buf = buf + words;
++		int len = buflen - words;
++
++		if (len > 2)
++			len = 2;
  
- 	case HDIO_GET_IDENTITY:
- 		return ata_get_identity(scsidev, arg);
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index bc5a8d0..ea9e3fc 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -138,6 +138,7 @@ enum {
- 	ATA_DFLAG_AN		= (1 << 7), /* AN configured */
- 	ATA_DFLAG_HIPM		= (1 << 8), /* device supports HIPM */
- 	ATA_DFLAG_DIPM		= (1 << 9), /* device supports DIPM */
-+	ATA_DFLAG_32BIT_PIO	= (1 << 10), /* device supports 32-bit in PIO mode */
- 	ATA_DFLAG_CFG_MASK	= (1 << 12) - 1,
+ 		if (rw == READ) {
+ 			align_buf[0] = cpu_to_le16(ioread16(data_addr));
+-			memcpy(trailing_buf, align_buf, 1);
++			memcpy(trailing_buf, align_buf, len);
+ 		} else {
+-			memcpy(align_buf, trailing_buf, 1);
++			memcpy(align_buf, trailing_buf, len);
+ 			iowrite16(le16_to_cpu(align_buf[0]), data_addr);
+ 		}
+-		words++;
++		words += len;
+ 	}
  
- 	ATA_DFLAG_PIO		= (1 << 12), /* device limited to PIO mode */
+-	return words << 1;
++	return words;
+ }
+ 
+ /**
 -- 
 1.5.3.8
 
