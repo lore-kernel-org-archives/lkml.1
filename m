@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbYBQQoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756338AbYBQQrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbYBQQoh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbYBQQo3
+	id S1756338AbYBQQrn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbYBQQrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:44:29 -0500
-Received: from iabervon.org ([66.92.72.58]:57726 "EHLO iabervon.org"
+	Sun, 17 Feb 2008 11:47:35 -0500
+Received: from www.tglx.de ([62.245.132.106]:49645 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753479AbYBQQo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:44:28 -0500
-Date: Sun, 17 Feb 2008 11:44:27 -0500 (EST)
-From: Daniel Barkalow <barkalow@iabervon.org>
-To: Frans Pop <elendil@planet.nl>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [REGRESSION 2.6.23] no vga console and no messages
-In-Reply-To: <E1JQe5R-0001cW-1a@faramir.fjphome.nl>
-Message-ID: <alpine.LNX.1.00.0802171134350.5496@iabervon.org>
-References: <alpine.LNX.1.00.0802162042130.6093@iabervon.org> <E1JQe5R-0001cW-1a@faramir.fjphome.nl>
-User-Agent: Alpine 1.00 (LNX 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752806AbYBQQre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:47:34 -0500
+Date: Sun, 17 Feb 2008 17:47:28 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: What's needed for a PCIe card to be recognized?
+Message-ID: <20080217174728.76e4231a@bluebox.local>
+In-Reply-To: <20080217072927.4b6c5964@laptopd505.fenrus.org>
+References: <20080216225932.22460d31@dilbert.local>
+	<20080216143946.6d532a41@laptopd505.fenrus.org>
+	<20080217015453.2a4e4142@dilbert.local>
+	<20080216182939.061c7246@laptopd505.fenrus.org>
+	<20080217133753.661cd98d@bluebox.local>
+	<20080217072927.4b6c5964@laptopd505.fenrus.org>
+Organization: Linutronix GmbH
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Frans Pop wrote:
+Am Sun, 17 Feb 2008 07:29:27 -0800
+schrieb Arjan van de Ven <arjan@infradead.org>:
 
-> Daniel Barkalow wrote:
-> > For some reason I can't see and don't know how to debug, in 2.6.23 on my
-> > server I don't get the vga console, but only get the dummy console.
+> On Sun, 17 Feb 2008 13:37:53 +0100
+> "Hans J. Koch" <hjk@linutronix.de> wrote:
+> > > Of course there's no driver for the wlan, but that's a different
+> > > story ;)
+> > 
+> > I replaced that unsupported Atheros 5007 card with an ipw3945, so I
+> > haven't got that problem.
 > 
-> Please check if this bug report matches the issue you are seeing:
-> http://bugzilla.kernel.org/show_bug.cgi?id=9310
+> oh but then you have a MUCH bigger problem ;(
+> The bios of that animal is hardcoded to the 5007 (or at least
+> Atheros). If you stick your own card in, for FCC reasons, the bios
+> refuses the card.
 
-I think mine might be different. I've got a vga parameter (vga=0x301), and 
-mine disappears very early, before when you usually get "Console: 
-colour VGA+ 80x25" (and I'm getting "Console: coloud dummy 80x25" 
-instead). I've also got CONFIG_FB turned off entirely.
+Really? Unbelievable what these guys do to make my live harder...
+So, they might use some undocumented GPIO to turn the power on, and
+refuse that if they don't find the original card? Looks like I can't
+have WLAN on an EeePC (I won't run a tainted kernel). Stupid thing to
+sell a PC with Linux preinstalled but with hardware not supported in
+mainline.
 
-But if you've got any insight into how the console driver stuff works from 
-troubleshooting your problem, I could use the hints...
+Thanks,
+Hans
 
-	-Daniel
-*This .sig left intentionally blank*
+
+ 
