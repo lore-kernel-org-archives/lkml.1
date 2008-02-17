@@ -1,114 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbYBQRzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754088AbYBQRzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753562AbYBQRzb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYBQRzL
+	id S1754088AbYBQRzn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:55:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbYBQRzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:55:11 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:58903 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750807AbYBQRzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:55:09 -0500
-Date: Sun, 17 Feb 2008 18:55:06 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: sct@redhat.com, linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/7] fs/ext{2,3,4}: Use BUG_ON
-Message-ID: <Pine.LNX.4.64.0802171854270.28055@ask.diku.dk>
+	Sun, 17 Feb 2008 12:55:12 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:17342 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbYBQRzK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 12:55:10 -0500
+Message-ID: <47B874D3.5080405@oracle.com>
+Date: Sun, 17 Feb 2008 09:54:27 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com
+Subject: Re: 2.6.25-rc2-mm1 (build failure)
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080216213225.f5f71c35.randy.dunlap@oracle.com> <200802171223.10466.rjw@sisk.pl>
+In-Reply-To: <200802171223.10466.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Rafael J. Wysocki wrote:
+> On Sunday, 17 of February 2008, Randy Dunlap wrote:
+>> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
+>>
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+>> When SMP=n, x86_64 build gets:
+>>
+>> arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
+>> (.text+0xfd7f): undefined reference to `setup_trampoline'
+>> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> Please try the patch at http://lkml.org/lkml/2008/2/16/301 .
 
-if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
-side-effects to allow a definition of BUG_ON that drops the code completely.
+Yes, fixed.  Thanks.
 
- fs/ext2/balloc.c |    3 +--
- fs/ext2/dir.c    |    3 +--
- fs/ext3/balloc.c |    3 +--
- fs/ext4/balloc.c |    3 +--
- 4 files changed, 4 insertions(+), 8 deletions(-)
-
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
-
-// <smpl>
-@ disable unlikely @ expression E,f; @@
-
-(
-  if (<... f(...) ...>) { BUG(); }
-|
-- if (unlikely(E)) { BUG(); }
-+ BUG_ON(E);
-)
-
-@@ expression E,f; @@
-
-(
-  if (<... f(...) ...>) { BUG(); }
-|
-- if (E) { BUG(); }
-+ BUG_ON(E);
-)
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
-
-diff -u -p a/fs/ext2/balloc.c b/fs/ext2/balloc.c
---- a/fs/ext2/balloc.c 2008-02-10 22:34:14.000000000 +0100
-+++ b/fs/ext2/balloc.c 2008-02-17 16:39:35.000000000 +0100
-@@ -245,8 +245,7 @@ restart:
- 		prev = rsv;
- 	}
- 	printk("Window map complete.\n");
--	if (bad)
--		BUG();
-+	BUG_ON(bad);
- }
- #define rsv_window_dump(root, verbose) \
- 	__rsv_window_dump((root), (verbose), __FUNCTION__)
-diff -u -p a/fs/ext2/dir.c b/fs/ext2/dir.c
---- a/fs/ext2/dir.c 2008-02-10 22:34:14.000000000 +0100
-+++ b/fs/ext2/dir.c 2008-02-17 16:39:36.000000000 +0100
-@@ -41,8 +41,8 @@ static inline __le16 ext2_rec_len_to_dis
- {
- 	if (len == (1 << 16))
- 		return cpu_to_le16(EXT2_MAX_REC_LEN);
--	else if (len > (1 << 16))
--		BUG();
-+	else
-+		BUG_ON(len > (1 << 16));
- 	return cpu_to_le16(len);
- }
- 
-diff -u -p a/fs/ext3/balloc.c b/fs/ext3/balloc.c
---- a/fs/ext3/balloc.c 2008-02-10 22:34:14.000000000 +0100
-+++ b/fs/ext3/balloc.c 2008-02-17 16:39:38.000000000 +0100
-@@ -232,8 +232,7 @@ restart:
- 		prev = rsv;
- 	}
- 	printk("Window map complete.\n");
--	if (bad)
--		BUG();
-+	BUG_ON(bad);
- }
- #define rsv_window_dump(root, verbose) \
- 	__rsv_window_dump((root), (verbose), __FUNCTION__)
-diff -u -p a/fs/ext4/balloc.c b/fs/ext4/balloc.c
---- a/fs/ext4/balloc.c 2008-02-10 22:34:14.000000000 +0100
-+++ b/fs/ext4/balloc.c 2008-02-17 16:39:39.000000000 +0100
-@@ -356,8 +356,7 @@ restart:
- 		prev = rsv;
- 	}
- 	printk("Window map complete.\n");
--	if (bad)
--		BUG();
-+	BUG_ON(bad);
- }
- #define rsv_window_dump(root, verbose) \
- 	__rsv_window_dump((root), (verbose), __FUNCTION__)
+-- 
+~Randy
