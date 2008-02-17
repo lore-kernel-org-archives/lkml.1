@@ -1,47 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbYBQQUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbYBQQV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbYBQQUt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:20:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbYBQQUk
+	id S1755747AbYBQQV3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbYBQQVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:20:40 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34181 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751951AbYBQQUi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:20:38 -0500
-Date: Sun, 17 Feb 2008 10:20:34 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-Cc: stern@rowland.harvard.edu, oliver.pntr@gmail.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
-       jfannin@gmail.com
-Subject: Re: USB regression (and other failures) in 2.6.2[45]*
-Message-Id: <20080217102034.fef6a81c.pj@sgi.com>
-In-Reply-To: <47B85E04.7090200@gmail.com>
-References: <Pine.LNX.4.44L0.0802161013190.3769-100000@iolanthe.rowland.org>
-	<47B71372.5050804@gmail.com>
-	<20080217012006.3757dfae.pj@sgi.com>
-	<47B85E04.7090200@gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 11:21:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45848 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751900AbYBQQVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:21:20 -0500
+Date: Sun, 17 Feb 2008 17:21:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: get apic_id later in
+	acpi_numa_processor_affinity_init
+Message-ID: <20080217162107.GC6006@elte.hu>
+References: <200802162300.23353.yinghai.lu@sun.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802162300.23353.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew B wrote:
-> Windows, which is what I have to use for work purposes.
 
-aha -- my condolences ;)
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-Take care.  Your last reply made as much sense
-as we're likely to make of this one.  Thanks.
+> don't need get that at beginning.
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+thanks, applied.
+
+	Ingo
