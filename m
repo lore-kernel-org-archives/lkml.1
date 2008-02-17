@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757141AbYBQVSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757530AbYBQVSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757141AbYBQVSZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 16:18:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbYBQVRx
+	id S1757530AbYBQVSl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 16:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757081AbYBQVSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 16:17:53 -0500
-Received: from smtp02.lnh.mail.rcn.net ([207.172.157.102]:6073 "EHLO
+	Sun, 17 Feb 2008 16:18:04 -0500
+Received: from smtp02.lnh.mail.rcn.net ([207.172.157.102]:6134 "EHLO
 	smtp02.lnh.mail.rcn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756750AbYBQVRw (ORCPT
+	with ESMTP id S1757039AbYBQVSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 16:17:52 -0500
-Date: Sun, 17 Feb 2008 16:07:58 -0500 (EST)
+	Sun, 17 Feb 2008 16:18:01 -0500
+Date: Sun, 17 Feb 2008 16:08:20 -0500 (EST)
 From: <dpreed@reed.com>
-Message-Id: <200802172107.OKX10470@mr02.lnh.mail.rcn.net>
-X-Junkmail-Status: score=10/50, host=mr02.lnh.mail.rcn.net
+Message-Id: <200802172108.JRY53937@mr08.lnh.mail.rcn.net>
+X-Junkmail-Status: score=10/50, host=mr08.lnh.mail.rcn.net
 X-Junkmail-SD-Raw: score=unknown,
-	refid=str=0001.0A010201.47B8A22E.0034,ss=1,fgs=0,
+	refid=str=0001.0A010204.47B8A245.000F,ss=1,fgs=0,
 	ip=207.172.4.11,
 	so=2007-10-30 19:00:17,
 	dmn=5.4.3/2007-11-16
@@ -26,35 +26,77 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 >From David P. Reed <dpreed@reed.com> Sat Feb 16 15:05:17 2008
-Message-Id: <20080216200517.113862251@reed.com>>
+Message-Id: <20080216200517.467388261@reed.com>>
+References: <20080216200517.113862251@reed.com>>
 User-Agent: quilt/0.46-1
-Date: Sat, 16 Feb 2008 15:05:17 -0500
+Date: Sat, 16 Feb 2008 15:05:20 -0500
 From: David P. Reed <dpreed@reed.com>
 To: Thomas Gleixner <tglx@linutronix.de>,
  Ingo Molnar <mingo@redhat.com>,
  "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 0/3] x86: cleanup primary motherboard chip port access delays
+Cc: linux-kernel@vger.kernel.org,
+ "David P. Reed" <dpreed@reed.com>
+Subject: [PATCH 3/3] x86: fix pcspkr to not use inb_p/outb_p calls.
+Content-Disposition: inline; filename=fix-pcspkr-iodelay.patch
 
-cleanup motherboard chip io port delays.  inb_p and outb_p have traditionally
-used a write to port 80 (a non-existent port) as a delay.  Though there is an
-argument that that is a good delay for devices on the ISA or PCI expansion buses
-it is not a good mechanism for devices in the processor chipset or on the
-"motherboard".  The write to port 80 at best causes an abort on the ISA or LPC
-bus, and on some machines (like many of the HP laptops manufactured by Quanta)
-actually writes data to real i/o devices.  For example, the ENE Embedded
-Controller chip family defaults to provide a register at port 80 that 
-can be written, and which can cause an interrupt in the Embedded Controller.
+Fix pcspkr driver to use explicit timing delay for access to PIT,
+rather than inb_p/outb_p calls, which use insufficiently explicit
+delays (defaulting to port 80 writes) that can cause freeze problems
+on some machines, such as Quanta moterboard  machines using ENE EC's.
+The explicit timing delay is only needed for accesses to the 8253 PIT.
+The standard requirement for the 8253 to respond to successive writes
+is 1 microsecond.  The 8253 has never been on the expansion bus, so 
+a proper delay has nothing to do with expansion bus timing, but instead
+its internal logic's capability to react to input.  Since udelay is correctly
+calibrated by the time the pcspkr driver is initialized, we use 1 microsecond
+as the timing.
 
-This has been shown to cause hangs on some machines, especially in accessing
-the CMOS RTC during bootup.
+Also shorten lines to less than 80 characters.
 
-This patch series addresses three of the places where these are used in common
-kernel code - in particular the three uses that affect the HP laptops mentioned
-above, modifying the delays to match the worst known delay issues for the
-specific chips.
+Signed-off-by: David P. Reed <dpreed@reed.com>
 
-The patch set is complementary to the iodelay= kernel parameter added in 2.6.25,
-since it means fewer users will need to add that parameter to run linux "out of the box" without hanging.
+Index: linux-2.6/drivers/input/misc/pcspkr.c
+===================================================================
+--- linux-2.6.orig/drivers/input/misc/pcspkr.c
++++ linux-2.6/drivers/input/misc/pcspkr.c
+@@ -32,9 +32,11 @@ MODULE_ALIAS("platform:pcspkr");
+ static DEFINE_SPINLOCK(i8253_lock);
+ #endif
+ 
+-static int pcspkr_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
++static int pcspkr_event(struct input_dev *dev, unsigned int type,
++			unsigned int code, int value)
+ {
+ 	unsigned int count = 0;
++	unsigned char mask;
+ 	unsigned long flags;
+ 
+ 	if (type != EV_SND)
+@@ -51,17 +53,21 @@ static int pcspkr_event(struct input_dev
+ 
+ 	spin_lock_irqsave(&i8253_lock, flags);
+ 
++	mask = inb(0x61);
+ 	if (count) {
+ 		/* enable counter 2 */
+-		outb_p(inb_p(0x61) | 3, 0x61);
++		outb(mask | 3, 0x61);
++		/* some 8253's may require 1 usec. between accesses */
+ 		/* set command for counter 2, 2 byte write */
+-		outb_p(0xB6, 0x43);
++		outb(0xB6, 0x43);
++		udelay(1);
+ 		/* select desired HZ */
+-		outb_p(count & 0xff, 0x42);
++		outb(count & 0xff, 0x42);
++		udelay(1);
+ 		outb((count >> 8) & 0xff, 0x42);
+ 	} else {
+ 		/* disable counter 2 */
+-		outb(inb_p(0x61) & 0xFC, 0x61);
++		outb(mask & 0xFC, 0x61);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&i8253_lock, flags);
 
 -- 
