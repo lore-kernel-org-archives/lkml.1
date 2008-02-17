@@ -1,101 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755647AbYBQQ1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbYBQQ3o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755647AbYBQQ1S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbYBQQ1I
+	id S1756038AbYBQQ3o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:29:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752611AbYBQQ3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:27:08 -0500
-Received: from webhosting.zipcon.net ([209.221.136.93]:60989 "EHLO
-	webhosting.zipcon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbYBQQ1H convert rfc822-to-8bit (ORCPT
+	Sun, 17 Feb 2008 11:29:35 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:24726 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752225AbYBQQ3d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:27:07 -0500
-X-Greylist: delayed 3310 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 11:27:07 EST
-From: Bill Waddington <william.waddington@beezmo.com>
+	Sun, 17 Feb 2008 11:29:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=g/EwlZqQHoMWUBuZVSEp4I11YlV8Anou5NiTnCDgXrdYBMNBSg/Utbjy+RWPLZlXVvrJ6QPANr1kUdlaaU7eZh6BZ1UxUylMhOvibjpOVaN+oRzqDMO/0ldeyx6a7VSd1OJYlchcYzI1H5RTZAC6PO2RuXCNTcYhBdgLPyWlRic=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: DMA mapping API on 32-bit X86 with CONFIG_HIGHMEM64G
-Date: Sun, 17 Feb 2008 07:31:53 -0800
-Message-ID: <qakgr39onfg8q408qhpstffuf5lhpt7c20@4ax.com>
-References: <fa.UILz1HxdpfM019FfTnX6mSuY9KE@ifi.uio.no>
-In-Reply-To: <fa.UILz1HxdpfM019FfTnX6mSuY9KE@ifi.uio.no>
-X-Mailer: Forte Agent 4.2/32.1118
+Subject: [PATCH] falconide: locking bugfix
+Date: Sun, 17 Feb 2008 17:22:05 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-ide@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Michael Schmitz <schmitz@debian.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - webhosting.zipcon.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - beezmo.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802171722.05804.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 Feb 2008 04:16:58 UTC, in fa.linux.kernel you wrote:
 
->I was looking at the out-of-tree driver for a PCI high-security module 
->(from a vendor who shall remain nameless) today, as we had a problem 
->reported where the device didn't work properly if the computer had more 
->than 4GB of RAM (this is x86 32-bit, with CONFIG_HIGHMEM64G enabled).
->
->Essentially what it was doing was taking some memory that the userspace 
->app was transferring to/from the device, doing get_user_pages on it, and 
->then using the old-style page_to_phys, etc. functions to DMA on that 
->memory instead of the modern DMA API.
->
->However, I'm not sure this strategy would have worked on this platform 
->even if it had been using the proper DMA API. This device has 32-bit DMA 
->limits and is transferring userspace buffers which with HIGHMEM64G 
->enabled could easily have physical addresses over 4GB. The strategy that 
->Linux Device Drivers, 3rd Edition (chapter 15) suggests is doing 
->get_user_pages, creating an SG list from the returned pages and then 
->using dma_map_sg on that list. However, essentially all dma_map_sg in 
->include/asm-x86/dma-mapping_32.h is:
->
->	for_each_sg(sglist, sg, nents, i) {
->		BUG_ON(!sg_page(sg));
->
->		sg->dma_address = sg_phys(sg);
->	}
->
->which does nothing to ensure that the returned physical address is 
->within the device's DMA mask. On 64-bit this triggers IOMMU mapping but 
->on 32-bit it doesn't seem like this case is handled at all. I believe 
->the block and networking layers have their own ways of ensuring that 
->they don't feed such buffers to their drivers if they can't handle it, 
->but a basic character device driver is kind of left out in the cold here 
->and the DMA API doesn't appear to work as documented in this case. Given 
->that x86-32 kernels don't implement any IOMMU support I'm not sure what 
->it actually could do, other than implementing some kind of software 
->bounce buffering of its own..
->
->Are there any in-tree drivers that use this DMA mapping on 
->get_user_pages strategy that could be affected by this?
+commit 8ac4ce742c66100931b6f2d7a36b0df08bc721fe ("ide: fix host drivers
+depending on ide_generic to probe for interfaces (take 2)") moved probing
+to falconide but forgot to take care of Atari specific locking - fix it.
 
-No takers?  This got me worried about _my_ out-of-tree driver...
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Michael Schmitz <schmitz@debian.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-generic.c      |    6 ------
+ drivers/ide/legacy/falconide.c |    2 ++
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
->I think the get_free_pages trick is actually pretty silly in this case, 
->the size of the data being transferred is likely such that it would be 
->just as fast or faster to copy to a kernel buffer and DMA to/from there..
-
-That's what I do currently.  If HIGHMEM64G is defined I switch from
-user space DMA to an in-driver copy/DMA buffer.
-
-Is there a more elegant/simpler way to do this?  At one time I thought
-there was a kernel bounce-buffer hidden behind the DMA API - at least
-on some architectures and some memory configurations.
-
-Just my imagination, or is this problem already taken care of in the
-kernel?
-
-Thanks,
-Bill
--- 
-William D Waddington
-william.waddington@beezmo.com
-"Even bugs...are unexpected signposts on
-the long road of creativity..." - Ken Burtch
+Index: b/drivers/ide/ide-generic.c
+===================================================================
+--- a/drivers/ide/ide-generic.c
++++ b/drivers/ide/ide-generic.c
+@@ -17,9 +17,6 @@ static int __init ide_generic_init(void)
+ 	u8 idx[MAX_HWIFS];
+ 	int i;
+ 
+-	if (ide_hwifs[0].io_ports[IDE_DATA_OFFSET])
+-		ide_get_lock(NULL, NULL); /* for atari only */
+-
+ 	for (i = 0; i < MAX_HWIFS; i++) {
+ 		ide_hwif_t *hwif = &ide_hwifs[i];
+ 
+@@ -31,9 +28,6 @@ static int __init ide_generic_init(void)
+ 
+ 	ide_device_add_all(idx, NULL);
+ 
+-	if (ide_hwifs[0].io_ports[IDE_DATA_OFFSET])
+-		ide_release_lock();	/* for atari only */
+-
+ 	return 0;
+ }
+ 
+Index: b/drivers/ide/legacy/falconide.c
+===================================================================
+--- a/drivers/ide/legacy/falconide.c
++++ b/drivers/ide/legacy/falconide.c
+@@ -84,7 +84,9 @@ static int __init falconide_init(void)
+ 		ide_init_port_data(hwif, index);
+ 		ide_init_port_hw(hwif, &hw);
+ 
++		ide_get_lock(NULL, NULL);
+ 		ide_device_add(idx, NULL);
++		ide_release_lock();
+ 	}
+ 
+ 	return 0;
