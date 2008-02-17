@@ -1,45 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755436AbYBQLAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbYBQLGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755436AbYBQLAc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 06:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbYBQLAV
+	id S1755793AbYBQLGU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 06:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbYBQLGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 06:00:21 -0500
-Received: from rv-out-0910.google.com ([209.85.198.184]:56242 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751140AbYBQLAU (ORCPT
+	Sun, 17 Feb 2008 06:06:09 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:20553 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752630AbYBQLGI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 06:00:20 -0500
+	Sun, 17 Feb 2008 06:06:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=vGghtk5PjL2OUpXJk50URaWBTdzEF6n3/5t/FBAdoYH5XlcP9QlXELTUuVHEBfvlj7y5WzK7p2hkMRyVdd6yNXLSFmT56ueYPAxI1spWvR5J9Bq7J94bflcDWlFZydHvbTYCy5tJWAExd1LDWh1qJtdABqRzbSllmx5n/80YCQE=
-Message-ID: <c4e36d110802170300t51e45613t4b45c921377bcfd7@mail.gmail.com>
-Date: Sun, 17 Feb 2008 12:00:19 +0100
-From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Suspend doesn't work when SD card is inserted
-Cc: rjw@sisk.pl
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=smverh3ju3OHnzBOVFlVsEvGZ6Mdr8orGO+ZgSVCF9/5v2eExIbvL07lTce02i6Z/eQjBE0RpkhvJ41VWoy+aM4Rgzk71xEcwsnC9FtpJ/S4rugdQCsezP3N8W1fC8VNSweKbVFQYd5s5dzuq0CeLTLIP7pVFYrA/6lHQXig7EI=
+Date: Sun, 17 Feb 2008 12:00:18 +0100
+From: Alejandro Riveira =?UTF-8?B?RmVybsOhbmRleg==?= 
+	<ariveira@gmail.com>
+To: Santiago Garcia Mantinan <manty@manty.net>
+Cc: linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: uli526x link problem solved, fix not on 2.6.25-rc2
+Message-ID: <20080217120018.01e6bc54@Varda>
+In-Reply-To: <20080217094225.GA3929@dis.manty.net>
+References: <20080217094225.GA3929@dis.manty.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello
+El Sun, 17 Feb 2008 10:42:25 +0100
+Santiago Garcia Mantinan <manty@manty.net> escribió:
 
-I've noticed that my system (T61) doesn't want to suspend when SD card
-is in the card reader slot with 2.6.25-rc2  (no problem when the card
-is outside)
-Also the card is not even mounted, it's just in the slot and suspend locks.
-2.6.24 worked correctly.
+> Hi!
+> 
+> There was a problem that affected all tulip based drivers and which has been
+> fixed in most of them, for uli526x the problem remains on 2.6.25-rc2 as the
+> fix has not yet been applied.
+> 
+> A discusion of this bug and the patch to fix it is at
+> http://bugzilla.kernel.org/show_bug.cgi?id=5839
+> Several people including myself have tested the patch and have stated that
+> it works ok.
+> 
+> I would encourage people with the proper permissions to submit this patch so
+> that it ends up on 2.6.25.
 
-Bisection games showed this patch as the source of problem:
+ Maybe CCing Jeff Garzik (manteiner) helps on this regard.
 
-775b64d2b6ca37697de925f70799c710aab5849a is first bad commit
-
-Hope this helps
-
-Zdenek
+> 
+> Thanks in advance!
+> 
+> Regards...
