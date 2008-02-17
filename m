@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756096AbYBQJZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755662AbYBQJdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756096AbYBQJZy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 04:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751933AbYBQJZi
+	id S1755662AbYBQJdp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 04:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbYBQJdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 04:25:38 -0500
-Received: from hpsmtp-eml17.kpnxchange.com ([213.75.38.117]:15054 "EHLO
-	hpsmtp-eml17.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752384AbYBQJZe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 04:25:34 -0500
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Unable to continue testing of 2.6.25
-Date: Sun, 17 Feb 2008 10:25:30 +0100
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
+	Sun, 17 Feb 2008 04:33:36 -0500
+Received: from mx2.suse.de ([195.135.220.15]:55776 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752165AbYBQJde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 04:33:34 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+References: <jelk5k62uy.fsf@sykes.suse.de> <47B77B3F.1000909@garzik.org>
+	<je1w7c5rx5.fsf@sykes.suse.de> <47B7B0AD.2080100@rtr.ca>
+X-Yow: You were s'posed to laugh!
+Date: Sun, 17 Feb 2008 10:33:30 +0100
+In-Reply-To: <47B7B0AD.2080100@rtr.ca> (Mark Lord's message of "Sat\, 16 Feb
+	2008 22\:57\:33 -0500")
+Message-ID: <jefxvs3p1x.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802171025.30590.elendil@planet.nl>
-X-OriginalArrivalTime: 17 Feb 2008 09:25:32.0932 (UTC) FILETIME=[0B7B8440:01C87147]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yesterday, after spending quite a few hours over the last days on bisecting 
-some serious regressions and finding workarounds for them, I thought I 
-could start using 2.6.25-rc2 as the new kernel for my desktop. 
-Unfortunately I found that I cannot because it would make my other main 
-activity - working on the Debian installation system - impossible.
+Mark Lord <lkml@rtr.ca> writes:
 
-For my work on the Debian Installer I heavily rely on emulators to run test 
-installs and ATM my emulator of choice is VirtualBox (the fully open "ose" 
-version). This requires the vboxdrv kernel module, but unfortunately:
-   vboxdrv: Unknown symbol change_page_attr
+> Andreas Schwab wrote:
+>> Jeff Garzik <jeff@garzik.org> writes:
+>>
+>>> Andreas Schwab wrote:
+>>>> Since commit aaa04c28cb9a1efd42541fdb7ab648231c2a2263 [blk_end_request:
+>>>> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the
+>>>> following error from wodim:
+>>>>
+>>>> Errno: 0 (Success), write_g1 scsi sendcmd: no error
+>>>> CDB:  2A 00 00 00 00 00 00 00 1F 00
+>>>> status: 0x2 (CHECK CONDITION)
+>>>> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00
+>>>> Sense Key: 0x5 Illegal Request, Segment 0
+>>>> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0
+>>>> Sense flags: Blk 0 (not valid) resid: 63488
+>>> Does libata on the same hardware work?
+>>
+>> There is no libata driver for ide-pmac.
+> ..
+>
+> What chipset is that..  CMD646 ?
 
-At first I traced this to:
-e1271f68
- x86: deprecate change_page_attr() for drivers
- With the introduction of the new API, no driver or non-archcore code needs
- to use c-p-a anymore, so this patch also deprecates the EXPORT_SYMBOL of
- CPA (it's a horrible API after all).
-which had:
--EXPORT_SYMBOL(change_page_attr);
-+EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
+Apple KeyLargo ATA-3 and Apple K2 ATA-6.
 
-Which seemed entirely reasonable but left me wondering about the error I 
-got.
+Andreas.
 
-But then I found:
-d1028a15
- x86: make various pageattr.c functions static
- change_page_attr_add is only used in pageattr.c now, so we can
- make this function static.
- change_page_attr() isn't used anywere at all anymore; this function
- is a really bad API anyway so just remove the bloat entirely.
-
-Which removed the entire function (without even properly mentioning it in 
-the shortlog).
-
-
-OF COURSE it is up to the VirtualBox developers to adjust to the new 
-interface (and based on past experience I expect they will with their next 
-version). And it may very well be that they were totally braindead to use 
-the function in the first place. I don't know and I really don't care.
-The important fact for me is that I can no longer use a piece of software 
-that is essential to me and thereby lose the motivation to do any work on 
-the kernel.
-
-Lesson of the day: thinking only about in-kernel users of published API when 
-doing restructuring is going to lose you testers who do MORE with their 
-systems than just kernel development.
-
-Please allow external users some decent period for transitioning. The 
-initial plan to "remove the old function in 2.6.27" was entirely sensible. 
-It's a pity it was not followed through.
-
-Thanks,
-FJP
-
-P.S. Of course I _will_ follow up on issues that I've already reported. I 
-will just not be doing any new testing.
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
