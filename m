@@ -1,71 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbYBQXcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbYBQXhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbYBQXcc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 18:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYBQXcX
+	id S1757117AbYBQXhT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 18:37:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbYBQXhB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 18:32:23 -0500
-Received: from mailgw2-out.fraunhofer.de ([153.96.1.22]:58860 "EHLO
-	mailgw2-out.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbYBQXcW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 18:32:22 -0500
-X-Greylist: delayed 649 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 18:32:21 EST
-Date: Mon, 18 Feb 2008 00:21:27 +0100
-From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-Message-ID: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de>
-User-Agent: nail 11.22 3/20/05
+	Sun, 17 Feb 2008 18:37:01 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39987 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754757AbYBQXg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 18:36:59 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Kosina <jkosina@suse.cz>
+Subject: Re: Subject: [PATCH] Revert "[RTNETLINK]: Send a single notification on device state changes."
+Date: Mon, 18 Feb 2008 00:35:12 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       Laszlo Attila Toth <panther@balabit.hu>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       =?iso-8859-1?q?Fran=E7ois_Valenduc?= 
+	<francois.valenduc@tvcablenet.be>,
+       netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0802180027331.30955@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0802180027331.30955@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 17 Feb 2008 23:21:27.0724 (UTC) FILETIME=[D2116EC0:01C871BB]
-X-Fraunhofer-Email-Policy: accepted
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802180035.14076.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the 
-> following error from wodim: 
+On Monday, 18 of February 2008, Jiri Kosina wrote:
+> This reverts commit 45b503548210fe6f23e92b856421c2a3f05fd034.
+> 
+> It contains deadlock, and breaks userspace applications (wpa_supplicant,
+> networkmanager). References:
+> 
+> http://bugzilla.kernel.org/show_bug.cgi?id=10002
+> http://bugzilla.kernel.org/show_bug.cgi?id=10002
 
-> Errno: 0 (Success), write_g1 scsi sendcmd: no error 
-> CDB:  2A 00 00 00 00 00 00 00 1F 00 
-> status: 0x2 (CHECK CONDITION) 
-> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00 
-> Sense Key: 0x5 Illegal Request, Segment 0 
-> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0 
-> Sense flags: Blk 0 (not valid) 
-> resid: 63488 
+I think Andrew has already queued this one up.
 
-This fragment is much too short to allow to judge on possible reasons.
-There is a high probability that your problem is caused by the cdrecord
-fork called "wodim".
+Thanks,
+Rafael
 
-Please always include the following information in your bug-report: 
 
-- The version number of cdrecord that caused the bug. 
-- The command line that was used for the failing command. 
-- The complete output (including error messages) from 'cdrecord -v ...' 
-- Probably the important part of the 'cdrecord -V' output if we agreed on it 
-- The OS name, release and hardware (processor) 
-- Special conditions of your environment (libc vers. SCSI transport ...) 
-- Sufficient information on the media used. This is at least the ATIP data, a 
-  note to CD-R/CD-RW and information on the state and the case history of this
-  media. 
+> ---
+>  net/core/rtnetlink.c |   36 ++++++++++--------------------------
+>  1 files changed, 10 insertions(+), 26 deletions(-)
+> 
+> diff --git a/net/core/rtnetlink.c b/net/core/rtnetlink.c
+> index ecb02af..61ac8d0 100644
+> --- a/net/core/rtnetlink.c
+> +++ b/net/core/rtnetlink.c
+> @@ -504,7 +504,7 @@ int rtnl_put_cacheinfo(struct sk_buff *skb, struct dst_entry *dst, u32 id,
+>  
+>  EXPORT_SYMBOL_GPL(rtnl_put_cacheinfo);
+>  
+> -static int set_operstate(struct net_device *dev, unsigned char transition, bool send_notification)
+> +static void set_operstate(struct net_device *dev, unsigned char transition)
+>  {
+>  	unsigned char operstate = dev->operstate;
+>  
+> @@ -527,12 +527,8 @@ static int set_operstate(struct net_device *dev, unsigned char transition, bool
+>  		write_lock_bh(&dev_base_lock);
+>  		dev->operstate = operstate;
+>  		write_unlock_bh(&dev_base_lock);
+> -
+> -		if (send_notification)
+> -			netdev_state_change(dev);
+> -		return 1;
+> -	} else
+> -		return 0;
+> +		netdev_state_change(dev);
+> +	}
+>  }
+>  
+>  static void copy_rtnl_link_stats(struct rtnl_link_stats *a,
+> @@ -826,7 +822,6 @@ static int do_setlink(struct net_device *dev, struct ifinfomsg *ifm,
+>  	if (tb[IFLA_BROADCAST]) {
+>  		nla_memcpy(dev->broadcast, tb[IFLA_BROADCAST], dev->addr_len);
+>  		send_addr_notify = 1;
+> -		modified = 1;
+>  	}
+>  
+>  	if (ifm->ifi_flags || ifm->ifi_change) {
+> @@ -839,23 +834,16 @@ static int do_setlink(struct net_device *dev, struct ifinfomsg *ifm,
+>  		dev_change_flags(dev, flags);
+>  	}
+>  
+> -	if (tb[IFLA_TXQLEN]) {
+> -		if (dev->tx_queue_len != nla_get_u32(tb[IFLA_TXQLEN])) {
+> -			dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
+> -			modified = 1;
+> -		}
+> -	}
+> +	if (tb[IFLA_TXQLEN])
+> +		dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
+>  
+>  	if (tb[IFLA_OPERSTATE])
+> -		modified |= set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]), false);
+> +		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]));
+>  
+>  	if (tb[IFLA_LINKMODE]) {
+> -		if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
+> -			write_lock_bh(&dev_base_lock);
+> -			dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> -			write_lock_bh(&dev_base_lock);
+> -			modified = 1;
+> -		}
+> +		write_lock_bh(&dev_base_lock);
+> +		dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> +		write_unlock_bh(&dev_base_lock);
+>  	}
+>  
+>  	err = 0;
+> @@ -869,10 +857,6 @@ errout:
+>  
+>  	if (send_addr_notify)
+>  		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+> -
+> -	if (modified)
+> -		netdev_state_change(dev);
+> -
+>  	return err;
+>  }
+>  
+> @@ -990,7 +974,7 @@ struct net_device *rtnl_create_link(struct net *net, char *ifname,
+>  	if (tb[IFLA_TXQLEN])
+>  		dev->tx_queue_len = nla_get_u32(tb[IFLA_TXQLEN]);
+>  	if (tb[IFLA_OPERSTATE])
+> -		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]), true);
+> +		set_operstate(dev, nla_get_u8(tb[IFLA_OPERSTATE]));
+>  	if (tb[IFLA_LINKMODE])
+>  		dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+>  
 
-As a general advise: if you have problems, always first try recent original 
-software from
 
-ftp://ftp.berlios.de/pub/cdrecord/alpha/
-
-None of the 30+ bugs reported against wodim in various Linux distributions is 
-known to be present with recent original software.
-
-Jörg
 
 -- 
- EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
-       js@cs.tu-berlin.de                (uni)  
-       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
- URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
+"Premature optimization is the root of all evil." - Donald Knuth
