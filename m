@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbYBQDB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759897AbYBQDBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbYBQDB1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757634AbYBQC61
+	id S1759897AbYBQDBq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbYBQC6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 21:58:27 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36355 "EHLO
+	Sat, 16 Feb 2008 21:58:31 -0500
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:36356 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757583AbYBQC6Y (ORCPT
+	with ESMTP id S1757617AbYBQC60 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 21:58:24 -0500
+	Sat, 16 Feb 2008 21:58:26 -0500
 From: Erez Zadok <ezk@cs.sunysb.edu>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        viro@ftp.linux.org.uk, hch@infradead.org,
        Erez Zadok <ezk@cs.sunysb.edu>
-Subject: [PATCH 12/17] Unionfs: branch management/configuration fixes
-Date: Sat, 16 Feb 2008 21:57:21 -0500
-Message-Id: <12032170521740-git-send-email-ezk@cs.sunysb.edu>
+Subject: [PATCH 10/17] Unionfs: factor out revalidation routine
+Date: Sat, 16 Feb 2008 21:57:19 -0500
+Message-Id: <1203217051613-git-send-email-ezk@cs.sunysb.edu>
 X-Mailer: git-send-email 1.5.2.2
 X-MailKey: Erez_Zadok
 In-Reply-To: <12032170461107-git-send-email-ezk@cs.sunysb.edu>
@@ -26,126 +26,137 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove unnecessary calls to update branch m/ctimes, and use them only when
-needed.  Update branch vfsmounts after operations that could cause a copyup.
+To be used by rest of revalidation code, as well a callers who already
+locked the child and parent dentry branch-configurations.
 
 Signed-off-by: Erez Zadok <ezk@cs.sunysb.edu>
 ---
- fs/unionfs/commonfops.c |    9 +++------
- fs/unionfs/copyup.c     |    3 ++-
- fs/unionfs/dentry.c     |    1 +
- fs/unionfs/mmap.c       |   17 ++++-------------
- fs/unionfs/rename.c     |    7 +++++--
- 5 files changed, 15 insertions(+), 22 deletions(-)
+ fs/unionfs/dentry.c |   87 +++++++++++++++++++++++++++++++-------------------
+ fs/unionfs/union.h  |    3 ++
+ 2 files changed, 57 insertions(+), 33 deletions(-)
 
-diff --git a/fs/unionfs/commonfops.c b/fs/unionfs/commonfops.c
-index 491e2ff..2add167 100644
---- a/fs/unionfs/commonfops.c
-+++ b/fs/unionfs/commonfops.c
-@@ -604,6 +604,7 @@ out:
- 	}
- out_nofree:
- 	if (!err) {
-+		unionfs_postcopyup_setmnt(dentry);
- 		unionfs_copy_attr_times(inode);
- 		unionfs_check_file(file);
- 		unionfs_check_inode(inode);
-@@ -839,13 +840,9 @@ int unionfs_flush(struct file *file, fl_owner_t id)
- 
- 	}
- 
--	/* on success, update our times */
--	unionfs_copy_attr_times(dentry->d_inode);
--	/* parent time could have changed too (async) */
--	unionfs_copy_attr_times(dentry->d_parent->d_inode);
--
- out:
--	unionfs_check_file(file);
-+	if (!err)
-+		unionfs_check_file(file);
- 	unionfs_unlock_dentry(file->f_path.dentry);
- 	unionfs_read_unlock(dentry->d_sb);
- 	return err;
-diff --git a/fs/unionfs/copyup.c b/fs/unionfs/copyup.c
-index 9beac01..f71bddf 100644
---- a/fs/unionfs/copyup.c
-+++ b/fs/unionfs/copyup.c
-@@ -819,7 +819,8 @@ begin:
- 	 * update times of this dentry, but also the parent, because if
- 	 * we changed, the parent may have changed too.
- 	 */
--	unionfs_copy_attr_times(parent_dentry->d_inode);
-+	fsstack_copy_attr_times(parent_dentry->d_inode,
-+				lower_parent_dentry->d_inode);
- 	unionfs_copy_attr_times(child_dentry->d_inode);
- 
- 	parent_dentry = child_dentry;
 diff --git a/fs/unionfs/dentry.c b/fs/unionfs/dentry.c
-index 17b297d..a956b94 100644
+index afa2120..3bd2dfb 100644
 --- a/fs/unionfs/dentry.c
 +++ b/fs/unionfs/dentry.c
-@@ -482,6 +482,7 @@ static int unionfs_d_revalidate(struct dentry *dentry, struct nameidata *nd)
- 	unionfs_lock_dentry(dentry, UNIONFS_DMUTEX_CHILD);
- 	err = __unionfs_d_revalidate_chain(dentry, nd, false);
- 	if (likely(err > 0)) { /* true==1: dentry is valid */
-+		unionfs_postcopyup_setmnt(dentry);
- 		unionfs_check_dentry(dentry);
- 		unionfs_check_nd(nd);
- 	}
-diff --git a/fs/unionfs/mmap.c b/fs/unionfs/mmap.c
-index ad770ac..d6ac61e 100644
---- a/fs/unionfs/mmap.c
-+++ b/fs/unionfs/mmap.c
-@@ -227,20 +227,11 @@ static int unionfs_prepare_write(struct file *file, struct page *page,
- 	int err;
+@@ -285,6 +285,59 @@ void purge_sb_data(struct super_block *sb)
+ }
  
- 	unionfs_read_lock(file->f_path.dentry->d_sb, UNIONFS_SMUTEX_PARENT);
+ /*
++ * Revalidate a single file/symlink/special dentry.  Assume that info nodes
++ * of the dentry and its parent are locked.  Assume that parent(s) are all
++ * valid already, but the child may not yet be valid.  Returns true if
++ * valid, false otherwise.
++ */
++bool __unionfs_d_revalidate_one_locked(struct dentry *dentry,
++				       struct nameidata *nd,
++				       bool willwrite)
++{
++	bool valid = false;	/* default is invalid */
++	int sbgen, dgen, bindex;
++
++	verify_locked(dentry);
++	verify_locked(dentry->d_parent);
++
++	sbgen = atomic_read(&UNIONFS_SB(dentry->d_sb)->generation);
++	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
++
++	if (unlikely(is_newer_lower(dentry))) {
++		/* root dentry special case as aforementioned */
++		if (IS_ROOT(dentry)) {
++			unionfs_copy_attr_times(dentry->d_inode);
++		} else {
++			/*
++			 * reset generation number to zero, guaranteed to be
++			 * "old"
++			 */
++			dgen = 0;
++			atomic_set(&UNIONFS_D(dentry)->generation, dgen);
++		}
++		if (!willwrite)
++			purge_inode_data(dentry->d_inode);
++	}
++	valid = __unionfs_d_revalidate_one(dentry, nd);
++
++	/*
++	 * If __unionfs_d_revalidate_one() succeeded above, then it will
++	 * have incremented the refcnt of the mnt's, but also the branch
++	 * indices of the dentry will have been updated (to take into
++	 * account any branch insertions/deletion.  So the current
++	 * dbstart/dbend match the current, and new, indices of the mnts
++	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
++	 * test below does not depend on whether chain_len was 0 or greater.
++	 */
++	if (!valid || sbgen == dgen)
++		goto out;
++	for (bindex = dbstart(dentry); bindex <= dbend(dentry); bindex++)
++		unionfs_mntput(dentry, bindex);
++out:
++	return valid;
++}
++
++/*
+  * Revalidate a parent chain of dentries, then the actual node.
+  * Assumes that dentry is locked, but will lock all parents if/when needed.
+  *
+@@ -404,42 +457,10 @@ out_this:
+ 	if (dentry != dentry->d_parent)
+ 		unionfs_lock_dentry(dentry->d_parent,
+ 				    UNIONFS_DMUTEX_REVAL_PARENT);
+-	dgen = atomic_read(&UNIONFS_D(dentry)->generation);
+-
+-	if (unlikely(is_newer_lower(dentry))) {
+-		/* root dentry special case as aforementioned */
+-		if (IS_ROOT(dentry)) {
+-			unionfs_copy_attr_times(dentry->d_inode);
+-		} else {
+-			/*
+-			 * reset generation number to zero, guaranteed to be
+-			 * "old"
+-			 */
+-			dgen = 0;
+-			atomic_set(&UNIONFS_D(dentry)->generation, dgen);
+-		}
+-		if (!willwrite)
+-			purge_inode_data(dentry->d_inode);
+-	}
+-	valid = __unionfs_d_revalidate_one(dentry, nd);
++	valid = __unionfs_d_revalidate_one_locked(dentry, nd, willwrite);
+ 	if (dentry != dentry->d_parent)
+ 		unionfs_unlock_dentry(dentry->d_parent);
+ 
 -	/*
--	 * This is the only place where we unconditionally copy the lower
--	 * attribute times before calling unionfs_file_revalidate.  The
--	 * reason is that our ->write calls do_sync_write which in turn will
--	 * call our ->prepare_write and then ->commit_write.  Before our
--	 * ->write is called, the lower mtimes are in sync, but by the time
--	 * the VFS calls our ->commit_write, the lower mtimes have changed.
--	 * Therefore, the only reasonable time for us to sync up from the
--	 * changed lower mtimes, and avoid an invariant violation warning,
--	 * is here, in ->prepare_write.
+-	 * If __unionfs_d_revalidate_one() succeeded above, then it will
+-	 * have incremented the refcnt of the mnt's, but also the branch
+-	 * indices of the dentry will have been updated (to take into
+-	 * account any branch insertions/deletion.  So the current
+-	 * dbstart/dbend match the current, and new, indices of the mnts
+-	 * which __unionfs_d_revalidate_one has incremented.  Note: the "if"
+-	 * test below does not depend on whether chain_len was 0 or greater.
 -	 */
--	unionfs_copy_attr_times(file->f_path.dentry->d_inode);
- 	err = unionfs_file_revalidate(file, true);
--	unionfs_check_file(file);
-+	if (!err) {
-+		unionfs_copy_attr_times(file->f_path.dentry->d_inode);
-+		unionfs_check_file(file);
-+	}
- 	unionfs_read_unlock(file->f_path.dentry->d_sb);
+-	if (valid && sbgen != dgen)
+-		for (bindex = dbstart(dentry);
+-		     bindex <= dbend(dentry);
+-		     bindex++)
+-			unionfs_mntput(dentry, bindex);
+-
+ out_free:
+ 	/* unlock/dput all dentries in chain and return status */
+ 	if (chain_len > 0) {
+diff --git a/fs/unionfs/union.h b/fs/unionfs/union.h
+index 0e0ccde..5001b07 100644
+--- a/fs/unionfs/union.h
++++ b/fs/unionfs/union.h
+@@ -368,6 +368,9 @@ extern int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ extern int unionfs_unlink(struct inode *dir, struct dentry *dentry);
+ extern int unionfs_rmdir(struct inode *dir, struct dentry *dentry);
  
- 	return err;
-diff --git a/fs/unionfs/rename.c b/fs/unionfs/rename.c
-index 5ab13f9..cc16eb2 100644
---- a/fs/unionfs/rename.c
-+++ b/fs/unionfs/rename.c
-@@ -138,6 +138,11 @@ static int __unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 	err = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
- 			 lower_new_dir_dentry->d_inode, lower_new_dentry);
- out_err_unlock:
-+	if (!err) {
-+		/* update parent dir times */
-+		fsstack_copy_attr_times(old_dir, lower_old_dir_dentry->d_inode);
-+		fsstack_copy_attr_times(new_dir, lower_new_dir_dentry->d_inode);
-+	}
- 	unlock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
- 	lockdep_on();
- 
-@@ -526,8 +531,6 @@ int unionfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		}
- 	}
- 	/* if all of this renaming succeeded, update our times */
--	unionfs_copy_attr_times(old_dir);
--	unionfs_copy_attr_times(new_dir);
- 	unionfs_copy_attr_times(old_dentry->d_inode);
- 	unionfs_copy_attr_times(new_dentry->d_inode);
- 	unionfs_check_inode(old_dir);
++extern bool __unionfs_d_revalidate_one_locked(struct dentry *dentry,
++					      struct nameidata *nd,
++					      bool willwrite);
+ extern bool __unionfs_d_revalidate_chain(struct dentry *dentry,
+ 					 struct nameidata *nd, bool willwrite);
+ extern bool is_newer_lower(const struct dentry *dentry);
 -- 
 1.5.2.2
 
