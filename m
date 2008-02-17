@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbYBQRsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbYBQRtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752117AbYBQRsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:48:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYBQRsU
+	id S1752605AbYBQRtR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750976AbYBQRtB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:48:20 -0500
-Received: from hpsmtp-eml20.kpnxchange.com ([213.75.38.85]:54389 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750798AbYBQRsT (ORCPT
+	Sun, 17 Feb 2008 12:49:01 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3152 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750995AbYBQRs7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:48:19 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Subject: Re: [REGRESSION 2.6.23] no vga console and no messages
-Date: Sun, 17 Feb 2008 18:48:16 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <alpine.LNX.1.00.0802162042130.6093@iabervon.org> <E1JQe5R-0001cW-1a@faramir.fjphome.nl> <alpine.LNX.1.00.0802171134350.5496@iabervon.org>
-In-Reply-To: <alpine.LNX.1.00.0802171134350.5496@iabervon.org>
+	Sun, 17 Feb 2008 12:48:59 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=udnPTgvce+11lluXrH4rJvwmrUkBpgPgKfX8mfhRF1lU8ISdcS1FDcChqx6Ky/YEu
+	F3kmRFfH10NkJCfpVQGPQ==
+Message-ID: <6599ad830802170948p4b39d242ubd10db541568e497@mail.gmail.com>
+Date: Sun, 17 Feb 2008 09:48:56 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC][PATCH 7/7] CGroup API: Update cpusets to use cgroup structured file API
+Cc: balbir@in.ibm.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080217112843.5496412d.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802171848.16969.elendil@planet.nl>
-X-OriginalArrivalTime: 17 Feb 2008 17:48:17.0505 (UTC) FILETIME=[46F81510:01C8718D]
+References: <20080215204418.535025000@menage.corp.google.com>
+	 <20080215204821.778088000@menage.corp.google.com>
+	 <20080216212901.70fe35ce.pj@sgi.com>
+	 <6599ad830802170918q4c748f7fs32e5b8ea63e49f15@mail.gmail.com>
+	 <20080217112843.5496412d.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 February 2008, Daniel Barkalow wrote:
-> On Sun, 17 Feb 2008, Frans Pop wrote:
-> > Daniel Barkalow wrote:
-> > > For some reason I can't see and don't know how to debug, in 2.6.23 on
-> > > my server I don't get the vga console, but only get the dummy
-> > > console.
-> >
-> > Please check if this bug report matches the issue you are seeing:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=9310
+On Feb 17, 2008 9:28 AM, Paul Jackson <pj@sgi.com> wrote:
 >
-> I think mine might be different. I've got a vga parameter (vga=0x301),
-> and mine disappears very early, before when you usually get "Console:
-> colour VGA+ 80x25" (and I'm getting "Console: coloud dummy 80x25"
-> instead). I've also got CONFIG_FB turned off entirely.
+> I'm figuring it would be easiest if you just threw this
+> little change into your hopper for the bigger changes
+> you're making
 
-The main question is: do you have FRAMEBUFFER_CONSOLE_DETECT_PRIMARY enabled 
-in you kernel config. If you do, I'd try disabling it.
+OK, will do.
 
-> But if you've got any insight into how the console driver stuff works
-> from troubleshooting your problem, I could use the hints...
-
-Afraid not. Are you sure you have the correct framebuffer driver compiled 
-into the kernel?
-
-Please post your kernel config and the output of 'lspci -nn', so people can 
-have a look.
+Paul
