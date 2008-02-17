@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757959AbYBQO2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbYBQOqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757959AbYBQO2F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 09:28:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbYBQO1w
+	id S1757791AbYBQOqT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 09:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbYBQOqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 09:27:52 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:35133 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755474AbYBQO1v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 09:27:51 -0500
-Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Roland Dreier <rdreier@cisco.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-In-Reply-To: <20080217162559.d0b01760.sfr@canb.auug.org.au>
-References: <20080212120208.f7168a91.sfr@canb.auug.org.au>
-	 <adalk5np1h5.fsf@cisco.com> <20080215120222.b3263e4a.sfr@canb.auug.org.au>
-	 <1203174872.3182.16.camel@localhost.localdomain>
-	 <20080217162559.d0b01760.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Sun, 17 Feb 2008 08:27:45 -0600
-Message-Id: <1203258465.3082.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+	Sun, 17 Feb 2008 09:46:09 -0500
+Received: from slowhand.arndnet.de ([88.198.19.76]:53624 "EHLO mail.unitix.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755646AbYBQOqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 09:46:08 -0500
+Message-ID: <47B848A9.3080308@i4.informatik.rwth-aachen.de>
+Date: Sun, 17 Feb 2008 15:46:01 +0100
+From: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Iain Paton <ilp@lkml.darkvoyage.org.uk>
+CC: Jordan Crouse <jordan.crouse@amd.com>,
+       Andres Salomon <dilinger@queued.net>, marc.jones@amd.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, wim@iguana.be
+Subject: Re: Geode GX/LX watchdog timer (RESEND)
+References: <20080116165606.3ebc06a4@ephemeral> <478F25D6.3060503@i4.informatik.rwth-aachen.de> <20080117134032.4cc1a1cf@ephemeral> <478FB255.5040001@i4.informatik.rwth-aachen.de> <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080119010624.GA25328@cosmic.amd.com> <47934B2E.3020707@i4.informatik.rwth-aachen.de> <20080121170700.GC6884@cosmic.amd.com> <4794E664.6020209@i4.informatik.rwth-aachen.de> <47B8413A.80105@lkml.darkvoyage.org.uk>
+In-Reply-To: <47B8413A.80105@lkml.darkvoyage.org.uk>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-17 at 16:25 +1100, Stephen Rothwell wrote:
-> Hi James,
+Hi,
+
+Iain Paton wrote:
+> Arnd Hannemann wrote:
 > 
-> On Sat, 16 Feb 2008 09:14:32 -0600 James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> >
-> > Do you have the tree and build logs available anywhere?  I'd like to
-> > turn off the merge tree builds when this is able to replace it.
+>> I can confirm that it is still working fine :-)
 > 
-> The tree is at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git - or did
-> you mean the logs of creating the tree.
+> Hi,
+> 
+> Has anyone managed to build this as a module against the full 2.6.24
+> release ?
+> 
+> I am seeing the following error:
+> 
+>   CC [M]  lib/zlib_inflate/infutil.o
+>   CC [M]  lib/zlib_inflate/inftrees.o
+>   CC [M]  lib/zlib_inflate/inflate_syms.o
+>   LD [M]  lib/zlib_inflate/zlib_inflate.o
+>   Building modules, stage 2.
+>   MODPOST 251 modules
+> ERROR: "geode_mfgpt_toggle_event" [drivers/watchdog/geodewdt.ko] undefined!
+> ERROR: "geode_mfgpt_alloc_timer" [drivers/watchdog/geodewdt.ko] undefined!
+> make[1]: *** [__modpost] Error 1
+> make: *** [modules] Error 2
+> 
+> 
+> arch/x86/kernel/mfgpt_32.c where these are defined seems to have been
+> built ok and they appear in System.map.
+> 
+> The only other thing I've done is to add "[PATCH] pata_cs5536 Fix
+> secondary port configuration" recently posted by Martin K. Petersen but
+> I don't believe that would cause this.
+> 
+> .config is available at http://pastebin.ca/907299
 
-Yes, the logs of creating the tree.
+Never tried to built it as a module.
+Probably there are issues with that. If I remember correctly I saw a patch in 2.6.25-rc which
+mentioned that using mfgpt in modules won't work. Does this apply to 2.6.24 as well?
 
->   I currently ceate the tree
-> fairly manually (as I slowly script what can be) and so have no logs of
-> that process.
+Best regards,
+Arnd Hannemann
 
-Um, well, I've already pointed to tools that currently do this bit
-automatically.  Do you have a list of input trees anywhere?
 
-> The build logs that I have some control over are at
-> http://kisskb.ellerman.id.au/kisskb/branch/9/.  I am hoping to expand on
-> the arch/config combinations over time (I have to convince my tame cross
-> compiler builder :-)).  I also hope that others will build this tree for
-> themselves and publish the results.
-
-Oh, OK ... by build I mean combine the trees and quilts into the actual
-tree.  Compiling is nice, but it's the tree construction logs I want to
-see to make sure there aren't any impending merge problems.  Most people
-verify on a fairly constant basis that their own trees actually build.
-The only problems we have are edge configurations (like arm and sparc,
-which have SCSI drivers that don't build except on those architectures).
-
-James
 
 
