@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbYBQCWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbYBQCaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbYBQCWZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 21:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYBQCWS
+	id S1755219AbYBQCaT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 21:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751431AbYBQCaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 21:22:18 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:47059 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbYBQCWR (ORCPT
+	Sat, 16 Feb 2008 21:30:06 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:37913 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbYBQCaF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 21:22:17 -0500
-X-IronPort-AV: E=Sophos;i="4.25,365,1199682000"; 
-   d="scan'208";a="62404374"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Stephen Rothwell" <sfr@canb.auug.org.au>
-Subject: Re: linux-next: first tree
-Date: Sat, 16 Feb 2008 21:23:47 -0500
-User-Agent: KMail/1.9.5
-Cc: "Bryan Wu" <cooloney.lkml@gmail.com>, linux-next@vger.kernel.org,
-       "LKML" <linux-kernel@vger.kernel.org>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au> <386072610802150033k4dc2faf1je119bf5516336ee9@mail.gmail.com> <20080217023337.e94ceb48.sfr@canb.auug.org.au>
-In-Reply-To: <20080217023337.e94ceb48.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802162123.47355.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 17 Feb 2008 02:22:15.0570 (UTC) FILETIME=[E9799F20:01C8710B]
+	Sat, 16 Feb 2008 21:30:05 -0500
+Date: Sat, 16 Feb 2008 18:29:39 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: What's needed for a PCIe card to be recognized?
+Message-ID: <20080216182939.061c7246@laptopd505.fenrus.org>
+In-Reply-To: <20080217015453.2a4e4142@dilbert.local>
+References: <20080216225932.22460d31@dilbert.local>
+	<20080216143946.6d532a41@laptopd505.fenrus.org>
+	<20080217015453.2a4e4142@dilbert.local>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 16 Feb 2008 10:33, Stephen Rothwell pondered:
-> On Fri, 15 Feb 2008 16:33:50 +0800 "Bryan Wu" <cooloney.lkml@gmail.com> wrote:
-> >
-> > Could you please add Blackfin tree to the linux-next
+On Sun, 17 Feb 2008 01:54:53 +0100
+Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+
+> Am Sat, 16 Feb 2008 14:39:46 -0800
+> schrieb Arjan van de Ven <arjan@infradead.org>:
+> 
+> > On Sat, 16 Feb 2008 22:59:32 +0100
+> > Hans-Jürgen Koch <hjk@linutronix.de> wrote:
 > > 
-> >  git://git.kernel.org/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git
-> > for-linus
+> > > I'm playing around with a vanilla 2.6.25-rc1, adding patches to
+> > > make it work on an Asus EeePC. That one has the problem that its
+> > > Mini PCIe WLAN module doesn't show up in lspci. That brought up a
+> > > few questions that I couldn't answer yet:
+> > > 
+> > > How can they "hide" a PCIe card?
+> > > What could be their motive to do that?
+> > > How can I make it appear?
+> > 
+> > 
+> > go to the bios, enable the wireless card. 
+> > 
+> > that did it for me ;)
 > 
-> Added, thanks.
+> It didn't for me. I tried all combinations (booting with/without WLAN
+> enabled, enabling WLAN through /proc with/without pciehp loaded and so
+> on). What kernel did you use, and which patches did you apply?
 > 
-> > And do you have the blackfin cross-compile toolchain?
-> 
-> No, I don't at the moment.
 
-You can grab (i386 rpms and tar ball) that should work from:
+I used a pretty much stock Fedora 8 kernel.. no magic patches at all.
+Of course there's no driver for the wlan, but that's a different story ;)
 
-http://blackfin.uclinux.org/gf/project/toolchain/frs/?action=FrsReleaseView&release_id=375
-
-You will need:
- - toolchain blackfin-toolchain-08r1-8.i386.rpm
- - c library (either one of):
-    - blackfin-toolchain-uclibc-default-08r1-8.i386.rpm
-    - blackfin-toolchain-uclibc-full-08r1-8.i386.rpm
-
-Other arch's & packages should appear shortly.
-
--Robin
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
