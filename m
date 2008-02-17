@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbYBQUrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbYBQUtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbYBQUrh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:47:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYBQUra
+	id S1756114AbYBQUtW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:49:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbYBQUtO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:47:30 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44350 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752752AbYBQUr2 (ORCPT
+	Sun, 17 Feb 2008 15:49:14 -0500
+Received: from server077.de-nserver.de ([62.27.12.245]:45962 "EHLO
+	server077.de-nserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752691AbYBQUtN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:47:28 -0500
-Date: Sun, 17 Feb 2008 12:46:50 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Unable to continue testing of 2.6.25
-Message-ID: <20080217124650.576990ce@laptopd505.fenrus.org>
-In-Reply-To: <200802171025.30590.elendil@planet.nl>
-References: <200802171025.30590.elendil@planet.nl>
-Organization: Intel
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Feb 2008 15:49:13 -0500
+Message-ID: <47B89DC6.4070906@allied-internet.ag>
+Date: Sun, 17 Feb 2008 21:49:10 +0100
+From: allied internet ag- Stefan Priebe <s.priebe@allied-internet.ag>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Christian Kujau <lists@nerdbynature.de>
+CC: LKML <linux-kernel@vger.kernel.org>, jirislaby@gmail.com
+Subject: Re: getting uninterruptible sleep processes after upgrade from 2.6.20.20
+ to 2.6.24.2
+References: <47B892B9.7060205@allied-internet.ag> <alpine.DEB.1.00.0802172133470.6469@sheep.housecafe.de>
+In-Reply-To: <alpine.DEB.1.00.0802172133470.6469@sheep.housecafe.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-User-Auth: Auth by hostmaster@profihost.com through 91.3.58.20
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 10:25:30 +0100
-Frans Pop <elendil@planet.nl> wrote:
+ >> One week ago we upgraded about 300 servers from 2.6.20.20 to 2.6.24.2.
+ >
+ > Painfull.
 
-> Yesterday, after spending quite a few hours over the last days on
-> bisecting some serious regressions and finding workarounds for them,
-> I thought I could start using 2.6.25-rc2 as the new kernel for my
-> desktop. Unfortunately I found that I cannot because it would make my
-> other main activity - working on the Debian installation system -
-> impossible.
-> 
-> For my work on the Debian Installer I heavily rely on emulators to
-> run test installs and ATM my emulator of choice is VirtualBox (the
-> fully open "ose" version). This requires the vboxdrv kernel module,
-> but unfortunately: vboxdrv: Unknown symbol change_page_attr
-> 
-> At first I traced this to:
-> e1271f68
->  x86: deprecate change_page_attr() for drivers
->  With the introduction of the new API, no driver or non-archcore code
-> needs to use c-p-a anymore, so this patch also deprecates the
-> EXPORT_SYMBOL of CPA (it's a horrible API after all).
-> which had:
-> -EXPORT_SYMBOL(change_page_attr);
-> +EXPORT_UNUSED_SYMBOL(change_page_attr); /* to be removed in 2.6.27 */
-> 
-> Which seemed entirely reasonable but left me wondering about the
-> error I got.
-> 
-> But then I found:
-> d1028a15
->  x86: make various pageattr.c functions static
->  change_page_attr_add is only used in pageattr.c now, so we can
->  make this function static.
->  change_page_attr() isn't used anywere at all anymore; this function
->  is a really bad API anyway so just remove the bloat entirely.
-> 
-> Which removed the entire function (without even properly mentioning
-> it in the shortlog).
-> 
+OK not really - i've tested the new kernel on all models. And it works 
+fine... the DN state only comes sometimes - absolutely not reproducable. 
+So my tests went OK and then we've done the update. I've now seen 5 
+servers in 7 days having this problem.
 
-the initial plan was for a depreciation period. Sadly it was untenable since the API
-was changing entirely to fix bugs and add a really important feature
-(the ability to clflush the exact range rather than wbinvd'ing the caches of all cpus in the system), 
-at which point we had to pull the function right away.
+ >> Now we get sometimes dozent of processes in state DN. The system is
+ >> completely idle - but the load is 20 or 90 or whatever. And it can
+ >> only be "repaired" by rebooting the system.
+ >
+ > please post sysrq-t (echo t > /proc/sysrq-trigger) output.
+Sorry what key is sysrq? Can i also do this via SSH Console?
 
-As for virtualbox; a fix for that already exists, and it consists of removing 25 lines of workarounds
-for c-p-a bugs, and just using set_memory_x / set_memory_nx.
+ > Did you test with *one* server before upgrading all 300? If not, please
+ > do and try to upgrade in smaller steps, e.g. 2.6.20->2.6.21 and see when
+ > it breaks. Add a few *DEBUG .config options, they may help narrowing
+ > down the problem...
+Problem here is that it is not reproducable...
 
-
-
--- 
-If you want to reach me at my work email, use arjan@linux.intel.com
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Stefan
