@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbYBQUMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbYBQUMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbYBQUMd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:12:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbYBQUK2
+	id S1756546AbYBQUMt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbYBQUMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:10:28 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:53482 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755544AbYBQUKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:10:22 -0500
-Date: Sun, 17 Feb 2008 22:09:53 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>,
-       Jean Delvare <khali@linux-fr.org>, ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: mips SMBUS_PSC_BASE compile errors
-Message-ID: <20080217200953.GJ1403@cs181133002.pp.htv.fi>
+	Sun, 17 Feb 2008 15:12:15 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:57306 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757333AbYBQUMN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 15:12:13 -0500
+Message-ID: <47B89501.5090108@zytor.com>
+Date: Sun, 17 Feb 2008 12:11:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, ak@suse.de, mingo@elte.hu,
+       tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/2] x86: lds - Use THREAD_SIZE instead of numeric	constant
+References: <20080217151716.274134094@gmail.com> <20080217151925.402628615@gmail.com> <20080217185936.GB14588@uranus.ravnborg.org> <20080217190801.GC31968@cvg> <47B88FAA.9080603@zytor.com> <20080217200654.GF31968@cvg>
+In-Reply-To: <20080217200654.GF31968@cvg>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8b798c4d16b762d15f4055597ff8d87f73b35552 causes compile errors 
-like the following for several system types:
+Cyrill Gorcunov wrote:
+> 
+> Thanks Peter for comments. Peter could you clarify for me a bit
+> more on the string:
+> 
+> x86/kernel/head_32.S:339
+> 
+> 	/* Set up the stack pointer */
+> 	lss stack_start,%esp
+> 
+> but stack_start is defined as head_32.S:647
+> 
+> .data
+> ENTRY(stack_start)
+> 	.long init_thread_union+THREAD_SIZE
+> 
+> so stack_start *must* be aligned with THREAD_SIZE in vmlinux.lds
+> at compiling time. There is no PDA at this booting time. Am I wrong?
+> If you're too busy - just reply me like "Read the code" ;)
+> 
 
-<--  snip  -->
+That doesn't follow.
 
-...
-  CC      arch/mips/au1000/common/platform.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/au1000/common/platform.c:277: error: 'PSC0_BASE_ADDR' undeclared here (not in a function)
-/home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/au1000/common/platform.c:314: warning: no previous prototype for 'au1xxx_platform_init'
-make[2]: *** [arch/mips/au1000/common/platform.o] Error 1
+You're saying that it *must* be aligned, I don't think that's true 
+anymore; I think nowadays it's more accurate to say that it *is* 
+aligned, but I don't think that's fundamental.
 
-<--  snip  -->
-
-One or more #include <asm/mach-au1x00/au1xxx_psc.h>'s at the right 
-places seem to be the correct solution, but I don't understand the mips 
-subarch setup good enough for knowing where to place them.
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+	-hpa
