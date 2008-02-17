@@ -1,87 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbYBQRhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751839AbYBQRpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751584AbYBQRhZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbYBQRhM
+	id S1751839AbYBQRpw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:45:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYBQRpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:37:12 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:38384 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750774AbYBQRhK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:37:10 -0500
-Date: Sun, 17 Feb 2008 19:36:42 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] linux/hdsmart.h: fix goofups
-Message-ID: <20080217173642.GC1403@cs181133002.pp.htv.fi>
-References: <200802171807.57983.bzolnier@gmail.com> <alpine.LFD.1.00.0802171214380.3515@localhost.localdomain> <200802171840.32180.bzolnier@gmail.com>
+	Sun, 17 Feb 2008 12:45:39 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57473 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750776AbYBQRp0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 12:45:26 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sun, 17 Feb 2008 18:44:56 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] firewire: fw-sbp2: fix NULL pointer deref in slave_alloc
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <tkrat.e8f3d31fb5f9fe01@s5r6.in-berlin.de>
+Message-ID: <tkrat.9103805c20697161@s5r6.in-berlin.de>
+References: <tkrat.e8f3d31fb5f9fe01@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <200802171840.32180.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 06:40:31PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Sunday 17 February 2008, Robert P. J. Day wrote:
-> > On Sun, 17 Feb 2008, Bartlomiej Zolnierkiewicz wrote:
-> > 
-> > > Fix goofups of commit 76166952bbc81dda1c8a8c14e75a2aa06f6c052c
-> > > ("<linux/hdsmart.h> is not used by kernel code").
-> > >
-> > > Reported-by: "Robert P. J. Day" <rpjday@crashcourse.ca>
-> > > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > > ---
-> > >  include/linux/hdsmart.h |    4 ++--
-> > >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > >
-> > > Index: b/include/linux/hdsmart.h
-> > > ===================================================================
-> > > --- a/include/linux/hdsmart.h
-> > > +++ b/include/linux/hdsmart.h
-> > > @@ -17,7 +17,7 @@
-> > >  #ifndef _LINUX_HDSMART_H
-> > >  #define _LINUX_HDSMART_H
-> > >
-> > > -#ifndef __KERNEL
-> > > +#ifndef __KERNEL__
-> > >  #define OFFLINE_FULL_SCAN		0
-> > >  #define SHORT_SELF_TEST			1
-> > >  #define EXTEND_SELF_TEST		2
-> > > @@ -121,6 +121,6 @@ typedef struct ata_smart_selftestlog_s {
-> > >  	unsigned char			resevered[2];
-> > >  	unsigned char			chksum;
-> > >  } __attribute__ ((packed)) ata_smart_selftestlog_t;
-> > > -#endif /* __KERNEL__ *
-> > > +#endif /* __KERNEL__ */
-> > >
-> > >  #endif	/* _LINUX_HDSMART_H */
-> > 
-> > if that header file isn't used by any kernel code, why bother having a
-> > check for __KERNEL__ in the first place?  it's being exported to
-> > userspace unchecked:
-> > 
-> >   include/linux/Kbuild:header-y += hdsmart.h
-> > 
-> > so why not just toss that check entirely?  otherwise, you're going to
-> > get a header file exported to userspace that has a superfluous
-> > __KERNEL__ test in it.
+On 17 Feb, Stefan Richter wrote:
+> Fix a kernel bug when running rescan-scsi-bus while a FireWire disk is
+> connected:  http://bugzilla.kernel.org/show_bug.cgi?id=10008
 > 
-> We don't want new (accidental etc.) kernel users of this header. 
->...
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>  drivers/firewire/fw-sbp2.c |    4 ++++
+>  1 file changed, 4 insertions(+)
+> 
+> Index: linux/drivers/firewire/fw-sbp2.c
+> ===================================================================
+> --- linux.orig/drivers/firewire/fw-sbp2.c
+> +++ linux/drivers/firewire/fw-sbp2.c
+> @@ -1473,6 +1473,10 @@ static int sbp2_scsi_slave_alloc(struct 
+>  {
+>  	struct sbp2_logical_unit *lu = sdev->hostdata;
+>  
+> +	/* (Re-)Adding logical units via the SCSI stack is not supported. */
+> +	if (!lu)
+> +		return -ENOSYS;
+> +
+>  	sdev->allow_restart = 1;
+>  
+>  	/*
+> 
 
-Why can't we simply remove it?
 
-cu
-Adrian
+There is unfortunately another bug.  If the user manually removes the
+scsi_device by writing into its "delete" sysfs attribute, the following
+will happen when the SBP-2 device is plugged out:
+
+
+BUG: unable to handle kernel NULL pointer dereference at 00000000000000b8
+IP: [<ffffffff804188c6>] mutex_lock_nested+0x7b/0x270
+PGD 0 
+Oops: 0002 [1] PREEMPT SMP 
+CPU 0 
+Modules linked in: firewire_sbp2 firewire_ohci firewire_core crc_itu_t i915 drm cpufreq_ondemand acpi_cpufreq freq_table applesmc input_polldev led_class coretemp hwmon eeprom snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_hda_intel snd_pcm snd_timer snd snd_page_alloc button sg thermal processor sky2 i2c_i801 rtc [last unloaded: ieee1394]
+Pid: 9, comm: events/0 Not tainted 2.6.25-rc2 #3
+RIP: 0010:[<ffffffff804188c6>]  [<ffffffff804188c6>] mutex_lock_nested+0x7b/0x270
+RSP: 0018:ffff81007dcddca0  EFLAGS: 00010002
+RAX: 0000000000000100 RBX: ffff81007cc4a800 RCX: ffff81007009b000
+RDX: ffff81007dc95040 RSI: 00000000000000d1 RDI: ffffffff804d0fcd
+RBP: 00000000000000b0 R08: ffffffff805b5000 R09: ffffffff805b6000
+R10: 00000000000000b0 R11: 0000000000000046 R12: 0000000000000246
+R13: ffff81007dc95040 R14: ffffffff8036a670 R15: 0000000000000000
+FS:  0000000000000000(0000) GS:ffffffff8055a000(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 00000000000000b8 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process events/0 (pid: 9, threadinfo ffff81007dcdc000, task ffff81007dc95040)
+Stack:  ffff81007009b000 ffff81007009b078 0000000000000286 ffffffff8041a305
+ 0000000000000000 0000000000000000 ffff81007009b000 ffff81007cc4a800
+ ffff81007009b638 00000000000000b0 ffff81007009b648 ffff81007009b000
+Call Trace:
+ [<ffffffff8041a305>] ? _spin_unlock_irqrestore+0x49/0x68
+ [<ffffffff8036a670>] ? scsi_remove_device+0x1e/0x33
+ [<ffffffff880ef799>] ? :firewire_sbp2:sbp2_release_target+0x33/0xca
+ [<ffffffff880ef766>] ? :firewire_sbp2:sbp2_release_target+0x0/0xca
+ [<ffffffff802ec6df>] ? kref_put+0x41/0x4c
+ [<ffffffff880ef117>] ? :firewire_sbp2:sbp2_remove+0x10/0x14
+ [<ffffffff8034d75c>] ? __device_release_driver+0x78/0x9e
+ [<ffffffff8034db94>] ? device_release_driver+0x3d/0x55
+ [<ffffffff8034cfd0>] ? bus_remove_device+0x76/0x85
+ [<ffffffff8034b760>] ? device_del+0x114/0x181
+ [<ffffffff88079095>] ? :firewire_core:shutdown_unit+0x0/0xd
+ [<ffffffff8034b7d6>] ? device_unregister+0x9/0x12
+ [<ffffffff8807909e>] ? :firewire_core:shutdown_unit+0x9/0xd
+ [<ffffffff8041a2f9>] ? _spin_unlock_irqrestore+0x3d/0x68
+ [<ffffffff8034b361>] ? device_for_each_child+0x22/0x4d
+ [<ffffffff880790fc>] ? :firewire_core:fw_device_shutdown+0x2e/0x71
+ [<ffffffff880790ce>] ? :firewire_core:fw_device_shutdown+0x0/0x71
+ [<ffffffff8023b396>] ? run_workqueue+0xdf/0x1df
+ [<ffffffff8023be87>] ? worker_thread+0xd8/0xe3
+ [<ffffffff8023e917>] ? autoremove_wake_function+0x0/0x2e
+ [<ffffffff8023bdaf>] ? worker_thread+0x0/0xe3
+ [<ffffffff8023e813>] ? kthread+0x47/0x74
+ [<ffffffff804198e0>] ? trace_hardirqs_on_thunk+0x35/0x3a
+ [<ffffffff8020c008>] ? child_rip+0xa/0x12
+ [<ffffffff8020b6e3>] ? restore_args+0x0/0x3d
+ [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+ [<ffffffff8023e68a>] ? kthreadd+0x14c/0x171
+ [<ffffffff8023e7cc>] ? kthread+0x0/0x74
+ [<ffffffff8020bffe>] ? child_rip+0x0/0x12
+
+
+Code: c0 74 1a 83 3d 43 8a 55 00 00 75 11 be 86 00 00 00 48 c7 c7 cd 0f 4d 80 e8 40 3c e1 ff 9c 41 5c fa e8 f8 e9 e2 ff b8 00 01 00 00 <f0> 66 0f c1 45 08 38 e0 74 07 f3 90 8a 45 08 eb f5 48 39 6d 58 
+RIP  [<ffffffff804188c6>] mutex_lock_nested+0x7b/0x270
+ RSP <ffff81007dcddca0>
+CR2: 00000000000000b8
+---[ end trace 2a9c61e9883e29d2 ]---
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Stefan Richter
+-=====-==--- --=- =---=
+http://arcgraph.de/sr/
 
