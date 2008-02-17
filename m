@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757659AbYBQKht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757974AbYBQKiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757659AbYBQKht (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 05:37:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbYBQKhi
+	id S1757974AbYBQKiA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 05:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbYBQKhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 05:37:38 -0500
-Received: from gw-colo-pa.panasas.com ([66.238.117.130]:27782 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754861AbYBQKhg (ORCPT
+	Sun, 17 Feb 2008 05:37:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:27036 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755108AbYBQKhp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 05:37:36 -0500
-Message-ID: <47B80E65.7090504@panasas.com>
-Date: Sun, 17 Feb 2008 12:37:25 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 17 Feb 2008 05:37:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=mk2vz88bhQPZmBUoGB/vp/qgO+rOlMXux3UdMpWzrwEMfijAHoFN0CoDCxqsJgDB6bWuDcq8+1FnvS1AJOILnmiAQVsNo1ssUYGVoCnu+x5/6iEVajeCQfcaUuZ/Ha8D38MCPzt+i1gTZD+0S+rksMzU5irmw1BZU/iLgB9ssuQ=
+Date: Sun, 17 Feb 2008 13:37:38 +0300
+To: Nicholas Marquez <nicholas.marquez@gatech.edu>
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: Re: [PATCH] More accessible usage of custom flags
+Message-ID: <20080217103738.GB6596@martell.zuzino.mipt.ru>
+References: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>, support@adaptec.com
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sergio Luis <sergio@larces.uece.br>,
-       Achim Leubner <achim_leubner@adaptec.com>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c
- into using pci_get device
-References: <47B1ADCE.40202@larces.uece.br> <1202833354.3137.19.camel@localhost.localdomain> <47B1CF45.5070407@panasas.com> <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain> <47B2B101.3090106@panasas.com> <20080216163756.GG7657@parisc-linux.org>
-In-Reply-To: <20080216163756.GG7657@parisc-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 17 Feb 2008 10:37:30.0188 (UTC) FILETIME=[18C480C0:01C87151]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e367bd3e0802161852v1265f101h86326b16362dd860@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16 2008 at 18:37 +0200, Matthew Wilcox <matthew@wil.cx> wrote:
-> On Wed, Feb 13, 2008 at 10:57:37AM +0200, Boaz Harrosh wrote:
->> I still don't have a card for testing myself. Again anyone
->> wants to send me a card. Intel people anybody home?
-> 
-> Apparently Intel sold this line of cards to Adaptec.  The copyright
-> notice in the file backs this up:
-> 
->  * Copyright (C) 1995-06 ICP vortex GmbH, Achim Leubner                 *
->  * Copyright (C) 2002-04 Intel Corporation                              *
->  * Copyright (C) 2003-06 Adaptec Inc.                                   *
->  * <achim_leubner@adaptec.com>                                          *
-> 
+On Sat, Feb 16, 2008 at 09:52:51PM -0500, Nicholas Marquez wrote:
+> I submitted this patch to the zen-sources Gentoo community and got
+> much praise and has promptly been included.  This kind of thing have
+> very likely already been done in other patchsets, but I haven't seen
+> it around,
 
-OK I never got this guy to ping back. CCing support@adaptec.com.
+Probably it wasn't done by other patchsets. ;-)
 
-Who is the right contact person, regarding the HW that is supported
-by the gdth driver? Form what we see in driver commit logs (above), 
-it was transfered to  Adaptec from Intel in 2003. Is that still so?
+> so I've gone ahead and made one.  The idea is that one can
+> enable -Os and various other options transparently through standard
+> kernel configuration, so why bar the builder from any other options to
+> pass on to gcc (et al)?
 
-Boaz
+Examples, please. Which compiler flags do you want to add to your .config?
+Speaking of -Os, it's CONFIG_CC_OPTIMIZE_FOR_SIZE .
+
+> One can indeed add one's own flags in the
+> Makefile, but this method is a good deal friendlier.  Granted, this
+> could be misused by ricers and idiots, but they'll get themselves into
+> that mess all of their own fault and we'll all go on our merry ways.
+
+No, they will come here and report bugs they created themselves. And
+there will be a policy: "too long CONFIG_CUSTOM_CFLAGS -- go away" and
+so on.
+
+> It just seems that much use could be made out of this, both in terms
+> of (sane) optimizations
+
+Sane optimizations should be added to main Makefile. 
+
+> and easier access to enhanced debugging
+> opportunities.
+
+Which ones exactly?
+
+> I see that people who build a Linux kernel are largely of two types:
+> ~the ones that understand and know enough that they could, with some
+> nudging and learning, become bonafide kernel devs and
+> ~the ones that understand it to some very basic degree and can get
+> through configuring it without too much trouble (though with limited
+> understanding)
+> I believe one of the very simple things that can be addressed is to
+> make the kernel more "accessible" without harming its integrity or
+> functionality.  This involves trying to fill the gap between those two
+> types of people, allowing there to be more understanding,
+> configuration, and (down the line) development opportunities within
+> the kernel to better ease these people into learning enough to begin
+> contributing back.
+
+> More developers can only be a Good Thing (tm).
+
+In general, wrong.
