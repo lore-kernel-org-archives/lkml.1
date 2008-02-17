@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbYBQVc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYBQVg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752241AbYBQVc6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 16:32:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbYBQVcl
+	id S1754859AbYBQVg5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 16:36:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYBQVgt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 16:32:41 -0500
-Received: from py-out-1112.google.com ([64.233.166.177]:18480 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754255AbYBQVck (ORCPT
+	Sun, 17 Feb 2008 16:36:49 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:62654 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750780AbYBQVgt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 16:32:40 -0500
+	Sun, 17 Feb 2008 16:36:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ixU85ooETZy3Q6mRxxFm3zgWXDs1peFR9VIeaheX7Gb6ZkQgmsqhY7hrIQ2GANq1mjGJbiOrPbXvdYGmsqmG73nFMKhbKLGkZTirWxjJiTKZE2rCbgRzuj91LqkE5GU9RoeWlzKFTlMB2AWwtfbNg5gyt/HSuweQXL/C/G8XqsQ=
-Message-ID: <64bb37e0802171332x6a0d18cdr1c3fcf72918883ac@mail.gmail.com>
-Date: Sun, 17 Feb 2008 22:32:38 +0100
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.25-rc2
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200802172125.56177.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=IFccI7g+DgDFe/dyTWRd8n35KAWMqUIgsYOlYlZS6lHlCFAzWvhyHmR5A+sntti1mO0FrQTpRnjF0dAP8UDxl9TkYb7BnwB1yFS+iPtWl4Vx+gLz4Ms/m5nkwhjlu0lFjuvNS9DtXF/GbJ/YkpbOz4pCX0fpvdJWEzLk8YMWJxw=
+Subject: Re: [PATCH] x86: include prototype for no_broadcast in
+	mach-default/setup.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080217200950.GA31865@elte.hu>
+References: <1202848517.28953.11.camel@brick>
+	 <20080213104227.GC32241@elte.hu> <1202924047.9824.14.camel@brick>
+	 <20080217200950.GA31865@elte.hu>
+Content-Type: text/plain
+Date: Sun, 17 Feb 2008 13:36:52 -0800
+Message-Id: <1203284212.5757.9.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
-	 <200802172125.56177.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 17, 2008 9:25 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> There's the Bugzilla entry for it at
-> http://bugzilla.kernel.org/show_bug.cgi?id=9973
+On Sun, 2008-02-17 at 21:09 +0100, Ingo Molnar wrote:
+> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+> 
+> > > config attached. The include file dependencies in this area are a 
+> > > bit of a mess - perhaps they need some cleanups?
+> > 
+> > OK, I'm building all(yes|mod)configs and didn't see this.  Agreed 
+> > about the file dependencies here, I'll take a look.  If you have any 
+> > notes lying around, would appreciate the head-start.
+> 
+> make randconfig build failure:
+> 
+> include/asm/mach-default/mach_ipi.h: In function 
+> '__local_send_IPI_allbutself':
+> include/asm/mach-default/mach_ipi.h:25: error: 'APIC_DEST_ALLBUT' 
+> undeclared (first use in this function)
+> include/asm/mach-default/mach_ipi.h:25: error: (Each undeclared 
+> identifier is re
+> 
+> config attached below.
+> 
 
-Thank you.
+Just drop the patch, I'm looking into the mach-* include mess, will
+hopefully have some stuff next week.
 
-> Please update it with the current information.
+Harvey
 
-Crash for 2.6.25-rc2-mm1 added. That one had a complete stacktrace,
-but the trace looks like others I already reported, so no real new
-information... :-(
-
-Torsten
