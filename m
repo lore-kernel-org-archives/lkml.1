@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbYBQM1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYBQM2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbYBQM1x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:27:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbYBQMXN
+	id S1756717AbYBQM2V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYBQMXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:13 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38359 "EHLO pasmtpA.tele.dk"
+	Sun, 17 Feb 2008 07:23:14 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55082 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755426AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 07:22:57 -0500
+	id S1755448AbYBQMW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 07:22:58 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 21/27] x86: fix section mismatch in srat_64.c:reserve_hotadd
-Date: Sun, 17 Feb 2008 13:22:58 +0100
-Message-Id: <1203250984-11285-21-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>
+Subject: [PATCH 27/27] [ALSA] hdsp - fix section mismatch warnings
+Date: Sun, 17 Feb 2008 13:23:04 +0100
+Message-Id: <1203250984-11285-27-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
 References: <20080217121255.GA10519@uranus.ravnborg.org>
@@ -24,33 +24,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warning:
-WARNING: vmlinux.o(.text+0x388cc): Section mismatch in reference from the function reserve_hotadd() to the function .init.text:absent_pages_in_range()
+Fix following warnings:
+WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x34bc): Section mismatch in reference from the function hdsp_check_for_firmware() to the function .devinit.text:hdsp_request_fw_loader()
+WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x4ac6): Section mismatch in reference from the function snd_hdsp_proc_read() to the function .devinit.text:hdsp_request_fw_loader()
 
-reserve_hotadd() are only used by __init acpi_numa_memory_affinity_init().
-Annotate reserve_hotadd() with __init is the trivial fix.
+Calling hdsp_request_fw_loader() were triggered from /proc
+so this is not restricted to init or hotplug.
+So removing the __devexit annotation of this function
+and one of the functions fix the warning.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jaroslav Kysela <perex@perex.cz>
 ---
- arch/x86/mm/srat_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ sound/pci/rme9652/hdsp.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-index ecd91ea..70eb153 100644
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -166,7 +166,7 @@ static inline int save_add_info(void) {return 0;}
-  * Both SPARSE and RESERVE need nodes_add information.
-  * This code supports one contiguous hot add area per node.
-  */
--static int reserve_hotadd(int node, unsigned long start, unsigned long end)
-+static int __init reserve_hotadd(int node, unsigned long start, unsigned long end)
+diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
+index c2bd438..6f07a25 100644
+--- a/sound/pci/rme9652/hdsp.c
++++ b/sound/pci/rme9652/hdsp.c
+@@ -745,7 +745,7 @@ static int hdsp_get_iobox_version (struct hdsp *hdsp)
+ 
+ 
+ #ifdef HDSP_FW_LOADER
+-static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp);
++static int hdsp_request_fw_loader(struct hdsp *hdsp);
+ #endif
+ 
+ static int hdsp_check_for_firmware (struct hdsp *hdsp, int load_on_demand)
+@@ -4688,7 +4688,7 @@ static struct snd_pcm_ops snd_hdsp_capture_ops = {
+ 	.copy =		snd_hdsp_capture_copy,
+ };
+ 
+-static int __devinit snd_hdsp_create_hwdep(struct snd_card *card,
++static int snd_hdsp_create_hwdep(struct snd_card *card,
+ 					   struct hdsp *hdsp)
  {
- 	unsigned long s_pfn = start >> PAGE_SHIFT;
- 	unsigned long e_pfn = end >> PAGE_SHIFT;
+ 	struct snd_hwdep *hw;
+@@ -4857,7 +4857,7 @@ static int snd_hdsp_create_alsa_devices(struct snd_card *card, struct hdsp *hdsp
+ 
+ #ifdef HDSP_FW_LOADER
+ /* load firmware via hotplug fw loader */
+-static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp)
++static int hdsp_request_fw_loader(struct hdsp *hdsp)
+ {
+ 	const char *fwfile;
+ 	const struct firmware *fw;
 -- 
 1.5.4.rc3.14.g44397
 
