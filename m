@@ -1,75 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757714AbYBQNla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbYBQNot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757714AbYBQNla (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 08:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbYBQNlX
+	id S1757499AbYBQNot (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYBQNom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 08:41:23 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:57826 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbYBQNlW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 08:41:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=lQsYM48qz/UJviPiFFkc/otYlei7YnKxPxJNVC0jsgZ9Ml1bDmtmVBtKHIJax1aoU7WHQDh0hbz05knSBhLymJe0F9KAp3SbHU+34XaE2ssyDWdj2inrzFl16LF0BZxR4qvrzHiEdFHAVfWqTwclfuj3fcZh+Eu2L0PRwNps13k=
-Date: Sun, 17 Feb 2008 14:41:16 +0100
-From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: coding style fixes in arch/x86/lib/io_64.c
-Message-ID: <20080217144116.5f146cfd@paolo-desktop>
-X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 08:44:42 -0500
+Received: from www.tglx.de ([62.245.132.106]:60086 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751158AbYBQNol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 08:44:41 -0500
+Date: Sun, 17 Feb 2008 14:44:23 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 09/27] x86: fix section mismatch warning in
+ setup_64.c:nearby_node
+In-Reply-To: <1203250984-11285-9-git-send-email-sam@ravnborg.org>
+Message-ID: <alpine.LFD.1.00.0802171443490.7583@apollo.tec.linutronix.de>
+References: <20080217121255.GA10519@uranus.ravnborg.org> <1203250984-11285-9-git-send-email-sam@ravnborg.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH] x86: coding style fixes in arch/x86/lib/io_64.c
+on Sun, 17 Feb 2008, Sam Ravnborg wrote:
 
-This simple patch makes the file error free (according to
-checkpatch.pl)
+> Fix following warnings:
+> WARNING: vmlinux.o(.text+0x1baa2): Section mismatch in reference from the function nearby_node() to the variable .cpuinit.data:apicid_to_node
+> WARNING: vmlinux.o(.text+0x1bace): Section mismatch in reference from the function nearby_node() to the variable .cpuinit.data:apicid_to_node
+> 
+> nearby_node() were only used by __cpuinit amd_detect_cmp()
+> So annotating nearby_node() __cpuinit was the trivial fix.
 
+Applied the x86 ones.
 
-Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
----
- arch/x86/lib/io_64.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Thanks,
 
-diff --git a/arch/x86/lib/io_64.c b/arch/x86/lib/io_64.c
-index 87b4a4e..71fdf4b 100644
---- a/arch/x86/lib/io_64.c
-+++ b/arch/x86/lib/io_64.c
-@@ -2,15 +2,15 @@
- #include <asm/io.h>
- #include <linux/module.h>
- 
--void __memcpy_toio(unsigned long dst,const void*src,unsigned len)
-+void __memcpy_toio(unsigned long dst, const void*src, unsigned len)
- {
--	__inline_memcpy((void *) dst,src,len);
-+	__inline_memcpy((void *) dst, src, len);
- }
- EXPORT_SYMBOL(__memcpy_toio);
- 
--void __memcpy_fromio(void *dst,unsigned long src,unsigned len)
-+void __memcpy_fromio(void *dst, unsigned long src, unsigned len)
- {
--	__inline_memcpy(dst,(const void *) src,len);
-+	__inline_memcpy(dst, (const void *) src, len);
- }
- EXPORT_SYMBOL(__memcpy_fromio);
- 
-@@ -18,6 +18,6 @@ void memset_io(volatile void __iomem *a, int b, size_t c)
- {
- 	/* XXX: memset can mangle the IO patterns quite a bit.
- 	   perhaps it would be better to use a dumb one */
--	memset((void *)a,b,c);
-+	memset((void *)a, b, c);
- }
- EXPORT_SYMBOL(memset_io);
--- 
-1.5.4.1.183.gf873
-
+	tglx
