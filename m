@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbYBQMiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbYBQMid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbYBQMiU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:38:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYBQMiH
+	id S1759384AbYBQMid (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbYBQMiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:38:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:37795 "EHLO www.tglx.de"
+	Sun, 17 Feb 2008 07:38:19 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:35960 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756444AbYBQMiF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 07:38:05 -0500
-Date: Sun, 17 Feb 2008 13:37:53 +0100
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: What's needed for a PCIe card to be recognized?
-Message-ID: <20080217133753.661cd98d@bluebox.local>
-In-Reply-To: <20080216182939.061c7246@laptopd505.fenrus.org>
-References: <20080216225932.22460d31@dilbert.local>
-	<20080216143946.6d532a41@laptopd505.fenrus.org>
-	<20080217015453.2a4e4142@dilbert.local>
-	<20080216182939.061c7246@laptopd505.fenrus.org>
-Organization: Linutronix GmbH
-X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+	id S1758483AbYBQMiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 07:38:17 -0500
+Date: Sun, 17 Feb 2008 15:41:48 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       roland@redhat.com, Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] 2.6.25-rc2-mm1 - Kernel panic while bootup caused by signal_group_exit()
+Message-ID: <20080217124148.GA9802@tv-sign.ru>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7B3B9.2090706@linux.vnet.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B7B3B9.2090706@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sat, 16 Feb 2008 18:29:39 -0800
-schrieb Arjan van de Ven <arjan@infradead.org>:
-
-> On Sun, 17 Feb 2008 01:54:53 +0100
-> Hans-Jürgen Koch <hjk@linutronix.de> wrote:
+On 02/17, Kamalesh Babulal wrote:
 > 
-> > Am Sat, 16 Feb 2008 14:39:46 -0800
-> > schrieb Arjan van de Ven <arjan@infradead.org>:
-> > 
-> > > On Sat, 16 Feb 2008 22:59:32 +0100
-> > > Hans-Jürgen Koch <hjk@linutronix.de> wrote:
-> > > 
-> > > > I'm playing around with a vanilla 2.6.25-rc1, adding patches to
-> > > > make it work on an Asus EeePC. That one has the problem that its
-> > > > Mini PCIe WLAN module doesn't show up in lspci. That brought up
-> > > > a few questions that I couldn't answer yet:
-> > > > 
-> > > > How can they "hide" a PCIe card?
-> > > > What could be their motive to do that?
-> > > > How can I make it appear?
-> > > 
-> > > 
-> > > go to the bios, enable the wireless card. 
-> > > 
-> > > that did it for me ;)
-> > 
-> > It didn't for me. I tried all combinations (booting with/without
-> > WLAN enabled, enabling WLAN through /proc with/without pciehp
-> > loaded and so on). What kernel did you use, and which patches did
-> > you apply?
-> > 
-> 
-> I used a pretty much stock Fedora 8 kernel..
+> There has been discussion on the patch for this panic on http://lkml.org/lkml/2008/2/16/99 
 
-Hm, interesting. My guess was that enabling the card in BIOS simply
-switches the power of the WLAN card on. But I really don't understand
-why it's not detected then with my vanilla kernel. My naive thought was
-that the kernel scans all possible PCI[e] slots a chipset offers and
-finds all cards there. Seems to be a bit more subtle...
+This looks similar...
 
-> no magic patches at all.
+> [   25.512919] BUG: unable to handle kernel paging request at 9d74e37b
+> [   25.514926] IP: [<c04a8fac>] proc_flush_task+0x5b/0x223
+> [   25.516934] Oops: 0000 [#1] SMP 
+> [   25.517918] last sysfs file: /sys/block/hdc/removable
+> [   25.517918] Modules linked in: dm_mirror dm_mod video output sbs sbshc battery ac parport_pc lp parport floppy sg serio_raw ide_cd_mod cdrom scb2_flash mtd chipreg button i2c_piix4 i2c_core pcspkr tg3 mptspi mptscsih mptbase scsi_transport_spi sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd uhci_hcd
+> [   25.517918] 
+> [   25.517918] Pid: 1, comm: init Not tainted (2.6.25-rc2-mm1-autotest #1)
+> [   25.517918] EIP: 0060:[<c04a8fac>] EFLAGS: 00010282 CPU: 2
+> [   25.517918] EIP is at proc_flush_task+0x5b/0x223
+> [   25.517918] EAX: 9d74e35b EBX: f7881ef0 ECX: f7a5ed84 EDX: a56b6b6b
+> [   25.517918] ESI: f74f76f8 EDI: a56b6b6b EBP: f7881f08 ESP: f7881ec0
+> [   25.517918]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> [   25.517918] Process init (pid: 1, ti=f7881000 task=f788adf0 task.ti=f7881000)
+> [   25.517918] Stack: f7a5ed84 00000001 f7a5ed58 f7a5ed58 00000000 a56b6b6b f7852750 f7a5ed68 
+> [   25.517918]        35881ef4 00003130 f788b4a4 f788adf0 0012d6c5 00000003 f7881ee3 00000003 
+> [   25.517918]        f7a72df0 f7a72df0 f7881f1c c042676d 00000003 000001f5 f7a72df0 f7881f78 
+> [   25.517918] Call Trace:
+> [   25.517918]  [<c042676d>] release_task+0x19/0x2d5
+> [   25.517918]  [<c042701b>] do_wait+0x5f2/0x8fc
+> [   25.517918]  [<c041d9e7>] default_wake_function+0x0/0xd
+> [   25.517918]  [<c042739d>] sys_wait4+0x78/0x8e
+> [   25.517918]  [<c04273c6>] sys_waitpid+0x13/0x15
+> [   25.517918]  [<c04039ba>] sysenter_past_esp+0x5f/0x99
+> [   25.517918]  =======================
+> [   25.517918] Code: 1c 89 4d d4 89 4d c4 89 55 b8 e9 b5 01 00 00 31 ff 83 7d c4 00 74 06 8b 45 d4 8b 78 1c 8b 55 b8 8b 4d b8 8b 12 89 55 cc 8b 41 04 <8b> 40 20 52 68 33 cd 6f c0 6a 0d 89 45 d0 8d 45 db 50 89 45 f0 
 
-Well, they've at least added atl2 support, otherwise you had no
-wired LAN either.
+Kamalesh, could you send me the output of "objdump -d fs/proc/base.o" ?
+and just in case, fs/proc/base.s (make fs/proc/base.s).
 
-> Of course there's no driver for the wlan, but that's a different
-> story ;)
-
-I replaced that unsupported Atheros 5007 card with an ipw3945, so I
-haven't got that problem.
-
-Thanks,
-Hans
+Oleg.
 
