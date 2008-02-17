@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbYBQXb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbYBQXcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbYBQXb7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 18:31:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYBQXbu
+	id S1755078AbYBQXcc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 18:32:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbYBQXcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 18:31:50 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:34036 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754891AbYBQXbt (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 18:31:49 -0500
-Date: Mon, 18 Feb 2008 10:31:23 +1100
-From: David Chinner <dgc@sgi.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Andi Kleen <andi@firstfloor.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Implement barrier support for single device DM devices
-Message-ID: <20080217233123.GA155407@sgi.com>
-References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B58EAA.8040405@msgid.tls.msk.ru>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 17 Feb 2008 18:32:23 -0500
+Received: from mailgw2-out.fraunhofer.de ([153.96.1.22]:58860 "EHLO
+	mailgw2-out.fraunhofer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754719AbYBQXcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 18:32:22 -0500
+X-Greylist: delayed 649 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 18:32:21 EST
+Date: Mon, 18 Feb 2008 00:21:27 +0100
+From: Joerg.Schilling@fokus.fraunhofer.de (Joerg Schilling)
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+Message-ID: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de>
+User-Agent: nail 11.22 3/20/05
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 17 Feb 2008 23:21:27.0724 (UTC) FILETIME=[D2116EC0:01C871BB]
+X-Fraunhofer-Email-Policy: accepted
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 04:07:54PM +0300, Michael Tokarev wrote:
-> Alasdair G Kergon wrote:
-> > On Fri, Feb 15, 2008 at 01:08:21PM +0100, Andi Kleen wrote:
-> >> Implement barrier support for single device DM devices
-> >  
-> > Thanks.  We've got some (more-invasive) dm patches in the works that
-> > attempt to use flushing to emulate barriers where we can't just
-> > pass them down like that.
-> 
-> I wonder if it's worth the effort to try to implement this.
-> 
-> As far as I understand (*), if a filesystem realizes that the
-> underlying block device does not support barriers, it will
-> switch to using regular flushes instead
+> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the 
+> following error from wodim: 
 
-No, typically the filesystems won't issue flushes, either.
+> Errno: 0 (Success), write_g1 scsi sendcmd: no error 
+> CDB:  2A 00 00 00 00 00 00 00 1F 00 
+> status: 0x2 (CHECK CONDITION) 
+> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00 
+> Sense Key: 0x5 Illegal Request, Segment 0 
+> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0 
+> Sense flags: Blk 0 (not valid) 
+> resid: 63488 
 
-> - isn't it the same
-> thing as you're trying to do on an MD level?
-> 
-> Note that a filesystem must understand barriers/flushes on
-> underlying block device, since many disk drives don't support
-> barriers anyway.
-> 
-> (*) this is, in fact, an interesting question.  I still can't
-> find complete information about this.  For example, how safe
-> xfs is if barriers are not supported or turned off?  Is it
-> "less safe" than with barriers?  Will it use regular cache
-> flushes if barriers are not here?
+This fragment is much too short to allow to judge on possible reasons.
+There is a high probability that your problem is caused by the cdrecord
+fork called "wodim".
 
-Try reading at the XFS FAQ:
+Please always include the following information in your bug-report: 
 
-http://oss.sgi.com/projects/xfs/faq/#wcache
+- The version number of cdrecord that caused the bug. 
+- The command line that was used for the failing command. 
+- The complete output (including error messages) from 'cdrecord -v ...' 
+- Probably the important part of the 'cdrecord -V' output if we agreed on it 
+- The OS name, release and hardware (processor) 
+- Special conditions of your environment (libc vers. SCSI transport ...) 
+- Sufficient information on the media used. This is at least the ATIP data, a 
+  note to CD-R/CD-RW and information on the state and the case history of this
+  media. 
 
-Cheers,
+As a general advise: if you have problems, always first try recent original 
+software from
 
-Dave.
+ftp://ftp.berlios.de/pub/cdrecord/alpha/
+
+None of the 30+ bugs reported against wodim in various Linux distributions is 
+known to be present with recent original software.
+
+Jörg
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+ EMail:joerg@schily.isdn.cs.tu-berlin.de (home) Jörg Schilling D-13353 Berlin
+       js@cs.tu-berlin.de                (uni)  
+       schilling@fokus.fraunhofer.de     (work) Blog: http://schily.blogspot.com/
+ URL:  http://cdrecord.berlios.de/old/private/ ftp://ftp.berlios.de/pub/schily
