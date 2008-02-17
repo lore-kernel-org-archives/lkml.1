@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754131AbYBQSl5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbYBQSsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754131AbYBQSl5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 13:41:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbYBQSlt
+	id S1753320AbYBQSsw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 13:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751186AbYBQSsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 13:41:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:37501 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751226AbYBQSls (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 13:41:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=vpKcvW7fpW1xNpEEgkRlqVMU3j2giAjoQvycE7HnHEKXrKmsujFCaBiY9pISkt6m1FX+hSK292pB25OEIrhctiBKh7jAOGx5meUeJuZH+DWxOZPK6C2CJPlrBQPaB64qHPIqEXLONh34MN59KZxQIE7V0V/aArcFcWmJ2oouoZg=
-Date: Sun, 17 Feb 2008 21:41:19 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <ak@suse.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86 cleanup: suspend_asm_64.S - use X86_CR4_PGE
-	instead of numeric value
-Message-ID: <20080217184119.GB31968@cvg>
-References: <20080208214913.GB6787@cvg> <20080217181716.GY6006@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080217181716.GY6006@elte.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 17 Feb 2008 13:48:43 -0500
+Received: from www.tglx.de ([62.245.132.106]:56934 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbYBQSsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 13:48:42 -0500
+Date: Sun, 17 Feb 2008 19:48:36 +0100
+From: "Hans J. Koch" <hjk@linutronix.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: What's needed for a PCIe card to be recognized?
+Message-ID: <20080217194836.3a8a3b97@bluebox.local>
+In-Reply-To: <20080217072927.4b6c5964@laptopd505.fenrus.org>
+References: <20080216225932.22460d31@dilbert.local>
+	<20080216143946.6d532a41@laptopd505.fenrus.org>
+	<20080217015453.2a4e4142@dilbert.local>
+	<20080216182939.061c7246@laptopd505.fenrus.org>
+	<20080217133753.661cd98d@bluebox.local>
+	<20080217072927.4b6c5964@laptopd505.fenrus.org>
+Organization: Linutronix GmbH
+X-Mailer: Claws Mail 3.0.1 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Sun, Feb 17, 2008 at 07:17:16PM +0100]
-| 
-| * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| 
-| > By including <asm/processor-flags.h> we're allowed to use X86_CR4_PGE 
-| > instead of numeric constant.
-| > 
-| > md5 sums of compiled files are differ due to this inclusion but .text 
-| > section remains the same.
-| 
-| thanks Cyrill, picked it up. (the merged version is below - the target 
-| files moved meanwhile)
-| 
-| 	Ingo
-| 
-[...]
+Am Sun, 17 Feb 2008 07:29:27 -0800
+schrieb Arjan van de Ven <arjan@infradead.org>:
 
-Thanks, Ingo
+> On Sun, 17 Feb 2008 13:37:53 +0100
+> "Hans J. Koch" <hjk@linutronix.de> wrote:
+> > > Of course there's no driver for the wlan, but that's a different
+> > > story ;)
+> > 
+> > I replaced that unsupported Atheros 5007 card with an ipw3945, so I
+> > haven't got that problem.
+> 
+> oh but then you have a MUCH bigger problem ;(
+> The bios of that animal is hardcoded to the 5007 (or at least
+> Atheros). If you stick your own card in, for FCC reasons, the bios
+> refuses the card. (this is not unique to Asus; all notebooks do this
+> for cards they're not certified with. This apparently  has to do with
+> the antenna being part of the laptop, and thus part of the radio in
+> FCC speak)
 
-		- Cyrill -
+Someone claims he's done it:
+
+http://beta.ivancover.com/wiki/index.php/Eee_PC_Internal_Upgrades#Wifi
+
+Hans
