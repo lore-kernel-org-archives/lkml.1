@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYBQM0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758444AbYBQM1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759616AbYBQM0x (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbYBQMXK
+	id S1758444AbYBQM1S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:27:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757422AbYBQMXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:10 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38353 "EHLO pasmtpA.tele.dk"
+	Sun, 17 Feb 2008 07:23:11 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38352 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755367AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755342AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Feb 2008 07:22:57 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>
-Subject: [PATCH 14/27] hwmon: fix section mismatch in coretemp
-Date: Sun, 17 Feb 2008 13:22:51 +0100
-Message-Id: <1203250984-11285-14-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Antonino Daplas <adaplas@gmail.com>,
+       Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH 18/27] video: fix section mismatch warnings in uvesafb
+Date: Sun, 17 Feb 2008 13:22:55 +0100
+Message-Id: <1203250984-11285-18-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
 References: <20080217121255.GA10519@uranus.ravnborg.org>
@@ -24,44 +24,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warning:
-WARNING: vmlinux.o(.text+0xebfd04): Section mismatch in reference from the function coretemp_cpu_callback() to the function .cpuinit.text:coretemp_device_add()
+Fix following warnings:
+WARNING: vmlinux.o(.text+0x51961b): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:mtrr
+WARNING: vmlinux.o(.text+0x519641): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:mtrr
+WARNING: vmlinux.o(.text+0x519664): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:pmi_setpal
+WARNING: vmlinux.o(.text+0x51966a): Section mismatch in reference from the function param_set_scroll() to the variable .devinit.data:pmi_setpal
 
-coretemp_cpu_callback() are only used inside a
-HOTPLUG_CPU block so annotate it __cpuinit.
-The notifier referencing the function are annotated
-__refdata to silence warning from the exit function.
-The unregister function do not use the embedded pointer
-but clears the variable so the annotation is OK.
+The function param_set_scroll() referenced the variable
+named ypan several times. modpost reported a bogus
+variable name but removing the the __devinitdata
+annotation of ypan fixed the above warnings.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mark M. Hoffman <mhoffman@lightlink.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Michal Januszewski <spock@gentoo.org>
 ---
- drivers/hwmon/coretemp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/uvesafb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
-index 3ee60d2..1439432 100644
---- a/drivers/hwmon/coretemp.c
-+++ b/drivers/hwmon/coretemp.c
-@@ -330,7 +330,7 @@ static void coretemp_device_remove(unsigned int cpu)
- 	mutex_unlock(&pdev_list_mutex);
- }
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index be27b9c..2fb5bb8 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -44,7 +44,7 @@ static struct fb_fix_screeninfo uvesafb_fix __devinitdata = {
  
--static int coretemp_cpu_callback(struct notifier_block *nfb,
-+static int __cpuinit coretemp_cpu_callback(struct notifier_block *nfb,
- 				 unsigned long action, void *hcpu)
- {
- 	unsigned int cpu = (unsigned long) hcpu;
-@@ -347,7 +347,7 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
- 	return NOTIFY_OK;
- }
- 
--static struct notifier_block coretemp_cpu_notifier = {
-+static struct notifier_block coretemp_cpu_notifier __refdata = {
- 	.notifier_call = coretemp_cpu_callback,
- };
- #endif				/* !CONFIG_HOTPLUG_CPU */
+ static int mtrr		__devinitdata = 3; /* enable mtrr by default */
+ static int blank	= 1;		   /* enable blanking by default */
+-static int ypan		__devinitdata = 1; /* 0: scroll, 1: ypan, 2: ywrap */
++static int ypan		= 1;		   /* 0: scroll, 1: ypan, 2: ywrap */
+ static int pmi_setpal	__devinitdata = 1; /* use PMI for palette changes */
+ static int nocrtc	__devinitdata; /* ignore CRTC settings */
+ static int noedid	__devinitdata; /* don't try DDC transfers */
 -- 
 1.5.4.rc3.14.g44397
 
