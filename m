@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYBQMF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYBQMKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755957AbYBQMF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYBQMFR
+	id S1756563AbYBQMKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754580AbYBQMKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:05:17 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:36871 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751051AbYBQMFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 07:05:16 -0500
-Date: Sun, 17 Feb 2008 13:04:59 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-cc: linux-kernel@vger.kernel.org, panther@balabit.hu,
-       Laszlo Attila Toth <panther@balabit.hu>,
-       "David S. Miller" <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
-In-Reply-To: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0802171301430.7699@twin.jikos.cz>
-References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 17 Feb 2008 07:10:09 -0500
+Received: from mail.southpole.se ([193.12.106.18]:45469 "EHLO
+	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754488AbYBQMKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 07:10:08 -0500
+From: Jonas Bonn <jonas@southpole.se>
+To: linux-kernel@vger.kernel.org, greg@kroah.com
+Cc: olof@lixom.net, sam@ravnborg.com, Jonas Bonn <jonas@southpole.se>
+Subject: [PATCH] Add PCI_DEVICE_TABLE macro
+Date: Sun, 17 Feb 2008 13:10:05 +0100
+Message-Id: <1203250205-5103-1-git-send-email-jonas@southpole.se>
+X-Mailer: git-send-email 1.5.3.8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Zdenek Kabelac wrote:
+The definitions of struct pci_device_id arrays should generally follow
+the same pattern across the entire kernel.  This macro defines this
+array as static const and puts it into the __devinitconst section.
 
-> It looks like there is something weird as my systems stops when the swap 
-> is mounted. I've played bisection game and this is the commit which 
-> makes the system unusable:
-> # bad: [45b503548210fe6f23e92b856421c2a3f05fd034] [RTNETLINK]: Send a
-> single notification on device state changes.
-> git-bisect bad 45b503548210fe6f23e92b856421c2a3f05fd034
-> I've tried to reverse this commit - and it has compiled & worked.
+Signed-off-by: Jonas Bonn <jonas@southpole.se>
+---
+ include/linux/pci.h |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-This commit is completely broken (it, for example, breaks locking around 
-dev->link_mode), as has been already mentioned by Rafael at 
-http://lkml.org/lkml/2008/2/15/542
-
-Dave, do you have a proper fix queued? Otherwise I would propose just to 
-revert it completely from Linus' tree for now.
-
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 87195b6..487d31c 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -389,6 +389,14 @@ struct pci_driver {
+ #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
+ 
+ /**
++ * PCI_DEVICE_TABLE - macro used to describe a pci device table
++ * 
++ * This macro is used to create a struct pci_device_id array in a generic
++ * manner.
++ */
++#define PCI_DEVICE_TABLE(_table) static const struct pci_device_id _table[] __devinitconst
++
++/**
+  * PCI_DEVICE - macro used to describe a specific pci device
+  * @vend: the 16 bit PCI Vendor ID
+  * @dev: the 16 bit PCI Device ID
 -- 
-Jiri Kosina
+1.5.3.8
+
 
