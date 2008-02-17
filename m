@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbYBQQdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756450AbYBQQeQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbYBQQdR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752403AbYBQQdF
+	id S1756450AbYBQQeQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:34:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbYBQQeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:33:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49344 "EHLO mx2.mail.elte.hu"
+	Sun, 17 Feb 2008 11:34:03 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35380 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752532AbYBQQdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:33:04 -0500
-Date: Sun, 17 Feb 2008 17:32:52 +0100
+	id S1752403AbYBQQeB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:34:01 -0500
+Date: Sun, 17 Feb 2008 17:33:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] sched: fix signedness warnings in sched.c
-Message-ID: <20080217163252.GH6006@elte.hu>
-References: <1203098196.15275.7.camel@brick>
+Cc: Jeff Dike <jdike@addtoit.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] sched: add declaration of sched_tail to sched.h
+Message-ID: <20080217163343.GI6006@elte.hu>
+References: <1203098194.15275.3.camel@brick>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1203098196.15275.7.camel@brick>
+In-Reply-To: <1203098194.15275.3.camel@brick>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,15 +36,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Harvey Harrison <harvey.harrison@gmail.com> wrote:
 
-> Unsigned long values are always assigned to switch_count,
-> make it unsigned long.
+> Avoids sparse warnings: kernel/sched.c:2170:17: warning: symbol 
+> 'schedule_tail' was not declared. Should it be static?
 > 
-> kernel/sched.c:3897:15: warning: incorrect type in assignment (different signedness)
-> kernel/sched.c:3897:15:    expected long *switch_count
-> kernel/sched.c:3897:15:    got unsigned long *<noident>
-> kernel/sched.c:3921:16: warning: incorrect type in assignment (different signedness)
-> kernel/sched.c:3921:16:    expected long *switch_count
-> kernel/sched.c:3921:16:    got unsigned long *<noident>
+> Avoids the need for an external declaration in arch/um/process.c
 
 thanks, applied.
 
