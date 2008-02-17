@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbYBQDH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbYBQD3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbYBQDH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 Feb 2008 22:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbYBQDHM
+	id S1754672AbYBQD3T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 Feb 2008 22:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751102AbYBQD3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 Feb 2008 22:07:12 -0500
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:37096 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbYBQDHK (ORCPT
+	Sat, 16 Feb 2008 22:29:12 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45486 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750919AbYBQD3L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 Feb 2008 22:07:10 -0500
-Date: Sat, 16 Feb 2008 22:06:59 -0500
-Message-Id: <200802170306.m1H36xeT031583@agora.fsl.cs.sunysb.edu>
-From: Erez Zadok <ezk@cs.sunysb.edu>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: unionfs_copy_attr_times oopses 
-In-reply-to: Your message of "Fri, 01 Feb 2008 20:30:46 GMT."
-             <Pine.LNX.4.64.0802011905230.32485@blonde.site> 
-X-MailKey: Erez_Zadok
+	Sat, 16 Feb 2008 22:29:11 -0500
+Date: Sat, 16 Feb 2008 21:29:01 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Paul Menage <menage@google.com>
+Cc: balbir@in.ibm.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 7/7] CGroup API: Update cpusets to use cgroup
+ structured file API
+Message-Id: <20080216212901.70fe35ce.pj@sgi.com>
+In-Reply-To: <20080215204821.778088000@menage.corp.google.com>
+References: <20080215204418.535025000@menage.corp.google.com>
+	<20080215204821.778088000@menage.corp.google.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message <Pine.LNX.4.64.0802011905230.32485@blonde.site>, Hugh Dickins writes:
+Ok ... this would (I suspect, just from code reading, no bytes were
+harmed in actual testing of this) have a minor change to how white
+space is handled writing integer flags to cpuset files, and a minor
+inconstency.
 
-> Hi Erez,
-> 
-> Aside from the occasional "unionfs: new lower inode mtime" messages
-> on directories (which I've got into the habit of ignoring now), the
-> only problem I'm still suffering with unionfs over tmpfs (not tested
-> any other fs's below it recently) is oops in unionfs_copy_attr_times.
-> 
-> I believe I'm working with your latest: 2.6.24-rc8-mm1 plus the four
-> patches you posted to lkml on 26 Jan.  But this problem has been around
-> for a while before that: I'd been hoping to debug it myself, but taken
-> too long to make too little progress, so now handing over to you.
-> 
-> The oops occurs while doing repeated "make -j20" kernel builds in a
-> unionfs mount of a tmpfs (though I doubt tmpfs is relevant): most of
-> my testing was while swapping, but today I find that's irrelevant,
-> and it should happen much quicker without.  SMP kernels (4 cpus),
-> I haven't tried UP; happens with or without PREEMPT, may just be
-> coincidence that it happens quicker on the machines with PREEMPT.
-> 
-> Most commonly it's unionfs_copy_attr_times called from unionfs_create,
-> but that's probably just the most common route in this workload:
-> I've seen it also when called from unionfs_rename or unionfs_open or
-> unionfs_unlink.  It looks like there's a locking or refcounting bug,
-> hence a race: the unionfs_inode_info which unionfs_copy_attr_times
-> is working on gets changed underneath it, so it oopses on NULL
-> lower_inodes.
-[...]
+ 1) Existing cpuset code lets you set a flag (e.g. cpu_exclusive) by doing:
+	echo '1 rumplestiltskin' > cpu_exclusive   # same as: echo 1 > cpu_exclusive
+    With this patch, that probably fails, EINVAL.
 
-Hugh,
+ 2) With this patch, one can write "1" or "1\n" to cpuset integer files, but one
+    cannot successfully write "1\r\n" or "1 " or "1 \n".  However, for the cpuset
+    control files that take strings, not single integers, one -can- have any mix
+    of trailing white space.
 
-Check out my latest set of patches (which correspond to release 2.2.4 of
-Unionfs).  Thanks to your info and the patch, I was able to trigger several
-races more frequently, and fix them.  I've tested my code with make -j N
-(for N=4 and N=20), on a 4 cpu machine a well as a 2 cpu machine (w/
-different amounts of memory and CPU speeds, also 32-bit vs 64-bit); I ran a
-kernel compile for ~10-12 hours.  With the patches I just posted, I wasn't
-able to trigger any of the WARN_ON's in unionfs_copy_attr_times.  I also
-tried it while flushing caches via /proc, and/or performing branch-mgmt
-commands in unionfs.
+So far as I know, I have no requirement to write rumplestiltskin to cpuset files ;).
+So I'm content to let the minor change in (1) pass without further comment.
 
-Give it a good shake and let me know what you find.
+I'd like to recommend consideration of the following patch, to address the
+minor inconsistency of (2), and to save a few bytes of kernel text space.
 
-Thanks,
-Erez.
+=======
+
+From: Paul Jackson <pj@sgi.com>
+
+Strip all trailing whitespace (such as carriage returns)
+when parsing integer writes to cgroup files, not just
+one trailing newline if present.
+
+Signed-off-by: Paul Jackson <pj@sgi.com>
+Cc: Paul Menage <menage@google.com>
+
+---
+ kernel/cgroup.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+--- 2.6.24-mm1.orig/kernel/cgroup.c	2008-02-16 04:20:33.000000000 -0800
++++ 2.6.24-mm1/kernel/cgroup.c	2008-02-16 19:00:41.207478218 -0800
+@@ -1321,10 +1321,7 @@ static ssize_t cgroup_write_uint(struct 
+ 		return -EFAULT;
+ 
+ 	buffer[nbytes] = 0;     /* nul-terminate */
+-
+-	/* strip newline if necessary */
+-	if (nbytes && (buffer[nbytes-1] == '\n'))
+-		buffer[nbytes-1] = 0;
++	strstrip(buffer);	/* strip -just- trailing whitespace */
+ 	val = simple_strtoull(buffer, &end, 0);
+ 	if (*end)
+ 		return -EINVAL;
+
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
