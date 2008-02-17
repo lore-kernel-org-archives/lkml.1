@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbYBQULP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756816AbYBQULg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756588AbYBQULP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:11:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbYBQUKU
+	id S1756816AbYBQULg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:11:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbYBQUKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:10:20 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:53474 "EHLO smtp4.pp.htv.fi"
+	Sun, 17 Feb 2008 15:10:22 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:59628 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755290AbYBQUKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:10:11 -0500
-Date: Sun, 17 Feb 2008 22:09:42 +0200
+	id S1755357AbYBQUKN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 15:10:13 -0500
+Date: Sun, 17 Feb 2008 22:09:45 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Dmitry Torokhov <dtor@mail.ru>, ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: cdev removal broke cobalt_btns.c compilation
-Message-ID: <20080217200942.GF1403@cs181133002.pp.htv.fi>
+To: herbert@gondor.apana.org.au, davem@davemloft.net
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6.25 patch] CRYPTO_NULL must select CRYPTO_BLKCIPHER
+Message-ID: <20080217200945.GG1403@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,28 +23,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 0c1efd365306c9b04df5abdd41e9b4dc721e84fb broke the compilation of 
-cobalt_btns.c:
+This patch fixes the following build error caused by commit 
+3631c650c495d61b1dabf32eb26b46873636e918:
 
 <--  snip  -->
 
 ...
-  CC      drivers/input/misc/cobalt_btns.o
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c: In function 'cobalt_buttons_probe':
-/home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:100: error: 'struct input_dev' has no member named 'cdev'
-...
-make[4]: *** [drivers/input/misc/cobalt_btns.o] Error 1
-...
+  LD      .tmp_vmlinux1
+crypto/built-in.o: In function `skcipher_null_crypt':
+crypto_null.c:(.text+0x3d14): undefined reference to `blkcipher_walk_virt'
+crypto_null.c:(.text+0x3d14): relocation truncated to fit: R_MIPS_26 against `blkcipher_walk_virt'
+crypto/built-in.o: In function `$L32':
+crypto_null.c:(.text+0x3d54): undefined reference to `blkcipher_walk_done'
+crypto_null.c:(.text+0x3d54): relocation truncated to fit: R_MIPS_26 against `blkcipher_walk_done'
+crypto/built-in.o:(.data+0x2e8): undefined reference to `crypto_blkcipher_type'
+make[1]: *** [.tmp_vmlinux1] Error 1
 
 <--  snip  -->
 
-cu
-Adrian
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+---
+0f6b025864c8536538da5a6b2b68e73dba1a2ab8 diff --git a/crypto/Kconfig b/crypto/Kconfig
+index c3166a1..b12a3ee 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -74,6 +74,7 @@ config CRYPTO_XCBC
+ config CRYPTO_NULL
+ 	tristate "Null algorithms"
+ 	select CRYPTO_ALGAPI
++	select CRYPTO_BLKCIPHER
+ 	help
+ 	  These are 'Null' algorithms, used by IPsec, which do nothing.
+ 
 
