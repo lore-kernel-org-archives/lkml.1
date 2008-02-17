@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758886AbYBQIU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbYBQIUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758886AbYBQIU3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:20:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbYBQISO
+	id S1757899AbYBQIUs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757989AbYBQISd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:18:14 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36843 "EHLO smtp6.pp.htv.fi"
+	Sun, 17 Feb 2008 03:18:33 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36856 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753987AbYBQISM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:18:12 -0500
-Date: Sun, 17 Feb 2008 10:17:46 +0200
+	id S1757976AbYBQISb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:18:31 -0500
+Date: Sun, 17 Feb 2008 10:18:05 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: joel.becker@oracle.com
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] fs/drop_caches.c: make 2 functions static
-Message-ID: <20080217081746.GI3848@cs181133002.pp.htv.fi>
+Subject: [RFC: 2.6 patch] fs/configfs/ cleanups
+Message-ID: <20080217081805.GJ3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,51 +23,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the following needlessly global functions static:
-- drop_pagecache()
-- drop_slab()
+This patch contains the following cleanups:
+- make the needlessly global file.c:configfs_add_file() static
+- #if 0 the unused inode.c:configfs_hash_and_remove()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/drop_caches.c   |    4 ++--
- include/linux/mm.h |    2 --
- 2 files changed, 2 insertions(+), 4 deletions(-)
+ fs/configfs/configfs_internal.h |    3 ---
+ fs/configfs/file.c              |    3 ++-
+ fs/configfs/inode.c             |    2 ++
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-32191754eb7aed31406850a082565bc428268a08 diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index 59375ef..e2c6b65 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -25,7 +25,7 @@ static void drop_pagecache_sb(struct super_block *sb)
- 	spin_unlock(&inode_lock);
+651b7a33c0dce1790230fe8ba9b7445cd69c8bde diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
+index cca9860..378fa36 100644
+--- a/fs/configfs/configfs_internal.h
++++ b/fs/configfs/configfs_internal.h
+@@ -63,9 +63,6 @@ extern int configfs_create_file(struct config_item *, const struct configfs_attr
+ extern int configfs_make_dirent(struct configfs_dirent *,
+ 				struct dentry *, void *, umode_t, int);
+ 
+-extern int configfs_add_file(struct dentry *, const struct configfs_attribute *, int);
+-extern void configfs_hash_and_remove(struct dentry * dir, const char * name);
+-
+ extern const unsigned char * configfs_get_name(struct configfs_dirent *sd);
+ extern void configfs_drop_dentry(struct configfs_dirent *sd, struct dentry *parent);
+ extern int configfs_setattr(struct dentry *dentry, struct iattr *iattr);
+diff --git a/fs/configfs/file.c b/fs/configfs/file.c
+index 397cb50..f331a40 100644
+--- a/fs/configfs/file.c
++++ b/fs/configfs/file.c
+@@ -314,7 +314,8 @@ const struct file_operations configfs_file_operations = {
+ };
+ 
+ 
+-int configfs_add_file(struct dentry * dir, const struct configfs_attribute * attr, int type)
++static int configfs_add_file(struct dentry * dir,
++			     const struct configfs_attribute * attr, int type)
+ {
+ 	struct configfs_dirent * parent_sd = dir->d_fsdata;
+ 	umode_t mode = (attr->ca_mode & S_IALLUGO) | S_IFREG;
+diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
+index 4c1ebff..dccff59 100644
+--- a/fs/configfs/inode.c
++++ b/fs/configfs/inode.c
+@@ -233,6 +233,7 @@ void configfs_drop_dentry(struct configfs_dirent * sd, struct dentry * parent)
+ 	}
  }
  
--void drop_pagecache(void)
-+static void drop_pagecache(void)
++#if 0
+ void configfs_hash_and_remove(struct dentry * dir, const char * name)
  {
- 	struct super_block *sb;
- 
-@@ -45,7 +45,7 @@ restart:
- 	spin_unlock(&sb_lock);
+ 	struct configfs_dirent * sd;
+@@ -255,6 +256,7 @@ void configfs_hash_and_remove(struct dentry * dir, const char * name)
+ 	}
+ 	mutex_unlock(&dir->d_inode->i_mutex);
  }
++#endif  /*  0  */
  
--void drop_slab(void)
-+static void drop_slab(void)
+ int __init configfs_inode_init(void)
  {
- 	int nr_objects;
- 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 26c7124..48927d4 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1192,8 +1192,6 @@ int drop_caches_sysctl_handler(struct ctl_table *, int, struct file *,
- 					void __user *, size_t *, loff_t *);
- unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
- 			unsigned long lru_pages);
--void drop_pagecache(void);
--void drop_slab(void);
- 
- #ifndef CONFIG_MMU
- #define randomize_va_space 0
 
