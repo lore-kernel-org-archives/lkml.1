@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbYBQIbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755957AbYBQIik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbYBQIbT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:31:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753433AbYBQIa6
+	id S1755957AbYBQIik (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:38:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752379AbYBQIia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:30:58 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:37336 "EHLO smtp6.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbYBQIa5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:30:57 -0500
-Date: Sun, 17 Feb 2008 10:30:31 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Patrick McHardy <kaber@trash.net>, "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [2.6 patch] remove include/linux/netfilter_ipv4/ipt_SAME.h
-Message-ID: <20080217083031.GY3848@cs181133002.pp.htv.fi>
+	Sun, 17 Feb 2008 03:38:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:30311 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753060AbYBQIi3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:38:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=HY3kXuVBUiI8bvfdYYYSfunaiA138jpNWwLdBf9MnaKEv6EzoCK2JXIn4d7elAEQpG6KTx2+e1KpdD5WhYsNcoywWfti+ZhRAj5Y2AsLB7o9gaXfyLM/icCLMp3bS73ANYZHtoSxI9Y/Yj7Svj5BteNVP5KxZLP4I8MCEQXQgxU=
+Date: Sun, 17 Feb 2008 11:38:01 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] sched: trivial sparse warning in sched.c
+Message-ID: <20080217083801.GA6752@cvg>
+References: <1203098196.15275.5.camel@brick> <1203196289.6301.20.camel@lappy> <20080216212747.GC6753@cvg> <1203198314.6298.6.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1203198314.6298.6.camel@lappy>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes the no longer used include/linux/netfilter_ipv4/ipt_SAME.h
+[Peter Zijlstra - Sat, Feb 16, 2008 at 10:45:14PM +0100]
+| 
+| On Sun, 2008-02-17 at 00:27 +0300, Cyrill Gorcunov wrote:
+| > [Peter Zijlstra - Sat, Feb 16, 2008 at 10:11:29PM +0100]
+| > | 
+[...]
+| > 
+| > Hi Peter,
+| > 
+| > dont you find 'return (void)foo();' statement a bit strange (as it was in
+| > original code)? ;) Am I wrong? /it's night here, so half a brain already
+| > tuned off ;)/
+| 
+| void foo(void);
+| 
+| void bar(void)
+| {
+| 	return foo();
+| }
+| 
+| Maybe I'm just weird an twisted, but no, I don't find it odd. In my mind
+| its consistent with how all other return types function.
+| 
+| Not sure what the C std text says on the matter though.
+| 
+| 
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+well, i've an obscure feeling about that. From one side I do understand that
+you're *absolutely right* but the second form of statement is more clear
+methink. That is what I prefer personally. Anyway the form of writting
+such a statement is taste of code author - so you choose ;)
 
----
-
- include/linux/netfilter_ipv4/Kbuild     |    1 -
- include/linux/netfilter_ipv4/ipt_SAME.h |   19 -------------------
- 2 files changed, 20 deletions(-)
-
-553bf355efd03581a094d8a4e0b278e04228aae8 diff --git a/include/linux/netfilter_ipv4/Kbuild b/include/linux/netfilter_ipv4/Kbuild
-index 3a7105b..646d104 100644
---- a/include/linux/netfilter_ipv4/Kbuild
-+++ b/include/linux/netfilter_ipv4/Kbuild
-@@ -7,7 +7,6 @@ header-y += ipt_LOG.h
- header-y += ipt_MARK.h
- header-y += ipt_NFQUEUE.h
- header-y += ipt_REJECT.h
--header-y += ipt_SAME.h
- header-y += ipt_TCPMSS.h
- header-y += ipt_TOS.h
- header-y += ipt_TTL.h
-diff --git a/include/linux/netfilter_ipv4/ipt_SAME.h b/include/linux/netfilter_ipv4/ipt_SAME.h
-deleted file mode 100644
-index be6e682..0000000
---- a/include/linux/netfilter_ipv4/ipt_SAME.h
-+++ /dev/null
-@@ -1,19 +0,0 @@
--#ifndef _IPT_SAME_H
--#define _IPT_SAME_H
--
--#define IPT_SAME_MAX_RANGE	10
--
--#define IPT_SAME_NODST		0x01
--
--struct ipt_same_info
--{
--	unsigned char info;
--	u_int32_t rangesize;
--	u_int32_t ipnum;
--	u_int32_t *iparray;
--
--	/* hangs off end. */
--	struct nf_nat_range range[IPT_SAME_MAX_RANGE];
--};
--
--#endif /*_IPT_SAME_H*/
-
+		- Cyrill -
