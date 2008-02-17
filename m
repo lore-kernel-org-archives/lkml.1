@@ -1,139 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbYBQR1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751457AbYBQR26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477AbYBQR1K (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 12:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753364AbYBQR05
+	id S1751457AbYBQR26 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 12:28:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750709AbYBQR2s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 12:26:57 -0500
-Received: from wx-out-0506.google.com ([66.249.82.238]:8066 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751548AbYBQR04 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 12:26:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QB5q/n417xLThZPMZu62OBagBsKvqCHe16t2JJEv2Gu6vvFmwCehW9ltbQaPBhXcRvPxLTmtcRxYq310RWyKjCAYfI3bbObMNGLOTqbzlrcWYE2Ns15ra5BpI75X1SKyPhMS1nhQZ38ZLJKCgXMODx+YH1dpB4aL7RhMv/B/epM=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Subject: Re: [PATCH] linux/hdsmart.h: fix goofups
-Date: Sun, 17 Feb 2008 18:40:31 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
-References: <200802171807.57983.bzolnier@gmail.com> <alpine.LFD.1.00.0802171214380.3515@localhost.localdomain>
-In-Reply-To: <alpine.LFD.1.00.0802171214380.3515@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sun, 17 Feb 2008 12:28:48 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:54709 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750700AbYBQR2s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 12:28:48 -0500
+Date: Sun, 17 Feb 2008 11:28:43 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: balbir@in.ibm.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 7/7] CGroup API: Update cpusets to use cgroup
+ structured file API
+Message-Id: <20080217112843.5496412d.pj@sgi.com>
+In-Reply-To: <6599ad830802170918q4c748f7fs32e5b8ea63e49f15@mail.gmail.com>
+References: <20080215204418.535025000@menage.corp.google.com>
+	<20080215204821.778088000@menage.corp.google.com>
+	<20080216212901.70fe35ce.pj@sgi.com>
+	<6599ad830802170918q4c748f7fs32e5b8ea63e49f15@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802171840.32180.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 February 2008, Robert P. J. Day wrote:
-> On Sun, 17 Feb 2008, Bartlomiej Zolnierkiewicz wrote:
+> > Strip all trailing whitespace (such as carriage returns)
+> > when parsing integer writes to cgroup files, not just
+> > one trailing newline if present.
 > 
-> > Fix goofups of commit 76166952bbc81dda1c8a8c14e75a2aa06f6c052c
-> > ("<linux/hdsmart.h> is not used by kernel code").
-> >
-> > Reported-by: "Robert P. J. Day" <rpjday@crashcourse.ca>
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> > ---
-> >  include/linux/hdsmart.h |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > Index: b/include/linux/hdsmart.h
-> > ===================================================================
-> > --- a/include/linux/hdsmart.h
-> > +++ b/include/linux/hdsmart.h
-> > @@ -17,7 +17,7 @@
-> >  #ifndef _LINUX_HDSMART_H
-> >  #define _LINUX_HDSMART_H
-> >
-> > -#ifndef __KERNEL
-> > +#ifndef __KERNEL__
-> >  #define OFFLINE_FULL_SCAN		0
-> >  #define SHORT_SELF_TEST			1
-> >  #define EXTEND_SELF_TEST		2
-> > @@ -121,6 +121,6 @@ typedef struct ata_smart_selftestlog_s {
-> >  	unsigned char			resevered[2];
-> >  	unsigned char			chksum;
-> >  } __attribute__ ((packed)) ata_smart_selftestlog_t;
-> > -#endif /* __KERNEL__ *
-> > +#endif /* __KERNEL__ */
-> >
-> >  #endif	/* _LINUX_HDSMART_H */
-> 
-> if that header file isn't used by any kernel code, why bother having a
-> check for __KERNEL__ in the first place?  it's being exported to
-> userspace unchecked:
-> 
->   include/linux/Kbuild:header-y += hdsmart.h
-> 
-> so why not just toss that check entirely?  otherwise, you're going to
-> get a header file exported to userspace that has a superfluous
-> __KERNEL__ test in it.
+> Sounds like a good idea to me. Thanks for this.
 
-We don't want new (accidental etc.) kernel users of this header. 
+I'm figuring it would be easiest if you just threw this
+little change into your hopper for the bigger changes
+you're making ... no need to preserve my name as author
+of this.
 
-How's about this version?
+But if you'd rather you or I send this separately to
+Andrew Morton, that works too.
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] linux/hdsmart.h: fix goofups (take 2)
-
-Fix goofups of commit 76166952bbc81dda1c8a8c14e75a2aa06f6c052c
-("<linux/hdsmart.h> is not used by kernel code").
-
-Also update include/linux/Kbuild to reflect the fact that hdsmart.h
-uses __KERNEL__ ifdefs now.
-
-Reported-by: "Robert P. J. Day" <rpjday@crashcourse.ca>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- include/linux/Kbuild    |    2 +-
- include/linux/hdsmart.h |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-Index: b/include/linux/Kbuild
-===================================================================
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -70,7 +70,6 @@ header-y += fuse.h
- header-y += genetlink.h
- header-y += gen_stats.h
- header-y += gigaset_dev.h
--header-y += hdsmart.h
- header-y += hysdn_if.h
- header-y += i2o-dev.h
- header-y += i8k.h
-@@ -211,6 +210,7 @@ unifdef-y += hayesesp.h
- unifdef-y += hdlcdrv.h
- unifdef-y += hdlc.h
- unifdef-y += hdreg.h
-+unifdef-y += hdsmart.h
- unifdef-y += hiddev.h
- unifdef-y += hpet.h
- unifdef-y += i2c.h
-Index: b/include/linux/hdsmart.h
-===================================================================
---- a/include/linux/hdsmart.h
-+++ b/include/linux/hdsmart.h
-@@ -17,7 +17,7 @@
- #ifndef _LINUX_HDSMART_H
- #define _LINUX_HDSMART_H
- 
--#ifndef __KERNEL
-+#ifndef __KERNEL__
- #define OFFLINE_FULL_SCAN		0
- #define SHORT_SELF_TEST			1
- #define EXTEND_SELF_TEST		2
-@@ -121,6 +121,6 @@ typedef struct ata_smart_selftestlog_s {
- 	unsigned char			resevered[2];
- 	unsigned char			chksum;
- } __attribute__ ((packed)) ata_smart_selftestlog_t;
--#endif /* __KERNEL__ *
-+#endif /* __KERNEL__ */
- 
- #endif	/* _LINUX_HDSMART_H */
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
