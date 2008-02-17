@@ -1,39 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757485AbYBQNZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757288AbYBQNjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757485AbYBQNZs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 08:25:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbYBQNZj
+	id S1757288AbYBQNjh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:39:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbYBQNj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 08:25:39 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47929 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752482AbYBQNZi (ORCPT
+	Sun, 17 Feb 2008 08:39:26 -0500
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:51167 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbYBQNjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 08:25:38 -0500
-Date: Sun, 17 Feb 2008 08:25:33 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Nick Piggin <npiggin@suse.de>, viro@zeniv.linux.org.uk,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [2.6 patch] remove generic_commit_write()
-Message-ID: <20080217132533.GB5777@infradead.org>
-References: <20080217081637.GB3848@cs181133002.pp.htv.fi>
+	Sun, 17 Feb 2008 08:39:25 -0500
+Date: Sun, 17 Feb 2008 08:38:57 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Paul Jackson <pj@sgi.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, akpm@zip.com.au
+Subject: Re: [19/19] ftrace
+In-Reply-To: <20080217041603.d2fd7e06.pj@sgi.com>
+Message-ID: <Pine.LNX.4.58.0802170838190.14823@gandalf.stny.rr.com>
+References: <20080210072309.GT4100@elte.hu> <20080217041603.d2fd7e06.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080217081637.GB3848@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 10:16:37AM +0200, Adrian Bunk wrote:
-> This patch removes the obsolete and no longer used generic_commit_write().
 
-Given that the APIs these are helpers for are gone this function should
-go away.
+On Sun, 17 Feb 2008, Paul Jackson wrote:
 
-ACK.
+> A week ago, Ingo wrote:
+> > There's no 19th patch.
+>
+> Dang ... and I came here looking for the "latency tracing for dummies"
+> update to Documentation ;).
+>
+> Did I miss its existence elsewhere?
+
+I submitted a tutorial to OLS, send them a note saying you want it
+accepted ;-)
+
+-- Steve
 
