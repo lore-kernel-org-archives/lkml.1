@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbYBQGW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbYBQG0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbYBQGW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 01:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYBQGWU
+	id S1756110AbYBQG0T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 01:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYBQG0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 01:22:20 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:22574 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbYBQGWT (ORCPT
+	Sun, 17 Feb 2008 01:26:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:51956 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752556AbYBQG0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 01:22:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EcbF0R34S+axsjXOm5JxCvFpY+cstw1uX8Bd4zcVfjGQqLpkZSsDNVzPM4OSsWl4ePRi8b7O36Uab75P2lh1A/bnoavpTBTxA63o+C6kW+o9G2yuZ82r5a5qscfMsyqltRNvJTRi6LE3eDaUKszJl9d55AleouAqoa2FmQ8BDkc=
-Message-ID: <86802c440802162222k47f5bebbhf42fef0f11ce3243@mail.gmail.com>
-Date: Sat, 16 Feb 2008 22:22:17 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 3/4] x86_64: Fold pda into per cpu area
-Cc: travis@sgi.com, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Jack Steiner" <steiner@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080215201640.GA6200@elte.hu>
+	Sun, 17 Feb 2008 01:26:08 -0500
+Date: Sat, 16 Feb 2008 22:25:40 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: 2.6.25-rc2-mm1
+Message-ID: <20080217062540.GB26206@mail.oracle.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org,
+	Randy Dunlap <randy.dunlap@oracle.com>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080201191414.961558000@sgi.com>
-	 <20080201191415.450555000@sgi.com> <20080215201640.GA6200@elte.hu>
+In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 15, 2008 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * travis@sgi.com <travis@sgi.com> wrote:
->
-> >  include/asm-generic/vmlinux.lds.h |    2 +
-> >  include/linux/percpu.h            |    9 ++++-
->
-> couldnt these two generic bits be done separately (perhaps a preparatory
-> but otherwise NOP patch pushed upstream straight away) to make
-> subsequent patches only touch x86 architecture files?
+On Sat, Feb 16, 2008 at 12:25:22AM -0800, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+...
+> +avoid-divides-in-bits_to_longs.patch
 
-this patch need to apply to mainline asap.
+Andrew,
+	This patch, by introducing sizeof(long) in the BITS_TO_LONGS
+math, changes BITS_TO_LONGS from an int to a unsigned long.  We noticed
+because this printk in fs/ocfs2/dlm/dlmdomain.c:
 
-or you need revert to the patch about include/asm-x86/percpu.h
+    mlog(ML_ERROR,
+         "map_size %u != BITS_TO_LONGS(O2NM_MAX_NODES) %u\n",
+         map_size, BITS_TO_LONGS(O2NM_MAX_NODES));
 
-+#ifdef CONFIG_X86_64
-+#include <linux/compiler.h>
-+
-+/* Same as asm-generic/percpu.h, except that we store the per cpu offset
-+   in the PDA. Longer term the PDA and every per cpu variable
-+   should be just put into a single section and referenced directly
-+   from %gs */
-+
-+#ifdef CONFIG_SMP
-+#include <asm/pda.h>
-+
-+#define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
-+#define __my_cpu_offset read_pda(data_offset)
-+
-+#define per_cpu_offset(x) (__per_cpu_offset(x))
-+
- #endif
-+#include <asm-generic/percpu.h>
-+
-+DECLARE_PER_CPU(struct x8664_pda, pda);
-+
-+#else /* CONFIG_X86_64 */
+now gives this warning:
 
-because current tree
-in setup_per_cpu_areas will have
-     cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+    fs/ocfs2/dlm/dlmdomain.c:938: warning: format '%u' expects type
+    'unsigned int', but argument 7 has type 'long unsigned int'
 
-but at that time all APs will use cpu_pda for boot cpu...,and APs will
-get their pda in do_boot_cpu()
+We can tweak the printk once the patch goes to Linus, no worries.  I
+just wanted to send a heads up in case the size change affects anything
+else.
 
-the result is all cpu will have same data_offset, there will share one
-per_cpu_data..that is totally wrong!!
+Joel
 
-that could explain a lot of strange panic ....recently about NUMA...
+-- 
 
-YH
+ There are morethings in heaven and earth, Horatio,
+ Than are dreamt of in your philosophy.
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
