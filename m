@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbYBQM0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759616AbYBQM0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759470AbYBQM0g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:26:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757377AbYBQMXJ
+	id S1759616AbYBQM0x (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:26:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757400AbYBQMXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:09 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:38350 "EHLO pasmtpA.tele.dk"
+	Sun, 17 Feb 2008 07:23:10 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38353 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755332AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755367AbYBQMW5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Feb 2008 07:22:57 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 09/27] x86: fix section mismatch warning in setup_64.c:nearby_node
-Date: Sun, 17 Feb 2008 13:22:46 +0100
-Message-Id: <1203250984-11285-9-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Subject: [PATCH 14/27] hwmon: fix section mismatch in coretemp
+Date: Sun, 17 Feb 2008 13:22:51 +0100
+Message-Id: <1203250984-11285-14-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
 References: <20080217121255.GA10519@uranus.ravnborg.org>
@@ -24,34 +24,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warnings:
-WARNING: vmlinux.o(.text+0x1baa2): Section mismatch in reference from the function nearby_node() to the variable .cpuinit.data:apicid_to_node
-WARNING: vmlinux.o(.text+0x1bace): Section mismatch in reference from the function nearby_node() to the variable .cpuinit.data:apicid_to_node
+Fix following warning:
+WARNING: vmlinux.o(.text+0xebfd04): Section mismatch in reference from the function coretemp_cpu_callback() to the function .cpuinit.text:coretemp_device_add()
 
-nearby_node() were only used by __cpuinit amd_detect_cmp()
-So annotating nearby_node() __cpuinit was the trivial fix.
+coretemp_cpu_callback() are only used inside a
+HOTPLUG_CPU block so annotate it __cpuinit.
+The notifier referencing the function are annotated
+__refdata to silence warning from the exit function.
+The unregister function do not use the embedded pointer
+but clears the variable so the annotation is OK.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Mark M. Hoffman <mhoffman@lightlink.com>
 ---
- arch/x86/kernel/setup_64.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/hwmon/coretemp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/setup_64.c b/arch/x86/kernel/setup_64.c
-index c0d8208..ff9029d 100644
---- a/arch/x86/kernel/setup_64.c
-+++ b/arch/x86/kernel/setup_64.c
-@@ -518,7 +518,7 @@ static void __cpuinit display_cacheinfo(struct cpuinfo_x86 *c)
+diff --git a/drivers/hwmon/coretemp.c b/drivers/hwmon/coretemp.c
+index 3ee60d2..1439432 100644
+--- a/drivers/hwmon/coretemp.c
++++ b/drivers/hwmon/coretemp.c
+@@ -330,7 +330,7 @@ static void coretemp_device_remove(unsigned int cpu)
+ 	mutex_unlock(&pdev_list_mutex);
  }
  
- #ifdef CONFIG_NUMA
--static int nearby_node(int apicid)
-+static int __cpuinit nearby_node(int apicid)
+-static int coretemp_cpu_callback(struct notifier_block *nfb,
++static int __cpuinit coretemp_cpu_callback(struct notifier_block *nfb,
+ 				 unsigned long action, void *hcpu)
  {
- 	int i, node;
+ 	unsigned int cpu = (unsigned long) hcpu;
+@@ -347,7 +347,7 @@ static int coretemp_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
  
+-static struct notifier_block coretemp_cpu_notifier = {
++static struct notifier_block coretemp_cpu_notifier __refdata = {
+ 	.notifier_call = coretemp_cpu_callback,
+ };
+ #endif				/* !CONFIG_HOTPLUG_CPU */
 -- 
 1.5.4.rc3.14.g44397
 
