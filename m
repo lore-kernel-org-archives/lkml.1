@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYBQHU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbYBQHhF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754263AbYBQHU2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 02:20:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYBQHUP
+	id S1754596AbYBQHhF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 02:37:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYBQHgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 02:20:15 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:48014 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750760AbYBQHUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 02:20:13 -0500
-Date: Sun, 17 Feb 2008 01:20:06 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-Cc: stern@rowland.harvard.edu, oliver.pntr@gmail.com,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com,
-       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
-       Joseph Fannin <jfannin@gmail.com>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]*
-Message-Id: <20080217012006.3757dfae.pj@sgi.com>
-In-Reply-To: <47B71372.5050804@gmail.com>
-References: <Pine.LNX.4.44L0.0802161013190.3769-100000@iolanthe.rowland.org>
-	<47B71372.5050804@gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Feb 2008 02:36:54 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:47027 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751531AbYBQHgx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 02:36:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Bl4zlu/OFoXEuG02EQExVLbolBBxVFb2j9cRqCdFl9cgcE1Q024lh8jKUcLvb2pMIhK5oyRsr+8iLbOIw/7MPBL4HQndMeAkNTdXVkst8JWuYk24MqrrpsPIsPR7+giqUpn9A79HaMGMx5rZbvsq2RcF/TadMidrLVdPB1cy+kc=
+Message-ID: <86802c440802162336he3cdef1y38ed3fcae89f3cc7@mail.gmail.com>
+Date: Sat, 16 Feb 2008 23:36:38 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 3/4] x86_64: Fold pda into per cpu area
+Cc: travis@sgi.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Andi Kleen" <ak@suse.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Jack Steiner" <steiner@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <86802c440802162222k47f5bebbhf42fef0f11ce3243@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20080201191414.961558000@sgi.com>
+	 <20080201191415.450555000@sgi.com> <20080215201640.GA6200@elte.hu>
+	 <86802c440802162222k47f5bebbhf42fef0f11ce3243@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew wrote:
-> (Note: I consider it blatantly incorrect to send a reply both to a
-> mailing list and directly to the address of someone who is subscribed to
-> that list
+On Feb 16, 2008 10:22 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Feb 15, 2008 12:16 PM, Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> > * travis@sgi.com <travis@sgi.com> wrote:
+> >
+> > >  include/asm-generic/vmlinux.lds.h |    2 +
+> > >  include/linux/percpu.h            |    9 ++++-
+> >
+> > couldnt these two generic bits be done separately (perhaps a preparatory
+> > but otherwise NOP patch pushed upstream straight away) to make
+> > subsequent patches only touch x86 architecture files?
+>
+> this patch need to apply to mainline asap.
+>
+> or you need revert to the patch about include/asm-x86/percpu.h
+>
+> +#ifdef CONFIG_X86_64
+> +#include <linux/compiler.h>
+> +
+> +/* Same as asm-generic/percpu.h, except that we store the per cpu offset
+> +   in the PDA. Longer term the PDA and every per cpu variable
+> +   should be just put into a single section and referenced directly
+> +   from %gs */
+> +
+> +#ifdef CONFIG_SMP
+> +#include <asm/pda.h>
+> +
+> +#define __per_cpu_offset(cpu) (cpu_pda(cpu)->data_offset)
+> +#define __my_cpu_offset read_pda(data_offset)
+> +
+> +#define per_cpu_offset(x) (__per_cpu_offset(x))
+> +
+>  #endif
+> +#include <asm-generic/percpu.h>
+> +
+> +DECLARE_PER_CPU(struct x8664_pda, pda);
+> +
+> +#else /* CONFIG_X86_64 */
+>
+> because current tree
+> in setup_per_cpu_areas will have
+>      cpu_pda(i)->data_offset = ptr - __per_cpu_start;
+>
+> but at that time all APs will use cpu_pda for boot cpu...,and APs will
+> get their pda in do_boot_cpu()
 
-Regardless of how you consider it, that is how responding to these big
-lists -must- work.
+sorry, boot_cpu_pda is array... so that is safe.
 
-There is no practical way for respondents to know, without spending at
-a minimum several minutes of their time per reply, whether or not the
-explicit receipients of a message are or are not also on one or more of
-the receiving lists.
-
-Do you really expect, Andrew, that I should examine the membership lists
-of each of linux-scsi, linux-usb and linux-kernel (if they are even open
-to the public) to see if you're subscribed to them, before responding to
-a message addressed such as this?
-
-As subscribers and submitters to such lists, we just have to learn to
-deal with this reality.  For example, I receive an average of a 100
-messages per hour on this email address, -after- my employers spam
-filters have knocked off over 90% of the incoming.
-
-May I recommend you become an expert in procmail?  That or speed
-reading (and speed ignoring ;).
-
-In a separate reply to this message, Alan Stern wrote:
-> Everyone has his own taste.
-
-This is not a matter of taste on these big lists.  There is no other
-practical alternative.  Most of the burden of ultimate filtering must
-be shifted to the recipients, and the senders asked only that they
-err on the side of including every individual list or person already
-on the address lists.
-
-Joseph Fannin also replied:
-> another free mail service which isn't so broken,
-
-I'd recommend fastmail.fm as one of the least broken, most tech savvy
-mail services.  I believe that their free side includes IMAP, though
-not POP support.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+YH
