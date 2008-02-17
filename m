@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbYBQUVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753974AbYBQUXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755073AbYBQUVY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:21:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYBQUVR
+	id S1753974AbYBQUXE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:23:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYBQUWv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:21:17 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:18962 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752606AbYBQUVQ (ORCPT
+	Sun, 17 Feb 2008 15:22:51 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:5122 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752673AbYBQUWu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:21:16 -0500
+	Sun, 17 Feb 2008 15:22:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=u866fvKgT6GEQf2ZaXs8eex87dBK4XRzkEF6/ZNhjJLVLwJOQ129WlZAY8bL+wnpeXlUsGdboyX+KPAh6dGCGJpN8Gy6GXgYsyAxQ8wNCVgs3Bvt2qLlI2YgfG/ywzzO+eGOWNLtO7vk3hw1e7sKIJLN82TUe6uMn7/nJLA44Nk=
-Date: Sun, 17 Feb 2008 21:27:39 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] workqueues: shrink cpu_populated_map when CPU dies
-Message-ID: <20080217202739.GA2994@ami.dom.local>
-References: <20080216172259.GA18524@tv-sign.ru>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VN/CUVGNWHrK/2sGxspTmSJ0yXFMnLRiFU967qXh0nYQqA+hxsPUimupCdLFu6cF3WIbjQTdXrTd7CPfQMhJ2I/+wnuCGr+4YuBpaRX/P0h80l7fnxG4jolsmaj9jlhpcU2nZe1RLF9be6MWMHJLe8r0q+SsxefAgHT71KE7U+Q=
+Message-ID: <939d53060802171222m4619de97u3aa4ed7cb27e6e75@mail.gmail.com>
+Date: Sun, 17 Feb 2008 21:22:48 +0100
+From: "Benjamin Thery" <ben.thery@gmail.com>
+To: "Frans Pop" <elendil@planet.nl>, davem@davemloft.net
+Subject: Re: [2.6.25-rc2] System freezes ca. 1 minute after logging into KDE
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <200802171139.13615.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080216172259.GA18524@tv-sign.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+References: <200802171139.13615.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg,
+On Feb 17, 2008 11:39 AM, Frans Pop <elendil@planet.nl> wrote:
+> (resend a third time because previous attempts never reached the lists
+> due to a bug in my MUA; my apologies to David for spamming his inbox)
+>
+> Linus Torvalds wrote:
+> > But hey, you can try to prove me wrong.  I dare you.
+> Me too, me too!
+>
+> Weird issue this.
+> About a minute after logging into KDE the system freezes, but only
+> partially. The keyboard is completely dead in all cases (no console
+> switching, no SysRq), but some tasks stay running. One time music continued
+> playing, other times it stopped. One time the desktop clock continued
+> ticking, other times it stopped. One time I could close a window using the
+> mouse, but other windows were frozen.
+> It's not just KDE that's frozen; one time I switched to VT1 before the
+> freeze happened, but that became unusable too.
+> Zilch in the logs.
+>
+> I've bisected it down to:
+> commit 69cc64d8d92bf852f933e90c888dfff083bd4fc9
+> Author: David S. Miller <davem@davemloft.net>
+>     [NDISC]: Fix race in generic address resolution
+>
+> Confirmed that this is really the culprit by reverting this commit on top
+> of -rc2, which is now running fine.
+>
+> I'm using IPv6 (local network only) together with IPv4, use a bridge (br0)
+> and have an NFS4 mount active.
 
-This patch looks OK to me. But while reading this I got some doubts
-in nearby places, so BTW 2 small questions:
+I've encountered the same issue last Thursday. Here, I can hang my machine
+with ping6. I've also bisected it down to the same commit.
 
-1) ... workqueue_cpu_callback(...)
-{
-	...
-        list_for_each_entry(wq, &workqueues, list) {
-                cwq = per_cpu_ptr(wq->cpu_wq, cpu);
+I've sent some kernel traces which shows how the soft lock up occurs. See
+thread: "[PATCH][RFC] race in generic address resolution"
+http://www.spinics.net/lists/netdev/msg55375.html
 
-                switch (action) {
-                case CPU_UP_PREPARE:
-		...
+Benjamin
 
-It looks like not all CPU_ cases are served here: shouldn't
-list_for_each_entry() be omitted for them?
 
-2) ... __create_workqueue_key(...)
-{
-	...
-        if (singlethread) {
-		...
-        } else {
-                get_online_cpus();
-                spin_lock(&workqueue_lock);
-                list_add(&wq->list, &workqueues);
-
-Shouldn't this list_add() be done after all these inits below?
-
-                spin_unlock(&workqueue_lock);
-
-                for_each_possible_cpu(cpu) {
-                        cwq = init_cpu_workqueue(wq, cpu);
-			...
-                }
-		...
-Thanks,
-Jarek P.
- 
-
-On Sat, Feb 16, 2008 at 08:22:59PM +0300, Oleg Nesterov wrote:
-> When cpu_populated_map was introduced, it was supposed that cwq->thread can
-> survive after CPU_DEAD, that is why we never shrink cpu_populated_map.
-> 
-> This is not very nice, we can safely remove the already dead CPU from the map.
-> The only required change is that destroy_workqueue() must hold the hotplug lock
-> until it destroys all cwq->thread's, to protect the cpu_populated_map. We could
-> make the local copy of cpu mask and drop the lock, but sizeof(cpumask_t) may be
-> very large.
-> 
-> Also, fix the comment near queue_work(). Unless _cpu_down() happens we do
-> guarantee the cpu-affinity of the work_struct, and we have users which rely on
-> this.
-> 
-> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+>
+> Cheers,
+> FJP
+>
+>
