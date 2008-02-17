@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbYBQTwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755394AbYBQTyQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbYBQTwx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 14:52:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbYBQTwo
+	id S1755394AbYBQTyQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 14:54:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbYBQTyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 14:52:44 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44437 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752073AbYBQTwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 14:52:43 -0500
-Date: Sun, 17 Feb 2008 20:52:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       len.brown@intel.com
-Subject: Re: 2.6.25-rc2-mm1 (build failure)
-Message-ID: <20080217195256.GC6115@elf.ucw.cz>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080216213225.f5f71c35.randy.dunlap@oracle.com> <20080216214627.e8248706.akpm@linux-foundation.org>
+	Sun, 17 Feb 2008 14:54:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38587 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbYBQTyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 14:54:00 -0500
+Date: Sun, 17 Feb 2008 20:53:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roland McGrath <roland@redhat.com>, Rene Herman <rene.herman@keyaccess.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-kbuild@vger.kernel.org
+Subject: Re: 2.6.25-rc2 vdso_install breaks user "make install"
+Message-ID: <20080217195344.GC20850@elte.hu>
+References: <47B6592A.6030200@keyaccess.nl> <20080216034211.8DD03270193@magilla.localdomain> <20080216113610.GB11362@uranus.ravnborg.org> <20080217193514.GJ14588@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080216214627.e8248706.akpm@linux-foundation.org>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20080217193514.GJ14588@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
-> > 
-> > When SMP=n, x86_64 build gets:
-> > 
-> > arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
-> > (.text+0xfd7f): undefined reference to `setup_trampoline'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
-> > 
-> 
-> Thanks.  Say hello to Pavel.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-Sorry, I was in mountains, with electricity 5 hours a day... I believe
-this was solved already?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Roland - if you agree will you please submit the patch
+> to the x86 people.
+> You can tag it:
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> or Acked-by: Sam Ravnborg <sam@ravnborg.org>
+
+i've picked it up, thanks.
+
+	Ingo
