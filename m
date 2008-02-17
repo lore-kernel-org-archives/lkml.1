@@ -1,99 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756781AbYBQWz3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbYBQXCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756781AbYBQWz3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 17:55:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbYBQWzV
+	id S1756579AbYBQXCj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 18:02:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbYBQXCa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 17:55:21 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:49738 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754091AbYBQWzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 17:55:20 -0500
-Date: Sun, 17 Feb 2008 23:54:26 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
-In-Reply-To: <200802172304.00322.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.64.0802172342431.7699@twin.jikos.cz>
-References: <200802172304.00322.rjw@sisk.pl>
+	Sun, 17 Feb 2008 18:02:30 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:30813 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYBQXC3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 18:02:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
+        b=ZuC0QqWFFrV7oYE1E2LYrRsuHFGRkgobKDIbnTpFdORy6FUAWjpXth53S+MippJJlQsctWzEH9C9oc//2kXvZuOxCiUP43biexT1O8bgQq6APbBfuui/N0SLNcInXo7ouvKjRg+Uo7m04FLUpZ2UdqkZW7Zadse0RqQpgu4WttU=
+Date: Mon, 18 Feb 2008 00:59:54 +0200
+To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH x86] i8259A_32: Remove redundant irq_desc[NR_IRQ]
+	initialization
+Message-ID: <20080217225954.GA3020@ubuntu>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-728730522-1203288866=:7699"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi all,
 
----1747641777-728730522-1203288866=:7699
-Content-Type: TEXT/PLAIN; charset=iso-8859-2
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Remove redundant irq_desc[NR_IRQS] element initialization in 
+init_ISA_irqs(). irq_desc[NR_IRQS] is already statically 
+initialized with the same values in kernel/irq/handle.c .
 
-On Sun, 17 Feb 2008, Rafael J. Wysocki wrote:
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
 
-> Bug-Entry=09: http://bugzilla.kernel.org/show_bug.cgi?id=3D9842
-> Subject=09=09: key 49 and 94 send both 49 and 94 events on macbooks REGRE=
-SSION
-> Submitter=09: Emil Karlson <jkarlson@cc.hut.fi>
-> Date=09=09: 2008-01-29 08:15
+ i8259_32.c |   26 ++++++--------------------
+ 1 file changed, 6 insertions(+), 20 deletions(-)
 
-I have already fixed this one, and fix has been already picked by Linus=20
-from my tree, so you can drop this one. (even the bugzilla is closed=20
-properly).
+Tested only on a UP machine with an i8259A PIC.
 
-> Bug-Entry=09: http://bugzilla.kernel.org/show_bug.cgi?id=3D9984
-> Subject=09=09: problem with starting 2.5.25-rc1 and latest git
+diff --git a/arch/x86/kernel/i8259_32.c b/arch/x86/kernel/i8259_32.c
+index 2d25b77..0fea87d 100644
+--- a/arch/x86/kernel/i8259_32.c
++++ b/arch/x86/kernel/i8259_32.c
+@@ -26,8 +26,6 @@
+  * present in the majority of PC/AT boxes.
+  * plus some generic x86 specific things if generic specifics makes
+  * any sense at all.
+- * this file should become arch/i386/kernel/irq.c when the old irq.c
+- * moves to arch independent land
+  */
+ 
+ static int i8259A_auto_eoi;
+@@ -362,24 +360,12 @@ void __init init_ISA_irqs (void)
+ #endif
+ 	init_8259A(0);
+ 
+-	for (i = 0; i < NR_IRQS; i++) {
+-		irq_desc[i].status = IRQ_DISABLED;
+-		irq_desc[i].action = NULL;
+-		irq_desc[i].depth = 1;
+-
+-		if (i < 16) {
+-			/*
+-			 * 16 old-style INTA-cycle interrupts:
+-			 */
+-			set_irq_chip_and_handler_name(i, &i8259A_chip,
+-						      handle_level_irq, "XT");
+-		} else {
+-			/*
+-			 * 'high' PCI IRQs filled in on demand
+-			 */
+-			irq_desc[i].chip = &no_irq_chip;
+-		}
+-	}
++	/*
++	 * 16 old-style INTA-cycle interrupts:
++	 */
++	for (i = 0; i < 16; i++)
++		set_irq_chip_and_handler_name(i, &i8259A_chip,
++					      handle_level_irq, "XT");
+ }
+ 
+ /* Overridden in paravirt.c */
 
-The kernel version seems to be a little bit bogus here :)
+Regards,
 
-> Bug-Entry=09: http://bugzilla.kernel.org/show_bug.cgi?id=3D10002
-> Subject=09=09: wpa_supplicant doens't work and froze the computer
-> Submitter=09: Fran=E7ois Valenduc <francois.valenduc@tvcablenet.be>
-> Date=09=09: 2008-02-16 08:25
-[ ... ]
-> Bug-Entry=09: http://bugzilla.kernel.org/show_bug.cgi?id=3D10014
-> Subject=09=09: commit 45b503548210fe6f23e92b856421c2a3f05fd034 is broken
-> Submitter=09: Rafael J. Wysocki <rjw@sisk.pl>
-> Date=09=09: 2008-02-16 03:08
-> References=09: http://lkml.org/lkml/2008/2/15/542
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
 
-These two are the same bug. I think we really need 45b503548 reverted in=20
-mainline.
-
-> Bug-Entry=09: http://bugzilla.kernel.org/show_bug.cgi?id=3D10022
-> Subject=09=09: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-> Submitter=09: Frans Pop <elendil@planet.nl>
-> Date=09=09: 2008-02-13 09:41
-> References=09: http://lkml.org/lkml/2008/2/13/82
-> Handled-By=09: Jiri Kosina <jkosina@suse.cz>
-
-Looks like this is issue with CONFIG_GROUP_SCHED. Waiting for Peter's=20
-feedback.
-
-BTW it would be nice to receive CC in the bugzilla, when I have Handled-by=
-=20
-on that bug :) (but hey, I know that it is difficult to track all the=20
-persons addressess, when they are not using them consistently).
-
-> Please let me know if there are any Bugzilla entries that should be added=
- to
-> the list in there.
-
-Thanks a lot Rafael for this regression tracking.
-
-BTW I think it might still be useful to CC everyone involved on these=20
-reports, even though the bugzillas probably have the correct addressess=20
-already.
-
-Thanks,
-
---=20
-Jiri Kosina
-SUSE Labs
-
----1747641777-728730522-1203288866=:7699--
