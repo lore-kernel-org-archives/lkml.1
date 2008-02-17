@@ -1,66 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbYBQWQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755504AbYBQWci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755912AbYBQWQf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 17:16:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbYBQWQU
+	id S1755504AbYBQWci (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 17:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753934AbYBQWc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 17:16:20 -0500
-Received: from qult.net ([82.238.217.46]:57450 "EHLO slartibartfast.qult.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753816AbYBQWQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 17:16:19 -0500
-Date: Sun, 17 Feb 2008 23:16:03 +0100
-From: Ignacy Gawedzki <lkml@qult.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kernel BUG at mm/rmap.c:631!
-Message-ID: <20080217221603.GA32482@zenon.in.qult.net>
-Mail-Followup-To: Ignacy Gawedzki <lkml@qult.net>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-References: <20080217194427.GA1080@zenon.in.qult.net> <200802172116.37205.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802172116.37205.rjw@sisk.pl>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sun, 17 Feb 2008 17:32:29 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50270 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753821AbYBQWc3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 17:32:29 -0500
+Date: Sun, 17 Feb 2008 22:23:29 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       "David P. Reed" <dpreed@reed.com>
+Subject: Re: [PATCH 3/3] x86: fix pcspkr to not use inb_p/outb_p calls.
+Message-ID: <20080217222329.1152d689@core>
+In-Reply-To: <6gr00g$g7cmat@smtp01.lnh.mail.rcn.net>
+References: <6gr00g$g7cmat@smtp01.lnh.mail.rcn.net>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 09:16:36PM +0100, thus spake Rafael J. Wysocki:
-> On Sunday, 17 of February 2008, Ignacy Gawedzki wrote:
-> > Hi,
-> 
-> Hi,
-> 
-> > I was printing on the parallel port and suddenly the "parallel" CUPS backend
-> > went 50% CPU (obviously endless-looping), while the other 50% were eaten by
-> > ghostscript (strace didn't show anything, so this might be an "internal"
-> > loop).  When I eventually killed the latter, I got this:
-> 
-> Which kernel is this?
+On Sun, 17 Feb 2008 16:56:42 -0500 (EST)
+"David P. Reed" <dpreed@reed.com> wrote:
 
-As is shown in the dmesg, it is 2.6.24.1.
+> Fix pcspkr driver to use explicit timing delay for access to PIT,
+> rather than inb_p/outb_p calls, which use insufficiently explicit
 
->                        Is it a regression?
+NAK.
 
-Can't really say for sure.  At least it already happened with 2.6.23.9.
+We now have inb_pit and outb_pit to make the transition easier - can you
+switch to those instead of coding internal knowledge outside of the
+kernel methods.
 
->                                             If so, what's the last known
-> working kernel?
+They in turn will acquire whatever logic is needed to DTRT.
 
-This is really difficult to determine, since the event is pretty hard to
-reproduce.  I'll try to investigate more, then. :/  This one happened pretty
-much right after a reboot due to a completely frozen machine (no Oops or Eeek
-whatsoever) apparently due to intensive writing to the parallel port (the
-kernel complained that "FIFO write timed out" twice before locking up).
-
-Of course I do suspect a hardware problem, but since last time I had similarly
-strange things it ended up being due to misconfiguration, I still hope
-someone will tell me this is also the case here.
-
--- 
-:wq!
+Alan
