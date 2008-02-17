@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbYBQUjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbYBQUj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbYBQUjM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 15:39:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbYBQUi6
+	id S1756872AbYBQUj0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 15:39:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbYBQUjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 15:38:58 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:40546 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752510AbYBQUi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 15:38:57 -0500
-Date: Sun, 17 Feb 2008 14:38:51 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: tilman@imap.cc, elendil@planet.nl, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: Unable to continue testing of 2.6.25
-Message-Id: <20080217143851.c21a9cc4.pj@sgi.com>
-In-Reply-To: <20080217194447.GD1403@cs181133002.pp.htv.fi>
-References: <200802171025.30590.elendil@planet.nl>
-	<20080217131611.GA1403@cs181133002.pp.htv.fi>
-	<47B88A08.2070902@imap.cc>
-	<20080217194447.GD1403@cs181133002.pp.htv.fi>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 15:39:05 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:50948 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753950AbYBQUjD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 15:39:03 -0500
+Date: Sun, 17 Feb 2008 21:38:55 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mm: setup_usemap() must be __meminit
+In-Reply-To: <20080217194320.GL14588@uranus.ravnborg.org>
+Message-ID: <Pine.LNX.4.64.0802172138010.6172@anakin>
+References: <Pine.LNX.4.64.0802171317230.10451@anakin>
+ <Pine.LNX.4.64.0802171329400.6172@anakin> <20080217194320.GL14588@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian wrote:
-> So let's fix the problem (kernel lacks functionality)
+On Sun, 17 Feb 2008, Sam Ravnborg wrote:
+> On Sun, Feb 17, 2008 at 01:31:14PM +0100, Geert Uytterhoeven wrote:
+> > On Sun, 17 Feb 2008, Geert Uytterhoeven wrote:
+> > > On m68k (CONFIG_SPARSEMEM is not set), I get:
+> > > 
+> > >     WARNING: vmlinux.o(.meminit.text+0x36c): Section mismatch in reference from the function free_area_init_core() to the function .init.text:setup_usemap()
+> > >     The function __meminit free_area_init_core() references
+> > >     a function __init setup_usemap().
+> > >     If free_area_init_core is only used by setup_usemap then
+> > >     annotate free_area_init_core with a matching annotation.
+> > > 
+> > > If CONFIG_SPARSEMEM is set, the problem is  not noticed because setup_usemap()
+> > > is always inlined.
+> > > 
+> > > Properly annotating setup_usemap() and usemap_size() fixes it.
+> > 
+> > Woops, hit the send button too soon.
+> > 
+> > setup_usemap() calls alloc_bootmem_node(), causing a whole new
+> > avalanche of warnings to be fixed up :-(
+> 
+> Something you like me to help with?
 
-That's the problem as understood by Adrian.
+Yes, that would be nice.
 
-I hear another problem as well ... 
+> I would need a config where the mismatch triggers for one
+> of the more popular architectures (as in where I have a toolchain).
 
-Frans wrote:
-> Please allow external users some decent period for transitioning. The 
-> initial plan to "remove the old function in 2.6.27" was entirely sensible. 
-> It's a pity it was not followed through.
+That was with plain m68k defconfig.
 
-That seems plain enough to me.  It's not just the lack of functionality,
-but that such lack apparently happened with too little warning.
+> I could not reproduce it with x86 64bit - not even with -fno-inline-functions
 
-If this is a fair representation of what happened, then seems to me that
-we could have left that EXPORT_UNUSED_SYMBOL(change_page_attr) in place
-a bit longer.
+If it helps, my cross-compiler is gcc version 4.1.2 20061115 (prerelease)
+(Debian 4.1.1-21).
 
-Or at least, if we really did have to make Frans life difficult like
-this, we could offer more appreciation for how things might look from
-his perspective.
+Gr{oetje,eeting}s,
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
