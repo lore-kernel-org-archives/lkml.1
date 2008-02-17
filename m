@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757860AbYBQIYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758986AbYBQIYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757860AbYBQIYX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbYBQIVC
+	id S1758986AbYBQIYm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:24:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758383AbYBQIVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:21:02 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:59741 "EHLO smtp4.pp.htv.fi"
+	Sun, 17 Feb 2008 03:21:06 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:34082 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759151AbYBQIVA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:21:00 -0500
-Date: Sun, 17 Feb 2008 10:20:34 +0200
+	id S1758194AbYBQIVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:21:04 -0500
+Date: Sun, 17 Feb 2008 10:20:38 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: swhiteho@redhat.com
-Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper extern for gfs2/locking/dlm/mount.c:gdlm_ops
-Message-ID: <20080217082034.GT3848@cs181133002.pp.htv.fi>
+To: mark.fasheh@oracle.com, kurt.hackel@oracle.com
+Cc: ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make ocfs2_downconvert_thread() static
+Message-ID: <20080217082038.GU3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,57 +23,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a proper extern declaration for gdlm_ops in 
-fs/gfs2/locking/dlm/lock_dlm.h
+This patch makes the needlessly global ocfs2_downconvert_thread() 
+static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- fs/gfs2/locking/dlm/lock_dlm.h |    5 +++++
- fs/gfs2/locking/dlm/main.c     |    2 --
- fs/gfs2/locking/dlm/sysfs.c    |    2 --
- 3 files changed, 5 insertions(+), 4 deletions(-)
-
-b4ac811ad577cd6039fdd1395cfa910294b8efdc diff --git a/fs/gfs2/locking/dlm/lock_dlm.h b/fs/gfs2/locking/dlm/lock_dlm.h
-index 9e8265d..58fcf8c 100644
---- a/fs/gfs2/locking/dlm/lock_dlm.h
-+++ b/fs/gfs2/locking/dlm/lock_dlm.h
-@@ -183,5 +183,10 @@ int gdlm_plock_get(void *, struct lm_lockname *, struct file *,
- 		struct file_lock *);
- int gdlm_punlock(void *, struct lm_lockname *, struct file *,
- 		struct file_lock *);
-+
-+/* mount.c */
-+
-+extern const struct lm_lockops gdlm_ops;
-+
- #endif
+bdbb7c3c448132142fffd0fbb8dc71f5a9efb594 diff --git a/fs/ocfs2/dlmglue.c b/fs/ocfs2/dlmglue.c
+index 351130c..841df58 100644
+--- a/fs/ocfs2/dlmglue.c
++++ b/fs/ocfs2/dlmglue.c
+@@ -3356,7 +3356,7 @@ static int ocfs2_downconvert_thread_should_wake(struct ocfs2_super *osb)
+ 	return should_wake;
+ }
  
-diff --git a/fs/gfs2/locking/dlm/main.c b/fs/gfs2/locking/dlm/main.c
-index a0e7eda..36a2258 100644
---- a/fs/gfs2/locking/dlm/main.c
-+++ b/fs/gfs2/locking/dlm/main.c
-@@ -11,8 +11,6 @@
- 
- #include "lock_dlm.h"
- 
--extern struct lm_lockops gdlm_ops;
--
- static int __init init_lock_dlm(void)
+-int ocfs2_downconvert_thread(void *arg)
++static int ocfs2_downconvert_thread(void *arg)
  {
- 	int error;
-diff --git a/fs/gfs2/locking/dlm/sysfs.c b/fs/gfs2/locking/dlm/sysfs.c
-index a87b098..8479da4 100644
---- a/fs/gfs2/locking/dlm/sysfs.c
-+++ b/fs/gfs2/locking/dlm/sysfs.c
-@@ -12,8 +12,6 @@
- 
- #include "lock_dlm.h"
- 
--extern struct lm_lockops gdlm_ops;
--
- static ssize_t proto_name_show(struct gdlm_ls *ls, char *buf)
- {
- 	return sprintf(buf, "%s\n", gdlm_ops.lm_proto_name);
+ 	int status = 0;
+ 	struct ocfs2_super *osb = arg;
 
