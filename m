@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754859AbYBQVg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbYBQVqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754859AbYBQVg5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 16:36:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbYBQVgt
+	id S1754649AbYBQVqc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 16:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbYBQVqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 16:36:49 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:62654 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbYBQVgt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 16:36:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=IFccI7g+DgDFe/dyTWRd8n35KAWMqUIgsYOlYlZS6lHlCFAzWvhyHmR5A+sntti1mO0FrQTpRnjF0dAP8UDxl9TkYb7BnwB1yFS+iPtWl4Vx+gLz4Ms/m5nkwhjlu0lFjuvNS9DtXF/GbJ/YkpbOz4pCX0fpvdJWEzLk8YMWJxw=
-Subject: Re: [PATCH] x86: include prototype for no_broadcast in
-	mach-default/setup.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080217200950.GA31865@elte.hu>
-References: <1202848517.28953.11.camel@brick>
-	 <20080213104227.GC32241@elte.hu> <1202924047.9824.14.camel@brick>
-	 <20080217200950.GA31865@elte.hu>
-Content-Type: text/plain
-Date: Sun, 17 Feb 2008 13:36:52 -0800
-Message-Id: <1203284212.5757.9.camel@brick>
+	Sun, 17 Feb 2008 16:46:22 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41145 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751054AbYBQVqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 16:46:22 -0500
+Date: Sun, 17 Feb 2008 22:46:31 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       pavel@suse.cz, Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH v2] Re: 2.6.25-rc2-mm1 (wakeup)
+Message-ID: <20080217214631.GA15753@uranus.ravnborg.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B7B9AF.2030006@zytor.com> <47B7BC4C.8070502@oracle.com> <200802172140.16055.rjw@sisk.pl> <20080217210710.GA15284@uranus.ravnborg.org> <47B8A557.9080901@zytor.com> <20080217212838.GA15631@uranus.ravnborg.org> <47B8A7B9.2060500@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B8A7B9.2060500@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2008-02-17 at 21:09 +0100, Ingo Molnar wrote:
-> * Harvey Harrison <harvey.harrison@gmail.com> wrote:
+On Sun, Feb 17, 2008 at 01:31:37PM -0800, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >
+> >But I assume in less obvious way.
+> >It is a bit more intuitive to error out on missing
+> >-m32 support than gcc failing to support .code16
+> >or some other inline assembler magic.
+> >
 > 
-> > > config attached. The include file dependencies in this area are a 
-> > > bit of a mess - perhaps they need some cleanups?
-> > 
-> > OK, I'm building all(yes|mod)configs and didn't see this.  Agreed 
-> > about the file dependencies here, I'll take a look.  If you have any 
-> > notes lying around, would appreciate the head-start.
-> 
-> make randconfig build failure:
-> 
-> include/asm/mach-default/mach_ipi.h: In function 
-> '__local_send_IPI_allbutself':
-> include/asm/mach-default/mach_ipi.h:25: error: 'APIC_DEST_ALLBUT' 
-> undeclared (first use in this function)
-> include/asm/mach-default/mach_ipi.h:25: error: (Each undeclared 
-> identifier is re
-> 
-> config attached below.
-> 
+> No, you will get the message "the selected CPU doesn't support the 
+> x86-64 architecture".
+A bit confusing but acceptable.
 
-Just drop the patch, I'm looking into the mach-* include mess, will
-hopefully have some stuff next week.
-
-Harvey
-
+	Sam
