@@ -1,58 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbYBQGx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754263AbYBQHU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbYBQGx5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 01:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbYBQGxu
+	id S1754263AbYBQHU2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 02:20:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbYBQHUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 01:53:50 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:51627 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753042AbYBQGxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 01:53:49 -0500
-Date: Sat, 16 Feb 2008 23:02:03 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86_64: remove never used nodenumer in pda
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802162302.04131.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Sun, 17 Feb 2008 02:20:15 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:48014 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750760AbYBQHUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 02:20:13 -0500
+Date: Sun, 17 Feb 2008 01:20:06 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Buehler <abuehler.kernel@gmail.com>
+Cc: stern@rowland.harvard.edu, oliver.pntr@gmail.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, greg@kroah.com,
+       linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org,
+       Joseph Fannin <jfannin@gmail.com>
+Subject: Re: USB regression (and other failures) in 2.6.2[45]*
+Message-Id: <20080217012006.3757dfae.pj@sgi.com>
+In-Reply-To: <47B71372.5050804@gmail.com>
+References: <Pine.LNX.4.44L0.0802161013190.3769-100000@iolanthe.rowland.org>
+	<47B71372.5050804@gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-we don't need copy too. already have x86_cpu_to_node_map
+Andrew wrote:
+> (Note: I consider it blatantly incorrect to send a reply both to a
+> mailing list and directly to the address of someone who is subscribed to
+> that list
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+Regardless of how you consider it, that is how responding to these big
+lists -must- work.
 
-diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
-index 1aecc65..69b33e3 100644
---- a/arch/x86/mm/numa_64.c
-+++ b/arch/x86/mm/numa_64.c
-@@ -546,8 +546,6 @@ void __cpuinit numa_set_node(int cpu, int node)
- {
- 	int *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
- 
--	cpu_pda(cpu)->nodenumber = node;
--
- 	if(cpu_to_node_map)
- 		cpu_to_node_map[cpu] = node;
- 	else if(per_cpu_offset(cpu))
-diff --git a/include/asm-x86/pda.h b/include/asm-x86/pda.h
-index c0305bf..d9dc209 100644
---- a/include/asm-x86/pda.h
-+++ b/include/asm-x86/pda.h
-@@ -22,7 +22,6 @@ struct x8664_pda {
- 					   offset 40!!! */
- #endif
- 	char *irqstackptr;
--	unsigned int nodenumber;	/* number of current node */
- 	unsigned int __softirq_pending;
- 	unsigned int __nmi_count;	/* number of NMI on this CPUs */
- 	short mmu_state;
+There is no practical way for respondents to know, without spending at
+a minimum several minutes of their time per reply, whether or not the
+explicit receipients of a message are or are not also on one or more of
+the receiving lists.
+
+Do you really expect, Andrew, that I should examine the membership lists
+of each of linux-scsi, linux-usb and linux-kernel (if they are even open
+to the public) to see if you're subscribed to them, before responding to
+a message addressed such as this?
+
+As subscribers and submitters to such lists, we just have to learn to
+deal with this reality.  For example, I receive an average of a 100
+messages per hour on this email address, -after- my employers spam
+filters have knocked off over 90% of the incoming.
+
+May I recommend you become an expert in procmail?  That or speed
+reading (and speed ignoring ;).
+
+In a separate reply to this message, Alan Stern wrote:
+> Everyone has his own taste.
+
+This is not a matter of taste on these big lists.  There is no other
+practical alternative.  Most of the burden of ultimate filtering must
+be shifted to the recipients, and the senders asked only that they
+err on the side of including every individual list or person already
+on the address lists.
+
+Joseph Fannin also replied:
+> another free mail service which isn't so broken,
+
+I'd recommend fastmail.fm as one of the least broken, most tech savvy
+mail services.  I believe that their free side includes IMAP, though
+not POP support.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
