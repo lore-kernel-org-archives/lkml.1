@@ -1,163 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbYBQOtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758142AbYBQOz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbYBQOtd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 09:49:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbYBQOtW
+	id S1758142AbYBQOz2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 09:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYBQOzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 09:49:22 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:54573 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755933AbYBQOtU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 09:49:20 -0500
-Date: Sun, 17 Feb 2008 08:49:06 -0600
-From: Paul Jackson <pj@sgi.com>
-To: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, marcelo@kvack.org,
-       daniel.spang@gmail.com, riel@redhat.com, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org, pavel@ucw.cz,
-       a1426z@gawab.com, jonathan@jonmasters.org, zlynx@acm.org
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Message-Id: <20080217084906.e1990b11.pj@sgi.com>
-In-Reply-To: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 09:55:19 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52528 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755573AbYBQOzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 09:55:18 -0500
+Date: Sun, 17 Feb 2008 16:54:50 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Arnd Hannemann <hannemann@i4.informatik.rwth-aachen.de>
+Cc: Iain Paton <ilp@lkml.darkvoyage.org.uk>,
+       Jordan Crouse <jordan.crouse@amd.com>,
+       Andres Salomon <dilinger@queued.net>, marc.jones@amd.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, wim@iguana.be
+Subject: Re: Geode GX/LX watchdog timer (RESEND)
+Message-ID: <20080217145450.GB1403@cs181133002.pp.htv.fi>
+References: <20080117211917.GF8244@cosmic.amd.com> <478FCDB6.4010708@i4.informatik.rwth-aachen.de> <20080117223644.GK8244@cosmic.amd.com> <478FDC12.6020505@i4.informatik.rwth-aachen.de> <20080119010624.GA25328@cosmic.amd.com> <47934B2E.3020707@i4.informatik.rwth-aachen.de> <20080121170700.GC6884@cosmic.amd.com> <4794E664.6020209@i4.informatik.rwth-aachen.de> <47B8413A.80105@lkml.darkvoyage.org.uk> <47B848A9.3080308@i4.informatik.rwth-aachen.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <47B848A9.3080308@i4.informatik.rwth-aachen.de>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just noticed this patchset, kosaki-san.  It looks quite interesting;
-my apologies for not commenting earlier.
+On Sun, Feb 17, 2008 at 03:46:01PM +0100, Arnd Hannemann wrote:
+> Hi,
+> 
+> Iain Paton wrote:
+> > Arnd Hannemann wrote:
+> > 
+> >> I can confirm that it is still working fine :-)
+> > 
+> > Hi,
+> > 
+> > Has anyone managed to build this as a module against the full 2.6.24
+> > release ?
+> > 
+> > I am seeing the following error:
+> > 
+> >   CC [M]  lib/zlib_inflate/infutil.o
+> >   CC [M]  lib/zlib_inflate/inftrees.o
+> >   CC [M]  lib/zlib_inflate/inflate_syms.o
+> >   LD [M]  lib/zlib_inflate/zlib_inflate.o
+> >   Building modules, stage 2.
+> >   MODPOST 251 modules
+> > ERROR: "geode_mfgpt_toggle_event" [drivers/watchdog/geodewdt.ko] undefined!
+> > ERROR: "geode_mfgpt_alloc_timer" [drivers/watchdog/geodewdt.ko] undefined!
+> > make[1]: *** [__modpost] Error 1
+> > make: *** [modules] Error 2
+> > 
+> > 
+> > arch/x86/kernel/mfgpt_32.c where these are defined seems to have been
+> > built ok and they appear in System.map.
+> > 
+> > The only other thing I've done is to add "[PATCH] pata_cs5536 Fix
+> > secondary port configuration" recently posted by Martin K. Petersen but
+> > I don't believe that would cause this.
+> > 
+> > .config is available at http://pastebin.ca/907299
+> 
+> Never tried to built it as a module.
+> Probably there are issues with that. If I remember correctly I saw a patch in 2.6.25-rc which
+> mentioned that using mfgpt in modules won't work. Does this apply to 2.6.24 as well?
 
-I see mention somewhere that mem_notify is of particular interest to
-embedded systems.
+For using code from modules it must be explicitely EXPORT_SYMBOL{,GPL}'ed.
 
-I have what seems, intuitively, a similar problem at the opposite
-end of the world, on big-honkin NUMA boxes (hundreds or thousands of
-CPUs, terabytes of main memory.)  The problem there is often best
-resolved if we can kill the offending task, rather than shrink its
-memory footprint.  The situation is that several compute intensive
-multi-threaded jobs are running, each in their own dedicated cpuset.
+Adding
+  EXPORT_SYMBOL_GPL(geode_mfgpt_toggle_event);
+and
+  EXPORT_SYMBOL_GPL(geode_mfgpt_alloc_timer);
+below the respective functions in mfgpt_32.c should fix this issue.
 
-If one of these jobs tries to use more memory than is available in
-its cpuset, then
+> Best regards,
+> Arnd Hannemann
 
-  (1) we quickly loose any hope of that job continuing at the excellent
-      performance needed of it, and
-
-  (2) we rapidly get increased risk of that job starting to swap and
-      unintentionally impact shared resources (kernel locks, disk
-      channels, disk heads).
-
-So we like to identify such jobs as soon as they begin to swap,
-and kill them very very quickly (before the direct reclaim code
-in mm/vmscan.c can push more than a few pages to the swap device.)
-
-For a much earlier, unsuccessful, attempt to accomplish this, see:
-
-	[Patch] cpusets policy kill no swap
-	http://lkml.org/lkml/2005/3/19/148
-
-Now, it may well be that we are too far apart to share any part of
-a solution; one seldom uses the same technology to build a Tour de
-France bicycle as one uses to build a Lockheed C-5A Galaxy heavy
-cargo transport.
-
-One clear difference is the policy of what action we desire to take
-when under memory pressure: do we invite user space to free memory so
-as to avoid the wrath of the oom killer, or do we go to the opposite
-extreme, seeking a nearly instantant killing, faster than the oom
-killer can even begin its search for a victim.
-
-Another clear difference is the use of cpusets, which are a major and
-vital part of administering the big NUMA boxes, and I presume are not
-even compiled into embedded kernels (correct?).  This difference maybe
-unbridgeable ... these big NUMA systems require per-cpuset mechanisms,
-whereas embedded may require builds without cpusets.
-
-However ... there might be some useful cross pollination of ideas.
-
-I see in the latest posts to your mem_notify patchset v6, responding
-to comments by Andrew and Andi on Feb 12 and 13, that you decided to
-think more about the design of this, so perhaps this is a good time
-for some random ideas from myself, even though I'm clearly coming from
-a quite different problem space in some ways.
-
-1) You have a little bit of code in the kernel to throttle the
-   thundering herd problem.  Perhaps this could be moved to user space
-   ... one user daemon that is always notified of such memory pressure
-   alarms, and in turn notifies interested applications.  This might
-   avoid the need to add poll_wait_exclusive() to the kernel.  And it
-   moves any fussy details of how to tame the thundering herd out of
-   the kernel.
-
-2) Another possible mechanism for communicating events from
-   the kernel to user space is inotify.  For example, I added
-   the line:
-
-   	fsnotify_modify(dentry);   # dentry is current tasks cpuset
-
-   at an interesting spot in vmscan.c, and using inotify-tools
-   <inotify-tools.sourceforge.net/> could easily watch all cpusets
-   for these events from one user space daemon.
-
-   At this point, I have no idea whether this odd use of inotify
-   is better or worse than what your patchset has.  However using
-   inotify did require less new kernel code, and with such user space
-   mechanisms as inotify-tools already well developed, it made the
-   problem I had, of watching an entire hierarcy of special files
-   (beneath /dev/cpuset) very easy to implement.  At least inotify
-   also presents events on a file descriptor that can be consumed
-   using a poll() loop.
-
-3) Perhaps, instead of sending simple events, one could update
-   a meter of the rate of recent such events, such as the per-cpuset
-   'memory_pressure' mechanism does.  This might lead to addressing
-   Andrew Morton's comment:
-
-	If this feature is useful then I'd expect that some
-	applications would want notification at different times, or at
-	different levels of VM distress.  So this semi-randomly-chosen
-	notification point just won't be strong enough in real-world
-	use.
-
-4) A place that I found well suited for my purposes (watching for
-   swapping from direct reclaim) was just before the lines in the
-   pageout() routine in mm/vmscan.c:
-
-   	if (clear_page_dirty_for_io(page)) {
-		...
-		res = mapping->a_ops->writepage(page, &wbc);
-
-   It seemed that testing "PageAnon(page)" here allowed me to easily
-   distinguish between dirty pages going back to the file system, and
-   pages going to swap (this detail is from work on a 2.6.16 kernel;
-   things might have changed.)
-
-   One possible advantage of the above hook in the direct reclaim
-   code path in vmscan.c is that pressure in one cpuset did not cause
-   any false alarms in other cpusets.  However even this hook does
-   not take into account the constraints of mm/mempolicy (the NUMA
-   memory policy that Andi mentioned) nor of cgroup memory controllers.
-
-5) I'd be keen to find an agreeable way that you could have the
-   system-wide, no cpuset, mechanism you need, while at the same
-   time, I have a cpuset interface that is similar and depends on the
-   same set of hooks.  This might involve a single set of hooks in
-   the key places in the memory and swapping code, that (1) updated
-   the system wide state you need, and (2) if cpusets were present,
-   updated similar state for the tasks current cpuset.  The user
-   visible API would present both the system-wide connector you need
-   (the special file or whatever) and if cpusets are present, similar
-   per-cpuset connectors.
-
-Anyhow ... just some thoughts.  Perhaps one of them will be useful.
+cu
+Adrian
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
