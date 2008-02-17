@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758020AbYBQNwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757745AbYBQN4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758020AbYBQNwD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 08:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbYBQNvx
+	id S1757745AbYBQN4V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbYBQN4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 08:51:53 -0500
-Received: from www.tglx.de ([62.245.132.106]:55948 "EHLO www.tglx.de"
+	Sun, 17 Feb 2008 08:56:10 -0500
+Received: from www.tglx.de ([62.245.132.106]:55996 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754705AbYBQNvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 08:51:52 -0500
-Date: Sun, 17 Feb 2008 14:51:27 +0100 (CET)
+	id S1754996AbYBQN4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 08:56:07 -0500
+Date: Sun, 17 Feb 2008 14:55:26 +0100 (CET)
 From: Thomas Gleixner <tglx@linutronix.de>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-In-Reply-To: <200802040711.11280.rusty@rustcorp.com.au>
-Message-ID: <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au>
+To: Adrian Bunk <bunk@kernel.org>
+cc: Roland McGrath <roland@redhat.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] x86: make mxcsr_feature_mask static again
+In-Reply-To: <20080213212933.GE3383@cs181133002.pp.htv.fi>
+Message-ID: <alpine.LFD.1.00.0802171454560.7583@apollo.tec.linutronix.de>
+References: <20080213212933.GE3383@cs181133002.pp.htv.fi>
 User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,57 +25,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 4 Feb 2008, Rusty Russell wrote:
+On Wed, 13 Feb 2008, Adrian Bunk wrote:
 
-> On Saturday 02 February 2008 04:05:51 Ingo Molnar wrote:
-> > looks similar to the previous one so i guess my quick fix attempt was a
-> > bit too quick. Will turn lguest off again. And i'm willing to test
-> > patches as well :)
+> mxcsr_feature_mask needlessly became global.
 > 
-> Hi Ingo,
-> 
->    OK, this problem was caused by asm-offsets.c only having the offsets when
-> lguest *guest* support was set, not lguest host (host support used to imply
-> guest support, so now they're separate these bugs come out).
-> 
-> Can you throw this patch into your tree for testing?
-> 
-> Thanks,
-> Rusty.
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-Applied. Thanks,
+Applied along with the other x86 ones.
 
-	 tglx
+Thanks,
+	tglx
  
-> Lguest guest support and host support are separate config options: they used
-> to be tied together.  Sort out which parts of asm-offsets are needed for Guest
-> and Host.
+> ---
 > 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>  arch/x86/kernel/i387.c |    2 +-
+>  include/asm-x86/i387.h |    1 -
+>  2 files changed, 1 insertion(+), 2 deletions(-)
 > 
-> diff -r 7d5a5c7a4b95 arch/x86/kernel/asm-offsets_32.c
-> --- a/arch/x86/kernel/asm-offsets_32.c	Sat Feb 02 23:13:05 2008 +1100
-> +++ b/arch/x86/kernel/asm-offsets_32.c	Sun Feb 03 10:13:19 2008 +1100
-> @@ -20,10 +20,8 @@
+> 76adc866d04ed20a5b2eb548920f93ad87268cbd 
+> diff --git a/arch/x86/kernel/i387.c b/arch/x86/kernel/i387.c
+> index 26719bd..763dfc4 100644
+> --- a/arch/x86/kernel/i387.c
+> +++ b/arch/x86/kernel/i387.c
+> @@ -39,7 +39,7 @@
+>  #define HAVE_HWFP 1
+>  #endif
 >  
->  #include <xen/interface/xen.h>
+> -unsigned int mxcsr_feature_mask __read_mostly = 0xffffffffu;
+> +static unsigned int mxcsr_feature_mask __read_mostly = 0xffffffffu;
 >  
-> -#ifdef CONFIG_LGUEST_GUEST
->  #include <linux/lguest.h>
->  #include "../../../drivers/lguest/lg.h"
-> -#endif
+>  void mxcsr_feature_mask_init(void)
+>  {
+> diff --git a/include/asm-x86/i387.h b/include/asm-x86/i387.h
+> index ba8105c..4c7706a 100644
+> --- a/include/asm-x86/i387.h
+> +++ b/include/asm-x86/i387.h
+> @@ -19,7 +19,6 @@
+>  #include <asm/uaccess.h>
 >  
->  #define DEFINE(sym, val) \
->          asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-> @@ -134,6 +132,10 @@ void foo(void)
->  	BLANK();
->  	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
->  	OFFSET(LGUEST_DATA_pgdir, lguest_data, pgdir);
-> +#endif
-> +
-> +#ifdef CONFIG_LGUEST
-> +	BLANK();
->  	OFFSET(LGUEST_PAGES_host_gdt_desc, lguest_pages, state.host_gdt_desc);
->  	OFFSET(LGUEST_PAGES_host_idt_desc, lguest_pages, state.host_idt_desc);
->  	OFFSET(LGUEST_PAGES_host_cr3, lguest_pages, state.host_cr3);
+>  extern void fpu_init(void);
+> -extern unsigned int mxcsr_feature_mask;
+>  extern void mxcsr_feature_mask_init(void);
+>  extern void init_fpu(struct task_struct *child);
+>  extern asmlinkage void math_state_restore(void);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
