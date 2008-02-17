@@ -1,112 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbYBQTky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbYBQTlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752933AbYBQTky (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 14:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbYBQTkD
+	id S1755088AbYBQTlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 14:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYBQTkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 14:40:03 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:51808 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbYBQTj6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 14:39:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=plF1rC+hTsBuqih4+CyCABTSt3DP3uULWjG0bJlLgYbcQE0v2PNd80tqAGqKjFpTZ1L2Bjwj1E5XbX4mqxmrit3dIZ4UkNadI/8750qpFf7znwR+7Z8/EIACzN8/okGsRLaxDn4gsyx7c+g2v5/3b45gY3Z7PdDCsXiOraHuCd4=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 3/4] ide-disk: add proc_idedisk_read_smart() helper
-Date: Sun, 17 Feb 2008 20:53:22 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 17 Feb 2008 14:40:06 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60486 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752471AbYBQTkE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 14:40:04 -0500
+Date: Sun, 17 Feb 2008 20:40:13 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Avi Kivity <avi@qumranet.com>, Roland McGrath <roland@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.25-rc2, Problem running 'make install' as root with different gcc
+Message-ID: <20080217194013.GK14588@uranus.ravnborg.org>
+References: <47B85485.2020000@qumranet.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802172053.22686.bzolnier@gmail.com>
+In-Reply-To: <47B85485.2020000@qumranet.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Factor out common code from proc_idedisk_read_smart_{thresholds,values}()
-  to proc_idedisk_read_smart() helper.
+On Sun, Feb 17, 2008 at 05:36:37PM +0200, Avi Kivity wrote:
+> Trying to install a built 2.5.25-rc2 on a machine with a different gcc 
+> installed fails with
+> 
+>  LDS     arch/x86/vdso/vdso.lds
+> cc1: fatal error: opening output file arch/x86/vdso/vdso.lds: Permission 
+> denied
+> compilation terminated.
+> make[1]: *** [arch/x86/vdso/vdso.lds] Error 1
+> make: *** [vdso_install] Error 2
+> 
+> I believe this is due to arch/x86/vdso/.vdso.lds.cmd containing
+> 
+> cmd_arch/x86/vdso/vdso.lds := gcc -E -Wp,-MD,arch/x86/vdso/.vdso.lds.d  
+> -nostdinc -isystem /usr/lib/gcc/x86_64-redhat-linux/4.1.1/include 
+> -D__KERNEL__ -Iinclude  -include include/linux/autoconf.h   -P -C 
+> -D__ASSEMBLY__ -o arch/x86/vdso/vdso.lds arch/x86/vdso/vdso.lds.S
+> 
+> '-isystem /usr/lib/gcc/x86_64-redhat-linux/4.1.1/include' changes with 
+> the gcc version, triggering the recompilation attempt, which fails since 
+> my home directory is nfs mounted.
+> 
+> This didn't trigger with previous versions, and I have no idea how to 
+> fix it.
 
-* Rename proc_idedisk_read_smart_thresholds() to proc_idedisk_read_st()
-  and proc_idedisk_read_smart_values() to proc_idedisk_read_sv().
+We had a related issue and I have suggested Rolan to just drop
+the implicit installation of vdso when we do a "make install".
+It would still trigger if you did a make vdso_install but this is
+very rare so here it would not matter.
 
-There should be no functional changes caused by this patch.
+The patch we discuss just drop the cdso_install dependency
+in arch/x86/Makefile (likewise for powerpc).
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-disk.c |   39 +++++++++++++++++----------------------
- 1 file changed, 17 insertions(+), 22 deletions(-)
-
-Index: b/drivers/ide/ide-disk.c
-===================================================================
---- a/drivers/ide/ide-disk.c
-+++ b/drivers/ide/ide-disk.c
-@@ -540,13 +540,13 @@ static int proc_idedisk_read_capacity
- 	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
- }
- 
--static int proc_idedisk_read_smart_thresholds
--	(char *page, char **start, off_t off, int count, int *eof, void *data)
-+static int proc_idedisk_read_smart(char *page, char **start, off_t off,
-+				   int count, int *eof, void *data, u8 sub_cmd)
- {
- 	ide_drive_t	*drive = (ide_drive_t *)data;
- 	int		len = 0, i = 0;
- 
--	if (get_smart_data(drive, page, SMART_READ_THRESHOLDS) == 0) {
-+	if (get_smart_data(drive, page, sub_cmd) == 0) {
- 		unsigned short *val = (unsigned short *) page;
- 		char *out = ((char *)val) + (SECTOR_WORDS * 4);
- 		page = out;
-@@ -559,31 +559,26 @@ static int proc_idedisk_read_smart_thres
- 	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
- }
- 
--static int proc_idedisk_read_smart_values
-+static int proc_idedisk_read_sv
- 	(char *page, char **start, off_t off, int count, int *eof, void *data)
- {
--	ide_drive_t	*drive = (ide_drive_t *)data;
--	int		len = 0, i = 0;
-+	return proc_idedisk_read_smart(page, start, off, count, eof, data,
-+				       SMART_READ_VALUES);
-+}
- 
--	if (get_smart_data(drive, page, SMART_READ_VALUES) == 0) {
--		unsigned short *val = (unsigned short *) page;
--		char *out = ((char *)val) + (SECTOR_WORDS * 4);
--		page = out;
--		do {
--			out += sprintf(out, "%04x%c", le16_to_cpu(*val), (++i & 7) ? ' ' : '\n');
--			val += 1;
--		} while (i < (SECTOR_WORDS * 2));
--		len = out - page;
--	}
--	PROC_IDE_READ_RETURN(page,start,off,count,eof,len);
-+static int proc_idedisk_read_st
-+	(char *page, char **start, off_t off, int count, int *eof, void *data)
-+{
-+	return proc_idedisk_read_smart(page, start, off, count, eof, data,
-+				       SMART_READ_THRESHOLDS);
- }
- 
- static ide_proc_entry_t idedisk_proc[] = {
--	{ "cache",		S_IFREG|S_IRUGO,	proc_idedisk_read_cache,		NULL },
--	{ "capacity",		S_IFREG|S_IRUGO,	proc_idedisk_read_capacity,		NULL },
--	{ "geometry",		S_IFREG|S_IRUGO,	proc_ide_read_geometry,			NULL },
--	{ "smart_values",	S_IFREG|S_IRUSR,	proc_idedisk_read_smart_values,		NULL },
--	{ "smart_thresholds",	S_IFREG|S_IRUSR,	proc_idedisk_read_smart_thresholds,	NULL },
-+	{ "cache",	  S_IFREG|S_IRUGO, proc_idedisk_read_cache,    NULL },
-+	{ "capacity",	  S_IFREG|S_IRUGO, proc_idedisk_read_capacity, NULL },
-+	{ "geometry",	  S_IFREG|S_IRUGO, proc_ide_read_geometry,     NULL },
-+	{ "smart_values", S_IFREG|S_IRUSR, proc_idedisk_read_sv,       NULL },
-+	{ "smart_thresholds", S_IFREG|S_IRUSR, proc_idedisk_read_st,   NULL },
- 	{ NULL, 0, NULL, NULL }
- };
- #endif	/* CONFIG_IDE_PROC_FS */
+	Sam
