@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbYBQIVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758444AbYBQIVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758100AbYBQIVO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 03:21:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbYBQISw
+	id S1758444AbYBQIVe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 03:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758262AbYBQITD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 03:18:52 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:34022 "EHLO smtp5.pp.htv.fi"
+	Sun, 17 Feb 2008 03:19:03 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:36886 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756480AbYBQISu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 03:18:50 -0500
-Date: Sun, 17 Feb 2008 10:18:23 +0200
+	id S1758255AbYBQIS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 03:18:59 -0500
+Date: Sun, 17 Feb 2008 10:18:33 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make ext{3,4}_xattr_list() static
-Message-ID: <20080217081823.GK3848@cs181133002.pp.htv.fi>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] fs/fs-writeback.: make 2 functions static
+Message-ID: <20080217081833.GL3848@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,110 +22,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global ext{3,4}_xattr_list() static.
+This patch makes the following needlessly global functions static:
+- writeback_acquire()
+- writeback_release()
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
 
- fs/ext3/xattr.c |    4 +++-
- fs/ext3/xattr.h |    7 -------
- fs/ext4/xattr.c |    4 +++-
- fs/ext4/xattr.h |    7 -------
- 4 files changed, 6 insertions(+), 16 deletions(-)
+ fs/fs-writeback.c           |   77 ++++++++++++++++++------------------
+ include/linux/backing-dev.h |    2 
+ 2 files changed, 39 insertions(+), 40 deletions(-)
 
-8fb5e610acafcbef4a9980042902c9269abf51b6 diff --git a/fs/ext3/xattr.c b/fs/ext3/xattr.c
-index fb89c29..4f9f187 100644
---- a/fs/ext3/xattr.c
-+++ b/fs/ext3/xattr.c
-@@ -99,6 +99,8 @@ static struct buffer_head *ext3_xattr_cache_find(struct inode *,
- 						 struct mb_cache_entry **);
- static void ext3_xattr_rehash(struct ext3_xattr_header *,
- 			      struct ext3_xattr_entry *);
-+static int ext3_xattr_list(struct inode *inode, char *buffer,
-+			   size_t buffer_size);
+b9618973cfdb38d747ce5332d38ab9716733a146 diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index c007607..b265a17 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -25,6 +25,45 @@
+ #include <linux/buffer_head.h>
+ #include "internal.h"
  
- static struct mb_cache *ext3_xattr_cache;
- 
-@@ -427,7 +429,7 @@ cleanup:
-  * Returns a negative error number on failure, or the number of bytes
-  * used / required on success.
-  */
--int
-+static int
- ext3_xattr_list(struct inode *inode, char *buffer, size_t buffer_size)
- {
- 	int i_error, b_error;
-diff --git a/fs/ext3/xattr.h b/fs/ext3/xattr.h
-index 6b1ae1c..148a4df 100644
---- a/fs/ext3/xattr.h
-+++ b/fs/ext3/xattr.h
-@@ -67,7 +67,6 @@ extern struct xattr_handler ext3_xattr_security_handler;
- extern ssize_t ext3_listxattr(struct dentry *, char *, size_t);
- 
- extern int ext3_xattr_get(struct inode *, int, const char *, void *, size_t);
--extern int ext3_xattr_list(struct inode *, char *, size_t);
- extern int ext3_xattr_set(struct inode *, int, const char *, const void *, size_t, int);
- extern int ext3_xattr_set_handle(handle_t *, struct inode *, int, const char *, const void *, size_t, int);
- 
-@@ -89,12 +88,6 @@ ext3_xattr_get(struct inode *inode, int name_index, const char *name,
++
++/**
++ * writeback_acquire: attempt to get exclusive writeback access to a device
++ * @bdi: the device's backing_dev_info structure
++ *
++ * It is a waste of resources to have more than one pdflush thread blocked on
++ * a single request queue.  Exclusion at the request_queue level is obtained
++ * via a flag in the request_queue's backing_dev_info.state.
++ *
++ * Non-request_queue-backed address_spaces will share default_backing_dev_info,
++ * unless they implement their own.  Which is somewhat inefficient, as this
++ * may prevent concurrent writeback against multiple devices.
++ */
++static int writeback_acquire(struct backing_dev_info *bdi)
++{
++	return !test_and_set_bit(BDI_pdflush, &bdi->state);
++}
++
++/**
++ * writeback_in_progress: determine whether there is writeback in progress
++ * @bdi: the device's backing_dev_info structure.
++ *
++ * Determine whether there is writeback in progress against a backing device.
++ */
++int writeback_in_progress(struct backing_dev_info *bdi)
++{
++	return test_bit(BDI_pdflush, &bdi->state);
++}
++
++/**
++ * writeback_release: relinquish exclusive writeback access against a device.
++ * @bdi: the device's backing_dev_info structure
++ */
++static void writeback_release(struct backing_dev_info *bdi)
++{
++	BUG_ON(!writeback_in_progress(bdi));
++	clear_bit(BDI_pdflush, &bdi->state);
++}
++
+ /**
+  *	__mark_inode_dirty -	internal function
+  *	@inode: inode to mark
+@@ -749,41 +788,3 @@ int generic_osync_inode(struct inode *inode, struct address_space *mapping, int
  }
  
- static inline int
--ext3_xattr_list(struct inode *inode, void *buffer, size_t size)
+ EXPORT_SYMBOL(generic_osync_inode);
+-
+-/**
+- * writeback_acquire: attempt to get exclusive writeback access to a device
+- * @bdi: the device's backing_dev_info structure
+- *
+- * It is a waste of resources to have more than one pdflush thread blocked on
+- * a single request queue.  Exclusion at the request_queue level is obtained
+- * via a flag in the request_queue's backing_dev_info.state.
+- *
+- * Non-request_queue-backed address_spaces will share default_backing_dev_info,
+- * unless they implement their own.  Which is somewhat inefficient, as this
+- * may prevent concurrent writeback against multiple devices.
+- */
+-int writeback_acquire(struct backing_dev_info *bdi)
 -{
--	return -EOPNOTSUPP;
+-	return !test_and_set_bit(BDI_pdflush, &bdi->state);
 -}
 -
--static inline int
- ext3_xattr_set(struct inode *inode, int name_index, const char *name,
- 	       const void *value, size_t size, int flags)
- {
-diff --git a/fs/ext4/xattr.c b/fs/ext4/xattr.c
-index d796213..e62c9b4 100644
---- a/fs/ext4/xattr.c
-+++ b/fs/ext4/xattr.c
-@@ -92,6 +92,8 @@ static struct buffer_head *ext4_xattr_cache_find(struct inode *,
- 						 struct mb_cache_entry **);
- static void ext4_xattr_rehash(struct ext4_xattr_header *,
- 			      struct ext4_xattr_entry *);
-+static int ext4_xattr_list(struct inode *inode, char *buffer,
-+			   size_t buffer_size);
- 
- static struct mb_cache *ext4_xattr_cache;
- 
-@@ -420,7 +422,7 @@ cleanup:
-  * Returns a negative error number on failure, or the number of bytes
-  * used / required on success.
-  */
--int
-+static int
- ext4_xattr_list(struct inode *inode, char *buffer, size_t buffer_size)
- {
- 	int i_error, b_error;
-diff --git a/fs/ext4/xattr.h b/fs/ext4/xattr.h
-index d7f5d6a..5992fe9 100644
---- a/fs/ext4/xattr.h
-+++ b/fs/ext4/xattr.h
-@@ -74,7 +74,6 @@ extern struct xattr_handler ext4_xattr_security_handler;
- extern ssize_t ext4_listxattr(struct dentry *, char *, size_t);
- 
- extern int ext4_xattr_get(struct inode *, int, const char *, void *, size_t);
--extern int ext4_xattr_list(struct inode *, char *, size_t);
- extern int ext4_xattr_set(struct inode *, int, const char *, const void *, size_t, int);
- extern int ext4_xattr_set_handle(handle_t *, struct inode *, int, const char *, const void *, size_t, int);
- 
-@@ -99,12 +98,6 @@ ext4_xattr_get(struct inode *inode, int name_index, const char *name,
- }
- 
- static inline int
--ext4_xattr_list(struct inode *inode, void *buffer, size_t size)
+-/**
+- * writeback_in_progress: determine whether there is writeback in progress
+- * @bdi: the device's backing_dev_info structure.
+- *
+- * Determine whether there is writeback in progress against a backing device.
+- */
+-int writeback_in_progress(struct backing_dev_info *bdi)
 -{
--	return -EOPNOTSUPP;
+-	return test_bit(BDI_pdflush, &bdi->state);
 -}
 -
--static inline int
- ext4_xattr_set(struct inode *inode, int name_index, const char *name,
- 	       const void *value, size_t size, int flags)
+-/**
+- * writeback_release: relinquish exclusive writeback access against a device.
+- * @bdi: the device's backing_dev_info structure
+- */
+-void writeback_release(struct backing_dev_info *bdi)
+-{
+-	BUG_ON(!writeback_in_progress(bdi));
+-	clear_bit(BDI_pdflush, &bdi->state);
+-}
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index 48a62ba..b66fa2b 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -156,9 +156,7 @@ static inline unsigned long bdi_stat_error(struct backing_dev_info *bdi)
+ extern struct backing_dev_info default_backing_dev_info;
+ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page);
+ 
+-int writeback_acquire(struct backing_dev_info *bdi);
+ int writeback_in_progress(struct backing_dev_info *bdi);
+-void writeback_release(struct backing_dev_info *bdi);
+ 
+ static inline int bdi_congested(struct backing_dev_info *bdi, int bdi_bits)
  {
 
