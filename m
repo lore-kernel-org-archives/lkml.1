@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755794AbYBQKvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbYBQKzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755794AbYBQKvT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 05:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbYBQKvA
+	id S1756150AbYBQKzR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 05:55:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbYBQKzF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 05:51:00 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:1213 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbYBQKu7 (ORCPT
+	Sun, 17 Feb 2008 05:55:05 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:48534 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754690AbYBQKzD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 05:50:59 -0500
+	Sun, 17 Feb 2008 05:55:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=YhFEa2Wm+C3jmmWrOOj8MFpMEM1OocUyAdxlXZdd2c9LKDIFtFO+IVQiRyyJVBWp8mmb2Iacg3B9Ynwb+81yrr58Km51VtBJWOeBQwEcEKx4vszEqvnsgNeoSGu1UPAHDAc2eEbnKY0aAzgWK55DZ6CJy75VCy0XD83KsL+6jIg=
-Date: Sun, 17 Feb 2008 13:50:50 +0300
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, alexn@dsv.su.se,
-       dwalker@mvista.com
-Subject: 2.6.25-rc2-mm1: new create_proc_entry() users
-Message-ID: <20080217105050.GC6596@martell.zuzino.mipt.ru>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hCgSNZSYI6XKCRIs0REgEhZhiU3EM+gyjk4RNXG9BTr9ChDGYsPTaP7Xvmy//aBk8PTY9vCijJbUJPfNpkBjmzS2wuf5HPs5NKAy8eroY1ZmWOvuSvSOlYtS/hjCYPkfuUa/BxyCEDH8qI1bPo2zdrQfChaEOBn5YVx16jT0SeE=
+Message-ID: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com>
+Date: Sun, 17 Feb 2008 11:55:02 +0100
+From: "Zdenek Kabelac" <zdenek.kabelac@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: My system stops during startup with curretn git tree of 2.6.25-rc2
+Cc: panther@balabit.hu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> profile-likely-unlikely-macros
-> page-owner-tracking-leak-detector
-> cciss-procfs-updates-to-display-info-about-many-volumes
+Hi
 
-Guys, create_proc_entry() is slightly racy in case of modular code and
-proc_create() was invented to fix it. Eventually all create_proc_entry()
-users will be converted to proc_create(), so please do it for new code.
+It looks like there is something weird as my systems stops when the
+swap is mounted.
+I've played bisection game and this is the commit which makes the
+system unusable:
+
+# bad: [45b503548210fe6f23e92b856421c2a3f05fd034] [RTNETLINK]: Send a
+single notification on device state changes.
+git-bisect bad 45b503548210fe6f23e92b856421c2a3f05fd034
+
+I've tried to reverse this commit - and it has compiled & worked.
+
+Zdenek
