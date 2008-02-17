@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757333AbYBQNHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757026AbYBQNMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757333AbYBQNHv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 08:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYBQNHn
+	id S1757026AbYBQNMU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 08:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYBQNMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 08:07:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60607 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750960AbYBQNHm (ORCPT
+	Sun, 17 Feb 2008 08:12:12 -0500
+Received: from wilson.telenet-ops.be ([195.130.132.42]:52237 "EHLO
+	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbYBQNML (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 08:07:42 -0500
-Date: Sun, 17 Feb 2008 08:07:33 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Erez Zadok <ezk@cs.sunysb.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jblunck@suse.de,
-       hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mmotm] fs/sysfs/file.c d_path fix
-Message-ID: <20080217130733.GA11483@infradead.org>
-References: <200802161912.m1GJC5Gt031939@agora.fsl.cs.sunysb.edu>
+	Sun, 17 Feb 2008 08:12:11 -0500
+Date: Sun, 17 Feb 2008 14:12:10 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: linux-kbuild@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] modpost: Fix reversed symbol name order
+Message-ID: <Pine.LNX.4.64.0802171411400.19269@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802161912.m1GJC5Gt031939@agora.fsl.cs.sunysb.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 16, 2008 at 02:12:05PM -0500, Erez Zadok wrote:
-> diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> index 02223e2..a57b024 100644
-> --- a/fs/sysfs/file.c
-> +++ b/fs/sysfs/file.c
-> @@ -329,9 +329,11 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
->  	struct sysfs_ops *ops;
->  	int error = -EACCES;
->  	char *p;
-> +	struct path sysfs_path;
->  
-> -	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
-> -		   sizeof(last_sysfs_file));
-> +	sysfs_path.dentry = file->f_dentry;
-> +	sysfs_path.mnt = sysfs_mount;
-> +	p = d_path(&sysfs_path, last_sysfs_file, sizeof(last_sysfs_file));
+XXXINIT_TO_INIT and XXXEXIT_TO_EXIT warnings use the reversed symbol name order
+in the suggestion, e.g.:
 
-A d_path(file->f_path, ..); should do it, but I'd really like to know
-what sysfs crowd was smoking when adding a d_path in ->open.  Guys,
-please explain what's going on here.
+    WARNING: vmlinux.o(.meminit.text+0x36c): Section mismatch in reference from the function free_area_init_core() to the function .init.text:setup_usemap()
+    The function __meminit free_area_init_core() references
+    a function __init setup_usemap().
+    If free_area_init_core is only used by setup_usemap then
+    annotate free_area_init_core with a matching annotation.
 
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ scripts/mod/modpost.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1200,7 +1200,7 @@ static void report_sec_mismatch(const ch
+ 		"annotate %s with a matching annotation.\n",
+ 		from, sec2annotation(fromsec), fromsym, from_p,
+ 		to, sec2annotation(tosec), tosym, to_p,
+-		fromsym, tosym, fromsym);
++		tosym, fromsym, tosym);
+ 		break;
+ 	case INIT_TO_EXIT:
+ 		fprintf(stderr,
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
