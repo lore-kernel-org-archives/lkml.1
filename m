@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbYBQQmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757097AbYBQQnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbYBQQmu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 11:42:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYBQQmm
+	id S1757097AbYBQQnc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 11:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbYBQQnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 11:42:42 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50684 "EHLO mx3.mail.elte.hu"
+	Sun, 17 Feb 2008 11:43:21 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:39948 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752823AbYBQQml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 11:42:41 -0500
-Date: Sun, 17 Feb 2008 17:42:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Robert Hancock <hancockr@shaw.ca>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
-Message-ID: <20080217164224.GK6006@elte.hu>
-References: <fa.LKjQjbOw482S/QFVaQ9fSrM+IFw@ifi.uio.no> <fa.wuwhrqFp6CufvpAJxShHqIaOPdI@ifi.uio.no> <47B67A0E.7060605@shaw.ca> <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
+	id S1753201AbYBQQnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 11:43:20 -0500
+Message-ID: <47B863FC.90500@garzik.org>
+Date: Sun, 17 Feb 2008 11:42:36 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440802152209p34965e70o8f20e957a6487423@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Matthew Wilcox <matthew@wil.cx>, support@adaptec.com,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sergio Luis <sergio@larces.uece.br>,
+       Achim Leubner <achim_leubner@adaptec.com>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, achim_leubner@adaptec.com
+Subject: Re: [PATCH] 2.6.25-rc1-git2: GDT SCSI: change drivers/scsi/gdth.c
+ into using pci_get device
+References: <47B1ADCE.40202@larces.uece.br> <1202833354.3137.19.camel@localhost.localdomain> <47B1CF45.5070407@panasas.com> <47B23033.1080100@larces.uece.br> <1202861823.3137.170.camel@localhost.localdomain> <47B2B101.3090106@panasas.com> <20080216163756.GG7657@parisc-linux.org> <47B80E65.7090504@panasas.com>
+In-Reply-To: <47B80E65.7090504@panasas.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
-
-> linus already apply the the patch to "use MMCONFIG for extended config 
-> space only" to mainline. the last two near 2.6.25-rc1.
+Boaz Harrosh wrote:
+> On Sat, Feb 16 2008 at 18:37 +0200, Matthew Wilcox <matthew@wil.cx> wrote:
+>> On Wed, Feb 13, 2008 at 10:57:37AM +0200, Boaz Harrosh wrote:
+>>> I still don't have a card for testing myself. Again anyone
+>>> wants to send me a card. Intel people anybody home?
+>> Apparently Intel sold this line of cards to Adaptec.  The copyright
+>> notice in the file backs this up:
+>>
+>>  * Copyright (C) 1995-06 ICP vortex GmbH, Achim Leubner                 *
+>>  * Copyright (C) 2002-04 Intel Corporation                              *
+>>  * Copyright (C) 2003-06 Adaptec Inc.                                   *
+>>  * <achim_leubner@adaptec.com>                                          *
+>>
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=a0ca9909609470ad779b9b9cc68ce96e975afff7
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=b6ce068a1285a24185b01be8a49021827516b3e1
+> OK I never got this guy to ping back. CCing support@adaptec.com.
+> 
+> Who is the right contact person, regarding the HW that is supported
+> by the gdth driver? Form what we see in driver commit logs (above), 
+> it was transfered to  Adaptec from Intel in 2003. Is that still so?
 
-FYI, we've applied your patches to x86.git, they certainly look 
-sensible.
+In my experience Achim does respond, but this driver is probably very 
+low priority, so it might take a while...
 
-	Ingo
+	Jeff
+
+
+
+
