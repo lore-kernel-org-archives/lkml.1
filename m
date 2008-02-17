@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbYBQM2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbYBQM2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbYBQM2V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 07:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757521AbYBQMXO
+	id S1760219AbYBQM2q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 07:28:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbYBQMXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 07:23:14 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55082 "EHLO pasmtpB.tele.dk"
+	Sun, 17 Feb 2008 07:23:16 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:38367 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755448AbYBQMW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755521AbYBQMW6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 Feb 2008 07:22:58 -0500
 From: Sam Ravnborg <sam@ravnborg.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Takashi Iwai <tiwai@suse.de>,
-       Jaroslav Kysela <perex@perex.cz>
-Subject: [PATCH 27/27] [ALSA] hdsp - fix section mismatch warnings
-Date: Sun, 17 Feb 2008 13:23:04 +0100
-Message-Id: <1203250984-11285-27-git-send-email-sam@ravnborg.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@codemonkey.org.uk>
+Subject: [PATCH 15/27] cpufreq: fix section mismatch warnings
+Date: Sun, 17 Feb 2008 13:22:52 +0100
+Message-Id: <1203250984-11285-15-git-send-email-sam@ravnborg.org>
 X-Mailer: git-send-email 1.5.4.1.143.ge7e51
 In-Reply-To: <20080217121255.GA10519@uranus.ravnborg.org>
 References: <20080217121255.GA10519@uranus.ravnborg.org>
@@ -24,53 +23,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix following warnings:
-WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x34bc): Section mismatch in reference from the function hdsp_check_for_firmware() to the function .devinit.text:hdsp_request_fw_loader()
-WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x4ac6): Section mismatch in reference from the function snd_hdsp_proc_read() to the function .devinit.text:hdsp_request_fw_loader()
+Fix the following warnings:
+WARNING: vmlinux.o(.text+0xfe6711): Section mismatch in reference from the function cpufreq_unregister_driver() to the variable .cpuinit.data:cpufreq_cpu_notifier
+WARNING: vmlinux.o(.text+0xfe68af): Section mismatch in reference from the function cpufreq_register_driver() to the variable .cpuinit.data:cpufreq_cpu_notifier
+WARNING: vmlinux.o(.exit.text+0xc4fa): Section mismatch in reference from the function cpufreq_stats_exit() to the variable .cpuinit.data:cpufreq_stat_cpu_notifier
 
-Calling hdsp_request_fw_loader() were triggered from /proc
-so this is not restricted to init or hotplug.
-So removing the __devexit annotation of this function
-and one of the functions fix the warning.
+The warnings were casued by references to unregister_hotcpu_notifier()
+from normal functions or exit functions.
+This is flagged by modpost as a potential error because
+it does not know that for the non HOTPLUG_CPU
+scenario the unregister_hotcpu_notifier() is a nop.
+Silence the warning by replacing the __initdata
+annotation with a __refdata annotation.
 
 Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Takashi Iwai <tiwai@suse.de>
-Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Dave Jones <davej@codemonkey.org.uk>
 ---
- sound/pci/rme9652/hdsp.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/cpufreq/cpufreq.c       |    2 +-
+ drivers/cpufreq/cpufreq_stats.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
-index c2bd438..6f07a25 100644
---- a/sound/pci/rme9652/hdsp.c
-+++ b/sound/pci/rme9652/hdsp.c
-@@ -745,7 +745,7 @@ static int hdsp_get_iobox_version (struct hdsp *hdsp)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 64926aa..c45768a 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1783,7 +1783,7 @@ static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
  
- 
- #ifdef HDSP_FW_LOADER
--static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp);
-+static int hdsp_request_fw_loader(struct hdsp *hdsp);
- #endif
- 
- static int hdsp_check_for_firmware (struct hdsp *hdsp, int load_on_demand)
-@@ -4688,7 +4688,7 @@ static struct snd_pcm_ops snd_hdsp_capture_ops = {
- 	.copy =		snd_hdsp_capture_copy,
+-static struct notifier_block __cpuinitdata cpufreq_cpu_notifier =
++static struct notifier_block __refdata cpufreq_cpu_notifier =
+ {
+     .notifier_call = cpufreq_cpu_callback,
  };
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 1b8312b..070421a 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -323,7 +323,7 @@ static int __cpuinit cpufreq_stat_cpu_callback(struct notifier_block *nfb,
+ 	return NOTIFY_OK;
+ }
  
--static int __devinit snd_hdsp_create_hwdep(struct snd_card *card,
-+static int snd_hdsp_create_hwdep(struct snd_card *card,
- 					   struct hdsp *hdsp)
+-static struct notifier_block cpufreq_stat_cpu_notifier __cpuinitdata =
++static struct notifier_block cpufreq_stat_cpu_notifier __refdata =
  {
- 	struct snd_hwdep *hw;
-@@ -4857,7 +4857,7 @@ static int snd_hdsp_create_alsa_devices(struct snd_card *card, struct hdsp *hdsp
- 
- #ifdef HDSP_FW_LOADER
- /* load firmware via hotplug fw loader */
--static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp)
-+static int hdsp_request_fw_loader(struct hdsp *hdsp)
- {
- 	const char *fwfile;
- 	const struct firmware *fw;
+ 	.notifier_call = cpufreq_stat_cpu_callback,
+ };
 -- 
 1.5.4.rc3.14.g44397
 
