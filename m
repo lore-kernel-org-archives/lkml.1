@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYBRN3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbYBRN3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759994AbYBRN3k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYBRN3b
+	id S1760429AbYBRN3z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:29:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbYBRN3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:29:31 -0500
-Received: from ns.suse.de ([195.135.220.2]:42289 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751195AbYBRN3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:29:31 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
-       Sam Ravnborg <sam@ravnborg.org>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-From: Andi Kleen <andi@firstfloor.org>
-References: <098123kjff90231nv098233rnvd908u234@garzik.org>
-	<20080217195235.GN14588@uranus.ravnborg.org>
-	<20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de>
-	<47B97BD5.5070209@garzik.org>
-Date: Mon, 18 Feb 2008 14:29:29 +0100
-In-Reply-To: <47B97BD5.5070209@garzik.org> (Jeff Garzik's message of "Mon\, 18 Feb 2008 07\:36\:37 -0500")
-Message-ID: <p73ejbaxuiu.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Mon, 18 Feb 2008 08:29:35 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:37048 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752488AbYBRN3d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:29:33 -0500
+Date: Mon, 18 Feb 2008 08:28:58 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andreas Dilger <adilger@sun.com>,
+       sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080218132858.GA12568@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+	Andreas Dilger <adilger@sun.com>, sct@redhat.com,
+	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218131209.GB21080@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218131209.GB21080@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+On Mon, Feb 18, 2008 at 03:12:09PM +0200, Adrian Bunk wrote:
+> If me resending this old patch collides with something finally getting a 
+> user this part of my patch shouldn't be applied now (but you might get 
+> it again in 6 months if it's still unused...).
+> 
+> But generally such conflicts would become visible if "known development 
+> trees that are intended for mainline" were in -mm.
 
->> And there is definitely still a large ISDN user base too.
->
-> This is what I'm curious about.  My personal guess is that there is a
-> lot of ISDN hardware available, but not necessarily the telco ISDN
-> availability.  
+It *has* been in -mm, except for periods when akpm has dropped it due
+to conflicts due to the "must have an in-tree user" doctrinaire
+attitude due to a conflict with the r/o bind patch.
 
-At least Germany has about 100% ISDN telco availability. I don't know
-the exact numbers of how many people use ISDN, but it is likely
-into the double digit millions. The big ex monopoly telco has been pushing
-ISDN aggressively for quite some time.
+Did you actually try to do a compile test, or only made sure the patch
+would apply?  The patch won't collide at application time, but it
+would when you compile it....
 
--Andi
+						- Ted
