@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbYBRM4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760113AbYBRM5d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759895AbYBRM4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 07:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbYBRM4m
+	id S1760113AbYBRM5d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 07:57:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbYBRM5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 07:56:42 -0500
-Received: from lax-green-bigip-5.dreamhost.com ([208.113.200.5]:54805 "EHLO
-	spaceymail-a3.g.dreamhost.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751185AbYBRM4l convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 07:56:41 -0500
-X-Greylist: delayed 21583 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Feb 2008 07:56:41 EST
-Date: Tue, 19 Feb 2008 00:01:45 +1100
-From: "Carlos E. M. Dyonisio" <cadu@nerdfeliz.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
-Message-Id: <20080219000145.ee2626fd.cadu@nerdfeliz.com>
-In-Reply-To: <200802181227.28238.rjw@sisk.pl>
-References: <200802172304.00322.rjw@sisk.pl>
-	<20080218180201.6b3276d5.cadu@nerdfeliz.com>
-	<200802181227.28238.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 18 Feb 2008 07:57:24 -0500
+Received: from mail.syneticon.net ([213.239.212.131]:48259 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751114AbYBRM5X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 07:57:23 -0500
+Message-ID: <47B980AC.2080806@wpkg.org>
+Date: Mon, 18 Feb 2008 13:57:16 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: LKML <linux-fsdevel@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: very poor ext3 write performance on big filesystems?
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 12:27:27 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+I have a 1.2 TB (of which 750 GB is used) filesystem which holds
+almost 200 millions of files.
+1.2 TB doesn't make this filesystem that big, but 200 millions of files 
+is a decent number.
 
-> On Monday, 18 of February 2008, Carlos Eduardo Medaglia Dyonisio wrote:
-> > On Sun, 17 Feb 2008 23:03:59 +0100
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9960
-> > > Subject		: [2.6.25-rc0 System no longer powers off after shutdown
-> > > Submitter	: Frans Pop <elendil@planet.nl>
-> > > Date		: 2008-02-11 16:23
-> > > References	: http://lkml.org/lkml/2008/2/11/198
-> > > Handled-By	: Greg KH <gregkh@suse.de>
-> > > Patch		: http://lkml.org/lkml/2008/2/8/342
-> > 
-> > This bug is happening here too. I didn´t apply the patch yet (I´ll do it
-> > when I get home), but if cpufreq is disabled, the system powers off
-> > normally.
-> > 
-> > I´m using Linus´ git tree, commit 1309d4e68497184d2fd87e892ddf14076c2bda98.
-> 
-> Have you tried to apply the patch listed?
 
-Yes, just tried. It works fine with SMP both enabled or disabled. I´m not
-sure if removing that piece of code is the right thing to do though.
+Most of the files are hardlinked multiple times, some of them are
+hardlinked thousands of times.
 
-Cheers,
-Carlos
+
+Recently I began removing some of unneeded files (or hardlinks) and to 
+my surprise, it takes longer than I initially expected.
+
+
+After cache is emptied (echo 3 > /proc/sys/vm/drop_caches) I can usually 
+remove about 50000-200000 files with moderate performance. I see up to 
+5000 kB read/write from/to the disk, wa reported by top is usually 20-70%.
+
+
+After that, waiting for IO grows to 99%, and disk write speed is down to 
+50 kB/s - 200 kB/s (fifty - two hundred kilobytes/s).
+
+
+Is it normal to expect the write speed go down to only few dozens of 
+kilobytes/s? Is it because of that many seeks? Can it be somehow 
+optimized? The machine has loads of free memory, perhaps it could be 
+uses better?
+
+
+Also, writing big files is very slow - it takes more than 4 minutes to 
+write and sync a 655 MB file (so, a little bit more than 1 MB/s) - 
+fragmentation perhaps?
+
++ dd if=/dev/zero of=testfile bs=64k count=10000
+10000+0 records in
+10000+0 records out
+655360000 bytes (655 MB) copied, 3,12109 seconds, 210 MB/s
++ sync
+0.00user 2.14system 4:06.76elapsed 0%CPU (0avgtext+0avgdata 0maxresident)k
+0inputs+0outputs (0major+883minor)pagefaults 0swaps
+
+
+# df -h
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sda              1,2T  697G  452G  61% /mnt/iscsi_backup
+
+# df -i
+Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+/dev/sda                154M     20M    134M   13% /mnt/iscsi_backup
+
+
+
+
 -- 
-Carlos Eduardo Medaglia Dyonisio
-cadu@nerdfeliz.com
-http://nerdfeliz.com/
+Tomasz Chmielewski
+http://wpkg.org
+
