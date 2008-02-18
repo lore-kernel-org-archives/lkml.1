@@ -1,67 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYBRQPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbYBRQRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759392AbYBRQPT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:15:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYBRQPG
+	id S1758779AbYBRQRX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:17:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbYBRQRO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:15:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:50645 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754555AbYBRQPE (ORCPT
+	Mon, 18 Feb 2008 11:17:14 -0500
+Received: from mail.syneticon.net ([213.239.212.131]:49989 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753321AbYBRQRM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:15:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=L9xemLYTULd6EUFpSOPEipq1RbcN+X96iPCZI/2I820zN4Kl2tBSt7GxNB7Y6hlJf98eG+u041fTVh95nptW+9Ovea4Ie06Zj33LaUsPsKvryW3wBeM2qvY4XE/OugedvpxLMOdYQ3zCD11F03ryp2H6CZ3HPdxk/Rzztmzk9A4=
-Message-ID: <2c0942db0802180815r59c2ef1s8d4c2e1e733b79c4@mail.gmail.com>
-Date: Mon, 18 Feb 2008 08:15:01 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Romano Giannetti" <romanol@upcomillas.es>
-Subject: Re: 2.6.25-rc1/2 regression: first-time login into gnome fails
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1203332161.26696.11.camel@pern>
+	Mon, 18 Feb 2008 11:17:12 -0500
+Message-ID: <47B9AF77.9040702@wpkg.org>
+Date: Mon, 18 Feb 2008 17:16:55 +0100
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Theodore Tso <tytso@mit.edu>, Tomasz Chmielewski <mangoo@wpkg.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: very poor ext3 write performance on big filesystems?
+References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de> <20080218141640.GC12568@mit.edu> <47B99E0C.8020706@wpkg.org> <20080218151632.GD25098@mit.edu>
+In-Reply-To: <20080218151632.GD25098@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203332161.26696.11.camel@pern>
-X-Google-Sender-Auth: b80801a39c423063
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 18, 2008 2:56 AM, Romano Giannetti <romanol@upcomillas.es> wrote:
->
-> Hi,
->
->         I have a very strange, but fully reproducible, regression with
-> 2.6.25-rc1 -rc2. I have an ubuntu 7.10 fully updated.
->
->         The first time after boot, when I login to gnome (through gdm)
-> the login half-fails with a Setting Daemon error: failed to connect to
-> socket /tmp/dbus-<some random stuff>: connection refused. Nothing in the
-> logs, and there is no such socket in /tmp.
->
-> If I log out and then log in again, all works ok.
->
-> With 2.6.24.2 there is no such a problem.
->
-> .config, dmesg (2M buffer size) and syslog here:
->
-> http://www.dea.icai.upcomillas.es/romano/linux/info/
->
->
->         Romano
->
->
-> (Back to 2.6.24.2, because ndiswrapper broke again, and ath5k doesn't
-> like (yet) my atheros adapter...)
+Theodore Tso schrieb:
 
-It may be a race. Please try booting up, then waiting for a minute or
-two once you see the gdm login screen, then try logging in.
+>> Are there better choices than ext3 for a filesystem with lots of hardlinks? 
+>> ext4, once it's ready? xfs?
+> 
+> All filesystems are going to have problems keeping inodes close to
+> directories when you have huge numbers of hard links.
+> 
+> I'd really need to know exactly what kind of operations you were
+> trying to do that were causing problems before I could say for sure.
+> Yes, you said you were removing unneeded files, but how were you doing
+> it?  With rm -r of old hard-linked directories?
 
-If that succeeds then something (dbus perhaps) is hanging on something
-that eventually times out.
+Yes, with rm -r.
 
-Ray
+
+> How big are the
+> average files involved?  Etc.
+
+It's hard to estimate the average size of a file. I'd say there are not 
+many files bigger than 50 MB.
+
+Basically, it's a filesystem where backups are kept. Backups are made 
+with BackupPC [1].
+
+Imagine a full rootfs backup of 100 Linux systems.
+
+Instead of compressing and writing "/bin/bash" 100 times for each 
+separate system, we do it once, and hardlink. Then, keep 40 copies back, 
+and you have 4000 hardlinks.
+
+For individual or user files, the number of hardlinks will be smaller of 
+course.
+
+The directories I want to remove have usually a structure of a "normal" 
+Linux rootfs, nothing special there (other than most of the files will 
+have multiple hardlinks).
+
+
+I noticed using write back helps a tiny bit, but as dm and md don't 
+support write barriers, I'm not very eager to use it.
+
+
+[1] http://backuppc.sf.net
+http://backuppc.sourceforge.net/faq/BackupPC.html#some_design_issues
+
+
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
+
