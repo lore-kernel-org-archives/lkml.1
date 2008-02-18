@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbYBRNcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760976AbYBRNci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760856AbYBRNcW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:32:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbYBRNbw
+	id S1760976AbYBRNci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:32:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbYBRNc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:31:52 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:37058 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760471AbYBRNbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:31:50 -0500
-Date: Mon, 18 Feb 2008 08:31:28 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andreas Dilger <adilger@sun.com>, Adrian Bunk <bunk@kernel.org>,
+	Mon, 18 Feb 2008 08:32:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53082 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760872AbYBRNcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:32:24 -0500
+Date: Mon, 18 Feb 2008 14:31:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Theodore Tso <tytso@mit.edu>, Andreas Dilger <adilger@sun.com>,
        sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
        linux-kernel@vger.kernel.org
 Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
-Message-ID: <20080218133127.GB12568@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	Andreas Dilger <adilger@sun.com>, Adrian Bunk <bunk@kernel.org>,
-	sct@redhat.com, akpm@linux-foundation.org,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218125702.GB15044@elte.hu>
+Message-ID: <20080218133140.GA21635@elte.hu>
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218131209.GB21080@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080218125702.GB15044@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20080218131209.GB21080@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So please deal with it like most other subsystem maintainers do and stop 
-> complaining about "code churn" - nobody but you changes the ext3 
-> codebase, it's one of the codebases least affected by general kernel 
-> flux, it's an ultimate "leaf" subsystem.
 
-Right, sorry.  I misread the filename; I thought this was against
-fs/jbd2, instead of fs/jbd.
+* Adrian Bunk <bunk@kernel.org> wrote:
 
-						- Ted
+> The following was meant 100% seriously:
+> 
+> This patch has been sent on:
+> - 16 May 2006
+> - 1 May 2006
+> - 23 Apr 2006
+
+ouch ...
+
+i guess this explains what static code metrics already suggest:
+
+   $ code-quality fs/ext3/ fs/ext4/
+                                errors   lines of code   errors/KLOC
+   fs/ext3/                        408           16055          25.4
+   fs/ext4/                        394           25169          15.6
+
+compared to:
+
+   $ code-quality kernel/
+                                errors   lines of code   errors/KLOC
+   kernel/                         739           98759           7.4
+
+and i guess our hope is now in:
+
+   $ code-quality fs/btrfs/
+                                errors   lines of code   errors/KLOC
+   fs/btrfs/                       240           20556          11.6
+
+(which hopefully will be a project done in a much more Linux-ish manner: 
+open participation, the easy taking of patches, an inclusive, 
+newbie-friendly contribution atmosphere, etc.)
+
+	Ingo
+
+ps. http://redhat.com/~mingo/x86.git/code-quality
