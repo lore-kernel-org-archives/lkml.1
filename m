@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761796AbYBRWW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbYBRWZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761796AbYBRWW1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:22:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752978AbYBRWWT
+	id S1758364AbYBRWZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:25:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYBRWZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:22:19 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:47616 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752808AbYBRWWS (ORCPT
+	Mon, 18 Feb 2008 17:25:11 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:51420 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752424AbYBRWZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:22:18 -0500
-Message-ID: <47BA0486.7000508@larces.uece.br>
-Date: Mon, 18 Feb 2008 19:19:50 -0300
-From: Sergio Luis <sergio@larces.uece.br>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 18 Feb 2008 17:25:10 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Date: Mon, 18 Feb 2008 23:24:44 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182308.56789.mb@bu3sch.de> <20080218221324.GB23181@flint.arm.linux.org.uk>
+In-Reply-To: <20080218221324.GB23181@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de> <47B83F90.7000203@larces.uece.br> <alpine.DEB.1.00.0802172109590.6469@sheep.housecafe.de> <47B8D99A.3020202@larces.uece.br> <47B8DFD8.6040602@larces.uece.br> <alpine.DEB.1.00.0802182305590.6469@sheep.housecafe.de>
-In-Reply-To: <alpine.DEB.1.00.0802182305590.6469@sheep.housecafe.de>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802182324.45267.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Kujau wrote:
-> On Sun, 17 Feb 2008, Sergio Luis wrote:
->> oops. sorry, I just realized I missed the makefile part. I changed
->> the config symbol to CONFIG_LGUEST_HYPERVISOR so I should change it on
->> the makefile as well. reposting an updated patch for testing:
+On Monday 18 February 2008 23:13:24 Russell King wrote:
+> On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
+> > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
+> > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
+> > > box using a cross-compiler:
+> > > 
+> > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
+> > > not a modulo of the size of section __mod_ssb_device_table=64.
+> > > Fix definition of struct ssb_device_id in mod_devicetable.h
+> > 
+> > Why does ARM have this special requirement and what is it about?
 > 
-> Hm, now I cannot select LGUEST as a module any more:
-> 
-> $ make clean && time make
->   [...]
->   HOSTCC  scripts/kconfig/zconf.tab.o
->   HOSTLD  scripts/kconfig/conf
-> scripts/kconfig/conf -s arch/x86/Kconfig
-> .config:1793:warning: symbol value 'm' invalid for LGUEST
->   [...]
->   Linux hypervisor (LGUEST) [Y/n/?] (NEW)
+> Because ARM is a 32 bit architecture.
 
-if you select Y here it will prompt you about the lguest hypervisor, the code in question, the one you want to build, and you will then be able to select it as a module, if you want, or built-in into the kernel. 
-I dont like this approach myself, but it does fix the problem. I was hoping people would come up with better ideas on how to properly fix it.
--sergio
+Ehm, I didn't see this warning on any other architecture nor did we
+have _any_ problem with it on any other architecture.
+This code runs fine on x86_32, x86_64, powerpc and mips, at least.
 
-> 
-> Is this intentional? I've tried your patch with or without Rusty's
-> patch, both gave me the same results. My .config:
-> http://nerdbynature.de/bits/2.6.25-rc2/lguest/
-> 
-> Thanks,
-> Christian.
-
+-- 
+Greetings Michael.
