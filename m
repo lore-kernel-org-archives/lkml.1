@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYBRI1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbYBRI30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758181AbYBRI1Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 03:27:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYBRI1Q
+	id S1757326AbYBRI30 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 03:29:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754720AbYBRI3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 03:27:16 -0500
-Received: from hall.aurel32.net ([88.191.38.19]:44055 "EHLO hall.aurel32.net"
+	Mon, 18 Feb 2008 03:29:18 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:36459 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754057AbYBRI1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 03:27:15 -0500
-X-Greylist: delayed 2233 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Feb 2008 03:27:15 EST
-Date: Mon, 18 Feb 2008 08:49:44 +0100
-From: Aurelien Jarno <aurelien@aurel32.net>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-Subject: Re: mips/bcm47xx/setup.c compile error
-Message-ID: <20080218074944.GA9317@hall.aurel32.net>
-Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
-	Adrian Bunk <bunk@kernel.org>,
-	Larry Finger <Larry.Finger@lwfinger.net>,
-	"John W. Linville" <linville@tuxdriver.com>, ralf@linux-mips.org,
-	linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
-References: <20080217200947.GH1403@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20080217200947.GH1403@cs181133002.pp.htv.fi>
-X-Mailer: Mutt 1.5.13 (2006-08-11)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1754620AbYBRI3R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 03:29:17 -0500
+Date: Mon, 18 Feb 2008 19:29:12 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Artem Bityutskiy <dedekind@yandex.ru>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-Id: <20080218192912.39fe26e4.sfr@canb.auug.org.au>
+In-Reply-To: <47B93C01.6020105@yandex.ru>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	<47B93C01.6020105@yandex.ru>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__18_Feb_2008_19_29_12_+1100_nx9A0W_m5R9f.GN1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 10:09:47PM +0200, Adrian Bunk wrote:
-> Commit d3c319f9c8d9ee2c042c60b8a1bbd909dcc42782 causes the following 
-> compile error:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      arch/mips/bcm47xx/setup.o
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c: In function 'bcm47xx_get_invariants':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:95: error: 'struct ssb_sprom' has no member named 'r1'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:97: error: 'struct ssb_sprom' has no member named 'r1'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:99: error: 'struct ssb_sprom' has no member named 'r1'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:101: error: 'struct ssb_sprom' has no member named 'r1'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:103: error: 'struct ssb_sprom' has no member named 'r1'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:105: error: 'struct ssb_sprom' has no member named 'r1'
-> make[2]: *** [arch/mips/bcm47xx/setup.o] Error 1
-> 
+--Signature=_Mon__18_Feb_2008_19_29_12_+1100_nx9A0W_m5R9f.GN1
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It has been broken by commit d3c319f9c8d9ee2c042c60b8a1bbd909dcc42782. I
-am working on a fix.
+Hi Artem,
 
+On Mon, 18 Feb 2008 10:04:17 +0200 Artem Bityutskiy <dedekind@yandex.ru> wr=
+ote:
+>
+> The UBI tree which is here:
+>=20
+> git://git.infradead.org/~dedekind/ubi-2.6.git master
 
--- 
-  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
- : :' :  Debian developer           | Electrical Engineer
- `. `'   aurel32@debian.org         | aurelien@aurel32.net
-   `-    people.debian.org/~aurel32 | www.aurel32.net
+Added, thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__18_Feb_2008_19_29_12_+1100_nx9A0W_m5R9f.GN1
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHuUHcTgG2atn1QN8RAv9eAJ9PMWC8egzmJ3MyqttRVAgXo2ht1wCfT56g
+oGnu/qk/GXDD9fdYhtEbek8=
+=VM7K
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__18_Feb_2008_19_29_12_+1100_nx9A0W_m5R9f.GN1--
