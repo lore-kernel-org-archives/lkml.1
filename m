@@ -1,65 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762515AbYBRWpZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbYBRWte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762515AbYBRWpZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:45:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754346AbYBRWpL
+	id S1761423AbYBRWte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:49:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYBRWt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:45:11 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44889 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754325AbYBRWpJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:45:09 -0500
-Message-ID: <47BA0A3D.1060708@zytor.com>
-Date: Mon, 18 Feb 2008 14:44:13 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: use explicit timing delay for pit accesses in kernel
- and pcspkr driver
-References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com> <47B9F2EC.4070308@keyaccess.nl> <47B9FC3A.2010508@zytor.com> <47B9FFD5.6040801@keyaccess.nl> <47BA002B.7070806@zytor.com> <47BA0188.6000808@keyaccess.nl> <47BA077B.50401@keyaccess.nl>
-In-Reply-To: <47BA077B.50401@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 18 Feb 2008 17:49:26 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:63973 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750770AbYBRWtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 17:49:25 -0500
+Date: Mon, 18 Feb 2008 23:49:18 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] atmel_spi clock polarity
+Message-ID: <20080218234918.3d09022a@siona>
+In-Reply-To: <200802181157.57299.david-b@pacbell.net>
+References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
+	<20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
+	<20080218.231243.41197917.anemo@mba.ocn.ne.jp>
+	<200802181157.57299.david-b@pacbell.net>
+Organization: Atmel
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene Herman wrote:
-> On 18-02-08 23:07, Rene Herman wrote:
-> 
->> On 18-02-08 23:01, H. Peter Anvin wrote:
->>
->>> Rene Herman wrote:
->>>>
->>>> Yes, but generally not any P5+ system is going to need the PIT delay 
->>>> in the first place meaning it just doesn't matter. There were the 
->>>> VIA issues with the PIC but unless I missed it not with the PIT.
->>>>
->>>
->>> Uhm, I'm not sure I believe that's safe.
->>>
->>> The PIT is particularly pissy in this case -- the semantics of the 
->>> PIT are ill-defined if there hasn't been a PIT clock between two 
->>> adjacent accesses, so I fully expect that there are chipsets out 
->>> there which will do very bad things in this case.
->>
->> Okay. Now that they're isolated, do you have a suggestion for 
->> {in,out}b_pit? You say a PIT clock, so do you think we can bounce of 
->> the PIT iself in this case after all?
-> 
-> Am I correct that channel 1 is never used? A simple read from 0x41?
-> 
+On Mon, 18 Feb 2008 11:57:56 -0800
+David Brownell <david-b@pacbell.net> wrote:
 
-Channel 1 is available for the system.  In modern systems, it's pretty 
-much available for the OS, although that's never formally stated (in the 
-original PC, it was used for DRAM refresh.)
+> On Monday 18 February 2008, Atsushi Nemoto wrote:
+> > 	 IIRC the clock state follows
+> > CSRn.CPOL just before the real transfer.
+> 
+> No ... clock state should be valid *before* chipselect goes
+> active.  So I'm thinking the patch from Haavard is likely
+> the right change.
 
-However, I could very easily see a chipset have issues with that kind of 
-stuff.
+Hopefully it is...
 
-	-hpa
+> > CLK     ______________________|~|___|~~~|___|~~~|___|~~~|___
+> 
+> ... and at T1 CPOL is changed??  That's wrong.  There should
+> never be a partial clock period while a chipselect is active.
+> While it's inactive, sure -- no chip should care.
+
+...but what I'm afraid of is that since we're using GPIO chipselects,
+the controller may _think_ that no chip is selected and change the
+clock polarity just before it would pull the chipselect low if we were
+using automatic chipselects...
+
+If that's the case, it would be a bit strange if it actually helped to
+initialize all the CSRn registers, but it would also offer us a nice
+workaround...
+
+Atsushi, do you by any chance have debugging enabled? That would
+explain the long delay from CS activation to the change of clock
+polarity. Compared to printk() the DMA setup takes almost no time at
+all.
+
+If you can confirm that my patch helps, I think that's the one we want
+in mainline.
+
+Haavard
