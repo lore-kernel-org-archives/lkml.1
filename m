@@ -1,42 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761387AbYBRU1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbYBRU1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761387AbYBRU1R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbYBRU1F
+	id S1761511AbYBRU1n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754866AbYBRU1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:27:05 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53535 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752562AbYBRU1F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:27:05 -0500
-Date: Mon, 18 Feb 2008 20:17:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Rene Herman <rene.herman@keyaccess.nl>,
-       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org,
-       "David P. Reed" <dpreed@reed.com>
-Subject: Re: [PATCH] x86: use explicit timing delay for pit accesses in
- kernel and pcspkr driver
-Message-ID: <20080218201740.723b3944@core>
-In-Reply-To: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net>
-References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 15:27:33 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59688 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751125AbYBRU1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 15:27:32 -0500
+Date: Mon, 18 Feb 2008 21:27:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: stern@rowland.harvard.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Status of storage autosuspend
+Message-ID: <20080218202749.GA2656@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 13:58:41 -0500 (EST)
-"David P. Reed" <dpreed@reed.com> wrote:
+Hi!
 
-> x86: use explicit timing delay for pit accesses in kernel and pcspkr driver
-
-Both look good to me now
+What is the status of USB storage/SCSI autosuspend patches? They work
+nicely here ;-).
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
