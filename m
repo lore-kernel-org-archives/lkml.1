@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760429AbYBRN3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYBRNaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760429AbYBRN3z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758321AbYBRN3f
+	id S1754096AbYBRNaW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbYBRN3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:29:35 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:37048 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752488AbYBRN3d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:29:33 -0500
-Date: Mon, 18 Feb 2008 08:28:58 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andreas Dilger <adilger@sun.com>,
-       sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
-Message-ID: <20080218132858.GA12568@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-	Andreas Dilger <adilger@sun.com>, sct@redhat.com,
-	akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218131209.GB21080@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080218131209.GB21080@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Mon, 18 Feb 2008 08:29:54 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:62088 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760315AbYBRN3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:29:52 -0500
+Date: Mon, 18 Feb 2008 14:29:49 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: "Nelson, Shannon" <shannon.nelson@intel.com>
+Cc: "Haavard Skinnemoen" <hskinnemoen@norway.atmel.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>,
+       <linux-kernel@vger.kernel.org>, "David Brownell" <david-b@pacbell.net>,
+       <kernel@avr32linux.org>, "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>
+Subject: Re: [RFC v3 4/7] dmaengine: Add slave DMA interface
+Message-ID: <20080218142949.2c5b2810@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C0407A37A@orsmsx418.amr.corp.intel.com>
+References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-2-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-3-git-send-email-hskinnemoen@atmel.com>
+	<1202834638-9009-4-git-send-email-hskinnemoen@atmel.com>
+	<e9c3a7c20802131107x4c9e6859p3bc6527b19c416cb@mail.gmail.com>
+	<20080213202402.22818482@siona>
+	<20080215105302.1e4251a3@dhcp-252-066.norway.atmel.com>
+	<BAE9DCEF64577A439B3A37F36F9B691C0407A37A@orsmsx418.amr.corp.intel.com>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 03:12:09PM +0200, Adrian Bunk wrote:
-> If me resending this old patch collides with something finally getting a 
-> user this part of my patch shouldn't be applied now (but you might get 
-> it again in 6 months if it's still unused...).
-> 
-> But generally such conflicts would become visible if "known development 
-> trees that are intended for mainline" were in -mm.
+On Fri, 15 Feb 2008 09:12:35 -0800
+"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
 
-It *has* been in -mm, except for periods when akpm has dropped it due
-to conflicts due to the "must have an in-tree user" doctrinaire
-attitude due to a conflict with the r/o bind patch.
+> I'll jump in here briefly - I'm okay with the direction this is going,
+> but I want to be protective of ioatdma performance.  As used in struct
+> ioat_desc_sw, the cookie and ack elements end up very close to the end
+> of a cache line and I'd like them to not get pushed out across the
+> boundry.  I don't think this proposal changes the layout, I'm just
+> bringing up my concern.
 
-Did you actually try to do a compile test, or only made sure the patch
-would apply?  The patch won't collide at application time, but it
-would when you compile it....
+Sure, performance is very important, and it's good to see that you're
+critical about the changes I'm proposing. That said, the memory layout
+doesn't change at all with this patch -- the fields that didn't go into
+the generic dma descriptor were at the end of the struct to begin with.
 
-						- Ted
+I can add a comment saying that cookie and ack must always come first.
+Any other fields that we need to be careful about?
+
+Haavard
