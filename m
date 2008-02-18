@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbYBRTNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760714AbYBRTNb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbYBRTNL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 14:13:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbYBRTMo
+	id S1760714AbYBRTNb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 14:13:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbYBRTMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 14:12:44 -0500
+	Mon, 18 Feb 2008 14:12:46 -0500
 Received: from wa-out-1112.google.com ([209.85.146.179]:20054 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751916AbYBRTMn (ORCPT
+	with ESMTP id S1752987AbYBRTMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 14:12:43 -0500
+	Mon, 18 Feb 2008 14:12:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=XcJCgjV0JmtvkWFfTTvJT2zDvM6wPsSigGO+8z5/bx5g9wmCgrrzFC6AOoJAHVUvvpdNhekU2KY/q6fQVe2DWQJvr2hKR60W61fOpuWYyI1CoGZIBS0zmgwBR+x0kN9sv7/ofg+MTQLCp65LgDhgqexhX5QQqPk6GF0xKgq2VPc=
-Subject: [PATCH 2/3] x86, kvm: make register_address, address_mask static
-	inlines
+        b=Q0fuNeodh5PLHnb7VQxvIjkL2IbTXrl3vlgaTjQ3oy6hwSt/y4MvH9tQ2PYWgT0xcfUVJmq+KiHQSlOSuHJdDz9Aht09L40WlQHXF9q88S4gEAEBnBmkwd+e/4Ik5G7sR5Dsx9dwTMFP53rEMhKNecVWOPuNbQJI1BpqZsVtpPA=
+Subject: [PATCH 3/3] x86, kvm: make register_address_increment and JMP_REL
+	static inlines
 From: Harvey Harrison <harvey.harrison@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@qumranet.com>
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        LKML <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Mon, 18 Feb 2008 11:12:50 -0800
-Message-Id: <1203361970.5757.43.camel@brick>
+Date: Mon, 18 Feb 2008 11:12:51 -0800
+Message-Id: <1203361971.5757.45.camel@brick>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
@@ -30,157 +30,177 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Change to jmp_rel now that it is a function.
+
 Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
 ---
- arch/x86/kvm/x86_emulate.c |   50 ++++++++++++++++++++++++++-----------------
- 1 files changed, 30 insertions(+), 20 deletions(-)
+ arch/x86/kvm/x86_emulate.c |   58 ++++++++++++++++++++-----------------------
+ 1 files changed, 27 insertions(+), 31 deletions(-)
 
 diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index 7460432..5b2cc50 100644
+index 5b2cc50..f5508d2 100644
 --- a/arch/x86/kvm/x86_emulate.c
 +++ b/arch/x86/kvm/x86_emulate.c
-@@ -432,11 +432,21 @@ static inline unsigned long ad_mask(struct decode_cache *c)
+@@ -447,23 +447,19 @@ register_address(struct decode_cache *c, unsigned long base, unsigned long reg)
+ 	return base + address_mask(c, reg);
  }
  
- /* Access/update address held in a register, based on addressing mode. */
--#define address_mask(reg)						\
--	((c->ad_bytes == sizeof(unsigned long)) ? 			\
--		(reg) :	((reg) & ad_mask(c)))
--#define register_address(base, reg)                                     \
--	((base) + address_mask(reg))
-+static inline unsigned long
-+address_mask(struct decode_cache *c, unsigned long reg)
+-#define register_address_increment(reg, inc)                            \
+-	do {								\
+-		/* signed type ensures sign extension to long */        \
+-		int _inc = (inc);					\
+-		if (c->ad_bytes == sizeof(unsigned long))		\
+-			(reg) += _inc;					\
+-		else							\
+-			(reg) = ((reg) & 				\
+-				 ~ad_mask(c)) |	\
+-				(((reg) + _inc) &			\
+-				 ad_mask(c));	\
+-	} while (0)
++static inline void
++register_address_increment(struct decode_cache *c, unsigned long *reg, int inc)
 +{
 +	if (c->ad_bytes == sizeof(unsigned long))
-+		return reg;
++		*reg += inc;
 +	else
-+		return reg & ad_mask(c);
++		*reg = (*reg & ~ad_mask(c)) | ((*reg + inc) & ad_mask(c));
 +}
-+
-+static inline unsigned long
-+register_address(struct decode_cache *c, unsigned long base, unsigned long reg)
+ 
+-#define JMP_REL(rel) 							\
+-	do {								\
+-		register_address_increment(c->eip, rel);		\
+-	} while (0)
++static inline void jmp_rel(struct decode_cache *c, int rel)
 +{
-+	return base + address_mask(c, reg);
++	register_address_increment(c, &c->eip, rel);
 +}
-+
- #define register_address_increment(reg, inc)                            \
- 	do {								\
- 		/* signed type ensures sign extension to long */        \
-@@ -990,7 +1000,7 @@ static inline void emulate_push(struct x86_emulate_ctxt *ctxt)
+ 
+ static int do_fetch_insn_byte(struct x86_emulate_ctxt *ctxt,
+ 			      struct x86_emulate_ops *ops,
+@@ -999,7 +995,7 @@ static inline void emulate_push(struct x86_emulate_ctxt *ctxt)
+ 	c->dst.type  = OP_MEM;
  	c->dst.bytes = c->op_bytes;
  	c->dst.val = c->src.val;
- 	register_address_increment(c->regs[VCPU_REGS_RSP], -c->op_bytes);
--	c->dst.ptr = (void *) register_address(ctxt->ss_base,
-+	c->dst.ptr = (void *) register_address(c, ctxt->ss_base,
+-	register_address_increment(c->regs[VCPU_REGS_RSP], -c->op_bytes);
++	register_address_increment(c, &c->regs[VCPU_REGS_RSP], -c->op_bytes);
+ 	c->dst.ptr = (void *) register_address(c, ctxt->ss_base,
  					       c->regs[VCPU_REGS_RSP]);
  }
- 
-@@ -1000,7 +1010,7 @@ static inline int emulate_grp1a(struct x86_emulate_ctxt *ctxt,
- 	struct decode_cache *c = &ctxt->decode;
- 	int rc;
- 
--	rc = ops->read_std(register_address(ctxt->ss_base,
-+	rc = ops->read_std(register_address(c, ctxt->ss_base,
- 					    c->regs[VCPU_REGS_RSP]),
- 			   &c->dst.val, c->dst.bytes, ctxt->vcpu);
+@@ -1016,7 +1012,7 @@ static inline int emulate_grp1a(struct x86_emulate_ctxt *ctxt,
  	if (rc != 0)
-@@ -1119,7 +1129,7 @@ static inline int emulate_grp45(struct x86_emulate_ctxt *ctxt,
+ 		return rc;
+ 
+-	register_address_increment(c->regs[VCPU_REGS_RSP], c->dst.bytes);
++	register_address_increment(c, &c->regs[VCPU_REGS_RSP], c->dst.bytes);
+ 
+ 	return 0;
+ }
+@@ -1127,7 +1123,7 @@ static inline int emulate_grp45(struct x86_emulate_ctxt *ctxt,
+ 			if (rc != 0)
+ 				return rc;
  		}
- 		register_address_increment(c->regs[VCPU_REGS_RSP],
+-		register_address_increment(c->regs[VCPU_REGS_RSP],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSP],
  					   -c->dst.bytes);
--		rc = ops->write_emulated(register_address(ctxt->ss_base,
-+		rc = ops->write_emulated(register_address(c, ctxt->ss_base,
+ 		rc = ops->write_emulated(register_address(c, ctxt->ss_base,
  				    c->regs[VCPU_REGS_RSP]), &c->dst.val,
- 				    c->dst.bytes, ctxt->vcpu);
- 		if (rc != 0)
-@@ -1369,11 +1379,11 @@ special_insn:
- 		register_address_increment(c->regs[VCPU_REGS_RSP],
+@@ -1376,7 +1372,7 @@ special_insn:
+ 		c->dst.type  = OP_MEM;
+ 		c->dst.bytes = c->op_bytes;
+ 		c->dst.val = c->src.val;
+-		register_address_increment(c->regs[VCPU_REGS_RSP],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSP],
  					   -c->op_bytes);
  		c->dst.ptr = (void *) register_address(
--			ctxt->ss_base, c->regs[VCPU_REGS_RSP]);
-+			c, ctxt->ss_base, c->regs[VCPU_REGS_RSP]);
- 		break;
- 	case 0x58 ... 0x5f: /* pop reg */
- 	pop_instruction:
--		if ((rc = ops->read_std(register_address(ctxt->ss_base,
-+		if ((rc = ops->read_std(register_address(c, ctxt->ss_base,
- 			c->regs[VCPU_REGS_RSP]), c->dst.ptr,
+ 			c, ctxt->ss_base, c->regs[VCPU_REGS_RSP]);
+@@ -1388,7 +1384,7 @@ special_insn:
  			c->op_bytes, ctxt->vcpu)) != 0)
  			goto done;
-@@ -1398,9 +1408,9 @@ special_insn:
- 				1,
- 				(c->d & ByteOp) ? 1 : c->op_bytes,
- 				c->rep_prefix ?
--				address_mask(c->regs[VCPU_REGS_RCX]) : 1,
-+				address_mask(c, c->regs[VCPU_REGS_RCX]) : 1,
- 				(ctxt->eflags & EFLG_DF),
--				register_address(ctxt->es_base,
-+				register_address(c, ctxt->es_base,
- 						 c->regs[VCPU_REGS_RDI]),
- 				c->rep_prefix,
- 				c->regs[VCPU_REGS_RDX]) == 0) {
-@@ -1414,9 +1424,9 @@ special_insn:
- 				0,
- 				(c->d & ByteOp) ? 1 : c->op_bytes,
- 				c->rep_prefix ?
--				address_mask(c->regs[VCPU_REGS_RCX]) : 1,
-+				address_mask(c, c->regs[VCPU_REGS_RCX]) : 1,
- 				(ctxt->eflags & EFLG_DF),
--				register_address(c->override_base ?
-+				register_address(c, c->override_base ?
- 							*c->override_base :
- 							ctxt->ds_base,
- 						 c->regs[VCPU_REGS_RSI]),
-@@ -1506,10 +1516,10 @@ special_insn:
- 	case 0xa4 ... 0xa5:	/* movs */
- 		c->dst.type = OP_MEM;
- 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
--		c->dst.ptr = (unsigned long *)register_address(
-+		c->dst.ptr = (unsigned long *)register_address(c,
- 						   ctxt->es_base,
- 						   c->regs[VCPU_REGS_RDI]);
--		if ((rc = ops->read_emulated(register_address(
-+		if ((rc = ops->read_emulated(register_address(c,
- 		      c->override_base ? *c->override_base :
- 					ctxt->ds_base,
- 					c->regs[VCPU_REGS_RSI]),
-@@ -1526,7 +1536,7 @@ special_insn:
- 	case 0xa6 ... 0xa7:	/* cmps */
- 		c->src.type = OP_NONE; /* Disable writeback. */
- 		c->src.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
--		c->src.ptr = (unsigned long *)register_address(
-+		c->src.ptr = (unsigned long *)register_address(c,
- 				c->override_base ? *c->override_base :
- 						   ctxt->ds_base,
- 						   c->regs[VCPU_REGS_RSI]);
-@@ -1538,7 +1548,7 @@ special_insn:
  
- 		c->dst.type = OP_NONE; /* Disable writeback. */
- 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
--		c->dst.ptr = (unsigned long *)register_address(
-+		c->dst.ptr = (unsigned long *)register_address(c,
- 						   ctxt->es_base,
- 						   c->regs[VCPU_REGS_RDI]);
- 		if ((rc = ops->read_emulated((unsigned long)c->dst.ptr,
-@@ -1562,7 +1572,7 @@ special_insn:
- 	case 0xaa ... 0xab:	/* stos */
- 		c->dst.type = OP_MEM;
- 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
--		c->dst.ptr = (unsigned long *)register_address(
-+		c->dst.ptr = (unsigned long *)register_address(c,
+-		register_address_increment(c->regs[VCPU_REGS_RSP],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSP],
+ 					   c->op_bytes);
+ 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ 		break;
+@@ -1440,7 +1436,7 @@ special_insn:
+ 		int rel = insn_fetch(s8, 1, c->eip);
+ 
+ 		if (test_cc(c->b, ctxt->eflags))
+-			JMP_REL(rel);
++			jmp_rel(c, rel);
+ 		break;
+ 	}
+ 	case 0x80 ... 0x83:	/* Grp1 */
+@@ -1526,10 +1522,10 @@ special_insn:
+ 					&c->dst.val,
+ 					c->dst.bytes, ctxt->vcpu)) != 0)
+ 			goto done;
+-		register_address_increment(c->regs[VCPU_REGS_RSI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+ 							   : c->dst.bytes);
+-		register_address_increment(c->regs[VCPU_REGS_RDI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RDI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+ 							   : c->dst.bytes);
+ 		break;
+@@ -1561,10 +1557,10 @@ special_insn:
+ 
+ 		emulate_2op_SrcV("cmp", c->src, c->dst, ctxt->eflags);
+ 
+-		register_address_increment(c->regs[VCPU_REGS_RSI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->src.bytes
+ 								  : c->src.bytes);
+-		register_address_increment(c->regs[VCPU_REGS_RDI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RDI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+ 								  : c->dst.bytes);
+ 
+@@ -1576,7 +1572,7 @@ special_insn:
  						   ctxt->es_base,
  						   c->regs[VCPU_REGS_RDI]);
  		c->dst.val = c->regs[VCPU_REGS_RAX];
-@@ -1574,7 +1584,7 @@ special_insn:
- 		c->dst.type = OP_REG;
- 		c->dst.bytes = (c->d & ByteOp) ? 1 : c->op_bytes;
- 		c->dst.ptr = (unsigned long *)&c->regs[VCPU_REGS_RAX];
--		if ((rc = ops->read_emulated(register_address(
-+		if ((rc = ops->read_emulated(register_address(c,
- 				c->override_base ? *c->override_base :
- 						   ctxt->ds_base,
- 						 c->regs[VCPU_REGS_RSI]),
+-		register_address_increment(c->regs[VCPU_REGS_RDI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RDI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+ 							   : c->dst.bytes);
+ 		break;
+@@ -1592,7 +1588,7 @@ special_insn:
+ 						 c->dst.bytes,
+ 						 ctxt->vcpu)) != 0)
+ 			goto done;
+-		register_address_increment(c->regs[VCPU_REGS_RSI],
++		register_address_increment(c, &c->regs[VCPU_REGS_RSI],
+ 				       (ctxt->eflags & EFLG_DF) ? -c->dst.bytes
+ 							   : c->dst.bytes);
+ 		break;
+@@ -1631,14 +1627,14 @@ special_insn:
+ 			goto cannot_emulate;
+ 		}
+ 		c->src.val = (unsigned long) c->eip;
+-		JMP_REL(rel);
++		jmp_rel(c, rel);
+ 		c->op_bytes = c->ad_bytes;
+ 		emulate_push(ctxt);
+ 		break;
+ 	}
+ 	case 0xe9: /* jmp rel */
+ 	case 0xeb: /* jmp rel short */
+-		JMP_REL(c->src.val);
++		jmp_rel(c, c->src.val);
+ 		c->dst.type = OP_NONE; /* Disable writeback. */
+ 		break;
+ 	case 0xf4:              /* hlt */
+@@ -1838,7 +1834,7 @@ twobyte_insn:
+ 			goto cannot_emulate;
+ 		}
+ 		if (test_cc(c->b, ctxt->eflags))
+-			JMP_REL(rel);
++			jmp_rel(c, rel);
+ 		c->dst.type = OP_NONE;
+ 		break;
+ 	}
 -- 
 1.5.4.1.1278.gc75be
-
 
