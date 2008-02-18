@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbYBRG6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755586AbYBRHDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbYBRG6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 01:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbYBRG6B
+	id S1755586AbYBRHDO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:03:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbYBRHC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 01:58:01 -0500
-Received: from hapkido.dreamhost.com ([66.33.216.122]:40134 "EHLO
-	hapkido.dreamhost.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752854AbYBRG6A convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 01:58:00 -0500
-Date: Mon, 18 Feb 2008 18:02:01 +1100
-From: Carlos Eduardo Medaglia Dyonisio <cadu@nerdfeliz.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
-Message-Id: <20080218180201.6b3276d5.cadu@nerdfeliz.com>
-In-Reply-To: <200802172304.00322.rjw@sisk.pl>
-References: <200802172304.00322.rjw@sisk.pl>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
+	Mon, 18 Feb 2008 02:02:59 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:49452 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752845AbYBRHC7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 02:02:59 -0500
+Date: Mon, 18 Feb 2008 01:02:54 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: akpm@linux-foundation.org, menage@google.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH 1/7] cgroup: fix and update documentation
+Message-Id: <20080218010255.a808714f.pj@sgi.com>
+In-Reply-To: <47B91C75.6000907@cn.fujitsu.com>
+References: <47B91C75.6000907@cn.fujitsu.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 23:03:59 +0100
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Li Zefan wrote:
+>  *** notify_on_release is disabled in the current patch set. It will be
+> -*** reactivated in a future patch in a less-intrusive manner
+> +*** reactivated in a future patch in a less-intrusive manner.
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=9960
-> Subject		: [2.6.25-rc0 System no longer powers off after shutdown
-> Submitter	: Frans Pop <elendil@planet.nl>
-> Date		: 2008-02-11 16:23
-> References	: http://lkml.org/lkml/2008/2/11/198
-> Handled-By	: Greg KH <gregkh@suse.de>
-> Patch		: http://lkml.org/lkml/2008/2/8/342
+Someone should verify this, but I'm pretty sure that notify_on_release
+is now working ... no longer disabled.  I believe the above line from
+the documentation is out of date.
 
-This bug is happening here too. I didn´t apply the patch yet (I´ll do it
-when I get home), but if cpufreq is disabled, the system powers off
-normally.
-
-I´m using Linus´ git tree, commit 1309d4e68497184d2fd87e892ddf14076c2bda98.
-
-Cheers,
-Carlos
 -- 
-Carlos Eduardo Medaglia Dyonisio
-cadu@nerdfeliz.com
-http://nerdfeliz.com/
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
