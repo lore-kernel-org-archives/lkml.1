@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbYBRWub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761763AbYBRWyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762308AbYBRWub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbYBRWuX
+	id S1761763AbYBRWyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbYBRWyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:50:23 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:58367 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376AbYBRWuW (ORCPT
+	Mon, 18 Feb 2008 17:54:08 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45232 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751483AbYBRWyF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:50:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=oodxRe+YJu4cyiUqFTPFFczca9lADaICcnDOxXK/+YRaZ01HoJ8bkH4X3IcdmN6FIbdgBqODs/SI2tqAetpNui1lvBKPDVCyrZmzKtFPzVsWLbqMJREW/o1RM0Xz0R6BmTY3QV5C1XQhPKcFceYnAhCZSzutANoqZrS5igWFiD8=
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-From: Harvey Harrison <harvey.harrison@gmail.com>
+	Mon, 18 Feb 2008 17:54:05 -0500
+Date: Mon, 18 Feb 2008 22:53:54 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 To: Michael Buesch <mb@bu3sch.de>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>,
+Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
        linux-kernel@vger.kernel.org, linville@tuxdriver.com,
        stefano.brivio@polimi.it
-In-Reply-To: <200802182343.12749.mb@bu3sch.de>
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com>
-	 <200802182324.45267.mb@bu3sch.de>
-	 <20080218223410.GD23181@flint.arm.linux.org.uk>
-	 <200802182343.12749.mb@bu3sch.de>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 14:50:30 -0800
-Message-Id: <1203375030.5757.75.camel@brick>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Message-ID: <20080218225354.GE23181@flint.arm.linux.org.uk>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182324.45267.mb@bu3sch.de> <20080218223410.GD23181@flint.arm.linux.org.uk> <200802182343.12749.mb@bu3sch.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802182343.12749.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-18 at 23:43 +0100, Michael Buesch wrote:
+On Mon, Feb 18, 2008 at 11:43:12PM +0100, Michael Buesch wrote:
 > On Monday 18 February 2008 23:34:10 Russell King wrote:
+> > On Mon, Feb 18, 2008 at 11:24:44PM +0100, Michael Buesch wrote:
+> > > On Monday 18 February 2008 23:13:24 Russell King wrote:
+> > > > On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
+> > > > > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
+> > > > > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
+> > > > > > box using a cross-compiler:
+> > > > > > 
+> > > > > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
+> > > > > > not a modulo of the size of section __mod_ssb_device_table=64.
+> > > > > > Fix definition of struct ssb_device_id in mod_devicetable.h
+> > > > > 
+> > > > > Why does ARM have this special requirement and what is it about?
+> > > > 
+> > > > Because ARM is a 32 bit architecture.
+> > > 
+> > > Ehm, I didn't see this warning on any other architecture nor did we
+> > > have _any_ problem with it on any other architecture.
+> > > This code runs fine on x86_32, x86_64, powerpc and mips, at least.
 > > 
 > > Well, don't expect this driver to work until you fix your broken
 > > assumptions about alignment requirements.
 > 
 > Mr King, I'm not an idiot!
-> 
+
+I get extremely pissed off everytime I have to try to explain random
+alignment issues to people.  "It doesn't work like i386 so it must be
+broken" is a rediculous position to take.
+
 > Can you _please_ explain what makes ARM so special here?
+
+No because I don't really know.
+
 > Why can't we have an array of this structure on ARM?
 > 
 > struct ssb_device_id {
 >        __u16   vendor;
+
+2 bytes
+
 >        __u16   coreid;
+
+2 bytes
+
 >        __u8    revision;
+
+1 byte
+
 > };
-> 
-> I will not apply any patches that I don't understand.
-> Why doesn't the compiler handle this? What's special? Can you please explain?
-> 
 
-I believe this is a good place to start (although I could be totally
-off-base)
+and therefore sizeof this structure will be 5 bytes, but because of the
+ABI rules (which are _explicitly_ allowed by the C standard), it'll
+become 8 bytes due to padding afterwards.
 
-http://lkml.org/lkml/2007/11/22/120
+At a _guess_ and its only a guess, the linker will enforce this rule
+between compilation units, otherwise the implications are disgusting
+(would probably result in all loads having to be individual byte loads
+and instructions to combine the result - since ARM has strict alignment
+requirements.)
 
-Harvey
+What I can say is that the ABI will not be changed because someone in the
+kernel decides they don't like it.  So the options are: either fix it so
+it works, or accept that the code is broken and will never work on ARM.
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
