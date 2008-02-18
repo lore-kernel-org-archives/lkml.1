@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762208AbYBRWnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756301AbYBRWoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762208AbYBRWnq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754061AbYBRWni
+	id S1756301AbYBRWoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:44:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbYBRWoF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:43:38 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:53078 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753924AbYBRWni (ORCPT
+	Mon, 18 Feb 2008 17:44:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:44874 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754061AbYBRWoE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:43:38 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Date: Mon, 18 Feb 2008 23:43:12 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182324.45267.mb@bu3sch.de> <20080218223410.GD23181@flint.arm.linux.org.uk>
-In-Reply-To: <20080218223410.GD23181@flint.arm.linux.org.uk>
+	Mon, 18 Feb 2008 17:44:04 -0500
+Message-ID: <47BA09FE.50507@zytor.com>
+Date: Mon, 18 Feb 2008 14:43:10 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: use explicit timing delay for pit accesses in kernel
+ and pcspkr driver
+References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com> <47B9F2EC.4070308@keyaccess.nl> <47B9FC3A.2010508@zytor.com> <47B9FFD5.6040801@keyaccess.nl> <47BA002B.7070806@zytor.com> <47BA0188.6000808@keyaccess.nl>
+In-Reply-To: <47BA0188.6000808@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802182343.12749.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008 23:34:10 Russell King wrote:
-> On Mon, Feb 18, 2008 at 11:24:44PM +0100, Michael Buesch wrote:
-> > On Monday 18 February 2008 23:13:24 Russell King wrote:
-> > > On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
-> > > > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
-> > > > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
-> > > > > box using a cross-compiler:
-> > > > > 
-> > > > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
-> > > > > not a modulo of the size of section __mod_ssb_device_table=64.
-> > > > > Fix definition of struct ssb_device_id in mod_devicetable.h
-> > > > 
-> > > > Why does ARM have this special requirement and what is it about?
-> > > 
-> > > Because ARM is a 32 bit architecture.
-> > 
-> > Ehm, I didn't see this warning on any other architecture nor did we
-> > have _any_ problem with it on any other architecture.
-> > This code runs fine on x86_32, x86_64, powerpc and mips, at least.
+Rene Herman wrote:
+>>
+>> Uhm, I'm not sure I believe that's safe.
+>>
+>> The PIT is particularly pissy in this case -- the semantics of the PIT 
+>> are ill-defined if there hasn't been a PIT clock between two adjacent 
+>> accesses, so I fully expect that there are chipsets out there which 
+>> will do very bad things in this case.
 > 
-> Well, don't expect this driver to work until you fix your broken
-> assumptions about alignment requirements.
+> Okay. Now that they're isolated, do you have a suggestion for 
+> {in,out}b_pit? You say a PIT clock, so do you think we can bounce of the 
+> PIT iself in this case after all?
 
-Mr King, I'm not an idiot!
+No, I don't think so.
 
-Can you _please_ explain what makes ARM so special here?
-Why can't we have an array of this structure on ARM?
-
-struct ssb_device_id {
-       __u16   vendor;
-       __u16   coreid;
-       __u8    revision;
-};
-
-I will not apply any patches that I don't understand.
-Why doesn't the compiler handle this? What's special? Can you please explain?
-
--- 
-Greetings Michael.
+	-hpa
