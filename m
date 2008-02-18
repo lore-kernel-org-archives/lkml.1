@@ -1,63 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbYBREKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758568AbYBREUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbYBREKa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 23:10:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756128AbYBREKW
+	id S1758568AbYBREUG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 23:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbYBRETy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 23:10:22 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:48318 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755845AbYBREKV (ORCPT
+	Sun, 17 Feb 2008 23:19:54 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58591 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbYBRETx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 23:10:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EuU5z+th6RjcFZOwmYrJzBOZWBIITYZAJyzfMUpsMMW2o/Yh8bLaYpeBuc2baIjikt0QVsZHTtaNM5OxNB44D9qYi30JSUgsmoWzWVPvCGVxXY3omq35i2vNuvtY7A4V+iRzNIZ7CbFFDZzPz6r3GSEtFH0siLfUpzBR+bIzFMw=
-Message-ID: <524f69650802172010vcd1c357nf39baf6cd3cdf9d1@mail.gmail.com>
-Date: Sun, 17 Feb 2008 22:10:19 -0600
-From: "Steve French" <smfrench@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: 2.6.25-rc2-mm1 (cifs build errs)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       sfrench@samba.org
-In-Reply-To: <20080217161435.345829cf.randy.dunlap@oracle.com>
+	Sun, 17 Feb 2008 23:19:53 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com,
+       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH] do_signal_stop: use signal_group_exit()
+References: <20080215180204.GA4359@tv-sign.ru>
+	<20080215193756.9e5b8205.akpm@linux-foundation.org>
+	<20080216140212.GA1421@tv-sign.ru> <20080217231019.GA83@tv-sign.ru>
+Date: Sun, 17 Feb 2008 21:11:14 -0700
+In-Reply-To: <20080217231019.GA83@tv-sign.ru> (Oleg Nesterov's message of
+	"Mon, 18 Feb 2008 02:10:19 +0300")
+Message-ID: <m1skzq9a59.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	 <20080217161435.345829cf.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for spotting this - it only would happen if CONFIG_PROC_FS is disabled.
-I have fixed it in the cifs-2.6.git tree so should be fine next time akpm pulls.
+Oleg Nesterov <oleg@tv-sign.ru> writes:
 
-On Feb 17, 2008 6:14 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
+> On 02/16, Oleg Nesterov wrote:
+>>
+>> On 02/15, Andrew Morton wrote:
+>> >
+>> > ug.  On about the fourth boot with the current -mm lineup I hit:
+>> >
+>> > : BUG: unable to handle kernel paging request at 0000000000200200
+>>                                                    ^^^^^^^^^^^^^^^^
+>> == LIST_POISON2
+>> 
+>> > : IP: [<ffffffff802444f5>] free_pid+0x35/0x8e
+>> 
+>> most probably == hlist_del_rcu(pid_chain)
+>> 
+>> > : Call Trace:
+>> > :  [<ffffffff80237727>] ? release_task+0x152/0x2e5
+>> > :  [<ffffffff80237f81>] ? do_wait+0x6c7/0xa1c
+>> > :  [<ffffffff8022f4cc>] ? default_wake_function+0x0/0xe
+>> > :  [<ffffffff8023e670>] ? sys_rt_sigaction+0x7a/0x98
+>> > :  [<ffffffff80238360>] ? sys_wait4+0x8a/0xa1
+>> > :  [<ffffffff8020be4b>] ? system_call_after_swapgs+0x7b/0x80
+>> 
+>> (Can't understand why there is no detach_pid() in this stack trace,
+>>  but it is the only possible caller of free_pid()).
+
+That is just because of tail call optimization.  There is no need
+to return to detach_pid so we just jumped to free_pid.
+
 >
-> >
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+>> So, detach_pid()->free_pid() hit an already unhashed pid. But this
+>> is not possible?
+>> 
+>> This means we already did detach_pid(), but in that case the previous
+>> detach_pid() has set task->pids[].pid = NULL, and we should OOPS earlier,
+>> somewhere at "if (!hlist_empty(&pid->tasks[tmp]))".
 >
-> CIFS has some build problems:
+> Yes, this is not possible.
 >
-> linux-2.6.25-rc2-mm1/fs/cifs/cifs_debug.c:922: error: static declaration of 'cifs_proc_init' follows non-static declaration
-> linux-2.6.25-rc2-mm1/fs/cifs/cifsproto.h:112: error: previous declaration of 'cifs_proc_init' was here
-> linux-2.6.25-rc2-mm1/fs/cifs/cifs_debug.c:926: error: static declaration of 'cifs_proc_clean' follows non-static declaration
-> linux-2.6.25-rc2-mm1/fs/cifs/cifsproto.h:113: error: previous declaration of 'cifs_proc_clean' was here
-> make[3]: *** [fs/cifs/cifs_debug.o] Error 1
+> But what possible is: we have the unbalanced put_pid(pid) which frees the
+> live pid. The next alloc_pid() gets the same memory, and initializes all
+> pid->tasks[] lists.
 >
-> .config is attached.
+> Now, if that pid was used as PIDTYPE_PGID/PIDTYPE_SID, the next detach_pid()
+> from this pgrp/sid sees that the pid is not used (all lists are hlist_empty),
+> frees this pid again, and the bug manifests itself this way.
 >
-> ---
-> ~Randy
+> 	tiocspgrp:
 >
+> 		put_pid(real_tty->pgrp);
+> 		// ------ WINDOW ------
+> 		real_tty->pgrp = get_pid(pgrp);
+>
+> When bash spawns the command, both parent and child do ioctl(TIOCSPGRP,child),
+> and it is possible that both do put_pid() on the same parent's pid.
+>
+> Damn, when you know what the bug is, the test case is trivial:
+>
+> 	$ while true; do perl -e0; done
+>
+> The kernel crashes.
+>
+>>From 2.6.25-rc2-mm1.bz2 patch:
+>>
+>> -       .ioctl          = tty_ioctl,
+>> +       .unlocked_ioctl = tty_ioctl,
+>
+> and this is why this didn't happen before, I guess.
+>
+>> I'll try to think more about this, but I doubt very much I'll find the
+>> reason :(
+>
+> Ohhh... 7 (!!!) hours of hacking + some vodka did the trick.
+>
+> (Kamalesh, I think you hit the same bug).
+
+Thanks.  Looks like we need to grab a lock there.
+At a quick skim I think we need the tty lock.
 
 
-
--- 
-Thanks,
-
-Steve
+Eric
