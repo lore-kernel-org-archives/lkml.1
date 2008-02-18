@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758775AbYBREaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbYBREam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758775AbYBREaH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 23:30:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758409AbYBRE3v
+	id S1758828AbYBREam (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 23:30:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbYBREad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 23:29:51 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36174 "EHLO gate.crashing.org"
+	Sun, 17 Feb 2008 23:30:33 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44132 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758633AbYBRE3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 23:29:34 -0500
-Subject: Re: [RFC/PATCH] iomap: Add specific address space __iomap for
-	iomap pointers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Reply-To: benh@kernel.crashing.org
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Al Viro <viro@ftp.linux.org.uk>,
-       jgarzik@pobox.com, David Miller <davem@davemloft.net>,
-       David Howells <dhowells@redhat.com>, miles@gnu.org
-In-Reply-To: <20080218033600.A9761DDE35@ozlabs.org>
-References: <20080218033600.A9761DDE35@ozlabs.org>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 15:28:24 +1100
-Message-Id: <1203308904.6740.19.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1755908AbYBREac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 23:30:32 -0500
+Date: Mon, 18 Feb 2008 05:30:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joe Perches <joe@perches.com>
+Cc: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Coding style fixes for
+	arch/x86/kernel/cpu/centaur.c
+Message-ID: <20080218043019.GA21151@elte.hu>
+References: <20080217233023.26764dc9@paolo-desktop> <20080218025645.GB30201@elte.hu> <1203304344.7181.45.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203304344.7181.45.camel@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Mon, 2008-02-18 at 14:35 +1100, Benjamin Herrenschmidt wrote:
-> The current iomap stuff (pci_iomap, ioport_map, pcim_iomap, ...) is
-> confusing as it returns pointers in the _miomem address space.
+* Joe Perches <joe@perches.com> wrote:
+
+> > +		if (e820.map[i].type == E820_RESERVED) {
+> > +			if (e820.map[i].addr >= 0x100000UL &&
+> > +						e820.map[i].addr < clip)
+> >  				clip = e820.map[i].addr;
 > 
-> However, even if that would work on some architectures, the result
-> of those functions is -not- to be used as an __iomem, with accessors
-> such as readl/writel, but only with the new brand of specific accessors
-> (ioread32/iowrite32/...).
+> Doesn't this look better as:
+> 
+> +			if (e820.map[i].addr >= 0x100000UL &&
+> +			    e820.map[i].addr < clip)
 
-Willy and Al raised a good point off-list, is that in all effective
-implementations of this, the MMIO case -does- use compatible virtual
-addresses with ioremap, in fact even powerpc does.
+yeah, it does - i've changed that.
 
-Thus if we consider iomap as a kind of superset of the ioremap space
-with a "hole" in it for PIO, it's fine to use the same address space
-marker and it's fine to interchange the accessors when one -knows-
-for sure it's dealing with memory and not IO.
-
-Thus drop my patch,
-
-Ben.
-
-
+	Ingo
