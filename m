@@ -1,126 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbYBRQlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbYBRQmj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbYBRQlB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:41:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYBRQkv
+	id S1756792AbYBRQmj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:42:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYBRQmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:40:51 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:40060 "EHLO mail.atlantis.sk"
+	Mon, 18 Feb 2008 11:42:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44174 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751070AbYBRQku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:40:50 -0500
-From: Ondrej Zary <linux@rainbow-software.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-Subject: Re: Compex FreedomLine 32 PnP-PCI2 broken with de2104x
-Date: Mon, 18 Feb 2008 17:40:42 +0100
-User-Agent: KMail/1.9.7
-Cc: jgarzik@pobox.com, Linux Kernel <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-References: <200801262158.12016.linux@rainbow-software.org> <200801302123.07783.linux@rainbow-software.org> <20080218032111.GA7970@colo.lackof.org>
-In-Reply-To: <20080218032111.GA7970@colo.lackof.org>
+	id S1751338AbYBRQma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 11:42:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Laszlo Attila Toth <panther@balabit.hu>
+Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
+Date: Mon, 18 Feb 2008 17:41:08 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com> <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz> <47B9928A.60202@balabit.hu>
+In-Reply-To: <47B9928A.60202@balabit.hu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802181740.44196.linux@rainbow-software.org>
+Message-Id: <200802181741.09046.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008 04:21:11 Grant Grundler wrote:
-> On Wed, Jan 30, 2008 at 09:23:06PM +0100, Ondrej Zary wrote:
-> > On Saturday 26 January 2008 21:58:10 Ondrej Zary wrote:
-> > > Hello,
-> > > I was having problems with these FreedomLine cards with Linux before
-> > > but tested it thoroughly today. This card uses DEC 21041 chip and has
-> > > TP and BNC connectors:
-> > >
-> > > 00:12.0 Ethernet controller [0200]: Digital Equipment Corporation
-> > > DECchip 21041 [Tulip Pass 3] [1011:0014] (rev 21)
-> > >
-> > >
-> > > de2104x driver was loaded automatically by udev and card seemed to
-> > > work. Until I disconnected the TP cable and putting it back after a
-> > > while. The driver then switched to (non-existing) AUI port and remained
-> > > there. I tried to set media to TP using ethtool - and the whole kernel
-> > > crashed because of BUG_ON(de_is_running(de));
-> > > in de_set_media(). Seems that the driver is unable to stop the DMA in
-> > > de_stop_rxtx().
->
-> The BUG_ON() is probably fine normally. But the media selection sounds
-> broken. It's possible to select the wrong media type with 21040 chip but
-> shouldn't be possible with 21041. For 21040 support, see
-> de21040_get_media_info(). But de21041_get_srom_info() is expected to
-> determine which media
-> types are supported from SEPROM "media blocks".   My guess is that code
-> is broken since it seems to work with de405 driver. If you care to
-> work the difference, I'd be happy to make a patch to fix that up.
+On Monday, 18 of February 2008, Laszlo Attila Toth wrote:
+> Jiri Kosina wrote:
+> > On Mon, 18 Feb 2008, Laszlo Attila Toth wrote:
+> > 
+> >> Okay, but I can't figure out what's the problem with it. I don't have 
+> >> wireless card on my linux box also I can't test it but everything else 
+> >> works. Swap is mounted. The concurrency cannot be a problem because the 
+> >> write operation is protected by a lock.
+> > 
+> > -               write_lock_bh(&dev_base_lock);
+> > -               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> > -               write_unlock_bh(&dev_base_lock);
+> > +               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
+> > +                       write_lock_bh(&dev_base_lock);
+> > +                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> > +                       write_lock_bh(&dev_base_lock);
+> > +                       modified = 1;
+> > +               }
+> >         }
+> > 
+> > 1) you are accessing dev->link_mode and tb[] outside the dev_base_lock 
+> 
+> yes, because tb[IFLA_LINKMODE] is not used by someone else in this case 
+> only dev->link_mode. Although its value is unpredictable in case of a 
+> concurrent access in the condition, it does not affect the final value 
+> of dev->link_mode but the length of the critical section remains 
+> minimal. The if statement may be inside the lock.
+> 
+> > 2) there is obvious and immediate deadlock -- you acquire the 
+> >    dev_base_lock twice, without any unlock, just look at the chunk above
+> 
+> Indeed:
+> "Feb 16 16:51:49 sandman kernel: BUG: rwlock recursion on CPU#0,"
+> 
+> I missed it. I copied the code from another patch which didn't contain 
+> the two locking statements and when I copied them back it became a 
+> copy-paste bug.
+> 
+> 
+> > 3) even with this deadlock fixed, Rafael states that either NM or 
+> >    wpa_supplicant (I don't recall from top of my head) still don't work
+> 
+> That's bad. Does my suggestion solve the problem? Again:
+> 
+> -      if (modified)
+> -                 netdev_state_change(dev);
+> +      if (modified && dev->flags & IFF_UP)
+> +                 call_netdevice_notifiers(NETDEV_CHANGE, dev)
 
-I don't think that BUG_ON() should be there. It should probably printk a 
-warning but certainly not crash the whole machine.
+All in all, I gather you wanted me to test the patch below. :-)
 
-> Also, from code review, DE2104X driver still has a few places with
-> potential PCI MMIO Write posting issues.  Specifically, I was looking
-> in de_stop_hw() and de_set_media(). Several other bits of code correctly
-> flush MMIO writes: e.g. tulip_read_eeprom().
->
-> > > I commented out AUI detection in the driver - this time it switched to
-> > > BNC after unplugging the cable and remained there. I also attempted to
-> > > reset the chip when de_stop_rxtx failed but failed to do it.
->
-> You'd have to basically hardcode only one media type and it's corresponding
-> parameters.
+Yes, that helps.
 
-That's bad. It just works with de4x5 with any cable at any time.
+Thanks,
+Rafael
 
-> > > Then I found that there's de4x5 driver which supports the same cards as
-> > > de2104x (and some other too) - and this one works fine! I can plug and
-> > > unplug the cable and even change between TP and BNC ports just by
-> > > unplugging one and plugging the other cable in. Unfortunately, this
-> > > driver is blacklisted by default - at least in Slackware and Debian.
->
-> ISTR there was a time when tulip would compete with de4x5 for devices.
-> tulip is the preferred driver. That's clearly no longer the case
-> and perhaps both distro's need to revisit this.
+---
+Fix net/core/rtnetlink.c breakage caused by commit
+45b503548210fe6f23e92b856421c2a3f05fd034
+"[RTNETLINK]: Send a single notification on device state changes."
 
-de4x5 has no MODULE_DEVICE_TABLE for PCI devices anymore, so no conflicts. 
-That's probably good for cards that work with tulip driver but bad for mine 
-card and also probably for some other cards that (should) work with de2104x.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ net/core/rtnetlink.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
->
-> > > The question is: why does de2104x exist? Does it work better with some
-> > > hardware?
->
-> de2104x is a "work in progress".
-> That's why it's marked "EXPERIMENTAL" in the Kconfig file.
-
-Great, it looks to be 6 years old and it's still experimental. Probably 
-because it never worked properly.
-
-I think that de2104x driver should be removed (or at least its 
-MODULE_DEVICE_TABLE) and MODULE_DEVICE_TABLE with only 21040 and 21041 PCI 
-IDs added to de4x5.
-
-I can send a patch if this is acceptable.
-
->
-> > > BTW. Found that the problem exist at least since 2003:
-> > > http://oss.sgi.com/archives/netdev/2003-08/msg00951.html
-> >
-> > Does the de2104x driver work correctly for anyone?
->
-> No idea. I've only used tulip driver.
->
-> thanks for the bug report,
-> grant
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
--- 
-Ondrej Zary
+Index: linux-2.6/net/core/rtnetlink.c
+===================================================================
+--- linux-2.6.orig/net/core/rtnetlink.c
++++ linux-2.6/net/core/rtnetlink.c
+@@ -853,7 +853,7 @@ static int do_setlink(struct net_device 
+ 		if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
+ 			write_lock_bh(&dev_base_lock);
+ 			dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+-			write_lock_bh(&dev_base_lock);
++			write_unlock_bh(&dev_base_lock);
+ 			modified = 1;
+ 		}
+ 	}
+@@ -870,8 +870,8 @@ errout:
+ 	if (send_addr_notify)
+ 		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+ 
+-	if (modified)
+-		netdev_state_change(dev);
++	if (modified && dev->flags & IFF_UP)
++		call_netdevice_notifiers(NETDEV_CHANGE, dev);
+ 
+ 	return err;
+ }
