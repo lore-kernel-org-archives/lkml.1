@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbYBRQNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759392AbYBRQPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbYBRQNX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbYBRQNP
+	id S1759392AbYBRQPT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:15:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbYBRQPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:13:15 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:55728 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754411AbYBRQNO convert rfc822-to-8bit (ORCPT
+	Mon, 18 Feb 2008 11:15:06 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:50645 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754555AbYBRQPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:13:14 -0500
-Date: Mon, 18 Feb 2008 13:13:00 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Toralf =?UTF-8?B?RsO2cnN0ZXI=?= <toralf.foerster@gmx.de>
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: build #355 issue for v2.6.25-rc2-15-g1309d4e in function
- v4l2_i2c_attach
-Message-ID: <20080218131300.529b9862@gaivota>
-In-Reply-To: <200802171121.13119.toralf.foerster@gmx.de>
-References: <200802171121.13119.toralf.foerster@gmx.de>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
-Mime-Version: 1.0
+	Mon, 18 Feb 2008 11:15:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=L9xemLYTULd6EUFpSOPEipq1RbcN+X96iPCZI/2I820zN4Kl2tBSt7GxNB7Y6hlJf98eG+u041fTVh95nptW+9Ovea4Ie06Zj33LaUsPsKvryW3wBeM2qvY4XE/OugedvpxLMOdYQ3zCD11F03ryp2H6CZ3HPdxk/Rzztmzk9A4=
+Message-ID: <2c0942db0802180815r59c2ef1s8d4c2e1e733b79c4@mail.gmail.com>
+Date: Mon, 18 Feb 2008 08:15:01 -0800
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Romano Giannetti" <romanol@upcomillas.es>
+Subject: Re: 2.6.25-rc1/2 regression: first-time login into gnome fails
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1203332161.26696.11.camel@pern>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203332161.26696.11.camel@pern>
+X-Google-Sender-Auth: b80801a39c423063
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 11:21:09 +0100
-Toralf Förster <toralf.foerster@gmx.de> wrote:
+On Feb 18, 2008 2:56 AM, Romano Giannetti <romanol@upcomillas.es> wrote:
+>
+> Hi,
+>
+>         I have a very strange, but fully reproducible, regression with
+> 2.6.25-rc1 -rc2. I have an ubuntu 7.10 fully updated.
+>
+>         The first time after boot, when I login to gnome (through gdm)
+> the login half-fails with a Setting Daemon error: failed to connect to
+> socket /tmp/dbus-<some random stuff>: connection refused. Nothing in the
+> logs, and there is no such socket in /tmp.
+>
+> If I log out and then log in again, all works ok.
+>
+> With 2.6.24.2 there is no such a problem.
+>
+> .config, dmesg (2M buffer size) and syslog here:
+>
+> http://www.dea.icai.upcomillas.es/romano/linux/info/
+>
+>
+>         Romano
+>
+>
+> (Back to 2.6.24.2, because ndiswrapper broke again, and ath5k doesn't
+> like (yet) my atheros adapter...)
 
-> Hello,
-> 
-> the build with the attached .config failed, make ends with:
-> ...
->   CC      arch/x86/lib/usercopy_32.o
->   AR      arch/x86/lib/lib.a
->   LD      vmlinux.o
->   MODPOST vmlinux.o
-> WARNING: modpost: Found 1 section mismatch(es).
-> To see full details build your kernel with:
-> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->   GEN     .version
->   CHK     include/linux/compile.h
->   UPD     include/linux/compile.h
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `v4l2_i2c_attach':
-> (.text+0x26c67): undefined reference to `i2c_attach_client'
-> make: *** [.tmp_vmlinux1] Error 1
+It may be a race. Please try booting up, then waiting for a minute or
+two once you see the gdm login screen, then try logging in.
 
-This bug were already fixed. I'm waiting for Linus to pull. The patches fixing
-it are available at:
+If that succeeds then something (dbus perhaps) is hanging on something
+that eventually times out.
 
-http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git
-
-Cheers,
-Mauro
+Ray
