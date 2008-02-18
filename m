@@ -1,42 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYBRQT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYBRQX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbYBRQT1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:19:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYBRQTT
+	id S1758394AbYBRQX3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBRQXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:19:19 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:14584 "EHLO
-	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753149AbYBRQTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:19:19 -0500
-Date: Mon, 18 Feb 2008 08:13:15 -0800
-From: Daniel Walker <dwalker@mvista.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mike.miller@hp.com, alexn@dsv.su.se
-Subject: Re: 2.6.25-rc2-mm1: new create_proc_entry() users
-Message-ID: <20080218161315.GQ4391@dwalker1.mvista.com>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080217105050.GC6596@martell.zuzino.mipt.ru>
+	Mon, 18 Feb 2008 11:23:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35236 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751650AbYBRQXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 11:23:18 -0500
+Date: Mon, 18 Feb 2008 17:22:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
+       Andreas Dilger <adilger@sun.com>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080218162226.GB4148@elte.hu>
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218131209.GB21080@cs181133002.pp.htv.fi> <20080218133140.GA21635@elte.hu> <20080218151119.GC25098@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080217105050.GC6596@martell.zuzino.mipt.ru>
+In-Reply-To: <20080218151119.GC25098@mit.edu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 01:50:50PM +0300, Alexey Dobriyan wrote:
-> > profile-likely-unlikely-macros
-> > page-owner-tracking-leak-detector
-> > cciss-procfs-updates-to-display-info-about-many-volumes
+
+* Theodore Tso <tytso@mit.edu> wrote:
+
+> On Mon, Feb 18, 2008 at 02:31:40PM +0100, Ingo Molnar wrote:
+> > i guess this explains what static code metrics already suggest:
 > 
-> Guys, create_proc_entry() is slightly racy in case of modular code and
-> proc_create() was invented to fix it. Eventually all create_proc_entry()
-> users will be converted to proc_create(), so please do it for new code.
+> Am I right in assuming that code-quality is just a program which runs 
+> checkpatch.pl and measures the number of warnings and calls them 
+> errors?
 
-profile-likely-unlikely-macros isn't new code, but I can still conver it
-to proc_create() if you like..
+no, it picks the checkpatch.pl errors and calls them errors. The script 
+ignores checkpatch.pl warnings. (although even the checkpatch.pl 
+warnings tend to be correct in like 90% of the cases - YMMV)
 
-Daniel
+but yes, i'd agree with you if you said this was an arbitrary metric 
+that does not map to the functional qualities of the code in a provable 
+way.
+
+(other than the fact that any of these style errors are valid reasons to 
+reject new code that is being offered into the kernel. I.e. if the ext4 
+codebase was submitted as a new, unknown filesystem right now, it would 
+probably have a hard time getting accepted with all those silly style 
+problems in it. Why should "old" subsystems have a lower threshold to 
+meet than newer subsystems? Isnt that unfair? )
+
+And fact is that i've yet to see really crappy code with an excellent 
+checkpatch score, and really good code with a very poor checkpatch 
+score. So i think you have to accept that there's _some_ correlation.
+
+And i believe this comes from the simple fact that mental carelessness 
+is contagious: lack of attention to details on the thinking level 
+subsconsciously slips over into the style space as well. It's hard 
+(impossible) to measure "true" code quality, but the style space is 
+interrelated with the "true quality" space and is easier to measure. I 
+just had a look at the errors and warnings that checkpatch --file emits 
+on fs/ext3/*.c, and if i was maintaining those files i'd be fixing over 
+50% of them - because they are just style inconsistencies often _within 
+the same function_ which would be constant distraction when adding new 
+code.
+
+In fact, the more critical a piece of code, the more strategic it is to 
+users, the less acceptable it is IMO to have "style noise" and similar 
+visual distractions in it. One unusual indentation or spacing, although 
+silly to even mention in isolation, _can_ trick the human eye into 
+glossing over just one critical piece of information to find or avoid a 
+bug. And as a bonus, consistent source code style is also an attractive 
+aesthetic experience to any first-time visitor of your subsystem. BYMMV.
+
+	Ingo
