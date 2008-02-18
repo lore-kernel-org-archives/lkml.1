@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752844AbYBROJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYBROMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752844AbYBROJd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbYBROJY
+	id S1753369AbYBROMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYBROMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:09:24 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:46836 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbYBROJX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:09:23 -0500
-Date: Mon, 18 Feb 2008 19:38:04 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux390@de.ibm.com, linux-s390@vger.kernel.org,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUG] 2.6.25-rc2-mm1 - kernel oops while bootup on s390x
-Message-ID: <20080218140804.GA32151@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B70C3A.4050600@linux.vnet.ibm.com> <20080216114527.48408288.akpm@linux-foundation.org> <alpine.LFD.1.00.0802162048120.7583@apollo.tec.linutronix.de> <alpine.LFD.1.00.0802162050020.7583@apollo.tec.linutronix.de> <47B7ACBE.1090904@linux.vnet.ibm.com> <20080217090616.GA8030@osiris.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20080217090616.GA8030@osiris.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 18 Feb 2008 09:12:24 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:57815 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751438AbYBROMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:12:23 -0500
+Date: Mon, 18 Feb 2008 23:12:43 +0900 (JST)
+Message-Id: <20080218.231243.41197917.anemo@mba.ocn.ne.jp>
+To: hskinnemoen@atmel.com
+Cc: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: atmel_spi clock polarity
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
+References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
+	<20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 10:06:16AM +0100, Heiko Carstens wrote:
-> On Sun, Feb 17, 2008 at 09:10:46AM +0530, Kamalesh Babulal wrote:
-> > To conform the patches causing the panic, I tested the 2.6.24.2 kernel with the futex-fix-init-order.patch and
-> > futex-runtime-enable-pi-and-robust-functionality.patch applied and they seem to cause the kernel
-> > panic.
-> > 
-> > Unable to handle kernel pointer dereference at virtual kernel address 0000000000
-> > 000000
-> > Oops: 0004 #1¨ SMP
-> > Modules linked in:
-> > CPU: 0 Not tainted 2.6.25-rc2-mm1-autotest #1
-> > Process swapper (pid: 1, task: 000000003f830000, ksp: 000000003f83ba48)
-> > Krnl PSW : 0704a00180000000 000000000024b2be (futex_atomic_cmpxchg_std+0x12/0x28
-> > )
-> >            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:2 CC:2 PM:0 EA:3
-> > Krnl GPRS: 0000000000000074 00000000fffffff2 0000000000000000 0000000000000000
-> >            0000000000000000 0000000000000001 0000000000000000 00000000004d0764
-> >            0000000000000000 00000000004d8768 0000000000000000 000000003f83bdb0
-> >            0000000000000040 0000000000343950 00000000000627e4 000000003f83bdb0
-> > Krnl Code: 000000000024b2b2: b90400bf           lgr     %r11,%r15
-> >            000000000024b2b6: a718fff2           lhi     %r1,-14
-> >            000000000024b2ba: b2790100           sacf    256
-> >           >000000000024b2be: ba342000           cs      %r3,%r4,0(%r2)
-> >            000000000024b2c2: 1813               lr      %r1,%r3
-> >            000000000024b2c4: b2790000           sacf    0
-> >            000000000024b2c8: b9140021           lgfr    %r2,%r1
-> >            000000000024b2cc: e3b0b0700004       lg      %r11,112(%r11)
-> > Call Trace:
-> > (<000000003f83bda8>¨ 0x3f83bda8)
-> >  <00000000004bdeec>¨ init+0x30/0x104
-> >  <00000000004b0c40>¨ kernel_init+0x1e0/0x370
-> >  <000000000001a5c6>¨ kernel_thread_starter+0x6/0xc
-> >  <000000000001a5c0>¨ kernel_thread_starter+0x0/0xc
-> > 
-> >  <4>--- end trace 561bb236c800851f ¨---
-> > note: swapper1¨ exited with preempt_count 1
-> > Kernel panic - not syncing: Attempted to kill init!
-Hi Heiko,
+On Mon, 18 Feb 2008 12:42:37 +0100, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> > Here is my quick workaround for this problem.  It makes all CSRn.CPOL
+> > match for the transfer before activating chipselect.  I'm not quite
+> > sure my analysis is correct, and there might be better solution.
+> > Could you give me any comments?
+> 
+> I'm not sure if I fully understand what problem you're seeing. Is the
+> clock state wrong when the chip select is activated?
 
-Thanks for the patch, I have tested patch, it fixes the bootup panic.
+Yes.
 
-Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+> If so, does the patch below help?
 
-Index: linux-2.6/arch/s390/lib/uaccess_std.c
-===================================================================
---- linux-2.6.orig/arch/s390/lib/uaccess_std.c
-+++ linux-2.6/arch/s390/lib/uaccess_std.c
-@@ -293,8 +293,8 @@ int futex_atomic_cmpxchg_std(int __user 
+Hmm... It might fix my problem.  But IIRC the clock state follows
+CSRn.CPOL just before the real transfer.  Like this (previous transfer
+was MODE 0, new transfer is MODE 3):
 
-      asm volatile(
-              "   sacf 256\n"
--             "   cs   %1,%4,0(%5)\n"
--             "0: lr   %0,%1\n"
-+             "0: cs   %1,%4,0(%5)\n"
-+             "   lr   %0,%1\n"
-              "1: sacf 0\n"
-              EX_TABLE(0b,1b)
-              : "=d" (ret), "+d" (oldval), "=m" (*uaddr)
---
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+           T0                T1 T2
+
+CS      ~~~|________________________________________________
+
+CLK     ______________________|~|___|~~~|___|~~~|___|~~~|___
+
+SO      ~~~~~~~~~~~~~~~~~~~~~~~~~~|___|~~~|___|~~~|___|~~~|_
+                                   MSB
+
+T0-T1 was relatively longer then T1-T2.  I suppose T1 is not the
+point of updating MR register, but the point of starting DMA transfer.
+
+Anyway, I will try your patch in a few days.
+
+---
+Atsushi Nemoto
