@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbYBRHG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755930AbYBRHN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbYBRHG7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 02:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbYBRHGw
+	id S1755930AbYBRHN1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbYBRHNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 02:06:52 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:53392 "EHLO e3.ny.us.ibm.com"
+	Mon, 18 Feb 2008 02:13:16 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32839 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbYBRHGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 02:06:51 -0500
-Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@lst.de>, Theodore Tso <tytso@MIT.EDU>,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu
-In-Reply-To: <20080215224608.fb5d11b7.akpm@linux-foundation.org>
-References: <20080215223721.9E0A088A@kernel>
-	 <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu>
-	 <1203122979.13230.3.camel@nimitz.home.sr71.net>
-	 <20080216010030.GC26734@mit.edu>
-	 <20080215171119.578bd302.akpm@linux-foundation.org>
-	 <20080216063129.GA8592@lst.de>
-	 <20080215224608.fb5d11b7.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 17 Feb 2008 23:06:43 -0800
-Message-Id: <1203318403.15017.7.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1752536AbYBRHNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 02:13:15 -0500
+Date: Mon, 18 Feb 2008 08:12:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Dilger <adilger@sun.com>
+Cc: Adrian Bunk <bunk@kernel.org>, sct@redhat.com, akpm@linux-foundation.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080218071229.GA1459@elte.hu>
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218070439.GG3029@webber.adilger.int>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-15 at 22:46 -0800, Andrew Morton wrote:
-> hrm, well, how about putting up a complete and suitably-changelogged patch
-> series for Linus to look at?  That's be a Dave thing I guess.
 
-I'll look at it on Wednesday.  I'm offline until then.
+* Andreas Dilger <adilger@sun.com> wrote:
 
-> I wasn't overawed by the initial patch - why not make those stubs inlined
-> to truly add zero cost??
+> > This patch contains the following cleanups:
+> > - make the following needlessly global function static:
+> >   - journal_check_used_features()
+> > - remove the following unused EXPORT_SYMBOL's:
+> >   - journal_set_features
+> >   - journal_update_superblock
+> 
+> Nack.  I don't object to un-exporting journal_update_superblock(), 
+> because that is pretty internal, but the other functions are intended 
+> specifically for use by code outside of JBD.  For example, the journal 
+> checksum patch for ext3/4 uses journal_set_features() to turn on 
+> features in the JBD superblock.
+> 
+> Similarly, for 64-bit support in ext4 uses journal_set_features() to 
+> set a 64-bit feature flag in the journal superblock.
 
-What I sent was the exact same thing I had from the original patch
-series.  They weren't inlined because shortly after that in the series,
-we make them much bigger.  Merging that exact patch is the easiest for
-me, but I see your point.  I'll rework it  with the others.
+that's an invalid excuse for the benefit of out-of-tree forks: reality 
+is that you can export those functions in the "journal checksum patch" 
+just fine. So you cannot 'nack' a sensible patch on that ground and no 
+maintainer does it on that ground. Once you get your stuff upstream, you 
+can re-add the export.
 
--- Dave
-
+	Ingo
