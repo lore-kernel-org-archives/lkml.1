@@ -1,80 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbYBRRMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYBRRO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759774AbYBRRMR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:12:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYBRRME
+	id S1756949AbYBRRO3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:14:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYBRROT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:12:04 -0500
-Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:50096 "EHLO
-	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbYBRRMD (ORCPT
+	Mon, 18 Feb 2008 12:14:19 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:33906 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbYBRROS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:12:03 -0500
-Date: Mon, 18 Feb 2008 18:11:59 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Unable to continue testing of 2.6.25
-Message-ID: <20080218171159.GA24090@basil.nowhere.org>
-References: <200802171025.30590.elendil@planet.nl> <20080217124650.576990ce@laptopd505.fenrus.org> <p73mypyxx6z.fsf@bingen.suse.de> <20080218085018.05f3190a@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080218085018.05f3190a@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 18 Feb 2008 17:05:35.0989 (UTC) FILETIME=[7A998250:01C87250]
+	Mon, 18 Feb 2008 12:14:18 -0500
+Date: Mon, 18 Feb 2008 09:13:57 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
+       mike.miller@hp.com
+Subject: Re: 2.6.25-rc2-mm1 (cciss build error)
+Message-Id: <20080218091357.eb119a08.randy.dunlap@oracle.com>
+In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 08:50:18AM -0800, Arjan van de Ven wrote:
-> On Mon, 18 Feb 2008 13:31:48 +0100
-> Andi Kleen <andi@firstfloor.org> wrote:
+On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
+
 > 
-> > Arjan van de Ven <arjan@infradead.org> writes:
-> > >
-> > > the initial plan was for a depreciation period. Sadly it was
-> > > untenable since the API was changing entirely to fix bugs and add a
-> > > really important feature (the ability to clflush the exact range
-> > > rather than wbinvd'ing the caches of all cpus in the system), 
-> > 
-> > Just for the record: I posted full patches to implement clflush
-> > support some time ago without changing any exported API. So your
-> > claims that changing the API was needed to implement CLFLUSH are not
-> > correct.
-> 
-> yeah of course it is possible to make things "smart" by having hidden state.
-> doesn't make it right.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
 
-Not sure how you can call global_flush_tlb() "hidden". It was a quite
-exposed interface.
+cciss driver has a bad macro definition:
 
-Anyways there was also no principle reason in the old interface why
-the flush couldn't have been done immediately. The only reason
-it wasn't done was that Linus long ago asked for separate
-flushing to improve efficiency of large remaps.
+#else /* no CONFIG_CISS_SCSI_TAPE */
 
-> > Also I believe some assumptions behind the new API are faulty (in
-> > particular that the caller doesn't fully own the to be changed pages)
-> > and make it actually impossible to implement the cache attribute PTE
-> > changing operation fully correct according to the Intel x86 manual
-> > (which requires temporary unmap)
-> 
-> the Intel x86 manual explicitly only has a temporary unmap when going from a 
-> cached state to a write-combining state. Any other transition does not require
-> an unmap. Which makes this not impossible, all a cached->WC transition needs
+/* If no tape support, then these become defined out of existence */
 
-True, that's a possible workaround for this deficiency of the new API.
+#define cciss_scsi_setup(cntl_num)
+#define cciss_unregister_scsi(ctlr)
+#define cciss_register_scsi(ctlr)
+#define cciss_seq_tape_report(struct seq_file *seq, int ctlr)
 
-> to do is go via an intermediate UC state and the really expensive process from
-> the manual is not needed.
+#endif /* CONFIG_CISS_SCSI_TAPE */
 
-Ok then you're proposing to use a even more expensive operation just
-to patch this over. I guess that will work as long as we assume
-none of the callers cares too much about performance, but trying to describe
-it as an improvement is quite a stretch.
+which causes this error:
 
--Andi
+In file included from /local/linsrc/linux-2.6.25-rc2-mm1/drivers/block/cciss.c:231:
+/local/linsrc/linux-2.6.25-rc2-mm1/drivers/block/cciss_scsi.c:1498:38: error: macro parameters must be comma-separated
+make[3]: *** [drivers/block/cciss.o] Error 1
 
+---
+~Randy
