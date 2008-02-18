@@ -1,248 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbYBRUlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbYBRUl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760962AbYBRUlA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:41:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYBRUkt
+	id S1753367AbYBRUl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbYBRUlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:40:49 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:45588 "EHLO mx1.riseup.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751738AbYBRUks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:40:48 -0500
-Message-Id: <20080218194534.283634243@kaehlcke.net>
-References: <20080218194533.185137318@kaehlcke.net>
-User-Agent: quilt/0.46-1
-Date: Mon, 18 Feb 2008 20:45:36 +0100
-From: matthias@kaehlcke.net
-To: wolfgang@iksw-muees.de, linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: [patch 3/3] Convert ccp->mutex in a mutex
-Content-Disposition: inline; filename=usb-misc-auerswald-ccp_mutex-to-mutex.diff
+	Mon, 18 Feb 2008 15:41:17 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:53438 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752333AbYBRUlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 15:41:16 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAGZ8uUdMQWRV/2dsb2JhbACBWawA
+Date: Mon, 18 Feb 2008 15:41:13 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Jan Kiszka <jan.kiszka@siemens.com>, prasad@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-rt-users@vger.kernel.org,
+       dipankar@in.ibm.com
+Subject: Re: [PATCH 0/2] Markers Implementation for RCU Tracing - Ver II
+Message-ID: <20080218204112.GA22031@Krystal>
+References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal> <20080107195038.GA5119@in.ibm.com> <47B97E63.3070205@siemens.com> <20080218194825.GF10471@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080218194825.GF10471@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:40:51 up 7 days, 16:41,  3 users,  load average: 0.36, 0.77,
+	0.72
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The semaphore ccp->mutex is used as mutex, convert it to the mutex API
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Mon, Feb 18, 2008 at 01:47:31PM +0100, Jan Kiszka wrote:
+> > K. Prasad wrote:
+> > > Hi Ingo,
+> > > 	Please accept these patches into the rt tree which convert the
+> > > existing RCU tracing mechanism for Preempt RCU and RCU Boost into
+> > > markers.
+> > >  
+> > > These patches are based upon the 2.6.24-rc5-rt1 kernel tree.
+> > >  
+> > > Along with marker transition, the RCU Tracing infrastructure has also
+> > > been modularised to be built as a kernel module, thereby enabling
+> > > runtime changes to the RCU Tracing infrastructure.
+> > >  
+> > > Patch [1/2] - Patch that converts the Preempt RCU tracing in
+> > > rcupreempt.c into markers.
+> > >  
+> > > Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
+> > > rcupreempt-boost.c into markers.
+> > >  
+> > 
+> > I have a technical problem with marker-based RCU tracing: It causes
+> > nasty recursions with latest multi-probe marker patches (sorry, no link
+> > at hand, can be found in latest LTTng, maybe also already in -mm). Those
+> > patches introduce a marker probe trampoline like this:
+> > 
+> > void marker_probe_cb(const struct marker *mdata, void *call_private,
+> > 	const char *fmt, ...)
+> > {
+> > 	va_list args;
+> > 	char ptype;
+> > 
+> > 	/*
+> > 	 * rcu_read_lock does two things : disabling preemption to make sure the
+> > 	 * teardown of the callbacks can be done correctly when they are in
+> > 	 * modules and they insure RCU read coherency.
+> > 	 */
+> > 	rcu_read_lock();
+> > 	preempt_disable();
+> > 	...
+> > 
+> > Can we do multi-probe with pure preempt_disable/enable protection? I
+> > guess it's fine with classic RCU, but what about preemptible RCU? Any
+> > suggestion appreciated!
+> 
+> If you substitute synchronize_sched() for synchronize_rcu(), this should
+> work fine.  Of course, this approach would cause RCU tracing to degrade
+> latencies somewhat in -rt.
+> 
+> If tracing is using call_rcu(), we will need to add a call_sched()
+> or some such.
+> 
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+Yes, I use call_rcu, so I guess a call_sched would be useful here.
 
-Index: linux-2.6/drivers/usb/misc/auerswald.c
-===================================================================
---- linux-2.6.orig/drivers/usb/misc/auerswald.c	2008-02-18 20:17:08.000000000 +0100
-+++ linux-2.6/drivers/usb/misc/auerswald.c	2008-02-18 20:28:02.000000000 +0100
-@@ -254,7 +254,7 @@
- /* character device context */
- typedef struct
- {
--	struct semaphore mutex;         /* protection in user context */
-+	struct mutex mutex;		/* protection in user context */
- 	pauerswald_t auerdev;           /* context pointer of assigned device */
-         auerbufctl_t bufctl;            /* controls the buffer chain */
-         auerscon_t scontext;            /* service context */
-@@ -1390,7 +1390,7 @@
- 	}
- 
- 	/* Initialize device descriptor */
--	init_MUTEX( &ccp->mutex);
-+	mutex_init(&ccp->mutex);
- 	mutex_init(&ccp->readmutex);
-         auerbuf_init (&ccp->bufctl);
-         ccp->scontext.id = AUH_UNASSIGNED;
-@@ -1433,23 +1433,23 @@
-         dbg ("ioctl");
- 
- 	/* get the mutexes */
--	if (down_interruptible (&ccp->mutex)) {
-+	if (mutex_lock_interruptible(&ccp->mutex)) {
- 		return -ERESTARTSYS;
- 	}
- 	cp = ccp->auerdev;
- 	if (!cp) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
-                 return -ENODEV;
- 	}
- 	if (mutex_lock_interruptible(&cp->mutex)) {
--		up(&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -ERESTARTSYS;
- 	}
- 
- 	/* Check for removal */
- 	if (!cp->usbdev) {
- 		mutex_unlock(&cp->mutex);
--		up(&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
-                 return -ENODEV;
- 	}
- 
-@@ -1552,7 +1552,7 @@
-         }
- 	/* release the mutexes */
- 	mutex_unlock(&cp->mutex);
--	up(&ccp->mutex);
-+	mutex_unlock(&ccp->mutex);
- 	return ret;
- }
- 
-@@ -1575,18 +1575,18 @@
- 		return 0;
- 
- 	/* get the mutex */
--	if (down_interruptible (&ccp->mutex))
-+	if (mutex_lock_interruptible(&ccp->mutex))
- 		return -ERESTARTSYS;
- 
- 	/* Can we expect to read something? */
- 	if (ccp->scontext.id == AUH_UNASSIGNED) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
-                 return -EIO;
- 	}
- 
- 	/* only one reader per device allowed */
- 	if (mutex_lock_interruptible(&ccp->readmutex)) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -ERESTARTSYS;
- 	}
- 
-@@ -1604,7 +1604,7 @@
- 			if (copy_to_user (buf, bp->bufp+ccp->readoffset, count)) {
- 				dbg ("auerswald_read: copy_to_user failed");
- 				mutex_unlock(&ccp->readmutex);
--				up (&ccp->mutex);
-+				mutex_unlock(&ccp->mutex);
- 				return -EFAULT;
- 			}
- 		}
-@@ -1619,7 +1619,7 @@
- 		/* return with number of bytes read */
- 		if (count) {
- 			mutex_unlock(&ccp->readmutex);
--			up (&ccp->mutex);
-+			mutex_unlock(&ccp->mutex);
- 			return count;
- 		}
- 	}
-@@ -1656,12 +1656,12 @@
- 		set_current_state (TASK_RUNNING);
- 		remove_wait_queue (&ccp->readwait, &wait);
- 		mutex_unlock(&ccp->readmutex);
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -EAGAIN;  /* nonblocking, no data available */
-         }
- 
- 	/* yes, we should wait! */
--	up (&ccp->mutex); /* allow other operations while we wait */
-+	mutex_unlock(&ccp->mutex); /* allow other operations while we wait */
- 	schedule();
- 	remove_wait_queue (&ccp->readwait, &wait);
- 	if (signal_pending (current)) {
-@@ -1676,7 +1676,7 @@
- 		return -EIO;
- 	}
- 
--	if (down_interruptible (&ccp->mutex)) {
-+	if (mutex_lock_interruptible(&ccp->mutex)) {
- 		mutex_unlock(&ccp->readmutex);
- 		return -ERESTARTSYS;
- 	}
-@@ -1708,27 +1708,27 @@
- 
- write_again:
- 	/* get the mutex */
--	if (down_interruptible (&ccp->mutex))
-+	if (mutex_lock_interruptible(&ccp->mutex))
- 		return -ERESTARTSYS;
- 
- 	/* Can we expect to write something? */
- 	if (ccp->scontext.id == AUH_UNASSIGNED) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
-                 return -EIO;
- 	}
- 
- 	cp = ccp->auerdev;
- 	if (!cp) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -ERESTARTSYS;
- 	}
- 	if (mutex_lock_interruptible(&cp->mutex)) {
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -ERESTARTSYS;
- 	}
- 	if (!cp->usbdev) {
- 		mutex_unlock(&cp->mutex);
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -EIO;
- 	}
- 	/* Prepare for sleep */
-@@ -1752,7 +1752,7 @@
- 	/* are there any buffers left? */
- 	if (!bp) {
- 		mutex_unlock(&cp->mutex);
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 
- 		/* NONBLOCK: don't wait */
- 		if (file->f_flags & O_NONBLOCK) {
-@@ -1785,7 +1785,7 @@
- 		/* Wake up all processes waiting for a buffer */
- 		wake_up (&cp->bufferwait);
- 		mutex_unlock(&cp->mutex);
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -EFAULT;
- 	}
- 
-@@ -1810,12 +1810,12 @@
- 		auerbuf_releasebuf (bp);
- 		/* Wake up all processes waiting for a buffer */
- 		wake_up (&cp->bufferwait);
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return -EIO;
- 	}
- 	else {
- 		dbg ("auerchar_write: Write OK");
--		up (&ccp->mutex);
-+		mutex_unlock(&ccp->mutex);
- 		return len;
- 	}
- }
-@@ -1828,7 +1828,7 @@
- 	pauerswald_t cp;
- 	dbg("release");
- 
--	down(&ccp->mutex);
-+	mutex_lock(&ccp->mutex);
- 	cp = ccp->auerdev;
- 	if (cp) {
- 		mutex_lock(&cp->mutex);
-@@ -1845,7 +1845,7 @@
- 		cp = NULL;
- 		ccp->auerdev = NULL;
- 	}
--	up (&ccp->mutex);
-+	mutex_unlock(&ccp->mutex);
- 	auerchar_delete (ccp);
- 
- 	return 0;
+Mathieu
+
+> 						Thanx, Paul
+> 
+> > Jan
+> > 
+> > PS: You will run into this issue if you try to marry latest -rt with
+> > latest LTTng. Straightforward workaround is to comment-out any RCU
+> > trace_mark occurrences.
+> > 
+> > -- 
+> > Siemens AG, Corporate Technology, CT SE 2
+> > Corporate Competence Center Embedded Linux
 
 -- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
-
-              We build too many walls and not enough bridges
-                             (Isaac Newton)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
