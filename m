@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbYBRDMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbYBRDNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbYBRDMf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 22:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYBRDM1
+	id S1758459AbYBRDNT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 22:13:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbYBRDNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 22:12:27 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52676 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753413AbYBRDM1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 22:12:27 -0500
-Date: Mon, 18 Feb 2008 04:12:02 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] x86: fix pcspkr to not use inb_p/outb_p calls.
-Message-ID: <20080218031202.GD30201@elte.hu>
-References: <6gr00g$g7cmat@smtp01.lnh.mail.rcn.net> <20080217222329.1152d689@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080217222329.1152d689@core>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 17 Feb 2008 22:13:05 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1788 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1756806AbYBRDNE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 22:13:04 -0500
+Subject: Re: [PATCH] x86: Coding style fixes for
+	arch/x86/kernel/cpu/centaur.c
+From: Joe Perches <joe@perches.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <20080218025645.GB30201@elte.hu>
+References: <20080217233023.26764dc9@paolo-desktop>
+	 <20080218025645.GB30201@elte.hu>
+Content-Type: text/plain
+Date: Sun, 17 Feb 2008 19:12:24 -0800
+Message-Id: <1203304344.7181.45.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> On Sun, 17 Feb 2008 16:56:42 -0500 (EST)
-> "David P. Reed" <dpreed@reed.com> wrote:
+On Mon, 2008-02-18 at 03:56 +0100, Ingo Molnar wrote:
+>  arch/x86/kernel/cpu/centaur.c |  394 +++++++++++++++++++++---------------------
+>  1 file changed, 199 insertions(+), 195 deletions(-)
 > 
-> > Fix pcspkr driver to use explicit timing delay for access to PIT,
-> > rather than inb_p/outb_p calls, which use insufficiently explicit
-> 
-> NAK.
-> 
-> We now have inb_pit and outb_pit to make the transition easier - can 
-> you switch to those instead of coding internal knowledge outside of 
-> the kernel methods.
+> Index: linux-x86.q/arch/x86/kernel/cpu/centaur.c
+> ===================================================================
+> --- linux-x86.q.orig/arch/x86/kernel/cpu/centaur.c
+> +++ linux-x86.q/arch/x86/kernel/cpu/centaur.c
+> @@ -52,13 +54,12 @@ static u32 __cpuinit ramtop(void)		/* 16
+>  		if (e820.map[i].addr > 0xFFFFFFFFUL)
+>  			continue;
+>  		/*
+> -		 *	Don't MCR over reserved space. Ignore the ISA hole
+> -		 *	we frob around that catastrophe already
+> +		 * Don't MCR over reserved space. Ignore the ISA hole
+> +		 * we frob around that catastrophe already
+>  		 */
+> -
+> -		if (e820.map[i].type == E820_RESERVED)
+> -		{
+> -			if (e820.map[i].addr >= 0x100000UL && e820.map[i].addr < clip)
+> +		if (e820.map[i].type == E820_RESERVED) {
+> +			if (e820.map[i].addr >= 0x100000UL &&
+> +						e820.map[i].addr < clip)
+>  				clip = e820.map[i].addr;
 
-please also Cc: Dmitry Torokhov <dtor_core@ameritech.net> to 
-drivers/input/ patches. Once inb_pit/outb_pit is used, as suggested by 
-Alan, i ack the patch from the arch/x86 perspective.
+Doesn't this look better as:
 
-	Ingo
++			if (e820.map[i].addr >= 0x100000UL &&
++			    e820.map[i].addr < clip)
+
+
