@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756018AbYBRBUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbYBRBVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756018AbYBRBUg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 20:20:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750947AbYBRBUZ
+	id S1757695AbYBRBVS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 20:21:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYBRBVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 20:20:25 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:53941 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750811AbYBRBUY (ORCPT
+	Sun, 17 Feb 2008 20:21:06 -0500
+Received: from science.horizon.com ([192.35.100.1]:11981 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750970AbYBRBVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 20:20:24 -0500
-Message-ID: <47B8DD55.5070800@kernel.org>
-Date: Sun, 17 Feb 2008 17:20:21 -0800
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 17 Feb 2008 20:21:05 -0500
+Message-ID: <20080218012103.31563.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+Date: Sun, 17 Feb 2008 20:21:03 -0500
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Cc: linux@horizon.com
+Subject: IO_DELAY documentation
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: charles.kirsch@internet.lu, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Gerald Combs <gerald@wireshark.org>,
-       Gilbert Ramirez <gram@alumni.rice.edu>, Guy Harris <guy@alum.mit.edu>
-Subject: Re: Possible problem in linux file posix capabilities
-References: <20080217224851.GA9168@sergelap.austin.ibm.com>
-In-Reply-To: <20080217224851.GA9168@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+"make oldconfig" doesn't know how to display the per-item help, so
+something like this is needed.  It was a squeeze to make all the help
+text, plus option prompt, fit into 24 lines.  If you think that's not
+a concern, some of the wording could be improved.
 
-Serge E. Hallyn wrote:
-| Andrew, this pretty much was bound to happen...  we need to figure out
-| what our approach here should be.  My preference is still to allow
-| signals when p->uid==current->uid so long as !SECURE_NOROOT.  Then as
-| people start using secure_noroot process trees they at least must know
-| what they're asking for.
+(Added text placed into the public domain; copyright abandoned.)
 
-I don't think there is anything special about root.
-
-I've been trying to advocate that we remove the *uid == 0 part of this
-check since we discussed it in November:
-
-As I said 11/29/07 [Re: [patch 31/55] file capabilities: don't prevent
-signaling	setuid root programs]:
-| I actually said (11/26/07):
-|> >> Serge,
-|> >>
-|> >> I still feel a bit uneasy about this. Looking ahead, with filesystem
-|> >> capabilities, one can simulate this same situation with a setuid
-|> >> 'non-root' program as follows:
-|> >>
-|> >> [... example of simulating the same situation with setuid-non-root
-...]
-|> >>
-|> >> Is there a compelling reason to include the euid==0 check?
-
-So, independent of whether SECURE_NOROOT is in effect or not, I think
-this particular line should simply read:
-
-~        if (p->uid == current->uid)
-~                 return 0;
-
-| An alternative stance is to accept these things as they come up and try
-| to quickly work with the authors of such programs to work around it.  I
-| suppose in a security sense that's the superior way :)  But it also
-| seems likely to lead to most people choosing option 2 above and not
-| bothering to fix the problem.
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFHuN1V+bHCR3gb8jsRAkqnAJ9o9j9KALm/LxWRoU9PGo9f7UWNYgCdGTQC
-Pm0daaJRMhWzcGSsTNgqj44=
-=EkD2
------END PGP SIGNATURE-----
+diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
+index 864affc..8e2ceb6 100644
+--- a/arch/x86/Kconfig.debug
++++ b/arch/x86/Kconfig.debug
+@@ -157,6 +157,24 @@ config IO_DELAY_TYPE_NONE
+ choice
+ 	prompt "IO delay type"
+ 	default IO_DELAY_0XED
++	help
++	  The original IBM PC required short pauses between consecutive
++	  accesses to its peripheral chips.  This can be provided four ways:
++
++	  * A dummy write to port 0x80 has been used for 15 years, but
++	    crashes the AMD64-based HP dv9000z laptop.  The safest option.
++	  * Port 0xED is also believed safe, and testing is requested.
++	  * Udelay is awkward to implement in the kernel due to processor
++	    speed variations, but should be extremely safe.
++	  * All but the very oldest PCs use emulations of the original
++	    peripheral chips built into a "Super I/O" chip, and usually
++	    do no need the delay at all.  The most efficient option.
++
++	  On the majority of machines, all four options should work.
++	  If you have a computer on which any of the four options
++	  (especially _0XED or _NONE) does not work, please report it,
++	  with a detailed description of the motherboard (and "lspci -nn"
++	  and "dmidecode" output), to linux-kernel@vger.kernel.org.
+ 
+ config IO_DELAY_0X80
+ 	bool "port 0x80 based port-IO delay [recommended]"
