@@ -1,54 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbYBRKbS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758879AbYBRKda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbYBRKbS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 05:31:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbYBRKbI
+	id S1758879AbYBRKda (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756103AbYBRKdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 05:31:08 -0500
-Received: from hpsmtp-eml11.kpnxchange.com ([213.75.38.111]:4924 "EHLO
-	hpsmtp-eml11.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756600AbYBRKbH (ORCPT
+	Mon, 18 Feb 2008 05:33:21 -0500
+Received: from hel.is.scarlet.be ([193.74.71.26]:49251 "EHLO hel.is.scarlet.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755959AbYBRKdU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 05:31:07 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-Date: Mon, 18 Feb 2008 11:31:04 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de> <E1JR1e0-0001R1-IR@faramir.fjphome.nl> <1203324960.24098.3.camel@homer.simson.net>
-In-Reply-To: <1203324960.24098.3.camel@homer.simson.net>
+	Mon, 18 Feb 2008 05:33:20 -0500
+Date: Mon, 18 Feb 2008 11:32:58 +0100
+Message-Id: <JWFJYY$FFD787B99A1F5B88A6B9433FC2F06B18@scarlet.be>
+Subject: Re: parisc compile error
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802181131.04498.elendil@planet.nl>
-X-OriginalArrivalTime: 18 Feb 2008 10:31:04.0884 (UTC) FILETIME=[5D858740:01C87219]
+X-Sensitivity: 3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+From: "rubisher" <rubisher@scarlet.be>
+To: "kyle" <kyle@mcmartin.ca>
+Cc: "kyle" <kyle@mcmartin.ca>, "clameter" <clameter@sgi.com>,
+       "bunk" <bunk@kernel.org>, "kyle" <kyle@parisc-linux.org>,
+       "matthew" <matthew@wil.cx>, "grundler" <grundler@parisc-linux.org>,
+       "linux-parisc" <linux-parisc@vger.kernel.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "rubisher" <rubisher@scarlet.be>
+X-XaM3-API-Version: 4.1 (B54)
+X-type: 0
+X-SenderIP: 57.67.177.33
+X-DCC-scarlet.be-Metrics: hel; whitelist
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008, Mike Galbraith wrote:
-> On Mon, 2008-02-18 at 09:46 +0100, Frans Pop wrote:
-> > Joerg Schilling wrote:
-> > > This fragment is much too short to allow to judge on possible
-> > > reasons. There is a high probability that your problem is caused by
-> > > the cdrecord fork called "wodim".
+> On Wed, Feb 13, 2008 at 01:42:10PM +0100, rubisher wrote:
 > >
-> > There is also the 100% certainty that this reply was from a known troll
-> > and should just be ignored.
->
-> That was rude, crude and uncalled for.
+> 
+> Can I get your Signed-off-by for this, Joel? (I assume you are Joel :)
+> 
+Yes the previous account seems to be a bit old and look more and more like a
+gc; I so take the opportunity of ml's change to use another pseudo ;-)
 
-I have no problems with my reply being called "rude" or "crude". After all, 
-I wasn't even remotely trying to be nice or considerate.
+That said those 2 hunks help build (even boot my 32bit up kernel on b2k and
+d380 boxes):
 
-However, I do think it was called for as mr. Schilling's reply was nothing 
-other than the next mail in his endlessly running FUD campain against 
-Wodim. If you're not aware of that campain, please try for example the 
-following link:
-http://www.google.com/search?q=schilling+wodim&ie=UTF-8&oe=UTF-8
+Signed-off-by: Joel Soete <soete dot joel at scarlet dot be>
 
-Cheers,
-FJP
+(any advise is welcome obviously ;-)
+
+r.
+
+> cheers, Kyle
+> 
+> >     - some lake of changes of kset to kobj:
+> > --- ./drivers/parisc/pdc_stable.c.Orig	2008-01-28 07:09:26.000000000 +0000
+> > +++ ./drivers/parisc/pdc_stable.c	2008-02-13 11:22:16.000000000 +0000
+> > @@ -829,7 +829,7 @@
+> >  				   struct kobj_attribute *attr,
+> >  				   const char *buf, size_t count)
+> >  {
+> > -	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOBOOT);
+> > +	return pdcs_auto_write(kobj, attr, buf, count, PF_AUTOBOOT);
+> >  }
+> >  
+> >  /**
+> > @@ -845,7 +845,7 @@
+> >  				     struct kobj_attribute *attr,
+> >  				     const char *buf, size_t count)
+> >  {
+> > -	return pdcs_auto_write(kset, attr, buf, count, PF_AUTOSEARCH);
+> > +	return pdcs_auto_write(kobj, attr, buf, count, PF_AUTOSEARCH);
+> >  }
+> >  
+> >  /**
+> > @@ -1066,7 +1066,7 @@
+> >  	}
+> >  
+> >  	/* Don't forget the root entries */
+> > -	error = sysfs_create_group(stable_kobj, pdcs_attr_group);
+> > +	error = sysfs_create_group(stable_kobj, &pdcs_attr_group);
+> >  
+> >  	/* register the paths kset as a child of the stable kset */
+> >  	paths_kset = kset_create_and_add("paths", NULL, stable_kobj);
+> > === <> ===
+> > 
+> > And the kernel build, but I don't yet try to boot it...
+> > 
+> > Hth,
+> > r.
+> > ---
+> > Scarlet One, ADSL 6 Mbps + Telephone, from EUR 29,95...
+> > http://www.scarlet.be/
+> > 
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-parisc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+---
+Scarlet One, ADSL 6 Mbps + Telephone, from EUR 29,95...
+http://www.scarlet.be/
+
