@@ -1,90 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbYBRXG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbYBRXNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761623AbYBRXG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 18:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYBRXGV
+	id S1760689AbYBRXNr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 18:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbYBRXNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 18:06:21 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:55075 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753798AbYBRXGV (ORCPT
+	Mon, 18 Feb 2008 18:13:37 -0500
+Received: from host64.cybernetics.com ([70.169.137.4]:4325 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752750AbYBRXNg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 18:06:21 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Date: Tue, 19 Feb 2008 00:04:47 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182343.12749.mb@bu3sch.de> <20080218225354.GE23181@flint.arm.linux.org.uk>
-In-Reply-To: <20080218225354.GE23181@flint.arm.linux.org.uk>
+	Mon, 18 Feb 2008 18:13:36 -0500
+X-Greylist: delayed 1947 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Feb 2008 18:13:36 EST
+Message-ID: <47BA0984.2070306@cybernetics.com>
+Date: Mon, 18 Feb 2008 17:41:08 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Michael Chan <mchan@broadcom.com>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: TG3 network data corruption regression 2.6.24/2.6.23.4
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802190004.47594.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008 23:53:54 Russell King wrote:
-> I get extremely pissed off everytime I have to try to explain random
-> alignment issues to people.  "It doesn't work like i386 so it must be
-> broken" is a rediculous position to take.
+I am experiencing network data corruption with a 3Com 3C996B-T NIC
+(Broadcom NetXtreme BCM5701; driver tg3.ko).  I have identified the
+following patch as the trigger:
 
-I did _not_ ask for a general description of alignment. I did
-_just_ ask why ARM is special and why the compiler didn't handle
-it there. I do develop code for MIPS, so I do know what alignment is about.
+commit fb93134dfc2a6e6fbedc7c270a31da03fce88db9
+Author: Herbert Xu <herbert@gondor.apana.org.au>
+Date:   Wed Nov 14 15:45:21 2007 -0800
 
-> > Can you _please_ explain what makes ARM so special here?
-> 
-> No because I don't really know.
-> 
-> > Why can't we have an array of this structure on ARM?
-> > 
-> > struct ssb_device_id {
-> >        __u16   vendor;
-> 
-> 2 bytes
-> 
-> >        __u16   coreid;
-> 
-> 2 bytes
-> 
-> >        __u8    revision;
-> 
-> 1 byte
-> 
-> > };
-> 
-> and therefore sizeof this structure will be 5 bytes, but because of the
-> ABI rules (which are _explicitly_ allowed by the C standard), it'll
-> become 8 bytes due to padding afterwards.
+    [TCP]: Fix size calculation in sk_stream_alloc_pskb
+   
+    We round up the header size in sk_stream_alloc_pskb so that
+    TSO packets get zero tail room.  Unfortunately this rounding
+    up is not coordinated with the select_size() function used by
+    TCP to calculate the second parameter of sk_stream_alloc_pskb.
+   
+    As a result, we may allocate more than a page of data in the
+    non-TSO case when exactly one page is desired.
+   
+    In fact, rounding up the head room is detrimental in the non-TSO
+    case because it makes memory that would otherwise be available to
+    the payload head room.  TSO doesn't need this either, all it wants
+    is the guarantee that there is no tail room.
+   
+    So this patch fixes this by adjusting the skb_reserve call so that
+    exactly the requested amount (which all callers have calculated in
+    a precise way) is made available as tail room.
+   
+    Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-So that would be fine. I don't see what would be unaligned then.
-Even if it would pad only one byte after the "revision" it would all
-be aligned in a natural way.
+This patch was included in 2.6.24 and 2.6.23.4 -stable.  I am
+experiencing data corruption with kernels 2.6.23.4 - 2.6.23.16, 2.6.24 -
+2.6.24.2, and 2.6.25-rc2-git1.  I have verified that reverting the above
+patch (by hand) makes the data corruption go away on all affected
+kernels (note that in 2.6.25 the function is sk_stream_alloc_skb() in
+net/ipv4/tcp.c rather than sk_stream_alloc_pskb() in include/net/sock.h).
 
-> At a _guess_ and its only a guess, the linker will enforce this rule
-> between compilation units, otherwise the implications are disgusting
-> (would probably result in all loads having to be individual byte loads
-> and instructions to combine the result - since ARM has strict alignment
-> requirements.)
+(Also note that when testing 2.6.23 - 2.6.23.4, I had to apply the
+individual patch "TG3: Fix performance regression on 5705." from 2.6.23.5.)
 
-Yeah. As I said. The code does work on MIPS, which has strict alignment
-requirements as well.
+I do not get data corruption when substituting a SysKonnect 9D21 NIC
+(which also uses the tg3.ko driver) or a Intel PRO/1000 82546GB NIC
+(which uses the e1000.ko driver).
 
-> What I can say is that the ABI will not be changed because someone in the
-> kernel decides they don't like it.  So the options are: either fix it so
-> it works, or accept that the code is broken and will never work on ARM.
+In addition to the 3Com NIC, my computer has a SCSI HBA with an attached
+tape drive.  The network data corruption happens only when reading from
+or writing to the tape drive.  I have tried both a LSI MPT Fusion
+Ultra320 SCSI HBA (mptspi.ko) and a LSI 53c1010 Ultra160 HBA
+(sym53c8xx.ko) with the same results.  The NIC and SCSI HBA are on
+separate PCI-X buses and do not share IRQs.  I am using two completely
+separate test programs to access the SCSI tape drive and test network
+data integrity, so one would expect no interaction between the two tests
+other than CPU scheduling and DMA bandwidth.  There is no disk I/O
+generated by either test program.
 
-I did never ask to change some ABI, sorry.
-Still I can't see why this structure will cause alignment issues, as the
-compiler will pad it up to the right boundary automagically, as you said
-above. Why doesn't the ARM compiler do this?
+The test program that I am using to debug this problem does the following:
 
--- 
-Greetings Michael.
+Computer A (kernel 2.6.24.2; 3Com 3C996B-T NIC):
+   malloc a 64 KB buf aligned to a 4 KB boundary
+   loop {
+      fill 64 KB buf with count data pattern
+      send(64 KB, MSG_MORE) <--- eventually sends corrupted data
+   }
+   (SCSI tape drive test program runs separately in the background)
+
+Computer B (kernel 2.6.12):
+   malloc a 64 KB buf aligned to a 4 KB boundary
+   loop {
+      recv(64 KB, MSG_WAITALL)
+      verify count data pattern in 64 KB buf
+   }
+
+After running for a few seconds, the verify on computer B detects data
+corruption in the last 4 bytes of the 64 KB buffer.  The last 48 bytes
+of the corrupted 64 KB buffer look like this:
+
+D0 D1 D2 D3 | D4 D5 D6 D7 | D8 D9 DA DB | DC DD DE DF
+E0 E1 E2 E3 | E4 E5 E6 E7 | E8 E9 EA EB | EC ED EE EF
+F0 F1 F2 F3 | F4 F5 F6 F7 | F8 F9 FA FB | F4 F5 F6 F7
+
+The last 4 bytes should be "FC FD FE FF" but instead are corrupted to
+"F4 F5 F6 F7", a sequence which came earlier in the data stream.  The
+data corruption always occurs at this same buffer offset and with the
+same 4 earlier bytes duplicated.  However, it occurs on a different
+iteration of the send()/recv() loop each time the test is run.
+
+When I reverse the test so that Computer A does recv() and Computer B
+does send(), the test passes with no data corruption.  Therefore, it
+appears that the data corruption happens on send() but not recv().
+
+The motherboard that I am using is a Commell LV-672.  This motherboard
+has a PCI-express x16 slot but no PCI-X slots.  To plug in the PCI-X NIC
+and SCSI HBA, I am using a SuperMicro CSE-RR2UE-AX riser card which
+plugs into the PCI-express slot on the motherboard and provides 3 PCI-X
+slots (two slots together on one PCI-X bus and one slot on its own PCI-X
+bus).  The data corruption happens with every combination of the 2 cards
+in the 3 slots.
+
+I assume that the above patch is just exposing some way in which the tg3
+driver or the BCM5701 chip are broken.  For now, I am just reverting the
+above patch for kernels that I use until a better solution is
+forthcoming.  I expect that this problem will be difficult for other
+developers to reproduce, but I can test any patches that anyone wants to
+send me.  [ In the meantime, should we revert the patch for 2.6.23.x and
+2.6.24.x -stable, or wait for a fix to tg3? ]
+
+I am not sure if it is relevant, but I am also getting the following
+messages sometimes during testing:
+
+Clocksource tsc unstable (delta = 64002086 ns)
+Time: pit clocksource has been installed.
+
+This seems bogus because the CPU is a Intel Pentium 4 with
+HyperThreading, so the tsc should be reliable.
+
+---
+
+network MTU = 1500
+
+lspci
+00:00.0 Host bridge: Intel Corporation 82915G/P/GV/GL/PL/910GL Memory
+Controller Hub (rev 0e)
+00:01.0 PCI bridge: Intel Corporation 82915G/P/GV/GL/PL/910GL PCI
+Express Root Port (rev 0e)
+00:02.0 VGA compatible controller: Intel Corporation 82915G/GV/910GL
+Integrated Graphics Controller (rev 0e)
+00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #1 (rev 04)
+00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #2 (rev 04)
+00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #3 (rev 04)
+00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB UHCI #4 (rev 04)
+00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) USB2 EHCI Controller (rev 04)
+00:1e.0 PCI bridge: Intel Corporation 82801 PCI Bridge (rev d4)
+00:1f.0 ISA bridge: Intel Corporation 82801FB/FR (ICH6/ICH6R) LPC
+Interface Bridge (rev 04)
+00:1f.1 IDE interface: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6
+Family) IDE Controller (rev 04)
+00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)
+SMBus Controller (rev 04)
+01:00.0 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge
+A (rev 09)
+01:00.2 PCI bridge: Intel Corporation 6700PXH PCI Express-to-PCI Bridge
+B (rev 09)
+02:02.0 SCSI storage controller: LSI Logic / Symbios Logic 53c1030 PCI-X
+Fusion-MPT Dual Ultra320 SCSI (rev 08)
+03:01.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5701
+Gigabit Ethernet (rev 15)
+04:0d.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61)
+
+cat /proc/interrupts
+           CPU0       CPU1      
+  0:         89          0   IO-APIC-edge      timer
+  1:         78          0   IO-APIC-edge      i8042
+  3:         17          0   IO-APIC-edge      serial
+  8:          0          0   IO-APIC-edge      rtc
+  9:          0          0   IO-APIC-fasteoi   acpi
+ 12:          5          0   IO-APIC-edge      i8042
+ 14:        465          0   IO-APIC-edge      ide0
+ 16:          0          0   IO-APIC-fasteoi   uhci_hcd:usb5
+ 17:     149220          0   IO-APIC-fasteoi   eth0
+ 18:      10007          0   IO-APIC-fasteoi   uhci_hcd:usb4, ioc0
+ 19:         29          0   IO-APIC-fasteoi   uhci_hcd:usb3
+ 23:          2          0   IO-APIC-fasteoi   ehci_hcd:usb1, uhci_hcd:usb2
+NMI:          0          0   Non-maskable interrupts
+LOC:       7457      10023   Local timer interrupts
+RES:       1962      14316   Rescheduling interrupts
+CAL:         40         49   function call interrupts
+TLB:         39         76   TLB shootdowns
+TRM:          0          0   Thermal event interrupts
+SPU:          0          0   Spurious interrupts
+ERR:          0
+MIS:          0
+(eth0 == tg3; ioc0 == LSI SCSI HBA)
+
+ifconfig
+eth0      Link encap:Ethernet  HWaddr 00:02:A5:E7:3C:2D 
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:77198 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:3488350 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:5403873 (5.1 MiB)  TX bytes:1000276920 (953.9 MiB)
+          Interrupt:17
+
+lo        Link encap:Local Loopback 
+          inet addr:127.0.0.1  Mask:255.0.0.0
+          UP LOOPBACK RUNNING  MTU:16436  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:0
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+
+information from ethtool
+
+driver: tg3
+version: 3.87
+firmware-version:
+bus-info: 0000:03:01.0
+
+Settings for eth0:
+    Supported ports: [ TP ]
+    Supported link modes:   10baseT/Half 10baseT/Full
+                            100baseT/Half 100baseT/Full
+                            1000baseT/Half 1000baseT/Full
+    Supports auto-negotiation: Yes
+    Advertised link modes:  10baseT/Half 10baseT/Full
+                            100baseT/Half 100baseT/Full
+                            1000baseT/Half 1000baseT/Full
+    Advertised auto-negotiation: Yes
+    Speed: 1000Mb/s
+    Duplex: Full
+    Port: Twisted Pair
+    PHYAD: 1
+    Transceiver: internal
+    Auto-negotiation: on
+    Supports Wake-on: g
+    Wake-on: g
+    Current message level: 0x000000ff (255)
+    Link detected: yes
+
+Offload parameters for eth0:
+rx-checksumming: on
+tx-checksumming: on
+scatter-gather: on
+tcp segmentation offload: off
+udp fragmentation offload: off
+generic segmentation offload: off
+
+NIC statistics:
+     rx_octets: 5403873
+     rx_fragments: 0
+     rx_ucast_packets: 77197
+     rx_mcast_packets: 0
+     rx_bcast_packets: 1
+     rx_fcs_errors: 0
+     rx_align_errors: 0
+     rx_xon_pause_rcvd: 0
+     rx_xoff_pause_rcvd: 0
+     rx_mac_ctrl_rcvd: 0
+     rx_xoff_entered: 0
+     rx_frame_too_long_errors: 0
+     rx_jabbers: 0
+     rx_undersize_packets: 0
+     rx_in_length_errors: 0
+     rx_out_length_errors: 0
+     rx_64_or_less_octet_packets: 2
+     rx_65_to_127_octet_packets: 77196
+     rx_128_to_255_octet_packets: 0
+     rx_256_to_511_octet_packets: 0
+     rx_512_to_1023_octet_packets: 0
+     rx_1024_to_1522_octet_packets: 0
+     rx_1523_to_2047_octet_packets: 0
+     rx_2048_to_4095_octet_packets: 0
+     rx_4096_to_8191_octet_packets: 0
+     rx_8192_to_9022_octet_packets: 0
+     tx_octets: 1000276920
+     tx_collisions: 0
+     tx_xon_sent: 0
+     tx_xoff_sent: 0
+     tx_flow_control: 0
+     tx_mac_errors: 0
+     tx_single_collisions: 0
+     tx_mult_collisions: 0
+     tx_deferred: 0
+     tx_excessive_collisions: 0
+     tx_late_collisions: 0
+     tx_collide_2times: 0
+     tx_collide_3times: 0
+     tx_collide_4times: 0
+     tx_collide_5times: 0
+     tx_collide_6times: 0
+     tx_collide_7times: 0
+     tx_collide_8times: 0
+     tx_collide_9times: 0
+     tx_collide_10times: 0
+     tx_collide_11times: 0
+     tx_collide_12times: 0
+     tx_collide_13times: 0
+     tx_collide_14times: 0
+     tx_collide_15times: 0
+     tx_ucast_packets: 3488350
+     tx_mcast_packets: 0
+     tx_bcast_packets: 0
+     tx_carrier_sense_errors: 0
+     tx_discards: 0
+     tx_errors: 0
+     dma_writeq_full: 0
+     dma_write_prioq_full: 0
+     rxbds_empty: 0
+     rx_discards: 0
+     rx_errors: 0
+     rx_threshold_hit: 11
+     dma_readq_full: 2188114
+     dma_read_prioq_full: 162588
+     tx_comp_queue_full: 0
+     ring_set_send_prod_index: 2901128
+     ring_status_update: 218885
+     nic_irqs: 146494
+     nic_avoided_irqs: 72391
+     nic_tx_threshold_hit: 103584
+
+Tony Battersby
+Cybernetics
+
