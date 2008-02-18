@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYBRLm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbYBRLsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbYBRLm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 06:42:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbYBRLmu
+	id S1759369AbYBRLsW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 06:48:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbYBRLsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 06:42:50 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:59937 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757001AbYBRLmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 06:42:50 -0500
-Date: Mon, 18 Feb 2008 12:42:37 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: David Brownell <david-b@pacbell.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: atmel_spi clock polarity
-Message-ID: <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
-References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 06:48:13 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:50586 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757993AbYBRLsM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 06:48:12 -0500
+To: hch@infradead.org
+CC: akpm@linux-foundation.org, hch@infradead.org, miklos@szeredi.hu,
+       serue@us.ibm.com, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, haveblue@us.ibm.com,
+       viro@ZenIV.linux.org.uk
+In-reply-to: <20080215091438.GA24386@infradead.org> (message from Christoph
+	Hellwig on Fri, 15 Feb 2008 04:14:38 -0500)
+Subject: Re: [patch 00/10] mount ownership and unprivileged mount syscall
+	(v8)
+References: <20080205213616.343721693@szeredi.hu> <20080214222103.a5d8f4fe.akpm@linux-foundation.org> <20080215090120.GA6266@infradead.org> <20080215010951.163fe10e.akpm@linux-foundation.org> <20080215091438.GA24386@infradead.org>
+Message-Id: <E1JR4TX-000392-Cu@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Feb 2008 12:47:59 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 22:32:52 +0900 (JST)
-Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > > > However David and Christoph are beavering away on the r-o-bind-mounts
+> > > > patches and I expect that there will be overlaps with unprivileged mounts.
+> > > > 
+> > > > Could we coordinate things a bit please?  Decide who goes first, review
+> > > > and maybe even test each others work, etc?
+> > > 
+> > > Al is setting up a git tree for VFS work.  per-mount r/o will go in
+> > > as one of the first things, aswell as his rework of the path lookup
+> > > logic to fix the intents mess.
+> > > 
+> > 
+> > That didn't answer my question..
+> 
+> Well, Al as the defacto VFS maintainer will decide on the ordering.
 
-> Here is my quick workaround for this problem.  It makes all CSRn.CPOL
-> match for the transfer before activating chipselect.  I'm not quite
-> sure my analysis is correct, and there might be better solution.
-> Could you give me any comments?
+I think we agreed, that r-o-bind mounts are more important, so they
+should go first.  They have also received more attention.  OTOH there
+isn't really any fundamental conflict between the two patchsets, so
+going in together (if the ro-bind patches miss 2.6.25) should also be
+possible.
 
-I'm not sure if I fully understand what problem you're seeing. Is the
-clock state wrong when the chip select is activated? If so, does the
-patch below help?
+> Reviewing this stuff properly is still on my todo list, but currently
+> I'm busy with more important things.
 
-Haavard
+So what should I do?
 
-diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
-index 293b7ca..4f19b82 100644
---- a/drivers/spi/atmel_spi.c
-+++ b/drivers/spi/atmel_spi.c
-@@ -90,6 +90,7 @@ static void cs_activate(struct atmel_spi *as, struct spi_device *spi)
- 
- 	mr = spi_readl(as, MR);
- 	mr = SPI_BFINS(PCS, ~(1 << spi->chip_select), mr);
-+	spi_writel(as, MR, mr);
- 
- 	dev_dbg(&spi->dev, "activate %u%s, mr %08x\n",
- 			gpio, active ? " (high)" : "",
-@@ -97,7 +98,6 @@ static void cs_activate(struct atmel_spi *as, struct spi_device *spi)
- 
- 	if (!(cpu_is_at91rm9200() && spi->chip_select == 0))
- 		gpio_set_value(gpio, active);
--	spi_writel(as, MR, mr);
- }
- 
- static void cs_deactivate(struct atmel_spi *as, struct spi_device *spi)
+Would Al be wanting to merge this into his VFS tree?  (Can't find it
+on git.kernel.org yet, BTW.)  I can set up a git tree for these
+patches if that makes things easier.
+
+Or should I just wait and resubmit after every kernel release, hoping
+that it becomes _the_ most important thing on Christoph's list ;)
+
+Miklos
