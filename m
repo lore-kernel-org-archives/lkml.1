@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbYBRNGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762022AbYBRNGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761943AbYBRNGY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:06:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761448AbYBRNEI
+	id S1762022AbYBRNGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:06:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760791AbYBRNFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:04:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38843 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761441AbYBRNEG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:04:06 -0500
-Date: Mon, 18 Feb 2008 05:01:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, mike.miller@hp.com, alexn@dsv.su.se,
-       dwalker@mvista.com
-Subject: Re: 2.6.25-rc2-mm1: new create_proc_entry() users
-Message-Id: <20080218050123.ddccf5ef.akpm@linux-foundation.org>
-In-Reply-To: <20080217105050.GC6596@martell.zuzino.mipt.ru>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	<20080217105050.GC6596@martell.zuzino.mipt.ru>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Feb 2008 08:05:15 -0500
+Received: from hobbit.corpit.ru ([81.13.94.6]:22824 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760814AbYBRNFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:05:12 -0500
+Message-ID: <47B98285.3060503@msgid.tls.msk.ru>
+Date: Mon, 18 Feb 2008 16:05:09 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.24: RPC: bad TCP reclen 0x00020090 (large)
+References: <47B2F88D.7080300@msgid.tls.msk.ru> <20080218045812.f1dc6f71.akpm@linux-foundation.org>
+In-Reply-To: <20080218045812.f1dc6f71.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 13:50:50 +0300 Alexey Dobriyan <adobriyan@gmail.com> wrote:
+Andrew Morton wrote:
+> (suitable cc added)
 
-> > profile-likely-unlikely-macros
-> > page-owner-tracking-leak-detector
-> > cciss-procfs-updates-to-display-info-about-many-volumes
-> 
-> Guys, create_proc_entry() is slightly racy in case of modular code and
-> proc_create() was invented to fix it. Eventually all create_proc_entry()
-> users will be converted to proc_create(), so please do it for new code.
+Thanks.  I was meant to sent it to linux-nfs originally, but
+looks like i mistyped the address.
 
-The first two patches are -mm-only debug patches - they won't be going into
-mainline.
+> (regression)
 
-I'll make a note that
-cciss-procfs-updates-to-display-info-about-many-volumes.pach needs
-updating, thanks.
+Now, after we did some more experiments with it, I don't think it's
+a regression.  I'll post a bit more details in a few hours when the
+ongoing testing finishes.  Thanks!
 
+/mjt
