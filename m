@@ -1,93 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbYBRNMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761797AbYBRNNM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760873AbYBRNMx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbYBRNMm
+	id S1761797AbYBRNNM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:13:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761577AbYBRNMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:12:42 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:45596 "EHLO smtp4.pp.htv.fi"
+	Mon, 18 Feb 2008 08:12:52 -0500
+Received: from www.tglx.de ([62.245.132.106]:41963 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757197AbYBRNMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:12:41 -0500
-Date: Mon, 18 Feb 2008 15:12:09 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Andreas Dilger <adilger@sun.com>, sct@redhat.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
-Message-ID: <20080218131209.GB21080@cs181133002.pp.htv.fi>
-References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu>
+	id S1760873AbYBRNMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:12:51 -0500
+Date: Mon, 18 Feb 2008 14:12:25 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Quel Qun <kelk1@comcast.net>
+cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>, marcel@holtmann.org
+Subject: Re: Kernel oops with bluetooth usb dongle
+In-Reply-To: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net>
+Message-ID: <alpine.LFD.1.00.0802181245370.7583@apollo.tec.linutronix.de>
+References: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080218114936.GM8905@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 06:49:36AM -0500, Theodore Tso wrote:
-> On Mon, Feb 18, 2008 at 08:12:29AM +0100, Ingo Molnar wrote:
-> > > Nack.  I don't object to un-exporting journal_update_superblock(), 
-> > > because that is pretty internal, but the other functions are intended 
-> > > specifically for use by code outside of JBD.  For example, the journal 
-> > > checksum patch for ext3/4 uses journal_set_features() to turn on 
-> > > features in the JBD superblock.
-> > > 
-> > > Similarly, for 64-bit support in ext4 uses journal_set_features() to 
-> > > set a 64-bit feature flag in the journal superblock.
+On Mon, 18 Feb 2008, Quel Qun wrote:
+
+Added bluetooth wizards to CC
+
+> > Can you please enable CONFIG_SLUB_DEBUG=y and CONFIG_SLUB_DEBUG_ON=y
+> > and give it another try?
 > > 
-> > that's an invalid excuse for the benefit of out-of-tree forks: reality 
-> > is that you can export those functions in the "journal checksum patch" 
-> > just fine. So you cannot 'nack' a sensible patch on that ground and no 
-> > maintainer does it on that ground. Once you get your stuff upstream, you 
-> > can re-add the export.
+> > If we can not catch it that way, I'll whip up a patch which points us
+> > to the code which added the offending timer.
+> > 
+> Hi,
 > 
-> I'm going to NACK it as well.  This kind of code churn where we make
-> symbols static only to make them non-static again in an existing ext4
-> tree is exactly the sort of needless code churn that makes patches
-> start to conflict and where we need different patches depending on
-> whether it is intended for -mm or linux-next or mainline.
+> Note: I switched to 2.6.25-rc2. The only new thing I see is this message:
 > 
-> I think we really have gotten WAY to doctrinaire on the if there are
-> no in-tree users, it MUST be static.  This is exactly the sort of
-> mindless rules that cause the patch conflicts that have been causing
-> us so much pain and grief.  In this case, it is an existing symbol
-> which is already non-static, and for which we have code in a
-> development tree that will be using it.  In the r/o bind case, it is
-> the insistence that you can't push an existing patch to expose a new
-> interface that must be used later in the r/o bind patchset and which
-> sweeps across all trees changing stuff that causes pain and grief.
+> hci_cmd_task: hci0 command tx timeout
 > 
-> In both cases, if we expand "in-tree" development users to include
-> known development trees that are intended for mainline, it makes all
-> of our lives MUCH easier.  
+> This comes from net/bluetooth/hci_core.c, line 1547
+> 
+> There is indeed a timeout message in the log (at the end of this
+> email). I tried to boot with slub_debug but did not get anything
+> more. slabinfo -v does not report anything either.
+>
+> Crash log:
+> 
+> hci_cmd_task: hci0 command tx timeout
+> BUG: unable to handle kernel paging request at 6b6b6b6b
 
-The following was meant 100% seriously:
+We got some more info ---------------------------^^^^^^^^
+#define POISON_FREE      0x6b    /* for use-after-free poisoning */
 
-This patch has been sent on:
-- 16 May 2006
-- 1 May 2006
-- 23 Apr 2006
+So the timer is in an allocated data structure, which is
+freed without having removed the timer first.
 
+> Sorry for the meager yield.
 
-If me resending this old patch collides with something finally getting a 
-user this part of my patch shouldn't be applied now (but you might get 
-it again in 6 months if it's still unused...).
+Hey, we know already more :)
 
-But generally such conflicts would become visible if "known development 
-trees that are intended for mainline" were in -mm.
+Marcel, any idea on this one ?
 
-> 					- Ted
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Thanks,
+	tglx
