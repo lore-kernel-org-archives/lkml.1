@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbYBRNDL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbYBRND3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760438AbYBRNDL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:03:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760792AbYBRNBz
+	id S1760568AbYBRND3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:03:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760159AbYBRNCB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:01:55 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46894 "EHLO
+	Mon, 18 Feb 2008 08:02:01 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40759 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760781AbYBRNBx (ORCPT
+	by vger.kernel.org with ESMTP id S1760809AbYBRNB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:01:53 -0500
-Date: Mon, 18 Feb 2008 05:00:49 -0800
+	Mon, 18 Feb 2008 08:01:59 -0500
+Date: Mon, 18 Feb 2008 05:00:56 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Chris Rankin <rankincj@yahoo.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
 Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
-Message-Id: <20080218050049.12bcc596.akpm@linux-foundation.org>
+Message-Id: <20080218050056.fb0fc0bf.akpm@linux-foundation.org>
 In-Reply-To: <23590.97305.qm@web52910.mail.re2.yahoo.com>
 References: <23590.97305.qm@web52910.mail.re2.yahoo.com>
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
@@ -38,35 +36,25 @@ On Sun, 17 Feb 2008 00:54:08 +0000 (GMT) Chris Rankin <rankincj@yahoo.com> wrote
 > "acpi=noirq" option. (There does seem to be some unhappiness with bridge symlinks in sysfs,
 > though.)
 > 
-> ...
->
-> sysfs: duplicate filename 'bridge' can not be created
-> WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
->  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
->  [<c0105990>] show_trace+0x12/0x14
->  [<c010613d>] dump_stack+0x6c/0x72
->  [<c01991bf>] sysfs_add_one+0x57/0xbc
->  [<c0199e41>] sysfs_create_link+0xc2/0x10d
->  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
->  [<c034016c>] pci_legacy_init+0x56/0xe3
->  [<c03274e1>] kernel_init+0x157/0x2c3
->  [<c0104c83>] kernel_thread_helper+0x7/0x10
->  =======================
-> pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
-> sysfs: duplicate filename 'bridge' can not be created
-> WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
->  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
->  [<c0105990>] show_trace+0x12/0x14
->  [<c010613d>] dump_stack+0x6c/0x72
->  [<c01991bf>] sysfs_add_one+0x57/0xbc
->  [<c0199e41>] sysfs_create_link+0xc2/0x10d
->  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
->  [<c01bae82>] pci_bus_add_devices+0xa5/0x103
->  [<c034016c>] pci_legacy_init+0x56/0xe3
->  [<c03274e1>] kernel_init+0x157/0x2c3
->  [<c0104c83>] kernel_thread_helper+0x7/0x10
->  =======================
 
-I have a vague feeling that this was fixed, perhaps in 2.6.24.x?
+Is this a regression?  If so, which was the latest kernel version which
+worked OK?
+
+> NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+> NFSD: starting 90-second grace period
+> [drm] Initialized drm 1.1.0 20060810
+> [drm] Initialized mga 3.2.1 20051102 on minor 0
+> agpgart: Found an AGP 2.0 compliant device at 0000:00:00.0.
+> agpgart: Putting AGP V2 device at 0000:00:00.0 into 4x mode
+> agpgart: Putting AGP V2 device at 0000:01:00.0 into 4x mode
+> [drm] Initialized card for AGP DMA.
+> 
+
+and here it hangs, I assume?
+
+Please add initcall_debug to the kernel boot command line so we can see if
+we can get a more precise idea of where it went wrong.
+
+Do you believe that this hang is somehow caused by x86 NMI?  If so, why?
+
+Thanks.
