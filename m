@@ -1,123 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761078AbYBRUNI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbYBRUPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761078AbYBRUNI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:13:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbYBRUMz
+	id S1760662AbYBRUPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYBRUPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:12:55 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:30013 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751483AbYBRUMy (ORCPT
+	Mon, 18 Feb 2008 15:15:25 -0500
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:63102 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752707AbYBRUPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:12:54 -0500
-X-Trace: 667638492/mk-filter-4.mail.uk.tiscali.com/B2C/$THROTTLED-DYNAMIC/CUSTOMER-DYNAMIC-IP/81.1.89.66
-X-SBRS: None
-X-RemoteIP: 81.1.89.66
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aj0KAOt0uUdRAVlC/2dsb2JhbACBWYFLqkA
-Subject: Re: Current git very broken on the Dreamcast
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Magnus Damm <magnus.damm@gmail.com>
-Cc: linux-sh@vger.kernel.org, Paul Mundt <lethal@users.sourceforge.net>,
-       matsu@igel.co.jp, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <aec7e5c30802180057k76050c02wfe3790cf379f7d5f@mail.gmail.com>
-References: <1203187080.6737.3.camel@localhost.localdomain>
-	 <1203191304.6737.5.camel@localhost.localdomain>
-	 <aec7e5c30802180057k76050c02wfe3790cf379f7d5f@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 20:11:20 +0000
-Message-Id: <1203365480.6637.2.camel@localhost.localdomain>
+	Mon, 18 Feb 2008 15:15:24 -0500
+Date: Mon, 18 Feb 2008 21:15:19 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: benh@kernel.crashing.org
+Cc: Christian Krafft <krafft@de.ibm.com>, linux-kernel@vger.kernel.org,
+       parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org
+Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
+Message-ID: <20080218211519.2b159ade@hyperion.delvare>
+In-Reply-To: <1202935374.7296.44.camel@pasglop>
+References: <20080213182800.5c6940a8@de.ibm.com>
+	<20080213183506.7f3e3145@de.ibm.com>
+	<1202935374.7296.44.camel@pasglop>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ben,
 
-On Mon, 2008-02-18 at 17:57 +0900, Magnus Damm wrote:
-> Hi Adrian,
+On Thu, 14 Feb 2008 07:42:54 +1100, Benjamin Herrenschmidt wrote:
 > 
-> [fixed up Matsubara-sans address]
-> 
-> On Feb 17, 2008 4:48 AM, Adrian McMenamin
-> <adrian@newgolddream.dyndns.info> wrote:
-> > On Sat, 2008-02-16 at 18:38 +0000, Adrian McMenamin wrote:
-> > > Will seek to bisect this, but I have just updated my sources to the
-> > > latest git and it is not booting at all on the Dreamcast.
-> > >
-> > > With early printk on, I get nothing more than this before an instant
-> > > reboot:
-> > >
-> > > [    0.000000] Linux version 2.6.25-rc2-10953-g52065cd
-> > > (adrian@bossclass) (gcc version 3.4.6) #511 PREEMPT Sat Feb 16 18:31:43
-> > > GMT 2008
-> > > [    0.000000] console [sercon0] enabled
-> > > [    0.000000] Booting machvec: Sega Dreamcast
-> >
-> >
-> > adrian@bossclass:~/gdrom-dev$ git bisect good
-> > e036eaa681a17f71b64f6d9040fe605555623919 is first bad commit
-> > commit e036eaa681a17f71b64f6d9040fe605555623919
-> > Author: Magnus Damm <magnus.damm@gmail.com>
-> > Date:   Thu Feb 14 13:52:43 2008 +0900
-> >
-> >     sh: use ctrl_in/out for on chip pci access
-> >
-> >     This patch makes sure ctrl_inN/outN are used instead of inN/outN for
-> > on chip
-> >     pci registers. Without this patch addresses may be adjusted using
-> > the value
-> >     in generic_io_base. This patch makes it possible to set
-> > generic_io_base and
-> >     have pci without reading and writing all over the place.
-> >
-> >     Signed-off-by: Magnus Damm <damm@igel.co.jp>
-> >     Acked-by: Katsuya MATSUBARA <matsu@igel.co.jp>
-> >     Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> >
-> > :040000 040000 17a9f8181301e3a082d8a1a2fdef9b13ff1185e4
-> > 87e4a2e912be56b0d12e8a92db9489d6615c31f7 M      arch
-> 
-> Thanks for tracking this down and sorry for breaking the dreamcast pci driver.
-> 
-> Most code for the dreamcast currently do direct register access using
-> ctrl_inN/outN or readN/writeN. Only a few places use inN/outN and
-> depend on the value of generic_io_base. Doing inN/outN is ok (but
-> outdated, use ioreadN/iowriteN instead) in a portable pci/isa driver,
-> but it doesn't make sense for any dreamcast specific code to rely on
-> generic_io_base. For the dreamcast we already know the address at
-> compile time so doing adjustment during runtime is just unnecessary
-> overhead.
-> 
-> It is of course possible to revert the dreamcast-specific bits of the
-> commit you pointed out, but I think the change for the dreamcast makes
-> sense since it makes the code both faster and more uniform.
-> 
-> However, at this point it is broken. Sorry about that. I just looked
-> through all upstream dreamcast-specific code I could find and irq.c is
-> now the only file that does inN/outN. I've attached a patch that makes
-> the irq code independent of generic_io_base. There is also another
-> patch attached that adjusts the addresses of the pci register.
-> Together they should solve the problem you are seeing. Please try them
-> on top of 2.6.25-rc2.
-> 
-> With these patches io ports count from 0 -> 8k-1 instead of being a
-> pointer. We currently rely on generic_io_base logic but that will be
-> changed in the future.
-> 
-Magnus,
+> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
+> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
 
-This fixed the original problem but re-introduced the problem I had
-before with not having a a working nic - so it's stole broken atm:
+For the records, sensors-detect accesses I/O ports, not memory.
 
-[    2.220263] NET: Registered protocol family 17
-[    2.224976] RPC: Registered udp transport module.
-[    2.228064] RPC: Registered tcp transport module.
-[    2.740995] IP-Config: Failed to open eth0
-[    2.744076] IP-Config: No network devices available.
-[    2.748232] Looking up port of RPC 100003/2 on 192.168.61.50
+> > This patch adds a check_legacy_ioports to read_port and write_port.
+> > It will now return ENXIO, instead of oopsing.
+> > 
+> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> 
+> The problem is that this prevents using /proc/ioports to access PCI
+> IO space, which might be useful.
+
+Maybe Christian's patch can be improved to not do the check on these?
+As long as /dev/port exists, it seems reasonable that the kernel should
+behave, no matter what I/O ports are accessed from user-space.
+
+> I hate that sensors_detect.. or for that matter any other userland code
+> that pokes random ports like that. It should die.
+
+What do you propose as a replacement?
+
+And how is userland code poking at random ports different from kernel
+code poking at random ports? We could move sensors-detect inside the
+kernel (and I have some plan to do that) but I fail to see how this
+would solve this particular problem.
+
+> > Index: linux.git/drivers/char/mem.c
+> > ===================================================================
+> > --- linux.git.orig/drivers/char/mem.c
+> > +++ linux.git/drivers/char/mem.c
+> > @@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
+> >  	char __user *tmp = buf;
+> >  
+> >  	if (!access_ok(VERIFY_WRITE, buf, count))
+> > -		return -EFAULT; 
+> > +		return -EFAULT;
+> > +
+> >  	while (count-- > 0 && i < 65536) {
+> > +#ifdef CONFIG_PPC_MERGE
+> > +		if (check_legacy_ioport(i))
+> > +			return -ENXIO;
+> > +#endif
+> >  		if (__put_user(inb(i),tmp) < 0) 
+> >  			return -EFAULT;  
+> >  		i++;
+> > @@ -585,6 +590,7 @@ static ssize_t write_port(struct file * 
+> >  
+> >  	if (!access_ok(VERIFY_READ,buf,count))
+> >  		return -EFAULT;
+> > +
+> >  	while (count-- > 0 && i < 65536) {
+> >  		char c;
+> >  		if (__get_user(c, tmp)) {
+> > @@ -592,6 +598,10 @@ static ssize_t write_port(struct file * 
+> >  				break;
+> >  			return -EFAULT; 
+> >  		}
+> > +#ifdef CONFIG_PPC_MERGE
+> > +		if (check_legacy_ioport(i))
+> > +			return -ENXIO;
+> > +#endif
+> >  		outb(c,i);
+> >  		i++;
+> >  		tmp++;
 
 
+-- 
+Jean Delvare
