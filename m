@@ -1,90 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758852AbYBRXvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759358AbYBRXyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758852AbYBRXvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 18:51:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBRXve
+	id S1759358AbYBRXyn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 18:54:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBRXyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 18:51:34 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41277 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751872AbYBRXvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 18:51:33 -0500
-Date: Mon, 18 Feb 2008 15:50:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Paul Clements <paul.clements@steeleye.com>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
-Message-Id: <20080218155001.97bf5976.akpm@linux-foundation.org>
-In-Reply-To: <20080218181630.GI23197@kernel.dk>
-References: <47AC87AE.9040408@steeleye.com>
-	<20080208093341.b4d02e22.randy.dunlap@oracle.com>
-	<20080208101151.935b575c.akpm@linux-foundation.org>
-	<47ACA250.1010404@steeleye.com>
-	<20080208204510.GD23197@kernel.dk>
-	<20080208204713.GF23197@kernel.dk>
-	<47ACC835.4070102@steeleye.com>
-	<20080208140244.c850a5d3.akpm@linux-foundation.org>
-	<47ADAB00.90306@steeleye.com>
-	<20080212151602.f1803ef0.akpm@linux-foundation.org>
-	<20080218181630.GI23197@kernel.dk>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Feb 2008 18:54:35 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:41660 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752475AbYBRXye (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 18:54:34 -0500
+Message-ID: <47BA1BE1.4060102@sgi.com>
+Date: Tue, 19 Feb 2008 10:59:29 +1100
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.25-rc3
+References: <20080218062736.3322E58C4C11@chook.melbourne.sgi.com> <alpine.LFD.1.00.0802181547560.7833@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802181547560.7833@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 19:16:30 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Tue, Feb 12 2008, Andrew Morton wrote:
-> > On Sat, 09 Feb 2008 08:30:40 -0500
-> > Paul Clements <paul.clements@steeleye.com> wrote:
-> > 
-> > > +		old_e = disk->queue->elevator;
-> > > +		if (elevator_init(disk->queue, "deadline") == 0 ||
-> > > +			elevator_init(disk->queue, "noop") == 0) {
-> > > +				elevator_exit(old_e);
-> > > +		}
-> > >  	}
-> > 
-> > afacit elevator_init() will not trigger a request_module().  And you really
-> > do want to trigger the request_module() here.  Perhaps the block layer
-> > should provide a means of doing so?
+Linus Torvalds wrote:
 > 
-> Good point, I think elevator_get() should do that automatically. Does
-> this look sane?
+> On Mon, 18 Feb 2008, Lachlan McIlroy wrote:
+>> This will update the following files:
+>>
+>>  fs/xfs/Kbuild             |    6 --
+>>  fs/xfs/Makefile           |  118 ++++++++++++++++++++++++++++++++++++++++++++-
+>>  fs/xfs/Makefile-linux-2.6 |  117 --------------------------------------------
+>>  3 files changed, 117 insertions(+), 124 deletions(-)
+>>  delete mode 100644 fs/xfs/Kbuild
 > 
-> diff --git a/block/elevator.c b/block/elevator.c
-> index bafbae0..88318c3 100644
-> --- a/block/elevator.c
-> +++ b/block/elevator.c
-> @@ -134,6 +134,21 @@ static struct elevator_type *elevator_get(const char *name)
->  	spin_lock(&elv_list_lock);
->  
->  	e = elevator_find(name);
-> +	if (!e) {
-> +		char elv[ELV_NAME_MAX + strlen("-iosched")];
-> +
-> +		spin_unlock(&elv_list_lock);
-> +
-> +		if (!strcmp(name, "anticipatory"))
-> +			sprintf(elv, "as-iosched");
-> +		else
-> +			sprintf(elv, "%s-iosched", name);
-> +
-> +		request_module(elv);
-> +		spin_lock(&elv_list_lock);
-> +		e = elevator_find(name);
-> +	}
-> +
->  	if (e && !try_module_get(e->elevator_owner))
->  		e = NULL;
+> Hmm. This didn't actually remove the old Makefile-linux-2.6 file, so it 
+> exists as a zero-length file still.
+> 
+> Was that intentional?
+No, not intentional, just the result of a merge failure I didn't clean up.
+It shouldn't cause any problems and I'll delete it in the next batch of changes.
 
-Looks nice and simple.  There might be some of the usual ordering problems
-when this is called during boot, maybe is-initramfs-available-yet problems,
-etc.  But it's unlikely to make things regress from where they are now.
-
-Should we emit a warning if the desired elevator wasn't available?
+> 
+> 		Linus
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
