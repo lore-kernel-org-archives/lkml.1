@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758635AbYBRKHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbYBRKIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758635AbYBRKHl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 05:07:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbYBRKHc
+	id S1757913AbYBRKIZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755244AbYBRKIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 05:07:32 -0500
-Received: from mx1.suse.de ([195.135.220.2]:60350 "EHLO mx1.suse.de"
+	Mon, 18 Feb 2008 05:08:13 -0500
+Received: from gate.cdi.cz ([80.95.109.117]:49775 "EHLO luxik.cdi.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752571AbYBRKHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 05:07:32 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Subject: Re: [patch] checkpatch.pl: revert wrong --file message
-Date: Mon, 18 Feb 2008 11:07:27 +0100
-User-Agent: KMail/1.9.6
-Cc: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Andy Whitcroft" <andyw@uk.ibm.com>
-References: <20080215165244.GA28358@elte.hu> <alpine.LFD.1.00.0802161026550.7583@apollo.tec.linutronix.de> <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com>
-In-Reply-To: <84144f020802160227u59c9959emb905808cc7141f2b@mail.gmail.com>
+	id S1756906AbYBRKIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 05:08:12 -0500
+Message-ID: <47B95909.8060202@cdi.cz>
+Date: Mon, 18 Feb 2008 11:08:09 +0100
+From: Martin Devera <devik@cdi.cz>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, kaber@trash.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.24 1/1] sch_htb: fix "too many events" situation
+References: <E1JPn6W-0002J2-5x@luxik.cdi.cz>	<20080217.232829.222344360.davem@davemloft.net>	<47B93BE8.7010905@cdi.cz> <20080218.001736.124204016.davem@davemloft.net>
+In-Reply-To: <20080218.001736.124204016.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802181107.27731.ak@suse.de>
+X-Spam-Score: -2.6 (--)
+X-Spam-Report: * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 February 2008 11:27:33 Pekka Enberg wrote:
-> Hi,
+David Miller wrote:
+> From: Martin Devera <devik@cdi.cz>
+> Date: Mon, 18 Feb 2008 09:03:52 +0100
 > 
-> On Feb 16, 2008 12:18 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> > People, who do cleanups - I'm not talking about running lindent here -
-> > read through the code while they fix it up.
-> >
-> > Actually they find bugs that way or at least come up with useful
-> > questions about code which is not obvious in the first place.
-> >
-> > Discouraging such cleanups with a pretty offensive warning is
-> > counterproductive.
+>> aha, ok, I'm not so informed about crossplatform issues.
+>> I was also thining about looking at jiffies value and stop once
+>> it is startjiffy+2, but with NO_HZ introduction, are jiffies
+>> still incremented ?
 > 
-> Well, it's not just about cleanup patches submitted by "newbies". I
-> use checkpatch for development too and the warning is real PITA for
-> that.
+> There should always be at least once cpu tasked with incrementing
+> jiffies.  Lots of stuff would break if not :-)
+> 
 
-Just use --file-force then. That will shut it up.
+Aha ok, so that when (at least one) cpu is busy then I can count on
+jiffies incrementing via do_timer, can't I ?
+So that I'd remove the loop limit altogether but limiting it to
+1 or 2 jiffies to prevent livelock.
+Like
+max_jiff = jiffies+2; /* not +1 at we could be at +0.9999 now */
+while (jiffies<max_jiff) do_hard_potentionaly_long_work();
+if (more_work) schedule_to_next_jiffie();
 
--Andi
- 
+This will keep event queue work load under 66% of system load which
+seems reasonable to me.
 
-
+Would you accept such solution ?
