@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759337AbYBRSOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYBRSQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759337AbYBRSOM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 13:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYBRSN6
+	id S1756824AbYBRSQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 13:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYBRSQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 13:13:58 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34047 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbYBRSN5 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 13:13:57 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: David Howells <dhowells@redhat.com>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Adrian Bunk <bunk@kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
-       lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org,
-       linuxppc-dev@ozlabs.org, Willy Tarreau <w@1wt.eu>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-In-Reply-To: Your message of "Mon, 18 Feb 2008 14:27:10 GMT."
-             <12131.1203344830@redhat.com>
-From: Valdis.Kletnieks@vt.edu
-References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be> <47B70A61.9030306@tiscali.nl> <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi>
-            <12131.1203344830@redhat.com>
+	Mon, 18 Feb 2008 13:16:31 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52411 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbYBRSQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 13:16:29 -0500
+Date: Mon, 18 Feb 2008 19:52:28 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Unable to continue testing of 2.6.25
+Message-ID: <20080218185228.GA29026@one.firstfloor.org>
+References: <200802171025.30590.elendil@planet.nl> <20080217124650.576990ce@laptopd505.fenrus.org> <p73mypyxx6z.fsf@bingen.suse.de> <20080218085018.05f3190a@laptopd505.fenrus.org> <20080218171159.GA24090@basil.nowhere.org> <20080218093215.5cf611a8@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1203358266_2991P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 18 Feb 2008 13:11:06 -0500
-Message-ID: <26571.1203358266@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218093215.5cf611a8@laptopd505.fenrus.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1203358266_2991P
-Content-Type: text/plain; charset=us-ascii
+> I've yet to see a user who wants WC. Lets face it, WC *sucks*. This is why
 
-On Mon, 18 Feb 2008 14:27:10 GMT, David Howells said:
+Interesting.
+ 
+> the folks who care about performance (the graphics guys) stopped using it.
 
-> __builtin_expect() is useful on FRV where you _have_ to give each branch and
-> conditional branch instruction a measure of probability whether the branch
-> will be taken.
+I didn't know this. What do they do instead?
 
-What does gcc do the 99.998% of the time we don't have likely/unlikely coded?
+I understand that WC was added originally because AGP was really slow
+at IO towards the CPU. You mean on PCI-E it is fast enough now
+that standard cached WB works well enough?
 
---==_Exmh_1203358266_2991P
-Content-Type: application/pgp-signature
+> WC is slow, and on modern cpus leads to really bad performance. I'm really
+> half tempted to just ignore WC entirely and suggest that we don't even implement
+> it in the kernel. Yes it's really that bad.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+At least the X server still uses it. In fact there are already some
+performance regression regarding this from differing kernel behavioun
+in the sysfs interfaces vs /dev/mem.
 
-iD8DBQFHuco6cC3lWbTT17ARAh+cAKD5ET97Gyef5yariQO4KkTKYSAucQCgomsw
-NiqkKVG+zUxU2wMpR2NuZbk=
-=ycYU
------END PGP SIGNATURE-----
+What would you recommend should the X server use instead? Always
+map standard WB?  How about on older AGP systems?
 
---==_Exmh_1203358266_2991P--
+-Andi
+
