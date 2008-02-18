@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbYBRJUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbYBRJaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbYBRJUc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 04:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbYBRJUX
+	id S1753845AbYBRJaX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 04:30:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYBRJaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 04:20:23 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34067 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751261AbYBRJUV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 04:20:21 -0500
-Message-ID: <47B94D8C.8040605@bull.net>
-Date: Mon, 18 Feb 2008 10:19:08 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Mon, 18 Feb 2008 04:30:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45578 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbYBRJaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 04:30:06 -0500
+Date: Mon, 18 Feb 2008 10:29:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Coding style fixes for
+	arch/x86/kernel/cpu/centaur.c
+Message-ID: <20080218092944.GA26521@elte.hu>
+References: <20080217233023.26764dc9@paolo-desktop> <20080218025645.GB30201@elte.hu> <4d8e3fd30802180048o39790aedwde2ef1cbb009363e@mail.gmail.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/8] Scaling msgmni to the amount of lowmem
-References: <20080211141646.948191000@bull.net>	<20080211141813.354484000@bull.net> <20080215215916.8566d337.akpm@linux-foundation.org>
-In-Reply-To: <20080215215916.8566d337.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4d8e3fd30802180048o39790aedwde2ef1cbb009363e@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 11 Feb 2008 15:16:47 +0100 Nadia.Derbey@bull.net wrote:
-> 
-> 
->>[PATCH 01/08]
->>
->>This patch computes msg_ctlmni to make it scale with the amount of lowmem.
->>msg_ctlmni is now set to make the message queues occupy 1/32 of the available
->>lowmem.
->>
->>Some cleaning has also been done for the MSGPOOL constant: the msgctl man page
->>says it's not used, but it also defines it as a size in bytes (the code
->>expresses it in Kbytes).
->>
-> 
-> 
-> Something's wrong here.  Running LTP's msgctl08 (specifically:
-> ltp-full-20070228) cripples the machine.  It's a 4-way 4GB x86_64.
-> 
-> http://userweb.kernel.org/~akpm/config-x.txt
-> http://userweb.kernel.org/~akpm/dmesg-x.txt
-> 
-> Normally msgctl08 will complete in a second or two.  With this patch I
-> don't know how long it will take to complete, and the machine is horridly
-> bogged down.  It does recover if you manage to kill msgctl08.  Feels like
-> a terrible memory shortage, but there's plenty of memory free and it isn't
-> swapping.
-> 
-> 
-> 
 
-Before the patchset, msgctl08 used to be run with the old msgmni value: 
-16. Now it is run with a much higher msgmni value (1746 in my case), 
-since it scales to the memory size.
-When I call "msgctl08 100000 16" it completes fast.
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
 
-Doing the follwing on the ref kernel:
-echo 1746 > /proc/sys/kernel/msgmni
-msgctl08 100000 1746
+> >  /*
+> > - *     Set up an actual MCR
+> > + * Set up an actual MCR
+> >   */
+> 
+> This was not highlighted by checkpatch.pl, right? The same applies for 
+> a few other "fix" you did on some comments.
 
-makes th test block too :-(
+correct - it's not fixes, just bringing it in line with the common 
+comment style we use. The file was using lots of inconsistent comment 
+styles.
 
-Will check to see where the problem comes from.
+> [...]
+> >  {
+> > -       u32 mem = ramtop();
+> >         u32 root = power2(mem);
+> > +       u32 mem = ramtop();
+> 
+> Can you please explain the rationale behind this change?
 
-Rgards,
-Nadia
+it's a bug :) It got pointed out by Joe Perches and i fixed it. (the 
+size check would have caught it too)
+
+> > -               E2MMX = 1<<19,
+> > -               EAMD3D = 1<<20,
+> > -       };
+> 
+> I see why you did the cleanup but I think even this part was not
+> catched by checkpatch.pl
+
+yes, as i said:
+
+> > Some of them are real CodingStyle problems, some of them are just 
+> > arbitrary taste details.
+
+checkpatch.pl is a helper tool which highlights some of the clear 
+problem - but when we clean up files we try to make it appear consistent 
+in all its details. My patch was a demonstration of what else can be 
+fixed in a file until it's really clean looking in its entirety.
+
+	Ingo
