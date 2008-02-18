@@ -1,39 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbYBRSVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYBRSdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbYBRSVv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 13:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751141AbYBRSVo
+	id S1755134AbYBRSdc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 13:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYBRSdX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 13:21:44 -0500
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:57085 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750811AbYBRSVn (ORCPT
+	Mon, 18 Feb 2008 13:33:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46364 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbYBRSdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 13:21:43 -0500
-Message-ID: <47B9CCB5.7080703@lwfinger.net>
-Date: Mon, 18 Feb 2008 11:21:41 -0700
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: keyboard dead with 45b5035 - Regression in 2.6.25-rc2
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 18 Feb 2008 13:33:22 -0500
+Date: Mon, 18 Feb 2008 10:32:22 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Unable to continue testing of 2.6.25
+Message-ID: <20080218103222.0f1f4709@laptopd505.fenrus.org>
+In-Reply-To: <20080218185228.GA29026@one.firstfloor.org>
+References: <200802171025.30590.elendil@planet.nl>
+	<20080217124650.576990ce@laptopd505.fenrus.org>
+	<p73mypyxx6z.fsf@bingen.suse.de>
+	<20080218085018.05f3190a@laptopd505.fenrus.org>
+	<20080218171159.GA24090@basil.nowhere.org>
+	<20080218093215.5cf611a8@laptopd505.fenrus.org>
+	<20080218185228.GA29026@one.firstfloor.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The patch "[RTNETLINK]: Send a single notification on device state changes." kills (at least) the 
- > keyboard here. Everything seems to work fine in single user mode, but when init starts spawning 
-of > logins, the keyboard goes bye-bye. Even the power button is ignored. :/
- >
- > I've tried just creating another vt with "chvt 2", but that is insufficient to trigger the bug.
+On Mon, 18 Feb 2008 19:52:28 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
 
-I can confirm this problem. On my system it is not triggered by logins as my system boots into KDE, 
-but as soon as NetworkManager starts and/or makes a connection, the problem is triggered. The 
-wireless system is being used. I found the problem by bisection and confirmed that 
-v2.6.25-rc2-238-gb45e229 will work OK if that commit is reverted.
+> > I've yet to see a user who wants WC. Lets face it, WC *sucks*. This
+> > is why
+> 
+> Interesting.
+>  
+> > the folks who care about performance (the graphics guys) stopped
+> > using it.
+> 
+> I didn't know this. What do they do instead?
 
-Larry
+they use a cached mapping and use clflush for the cases they want to be sure
+the GPU sees the data. This turns out to be faster than WC.
+(think "double to tripple digit percentage")
+
+ 
+> I understand that WC was added originally because AGP was really slow
+> at IO towards the CPU. You mean on PCI-E it is fast enough now
+> that standard cached WB works well enough?
+
+since then the graphics programming paradigm has changed as well;
+WC is really bad for reading data no matter what; it focuses on group writes 
+so that you don't get one transaction per write, but reads are extremely slow.
+And apparently in the current graphics systems (with "composite" and the like)
+all of this stuff doesn't get used anymore. Instead they use cached mappings,
+acceleration engines etc.
+
+> 
+> > WC is slow, and on modern cpus leads to really bad performance. I'm
+> > really half tempted to just ignore WC entirely and suggest that we
+> > don't even implement it in the kernel. Yes it's really that bad.
+> 
+> At least the X server still uses it.
+
+depends on which driver. The new generation Intel graphics ones don't.
+I doubt the proprietary ones do either, those are even more performance tuned.
+I understand that the radeon driver is doing or going to do something similar to the
+Intel driver as well.
+
+> 
+> What would you recommend should the X server use instead? Always
+> map standard WB?  How about on older AGP systems?
+>
+
+the X drivers need to do what is best; the ones with acceleration use WB nowadays.
+(For the Intel driver that is somewhat recent, so it could be that your distro
+doesn't do that yet).
 
 
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
