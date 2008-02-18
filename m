@@ -1,31 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbYBRSdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbYBRSex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbYBRSdc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 13:33:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbYBRSdX
+	id S1757737AbYBRSex (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 13:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbYBRSeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 13:33:23 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46364 "EHLO
+	Mon, 18 Feb 2008 13:34:46 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46388 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751637AbYBRSdW (ORCPT
+	with ESMTP id S1751868AbYBRSep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 13:33:22 -0500
-Date: Mon, 18 Feb 2008 10:32:22 -0800
+	Mon, 18 Feb 2008 13:34:45 -0500
+Date: Mon, 18 Feb 2008 10:33:20 -0800
 From: Arjan van de Ven <arjan@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Unable to continue testing of 2.6.25
-Message-ID: <20080218103222.0f1f4709@laptopd505.fenrus.org>
-In-Reply-To: <20080218185228.GA29026@one.firstfloor.org>
-References: <200802171025.30590.elendil@planet.nl>
-	<20080217124650.576990ce@laptopd505.fenrus.org>
-	<p73mypyxx6z.fsf@bingen.suse.de>
-	<20080218085018.05f3190a@laptopd505.fenrus.org>
-	<20080218171159.GA24090@basil.nowhere.org>
-	<20080218093215.5cf611a8@laptopd505.fenrus.org>
-	<20080218185228.GA29026@one.firstfloor.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: David Howells <dhowells@redhat.com>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Adrian Bunk <bunk@kernel.org>, Roel Kluin <12o3l@tiscali.nl>,
+       lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org,
+       linuxppc-dev@ozlabs.org, Willy Tarreau <w@1wt.eu>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080218103320.41cf096f@laptopd505.fenrus.org>
+In-Reply-To: <26571.1203358266@turing-police.cc.vt.edu>
+References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+	<47B70A61.9030306@tiscali.nl>
+	<20080216092552.325e5726@laptopd505.fenrus.org>
+	<20080216173315.GU8953@1wt.eu>
+	<20080216094226.1e8eede1@laptopd505.fenrus.org>
+	<47B72BFE.9060302@am.sony.com>
+	<20080216103927.2a02352b@laptopd505.fenrus.org>
+	<1203249003.6718.24.camel@concordia>
+	<20080218135609.GD21080@cs181133002.pp.htv.fi>
+	<12131.1203344830@redhat.com>
+	<26571.1203358266@turing-police.cc.vt.edu>
 Organization: Intel
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -37,56 +43,22 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 19:52:28 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
+On Mon, 18 Feb 2008 13:11:06 -0500
+Valdis.Kletnieks@vt.edu wrote:
 
-> > I've yet to see a user who wants WC. Lets face it, WC *sucks*. This
-> > is why
+> On Mon, 18 Feb 2008 14:27:10 GMT, David Howells said:
 > 
-> Interesting.
->  
-> > the folks who care about performance (the graphics guys) stopped
-> > using it.
+> > __builtin_expect() is useful on FRV where you _have_ to give each
+> > branch and conditional branch instruction a measure of probability
+> > whether the branch will be taken.
 > 
-> I didn't know this. What do they do instead?
+> What does gcc do the 99.998% of the time we don't have
+> likely/unlikely coded?
 
-they use a cached mapping and use clflush for the cases they want to be sure
-the GPU sees the data. This turns out to be faster than WC.
-(think "double to tripple digit percentage")
-
- 
-> I understand that WC was added originally because AGP was really slow
-> at IO towards the CPU. You mean on PCI-E it is fast enough now
-> that standard cached WB works well enough?
-
-since then the graphics programming paradigm has changed as well;
-WC is really bad for reading data no matter what; it focuses on group writes 
-so that you don't get one transaction per write, but reads are extremely slow.
-And apparently in the current graphics systems (with "composite" and the like)
-all of this stuff doesn't get used anymore. Instead they use cached mappings,
-acceleration engines etc.
-
-> 
-> > WC is slow, and on modern cpus leads to really bad performance. I'm
-> > really half tempted to just ignore WC entirely and suggest that we
-> > don't even implement it in the kernel. Yes it's really that bad.
-> 
-> At least the X server still uses it.
-
-depends on which driver. The new generation Intel graphics ones don't.
-I doubt the proprietary ones do either, those are even more performance tuned.
-I understand that the radeon driver is doing or going to do something similar to the
-Intel driver as well.
-
-> 
-> What would you recommend should the X server use instead? Always
-> map standard WB?  How about on older AGP systems?
->
-
-the X drivers need to do what is best; the ones with acceleration use WB nowadays.
-(For the Intel driver that is somewhat recent, so it could be that your distro
-doesn't do that yet).
-
+see Andi's email.
+It gets the exact same hints that 95%+ of the kernels unlikely/likely get you,
+because the heuristics in it are usually the same as the kernel programmers 
+heuristics.
 
 
 -- 
