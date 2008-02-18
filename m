@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbYBRSQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760213AbYBRSQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756824AbYBRSQk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 13:16:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYBRSQb
+	id S1760213AbYBRSQx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 13:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbYBRSQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 13:16:31 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52411 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbYBRSQ3 (ORCPT
+	Mon, 18 Feb 2008 13:16:32 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:54187 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752723AbYBRSQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 13:16:29 -0500
-Date: Mon, 18 Feb 2008 19:52:28 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Unable to continue testing of 2.6.25
-Message-ID: <20080218185228.GA29026@one.firstfloor.org>
-References: <200802171025.30590.elendil@planet.nl> <20080217124650.576990ce@laptopd505.fenrus.org> <p73mypyxx6z.fsf@bingen.suse.de> <20080218085018.05f3190a@laptopd505.fenrus.org> <20080218171159.GA24090@basil.nowhere.org> <20080218093215.5cf611a8@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 18 Feb 2008 13:16:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=BEIW0Iiqr1zOCWsnrYeLDHt/lZOw1HR9YRl7jUZC+eQ9E05UJvXMOx/Cu+1CceZ4TQDLOAYj/EUqTE3mF3IHZ1ZMc+6mg+7PymRgwPI18ff5XW5F8pDqxqTyrsykdnRnWFkcVWMkk8jH7bPa2WG5529ZuxKx/+1XjNBgbHC9A54=
+To: "Chris Clayton" <chris2553@googlemail.com>
+Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
+Date: Mon, 18 Feb 2008 19:16:12 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802181911.32128.IvDoorn@gmail.com>
+In-Reply-To: <200802181911.32128.IvDoorn@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080218093215.5cf611a8@laptopd505.fenrus.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802181916.12746.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've yet to see a user who wants WC. Lets face it, WC *sucks*. This is why
+Almost forgot:
 
-Interesting.
- 
-> the folks who care about performance (the graphics guys) stopped using it.
+> > In 2.6.25 kernels, my wireless LAN dies after even the smallest amount
+> > of network activity. The following screen cut shows what I typically
+> > see:
+> 
+> How complete is this failure? Just TX or also RX?
+> 
+> Could you use the tools found here:
+> http://www-user.rhrk.uni-kl.de/~nissler/rt2x00/index.html
+> 
+> and capture all TX/RX frames going through the hardware?
+> Note that after the failure, this dumping facitilty should still report
+> any ping request you might send to the interface.
 
-I didn't know this. What do they do instead?
+Note that this feature is only present in 2.6.25.
 
-I understand that WC was added originally because AGP was really slow
-at IO towards the CPU. You mean on PCI-E it is fast enough now
-that standard cached WB works well enough?
+> I have a series of tests I would like to request from you,
+> you mentioned you already enabled debugfs, and that is just what we need. ;)
+> Please use attached script to create dumps of the hardware register contents.
 
-> WC is slow, and on modern cpus leads to really bad performance. I'm really
-> half tempted to just ignore WC entirely and suggest that we don't even implement
-> it in the kernel. Yes it's really that bad.
+The debugfs register files were moved into a seperate folder somewhere between
+2.6.24 and 2.6.25. This means you might have to edit the file slightly to make it
+point to the correct location of the chipset file.
 
-At least the X server still uses it. In fact there are already some
-performance regression regarding this from differing kernel behavioun
-in the sysfs interfaces vs /dev/mem.
-
-What would you recommend should the X server use instead? Always
-map standard WB?  How about on older AGP systems?
-
--Andi
-
+Ivo
