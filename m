@@ -1,209 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYBRUkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760962AbYBRUlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbYBRUkk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:40:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYBRUkb
+	id S1760962AbYBRUlA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:41:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYBRUkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:40:31 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:45523 "EHLO mx1.riseup.net"
+	Mon, 18 Feb 2008 15:40:49 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:45588 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbYBRUka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:40:30 -0500
-Message-Id: <20080218194533.546348043@kaehlcke.net>
+	id S1751738AbYBRUks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 15:40:48 -0500
+Message-Id: <20080218194534.283634243@kaehlcke.net>
 References: <20080218194533.185137318@kaehlcke.net>
 User-Agent: quilt/0.46-1
-Date: Mon, 18 Feb 2008 20:45:34 +0100
+Date: Mon, 18 Feb 2008 20:45:36 +0100
 From: matthias@kaehlcke.net
 To: wolfgang@iksw-muees.de, linux-usb@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: [patch 1/3] Convert stats_sem in a mutex
-Content-Disposition: inline; filename=usb-misc-auerswald-cp_mutex-to-mutex.diff
+Subject: [patch 3/3] Convert ccp->mutex in a mutex
+Content-Disposition: inline; filename=usb-misc-auerswald-ccp_mutex-to-mutex.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The semaphore cp->mutex is used as mutex, convert it to the mutex API
+The semaphore ccp->mutex is used as mutex, convert it to the mutex API
 
 Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
 Index: linux-2.6/drivers/usb/misc/auerswald.c
 ===================================================================
---- linux-2.6.orig/drivers/usb/misc/auerswald.c	2008-02-18 19:47:18.000000000 +0100
-+++ linux-2.6/drivers/usb/misc/auerswald.c	2008-02-18 19:51:52.000000000 +0100
-@@ -31,6 +31,7 @@
- #include <linux/init.h>
- #include <linux/wait.h>
- #include <linux/usb.h>
-+#include <linux/mutex.h>
- 
- /*-------------------------------------------------------------------*/
- /* Debug support 						     */
-@@ -232,7 +233,7 @@
- /* USB device context */
+--- linux-2.6.orig/drivers/usb/misc/auerswald.c	2008-02-18 20:17:08.000000000 +0100
++++ linux-2.6/drivers/usb/misc/auerswald.c	2008-02-18 20:28:02.000000000 +0100
+@@ -254,7 +254,7 @@
+ /* character device context */
  typedef struct
  {
--	struct semaphore 	mutex;         	    /* protection in user context */
-+	struct mutex 	mutex;         	    /* protection in user context */
- 	char 			name[20];	    /* name of the /dev/usb entry */
- 	unsigned int		dtindex;	    /* index in the device table */
- 	struct usb_device *	usbdev;      	    /* USB device handle */
-@@ -1376,7 +1377,7 @@
- 	if (cp == NULL) {
- 		return -ENODEV;
+-	struct semaphore mutex;         /* protection in user context */
++	struct mutex mutex;		/* protection in user context */
+ 	pauerswald_t auerdev;           /* context pointer of assigned device */
+         auerbufctl_t bufctl;            /* controls the buffer chain */
+         auerscon_t scontext;            /* service context */
+@@ -1390,7 +1390,7 @@
  	}
--	if (down_interruptible (&cp->mutex)) {
-+	if (mutex_lock_interruptible(&cp->mutex)) {
+ 
+ 	/* Initialize device descriptor */
+-	init_MUTEX( &ccp->mutex);
++	mutex_init(&ccp->mutex);
+ 	mutex_init(&ccp->readmutex);
+         auerbuf_init (&ccp->bufctl);
+         ccp->scontext.id = AUH_UNASSIGNED;
+@@ -1433,23 +1433,23 @@
+         dbg ("ioctl");
+ 
+ 	/* get the mutexes */
+-	if (down_interruptible (&ccp->mutex)) {
++	if (mutex_lock_interruptible(&ccp->mutex)) {
  		return -ERESTARTSYS;
  	}
- 
-@@ -1405,7 +1406,7 @@
- 	cp->open_count++;
- 	ccp->auerdev = cp;
- 	dbg("open %s as /dev/%s", cp->dev_desc, cp->name);
--	up (&cp->mutex);
-+	mutex_unlock(&cp->mutex);
- 
- 	/* file IO stuff */
- 	file->f_pos = 0;
-@@ -1413,7 +1414,7 @@
- 	return nonseekable_open(inode, file);
- 
- 	/* Error exit */
--ofail:	up (&cp->mutex);
-+ofail:	mutex_unlock(&cp->mutex);
- 	auerchar_delete (ccp);
- 	return ret;
- }
-@@ -1440,14 +1441,14 @@
- 		up (&ccp->mutex);
+ 	cp = ccp->auerdev;
+ 	if (!cp) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
                  return -ENODEV;
  	}
--	if (down_interruptible (&cp->mutex)) {
-+	if (mutex_lock_interruptible(&cp->mutex)) {
- 		up(&ccp->mutex);
+ 	if (mutex_lock_interruptible(&cp->mutex)) {
+-		up(&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
  		return -ERESTARTSYS;
  	}
  
  	/* Check for removal */
  	if (!cp->usbdev) {
--		up(&cp->mutex);
-+		mutex_unlock(&cp->mutex);
- 		up(&ccp->mutex);
+ 		mutex_unlock(&cp->mutex);
+-		up(&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
                  return -ENODEV;
  	}
-@@ -1550,7 +1551,7 @@
- 		break;
+ 
+@@ -1552,7 +1552,7 @@
          }
  	/* release the mutexes */
--	up(&cp->mutex);
-+	mutex_unlock(&cp->mutex);
- 	up(&ccp->mutex);
+ 	mutex_unlock(&cp->mutex);
+-	up(&ccp->mutex);
++	mutex_unlock(&ccp->mutex);
  	return ret;
  }
-@@ -1721,12 +1722,12 @@
- 		up (&ccp->mutex);
+ 
+@@ -1575,18 +1575,18 @@
+ 		return 0;
+ 
+ 	/* get the mutex */
+-	if (down_interruptible (&ccp->mutex))
++	if (mutex_lock_interruptible(&ccp->mutex))
+ 		return -ERESTARTSYS;
+ 
+ 	/* Can we expect to read something? */
+ 	if (ccp->scontext.id == AUH_UNASSIGNED) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+                 return -EIO;
+ 	}
+ 
+ 	/* only one reader per device allowed */
+ 	if (mutex_lock_interruptible(&ccp->readmutex)) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
  		return -ERESTARTSYS;
  	}
--	if (down_interruptible (&cp->mutex)) {
-+	if (mutex_lock_interruptible(&cp->mutex)) {
- 		up (&ccp->mutex);
+ 
+@@ -1604,7 +1604,7 @@
+ 			if (copy_to_user (buf, bp->bufp+ccp->readoffset, count)) {
+ 				dbg ("auerswald_read: copy_to_user failed");
+ 				mutex_unlock(&ccp->readmutex);
+-				up (&ccp->mutex);
++				mutex_unlock(&ccp->mutex);
+ 				return -EFAULT;
+ 			}
+ 		}
+@@ -1619,7 +1619,7 @@
+ 		/* return with number of bytes read */
+ 		if (count) {
+ 			mutex_unlock(&ccp->readmutex);
+-			up (&ccp->mutex);
++			mutex_unlock(&ccp->mutex);
+ 			return count;
+ 		}
+ 	}
+@@ -1656,12 +1656,12 @@
+ 		set_current_state (TASK_RUNNING);
+ 		remove_wait_queue (&ccp->readwait, &wait);
+ 		mutex_unlock(&ccp->readmutex);
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+ 		return -EAGAIN;  /* nonblocking, no data available */
+         }
+ 
+ 	/* yes, we should wait! */
+-	up (&ccp->mutex); /* allow other operations while we wait */
++	mutex_unlock(&ccp->mutex); /* allow other operations while we wait */
+ 	schedule();
+ 	remove_wait_queue (&ccp->readwait, &wait);
+ 	if (signal_pending (current)) {
+@@ -1676,7 +1676,7 @@
+ 		return -EIO;
+ 	}
+ 
+-	if (down_interruptible (&ccp->mutex)) {
++	if (mutex_lock_interruptible(&ccp->mutex)) {
+ 		mutex_unlock(&ccp->readmutex);
+ 		return -ERESTARTSYS;
+ 	}
+@@ -1708,27 +1708,27 @@
+ 
+ write_again:
+ 	/* get the mutex */
+-	if (down_interruptible (&ccp->mutex))
++	if (mutex_lock_interruptible(&ccp->mutex))
+ 		return -ERESTARTSYS;
+ 
+ 	/* Can we expect to write something? */
+ 	if (ccp->scontext.id == AUH_UNASSIGNED) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+                 return -EIO;
+ 	}
+ 
+ 	cp = ccp->auerdev;
+ 	if (!cp) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+ 		return -ERESTARTSYS;
+ 	}
+ 	if (mutex_lock_interruptible(&cp->mutex)) {
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
  		return -ERESTARTSYS;
  	}
  	if (!cp->usbdev) {
--		up (&cp->mutex);
-+		mutex_unlock(&cp->mutex);
- 		up (&ccp->mutex);
+ 		mutex_unlock(&cp->mutex);
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
  		return -EIO;
  	}
-@@ -1750,7 +1751,7 @@
- 
+ 	/* Prepare for sleep */
+@@ -1752,7 +1752,7 @@
  	/* are there any buffers left? */
  	if (!bp) {
--		up (&cp->mutex);
-+		mutex_unlock(&cp->mutex);
- 		up (&ccp->mutex);
+ 		mutex_unlock(&cp->mutex);
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
  
  		/* NONBLOCK: don't wait */
-@@ -1783,7 +1784,7 @@
+ 		if (file->f_flags & O_NONBLOCK) {
+@@ -1785,7 +1785,7 @@
+ 		/* Wake up all processes waiting for a buffer */
+ 		wake_up (&cp->bufferwait);
+ 		mutex_unlock(&cp->mutex);
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+ 		return -EFAULT;
+ 	}
+ 
+@@ -1810,12 +1810,12 @@
  		auerbuf_releasebuf (bp);
  		/* Wake up all processes waiting for a buffer */
  		wake_up (&cp->bufferwait);
--		up (&cp->mutex);
-+		mutex_unlock(&cp->mutex);
- 		up (&ccp->mutex);
- 		return -EFAULT;
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+ 		return -EIO;
  	}
-@@ -1803,7 +1804,7 @@
- 		    auerchar_ctrlwrite_complete, bp);
- 	/* up we go */
- 	ret = auerchain_submit_urb (&cp->controlchain, bp->urbp);
--	up (&cp->mutex);
-+	mutex_unlock(&cp->mutex);
- 	if (ret) {
- 		dbg ("auerchar_write: nonzero result of auerchain_submit_urb %d", ret);
- 		auerbuf_releasebuf (bp);
-@@ -1830,16 +1831,16 @@
- 	down(&ccp->mutex);
+ 	else {
+ 		dbg ("auerchar_write: Write OK");
+-		up (&ccp->mutex);
++		mutex_unlock(&ccp->mutex);
+ 		return len;
+ 	}
+ }
+@@ -1828,7 +1828,7 @@
+ 	pauerswald_t cp;
+ 	dbg("release");
+ 
+-	down(&ccp->mutex);
++	mutex_lock(&ccp->mutex);
  	cp = ccp->auerdev;
  	if (cp) {
--		down(&cp->mutex);
-+		mutex_lock(&cp->mutex);
- 		/* remove an open service */
- 		auerswald_removeservice (cp, &ccp->scontext);
- 		/* detach from device */
- 		if ((--cp->open_count <= 0) && (cp->usbdev == NULL)) {
- 			/* usb device waits for removal */
--			up (&cp->mutex);
-+			mutex_unlock(&cp->mutex);
- 			auerswald_delete (cp);
- 		} else {
--			up (&cp->mutex);
-+			mutex_unlock(&cp->mutex);
- 		}
+ 		mutex_lock(&cp->mutex);
+@@ -1845,7 +1845,7 @@
  		cp = NULL;
  		ccp->auerdev = NULL;
-@@ -1917,7 +1918,7 @@
  	}
+-	up (&ccp->mutex);
++	mutex_unlock(&ccp->mutex);
+ 	auerchar_delete (ccp);
  
- 	/* Initialize device descriptor */
--	init_MUTEX (&cp->mutex);
-+	mutex_init(&cp->mutex);
- 	cp->usbdev = usbdev;
- 	auerchain_init (&cp->controlchain);
-         auerbuf_init (&cp->bufctl);
-@@ -2042,7 +2043,7 @@
- 	/* give back our USB minor number */
- 	usb_deregister_dev(intf, &auerswald_class);
- 
--	down (&cp->mutex);
-+	mutex_lock(&cp->mutex);
- 	info ("device /dev/%s now disconnecting", cp->name);
- 
- 	/* Stop the interrupt endpoint */
-@@ -2057,16 +2058,18 @@
- 
- 	if (cp->open_count == 0) {
- 		/* nobody is using this device. So we can clean up now */
--		up (&cp->mutex);/* up() is possible here because no other task
--				   can open the device (see above). I don't want
--				   to kfree() a locked mutex. */
-+		mutex_unlock(&cp->mutex);
-+		/* mutex_unlock() is possible here because no other task
-+		   can open the device (see above). I don't want
-+		   to kfree() a locked mutex. */
-+
- 		auerswald_delete (cp);
- 	} else {
- 		/* device is used. Remove the pointer to the
- 		   usb device (it's not valid any more). The last
- 		   release() will do the clean up */
- 		cp->usbdev = NULL;
--		up (&cp->mutex);
-+		mutex_unlock(&cp->mutex);
- 		/* Terminate waiting writers */
- 		wake_up (&cp->bufferwait);
- 		/* Inform all waiting readers */
+ 	return 0;
 
 -- 
 Matthias Kaehlcke
