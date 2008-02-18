@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758027AbYBRBzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbYBRB6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758027AbYBRBzy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 20:55:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbYBRBzq
+	id S1757941AbYBRB6R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 20:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752058AbYBRB6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 20:55:46 -0500
-Received: from twinlark.arctic.org ([208.69.40.136]:44522 "EHLO
-	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751737AbYBRBzp (ORCPT
+	Sun, 17 Feb 2008 20:58:04 -0500
+Received: from n31.bullet.mail.mud.yahoo.com ([68.142.201.26]:30841 "HELO
+	n31.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751911AbYBRB6C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 20:55:45 -0500
-Message-ID: <47B8E59F.5030004@kernel.org>
-Date: Sun, 17 Feb 2008 17:55:43 -0800
-From: "Andrew G. Morgan" <morgan@kernel.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Sun, 17 Feb 2008 20:58:02 -0500
+X-Greylist: delayed 365 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 20:58:02 EST
+X-Yahoo-Newman-Id: 830026.31835.bm@omp420.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=AViaKke8Hoz3tGCO6NeTdtE+qeEklPrrELzkMwoudCZm9rzCh/US7SYt9WIv4hDtdD0hUabIznRAYTu77SH9cOU7g4rmFDNhiCxkhB1KQ7S81QrAkfoefd35cPXosAPKY1uQH9sHBbr7KWH3VE2fLZcFt73PcHJfTDzBVRAp1xM=  ;
+X-YMail-OSG: _1.aSDwVM1khJA0suOptdWRlVPP5sh5eHKbqpy01MsNZBQnMHEw9ElXNDh7pfFFO8PkOCKrGsA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 3/6] mmu_notifier: invalidate_page callbacks
+Date: Mon, 18 Feb 2008 12:51:27 +1100
+User-Agent: KMail/1.9.5
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+References: <20080215064859.384203497@sgi.com> <20080215064932.918191502@sgi.com> <20080215193736.9d6e7da3.akpm@linux-foundation.org>
+In-Reply-To: <20080215193736.9d6e7da3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-CC: charles.kirsch@internet.lu, lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Gerald Combs <gerald@wireshark.org>,
-       Gilbert Ramirez <gram@alumni.rice.edu>, Guy Harris <guy@alum.mit.edu>
-Subject: Re: Possible problem in linux file posix capabilities
-References: <20080217224851.GA9168@sergelap.austin.ibm.com> <47B8DD55.5070800@kernel.org> <20080218013943.GA17142@sergelap.austin.ibm.com>
-In-Reply-To: <20080218013943.GA17142@sergelap.austin.ibm.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802181251.28813.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Saturday 16 February 2008 14:37, Andrew Morton wrote:
+> On Thu, 14 Feb 2008 22:49:02 -0800 Christoph Lameter <clameter@sgi.com> 
+wrote:
+> > Two callbacks to remove individual pages as done in rmap code
+> >
+> > 	invalidate_page()
+> >
+> > Called from the inner loop of rmap walks to invalidate pages.
+> >
+> > 	age_page()
+> >
+> > Called for the determination of the page referenced status.
+> >
+> > If we do not care about page referenced status then an age_page callback
+> > may be be omitted. PageLock and pte lock are held when either of the
+> > functions is called.
+>
+> The age_page mystery shallows.
 
-Serge E. Hallyn wrote:
-| Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-| ---
-|  security/commoncap.c |    2 +-
-|  1 files changed, 1 insertions(+), 1 deletions(-)
-|
-| diff --git a/security/commoncap.c b/security/commoncap.c
-| index 5aba826..bb0c095 100644
-| --- a/security/commoncap.c
-| +++ b/security/commoncap.c
-| @@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct
-siginfo *info,
-|  	 * allowed.
-|  	 * We must preserve legacy signal behavior in this case.
-|  	 */
-| -	if (p->euid == 0 && p->uid == current->uid)
-| +	if (p->uid == current->uid)
-|  		return 0;
+BTW. can this callback be called mmu_notifier_clear_flush_young? To
+match the core VM.
 
-Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
-
-Cheers
-
-Andrew
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFHuOWf+bHCR3gb8jsRAr5jAKCQ9MTWW9VNKGbbhacygeI6G7kqTACcCMEP
-hyz+xgh91wN3+6dcL72S85c=
-=Fjd8
------END PGP SIGNATURE-----
