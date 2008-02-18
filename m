@@ -1,121 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYBRUt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbYBRUu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761406AbYBRUt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBRUtR
+	id S1761538AbYBRUu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:50:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753835AbYBRUur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:49:17 -0500
-Received: from mx1.riseup.net ([204.13.164.18]:53880 "EHLO mx1.riseup.net"
+	Mon, 18 Feb 2008 15:50:47 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:39872 "EHLO smtp.drzeus.cx"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752782AbYBRUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:49:16 -0500
-Message-Id: <20080218194533.903955589@kaehlcke.net>
-References: <20080218194533.185137318@kaehlcke.net>
-User-Agent: quilt/0.46-1
-Date: Mon, 18 Feb 2008 20:45:35 +0100
-From: matthias@kaehlcke.net
-To: wolfgang@iksw-muees.de, linux-usb@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Matthias Kaehlcke <matthias@kaehlcke.net>
-Subject: [patch 2/3] Convert ccp->readmutex in a mutex
-Content-Disposition: inline; filename=usb-misc-auerswald-ccp_readmutex-to-mutex.diff
+	id S1753217AbYBRUuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 15:50:46 -0500
+Date: Mon, 18 Feb 2008 21:50:12 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Laszlo Attila Toth <panther@balabit.hu>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: keyboard dead with 45b5035
+Message-ID: <20080218215012.0462a302@mjolnir.drzeus.cx>
+In-Reply-To: <200802182050.01964.rjw@sisk.pl>
+References: <20080218185305.48a67587@mjolnir.drzeus.cx>
+	<200802182050.01964.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The semaphore ccp->readmutex is used as mutex, convert it to the mutex API
+On Mon, 18 Feb 2008 20:50:01 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
+> On Monday, 18 of February 2008, Pierre Ossman wrote:
+> > The patch "[RTNETLINK]: Send a single notification on device state changes." kills (at least)
+> > the keyboard here. Everything seems to work fine in single user mode, but when init starts
+> > spawning of logins, the keyboard goes bye-bye. Even the power button is ignored. :/ 
+> 
+> Please try with the patch from http://lkml.org/lkml/2008/2/18/331 .
+> 
 
-Index: linux-2.6/drivers/usb/misc/auerswald.c
-===================================================================
---- linux-2.6.orig/drivers/usb/misc/auerswald.c	2008-02-18 20:12:55.000000000 +0100
-+++ linux-2.6/drivers/usb/misc/auerswald.c	2008-02-18 20:10:00.000000000 +0100
-@@ -259,7 +259,7 @@
-         auerbufctl_t bufctl;            /* controls the buffer chain */
-         auerscon_t scontext;            /* service context */
- 	wait_queue_head_t readwait;     /* for synchronous reading */
--	struct semaphore readmutex;     /* protection against multiple reads */
-+	struct mutex readmutex;		/* protection against multiple reads */
- 	pauerbuf_t readbuf;		/* buffer held for partial reading */
- 	unsigned int readoffset;	/* current offset in readbuf */
- 	unsigned int removed;		/* is != 0 if device is removed */
-@@ -1391,7 +1391,7 @@
- 
- 	/* Initialize device descriptor */
- 	init_MUTEX( &ccp->mutex);
--	init_MUTEX( &ccp->readmutex);
-+	mutex_init(&ccp->readmutex);
-         auerbuf_init (&ccp->bufctl);
-         ccp->scontext.id = AUH_UNASSIGNED;
-         ccp->scontext.dispatch = auerchar_ctrlread_dispatch;
-@@ -1585,7 +1585,7 @@
- 	}
- 
- 	/* only one reader per device allowed */
--	if (down_interruptible (&ccp->readmutex)) {
-+	if (mutex_lock_interruptible(&ccp->readmutex)) {
- 		up (&ccp->mutex);
- 		return -ERESTARTSYS;
- 	}
-@@ -1603,7 +1603,7 @@
- 		if (count) {
- 			if (copy_to_user (buf, bp->bufp+ccp->readoffset, count)) {
- 				dbg ("auerswald_read: copy_to_user failed");
--				up (&ccp->readmutex);
-+				mutex_unlock(&ccp->readmutex);
- 				up (&ccp->mutex);
- 				return -EFAULT;
- 			}
-@@ -1618,7 +1618,7 @@
- 		}
- 		/* return with number of bytes read */
- 		if (count) {
--			up (&ccp->readmutex);
-+			mutex_unlock(&ccp->readmutex);
- 			up (&ccp->mutex);
- 			return count;
- 		}
-@@ -1655,7 +1655,7 @@
-                 dbg ("No read buffer available, returning -EAGAIN");
- 		set_current_state (TASK_RUNNING);
- 		remove_wait_queue (&ccp->readwait, &wait);
--		up (&ccp->readmutex);
-+		mutex_unlock(&ccp->readmutex);
- 		up (&ccp->mutex);
- 		return -EAGAIN;  /* nonblocking, no data available */
-         }
-@@ -1666,18 +1666,18 @@
- 	remove_wait_queue (&ccp->readwait, &wait);
- 	if (signal_pending (current)) {
- 		/* waked up by a signal */
--		up (&ccp->readmutex);
-+		mutex_unlock(&ccp->readmutex);
- 		return -ERESTARTSYS;
- 	}
- 
- 	/* Anything left to read? */
- 	if ((ccp->scontext.id == AUH_UNASSIGNED) || ccp->removed) {
--		up (&ccp->readmutex);
-+		mutex_unlock(&ccp->readmutex);
- 		return -EIO;
- 	}
- 
- 	if (down_interruptible (&ccp->mutex)) {
--		up (&ccp->readmutex);
-+		mutex_unlock(&ccp->readmutex);
- 		return -ERESTARTSYS;
- 	}
- 
+That solved it.
+
+I wonder if that's also why modprobe tends to wedge up with the new USB announce thingy... Tomorrow's debugging will tell.
 
 -- 
-Matthias Kaehlcke
-Linux System Developer
-Barcelona
+     -- Pierre Ossman
 
-              We build too many walls and not enough bridges
-                             (Isaac Newton)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
