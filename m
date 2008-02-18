@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762119AbYBRVDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752738AbYBRVEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762119AbYBRVDg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 16:03:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761734AbYBRVDN
+	id S1752738AbYBRVEB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 16:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755535AbYBRVDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 16:03:13 -0500
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:40949 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758322AbYBRVDM (ORCPT
+	Mon, 18 Feb 2008 16:03:43 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:11867 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756232AbYBRVDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 16:03:12 -0500
-Message-ID: <47B9F2EC.4070308@keyaccess.nl>
-Date: Mon, 18 Feb 2008 22:04:44 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 18 Feb 2008 16:03:42 -0500
+Date: Mon, 18 Feb 2008 13:03:13 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: marcin.slusarz@gmail.com
+Cc: LKML <linux-kernel@vger.kernel.org>, Kurt Hackel <kurt.hackel@oracle.com>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [PATCH] ocfs2: le*_add_cpu conversion
+Message-ID: <20080218210313.GB22671@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <1202857582-15450-1-git-send-email-marcin.slusarz@gmail.com> <1202857582-15450-14-git-send-email-marcin.slusarz@gmail.com>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: use explicit timing delay for pit accesses in kernel
- and pcspkr driver
-References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com>
-In-Reply-To: <47B9EDF1.5050404@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -0.6 (/)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1202857582-15450-14-git-send-email-marcin.slusarz@gmail.com>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 18-02-08 21:43, H. Peter Anvin wrote:
-
-> Rene Herman wrote:
->>
->> Now with respect to the original pre port 80 "jmp $+2" I/O delay 
->> (which the Pentium obsoleted) I suppose it'll probably be okay even 
->> without fixing that specifically but do note such -- it's a vital part 
->> of the problem.
->>
+On Wed, Feb 13, 2008 at 12:06:18AM +0100, marcin.slusarz@gmail.com wrote:
+> From: Marcin Slusarz <marcin.slusarz@gmail.com>
 > 
-> Sorry, that paragraph didn't parse for me.
+> replace all:
+> little_endian_variable = cpu_to_leX(leX_to_cpu(little_endian_variable) +
+> 					expression_in_cpu_byteorder);
+> with:
+> 	leX_add_cpu(&little_endian_variable, expression_in_cpu_byteorder);
+> generated with semantic patch
 
-I mean that before the linux kernel used a port 0x80 write as an I/O delay 
-it used a short jump (two in a row actually...) as such and this was at the 
-time that it actually ran on the old legacy stuff that is of most concern here.
 
-No, if I'm not mistaken, those two jumps are actually what the udelay() is 
-going to do anyway as part of delay_loop() at that early stage so that even 
-before loops_per_jiffy calibration, I believe we should still be okay.
-
-Yes, it's a bit of a "well, hrrm" thing, but, well... loops_per_jiffy can be 
-initialised a bit more conservatively then today as well (and as discussed 
-earlier, possibly per CPU family) but I believe it's actually sort of fine 
-not too worry much about it...
-
-Rene.
+Thanks, this is in ocfs2.git now.
+	--Mark
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
