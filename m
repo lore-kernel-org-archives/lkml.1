@@ -1,158 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752503AbYBROxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbYBRPAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752503AbYBROxP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:53:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbYBROw5
+	id S1754418AbYBRPAG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:00:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbYBRO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:52:57 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:41144 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752201AbYBROwz (ORCPT
+	Mon, 18 Feb 2008 09:59:55 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:60645 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751938AbYBRO7y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:52:55 -0500
-X-Greylist: delayed 2113 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Feb 2008 09:52:55 EST
-Message-ID: <47B99384.2080900@canonical.com>
-Date: Mon, 18 Feb 2008 09:17:40 -0500
-From: Stefan Bader <stefan.bader@canonical.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Mon, 18 Feb 2008 09:59:54 -0500
+Date: Mon, 18 Feb 2008 20:29:47 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] simplify cpu_hotplug_begin()/put_online_cpus()
+Message-ID: <20080218145947.GA27127@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20080216172254.GA18521@tv-sign.ru>
 MIME-Version: 1.0
-To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Optiarc DVD RW AD-5200A audio playing
-References: <47B5EDB7.5050709@canonical.com> <20080216090532.GK13446@gollum.tnic> <200802161624.02768.bzolnier@gmail.com> <20080216164302.GP13446@gollum.tnic>
-In-Reply-To: <20080216164302.GP13446@gollum.tnic>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080216172254.GA18521@tv-sign.ru>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> On Sat, Feb 16, 2008 at 04:24:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
->> Hi,
->>
->> On Saturday 16 February 2008, Borislav Petkov wrote:
->>> On Fri, Feb 15, 2008 at 02:53:27PM -0500, Stefan Bader wrote:
->>>> Hello Borislav,
->>>>
->>>> I worked on a problem with an DVD driver (model=Optiarc DVD RW AD-5200A)
->>>> which obviously has the same problem as some Matshita drives. The
->>>> following patch was reported to enabled audio playing on this drive.
->>>> Would this approach be suitable for upstream or are there other
->>>> solutions to this problem?
->>>>
->>>> Regards,
->>>> Stefan
->>>>
->>>> --- a/drivers/ide/ide-cd.c
->>>> +++ b/drivers/ide/ide-cd.c
->>>> @@ -2988,7 +2988,8 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
->>>>  	if (strcmp(drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
->>>>  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
->>>>  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8176") == 0 ||
->>>> -	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0)
->>>> +	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0 ||
->>>> +	    strcmp(drive->id->model, "Optiarc DVD RW AD-5200A") == 0)
->>>>  		CDROM_CONFIG_FLAGS(drive)->audio_play = 1;
->>>>
->>>>  #if ! STANDARD_ATAPI
->>> Hi Stefan,
->>>
->>> just to make sure that the audioplay bit is not set in the capabilities page,
->>> can you please try the following patch applied against 2.6.25-rc2 and send me
->>> the output. Thanks!
->>>
->>> @Bart: by the way, this cdi->mask thingy is kinda unintuitive doing double
->>> negation to check whether a feature is supported or not. Yeah, this comes from
->>> "above," i.e. uniform cdrom layer. But still, shouldn't we use a cdi->caps_flags
->>> or something similar instead, which mirrors the caps page bits setting?
->> It seems so (at least having negative flags is very unintuitive) but they
->> might be some reason for this ugliness, Jens?
->>
->> [ Please also remember that since cdrom layer is _uniform_ it may be not
->>   possible and/or desirable to have 1-1 mapping between caps page bits
->>   and the future cdi->caps_flags. ]
->>
->>> commit 435f0f4496a1b32af2d542f43b2370a890fe2f83
->>> Author: Borislav Petkov <petkovbb@gmail.com>
->>> Date:   Sat Feb 16 09:56:36 2008 +0100
->>>
->>>     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
->>>     
->>>     Reported-by: Stefan Bader <stefan.bader@canonical.com>
->>>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
->>>
->>> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
->>> index f77db6b..2c9d06e 100644
->>> --- a/drivers/ide/ide-cd.c
->>> +++ b/drivers/ide/ide-cd.c
->>> @@ -1750,6 +1750,10 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
->>>  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
->>>  	if (buf[8 + 3] & 0x10)
->>>  		cdi->mask &= ~CDC_DVD_R;
->>> +	if (!(buf[8 + 4] & 0x01)) {
->> Hmm, shouldn't there be '&& (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK)'
->> to prevent false positives?
-> 
-> I wanted to see whether the caps page reports the audioplay bit off...
-> 
->>> +		printk(KERN_INFO "ide-cd: audio play not advertised in caps page,"
->> Would be nice to also printk() the device name.
-> 
-> ... but printing the device model is actually a good idea and this will rule out
-> false positives, so Stefan, please drop the previous patch and test the updated
-> one below. Thanks.
-> 
-> 
+On Sat, Feb 16, 2008 at 08:22:54PM +0300, Oleg Nesterov wrote:
 
-Hi Borislav,
+This looks neat and clean.
 
-the problem is that I don't own this drive myself and the owner is
-running a 2.6.22 kernel and is normally not doing any kernel compiles.
-But I could provide him a modified patch.
-Though, if you just want to know whether the cap bit was really unset, I
-think we know this already. When I got the problem report we checked
-/proc/sys/dev/cdrom/info and that showed the "Can play audio" bit as 0.
-Which is the reason I gave the owner the patch for adding the model to
-the excemption list. And from his feedback I take that the drive plays
-audio tracks with the patch in use.
+Acked-by: Gautham R Shenoy <ego@in.ibm.com>
 
-Stefan
 
-> commit 6cc44b0ce5c9270b15d456eb9ffa91b855e4e0d0
-> Author: Borislav Petkov <petkovbb@gmail.com>
-> Date:   Sat Feb 16 09:56:36 2008 +0100
+> cpu_hotplug_begin() must be always called under cpu_add_remove_lock, this means
+> that only one process can be cpu_hotplug.active_writer. So we don't need the
+> cpu_hotplug.writer_queue, we can wake up the ->active_writer directly.
 > 
->     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
->     
->     Reported-by: Stefan Bader <stefan.bader@canonical.com>
->     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> Also, fix the comment.
 > 
-> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> index f77db6b..4c9984f 100644
-> --- a/drivers/ide/ide-cd.c
-> +++ b/drivers/ide/ide-cd.c
-> @@ -1750,6 +1750,11 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
->  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
->  	if (buf[8 + 3] & 0x10)
->  		cdi->mask &= ~CDC_DVD_R;
-> +	if (!(buf[8 + 4] & 0x01)) {
-> +		printk(KERN_INFO "ide-cd: audio play not advertised in caps "
-> +				"page for drive model [%s], enabling quirk.\n",
-> +				drive->id->model);
-> +	}
->  	if ((buf[8 + 4] & 0x01) || (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK))
->  		cdi->mask &= ~CDC_PLAY_AUDIO;
->  
-> @@ -1929,6 +1934,7 @@ static const struct cd_list_entry ide_cd_quirks_list[] = {
->  	{ "MATSHITADVD-ROM SR-8186", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
->  	{ "MATSHITADVD-ROM SR-8176", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
->  	{ "MATSHITADVD-ROM SR-8174", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
-> +	{ "Optiarc DVD RW AD-5200A", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK      },
->  	{ NULL, NULL, 0 }
->  };
->  
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 > 
+> --- 25/kernel/cpu.c~1_CPU_HP_LOCK	2008-02-15 16:59:17.000000000 +0300
+> +++ 25/kernel/cpu.c	2008-02-16 18:36:37.000000000 +0300
+> @@ -33,17 +33,13 @@ static struct {
+>  	 * an ongoing cpu hotplug operation.
+>  	 */
+>  	int refcount;
+> -	wait_queue_head_t writer_queue;
+>  } cpu_hotplug;
+> 
+> -#define writer_exists() (cpu_hotplug.active_writer != NULL)
+> -
+>  void __init cpu_hotplug_init(void)
+>  {
+>  	cpu_hotplug.active_writer = NULL;
+>  	mutex_init(&cpu_hotplug.lock);
+>  	cpu_hotplug.refcount = 0;
+> -	init_waitqueue_head(&cpu_hotplug.writer_queue);
+>  }
+> 
+>  #ifdef CONFIG_HOTPLUG_CPU
+> @@ -65,11 +61,8 @@ void put_online_cpus(void)
+>  	if (cpu_hotplug.active_writer == current)
+>  		return;
+>  	mutex_lock(&cpu_hotplug.lock);
+> -	cpu_hotplug.refcount--;
+> -
+> -	if (unlikely(writer_exists()) && !cpu_hotplug.refcount)
+> -		wake_up(&cpu_hotplug.writer_queue);
+> -
+> +	if (!--cpu_hotplug.refcount && unlikely(cpu_hotplug.active_writer))
+> +		wake_up_process(cpu_hotplug.active_writer);
+>  	mutex_unlock(&cpu_hotplug.lock);
+> 
+>  }
+> @@ -98,8 +91,8 @@ void cpu_maps_update_done(void)
+>   * Note that during a cpu-hotplug operation, the new readers, if any,
+>   * will be blocked by the cpu_hotplug.lock
+>   *
+> - * Since cpu_maps_update_begin is always called after invoking
+> - * cpu_maps_update_begin, we can be sure that only one writer is active.
+> + * Since cpu_hotplug_begin() is always called after invoking
+> + * cpu_maps_update_begin(), we can be sure that only one writer is active.
+>   *
+>   * Note that theoretically, there is a possibility of a livelock:
+>   * - Refcount goes to zero, last reader wakes up the sleeping
+> @@ -115,19 +108,16 @@ void cpu_maps_update_done(void)
+>   */
+>  static void cpu_hotplug_begin(void)
+>  {
+> -	DECLARE_WAITQUEUE(wait, current);
+> -
+> -	mutex_lock(&cpu_hotplug.lock);
+> -
+>  	cpu_hotplug.active_writer = current;
+> -	add_wait_queue_exclusive(&cpu_hotplug.writer_queue, &wait);
+> -	while (cpu_hotplug.refcount) {
+> -		set_current_state(TASK_UNINTERRUPTIBLE);
+> +
+> +	for (;;) {
+> +		mutex_lock(&cpu_hotplug.lock);
+> +		if (likely(!cpu_hotplug.refcount))
+> +			break;
+> +		__set_current_state(TASK_UNINTERRUPTIBLE);
+>  		mutex_unlock(&cpu_hotplug.lock);
+>  		schedule();
+> -		mutex_lock(&cpu_hotplug.lock);
+>  	}
+> -	remove_wait_queue_locked(&cpu_hotplug.writer_queue, &wait);
+>  }
+> 
+>  static void cpu_hotplug_done(void)
 
+-- 
+Thanks and Regards
+gautham
