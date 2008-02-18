@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757628AbYBRXhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757115AbYBRXmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757628AbYBRXhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 18:37:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbYBRXhH
+	id S1757115AbYBRXmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 18:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752716AbYBRXmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 18:37:07 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:46592 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752599AbYBRXhF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 18:37:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:bcc:subject:reply-to:in-reply-to:message-id;
-        b=Yz0intdmOCHkUoGfynyrCQPCBmq/CQbCK7PWWh9LFIU4WZvdgMKhtKc/6QksVlFc7hwO8kZ1S5BTFoGiGsVWcBiObB1g7SLH4aK5Lv5bEBy1sbfoqNGhYALyamza21l2mSnkFN3zAn/pRTDJQsPD0gP7GwkeC8DPCJXAmbvgj9U=
-Date: Mon, 18 Feb 2008 15:45:12 -0800
-From: Glenn Griffin <ggriffin.kernel@gmail.com>
-To: ggriffin.kernel@gmail.com
-Cc: dada1@cosmosbay.com, johnpol@2ka.mipt.ru, alan@lxorguk.ukuu.org.uk,
-       andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: [PATCH] Add IPv6 support to TCP SYN cookies
-In-Reply-To: <20080212.030741.132208013.yoshfuji@linux-ipv6.org>
-Message-ID: <47ba169f.23f8720a.54d4.0229@mx.google.com>
+	Mon, 18 Feb 2008 18:42:06 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52679 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752601AbYBRXmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 18:42:05 -0500
+Date: Tue, 19 Feb 2008 00:42:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Gordon Farquharson <gordonfarquharson@gmail.com>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Message-ID: <20080218234212.GA25680@uranus.ravnborg.org>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <20080218225354.GE23181@flint.arm.linux.org.uk> <20080218230058.GA32357@flint.arm.linux.org.uk> <200802190017.04432.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802190017.04432.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've posted a series of patches that I believe address Andi's concerns
-about syncookies not supporting valuable tcp options (primarily SACK,
-and window scaling).  The premise being if the client support tcp
-timestamps we can encode the additional tcp options in the initial
-timestamp we send back to the client, and they will be echo'd back to us
-in the ack.  Anyone interested have a look, and provide any suggestions
-you may have.  The new patches are a superset of this patch, so if they
-are accepted this is one obsolete.
+On Tue, Feb 19, 2008 at 12:17:04AM +0100, Michael Buesch wrote:
+> On Tuesday 19 February 2008 00:00:58 Russell King wrote:
+> > > > Why can't we have an array of this structure on ARM?
+> > > > 
+> > > > struct ssb_device_id {
+> > > >        __u16   vendor;
+> > > 
+> > > 2 bytes
+> > > 
+> > > >        __u16   coreid;
+> > > 
+> > > 2 bytes
+> > > 
+> > > >        __u8    revision;
+> > > 
+> > > 1 byte
+> > > 
+> > > > };
+> > > 
+> > > and therefore sizeof this structure will be 5 bytes, but because of the
+> > > ABI rules (which are _explicitly_ allowed by the C standard), it'll
+> > > become 8 bytes due to padding afterwards.
+> > 
+> > Another guess might be that, if using AEABI, this structure might
+> > be 6 bytes in size, but the linker will align structures to 4 bytes.
+> 
+> If the struct is padded to 6 bytes and the linker aligns it to 4 byte
+> everything will be naturally aligned, as far as I can see.
+> 
+> > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
+> > not a modulo of the size of section __mod_ssb_device_table=64.
+> > Fix definition of struct ssb_device_id in mod_devicetable.h
+> 
+> So this message tells me the table size is 64 bytes. There are 8 entries,
+> so it seems the structure is padded to 8 bytes.
+> But above that it says that sizeof(struct ssb_device_id)=6
+> 
+> IMO this sanity check is broken and not the code.
+> 
+> Where does this sanity check message come from? The linker?
+$ git grep 'not a modulo'
+scripts/mod/file2alias.c:               fatal("%s: sizeof(struct %s_device_id)=%lu is not a modulo "
 
-Support arbitrary initial TCP timestamps
-http://lkml.org/lkml/2008/2/15/244
+It is a consistencycheck between host and target
+layout of data.
+You need to pad the structure so it becomes 8 byte in size.
 
-Enable the use of TCP options with syncookies
-http://lkml.org/lkml/2008/2/15/245
-
-Add IPv6 Support to TCP SYN cookies
-http://lkml.org/lkml/2008/2/15/246
-
---Glenn
+	Sam
