@@ -1,44 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757766AbYBRPzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYBRP7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757766AbYBRPzJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:55:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBRPy5
+	id S1756820AbYBRP7b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYBRP7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:54:57 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55262 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753208AbYBRPy5 (ORCPT
+	Mon, 18 Feb 2008 10:59:23 -0500
+Received: from nf-out-0910.google.com ([64.233.182.188]:28058 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbYBRP7W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:54:57 -0500
-Date: Mon, 18 Feb 2008 15:45:46 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       "David P. Reed" <dpreed@reed.com>
-Subject: Re: [patch 1/2] x86: define outb_pic and inb_pic to stop using
- outb_p and inb_p
-Message-ID: <20080218154546.66e4c72d@core>
-In-Reply-To: <6gr00g$g7mc5k@smtp01.lnh.mail.rcn.net>
-References: <6gr00g$g7mc5k@smtp01.lnh.mail.rcn.net>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Feb 2008 10:59:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=wTsIzLzbSgWzJQHH4GPTp77/dy1sftHrMsHETmLhQZ4PW4H7mhdzfwxPRQkSCEPriubYARFhl/8XmQtOS+Iz/gV/ya0XflLC8VFgCcPwY6vtISlybhmzx91qCckK7jzxa+PmVFfzjwfGZIzQLeyMWvZWPauO7i88HDIHCyVIFX8=
+Message-ID: <58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
+Date: Mon, 18 Feb 2008 16:59:20 +0100
+From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
+To: "Andreas Schwab" <schwab@suse.de>
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+Cc: linux-kernel@vger.kernel.org, "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>,
+       "Jens Axboe" <jens.axboe@oracle.com>,
+       "Borislav Petkov" <petkovbb@gmail.com>
+In-Reply-To: <jelk5k62uy.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <jelk5k62uy.fsf@sykes.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +unsigned char inb_pic(unsigned int port)
-> +{
-> +	/* delay for some accesses to PIC on motherboard or in chipset must be
-> +	   at least one microsecond, but be safe here. */
-> +	unsigned char value = inb(port);
-> +	udelay(2);
-> +	return value;
-> +}
+Hi,
 
-inline it. Its almost no instructions
+On Feb 16, 2008 9:52 PM, Andreas Schwab <schwab@suse.de> wrote:
+> Since commit aaa04c28cb9a1efd42541fdb7ab648231c2a2263 [blk_end_request:
+> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the
+> following error from wodim:
+>
+> Errno: 0 (Success), write_g1 scsi sendcmd: no error
+> CDB:  2A 00 00 00 00 00 00 00 1F 00
+> status: 0x2 (CHECK CONDITION)
+> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00
+> Sense Key: 0x5 Illegal Request, Segment 0
+> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0
+> Sense flags: Blk 0 (not valid)
+> resid: 63488
+
+blk_end_request: changing ide-cd (take 4)
+
+This patch converts ide-cd (cdrom_newpc_intr()) to use blk_end_request
+interfaces.  Related 'uptodate' arguments are converted to 'error'.
+
+In PIO mode, ide-cd (cdrom_newpc_intr()) needs to defer
+end_that_request_last() until the device clears DRQ_STAT and raises
+an interrupt after end_that_request_first().
+So blk_end_request() has to return without completing request
+even if no leftover in the request.
+
+ide-cd uses blk_end_request_callback() and a dummy callback function,
+which just returns value '1', to tell blk_end_request_callback()
+about that.
+
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+
+[...]
+
+I looked at the commit again but nothing seems obviously wrong (probably there
+was a silent change in the behavior of block layer API that upsets ide-cd)...
+
+Kiyoshi/Jens: please follow up on this bug.
+
+Thanks,
+Bart
