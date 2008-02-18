@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbYBRPTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbYBRPVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbYBRPTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbYBRPTa
+	id S1757578AbYBRPVe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYBRPVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:19:30 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:52996 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbYBRPT3 (ORCPT
+	Mon, 18 Feb 2008 10:21:25 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52237 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753728AbYBRPVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:19:29 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 216.15.117.105
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1980KOEBL95++sEQsmv69iV
-Message-ID: <47B9A1E0.8020200@reed.com>
-Date: Mon, 18 Feb 2008 10:18:56 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [linux-kernel] [patch 2/2] x86: use explicit timing delay for
- pit accesses
-References: <6gr00g$g7mc7l@smtp01.lnh.mail.rcn.net>
-In-Reply-To: <6gr00g$g7mc7l@smtp01.lnh.mail.rcn.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 10:21:24 -0500
+Date: Mon, 18 Feb 2008 16:57:25 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Theodore Tso <tytso@mit.edu>, Tomasz Chmielewski <mangoo@wpkg.org>,
+       Andi Kleen <andi@firstfloor.org>, LKML <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: very poor ext3 write performance on big filesystems?
+Message-ID: <20080218155725.GB26622@one.firstfloor.org>
+References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de> <20080218141640.GC12568@mit.edu> <47B99E0C.8020706@wpkg.org> <20080218151632.GD25098@mit.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218151632.GD25098@mit.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oops. the patch I just submitted for i8253.c didn't export the symbol 
-needed by the pcspkr driver to build it as a module.  I will send the 
-revised patch shortly.
+On Mon, Feb 18, 2008 at 10:16:32AM -0500, Theodore Tso wrote:
+> On Mon, Feb 18, 2008 at 04:02:36PM +0100, Tomasz Chmielewski wrote:
+> > I tried to copy that filesystem once (when it was much smaller) with "rsync 
+> > -a -H", but after 3 days, rsync was still building an index and didn't copy 
+> > any file.
+> 
+> If you're going to copy the whole filesystem don't use rsync! 
 
+Yes, I managed to kill systems (drive them really badly into oom and
+get very long swap storms) with rsync -H in the past too. Something is very 
+wrong with the rsync implementation of this.
+
+> Use cp
+> or a tar pipeline to move the files.
+
+Are you sure cp handles hardlinks correctly? I know tar does,
+but I have my doubts about cp.
+
+-Andi
