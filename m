@@ -1,58 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755950AbYBRGEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYBRGID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755950AbYBRGEQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 01:04:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbYBRGED
+	id S1755231AbYBRGID (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 01:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYBRGHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 01:04:03 -0500
-Received: from rv-out-0910.google.com ([209.85.198.189]:33122 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751687AbYBRGEA (ORCPT
+	Mon, 18 Feb 2008 01:07:54 -0500
+Received: from mga10.intel.com ([192.55.52.92]:27250 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751836AbYBRGHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 01:04:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tdieUdpZ8NiGe3qc/dOXPV5br1Owg/0jleQpgF56CUzgBXqxnJij+54I5/X2rgg3XfyC2ARWFUCfW3SusfWHNX6n2Q70cbmE1Nx9aj3wXD8MX2UTEWMbuc3EuNzn1KscMuZVQsX7EiiiGfOdCk/9qvUYf0UAdsxNxk3AGfPCY4Y=
-Message-ID: <86802c440802172203m744d8408i8611522a387b6bde@mail.gmail.com>
-Date: Sun, 17 Feb 2008 22:03:57 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: 2.6.25-rc2-mm1 (x86 MCE build error)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080217211755.8c2367cc.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 18 Feb 2008 01:07:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,369,1199692800"; 
+   d="scan'208";a="520289549"
+Subject: Re: 2.6.25-rc1: volanoMark 45% regression
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: balbir@linux.vnet.ibm.com
+Cc: vatsa@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <47B91615.3040407@linux.vnet.ibm.com>
+References: <1202895028.3027.27.camel@ymzhang>
+	 <47B2BC2C.80100@linux.vnet.ibm.com>
+	 <20080213120708.GA16231@linux.vnet.ibm.com>
+	 <1202974901.3027.58.camel@ymzhang> <1203067505.3027.178.camel@ymzhang>
+	 <47B91008.8050505@linux.vnet.ibm.com> <1203311505.3027.187.camel@ymzhang>
+	 <47B91615.3040407@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 18 Feb 2008 14:05:45 +0800
+Message-Id: <1203314745.3027.191.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	 <20080217211755.8c2367cc.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 17, 2008 9:17 PM, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
->
-> >
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
->
-> It's possible to config a specific CPU and also enable Intel MCE checks
-> and AMD MCE checks, ending with this:
->
-> arch/x86/kernel/built-in.o: In function `smp_thermal_interrupt_init':
-> mce_amd_64.c:(.text+0xd7ea): undefined reference to `num_k8_northbridges'
-> mce_amd_64.c:(.text+0xd800): undefined reference to `k8_northbridges'
-> mce_amd_64.c:(.text+0xd863): undefined reference to `k8_northbridges'
-> mce_amd_64.c:(.text+0xd888): undefined reference to `k8_northbridges'
-> mce_amd_64.c:(.text+0xd8b1): undefined reference to `num_k8_northbridges'
-> mce_amd_64.c:(.text+0xd8d8): undefined reference to `num_k8_northbridges'
-> mce_amd_64.c:(.text+0xd8f3): undefined reference to `k8_northbridges'
-> mce_amd_64.c:(.text+0xd917): undefined reference to `num_k8_northbridges'
-> make[1]: *** [.tmp_vmlinux1] Error 1
->
-> .config file is attached.
+On Mon, 2008-02-18 at 10:52 +0530, Balbir Singh wrote:
+> Zhang, Yanmin wrote:
+> > On Mon, 2008-02-18 at 10:26 +0530, Balbir Singh wrote:
+> >> Zhang, Yanmin wrote:
+> >>>>>  Did you have
+> >>>>> CONFIG_FAIR_USER_SCHED enabled in both cases?
+> >>>> Yes.
+> >>>>
+> >>>> CONFIG_FAIR_GROUP_SCHED=y
+> >>>> CONFIG_FAIR_USER_SCHED=y
+> >>>>
+> >> Interesting that you have CONFIG_FAIR_USER_SCHED. Do you have any other users on
+> >> the system (are they running anything at the time of the benchmark)?
+> > No. As for volanoMark, I start volanoMark both server and client processes while
+> > starting some system measurement tools such like vmstat/iostat/sar. All the processes
+> > run under the same user.
+> > 
+> 
+> Ok, so the bandwidth is not split between users, which is very good. I assume
+> the same user is root?
+No. I use an ordinary user.
 
-same config no problem with mainline.
+> 
+> > 
+> >>  Could you
+> >> turn off CONFIG_FAIR_USER_SCHED  and turn on CONFIG_FAIR_GROUP_SCHED.
+> > I will try.
+> > 
+> >>  I am going
+> >> to run some tests with 2.6.25-rc2 and Volanomark and see how that goes.
+> > Pls. set /proc/sys/kernel/sched_compat_yield=1 before starting test.
+> 
+> Thanks for the tip, I would have definitely missed this one
+I use Jrockit JVM and enables hugetlb, but I don't think hugetlb has too much help on
+volanoMark, especially for the regression tracking.
 
-YH
+-yanmin
+
+
