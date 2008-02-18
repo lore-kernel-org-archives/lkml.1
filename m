@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbYBRQFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbYBRQGD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbYBRQFO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:05:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYBRQFA
+	id S1758766AbYBRQGD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:06:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYBRQFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:05:00 -0500
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:37419 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753977AbYBRQFA (ORCPT
+	Mon, 18 Feb 2008 11:05:53 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.155]:54420 "EHLO
+	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754156AbYBRQFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:05:00 -0500
-Date: Mon, 18 Feb 2008 17:04:25 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [Patch] Driver core: Fix error handling in bus_add_driver().
-Message-ID: <20080218170425.56d03e37@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Feb 2008 11:05:51 -0500
+Message-ID: <47B9AD1D.4020307@ru.mvista.com>
+Date: Mon, 18 Feb 2008 19:06:53 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] ide: remove PIO "downgrade" quirk
+References: <20080217185105.16210.26582.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080217185105.16210.26582.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- If the allocation of ->priv fails, the reference on the bus
-  must be dropped.
-- If adding the kobject fails, kobject_put must be called to
-  clean things up.
+Bartlomiej Zolnierkiewicz wrote:
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> No need for it nowadays
 
----
- drivers/base/bus.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+    Since which moment, could you elaborate
 
---- linux-2.6.orig/drivers/base/bus.c
-+++ linux-2.6/drivers/base/bus.c
-@@ -658,9 +658,10 @@ int bus_add_driver(struct device_driver 
- 	pr_debug("bus: '%s': add driver %s\n", bus->name, drv->name);
- 
- 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
--	if (!priv)
--		return -ENOMEM;
--
-+	if (!priv) {
-+		error = -ENOMEM;
-+		goto out_put_bus;
-+	}
- 	klist_init(&priv->klist_devices, NULL, NULL);
- 	priv->driver = drv;
- 	drv->p = priv;
-@@ -668,7 +669,7 @@ int bus_add_driver(struct device_driver 
- 	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
- 				     "%s", drv->name);
- 	if (error)
--		goto out_put_bus;
-+		goto out_unregister;
- 
- 	if (drv->bus->p->drivers_autoprobe) {
- 		error = driver_attach(drv);
+> so remove quirk code from ide_get_best_pio_mode()
+> and IDE_HFLAG_PIO_DOWNGRADE host flag.
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+MBR, Sergei
