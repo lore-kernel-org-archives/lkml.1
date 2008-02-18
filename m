@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756475AbYBRJiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbYBRJlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756475AbYBRJiT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 04:38:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbYBRJiK
+	id S1755325AbYBRJlz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 04:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbYBRJlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 04:38:10 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:1073 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751336AbYBRJiJ (ORCPT
+	Mon, 18 Feb 2008 04:41:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:11971 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbYBRJlq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 04:38:09 -0500
+	Mon, 18 Feb 2008 04:41:46 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YzDvglDkQF0ZVoxXGh1Sa6QlDQc/TcfIx0LQFOpi8xvFIfYl4rE57Q4ij1s1cje3+Kd7302xLvMXGMSmd6zHmiDi3mWXDLTUABXPty9Dt0uOt4ST8qXuM+O3AIDc0yLa0SwRdFl86d5hJ6+0vKXVNsrfcXUw01xb4W2IlOHGyxA=
-Message-ID: <4d8e3fd30802180138n794450fcg30b3e3b6c5c23e98@mail.gmail.com>
-Date: Mon, 18 Feb 2008 13:08:07 +0330
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Coding style fixes for arch/x86/kernel/cpu/centaur.c
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <20080218092944.GA26521@elte.hu>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=uWlos2atQAGWSqPxBrAq99VL9lPpy3NHPeHvI6MwUWReEWo9ecWjOQrYJsYYroWxXbyO0ZiEB2B+e/WQDP3ZduB9U6aZ3c/Tl7Wn93YU9HFgy3FDb3JsrSKdHC8tDV12o56i71QF6AOFH659HeU/9qmv6cDlexxPLDmNpA0cWb8=
+Message-ID: <47B952D3.2030900@gmail.com>
+Date: Mon, 18 Feb 2008 11:41:39 +0200
+From: =?ISO-8859-1?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080109)
 MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: Oliver Pinter <oliver.pntr@gmail.com>, xfs@oss.sgi.com,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Christoph Lameter <clameter@sgi.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: xfsaild causing 30+ wakeups/s on an idle system since 2.6.25-rcX
+References: <47B863A9.5070206@gmail.com> <6101e8c40802170851w73db8130t9bcfdc5cf053f0dc@mail.gmail.com> <20080217224736.GX155407@sgi.com>
+In-Reply-To: <20080217224736.GX155407@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080217233023.26764dc9@paolo-desktop>
-	 <20080218025645.GB30201@elte.hu>
-	 <4d8e3fd30802180048o39790aedwde2ef1cbb009363e@mail.gmail.com>
-	 <20080218092944.GA26521@elte.hu>
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/08, Ingo Molnar <mingo@elte.hu> wrote:
-
-> * Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+David Chinner wrote:
+> On Sun, Feb 17, 2008 at 05:51:08PM +0100, Oliver Pinter wrote:
+>   
+>> On 2/17/08, Török Edwin <edwintorok@gmail.com> wrote:
+>>     
+>>> Hi,
+>>>
+>>> xfsaild is causing many wakeups, a quick investigation shows
+>>> xfsaild_push is always
+>>> returning 30 msecs timeout value.
+>>>       
 >
-> > >  /*
-> > > - *     Set up an actual MCR
-> > > + * Set up an actual MCR
-> > >   */
-> >
-> > This was not highlighted by checkpatch.pl, right? The same applies for
-> > a few other "fix" you did on some comments.
+> That's a bug
+
+Ok. Your patches fixes the 30+ wakeups :)
+
+> , and has nothing to do with power consumption. ;)
+>   
+
+I suggest using a sysctl value (such as
+/proc/sys/vm/dirty_writeback_centisecs), instead of a hardcoded default
+1000.
+That would further reduce the wakeups.
+
 >
-> correct - it's not fixes, just bringing it in line with the common
-> comment style we use. The file was using lots of inconsistent comment
-> styles.
+> I only managed to reproduce this on a lazy superblock counter
+> filesystem (i.e.  new mkfs and recent kernel), 
 
-Ok, that's something i'll verify when i'll work on a new file.
+The filesystem was created in July 2007
 
-> > [...]
-> > >  {
-> > > -       u32 mem = ramtop();
-> > >         u32 root = power2(mem);
-> > > +       u32 mem = ramtop();
-> >
-> > Can you please explain the rationale behind this change?
->
-> it's a bug :) It got pointed out by Joe Perches and i fixed it. (the
-> size check would have caught it too)
+> Can you see if the patch below fixes the problem.
 
-oh, i see now :-)
+Yes, it reduces wakeups to 1/sec.
 
-> > > -               E2MMX = 1<<19,
-> > > -               EAMD3D = 1<<20,
-> > > -       };
-> >
-> > I see why you did the cleanup but I think even this part was not
-> > catched by checkpatch.pl
->
-> yes, as i said:
->
-> > > Some of them are real CodingStyle problems, some of them are just
-> > > arbitrary taste details.
->
-> checkpatch.pl is a helper tool which highlights some of the clear
-> problem - but when we clean up files we try to make it appear consistent
-> in all its details. My patch was a demonstration of what else can be
-> fixed in a file until it's really clean looking in its entirety.
-
-
-Fair enought, i just want to try to improve checkpatch.pl while using it :-)
-
-ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+Thanks,
+--Edwin
