@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbYBRIw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758152AbYBRI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbYBRIw1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 03:52:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbYBRIwU
+	id S1758152AbYBRI4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 03:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbYBRI4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 03:52:20 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:63106 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbYBRIwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 03:52:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=VLUhG3FCkmhWvNNF2ClO4Ej+MoOHy6h6UYjipxjWapEUFccseY5S+98QLhnAVyOheWZi4CqGxDrY1SKrJB6lL8lOz1YypK9CN0Xnodbqsmy11a7I15mVP24pc7eA5ebizns0Wx66h99qiZEwrLxCHwRWa02AQR5VQTqOSyw13bc=
-Message-ID: <47B9473D.20508@gmail.com>
-Date: Mon, 18 Feb 2008 09:52:13 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Tilman Schmidt <tilman@imap.cc>
-Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
-References: <200802172304.00322.rjw@sisk.pl>
-In-Reply-To: <200802172304.00322.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	Mon, 18 Feb 2008 03:56:06 -0500
+Received: from mail.gmx.net ([213.165.64.20]:45495 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755176AbYBRI4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 03:56:04 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18ZgjwGNGMZJigSgFI7ps1MT39grPvQQNzXVmd6JU
+	bFBIbdVm2WVxsO
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+From: Mike Galbraith <efault@gmx.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
+References: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de>
+	 <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
+Content-Type: text/plain
+Date: Mon, 18 Feb 2008 09:56:00 +0100
+Message-Id: <1203324960.24098.3.camel@homer.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/17/2008 11:03 PM, Rafael J. Wysocki wrote:
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10021
-> Subject		: Linux 2.6.25-rc2 regression: LVM cannot find volume group
-> Submitter	: Tilman Schmidt <tilman@imap.cc>
-> Date		: 2008-02-16 20:14
-> References	: http://lkml.org/lkml/2008/2/16/208
-> Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-NOTABUG, http://lkml.org/lkml/2008/2/17/386
+On Mon, 2008-02-18 at 09:46 +0100, Frans Pop wrote:
+> Joerg Schilling wrote:
+> > This fragment is much too short to allow to judge on possible reasons.
+> > There is a high probability that your problem is caused by the cdrecord
+> > fork called "wodim".
+> 
+> There is also the 100% certainty that this reply was from a known troll and
+> should just be ignored.
+
+That was rude, crude and uncalled for.
+
+	-Mike
+
