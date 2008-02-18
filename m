@@ -1,65 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762292AbYBRWig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761856AbYBRWmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762292AbYBRWig (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:38:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761923AbYBRWiX
+	id S1761856AbYBRWmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbYBRWmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:38:23 -0500
-Received: from wx-out-0506.google.com ([66.249.82.227]:6015 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760357AbYBRWiR (ORCPT
+	Mon, 18 Feb 2008 17:42:10 -0500
+Received: from el-out-1112.google.com ([209.85.162.181]:57635 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753865AbYBRWmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:38:17 -0500
+	Mon, 18 Feb 2008 17:42:08 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:bcc:subject:message-id:reply-to:in-reply-to;
-        b=orouaE8OSbZPamaboxQQw++3n/tnpELmJZU8gVNIVDWrlNrQ8+S1efXOctm9JkPprgLwfcWNVHcDoSly51YnPo6FhMMJi5nFOcerpkYCGD8wf+SubT9wefXWQKtB+lJq7+62I73KcsF3ol3Vlrk85gVH+tvfe0SC3USQdX2NWK4=
-Date: Mon, 18 Feb 2008 14:46:18 -0800
-From: Glenn Griffin <ggriffin.kernel@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: ggriffin.kernel@gmail.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Support arbitrary initial TCP timestamps
-Message-ID: <20080218164723.GA13941@fin>
-In-Reply-To: <20080217.233330.157255657.davem@davemloft.net>
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=hUINjyzdTDAF+XgN7V6mFaoX8cCXL6ggsI7/u/mqS1LF56NEIeigS5w2vhlFteRPey5vhi5R22w6MilmF4QrRzrYhVZYtXDx15nFhkXSJqMHRB3glqElsX+bU0xZ8L0Tp7jT0/uJHZsD0QKTtw3PUSpO/Q1R/8VnuwId5CfpbA0=
+Message-ID: <e9c3a7c20802181442q60d94a77rfff8ce4a9f3087b3@mail.gmail.com>
+Date: Mon, 18 Feb 2008 15:42:07 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
+Subject: Re: [RFC v3 4/7] dmaengine: Add slave DMA interface
+Cc: linux-kernel@vger.kernel.org, "Shannon Nelson" <shannon.nelson@intel.com>,
+       "David Brownell" <david-b@pacbell.net>, kernel@avr32linux.org,
+       "Francis Moreau" <francis.moro@gmail.com>,
+       "Paul Mundt" <lethal@linux-sh.org>,
+       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
+       "Pierre Ossman" <drzeus-list@drzeus.cx>
+In-Reply-To: <20080218142239.43809da7@dhcp-252-066.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com>
+	 <1202834638-9009-2-git-send-email-hskinnemoen@atmel.com>
+	 <1202834638-9009-3-git-send-email-hskinnemoen@atmel.com>
+	 <1202834638-9009-4-git-send-email-hskinnemoen@atmel.com>
+	 <e9c3a7c20802131107x4c9e6859p3bc6527b19c416cb@mail.gmail.com>
+	 <20080213202402.22818482@siona>
+	 <20080215105302.1e4251a3@dhcp-252-066.norway.atmel.com>
+	 <e9c3a7c20802161206n6fdece7dk3c442144458ad472@mail.gmail.com>
+	 <20080218142239.43809da7@dhcp-252-066.norway.atmel.com>
+X-Google-Sender-Auth: 726254a4a580bd8f
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Adding yet another member to the already bloated tcp_sock structure to
-> implement this is too high a cost.
+On Feb 18, 2008 6:22 AM, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
+> On Sat, 16 Feb 2008 13:06:54 -0700
+> "Dan Williams" <dan.j.williams@intel.com> wrote:
+>
+> > I like the direction of the patch, i.e. splitting out separate
+> > functionality into separate structs.  However, I do not want to break
+> > the model of clients sourcing the operations and drivers sinking them
+> > which dma_slave_descriptor appears to do.  How about adding a
+> > scatterlist pointer and an 'unmap_type' to the common descriptor?
+> > Where unmap_type selects between,  page, single, sg, or no-unmap.
+> > Drivers already know the length and direction.
+>
+> But there are currently no operations available for submitting
+> scatterlists as a single descriptor -- the client iterates over the
+> scatterlist and submits one descriptor for each entry. So there's no
+> way you can associated a scatterlist with a single descriptor. You can
+> perhaps attach it to the last one, but that may get you into trouble if
+> the transfer is terminated early for some reason.
+>
 
-Yes, I was worried that would be deemed too high of a cost, but it was
-the most efficient way I could think to accomplish what I wanted.
+Drivers know how to treat a group of descriptors as one operation.  I
+see this as no different than the case where an operation exceeds the
+hardware's per descriptor max transfer length.  The driver internally
+creates extra descriptors but the client only needs to worry about one
+handle.
 
-> I would instead prefer that there be some global random number
-> calculated when the first TCP socket is created, and use that as a
-> global offset.  You can even recompute it every few hours if you
-> like.
+[..]
 
-That would work fine if my mine purpose was to randomize the tcp
-timestamp to mitigate the leak in information regarding uptime, but
-despite the brief description, that's only a side effect of what I
-intended to do.  What I wanted was a way to be able to choose an initial
-tcp timestamp for a particular connection that was not tied directly to
-jiffies.
+> Btw, this discussion is a bit off-topic for the patch in question, but
+> it's an issue that needs to be resolved.
+>
 
-The two patches following this show my intended use case.  I intend to
-enhance syncookie support to allow it to support advanced tcp options
-(sack and window scaling).  Normally syncookies encode the bare minimum
-state of a connection in the ISN they choose, but the 32bit ISN isn't
-enough to encode advanced tcp options so you are left with a working but
-crippled tcp stack during a synflood attack.  If in addition to choosing
-an ISN we are able to choose an initial tcp timestamp, we are then able
-to encode an additional 32 bits of information that can contain more of
-the advanced tcp options.
+Agreed, more code less words :-).  I'll try to brew this into a patch.
 
-This stems from a discussion about implementing IPv6 support for
-syncookies, and the main concern being that syncookies disabled too many
-valuable tcp features to be relevant on modern systems.  Many people
-stood in opposition to that statement, but it did not seem as though a
-general consensus was reached.  http://lkml.org/lkml/2008/2/4/396
-
-I'm always open to alternatives.
-
---Glenn
+--
+Dan
