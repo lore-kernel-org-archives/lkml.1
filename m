@@ -1,139 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbYBRBaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbYBRBjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755362AbYBRBaG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 20:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750959AbYBRB3z
+	id S1756419AbYBRBjy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 20:39:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYBRBjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 20:29:55 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:33527 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbYBRB3y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 20:29:54 -0500
-Message-ID: <47B8DFD8.6040602@larces.uece.br>
-Date: Sun, 17 Feb 2008 22:31:04 -0300
-From: Sergio Luis <sergio@larces.uece.br>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Sun, 17 Feb 2008 20:39:44 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:51830 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750904AbYBRBjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 20:39:43 -0500
+Date: Sun, 17 Feb 2008 19:39:43 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Andrew G. Morgan" <morgan@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, charles.kirsch@internet.lu,
+       lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Gerald Combs <gerald@wireshark.org>,
+       Gilbert Ramirez <gram@alumni.rice.edu>, Guy Harris <guy@alum.mit.edu>
+Subject: Re: Possible problem in linux file posix capabilities
+Message-ID: <20080218013943.GA17142@sergelap.austin.ibm.com>
+References: <20080217224851.GA9168@sergelap.austin.ibm.com> <47B8DD55.5070800@kernel.org>
 MIME-Version: 1.0
-To: Christian Kujau <lists@nerdbynature.de>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de> <47B83F90.7000203@larces.uece.br> <alpine.DEB.1.00.0802172109590.6469@sheep.housecafe.de> <47B8D99A.3020202@larces.uece.br>
-In-Reply-To: <47B8D99A.3020202@larces.uece.br>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B8DD55.5070800@kernel.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sergio Luis wrote:
-> Christian Kujau wrote:
->> On Sun, 17 Feb 2008, Sergio Luis wrote:
->>> It doesn't fix the problem totally. If we select
->>> Virtualization->Linux hypervisor example code (CONFIG_LGUEST)
->>> as a module, we will get the same build errors,
->> Confirmed, the build errors persist with CONFIG_LGUEST=m and Rusty's
->> patch applied.
->>
->> thanks,
->> Christian.
-> 
-> This will make sure CONFIG_LGUEST is set when building the linux hypervisor example code as both module and built-in,
-> so that the LGUEST_* offsets will be generated for both cases in asm-offset.h.
-> I am sure you guys will have a better way to fix this, but anyway... 
-> -sergio
-> 
-> --- linux-2.6.25-rc2.orig/drivers/lguest/Kconfig	2008-02-16 23:21:29.000000000 -0300
-> +++ linux-2.6.25-rc2/drivers/lguest/Kconfig	2008-02-17 21:44:57.000000000 -0300
-> @@ -1,7 +1,17 @@
->  config LGUEST
-> -	tristate "Linux hypervisor example code"
-> +	bool "Linux hypervisor"
->  	depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX && !(X86_VISWS || X86_VOYAGER)
-> +	default y 
-> +	---help---
-> +	  This allows you to select the linux hypervisor example code.
-> +
-> +if LGUEST
-> +
-> +config LGUEST_HYPERVISOR
-> +	tristate "Linux hypervisor example code"
-> +	depends on LGUEST
->  	select HVC_DRIVER
-> +	default m
->  	---help---
->  	  This is a very simple module which allows you to run
->  	  multiple instances of the same Linux kernel, using the
-> @@ -10,3 +20,5 @@
->  	  not "rustyvisor".  See Documentation/lguest/lguest.txt.
->  
->  	  If unsure, say N.  If curious, say M.  If masochistic, say Y.
-> +
-> +endif # LGUEST
-> 
-oops. sorry, I just realized I missed the makefile part. I changed the config symbol to CONFIG_LGUEST_HYPERVISOR so I should change it on the makefile as well.
-reposting an updated patch for testing:
--sergio
+Quoting Andrew G. Morgan (morgan@kernel.org):
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+>
+> Serge E. Hallyn wrote:
+> | Andrew, this pretty much was bound to happen...  we need to figure out
+> | what our approach here should be.  My preference is still to allow
+> | signals when p->uid==current->uid so long as !SECURE_NOROOT.  Then as
+> | people start using secure_noroot process trees they at least must know
+> | what they're asking for.
+>
+> I don't think there is anything special about root.
+>
+> I've been trying to advocate that we remove the *uid == 0 part of this
+> check since we discussed it in November:
+>
+> As I said 11/29/07 [Re: [patch 31/55] file capabilities: don't prevent
+> signaling	setuid root programs]:
+> | I actually said (11/26/07):
+> |> >> Serge,
+> |> >>
+> |> >> I still feel a bit uneasy about this. Looking ahead, with filesystem
+> |> >> capabilities, one can simulate this same situation with a setuid
+> |> >> 'non-root' program as follows:
+> |> >>
+> |> >> [... example of simulating the same situation with setuid-non-root
+> ...]
+> |> >>
+> |> >> Is there a compelling reason to include the euid==0 check?
+>
+> So, independent of whether SECURE_NOROOT is in effect or not, I think
+> this particular line should simply read:
+>
+> ~        if (p->uid == current->uid)
+> ~                 return 0;
 
+Hmm, well unless I misunderstand I think I'm fine with that.  And I must
+have completely misunderstood you in November or my memory is just
+playing tricks.
 
-lguest: makes sure CONFIG_LGUEST is defined when building it as a module and built-in into the kernel.
+So the following patch against current -git is ok with you?
+
+thanks,
+-serge
+
+>From bd076c7245d02be0cc01b7c09bd7170ec5946492 Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Sun, 17 Feb 2008 20:28:07 -0500
+Subject: [PATCH 1/1] file capabilities: simplify signal check
+
+Simplify the uid equivalence check in cap_task_kill().  Anyone
+can kill a process owned by the same uid.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+---
+ security/commoncap.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/security/commoncap.c b/security/commoncap.c
+index 5aba826..bb0c095 100644
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
+ 	 * allowed.
+ 	 * We must preserve legacy signal behavior in this case.
+ 	 */
+-	if (p->euid == 0 && p->uid == current->uid)
++	if (p->uid == current->uid)
+ 		return 0;
  
-This will make sure CONFIG_LGUEST is set when building the linux hypervisor example code as both module and built-in,
-so that the LGUEST_* offsets will be generated for both cases in asm-offset.h.
-
-Signed-off-by: Sergio Luis <sergio@larces.uece.br>
-
-
- Kconfig  |   14 +++++++++++++-
- Makefile |    2 +-
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-
-diff -urN linux-2.6.25-rc2.orig/drivers/lguest/Kconfig linux-2.6.25-rc2/drivers/lguest/Kconfig
---- linux-2.6.25-rc2.orig/drivers/lguest/Kconfig	2008-02-16 23:21:29.000000000 -0300
-+++ linux-2.6.25-rc2/drivers/lguest/Kconfig	2008-02-17 21:44:57.000000000 -0300
-@@ -1,7 +1,17 @@
- config LGUEST
--	tristate "Linux hypervisor example code"
-+	bool "Linux hypervisor"
- 	depends on X86_32 && EXPERIMENTAL && !X86_PAE && FUTEX && !(X86_VISWS || X86_VOYAGER)
-+	default y 
-+	---help---
-+	  This allows you to select the linux hypervisor example code.
-+
-+if LGUEST
-+
-+config LGUEST_HYPERVISOR
-+	tristate "Linux hypervisor example code"
-+	depends on LGUEST
- 	select HVC_DRIVER
-+	default m
- 	---help---
- 	  This is a very simple module which allows you to run
- 	  multiple instances of the same Linux kernel, using the
-@@ -10,3 +20,5 @@
- 	  not "rustyvisor".  See Documentation/lguest/lguest.txt.
- 
- 	  If unsure, say N.  If curious, say M.  If masochistic, say Y.
-+
-+endif # LGUEST
-diff -urN linux-2.6.25-rc2.orig/drivers/lguest/Makefile linux-2.6.25-rc2/drivers/lguest/Makefile
---- linux-2.6.25-rc2.orig/drivers/lguest/Makefile	2008-02-16 23:21:29.000000000 -0300
-+++ linux-2.6.25-rc2/drivers/lguest/Makefile	2008-02-17 22:21:53.000000000 -0300
-@@ -2,7 +2,7 @@
- obj-$(CONFIG_LGUEST_GUEST) += lguest_device.o
- 
- # Host requires the other files, which can be a module.
--obj-$(CONFIG_LGUEST)	+= lg.o
-+obj-$(CONFIG_LGUEST_HYPERVISOR)	+= lg.o
- lg-y = core.o hypercalls.o page_tables.o interrupts_and_traps.o \
- 	segments.o lguest_user.o
- 
-
-
+ 	/* sigcont is permitted within same session */
+-- 
+1.5.1.1.GIT
 
