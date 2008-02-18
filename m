@@ -1,68 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbYBRNcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760856AbYBRNcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbYBRNcA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:32:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759608AbYBRNbn
+	id S1760856AbYBRNcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760607AbYBRNbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:31:43 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:63416 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759353AbYBRNbm (ORCPT
+	Mon, 18 Feb 2008 08:31:52 -0500
+Received: from www.church-of-our-saviour.org ([69.25.196.31]:37058 "EHLO
+	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760471AbYBRNbu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:31:42 -0500
-Date: Mon, 18 Feb 2008 14:31:39 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, parabelboi@bopserverein.de,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [Patch 2/2] powerpc: i2c-isa: add access check to legacy
- ioports
-Message-ID: <20080218143139.1ad6b82f@hyperion.delvare>
-In-Reply-To: <20080213183701.254391cc@de.ibm.com>
-References: <20080213182800.5c6940a8@de.ibm.com>
-	<20080213183701.254391cc@de.ibm.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 08:31:50 -0500
+Date: Mon, 18 Feb 2008 08:31:28 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andreas Dilger <adilger@sun.com>, Adrian Bunk <bunk@kernel.org>,
+       sct@redhat.com, akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080218133127.GB12568@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Andreas Dilger <adilger@sun.com>, Adrian Bunk <bunk@kernel.org>,
+	sct@redhat.com, akpm@linux-foundation.org,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218125702.GB15044@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218125702.GB15044@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christian,
+> So please deal with it like most other subsystem maintainers do and stop 
+> complaining about "code churn" - nobody but you changes the ext3 
+> codebase, it's one of the codebases least affected by general kernel 
+> flux, it's an ultimate "leaf" subsystem.
 
-On Wed, 13 Feb 2008 18:37:01 +0100, Christian Krafft wrote:
-> when probing i2c-pca-isa writes to legacy ioports, which crashes the kernel
-> if there is no device at that port.
-> This patch adds a check_legacy_ioport call, so probe failes gracefully
-> and thus prevents the oops.
-> 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> 
-> Index: linux.git/drivers/i2c/busses/i2c-pca-isa.c
-> ===================================================================
-> --- linux.git.orig/drivers/i2c/busses/i2c-pca-isa.c
-> +++ linux.git/drivers/i2c/busses/i2c-pca-isa.c
-> @@ -125,6 +125,13 @@ static int __devinit pca_isa_probe(struc
->  
->  	dev_info(dev, "i/o base %#08lx. irq %d\n", base, irq);
->  
-> +#ifdef CONFIG_PPC_MERGE
-> +	if (check_legacy_ioport(base)) {
-> +		dev_err(dev, "I/O address %#08lx is not available\n", base);
-> +		goto out;
-> +	}
-> +#endif
-> +
->  	if (!request_region(base, IO_SIZE, "i2c-pca-isa")) {
->  		dev_err(dev, "I/O address %#08lx is in use\n", base);
->  		goto out;
-> 
+Right, sorry.  I misread the filename; I thought this was against
+fs/jbd2, instead of fs/jbd.
 
-I can apply this, no problem. That being said, you might alternatively
-just exclude this driver from PPC. It's for a rare device with no known
-user, the driver is unmaintained and will hopefully be replaced soon by
-a platform driver which will not probe random ports at load time.
-
--- 
-Jean Delvare
+						- Ted
