@@ -1,64 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753369AbYBROMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbYBRONm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753369AbYBROMc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751441AbYBROMY
+	id S1752358AbYBRONm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:13:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbYBRONe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:12:24 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57815 "EHLO smtp.mba.ocn.ne.jp"
+	Mon, 18 Feb 2008 09:13:34 -0500
+Received: from www.balabit.hu ([212.92.18.33]:34647 "EHLO lists.balabit.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751438AbYBROMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:12:23 -0500
-Date: Mon, 18 Feb 2008 23:12:43 +0900 (JST)
-Message-Id: <20080218.231243.41197917.anemo@mba.ocn.ne.jp>
-To: hskinnemoen@atmel.com
-Cc: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: atmel_spi clock polarity
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
-References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
-	<20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751441AbYBRONd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:13:33 -0500
+Message-ID: <47B9928A.60202@balabit.hu>
+Date: Mon, 18 Feb 2008 15:13:30 +0100
+From: Laszlo Attila Toth <panther@balabit.hu>
+Organization: BalaBit IT Ltd.
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
+References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com> <Pine.LNX.4.64.0802171301430.7699@twin.jikos.cz> <20080217.183621.110686685.davem@davemloft.net> <47B982C9.60207@balabit.hu> <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 12:42:37 +0100, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> > Here is my quick workaround for this problem.  It makes all CSRn.CPOL
-> > match for the transfer before activating chipselect.  I'm not quite
-> > sure my analysis is correct, and there might be better solution.
-> > Could you give me any comments?
+Jiri Kosina wrote:
+> On Mon, 18 Feb 2008, Laszlo Attila Toth wrote:
 > 
-> I'm not sure if I fully understand what problem you're seeing. Is the
-> clock state wrong when the chip select is activated?
+>> Okay, but I can't figure out what's the problem with it. I don't have 
+>> wireless card on my linux box also I can't test it but everything else 
+>> works. Swap is mounted. The concurrency cannot be a problem because the 
+>> write operation is protected by a lock.
+> 
+> -               write_lock_bh(&dev_base_lock);
+> -               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> -               write_unlock_bh(&dev_base_lock);
+> +               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
+> +                       write_lock_bh(&dev_base_lock);
+> +                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> +                       write_lock_bh(&dev_base_lock);
+> +                       modified = 1;
+> +               }
+>         }
+> 
+> 1) you are accessing dev->link_mode and tb[] outside the dev_base_lock 
 
-Yes.
+yes, because tb[IFLA_LINKMODE] is not used by someone else in this case 
+only dev->link_mode. Although its value is unpredictable in case of a 
+concurrent access in the condition, it does not affect the final value 
+of dev->link_mode but the length of the critical section remains 
+minimal. The if statement may be inside the lock.
 
-> If so, does the patch below help?
+> 2) there is obvious and immediate deadlock -- you acquire the 
+>    dev_base_lock twice, without any unlock, just look at the chunk above
 
-Hmm... It might fix my problem.  But IIRC the clock state follows
-CSRn.CPOL just before the real transfer.  Like this (previous transfer
-was MODE 0, new transfer is MODE 3):
+Indeed:
+"Feb 16 16:51:49 sandman kernel: BUG: rwlock recursion on CPU#0,"
 
-           T0                T1 T2
+I missed it. I copied the code from another patch which didn't contain 
+the two locking statements and when I copied them back it became a 
+copy-paste bug.
 
-CS      ~~~|________________________________________________
 
-CLK     ______________________|~|___|~~~|___|~~~|___|~~~|___
+> 3) even with this deadlock fixed, Rafael states that either NM or 
+>    wpa_supplicant (I don't recall from top of my head) still don't work
 
-SO      ~~~~~~~~~~~~~~~~~~~~~~~~~~|___|~~~|___|~~~|___|~~~|_
-                                   MSB
+That's bad. Does my suggestion solve the problem? Again:
 
-T0-T1 was relatively longer then T1-T2.  I suppose T1 is not the
-point of updating MR register, but the point of starting DMA transfer.
+-      if (modified)
+-                 netdev_state_change(dev);
++      if (modified && dev->flags & IFF_UP)
++                 call_netdevice_notifiers(NETDEV_CHANGE, dev)
 
-Anyway, I will try your patch in a few days.
-
----
-Atsushi Nemoto
+Regards,
+Attila
