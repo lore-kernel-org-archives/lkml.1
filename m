@@ -1,160 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761144AbYBRVBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761633AbYBRVCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761144AbYBRVBS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 16:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYBRVBI
+	id S1761633AbYBRVCu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 16:02:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752341AbYBRVCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 16:01:08 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55405 "EHLO pasmtpA.tele.dk"
+	Mon, 18 Feb 2008 16:02:42 -0500
+Received: from smtp06.mtu.ru ([62.5.255.53]:59078 "EHLO smtp06.mtu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbYBRVBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 16:01:07 -0500
-Date: Mon, 18 Feb 2008 22:01:15 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alexander van Heukelum <heukelum@mailshack.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Solve section mismatch for free_area_init_core.
-Message-ID: <20080218210115.GA24592@uranus.ravnborg.org>
-References: <20080203172148.GA17875@mailshack.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080203172148.GA17875@mailshack.com>
-User-Agent: Mutt/1.4.2.1i
+	id S1751725AbYBRVCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 16:02:42 -0500
+From: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+To: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [MIPS] Enable the timerfd_*() o32 system calls
+Date: Tue, 19 Feb 2008 00:02:37 +0300
+Message-Id: <1203368557-32356-1-git-send-email-dmitri.vorobiev@gmail.com>
+X-Mailer: git-send-email 1.5.3.6
+X-DCC-STREAM-Metrics: smtp06.mtu.ru 10001; Body=0 Fuz1=0 Fuz2=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew.
+This patch enables the system calls timerfd_create(), timerfd_settime()
+and timerfd_gettime() for MIPS architecture.
 
-I have (triggered by Geert) spend some time reviewing this patch
-and I see no better way to fix it.
+Please see the following Bugzilla entry for more details:
 
-So it gets my:
+http://bugzilla.kernel.org/show_bug.cgi?id=10038
 
-Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+This was tested using a Malta 4Kc board in both little-endian and
+big-endian modes. The unit test program is available from the URL
+above.
 
-Original mail is here:
-http://lkml.org/lkml/2008/2/3/129
+Note that only the "o32"-style system calls have been added. This is
+due to the fact that I have no suitable equipment to test the other
+flavors of MIPS ABI.
 
-Can you take it in -mm so we get some testing coverage.
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@gmail.com>
+---
+ arch/mips/kernel/scall32-o32.S |    3 +++
+ include/asm-mips/unistd.h      |    7 +++++--
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
-Thanks,
-	Sam
+diff --git a/arch/mips/kernel/scall32-o32.S b/arch/mips/kernel/scall32-o32.S
+index f798139..08a9c50 100644
+--- a/arch/mips/kernel/scall32-o32.S
++++ b/arch/mips/kernel/scall32-o32.S
+@@ -663,6 +663,9 @@ einval:	li	v0, -EINVAL
+ 	sys	sys_ni_syscall		0
+ 	sys	sys_eventfd		1
+ 	sys	sys_fallocate		6	/* 4320 */
++	sys	sys_timerfd_create	2
++	sys	sys_timerfd_gettime	2
++	sys	sys_timerfd_settime	4
+ 	.endm
+ 
+ 	/* We pre-compute the number of _instruction_ bytes needed to
+diff --git a/include/asm-mips/unistd.h b/include/asm-mips/unistd.h
+index fa9a587..7316b55 100644
+--- a/include/asm-mips/unistd.h
++++ b/include/asm-mips/unistd.h
+@@ -341,16 +341,19 @@
+ #define __NR_timerfd			(__NR_Linux + 318)
+ #define __NR_eventfd			(__NR_Linux + 319)
+ #define __NR_fallocate			(__NR_Linux + 320)
++#define __NR_timerfd_create		(__NR_Linux + 321)
++#define __NR_timerfd_gettime		(__NR_Linux + 322)
++#define __NR_timerfd_settime		(__NR_Linux + 323)
+ 
+ /*
+  * Offset of the last Linux o32 flavoured syscall
+  */
+-#define __NR_Linux_syscalls		320
++#define __NR_Linux_syscalls		323
+ 
+ #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
+ 
+ #define __NR_O32_Linux			4000
+-#define __NR_O32_Linux_syscalls		320
++#define __NR_O32_Linux_syscalls		323
+ 
+ #if _MIPS_SIM == _MIPS_SIM_ABI64
+ 
+-- 
+1.5.3
 
-On Sun, Feb 03, 2008 at 06:21:48PM +0100, Alexander van Heukelum wrote:
-> Solve section mismatch for free_area_init_core:
-> 
-> WARNING: vmlinux.o(.meminit.text+0x649): 
-> Section mismatch in reference from the 
-> function free_area_init_core() to the function .init.text:setup_usemap()
-> The function __meminit free_area_init_core() references
-> a function __init setup_usemap().
-> If free_area_init_core is only used by setup_usemap then
-> annotate free_area_init_core with a matching annotation.
-> 
-> The warning is covers this stack of functions in mm/page_alloc.c:
-> 
-> alloc_bootmem_node must be marked __init.
-> alloc_bootmem_node is used by setup_usemap, if !SPARSEMEM.
-> (usemap_size is only used by setup_usemap, if !SPARSEMEM.)
-> setup_usemap is only used by free_area_init_core.
-> free_area_init_core is only used by free_area_init_node.
-> 
-> free_area_init_node is used by:
-> arch/alpha/mm/numa.c: __init paging_init()
-> arch/arm/mm/init.c: __init bootmem_init_node()
-> arch/avr32/mm/init.c: __init paging_init()
-> arch/cris/arch-v10/mm/init.c: __init paging_init()
-> arch/cris/arch-v32/mm/init.c: __init paging_init()
-> arch/m32r/mm/discontig.c: __init zone_sizes_init()
-> arch/m32r/mm/init.c: __init zone_sizes_init()
-> arch/m68k/mm/motorola.c: __init paging_init()
-> arch/m68k/mm/sun3mmu.c: __init paging_init()
-> arch/mips/sgi-ip27/ip27-memory.c: __init paging_init()
-> arch/parisc/mm/init.c: __init paging_init()
-> arch/sparc/mm/srmmu.c: __init srmmu_paging_init()
-> arch/sparc/mm/sun4c.c: __init sun4c_paging_init()
-> arch/sparc64/mm/init.c: __init paging_init()
-> mm/page_alloc.c: __init free_area_init_nodes()
-> mm/page_alloc.c: __init free_area_init()
-> and
-> mm/memory_hotplug.c: hotadd_new_pgdat()
-> 
-> hotadd_new_pgdat can not be an __init function, but:
-> 
-> It is compiled for MEMORY_HOTPLUG configurations only
-> MEMORY_HOTPLUG depends on SPARSEMEM || X86_64_ACPI_NUMA
-> X86_64_ACPI_NUMA depends on X86_64
-> ARCH_FLATMEM_ENABLE depends on X86_32
-> ARCH_DISCONTIGMEM_ENABLE depends on X86_32
-> So X86_64_ACPI_NUMA implies SPARSEMEM, right?
-> 
-> So we can mark the stack of functions __init for !SPARSEMEM,
-> but we must mark them __meminit for SPARSEMEM configurations.
-> This is ok, because then the calls to alloc_bootmem_node are
-> also avoided.
-> 
-> Compile-tested on:
-> silly minimal config
-> defconfig x86_32
-> defconfig x86_64
-> defconfig x86_64 -HIBERNATION +MEMORY_HOTPLUG
-> 
-> Comments?
-> 
-> Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> 
-> 
-> diff --git a/mm/internal.h b/mm/internal.h
-> index 953f941..5b46b32 100644
-> --- a/mm/internal.h
-> +++ b/mm/internal.h
-> @@ -47,4 +47,17 @@ static inline unsigned long page_order(struct page *page)
->  	VM_BUG_ON(!PageBuddy(page));
->  	return page_private(page);
->  }
-> +
-> +/*
-> + * FLATMEM and DISCONTIGMEM configurations use alloc_bootmem_node,
-> + * so all functions starting at paging_init should be marked __init
-> + * in those cases. SPARSEMEM, however, allows for memory hotplug,
-> + * and alloc_bootmem_node is not used.
-> + */
-> +#ifdef CONFIG_SPARSEMEM
-> +#define __paginginit __meminit
-> +#else
-> +#define __paginginit __init
-> +#endif
-> +
->  #endif
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index b2838c2..859be40 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -3321,7 +3321,7 @@ static inline int pageblock_default_order(unsigned int order)
->   *   - mark all memory queues empty
->   *   - clear the memory bitmaps
->   */
-> -static void __meminit free_area_init_core(struct pglist_data *pgdat,
-> +static void __paginginit free_area_init_core(struct pglist_data *pgdat,
->  		unsigned long *zones_size, unsigned long *zholes_size)
->  {
->  	enum zone_type j;
-> @@ -3445,7 +3445,7 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
->  #endif /* CONFIG_FLAT_NODE_MEM_MAP */
->  }
->  
-> -void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
-> +void __paginginit free_area_init_node(int nid, struct pglist_data *pgdat,
->  		unsigned long *zones_size, unsigned long node_start_pfn,
->  		unsigned long *zholes_size)
->  {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
