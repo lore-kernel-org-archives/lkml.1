@@ -1,51 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756318AbYBRN2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759994AbYBRN3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756318AbYBRN2t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:28:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751297AbYBRN2l
+	id S1759994AbYBRN3k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbYBRN3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:28:41 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:59117 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751276AbYBRN2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:28:41 -0500
-Date: Mon, 18 Feb 2008 14:28:32 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: problem with starting 2.5.26-rc1 and latest git
-Message-ID: <20080218142832.3a092dd5@hyperion.delvare>
-In-Reply-To: <200802140027.35102.m.kozlowski@tuxland.pl>
-References: <200802132316.03155.m.kozlowski@tuxland.pl>
-	<200802140027.35102.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 08:29:31 -0500
+Received: from ns.suse.de ([195.135.220.2]:42289 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751195AbYBRN3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:29:31 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Greg KH <greg@kroah.com>,
+       Sam Ravnborg <sam@ravnborg.org>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+From: Andi Kleen <andi@firstfloor.org>
+References: <098123kjff90231nv098233rnvd908u234@garzik.org>
+	<20080217195235.GN14588@uranus.ravnborg.org>
+	<20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de>
+	<47B97BD5.5070209@garzik.org>
+Date: Mon, 18 Feb 2008 14:29:29 +0100
+In-Reply-To: <47B97BD5.5070209@garzik.org> (Jeff Garzik's message of "Mon\, 18 Feb 2008 07\:36\:37 -0500")
+Message-ID: <p73ejbaxuiu.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 Feb 2008 00:27:34 +0100, Mariusz Kozlowski wrote:
-> Of course there is a typo in the subject :)
-> 
-> 2.5.25-rc1 -> 2.6.25-rc1
-> 
-> > Hello,
-> > 
-> > 	I tried 2.6.25-rc1 and latest git on my laptop (x86 32bit) and have a problem.
-> > Linux boots but with huge delay due to some issue with loading usb modules.
-> > Udev complains:
-> > 
-> > 'Could not lock modprobe uhci_hcd'
-> > 'Could not lock modprobe yenta_socket'
-> > 'Unknown symbol usb_*'
-> > 'Gave up waiting for init of module usbcore'
-> > (...)
+Jeff Garzik <jeff@garzik.org> writes:
 
-Have you tried upgrading to rc2? I used to have the same problem you
-reported, but I was unable to reproduce it since I upgraded to rc2.
+>> And there is definitely still a large ISDN user base too.
+>
+> This is what I'm curious about.  My personal guess is that there is a
+> lot of ISDN hardware available, but not necessarily the telco ISDN
+> availability.  
 
--- 
-Jean Delvare
+At least Germany has about 100% ISDN telco availability. I don't know
+the exact numbers of how many people use ISDN, but it is likely
+into the double digit millions. The big ex monopoly telco has been pushing
+ISDN aggressively for quite some time.
+
+-Andi
