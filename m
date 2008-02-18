@@ -1,67 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758734AbYBRLBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbYBRLCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758734AbYBRLBl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 06:01:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbYBRLBa
+	id S1757768AbYBRLCQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 06:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758831AbYBRLB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 06:01:30 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:64976 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751161AbYBRLB3 (ORCPT
+	Mon, 18 Feb 2008 06:01:58 -0500
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:55448 "EHLO
+	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756667AbYBRLB5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 06:01:29 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VtdfecyYBNAMb8+gpg7CRobcGEvBWNyw8fK57SqjfawSAYnbNgqXRuPk/0mSWFatGFKskpR4nJ7zjl55GvJqeLxKpd110TaYP85Ra6uMe0n+h0fF1fMrblVO6f5p8IoxyHIwHdJmGDTe+XG15RjKPDi09jeLOlR48std0OSpApU=
-Message-ID: <e2e108260802180301o5c376024t72e649a9debd5157@mail.gmail.com>
-Date: Mon, 18 Feb 2008 12:01:27 +0100
-From: "Bart Van Assche" <bart.vanassche@gmail.com>
-To: "Erez Zilber" <erezz@voltaire.com>
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-Cc: "FUJITA Tomonori" <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, vst@vlnb.net, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <47B95343.9060802@Voltaire.COM>
+	Mon, 18 Feb 2008 06:01:57 -0500
+Date: Mon, 18 Feb 2008 16:31:22 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Aneesh Kumar KV <aneesh.kumar@linux.vnet.ibm.com>, efault@gmx.de
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: sched-devel latencies
+Message-ID: <20080218110121.GB18817@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20080218104933.GA18817@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>
-	 <1201639331.3069.58.camel@localhost.localdomain>
-	 <adazluoe2t3.fsf@cisco.com>
-	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>
-	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>
-	 <47A89660.1080804@Voltaire.COM>
-	 <e2e108260802060416w492db372mc09848edd365d441@mail.gmail.com>
-	 <47B95343.9060802@Voltaire.COM>
+In-Reply-To: <20080218104933.GA18817@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 18, 2008 10:43 AM, Erez Zilber <erezz@voltaire.com> wrote:
-> If you use a high value for FirstBurstLength, all (or most) of your data
-> will be sent as unsolicited data-out PDUs. These PDUs don't use the RDMA
-> engine, so you miss the advantage of IB.
+On Mon, Feb 18, 2008 at 04:19:33PM +0530, Dhaval Giani wrote:
+> Hi Ingo,
+> 
+> I am running the sched-devel tree (at HEAD
+> 44e770a8750abc7e876076cda718b413bad9e654) and it is not looking good.
+> 
+> I am running two "make -j"s for the kernel in two different cgroups and
+> interactivity is going for a toss. I can see noticable lags in
+> keypresses.
+> 
+> Will get down to debugging it further a bit later on.
+> 
 
-Hello Erez,
+Some more numbers, with exact scenario
 
-Did you notice the e-mail Roland Dreier wrote on Februari 6, 2008 ?
-This is what Roland wrote:
-> I think the confusion here is caused by a slight misuse of the term
-> "RDMA".  It is true that all data is always transported over an
-> InfiniBand connection when iSER is used, but not all such transfers
-> are one-sided RDMA operations; some data can be transferred using
-> send/receive operations.
+1. Mount the cgroup
+2. Make 3 groups
+3. Start kernbench in each group
+4. Start chew.
 
-Or: data sent during the first burst is not transferred via one-sided
-remote memory reads or writes but via two-sided send/receive
-operations. At least on my setup, these operations are as fast as
-one-sided remote memory reads or writes. As an example, I obtained the
-following numbers on my setup (SDR 4x network);
-ib_write_bw: 933 MB/s.
-ib_read_bw: 905 MB/s.
-ib_send_bw: 931 MB/s.
+This is the chew output from the root cgroup 
 
-Bart Van Assche.
+[root@llm11 dhaval]# ./chew2 
+pid 29345 preempted 544115 us after 1560 us
+pid 29345 preempted 588109 us after 3935 us
+pid 29345 preempted 632122 us after 3941 us
+pid 29345 preempted 794259 us after 3954 us
+pid 29345 preempted 972163 us after 3963 us
+pid 29345 preempted 1024219 us after 3942 us
+
+>From within one of the groups
+[root@llm11 dhaval]# ./chew2 
+pid 27961 preempted 4028 us after 1708 us
+pid 27961 preempted 28090 us after 5466 us
+pid 27961 preempted 52021 us after 6505 us
+pid 27961 preempted 56100 us after 7183 us
+pid 27961 preempted 61850 us after 7505 us
+pid 27961 preempted 131892 us after 59 us
+pid 27961 preempted 332112 us after 7607 us
+
+-- 
+regards,
+Dhaval
