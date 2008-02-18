@@ -1,132 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYBRRtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbYBRRvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbYBRRtn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYBRRtc
+	id S1755338AbYBRRvl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751997AbYBRRve
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:49:32 -0500
-Received: from www.tglx.de ([62.245.132.106]:59355 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751340AbYBRRtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:49:31 -0500
-Date: Mon, 18 Feb 2008 18:49:14 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [BUG][RFC] [GENERIC IRQ] irq_chip_set_defaults shutdown /
- disable
-In-Reply-To: <600D5CB4DFD93545BF61FF01473D11AC125CC333@limkexm2.ad.analog.com>
-Message-ID: <alpine.LFD.1.00.0802181814550.7583@apollo.tec.linutronix.de>
-References: <600D5CB4DFD93545BF61FF01473D11AC125CC333@limkexm2.ad.analog.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 18 Feb 2008 12:51:34 -0500
+Received: from fnoeppeil48.netpark.at ([217.175.205.176]:53466 "EHLO
+	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbYBRRve (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 12:51:34 -0500
+Date: Mon, 18 Feb 2008 18:51:32 +0100
+From: Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Adrian Bunk <bunk@kernel.org>, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: mips SMBUS_PSC_BASE compile errors
+Message-ID: <20080218175132.GA10548@roarinelk.homelinux.net>
+References: <20080217200953.GJ1403@cs181133002.pp.htv.fi> <20080218102146.GA7282@roarinelk.homelinux.net> <20080218124947.2a768c05@hyperion.delvare>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218124947.2a768c05@hyperion.delvare>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Hennerich, Michael wrote:
-> RESENT: Add Maintainers 
-> 
-> free_irq() does not disable/mask the irq, in case disable or shutdown in struct irq_chip is left uninitilazied.
-> 
-> /**
->  * struct irq_chip - hardware interrupt chip descriptor
->  *
->  * @name:	name for /proc/interrupts
->  * @startup:	start up the interrupt (defaults to ->enable if NULL)
->  * @shutdown:	shut down the interrupt (defaults to ->disable if NULL)
->  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
->  * @disable:	disable the interrupt (defaults to chip->mask if NULL)
-> 
-> 
-> According to linux/irq.h struct irq_chip information,
-> chip->disable should default to chip->mask if NULL.
-> However irq_chip_set_defaults(struct irq_chip *chip) will set it to default_disable an empty function.
-> 
-> In earlier kernel versions such as 2.6.19 default_disable called chip->mask.
-> In 2.6.22 and 2.6.24 default_disable is an empty function.
-> 
-> Looking through various architectures, it's still pretty common that disable and shutdown is NULL.
+Hi Jean,
 
-Yeah, you are right. This was broken by commit
-76d2160147f43f982dfe881404cfde9fd0a9da21
+On Mon, Feb 18, 2008 at 12:49:47PM +0100, Jean Delvare wrote:
+> On Mon, 18 Feb 2008 11:21:46 +0100, Manuel Lauss wrote:
+> > > ...
+> > >   CC      arch/mips/au1000/common/platform.o
+> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/au1000/common/platform.c:277: error: 'PSC0_BASE_ADDR' undeclared here (not in a function)
+> > > /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/au1000/common/platform.c:314: warning: no previous prototype for 'au1xxx_platform_init'
+> > > make[2]: *** [arch/mips/au1000/common/platform.o] Error 1
+> > 
+> > Thanks, here's a patch. The db1200/pb1550 defconfigs (+ i2c enabled) compile
 
-> Do I miss something here?
+[...]
 
-Just a small detail. The commit optimized the irq_disable/enable logic
-by defaulting to delayed disable. So we want to keep that logic intact
-in case that we still have a device which is handling this
-interrupt. For the free_irq() case your patch is correct.
+> As the breakage came through my i2c tree, I guess I am supposed to push
+> this fix as well?
 
-The patch below fixes the shutdown case and keeps the delayed disable
-logic intact.
+Yes, please do.
 
-How did you notice ? I guess you got spurious interrupts after calling
-free_irq(), right ?
-
-Thanks for analyzing and reporting,
-
-	tglx
-
-------------->
-Subject: genirq: do not leave interupts enabled on free_irq
-From: Thomas Gleixner <tglx@linutronix.de>
-Date: Mon, 18 Feb 2008 18:25:17 +0100
-
-The default_disable() function was changed in commit:
-
- 76d2160147f43f982dfe881404cfde9fd0a9da21
- genirq: do not mask interrupts by default
-
-It removed the mask function in favour of the default delayed
-interrupt disable handling. Unfortunately this also broke the shutdown
-in free_irq() when the last handler is removed from the interrupt for
-those architectures which rely on the default implementations. Now we
-can end up with a enabled interrupt line after the last handler was
-removed.
-
-Fix this by adding a default_shutdown function, which is only
-installed, when the irqchip implementation does provide neither a
-shutdown nor a disable function.
-
-Pointed-out-by: Michael Hennerich <Michael.Hennerich@analog.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-CC: stable@kernel.org
-
----
- kernel/irq/chip.c |   14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -246,6 +246,17 @@ static unsigned int default_startup(unsi
- }
- 
- /*
-+ * default shutdown function
-+ */
-+static void default_shutdown(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+
-+	desc->chip->mask(irq);
-+	desc->status &= ~IRQ_MASKED;
-+}
-+
-+/*
-  * Fixup enable/disable function pointers
-  */
- void irq_chip_set_defaults(struct irq_chip *chip)
-@@ -257,7 +268,8 @@ void irq_chip_set_defaults(struct irq_ch
- 	if (!chip->startup)
- 		chip->startup = default_startup;
- 	if (!chip->shutdown)
--		chip->shutdown = chip->disable;
-+		chip->shutdown = chip->disable != default_disable ?
-+			chip_disable : default_shutdown;
- 	if (!chip->name)
- 		chip->name = chip->typename;
- 	if (!chip->end)
+Thank you!
+	Manuel Lauss
