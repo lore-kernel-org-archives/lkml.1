@@ -1,49 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbYBRRh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbYBRRtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbYBRRh6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbYBRRhu
+	id S1753897AbYBRRtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbYBRRtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:37:50 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:27563 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752261AbYBRRhu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:37:50 -0500
-Date: Mon, 18 Feb 2008 20:37:45 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       adaplas@gmail.com
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-Message-ID: <20080218173745.GA25628@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080205154432.GA8749@localhost.localdomain> <20080214224942.a0cb6218.akpm@linux-foundation.org> <20080215164542.GB16810@localhost.localdomain> <Pine.LNX.4.64.0802171030330.6848@anakin> <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm> <19805.1203355811@turing-police.cc.vt.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <19805.1203355811@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 18 Feb 2008 12:49:32 -0500
+Received: from www.tglx.de ([62.245.132.106]:59355 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbYBRRtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 12:49:31 -0500
+Date: Mon, 18 Feb 2008 18:49:14 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [BUG][RFC] [GENERIC IRQ] irq_chip_set_defaults shutdown /
+ disable
+In-Reply-To: <600D5CB4DFD93545BF61FF01473D11AC125CC333@limkexm2.ad.analog.com>
+Message-ID: <alpine.LFD.1.00.0802181814550.7583@apollo.tec.linutronix.de>
+References: <600D5CB4DFD93545BF61FF01473D11AC125CC333@limkexm2.ad.analog.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 12:30:11PM -0500, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
-> > I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
-> > Both resolve endianess at driver level. Actually, both handle it by setting special
-> > bits so the graphics chip itself reorder bytes to transform foreign endianess. 
-> > I understand that this patch is for chips which cannot reorder bytes by themselves.
+On Mon, 18 Feb 2008, Hennerich, Michael wrote:
+> RESENT: Add Maintainers 
 > 
-> Does anybody know of such a chip that's actually available in the wild?
+> free_irq() does not disable/mask the irq, in case disable or shutdown in struct irq_chip is left uninitilazied.
+> 
+> /**
+>  * struct irq_chip - hardware interrupt chip descriptor
+>  *
+>  * @name:	name for /proc/interrupts
+>  * @startup:	start up the interrupt (defaults to ->enable if NULL)
+>  * @shutdown:	shut down the interrupt (defaults to ->disable if NULL)
+>  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
+>  * @disable:	disable the interrupt (defaults to chip->mask if NULL)
+> 
+> 
+> According to linux/irq.h struct irq_chip information,
+> chip->disable should default to chip->mask if NULL.
+> However irq_chip_set_defaults(struct irq_chip *chip) will set it to default_disable an empty function.
+> 
+> In earlier kernel versions such as 2.6.19 default_disable called chip->mask.
+> In 2.6.22 and 2.6.24 default_disable is an empty function.
+> 
+> Looking through various architectures, it's still pretty common that disable and shutdown is NULL.
 
-LE Fujitsu mb86277 (MINT) on the BE MPC8360E.
+Yeah, you are right. This was broken by commit
+76d2160147f43f982dfe881404cfde9fd0a9da21
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+> Do I miss something here?
+
+Just a small detail. The commit optimized the irq_disable/enable logic
+by defaulting to delayed disable. So we want to keep that logic intact
+in case that we still have a device which is handling this
+interrupt. For the free_irq() case your patch is correct.
+
+The patch below fixes the shutdown case and keeps the delayed disable
+logic intact.
+
+How did you notice ? I guess you got spurious interrupts after calling
+free_irq(), right ?
+
+Thanks for analyzing and reporting,
+
+	tglx
+
+------------->
+Subject: genirq: do not leave interupts enabled on free_irq
+From: Thomas Gleixner <tglx@linutronix.de>
+Date: Mon, 18 Feb 2008 18:25:17 +0100
+
+The default_disable() function was changed in commit:
+
+ 76d2160147f43f982dfe881404cfde9fd0a9da21
+ genirq: do not mask interrupts by default
+
+It removed the mask function in favour of the default delayed
+interrupt disable handling. Unfortunately this also broke the shutdown
+in free_irq() when the last handler is removed from the interrupt for
+those architectures which rely on the default implementations. Now we
+can end up with a enabled interrupt line after the last handler was
+removed.
+
+Fix this by adding a default_shutdown function, which is only
+installed, when the irqchip implementation does provide neither a
+shutdown nor a disable function.
+
+Pointed-out-by: Michael Hennerich <Michael.Hennerich@analog.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+CC: stable@kernel.org
+
+---
+ kernel/irq/chip.c |   14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/irq/chip.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/chip.c
++++ linux-2.6/kernel/irq/chip.c
+@@ -246,6 +246,17 @@ static unsigned int default_startup(unsi
+ }
+ 
+ /*
++ * default shutdown function
++ */
++static void default_shutdown(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++
++	desc->chip->mask(irq);
++	desc->status &= ~IRQ_MASKED;
++}
++
++/*
+  * Fixup enable/disable function pointers
+  */
+ void irq_chip_set_defaults(struct irq_chip *chip)
+@@ -257,7 +268,8 @@ void irq_chip_set_defaults(struct irq_ch
+ 	if (!chip->startup)
+ 		chip->startup = default_startup;
+ 	if (!chip->shutdown)
+-		chip->shutdown = chip->disable;
++		chip->shutdown = chip->disable != default_disable ?
++			chip_disable : default_shutdown;
+ 	if (!chip->name)
+ 		chip->name = chip->typename;
+ 	if (!chip->end)
