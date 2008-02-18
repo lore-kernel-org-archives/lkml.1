@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYBRPtR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbYBRPyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbYBRPtR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:49:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYBRPtE
+	id S1756580AbYBRPyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbYBRPyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:49:04 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:51516 "EHLO mx1.redhat.com"
+	Mon, 18 Feb 2008 10:54:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45445 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753275AbYBRPtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:49:03 -0500
-Date: Mon, 18 Feb 2008 10:48:56 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Larry Woodman <lwoodman@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problem with /proc/sys/vm/lowmem_reserve_ratio ???
-Message-ID: <20080218104856.053e7682@bree.surriel.com>
-In-Reply-To: <x49wsp272se.fsf@segfault.boston.devel.redhat.com>
-References: <47B5A699.7010509@redhat.com>
-	<x49wsp272se.fsf@segfault.boston.devel.redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1753066AbYBRPyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 10:54:05 -0500
+Date: Mon, 18 Feb 2008 16:53:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] simplify cpu_hotplug_begin()/put_online_cpus()
+Message-ID: <20080218155339.GA4148@elte.hu>
+References: <20080216172254.GA18521@tv-sign.ru> <20080218145947.GA27127@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218145947.GA27127@in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008 09:33:05 -0500
-Jeff Moyer <jmoyer@redhat.com> wrote:
 
-> Larry Woodman <lwoodman@redhat.com> writes:
+* Gautham R Shenoy <ego@in.ibm.com> wrote:
+
+> On Sat, Feb 16, 2008 at 08:22:54PM +0300, Oleg Nesterov wrote:
 > 
-> > balance_pgdat() calls zone_watermark_ok() three times, the first call
-> > passes a zero(0) in as the 4th argument.  This 4th argument is the
-> > classzone_idx which is used as the index into the
-> > zone->lowmem_reserve[] array.  Since setup_per_zone_lowmem_reserve()
-> > always sets the zone->lowmem_reserve[0] = 0(because there is nothing
-> > below the DMA zone), zone_watermark_ok() will not consider the
-> > lowmem_reserve pages when zero is passed as the 4th arg.  Shouldnt this
-> > 4th argument be either "i" or "nr_zones - 1" ???
+> This looks neat and clean.
 > 
-> That certainly looks like the intent of this code.  I'd say patch 1,
-> passing i in as the 4th arg.  Rik, what do you think?
+> Acked-by: Gautham R Shenoy <ego@in.ibm.com>
 
-Yes, that is probably the best option.
+thanks, picked it up into the scheduler queue.
 
--- 
-All rights reversed.
+	Ingo
