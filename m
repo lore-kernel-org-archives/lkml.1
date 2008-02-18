@@ -1,63 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761467AbYBRNMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760873AbYBRNMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761467AbYBRNMV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755876AbYBRNMG
+	id S1760873AbYBRNMx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:12:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbYBRNMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:12:06 -0500
-Received: from mx2.suse.de ([195.135.220.15]:33270 "EHLO mx2.suse.de"
+	Mon, 18 Feb 2008 08:12:42 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:45596 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753403AbYBRNME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:12:04 -0500
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org
-Subject: Re: Reducing debuginfo size by removing unneeded includes
-From: Andi Kleen <andi@firstfloor.org>
-References: <20080207230304.GA4352@ghostprotocols.net>
-Date: Mon, 18 Feb 2008 14:12:01 +0100
-In-Reply-To: <20080207230304.GA4352@ghostprotocols.net> (Arnaldo Carvalho de Melo's message of "Thu\, 7 Feb 2008 21\:03\:04 -0200")
-Message-ID: <p73ir0mxvby.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	id S1757197AbYBRNMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:12:41 -0500
+Date: Mon, 18 Feb 2008 15:12:09 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Andreas Dilger <adilger@sun.com>, sct@redhat.com,
+       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
+Message-ID: <20080218131209.GB21080@cs181133002.pp.htv.fi>
+References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080218114936.GM8905@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnaldo Carvalho de Melo <acme@redhat.com> writes:
->
-> [acme@doppio net-2.6]$ l /tmp/sys_ia32.o.before /tmp/sys_ia32.o.after
-> -rw-rw-r-- 1 acme acme 185240 2008-02-06 19:19 /tmp/sys_ia32.o.after
-> -rw-rw-r-- 1 acme acme 248328 2008-02-06 19:00 /tmp/sys_ia32.o.before
->
-> 	Almost 64KB only on this object file!
+On Mon, Feb 18, 2008 at 06:49:36AM -0500, Theodore Tso wrote:
+> On Mon, Feb 18, 2008 at 08:12:29AM +0100, Ingo Molnar wrote:
+> > > Nack.  I don't object to un-exporting journal_update_superblock(), 
+> > > because that is pretty internal, but the other functions are intended 
+> > > specifically for use by code outside of JBD.  For example, the journal 
+> > > checksum patch for ext3/4 uses journal_set_features() to turn on 
+> > > features in the JBD superblock.
+> > > 
+> > > Similarly, for 64-bit support in ext4 uses journal_set_features() to 
+> > > set a 64-bit feature flag in the journal superblock.
+> > 
+> > that's an invalid excuse for the benefit of out-of-tree forks: reality 
+> > is that you can export those functions in the "journal checksum patch" 
+> > just fine. So you cannot 'nack' a sensible patch on that ground and no 
+> > maintainer does it on that ground. Once you get your stuff upstream, you 
+> > can re-add the export.
+> 
+> I'm going to NACK it as well.  This kind of code churn where we make
+> symbols static only to make them non-static again in an existing ext4
+> tree is exactly the sort of needless code churn that makes patches
+> start to conflict and where we need different patches depending on
+> whether it is intended for -mm or linux-next or mainline.
+> 
+> I think we really have gotten WAY to doctrinaire on the if there are
+> no in-tree users, it MUST be static.  This is exactly the sort of
+> mindless rules that cause the patch conflicts that have been causing
+> us so much pain and grief.  In this case, it is an existing symbol
+> which is already non-static, and for which we have code in a
+> development tree that will be using it.  In the r/o bind case, it is
+> the insistence that you can't push an existing patch to expose a new
+> interface that must be used later in the r/o bind patchset and which
+> sweeps across all trees changing stuff that causes pain and grief.
+> 
+> In both cases, if we expand "in-tree" development users to include
+> known development trees that are intended for mainline, it makes all
+> of our lives MUCH easier.  
 
-Just FYI, newer gcc does this in theory automatically when you specify 
+The following was meant 100% seriously:
 
--feliminate-unused-debug-types -feliminate-unused-debug-symbols
+This patch has been sent on:
+- 16 May 2006
+- 1 May 2006
+- 23 Apr 2006
 
-But in my tests on gcc 4.1 / gcc 4.2 it doesn't seem to make any difference
-currently :/ Not sure what is wrong. 
 
-There is also -feliminate-dwarf2-dups, but it seems to even increase
-obj dir size. Also -feliminate-dwarf2-dups seems to generate a lot of 
+If me resending this old patch collides with something finally getting a 
+user this part of my patch shouldn't be applied now (but you might get 
+it again in 6 months if it's still unused...).
 
-WARNING: vmlinux.o (.gnu.linkonce.wi.mmzone.h.97561702): unexpected section name.
-The (.[number]+) following section name are ld generated and not expected.
-Did you forget to use "ax"/"aw" in a .S file?
-Note that for example <linux/init.h> contains
-section definitions for use in .S files.
+But generally such conflicts would become visible if "known development 
+trees that are intended for mainline" were in -mm.
 
-etc. warnings But the kernel builds fine even with those warnings.
+> 					- Ted
 
-Still if you just want to shrink objdir size then figuring out
-what's wrong with these options and then specifying them would be 
-probably the best strategy than to try to do it all manually.
+cu
+Adrian
 
-That said removing unused includes is of course a valuable
-clean up by itself, I'm just not sure it's the best way to get
-smaller object dirs.
+-- 
 
--Andi
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
