@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbYBRKzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbYBRK4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbYBRKzU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 05:55:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756484AbYBRKzJ
+	id S1759217AbYBRK4V (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756667AbYBRK4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 05:55:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:59025 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755830AbYBRKzH (ORCPT
+	Mon, 18 Feb 2008 05:56:13 -0500
+Received: from antispam.upcomillas.es ([130.206.70.245]:45802 "EHLO
+	antispam.upcomillas.es" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055AbYBRK4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 05:55:07 -0500
-Date: Mon, 18 Feb 2008 12:31:07 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/5] x86: validate against acpi motherboard resources
-Message-ID: <20080218113107.GB24147@one.firstfloor.org>
-References: <fa.LKjQjbOw482S/QFVaQ9fSrM+IFw@ifi.uio.no> <fa.wuwhrqFp6CufvpAJxShHqIaOPdI@ifi.uio.no> <47B67A0E.7060605@shaw.ca>
+	Mon, 18 Feb 2008 05:56:12 -0500
+Subject: 2.6.25-rc1/2 regression: first-time login into gnome fails
+From: Romano Giannetti <romanol@upcomillas.es>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Mon, 18 Feb 2008 11:56:01 +0100
+Message-Id: <1203332161.26696.11.camel@pern>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B67A0E.7060605@shaw.ca>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 11:52:14PM -0600, Robert Hancock wrote:
-> Andi Kleen wrote:
-> >Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
-> >>[akpm@linux-foundation.org: many fixes and cleanups]
-> >>Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-> >>Signed-off-by: Andi Kleen <ak@suse.de>
-> >>Tested-by: Andi Kleen <ak@suse.de>
-> >
-> >iirc it really was 
-> >Tested-and-didnt-pass-test-by: Andi Kleen 
-> >unfortunately. I have not rechecked recently, but on the one Intel
-> >box the original patch and the other mcfg heuristics removed didn't work.
-> 
-> With just this patch you will have this problem. You need either the 
-> patch to disable decode during BAR sizing,
 
-Isn't that one already merged?
+Hi,
 
-I remember the BAR decoding patch did help with at least one
-of the original failures (there were multiple ones iirc0) 
+	I have a very strange, but fully reproducible, regression with
+2.6.25-rc1 -rc2. I have an ubuntu 7.10 fully updated.
 
-If someone points me to all the patches needed or a tree who 
-has them all applied I can give it a quick spin on the boxes I have here.
-One of the systems where it originally failed I don't have anymore
-though.
+	The first time after boot, when I login to gnome (through gdm) 
+the login half-fails with a Setting Daemon error: failed to connect to
+socket /tmp/dbus-<some random stuff>: connection refused. Nothing in the
+logs, and there is no such socket in /tmp. 
 
-> or the patch to use MMCONFIG 
-> for extended config space only, if you don't have them already.
+If I log out and then log in again, all works ok. 
 
-That would mean it would boot, but anything that uses extended config
-space would fail. While not as catastrophic as before I'm not sure
-it's that great either. At least there would be still breakage,
-but much more subtle ones.
+With 2.6.24.2 there is no such a problem.
 
--Andi
+.config, dmesg (2M buffer size) and syslog here: 
+
+http://www.dea.icai.upcomillas.es/romano/linux/info/
+
+
+	Romano 
+
+
+(Back to 2.6.24.2, because ndiswrapper broke again, and ath5k doesn't
+like (yet) my atheros adapter...) 
+
+	
+-- 
+Sorry for the disclaimer --- ¡I cannot stop it!
+
+
+
+--
+La presente comunicación tiene carácter confidencial y es para el exclusivo uso del destinatario indicado en la misma. Si Ud. no es el destinatario indicado, le informamos que cualquier forma de distribución, reproducción o uso de esta comunicación y/o de la información contenida en la misma están estrictamente prohibidos por la ley. Si Ud. ha recibido esta comunicación por error, por favor, notifíquelo inmediatamente al remitente contestando a este mensaje y proceda a continuación a destruirlo. Gracias por su colaboración.
+
+This communication contains confidential information. It is for the exclusive use of the intended addressee. If you are not the intended addressee, please note that any form of distribution, copying or use of this communication or the information in it is strictly prohibited by law. If you have received this communication in error, please immediately notify the sender by reply e-mail and destroy this message. Thank you for your cooperation. 
