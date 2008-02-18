@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbYBRQGD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757897AbYBRQIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758766AbYBRQGD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:06:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbYBRQFx
+	id S1757897AbYBRQIC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:08:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbYBRQHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:05:53 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:54420 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754156AbYBRQFv (ORCPT
+	Mon, 18 Feb 2008 11:07:54 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:30064 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498AbYBRQHx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:05:51 -0500
-Message-ID: <47B9AD1D.4020307@ru.mvista.com>
-Date: Mon, 18 Feb 2008 19:06:53 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] ide: remove PIO "downgrade" quirk
-References: <20080217185105.16210.26582.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080217185105.16210.26582.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 18 Feb 2008 11:07:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=g1/K5UTXTmGjuOxaz7H/jnjkDVSardJfMyzMq+4ICAqAmlZXEdMy9XDCYTKn+TYo4tC7c1S+ZvCE4QSL7XqfGtvHZZjzN5mwrrrEy3nlwaQZJ5qk7CBe4wIpCCbzyfykdPTFOanaxdLS44wb43Kx/9fpDH2Goq3yvVNN2r/7BsQ=
+Subject: [PATCH] ata: replace macro with static inline in libata.h
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 18 Feb 2008 08:07:53 -0800
+Message-Id: <1203350873.5757.23.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+Avoid ~70 sparse warnings like:
+drivers/ata/pata_ali.c:176:14: warning: symbol '__x' shadows an earlier one
+drivers/ata/pata_ali.c:176:14: originally declared here
 
-> No need for it nowadays
+Due to nesting min_t macro inside max_t macro which both use a __x
+identifier internally.
 
-    Since which moment, could you elaborate
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, here is a patch that drastically reduces the number of sparse
+warnings in libata.  Alan Cox has suggested a clamp_t macro be added
+to kernel.h instead to avoid this issue.  I don't believe Jeff Garzik
+has given an opinion yet (other than not applying it when originally
+sent this was 5/11 of the libata sparse warnings)
 
-> so remove quirk code from ide_get_best_pio_mode()
-> and IDE_HFLAG_PIO_DOWNGRADE host flag.
+ include/linux/libata.h |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+diff --git a/include/linux/libata.h b/include/linux/libata.h
+index bc5a8d0..b5590fb 100644
+--- a/include/linux/libata.h
++++ b/include/linux/libata.h
+@@ -764,7 +764,14 @@ struct ata_timing {
+ 	unsigned short udma;		/* t2CYCTYP/2 */
+ };
+ 
+-#define FIT(v, vmin, vmax)	max_t(short, min_t(short, v, vmax), vmin)
++static inline short FIT(short v, short vmin, short vmax)
++{
++	if (v >= vmax)
++		return vmax;
++	if (v <= vmin)
++		return vmin;
++	return v;
++}
+ 
+ extern const unsigned long sata_deb_timing_normal[];
+ extern const unsigned long sata_deb_timing_hotplug[];
+-- 
+1.5.4.1.1278.gc75be
 
-MBR, Sergei
+
+
