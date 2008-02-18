@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762863AbYBRX0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762931AbYBRX1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762863AbYBRX0y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 18:26:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756024AbYBRX0O
+	id S1762931AbYBRX1Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 18:27:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbYBRX0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 18:26:14 -0500
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41609 "EHLO
+	Mon, 18 Feb 2008 18:26:15 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:41619 "EHLO
 	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755341AbYBRX0K (ORCPT
+	with ESMTP id S1755368AbYBRX0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 Feb 2008 18:26:10 -0500
 From: Rodolfo Giometti <giometti@linux.it>
@@ -16,110 +16,224 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
        Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
        Rodolfo Giometti <giometti@linux.it>
-Date: Tue, 19 Feb 2008 00:28:38 +0100
-Message-Id: <120337732021-git-send-email-giometti@linux.it>
+Date: Tue, 19 Feb 2008 00:28:36 +0100
+Message-Id: <12033773201912-git-send-email-giometti@linux.it>
 X-Mailer: git-send-email 1.5.2.5
-In-Reply-To: <12033773203297-git-send-email-giometti@linux.it>
+In-Reply-To: <12033773201179-git-send-email-giometti@linux.it>
 References: <1203377319975-git-send-email-giometti@linux.it>
  <1203377319560-git-send-email-giometti@linux.it>
  <1203377320720-git-send-email-giometti@linux.it>
  <12033773201179-git-send-email-giometti@linux.it>
- <12033773201912-git-send-email-giometti@linux.it>
- <12033773203297-git-send-email-giometti@linux.it>
 X-SA-Exim-Connect-IP: 192.168.32.1
 X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: [PATCH] PPS: example program to enable PPS support on serial ports.
+Subject: [PATCH] PPS: LinuxPPS clients support.
 X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
 X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Each PPS source can be registered/deregistered into the system by
+using special modules called "clients". They simply define the PPS
+sources' attributes and implement the time signal registartion
+mechanism.
+
+This patch adds a special directory for such clients and adds a dummy
+client that can be useful to test system integrity on real systems.
+
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 ---
- Documentation/pps/Makefile |    2 +-
- Documentation/pps/ppsctl.c |   62 ++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 63 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/pps/ppsctl.c
+ drivers/pps/Kconfig          |    2 +
+ drivers/pps/Makefile         |    1 +
+ drivers/pps/clients/Kconfig  |   18 +++++++
+ drivers/pps/clients/Makefile |    9 +++
+ drivers/pps/clients/ktimer.c |  114 ++++++++++++++++++++++++++++++++++++++++++
+ 5 files changed, 144 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/pps/clients/Kconfig
+ create mode 100644 drivers/pps/clients/Makefile
+ create mode 100644 drivers/pps/clients/ktimer.c
 
-diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
-index af4f9b4..8ef4f47 100644
---- a/Documentation/pps/Makefile
-+++ b/Documentation/pps/Makefile
-@@ -1,4 +1,4 @@
--TARGETS = ppstest
-+TARGETS = ppstest ppsctl
+diff --git a/drivers/pps/Kconfig b/drivers/pps/Kconfig
+index dce4a1f..0c82285 100644
+--- a/drivers/pps/Kconfig
++++ b/drivers/pps/Kconfig
+@@ -29,4 +29,6 @@ config PPS_DEBUG
+ 	  messages to the system log.  Select this if you are having a
+ 	  problem with PPS support and want to see more of what is going on.
  
- CFLAGS += -Wall -O2 -D_GNU_SOURCE
- CFLAGS += -I .
-diff --git a/Documentation/pps/ppsctl.c b/Documentation/pps/ppsctl.c
++source drivers/pps/clients/Kconfig
++
+ endmenu
+diff --git a/drivers/pps/Makefile b/drivers/pps/Makefile
+index 19ea582..01db345 100644
+--- a/drivers/pps/Makefile
++++ b/drivers/pps/Makefile
+@@ -4,5 +4,6 @@
+ 
+ pps_core-y			:= pps.o kapi.o sysfs.o
+ obj-$(CONFIG_PPS)		:= pps_core.o
++obj-y				:= clients/
+ 
+ ccflags-$(CONFIG_PPS_DEBUG) := -DDEBUG
+diff --git a/drivers/pps/clients/Kconfig b/drivers/pps/clients/Kconfig
 new file mode 100644
-index 0000000..83fd08a
+index 0000000..60b83be
 --- /dev/null
-+++ b/Documentation/pps/ppsctl.c
-@@ -0,0 +1,62 @@
-+#include <stdio.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+#include <errno.h>
-+#include <sys/ioctl.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <fcntl.h>
-+#include <string.h>
-+#include <linux/serial.h>
++++ b/drivers/pps/clients/Kconfig
+@@ -0,0 +1,18 @@
++#
++# PPS clients configuration
++#
 +
-+void usage(char *name)
++if PPS
++
++comment "PPS clients support"
++
++config PPS_CLIENT_KTIMER
++	tristate "Kernel timer client (Testing client, use for debug)"
++	help
++	  If you say yes here you get support for a PPS debugging client
++	  which uses a kernel timer to generate the PPS signal.
++
++	  This driver can also be built as a module.  If so, the module
++	  will be called ktimer.ko.
++
++endif
+diff --git a/drivers/pps/clients/Makefile b/drivers/pps/clients/Makefile
+new file mode 100644
+index 0000000..f3c1e39
+--- /dev/null
++++ b/drivers/pps/clients/Makefile
+@@ -0,0 +1,9 @@
++#
++# Makefile for PPS clients.
++#
++
++obj-$(CONFIG_PPS_CLIENT_KTIMER)	+= ktimer.o
++
++ifeq ($(CONFIG_PPS_DEBUG),y)
++EXTRA_CFLAGS += -DDEBUG
++endif
+diff --git a/drivers/pps/clients/ktimer.c b/drivers/pps/clients/ktimer.c
+new file mode 100644
+index 0000000..5845188
+--- /dev/null
++++ b/drivers/pps/clients/ktimer.c
+@@ -0,0 +1,114 @@
++/*
++ * ktimer.c -- kernel timer test client
++ *
++ *
++ * Copyright (C) 2005-2006   Rodolfo Giometti <giometti@linux.it>
++ *
++ *   This program is free software; you can redistribute it and/or modify
++ *   it under the terms of the GNU General Public License as published by
++ *   the Free Software Foundation; either version 2 of the License, or
++ *   (at your option) any later version.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License
++ *   along with this program; if not, write to the Free Software
++ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/time.h>
++#include <linux/timer.h>
++
++#include <linux/pps.h>
++
++/*
++ * Global variables
++ */
++
++static int source;
++static struct timer_list ktimer;
++
++/*
++ * The kernel timer
++ */
++
++static void pps_ktimer_event(unsigned long ptr)
 +{
-+	fprintf(stderr, "usage: %s <ttyS> [enable|disable]\n", name);
++	pr_info("PPS event at %lu\n", jiffies);
 +
-+	exit(EXIT_FAILURE);
++	pps_event(source, PPS_CAPTUREASSERT, NULL);
++
++	mod_timer(&ktimer, jiffies + HZ);
 +}
 +
-+int main(int argc, char *argv[])
++/*
++ * The echo function
++ */
++
++static void pps_ktimer_echo(int source, int event, void *data)
 +{
-+	int fd;
++	pr_info("echo %s %s for source %d\n",
++		event & PPS_CAPTUREASSERT ? "assert" : "",
++		event & PPS_CAPTURECLEAR ? "clear" : "",
++		source);
++}
++
++/*
++ * The PPS info struct
++ */
++
++static struct pps_source_info pps_ktimer_info = {
++	.name		= "ktimer",
++	.path		= "",
++	.mode		= PPS_CAPTUREASSERT | PPS_OFFSETASSERT | \
++			  PPS_ECHOASSERT | \
++			  PPS_CANWAIT | PPS_TSFMT_TSPEC,
++	.echo 		= pps_ktimer_echo,
++	.owner		= THIS_MODULE,
++};
++
++/*
++ * Module staff
++ */
++
++static void __exit pps_ktimer_exit(void)
++{
++	del_timer_sync(&ktimer);
++	pps_unregister_source(source);
++
++	pr_info("ktimer PPS source unregistered\n");
++}
++
++static int __init pps_ktimer_init(void)
++{
 +	int ret;
-+	struct serial_struct ss;
 +
-+	if (argc < 2)
-+		usage(argv[0]);
-+
-+	fd = open(argv[1], O_RDWR);
-+	if (fd < 0) {
-+		perror("open");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+	ret = ioctl(fd, TIOCGSERIAL, &ss);
++	ret = pps_register_source(&pps_ktimer_info,
++				PPS_CAPTUREASSERT | PPS_OFFSETASSERT);
 +	if (ret < 0) {
-+		perror("ioctl(TIOCGSERIAL)");
-+		exit(EXIT_FAILURE);
++		printk(KERN_ERR "cannot register ktimer source\n");
++		return ret;
 +	}
++	source = ret;
 +
-+	if (argc < 3) {		/* just read PPS status */
-+		printf("PPS is %sabled\n",
-+		       ss.flags & ASYNC_HARDPPS_CD ? "en" : "dis");
-+		exit(EXIT_SUCCESS);
-+	}
++	setup_timer(&ktimer, pps_ktimer_event, 0);
++	mod_timer(&ktimer, jiffies + HZ);
 +
-+	if (argv[2][0] == 'e' || argv[2][0] == '1')
-+		ss.flags |= ASYNC_HARDPPS_CD;
-+	else if (argv[2][0] == 'd' || argv[2][0] == '0')
-+		ss.flags &= ~ASYNC_HARDPPS_CD;
-+	else {
-+		fprintf(stderr, "invalid state argument \"%s\"\n", argv[2]);
-+		exit(EXIT_FAILURE);
-+	}
++	pr_info("ktimer PPS source registered at %d\n", source);
 +
-+	ret = ioctl(fd, TIOCSSERIAL, &ss);
-+	if (ret < 0) {
-+		perror("ioctl(TIOCSSERIAL)");
-+		exit(EXIT_FAILURE);
-+	}
-+
-+	return 0;
++	return  0;
 +}
++
++module_init(pps_ktimer_init);
++module_exit(pps_ktimer_exit);
++
++MODULE_AUTHOR("Rodolfo Giometti <giometti@linux.it>");
++MODULE_DESCRIPTION("dummy PPS source by using a kernel timer (just for debug)");
++MODULE_LICENSE("GPL");
 -- 
 1.5.2.5
 
