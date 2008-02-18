@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759843AbYBRNAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbYBRNAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759843AbYBRNAK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:00:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbYBRM7y
+	id S1760286AbYBRNAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:00:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756539AbYBRNAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 07:59:54 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39380 "EHLO
+	Mon, 18 Feb 2008 08:00:00 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44552 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750699AbYBRM7w (ORCPT
+	by vger.kernel.org with ESMTP id S1755194AbYBRM76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 07:59:52 -0500
-Date: Mon, 18 Feb 2008 04:58:49 -0800
+	Mon, 18 Feb 2008 07:59:58 -0500
+Date: Mon, 18 Feb 2008 04:58:12 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Daniel J Blueman" <daniel.blueman@gmail.com>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [2.6.25-rc2, 2.6.24-rc8] page allocation failure...
-Message-Id: <20080218045849.59311851.akpm@linux-foundation.org>
-In-Reply-To: <6278d2220802170520k2ddf9072x386e4a9e3062f4da@mail.gmail.com>
-References: <6278d2220802141240g6ee2421ew94e57669ef930be6@mail.gmail.com>
-	<6278d2220802170520k2ddf9072x386e4a9e3062f4da@mail.gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.24: RPC: bad TCP reclen 0x00020090 (large)
+Message-Id: <20080218045812.f1dc6f71.akpm@linux-foundation.org>
+In-Reply-To: <47B2F88D.7080300@msgid.tls.msk.ru>
+References: <47B2F88D.7080300@msgid.tls.msk.ru>
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,48 +27,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008 13:20:59 +0000 "Daniel J Blueman" <daniel.blueman@gmail.com> wrote:
+(suitable cc added)
 
-> I'm still hitting this with e1000e on 2.6.25-rc2, 10 times again.
-> 
-> It's clearly non-fatal, but then do we expect it to occur?
-> 
-> Daniel
-> 
-> --- [dmesg]
-> 
-> [ 1250.822786] swapper: page allocation failure. order:3, mode:0x4020
-> [ 1250.822786] Pid: 0, comm: swapper Not tainted 2.6.25-rc2-119 #2
-> [ 1250.822786]
-> [ 1250.822786] Call Trace:
-> [ 1250.822786]  <IRQ>  [<ffffffff8025fe9e>] __alloc_pages+0x34e/0x3a0
-> [ 1250.822786]  [<ffffffff8048c6df>] ? __netdev_alloc_skb+0x1f/0x40
-> [ 1250.822786]  [<ffffffff8027acc2>] __slab_alloc+0x102/0x3d0
-> [ 1250.822786]  [<ffffffff8048c6df>] ? __netdev_alloc_skb+0x1f/0x40
-> [ 1250.822786]  [<ffffffff8027b8cb>] __kmalloc_track_caller+0x7b/0xc0
-> [ 1250.822786]  [<ffffffff8048b74f>] __alloc_skb+0x6f/0x160
-> [ 1250.822786]  [<ffffffff8048c6df>] __netdev_alloc_skb+0x1f/0x40
-> [ 1250.822786]  [<ffffffff8042652d>] e1000_alloc_rx_buffers+0x1ed/0x260
-> [ 1250.822786]  [<ffffffff80426b5a>] e1000_clean_rx_irq+0x22a/0x330
-> [ 1250.822786]  [<ffffffff80422981>] e1000_clean+0x1e1/0x540
-> [ 1250.822786]  [<ffffffff8024b7a5>] ? tick_program_event+0x45/0x70
-> [ 1250.822786]  [<ffffffff804930ba>] net_rx_action+0x9a/0x150
-> [ 1250.822786]  [<ffffffff802336b4>] __do_softirq+0x74/0xf0
-> [ 1250.822786]  [<ffffffff8020c5fc>] call_softirq+0x1c/0x30
-> [ 1250.822786]  [<ffffffff8020eaad>] do_softirq+0x3d/0x80
-> [ 1250.822786]  [<ffffffff80233635>] irq_exit+0x85/0x90
-> [ 1250.822786]  [<ffffffff8020eba5>] do_IRQ+0x85/0x100
-> [ 1250.822786]  [<ffffffff8020a5b0>] ? mwait_idle+0x0/0x50
-> [ 1250.822786]  [<ffffffff8020b981>] ret_from_intr+0x0/0xa
-> [ 1250.822786]  <EOI>  [<ffffffff8020a5f5>] ? mwait_idle+0x45/0x50
-> [ 1250.822786]  [<ffffffff80209a92>] ? enter_idle+0x22/0x30
-> [ 1250.822786]  [<ffffffff8020a534>] ? cpu_idle+0x74/0xa0
-> [ 1250.822786]  [<ffffffff80527825>] ? rest_init+0x55/0x60
+(regression)
 
-They're regularly reported with e1000 too - I don't think aything really
-changed.
+On Wed, 13 Feb 2008 17:02:53 +0300 Michael Tokarev <mjt@tls.msk.ru> wrote:
 
-e1000 has this crazy problem where because of a cascade of follies (mainly
-borked hardware) it has to do a 32kb allocation for a 9kb(?) packet.  It
-would be sad if that was carried over into e1000e?
+> Hello!
+> 
+> After upgrading to 2.6.24 (from .23), we're seeing ALOT
+> of messages like in $subj in dmesg:
+> 
+> Feb 13 13:21:39 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+> Feb 13 13:21:46 paltus kernel: printk: 3586 messages suppressed.
+> Feb 13 13:21:46 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+> Feb 13 13:21:49 paltus kernel: printk: 371 messages suppressed.
+> Feb 13 13:21:49 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
+> Feb 13 13:21:55 paltus kernel: printk: 2979 messages suppressed.
+> ...
+> 
+> with linux NFS server.  The clients are all linux too, mostly 2.6.23
+> and some 2.6.22.
+> 
+> I found the "offending" piece of code in net/sunrpc/svcsock.c,
+> in routine svc_tcp_recvfrom() with condition being:
+> 
+>    if (svsk->sk_reclen > serv->sv_max_mesg) ...
+> 
+> This happens after a server reboot.  At this point, client(s) are trying
+> to perform some NFS transaction and fail, and server starts generating
+> the above messages - till I do a umount followed by mount on all clients.
+> Before, such situation (nfs server reboot) were handled transparently,
+> ie, there was nothing to do, the mount continued working just fine when
+> the server comes back online.
+> 
+> Now, I'm not sure if it's really 2.6.24-specific problem or a userspace
+> problem.  Some time ago we also upgraded nfs-kernel-server (Debian)
+> package, and the remount-after-nfs-server-reboot problem started to
+> occur at THAT time (and it is something to worry about as well, I just
+> had no time to deal with it); but the dmesg spamming only appeared
+> with 2.6.24.
+> 
+> How to debug the issue further on from this point?
+> 
+
 
