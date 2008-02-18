@@ -1,76 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbYBRGID@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbYBRGNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbYBRGID (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 01:08:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYBRGHy
+	id S1753995AbYBRGNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 01:13:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbYBRGNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 01:07:54 -0500
-Received: from mga10.intel.com ([192.55.52.92]:27250 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751836AbYBRGHx (ORCPT
+	Mon, 18 Feb 2008 01:13:24 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:57539 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbYBRGNX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 01:07:53 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,369,1199692800"; 
-   d="scan'208";a="520289549"
-Subject: Re: 2.6.25-rc1: volanoMark 45% regression
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: balbir@linux.vnet.ibm.com
-Cc: vatsa@linux.vnet.ibm.com, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <47B91615.3040407@linux.vnet.ibm.com>
-References: <1202895028.3027.27.camel@ymzhang>
-	 <47B2BC2C.80100@linux.vnet.ibm.com>
-	 <20080213120708.GA16231@linux.vnet.ibm.com>
-	 <1202974901.3027.58.camel@ymzhang> <1203067505.3027.178.camel@ymzhang>
-	 <47B91008.8050505@linux.vnet.ibm.com> <1203311505.3027.187.camel@ymzhang>
-	 <47B91615.3040407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 18 Feb 2008 14:05:45 +0800
-Message-Id: <1203314745.3027.191.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Mon, 18 Feb 2008 01:13:23 -0500
+Message-ID: <47B92122.5010406@linux.vnet.ibm.com>
+Date: Mon, 18 Feb 2008 11:39:38 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Li Zefan <lizf@cn.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       containers@lists.linux-foundation.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] memcgroup: fix and update documentation
+References: <47B91EBC.2080007@cn.fujitsu.com>
+In-Reply-To: <47B91EBC.2080007@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-02-18 at 10:52 +0530, Balbir Singh wrote:
-> Zhang, Yanmin wrote:
-> > On Mon, 2008-02-18 at 10:26 +0530, Balbir Singh wrote:
-> >> Zhang, Yanmin wrote:
-> >>>>>  Did you have
-> >>>>> CONFIG_FAIR_USER_SCHED enabled in both cases?
-> >>>> Yes.
-> >>>>
-> >>>> CONFIG_FAIR_GROUP_SCHED=y
-> >>>> CONFIG_FAIR_USER_SCHED=y
-> >>>>
-> >> Interesting that you have CONFIG_FAIR_USER_SCHED. Do you have any other users on
-> >> the system (are they running anything at the time of the benchmark)?
-> > No. As for volanoMark, I start volanoMark both server and client processes while
-> > starting some system measurement tools such like vmstat/iostat/sar. All the processes
-> > run under the same user.
-> > 
+Li Zefan wrote:
+> - remove trailing " Bytes"s in the demonstration
+> - remove section 4.4 (feature control_type has been removed)
+> - fix reference section
 > 
-> Ok, so the bandwidth is not split between users, which is very good. I assume
-> the same user is root?
-No. I use an ordinary user.
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-> 
-> > 
-> >>  Could you
-> >> turn off CONFIG_FAIR_USER_SCHED  and turn on CONFIG_FAIR_GROUP_SCHED.
-> > I will try.
-> > 
-> >>  I am going
-> >> to run some tests with 2.6.25-rc2 and Volanomark and see how that goes.
-> > Pls. set /proc/sys/kernel/sched_compat_yield=1 before starting test.
-> 
-> Thanks for the tip, I would have definitely missed this one
-I use Jrockit JVM and enables hugetlb, but I don't think hugetlb has too much help on
-volanoMark, especially for the regression tracking.
-
--yanmin
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
