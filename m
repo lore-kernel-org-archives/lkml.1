@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbYBRNNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbYBRNPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbYBRNNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:13:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761831AbYBRNNJ
+	id S1754605AbYBRNPn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:15:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYBRNPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:13:09 -0500
-Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:27029 "HELO
-	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1760517AbYBRNNG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:13:06 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=4tBdFTDfRId4O3Iv6t3cyAEkUvQxc0W70oFsMuFFrxjl0G6k6XzX0dRGQ8WuDZPkQ2lIBObzICQEEZneNT3JcA+S1eF3J2pozhJpPEyjmv0/gAGv9vhRfGf9Dx3PSjjsIl2QacvkOhPyNHUmGDJ+SaAgGbG76lzSff50KQG6aVg=;
-X-YMail-OSG: S3i1f1EVM1mUJsM7GxJFlN5.utA_WtUwiGWgUw1dfFV2ijodMc0KC3RrMuaAfjSjmoUjHeFq4FnsjTDeeq23EP9z5yHc17BR_PxWLtI_7dQNJ.5NTT8ADQPprta70hNsW9UNaTb_qwBJ.gZH4rNkJJEm8A--
-Date: Mon, 18 Feb 2008 13:13:04 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080218050056.fb0fc0bf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <432054.54127.qm@web52910.mail.re2.yahoo.com>
+	Mon, 18 Feb 2008 08:15:34 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:59751 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750773AbYBRNPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:15:33 -0500
+Date: Tue, 19 Feb 2008 00:15:26 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+Message-Id: <20080219001526.bdb57549.sfr@canb.auug.org.au>
+In-Reply-To: <4d8e3fd30802180311u1f216fe9va916e797db10af12@mail.gmail.com>
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
+	<4d8e3fd30802180311u1f216fe9va916e797db10af12@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_Feb_2008_00_15_26_+1100_.AnzKnzckauYVhzQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
-> and here it hangs, I assume?
+--Signature=_Tue__19_Feb_2008_00_15_26_+1100_.AnzKnzckauYVhzQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Oops, I think you have misunderstood. The hang happens if I *don't* specify acpi=noirq, whereas in
-this case I did. I have already reported the original hang under threads:
+Hi Paolo,
 
-http://www.ussg.iu.edu/hypermail/linux/kernel/0802.0/0895.html
-http://www.ussg.iu.edu/hypermail/linux/kernel/0802.0/0898.html
+On Mon, 18 Feb 2008 12:11:33 +0100 "Paolo Ciarrocchi" <paolo.ciarrocchi@gma=
+il.com> wrote:
+>
+> I would like to update the "The development process" section in
+> Documentation/HOWTO including some information about the linux-next tree.
+>=20
+> I understand what it's including but I didn't get how it will fit in
+> the process.
+> Is Linus going to pull from that tree as soon as we reach -rc0 or this
+> is just a tree
+> used for testing what will be pushed to Linus as soon as the two weeks
+> merge window
+> open?
 
-So I was actually reporting that I've *worked around* the hang here. The net result is that all my
-PCI devices are now placed on IRQ 9, instead of IRQs 16, 17 18 and 19.
+The intention is the latter.  I hope to help people sort out some of the
+conflicts and cross subsystem issues before we get into the merge window
+and the code gets into Linus' tree.
 
+Andrew Morton also hopes that the linux-next tree may get more testing
+that the -mm tree did if we can stop it having to many regressions by
+only including the less experimental code that is destined for the next
+kernel release.
+
+--=20
 Cheers,
-Chris
+Stephen Rothwell                    sfr@canb.auug.org.au
 
+--Signature=_Tue__19_Feb_2008_00_15_26_+1100_.AnzKnzckauYVhzQ
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-      ___________________________________________________________
-Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
+iD8DBQFHuYTzTgG2atn1QN8RAppnAJ4jtY/3HzgCp+BItONx3U6FXtZNvwCaA9w4
+9XHpJ9iIvHdPwRxGruDMtv8=
+=+x6W
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_Feb_2008_00_15_26_+1100_.AnzKnzckauYVhzQ--
