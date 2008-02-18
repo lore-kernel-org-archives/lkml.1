@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbYBRGnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbYBRGsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755701AbYBRGnn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 01:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYBRGnf
+	id S1754975AbYBRGsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 01:48:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752217AbYBRGsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 01:43:35 -0500
-Received: from ns2.suse.de ([195.135.220.15]:51739 "EHLO mx2.suse.de"
+	Mon, 18 Feb 2008 01:48:06 -0500
+Received: from cantor.suse.de ([195.135.220.2]:50304 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbYBRGne (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 01:43:34 -0500
-Date: Mon, 18 Feb 2008 07:43:32 +0100
-Message-ID: <s5hr6favk6j.wl%tiwai@suse.de>
+	id S1751641AbYBRGsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 01:48:05 -0500
+Date: Mon, 18 Feb 2008 07:48:03 +0100
+Message-ID: <s5hpruuvjz0.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jaroslav Kysela <perex@perex.cz>
-Subject: Re: [PATCH 27/27] [ALSA] hdsp - fix section mismatch warnings
-In-Reply-To: <1203250984-11285-27-git-send-email-sam@ravnborg.org>
-References: <20080217121255.GA10519@uranus.ravnborg.org>
-	<1203250984-11285-27-git-send-email-sam@ravnborg.org>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Adel Gadllah <adel.gadllah@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] snd-hda-intel: don't print using snd_printdd on device open
+In-Reply-To: <47B8F020.7030300@redhat.com>
+References: <47B80CED.3060903@gmail.com>
+	<47B8F020.7030300@redhat.com>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 MULE XEmacs/21.5 (beta28)
  (fuki) (+CVS-20070806) (i386-suse-linux)
@@ -29,63 +28,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Sun, 17 Feb 2008 13:23:04 +0100,
-Sam Ravnborg wrote:
+At Sun, 17 Feb 2008 21:40:32 -0500,
+Chuck Ebbert wrote:
 > 
-> Fix following warnings:
-> WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x34bc): Section mismatch in reference from the function hdsp_check_for_firmware() to the function .devinit.text:hdsp_request_fw_loader()
-> WARNING: sound/pci/rme9652/snd-hdsp.o(.text+0x4ac6): Section mismatch in reference from the function snd_hdsp_proc_read() to the function .devinit.text:hdsp_request_fw_loader()
+> From: Adel Gadllah <adel.gadllah@gmail.com>
 > 
-> Calling hdsp_request_fw_loader() were triggered from /proc
-> so this is not restricted to init or hotplug.
-> So removing the __devexit annotation of this function
-> and one of the functions fix the warning.
+> snd-hda-intel: don't print using snd_printdd on device open
+> 
+> When CONFIG_SND_DEBUG_DETECT is set the hda-intel driver prints verbose
+> info like this:
+> 
+> ALSA sound/pci/hda/hda_intel.c:1259: azx_pcm_prepare: bufsize=0x4400,
+> fragsize=0x1100, format=0x11
+> ALSA sound/pci/hda/hda_codec.c:682: hda_codec_setup_stream: NID=0x7,
+> stream=0x5, channel=0, format=0x11
+> ALSA sound/pci/hda/hda_codec.c:682: hda_codec_setup_stream: NID=0x3,
+> stream=0x5, channel=0, format=0x11
+> ALSA sound/pci/hda/hda_codec.c:682: hda_codec_setup_stream: NID=0x3,
+> stream=0x0, channel=0, format=0x0
+> ALSA sound/pci/hda/hda_codec.c:682: hda_codec_setup_stream: NID=0x7,
+> stream=0x0, channel=0, format=0x0
+> ALSA sound/pci/hda/hda_codec.c:682: hda_codec_setup_stream: NID=0x3,
+> stream=0x0, channel=0, format=0x0
+> 
+> Don't print anything in functions that get called when the device gets
+> opened/prepared for output.
 
-Thanks.  The exactly same fix has been already on ALSA tree since
-weeks ago, but was never pushed...
+Why?  This debug option is explicitly for debugging purposes, and I
+see no reason why such behavior is prohibited.
 
 
 Takashi
-
-> 
-> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-> Cc: Takashi Iwai <tiwai@suse.de>
-> Cc: Jaroslav Kysela <perex@perex.cz>
-> ---
->  sound/pci/rme9652/hdsp.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
-> index c2bd438..6f07a25 100644
-> --- a/sound/pci/rme9652/hdsp.c
-> +++ b/sound/pci/rme9652/hdsp.c
-> @@ -745,7 +745,7 @@ static int hdsp_get_iobox_version (struct hdsp *hdsp)
->  
->  
->  #ifdef HDSP_FW_LOADER
-> -static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp);
-> +static int hdsp_request_fw_loader(struct hdsp *hdsp);
->  #endif
->  
->  static int hdsp_check_for_firmware (struct hdsp *hdsp, int load_on_demand)
-> @@ -4688,7 +4688,7 @@ static struct snd_pcm_ops snd_hdsp_capture_ops = {
->  	.copy =		snd_hdsp_capture_copy,
->  };
->  
-> -static int __devinit snd_hdsp_create_hwdep(struct snd_card *card,
-> +static int snd_hdsp_create_hwdep(struct snd_card *card,
->  					   struct hdsp *hdsp)
->  {
->  	struct snd_hwdep *hw;
-> @@ -4857,7 +4857,7 @@ static int snd_hdsp_create_alsa_devices(struct snd_card *card, struct hdsp *hdsp
->  
->  #ifdef HDSP_FW_LOADER
->  /* load firmware via hotplug fw loader */
-> -static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp)
-> +static int hdsp_request_fw_loader(struct hdsp *hdsp)
->  {
->  	const char *fwfile;
->  	const struct firmware *fw;
-> -- 
-> 1.5.4.rc3.14.g44397
-> 
