@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759869AbYBRRGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbYBRRIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759869AbYBRRGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYBRRG2
+	id S1760173AbYBRRIF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:08:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751236AbYBRRHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:06:28 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:51419 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750932AbYBRRG0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:06:26 -0500
-Date: Mon, 18 Feb 2008 22:36:18 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, apw@shadowen.org
-Subject: [PATCH-RESEND] next-20080218 build failure at pmac_ide_macio_attach ()
-Message-ID: <20080218170618.GA7435@linux.vnet.ibm.com>
-Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-References: <20080218140159.GA31310@linux.vnet.ibm.com> <jeodae4acy.fsf@sykes.suse.de>
+	Mon, 18 Feb 2008 12:07:54 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44323 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751119AbYBRRHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 12:07:54 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Laszlo Attila Toth <panther@balabit.hu>
+Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
+Date: Mon, 18 Feb 2008 18:06:32 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com> <200802181741.09046.rjw@sisk.pl> <47B9BA73.7020909@balabit.hu>
+In-Reply-To: <47B9BA73.7020909@balabit.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <jeodae4acy.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802181806.32741.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 03:17:49PM +0100, Andreas Schwab wrote:
-> Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+On Monday, 18 of February 2008, Laszlo Attila Toth wrote:
+> Hello,
 > 
-.
-.
-<snip>
-> Just remove the cast.
+> Rafael J. Wysocki wrote:
+> > On Monday, 18 of February 2008, Laszlo Attila Toth wrote:
+> >
+> > 
+> > All in all, I gather you wanted me to test the patch below. :-)
+> > 
+> > Yes, that helps.
 > 
-> Andreas.
+> Thanks for the testing. Dave already reverted the patch, also I don't 
+> know I should resend it or leave it as is.
 
-Resending the patch after making the changes Andreas said.
+Since the patch has been reverted, I think you can fold the fix into it
+and send it again for the next merge window (unless it's _really_ urgent).
+Of course, if that's fine by Dave. :-)
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Andreas Schwab <schwab@suse.de>
---
---- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 22:24:49.000000000 +0530
-+++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 22:25:10.000000000 +0530
-@@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
- 	int irq, rc;
- 	hw_regs_t hw;
- 
--	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-+	pmif = kzalloc(sizeof(*pmif), GFP_KERNEL);
- 	if (pmif == NULL)
- 		return -ENOMEM;
- 
-@@ -1229,7 +1229,7 @@ pmac_ide_pci_attach(struct pci_dev *pdev
- 		return -ENODEV;
- 	}
- 
--	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-+	pmif = kzalloc(sizeof(*pmif), GFP_KERNEL);
- 	if (pmif == NULL)
- 		return -ENOMEM;
- 
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+Thanks,
+Rafael
