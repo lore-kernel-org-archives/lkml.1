@@ -1,86 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758394AbYBRQX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbYBRQ32@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758394AbYBRQX3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBRQXU
+	id S1758235AbYBRQ32 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:29:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754911AbYBRQ3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:23:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35236 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751650AbYBRQXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:23:18 -0500
-Date: Mon, 18 Feb 2008 17:22:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Theodore Tso <tytso@mit.edu>, Adrian Bunk <bunk@kernel.org>,
-       Andreas Dilger <adilger@sun.com>, sct@redhat.com,
-       akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] fs/jbd/journal.c: cleanups
-Message-ID: <20080218162226.GB4148@elte.hu>
-References: <20080217081935.GN3848@cs181133002.pp.htv.fi> <20080218070439.GG3029@webber.adilger.int> <20080218071229.GA1459@elte.hu> <20080218114936.GM8905@mit.edu> <20080218131209.GB21080@cs181133002.pp.htv.fi> <20080218133140.GA21635@elte.hu> <20080218151119.GC25098@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080218151119.GC25098@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 18 Feb 2008 11:29:20 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:42184 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754880AbYBRQ3U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 11:29:20 -0500
+To: haveblue@us.ibm.com
+CC: linux-kernel@vger.kernel.org, hch@lst.de, miklos@szeredi.hu, akpm@osdl.org,
+       haveblue@us.ibm.com
+In-reply-to: <20080215223732.42E46571@kernel> (message from Dave Hansen on
+	Fri, 15 Feb 2008 14:37:32 -0800)
+Subject: Re: [PATCH 09/30] r/o bind mounts: drop write during emergency remount
+References: <20080215223721.9E0A088A@kernel> <20080215223732.42E46571@kernel>
+Message-Id: <E1JR8rj-0003ul-Di@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 18 Feb 2008 17:29:15 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Theodore Tso <tytso@mit.edu> wrote:
-
-> On Mon, Feb 18, 2008 at 02:31:40PM +0100, Ingo Molnar wrote:
-> > i guess this explains what static code metrics already suggest:
+> The emergency remount code forcibly removes FMODE_WRITE from
+> filps.  The r/o bind mount code notices that this was done
+> without a proper mnt_drop_write() and properly gives a
+> warning.
 > 
-> Am I right in assuming that code-quality is just a program which runs 
-> checkpatch.pl and measures the number of warnings and calls them 
-> errors?
+> This patch does a mnt_drop_write() to keep everything
+> balanced.
+> 	
+> Acked-by: Al Viro <viro@ZenIV.linux.org.uk>
+> Signed-off-by: Christoph Hellwig <hch@infradead.org>
+> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+> ---
+> 
+>  linux-2.6.git-dave/fs/super.c |   20 ++++++++++++++++++--
+>  1 file changed, 18 insertions(+), 2 deletions(-)
+> 
+> diff -puN fs/super.c~robind-sysrq-fix fs/super.c
+> --- linux-2.6.git/fs/super.c~robind-sysrq-fix	2008-02-15 13:25:46.000000000 -0800
+> +++ linux-2.6.git-dave/fs/super.c	2008-02-15 13:25:46.000000000 -0800
+> @@ -37,6 +37,7 @@
+>  #include <linux/idr.h>
+>  #include <linux/kobject.h>
+>  #include <linux/mutex.h>
+> +#include <linux/file.h>
+>  #include <asm/uaccess.h>
+>  
+>  
+> @@ -567,10 +568,25 @@ static void mark_files_ro(struct super_b
+>  {
+>  	struct file *f;
+>  
+> +retry:
+>  	file_list_lock();
+>  	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
+> -		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
+> -			f->f_mode &= ~FMODE_WRITE;
+> +		struct vfsmount *mnt;
+> +		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
+> +		       continue;
+> +		if (!file_count(f))
+> +			continue;
+> +		if (!(f->f_mode & FMODE_WRITE))
+> +			continue;
+> +		f->f_mode &= ~FMODE_WRITE;
+> +		mnt = f->f_path.mnt;
 
-no, it picks the checkpatch.pl errors and calls them errors. The script 
-ignores checkpatch.pl warnings. (although even the checkpatch.pl 
-warnings tend to be correct in like 90% of the cases - YMMV)
+AFAICS an mntget() is needed here to make sure mnt doesn't go away
+after releasing file_list_lock.
 
-but yes, i'd agree with you if you said this was an arbitrary metric 
-that does not map to the functional qualities of the code in a provable 
-way.
+Miklos
 
-(other than the fact that any of these style errors are valid reasons to 
-reject new code that is being offered into the kernel. I.e. if the ext4 
-codebase was submitted as a new, unknown filesystem right now, it would 
-probably have a hard time getting accepted with all those silly style 
-problems in it. Why should "old" subsystems have a lower threshold to 
-meet than newer subsystems? Isnt that unfair? )
-
-And fact is that i've yet to see really crappy code with an excellent 
-checkpatch score, and really good code with a very poor checkpatch 
-score. So i think you have to accept that there's _some_ correlation.
-
-And i believe this comes from the simple fact that mental carelessness 
-is contagious: lack of attention to details on the thinking level 
-subsconsciously slips over into the style space as well. It's hard 
-(impossible) to measure "true" code quality, but the style space is 
-interrelated with the "true quality" space and is easier to measure. I 
-just had a look at the errors and warnings that checkpatch --file emits 
-on fs/ext3/*.c, and if i was maintaining those files i'd be fixing over 
-50% of them - because they are just style inconsistencies often _within 
-the same function_ which would be constant distraction when adding new 
-code.
-
-In fact, the more critical a piece of code, the more strategic it is to 
-users, the less acceptable it is IMO to have "style noise" and similar 
-visual distractions in it. One unusual indentation or spacing, although 
-silly to even mention in isolation, _can_ trick the human eye into 
-glossing over just one critical piece of information to find or avoid a 
-bug. And as a bonus, consistent source code style is also an attractive 
-aesthetic experience to any first-time visitor of your subsystem. BYMMV.
-
-	Ingo
+> +		file_list_unlock();
+> +		/*
+> +		 * This can sleep, so we can't hold
+> +		 * the file_list_lock() spinlock.
+> +		 */
+> +		mnt_drop_write(mnt);
+> +		goto retry;
+>  	}
+>  	file_list_unlock();
+>  }
+> _
+> 
