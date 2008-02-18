@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759772AbYBRLlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbYBRLm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759772AbYBRLlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 06:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757999AbYBRLlG
+	id S1759545AbYBRLm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 06:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbYBRLmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 06:41:06 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33991 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756982AbYBRLlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 06:41:04 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18UubcwhccUpWwLfBjIZzP5ShYzhspjSPaee6al0j
-	SMQUs95apyQs3y
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-From: Mike Galbraith <efault@gmx.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200802181131.04498.elendil@planet.nl>
-References: <47b8c177.2QDr0ADTa5ExM+/T%Joerg.Schilling@fokus.fraunhofer.de>
-	 <E1JR1e0-0001R1-IR@faramir.fjphome.nl>
-	 <1203324960.24098.3.camel@homer.simson.net>
-	 <200802181131.04498.elendil@planet.nl>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 12:41:01 +0100
-Message-Id: <1203334861.4957.3.camel@homer.simson.net>
+	Mon, 18 Feb 2008 06:42:50 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:59937 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757001AbYBRLmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 06:42:50 -0500
+Date: Mon, 18 Feb 2008 12:42:37 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: David Brownell <david-b@pacbell.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: atmel_spi clock polarity
+Message-ID: <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
+References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 16 Feb 2008 22:32:52 +0900 (JST)
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-On Mon, 2008-02-18 at 11:31 +0100, Frans Pop wrote:
-> On Monday 18 February 2008, Mike Galbraith wrote:
-> > On Mon, 2008-02-18 at 09:46 +0100, Frans Pop wrote:
-> > > Joerg Schilling wrote:
-> > > > This fragment is much too short to allow to judge on possible
-> > > > reasons. There is a high probability that your problem is caused by
-> > > > the cdrecord fork called "wodim".
-> > >
-> > > There is also the 100% certainty that this reply was from a known troll
-> > > and should just be ignored.
-> >
-> > That was rude, crude and uncalled for.
-> 
-> I have no problems with my reply being called "rude" or "crude". After all, 
-> I wasn't even remotely trying to be nice or considerate.
+> Here is my quick workaround for this problem.  It makes all CSRn.CPOL
+> match for the transfer before activating chipselect.  I'm not quite
+> sure my analysis is correct, and there might be better solution.
+> Could you give me any comments?
 
-Your bad.
+I'm not sure if I fully understand what problem you're seeing. Is the
+clock state wrong when the chip select is activated? If so, does the
+patch below help?
 
-Lame excuse for poor behavior elided.
+Haavard
 
-	-Mike
-
+diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
+index 293b7ca..4f19b82 100644
+--- a/drivers/spi/atmel_spi.c
++++ b/drivers/spi/atmel_spi.c
+@@ -90,6 +90,7 @@ static void cs_activate(struct atmel_spi *as, struct spi_device *spi)
+ 
+ 	mr = spi_readl(as, MR);
+ 	mr = SPI_BFINS(PCS, ~(1 << spi->chip_select), mr);
++	spi_writel(as, MR, mr);
+ 
+ 	dev_dbg(&spi->dev, "activate %u%s, mr %08x\n",
+ 			gpio, active ? " (high)" : "",
+@@ -97,7 +98,6 @@ static void cs_activate(struct atmel_spi *as, struct spi_device *spi)
+ 
+ 	if (!(cpu_is_at91rm9200() && spi->chip_select == 0))
+ 		gpio_set_value(gpio, active);
+-	spi_writel(as, MR, mr);
+ }
+ 
+ static void cs_deactivate(struct atmel_spi *as, struct spi_device *spi)
