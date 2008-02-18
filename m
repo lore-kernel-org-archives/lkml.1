@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754841AbYBRGWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYBRGYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754841AbYBRGWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 01:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752613AbYBRGWM
+	id S1755828AbYBRGYt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 01:24:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbYBRGYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 01:22:12 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:43650 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751993AbYBRGWK (ORCPT
+	Mon, 18 Feb 2008 01:24:41 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:32952 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752443AbYBRGYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 01:22:10 -0500
-To: balbir@linux.vnet.ibm.com
-Cc: lizf@cn.fujitsu.com, akpm@linux-foundation.org,
+	Mon, 18 Feb 2008 01:24:41 -0500
+Message-ID: <47B923C8.3090904@linux.vnet.ibm.com>
+Date: Mon, 18 Feb 2008 11:50:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+CC: lizf@cn.fujitsu.com, akpm@linux-foundation.org,
        containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 2/3] memcgroup: fix typo in VM_BUG_ON()
-In-Reply-To: Your message of "Mon, 18 Feb 2008 11:44:20 +0530"
-	<47B9223C.9020106@linux.vnet.ibm.com>
-References: <47B9223C.9020106@linux.vnet.ibm.com>
-X-Mailer: Cue version 0.8 (070404-1613/takashi)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Message-Id: <20080218062209.DA59B1E3C58@siro.lan>
-Date: Mon, 18 Feb 2008 15:22:09 +0900 (JST)
-From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
+References: <47B9223C.9020106@linux.vnet.ibm.com> <20080218062209.DA59B1E3C58@siro.lan>
+In-Reply-To: <20080218062209.DA59B1E3C58@siro.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Li Zefan wrote:
-> > No need for VM_BUG_ON(pc), since 'pc' is the list entry. This should
-> > be VM_BUG_ON(page).
-> > 
-> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> > Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+YAMAMOTO Takashi wrote:
+>> Li Zefan wrote:
+>>> No need for VM_BUG_ON(pc), since 'pc' is the list entry. This should
+>>> be VM_BUG_ON(page).
+>>>
+>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+>>> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> pc is of type page_cgroup and we use list_for_each_entry_safe_reverse. Not sure
+>> why we can't bug on pc.
 > 
-> pc is of type page_cgroup and we use list_for_each_entry_safe_reverse. Not sure
-> why we can't bug on pc.
+> pc is dereferenced before this VM_BUG_ON.
+> 
+> YAMAMOTO Takashi
+> 
 
-pc is dereferenced before this VM_BUG_ON.
+OK, so the VM_BUG_ON needs to move to an earlier location. Agreed.
 
-YAMAMOTO Takashi
-
-> 
-> 
-> 
-> -- 
-> 	Warm Regards,
-> 	Balbir Singh
-> 	Linux Technology Center
-> 	IBM, ISTL
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
