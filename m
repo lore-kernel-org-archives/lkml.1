@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbYBRPs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbYBRPtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbYBRPs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:48:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756050AbYBRPsS
+	id S1758804AbYBRPtR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbYBRPtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:48:18 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.155]:54106 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753084AbYBRPsQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:48:16 -0500
-Message-ID: <47B9A8FF.1010806@ru.mvista.com>
-Date: Mon, 18 Feb 2008 18:49:19 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/4] ide-disk: add missing printk() KERN_* levels
-References: <200802172052.48836.bzolnier@gmail.com>
-In-Reply-To: <200802172052.48836.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Mon, 18 Feb 2008 10:49:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:51516 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753275AbYBRPtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 10:49:03 -0500
+Date: Mon, 18 Feb 2008 10:48:56 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Larry Woodman <lwoodman@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Problem with /proc/sys/vm/lowmem_reserve_ratio ???
+Message-ID: <20080218104856.053e7682@bree.surriel.com>
+In-Reply-To: <x49wsp272se.fsf@segfault.boston.devel.redhat.com>
+References: <47B5A699.7010509@redhat.com>
+	<x49wsp272se.fsf@segfault.boston.devel.redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
+On Mon, 18 Feb 2008 09:33:05 -0500
+Jeff Moyer <jmoyer@redhat.com> wrote:
 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Larry Woodman <lwoodman@redhat.com> writes:
+> 
+> > balance_pgdat() calls zone_watermark_ok() three times, the first call
+> > passes a zero(0) in as the 4th argument.  This 4th argument is the
+> > classzone_idx which is used as the index into the
+> > zone->lowmem_reserve[] array.  Since setup_per_zone_lowmem_reserve()
+> > always sets the zone->lowmem_reserve[0] = 0(because there is nothing
+> > below the DMA zone), zone_watermark_ok() will not consider the
+> > lowmem_reserve pages when zero is passed as the 4th arg.  Shouldnt this
+> > 4th argument be either "i" or "nr_zones - 1" ???
+> 
+> That certainly looks like the intent of this code.  I'd say patch 1,
+> passing i in as the 4th arg.  Rik, what do you think?
 
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Yes, that is probably the best option.
 
-MBR, Sergei
-
+-- 
+All rights reversed.
