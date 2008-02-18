@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757695AbYBRBVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbYBRBVk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757695AbYBRBVS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 20:21:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbYBRBVG
+	id S1758102AbYBRBVk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 20:21:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750992AbYBRBV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 20:21:06 -0500
-Received: from science.horizon.com ([192.35.100.1]:11981 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750970AbYBRBVF (ORCPT
+	Sun, 17 Feb 2008 20:21:29 -0500
+Received: from fbr02.csee.onr.siteprotect.com ([64.26.60.146]:46137 "EHLO
+	fbr02.csee.onr.siteprotect.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751763AbYBRBV2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 20:21:05 -0500
-Message-ID: <20080218012103.31563.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-Date: Sun, 17 Feb 2008 20:21:03 -0500
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Cc: linux@horizon.com
-Subject: IO_DELAY documentation
+	Sun, 17 Feb 2008 20:21:28 -0500
+X-Greylist: delayed 1195 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 20:21:28 EST
+Date: Sun, 17 Feb 2008 20:15:09 -0500 (EST)
+From: Vince Weaver <vince@deater.net>
+X-X-Sender: vince@pianoman.cluster.toy
+To: linux-kernel@vger.kernel.org
+Subject: finding per-process hw interrupt counts
+Message-ID: <Pine.LNX.4.64.0802171929480.5572@pianoman.cluster.toy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"make oldconfig" doesn't know how to display the per-item help, so
-something like this is needed.  It was a squeeze to make all the help
-text, plus option prompt, fit into 24 lines.  If you think that's not
-a concern, some of the wording could be improved.
+Hello
 
-(Added text placed into the public domain; copyright abandoned.)
+is there a way to find out how many times a userspace program is forced to 
+context switch due to a hardware interrupt?
 
-diff --git a/arch/x86/Kconfig.debug b/arch/x86/Kconfig.debug
-index 864affc..8e2ceb6 100644
---- a/arch/x86/Kconfig.debug
-+++ b/arch/x86/Kconfig.debug
-@@ -157,6 +157,24 @@ config IO_DELAY_TYPE_NONE
- choice
- 	prompt "IO delay type"
- 	default IO_DELAY_0XED
-+	help
-+	  The original IBM PC required short pauses between consecutive
-+	  accesses to its peripheral chips.  This can be provided four ways:
-+
-+	  * A dummy write to port 0x80 has been used for 15 years, but
-+	    crashes the AMD64-based HP dv9000z laptop.  The safest option.
-+	  * Port 0xED is also believed safe, and testing is requested.
-+	  * Udelay is awkward to implement in the kernel due to processor
-+	    speed variations, but should be extremely safe.
-+	  * All but the very oldest PCs use emulations of the original
-+	    peripheral chips built into a "Super I/O" chip, and usually
-+	    do no need the delay at all.  The most efficient option.
-+
-+	  On the majority of machines, all four options should work.
-+	  If you have a computer on which any of the four options
-+	  (especially _0XED or _NONE) does not work, please report it,
-+	  with a detailed description of the motherboard (and "lspci -nn"
-+	  and "dmidecode" output), to linux-kernel@vger.kernel.org.
- 
- config IO_DELAY_0X80
- 	bool "port 0x80 based port-IO delay [recommended]"
+The reason for this:
+I am measuring the retired instruction count of programs using performance 
+counters (perfmon2 patchset), and trying to find out where the 
+descrepancies compe from.
+
+On x86, it seems to be:
+
+   reported_count = expected_count + 1*major_pagefaults + \
+                    1*hardware_interrupts + known_errata + 1
+
+I can get the pagefault info from getrusage().  The hardware_interrupts 
+count is my best guess at what is causing the rest, based on the LOC
+field in /proc/interrupts.  That's not per-process though.
+
+Is this info available?  If not, is it possible to patch the kernel to 
+make it so?
+
+Thanks for any help
+
+Vince
+vince@deater.net
