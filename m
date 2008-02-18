@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760266AbYBRTmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbYBRTsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760266AbYBRTmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 14:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYBRTm1
+	id S1759383AbYBRTsj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 14:48:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbYBRTs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 14:42:27 -0500
-Received: from web52907.mail.re2.yahoo.com ([206.190.49.17]:34606 "HELO
-	web52907.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751690AbYBRTm0 (ORCPT
+	Mon, 18 Feb 2008 14:48:29 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:58113 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbYBRTs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 14:42:26 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=w430LHfe4Jm3dXEtFQVIx6GQaZ+7GeziiV+kBD7q22/jZcA5Cj9QoFIMFN3z+v8smLwfLu6GUheDgo9bRenh0RVqxHkEkWusVpSup/OLq5YVFBxp4rfoj4sj/5z/maY9Gos8Zr5yrYifMkEczAuGqmYHEVJbfM5vKX1D0h79c1M=;
-X-YMail-OSG: oYAa_rQVM1k361ZlNRblyKyErNZfm8NDplyopJNq4qWBdjaX8DIjkiFQBzIuRncOyzOAzmS4T5n_yII9MfTrk2Yy88NM1LAr2sr8Z3QV_oSlzC9Sm77rBi_S5oCLoa9X96635.zkHQSbSXTGao6QCyk5Hw--
-Date: Mon, 18 Feb 2008 19:42:25 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
-To: Stephen Hemminger <shemminger@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080218085333.3d32b626@extreme>
+	Mon, 18 Feb 2008 14:48:28 -0500
+Date: Mon, 18 Feb 2008 11:48:25 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Gautham R Shenoy <ego@in.ibm.com>, mathieu.desnoyers@polymtl.ca,
+       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com
+Subject: Re: [PATCH 0/2] Markers Implementation for RCU Tracing - Ver II
+Message-ID: <20080218194825.GF10471@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal> <20080107195038.GA5119@in.ibm.com> <47B97E63.3070205@siemens.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <395400.45093.qm@web52907.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B97E63.3070205@siemens.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Stephen Hemminger <shemminger@linux-foundation.org> wrote:
-> > > sysfs: duplicate filename 'bridge' can not be created
-> > > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > > Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
-> > >  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
-> > >  [<c0105990>] show_trace+0x12/0x14
-> > >  [<c010613d>] dump_stack+0x6c/0x72
-> > >  [<c01991bf>] sysfs_add_one+0x57/0xbc
-> > >  [<c0199e41>] sysfs_create_link+0xc2/0x10d
-> > >  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
-> > >  [<c034016c>] pci_legacy_init+0x56/0xe3
-> > >  [<c03274e1>] kernel_init+0x157/0x2c3
-> > >  [<c0104c83>] kernel_thread_helper+0x7/0x10
-> > >  =======================
-> > > pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
-> > > sysfs: duplicate filename 'bridge' can not be created
-> > > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > > Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
-> > >  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
-> > >  [<c0105990>] show_trace+0x12/0x14
-> > >  [<c010613d>] dump_stack+0x6c/0x72
-> > >  [<c01991bf>] sysfs_add_one+0x57/0xbc
-> > >  [<c0199e41>] sysfs_create_link+0xc2/0x10d
-> > >  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
-> > >  [<c01bae82>] pci_bus_add_devices+0xa5/0x103
-> > >  [<c034016c>] pci_legacy_init+0x56/0xe3
-> > >  [<c03274e1>] kernel_init+0x157/0x2c3
-> > >  [<c0104c83>] kernel_thread_helper+0x7/0x10
-> > >  =======================
-> > 
-> > I have a vague feeling that this was fixed, perhaps in 2.6.24.x?
+On Mon, Feb 18, 2008 at 01:47:31PM +0100, Jan Kiszka wrote:
+> K. Prasad wrote:
+> > Hi Ingo,
+> > 	Please accept these patches into the rt tree which convert the
+> > existing RCU tracing mechanism for Preempt RCU and RCU Boost into
+> > markers.
+> >  
+> > These patches are based upon the 2.6.24-rc5-rt1 kernel tree.
+> >  
+> > Along with marker transition, the RCU Tracing infrastructure has also
+> > been modularised to be built as a kernel module, thereby enabling
+> > runtime changes to the RCU Tracing infrastructure.
+> >  
+> > Patch [1/2] - Patch that converts the Preempt RCU tracing in
+> > rcupreempt.c into markers.
+> >  
+> > Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
+> > rcupreempt-boost.c into markers.
+> >  
 > 
-> Never heard of this, what is the initialization script that causes this?
-> Also do you have the SYSFS_DEPRECATED option configured? that caused issues
-> with regular network drivers.
+> I have a technical problem with marker-based RCU tracing: It causes
+> nasty recursions with latest multi-probe marker patches (sorry, no link
+> at hand, can be found in latest LTTng, maybe also already in -mm). Those
+> patches introduce a marker probe trampoline like this:
+> 
+> void marker_probe_cb(const struct marker *mdata, void *call_private,
+> 	const char *fmt, ...)
+> {
+> 	va_list args;
+> 	char ptype;
+> 
+> 	/*
+> 	 * rcu_read_lock does two things : disabling preemption to make sure the
+> 	 * teardown of the callbacks can be done correctly when they are in
+> 	 * modules and they insure RCU read coherency.
+> 	 */
+> 	rcu_read_lock();
+> 	preempt_disable();
+> 	...
+> 
+> Can we do multi-probe with pure preempt_disable/enable protection? I
+> guess it's fine with classic RCU, but what about preemptible RCU? Any
+> suggestion appreciated!
 
-Yes, SYSFS_DEPRECATED is enabled. And the init scripts are from Fedora 8.
+If you substitute synchronize_sched() for synchronize_rcu(), this should
+work fine.  Of course, this approach would cause RCU tracing to degrade
+latencies somewhat in -rt.
 
-Cheers,
-Chris
+If tracing is using call_rcu(), we will need to add a call_sched()
+or some such.
 
+						Thanx, Paul
 
-
-
-
-
-      __________________________________________________________
-Sent from Yahoo! Mail - a smarter inbox http://uk.mail.yahoo.com
-
+> Jan
+> 
+> PS: You will run into this issue if you try to marry latest -rt with
+> latest LTTng. Straightforward workaround is to comment-out any RCU
+> trace_mark occurrences.
+> 
+> -- 
+> Siemens AG, Corporate Technology, CT SE 2
+> Corporate Competence Center Embedded Linux
