@@ -1,39 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbYBROOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbYBROOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754777AbYBROOU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:14:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYBROOH
+	id S1755538AbYBROOc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754556AbYBROON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:14:07 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:43856 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbYBROOG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:14:06 -0500
-Date: Mon, 18 Feb 2008 15:50:06 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: Reducing debuginfo size by removing unneeded includes
-Message-ID: <20080218145006.GA26286@one.firstfloor.org>
-References: <20080207230304.GA4352@ghostprotocols.net> <p73ir0mxvby.fsf@bingen.suse.de> <20080218134100.GE4359@ghostprotocols.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 18 Feb 2008 09:14:13 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:38151 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754537AbYBROOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:14:12 -0500
+Date: Mon, 18 Feb 2008 16:13:40 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>, Roel Kluin <12o3l@tiscali.nl>,
+       lkml <linux-kernel@vger.kernel.org>, cbe-oss-dev@ozlabs.org,
+       linuxppc-dev@ozlabs.org, Willy Tarreau <w@1wt.eu>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080218141340.GB667@cs181133002.pp.htv.fi>
+References: <47B70A61.9030306@tiscali.nl> <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi> <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080218134100.GE4359@ghostprotocols.net>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I found just it to be another reason for cleaning up the includes hell,
-> but I agree completely that the correct solution is for gcc to do the
-> right thing and eliminate unused debug types.
+On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
+> On Mon, 18 Feb 2008, Adrian Bunk wrote:
+> > 
+> > This means it generates faster code with a current gcc for your platform.
+> > 
+> > But a future gcc might e.g. replace the whole loop with a division
+> > (gcc SVN head (that will soon become gcc 4.3) already does 
+> > transformations like replacing loops with divisions [1]).
+> 
+> Hence shouldn't we ask the gcc people what's the purpose of __builtin_expect(),
+> if it doesn't live up to its promise?
 
-Yes, but I'm a little disappointed that it doesn't work either.
-I remember long ago trying an original patch which did something
-similar to -feliminate-dwarf2-* on a 3.3-hammer based gcc and
-it actually shrunk the objdir size considerably.
+That's a different issue.
 
--Andi
+My point here is that we do not know how the latest gcc available in the 
+year 2010 might transform this code, and how a likely/unlikely placed 
+there might influence gcc's optimizations then.
+
+If this is in hotpath code with a measurable speedup when using 
+likely/unlikely with a current gcc then it's worth it.
+
+But otherwise it brings no real advantage today and the longterm effects 
+are not predictable.
+
+> With kind regards,
+> 
+> Geert Uytterhoeven
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
