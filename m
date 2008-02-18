@@ -1,109 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYBRIKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbYBRIO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758097AbYBRIKt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 03:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYBRIKm
+	id S1756594AbYBRIO1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 03:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbYBRIOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 03:10:42 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:59499 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754471AbYBRIKl (ORCPT
+	Mon, 18 Feb 2008 03:14:17 -0500
+Received: from mga10.intel.com ([192.55.52.92]:5182 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753347AbYBRIOQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 03:10:41 -0500
-Date: Mon, 18 Feb 2008 13:50:21 +0530
-From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Lukas Hejtmanek <xhejtman@ics.muni.cz>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, aneesh.kumar@in.ibm.com
-Subject: Re: 2.6.24-git4+ regression
-Message-ID: <20080218082021.GD14419@linux.vnet.ibm.com>
-Reply-To: vatsa@linux.vnet.ibm.com
-References: <20080130135609.GA5100@ics.muni.cz> <20080214165551.GA21963@linux.vnet.ibm.com> <20080217202642.GA4327@ics.muni.cz> <20080218042831.GJ30201@elte.hu> <1203320304.26269.3.camel@homer.simson.net>
+	Mon, 18 Feb 2008 03:14:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,370,1199692800"; 
+   d="scan'208";a="520334630"
+Subject: Re: tbench regression in 2.6.25-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: dada1@cosmosbay.com, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20080215.152200.145584182.davem@davemloft.net>
+References: <47B52B95.3070607@cosmosbay.com>
+	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>
+	 <20080215.152200.145584182.davem@davemloft.net>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 18 Feb 2008 16:12:38 +0800
+Message-Id: <1203322358.3027.200.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203320304.26269.3.camel@homer.simson.net>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 08:38:24AM +0100, Mike Galbraith wrote:
-> Here, it does not.  It seems fine without CONFIG_FAIR_GROUP_SCHED.
+On Fri, 2008-02-15 at 15:22 -0800, David Miller wrote:
+> From: Eric Dumazet <dada1@cosmosbay.com>
+> Date: Fri, 15 Feb 2008 15:21:48 +0100
+> 
+> > On linux-2.6.25-rc1 x86_64 :
+> > 
+> > offsetof(struct dst_entry, lastuse)=0xb0
+> > offsetof(struct dst_entry, __refcnt)=0xb8
+> > offsetof(struct dst_entry, __use)=0xbc
+> > offsetof(struct dst_entry, next)=0xc0
+> > 
+> > So it should be optimal... I dont know why tbench prefers __refcnt being 
+> > on 0xc0, since in this case lastuse will be on a different cache line...
+> > 
+> > Each incoming IP packet will need to change lastuse, __refcnt and __use, 
+> > so keeping them in the same cache line is a win.
+> > 
+> > I suspect then that even this patch could help tbench, since it avoids 
+> > writing lastuse...
+> 
+> I think your suspicions are right, and even moreso
+> it helps to keep __refcnt out of the same cache line
+> as input/output/ops which are read-almost-entirely :-
+I think you are right. The issue is these three variables sharing the same cache line
+with input/output/ops.
 
-My hunch is its because of the vruntime driven preemption which shoots
-up latencies (and the fact perhaps that Peter hasnt't focused more on SMP case
-yet!).
+> )
+> 
+> I haven't done an exhaustive analysis, but it seems that
+> the write traffic to lastuse and __refcnt are about the
+> same.  However if we find that __refcnt gets hit more
+> than lastuse in this workload, it explains the regression.
+I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
+pading before lastuse, so the 3 members are moved to next cache line. The performance is
+recovered.
 
-Curiously, do you observe the same results when in UP mode (maxcpus=1)? 
+How about below patch? Almost all performance is recovered with the new patch.
 
-> Oddity:  mainline git with Srivatsa's test patch improves markedly, and
-> using sched_latency_ns and sched_wakeup_granularity_ns, I can tweak the
-
-Lukas,
-	Does tweaking these make any difference for you?
-
-	# echo 10000000 > /proc/sys/kernel/sched_latency_ns
-	# echo 10000000 > /proc/sys/kernel/sched_wakeup_granularity_ns
-
-[or some other lower value]
-
-> regression into submission.  With sched-devel, I cannot tweak it away
-> with or without the test patch.  Dunno how useful that info is.
-
-FWIW, my test patch I had sent earlier didnt address the needs of UP, as Peter 
-pointed me out. In that direction, I had done more experimentation with the 
-patch below, which seemed to improve UP latencies also. Note that I
-don't particularly like the first hunk below, perhaps it needs to be
-surrounded by an if(something) ..
+Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
 
 ---
- kernel/sched_fair.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Index: current/kernel/sched_fair.c
-===================================================================
---- current.orig/kernel/sched_fair.c
-+++ current/kernel/sched_fair.c
-@@ -523,8 +523,6 @@ place_entity(struct cfs_rq *cfs_rq, stru
- 		if (sched_feat(NEW_FAIR_SLEEPERS))
- 			vruntime -= sysctl_sched_latency;
+--- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
++++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-21 14:36:22.000000000 +0800
+@@ -52,11 +52,10 @@ struct dst_entry
+ 	unsigned short		header_len;	/* more space at head required */
+ 	unsigned short		trailer_len;	/* space to reserve at tail */
  
--		/* ensure we never gain time by being placed backwards. */
--		vruntime = max_vruntime(se->vruntime, vruntime);
- 	}
- 
- 	se->vruntime = vruntime;
-@@ -816,6 +814,13 @@ hrtick_start_fair(struct rq *rq, struct 
- }
- #endif
- 
-+static inline void dequeue_stack(struct sched_entity *se)
-+{
-+	for_each_sched_entity(se)
-+		if (se->on_rq)
-+			dequeue_entity(cfs_rq_of(se), se, 0);
-+}
+-	u32			metrics[RTAX_MAX];
+-	struct dst_entry	*path;
+-
+-	unsigned long		rate_last;	/* rate limiting for ICMP */
+ 	unsigned int		rate_tokens;
++	unsigned long		rate_last;	/* rate limiting for ICMP */
 +
- /*
-  * The enqueue_task method is called before nr_running is
-  * increased. Here we update the fair scheduling stats and
-@@ -828,6 +833,9 @@ static void enqueue_task_fair(struct rq 
- 			    *topse = NULL;	/* Highest schedulable entity */
- 	int incload = 1;
++	struct dst_entry	*path;
  
-+	if (wakeup)
-+		dequeue_stack(se);
+ #ifdef CONFIG_NET_CLS_ROUTE
+ 	__u32			tclassid;
+@@ -70,10 +69,12 @@ struct dst_entry
+ 	int			(*output)(struct sk_buff*);
+ 
+ 	struct  dst_ops	        *ops;
+-		
+-	unsigned long		lastuse;
 +
- 	for_each_sched_entity(se) {
- 		topse = se;
- 		if (se->on_rq) {
++	u32			metrics[RTAX_MAX];
++
+ 	atomic_t		__refcnt;	/* client references	*/
+ 	int			__use;
++	unsigned long		lastuse;
+ 	union {
+ 		struct dst_entry *next;
+ 		struct rtable    *rt_next;
 
 
-
-P.S : Sorry about slow responses, since I am now in a different project :(
-
--- 
-Regards,
-vatsa
