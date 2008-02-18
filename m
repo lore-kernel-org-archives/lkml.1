@@ -1,40 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758159AbYBRHsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbYBRHtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758159AbYBRHsx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 02:48:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbYBRHsp
+	id S1758361AbYBRHtp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYBRHth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 02:48:45 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:40191 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754097AbYBRHsn (ORCPT
+	Mon, 18 Feb 2008 02:49:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:60823 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754150AbYBRHtg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 02:48:43 -0500
-Reply-To: <kmpark@infradead.org>
-From: "Kyungmin Park" <kmpark@infradead.org>
-To: "'Roel Kluin'" <12o3l@tiscali.nl>
-Cc: <linux-mtd@lists.infradead.org>, "'lkml'" <linux-kernel@vger.kernel.org>
-References: <47B719FB.4020107@tiscali.nl>
-Subject: RE: [PATCH] drivers/mtd/onenand/onenand_base.c unlikely(x) || unlikely(y) => unlikely(x || y)
-Date: Mon, 18 Feb 2008 16:48:52 +0900
-Organization: infradead
-Message-ID: <007701c87202$b87c8b10$1fa9580a@swcenter.sec.samsung.co.kr>
+	Mon, 18 Feb 2008 02:49:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=vF5iW/dgdz8m5ZM6qJoMPoK63Ijw2N0y4aEJ6x+m0nLH/x0ZbqPLN6LchV/53NPr4RlFFUXHMBM5TGxwY+JYfizlUMxxdCU3H1sBdx/V/rcfFbl77FgfNb7pz2o9zJqiqpYGxt9cvSA3n0DuwWtGQx+f8qsK6oW31UjEfqYp320=
+Date: Mon, 18 Feb 2008 07:50:26 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] workqueues: shrink cpu_populated_map when CPU dies
+Message-ID: <20080218075025.GA3923@ff.dom.local>
+References: <20080216172259.GA18524@tv-sign.ru> <20080217202739.GA2994@ami.dom.local> <20080217234556.GA655@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 11
-In-reply-to: <47B719FB.4020107@tiscali.nl>
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3198
-Thread-index: Achwv2vRtPRypGT7S6q9VblxO6PxWABQr4Fw
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080217234556.GA655@tv-sign.ru>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Not yet tested.
-> ---
-> Replace unlikely(x) || unlikely(y) by unlikely(x || y)
+On Mon, Feb 18, 2008 at 02:45:56AM +0300, Oleg Nesterov wrote:
+> On 02/17, Jarek Poplawski wrote:
+...
+> > 1) ... workqueue_cpu_callback(...)
+...
+> Yes, but this is harmless. cpu-hotplug callbacks are not time-critical,
+> and cpu_down/cpu_up happens not often, and LIST_HEAD(workqueues) is not
+> very long, so ...
 > 
-> Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Ack-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > 2) ... __create_workqueue_key(...)
+...
+> > Shouldn't this list_add() be done after all these inits below?
+> This doesn't matter. Please note that get_online_cpus() blocks
+> cpu_up/cpu_down, they take cpu_hotplug_begin().
 
+You are completely right. It looks like this was only about ..."look".
+(But adding only "default:" in 1) would make it look nicer to me...)
+
+Regards,
+Jarek P.
