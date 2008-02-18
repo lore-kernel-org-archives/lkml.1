@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757094AbYBRI05@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbYBRI1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757094AbYBRI05 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 03:26:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754250AbYBRI0t
+	id S1758181AbYBRI1Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 03:27:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYBRI1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 03:26:49 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:57375 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754057AbYBRI0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 03:26:49 -0500
-Message-ID: <47B940EA.5000305@cn.fujitsu.com>
-Date: Mon, 18 Feb 2008 16:25:14 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 18 Feb 2008 03:27:16 -0500
+Received: from hall.aurel32.net ([88.191.38.19]:44055 "EHLO hall.aurel32.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbYBRI1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 03:27:15 -0500
+X-Greylist: delayed 2233 seconds by postgrey-1.27 at vger.kernel.org; Mon, 18 Feb 2008 03:27:15 EST
+Date: Mon, 18 Feb 2008 08:49:44 +0100
+From: Aurelien Jarno <aurelien@aurel32.net>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Subject: Re: mips/bcm47xx/setup.c compile error
+Message-ID: <20080218074944.GA9317@hall.aurel32.net>
+Mail-Followup-To: Aurelien Jarno <aurelien@aurel32.net>,
+	Adrian Bunk <bunk@kernel.org>,
+	Larry Finger <Larry.Finger@lwfinger.net>,
+	"John W. Linville" <linville@tuxdriver.com>, ralf@linux-mips.org,
+	linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+References: <20080217200947.GH1403@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: akpm@linux-foundation.org, menage@google.com,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH 1/7] cgroup: fix and update documentation
-References: <47B91C75.6000907@cn.fujitsu.com> <20080218010255.a808714f.pj@sgi.com>
-In-Reply-To: <20080218010255.a808714f.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20080217200947.GH1403@cs181133002.pp.htv.fi>
+X-Mailer: Mutt 1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Li Zefan wrote:
->>  *** notify_on_release is disabled in the current patch set. It will be
->> -*** reactivated in a future patch in a less-intrusive manner
->> +*** reactivated in a future patch in a less-intrusive manner.
+On Sun, Feb 17, 2008 at 10:09:47PM +0200, Adrian Bunk wrote:
+> Commit d3c319f9c8d9ee2c042c60b8a1bbd909dcc42782 causes the following 
+> compile error:
 > 
-> Someone should verify this, but I'm pretty sure that notify_on_release
-> is now working ... no longer disabled.  I believe the above line from
-> the documentation is out of date.
+> <--  snip  -->
+> 
+> ...
+>   CC      arch/mips/bcm47xx/setup.o
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c: In function 'bcm47xx_get_invariants':
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:95: error: 'struct ssb_sprom' has no member named 'r1'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:97: error: 'struct ssb_sprom' has no member named 'r1'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:99: error: 'struct ssb_sprom' has no member named 'r1'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:101: error: 'struct ssb_sprom' has no member named 'r1'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:103: error: 'struct ssb_sprom' has no member named 'r1'
+> /home/bunk/linux/kernel-2.6/git/linux-2.6/arch/mips/bcm47xx/setup.c:105: error: 'struct ssb_sprom' has no member named 'r1'
+> make[2]: *** [arch/mips/bcm47xx/setup.o] Error 1
 > 
 
-Aha, it does work now. I tried it but it didn't seem to work, maybe I didn't
-something wrong. I'll resend a new patch.
+It has been broken by commit d3c319f9c8d9ee2c042c60b8a1bbd909dcc42782. I
+am working on a fix.
 
+
+-- 
+  .''`.  Aurelien Jarno	            | GPG: 1024D/F1BCDB73
+ : :' :  Debian developer           | Electrical Engineer
+ `. `'   aurel32@debian.org         | aurelien@aurel32.net
+   `-    people.debian.org/~aurel32 | www.aurel32.net
