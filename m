@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYBRQoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbYBRQts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756132AbYBRQoh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:44:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYBRQo2
+	id S1755398AbYBRQts (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:49:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbYBRQtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:44:28 -0500
-Received: from ns2.suse.de ([195.135.220.15]:44895 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbYBRQo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:44:27 -0500
-Date: Mon, 18 Feb 2008 17:44:25 +0100
-From: Jan Blunck <jblunck@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mmotm] fs/sysfs/file.c d_path fix
-Message-ID: <20080218164425.GC26915@hasse.suse.de>
-References: <200802161912.m1GJC5Gt031939@agora.fsl.cs.sunysb.edu> <20080217130733.GA11483@infradead.org>
+	Mon, 18 Feb 2008 11:49:41 -0500
+Received: from ik-out-1112.google.com ([66.249.90.180]:45117 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750770AbYBRQtk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 11:49:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=BCsvEqyPbmrWKxpLtW3VtOO17wRUNA5gwfOpWL3v1TTCg+pdHMGabi/YGnq9HfaoX5sxaiJR8f+pypHOWNhF78ujoq1jLNwOlNVPQBtJvY3px4mwRGWhRttx3QnUMnGYKzBzQsWkc6kNtcx8CnQHw9AyjdWT2EqHYHEHYhdOxHg=
+Message-ID: <47B9B720.9020000@gmail.com>
+Date: Mon, 18 Feb 2008 17:49:36 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080217130733.GA11483@infradead.org>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Ke <kecore@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: PCI DMA address
+References: <63aa4aaa0802180705i76229711v8ed9fb2b1ea242df@mail.gmail.com>
+In-Reply-To: <63aa4aaa0802180705i76229711v8ed9fb2b1ea242df@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, Christoph Hellwig wrote:
+On 02/18/2008 04:05 PM, Ke wrote:
+> Hello all,
+>       How can kernel get the PCI DMA address above 16MB or 64MB?
 
-> On Sat, Feb 16, 2008 at 02:12:05PM -0500, Erez Zadok wrote:
-> > diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-> > index 02223e2..a57b024 100644
-> > --- a/fs/sysfs/file.c
-> > +++ b/fs/sysfs/file.c
-> > @@ -329,9 +329,11 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
-> >  	struct sysfs_ops *ops;
-> >  	int error = -EACCES;
-> >  	char *p;
-> > +	struct path sysfs_path;
-> >  
-> > -	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
-> > -		   sizeof(last_sysfs_file));
-> > +	sysfs_path.dentry = file->f_dentry;
-> > +	sysfs_path.mnt = sysfs_mount;
-> > +	p = d_path(&sysfs_path, last_sysfs_file, sizeof(last_sysfs_file));
-> 
-> A d_path(file->f_path, ..); should do it, but I'd really like to know
-> what sysfs crowd was smoking when adding a d_path in ->open.  Guys,
-> please explain what's going on here.
-> 
+Documentation/DMA*
 
-This is from gregkh-driver-sysfs-crash-debugging.patch which is only in -mm I
-guess.
+>       I hope that the all PCI devices can use a dma address above
+> 0x1000000 at a higher memory.
+
+Depends on how much is the device broken or what it can do.
+
+IIRC you'll always get memory from DMA-zone for < ~0U dma_masks on kernels older 
+than 2.6.(around 10). If you set dma_masks to < ~0U, you will probably (in the 
+meaning, kernel will try to allocate from higher space and fall back to the 
+dma-zone) get higher pages nowadays. However I don't know how far this applies 
+also to systems with iommu in retrospective.
