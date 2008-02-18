@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbYBRQL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759976AbYBRQMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759411AbYBRQL4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:11:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYBRQLs
+	id S1759976AbYBRQMQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:12:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbYBRQLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 18 Feb 2008 11:11:48 -0500
-Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:24345 "EHLO
-	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754100AbYBRQLr (ORCPT
+Received: from bombadil.infradead.org ([18.85.46.34]:55461 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754198AbYBRQLs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:11:47 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [BUG] Linux 2.6.25-rc2 - Kernel Ooops while running dbench
-Cc: akpm@linux-foundation.org, apw@shadowen.org, balbir@linux.vnet.ibm.com,
-       clameter@sgi.com, kamalesh@linux.vnet.ibm.com,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-reply-To: <47B9956B.8060506@garzik.org>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <47B6784E.2090401@linux.vnet.ibm.com> <20080218045954.50503fb1.akpm@linux-foundation.org> <20080218045954.50503fb1.akpm@linux-foundation.org> <47B9956B.8060506@garzik.org>
-Message-Id: <E1JR8aj-0004bH-Er@faramir.fjphome.nl>
-From: Frans Pop <elendil@planet.nl>
-Date: Mon, 18 Feb 2008 17:11:41 +0100
-X-OriginalArrivalTime: 18 Feb 2008 16:11:41.0867 (UTC) FILETIME=[F2E9A7B0:01C87248]
+	Mon, 18 Feb 2008 11:11:48 -0500
+Date: Mon, 18 Feb 2008 13:11:25 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Bongani Hlope <bonganilinux@mweb.co.za>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
+Message-ID: <20080218131125.2857f7c7@gaivota>
+In-Reply-To: <200802171036.19619.bonganilinux@mweb.co.za>
+References: <200802171036.19619.bonganilinux@mweb.co.za>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Two x86-64 boxes here lock up here on 2.6.25-rc2, shortly after boot.
-> One running Fedora 8 + X (GNOME) and one a headless file server.
-> configs and lspci attached.  Unable to capture any splatter so far.
+On Sun, 17 Feb 2008 10:36:19 +0200
+Bongani Hlope <bonganilinux@mweb.co.za> wrote:
 
-Sounds like it may be http://lkml.org/lkml/2008/2/17/78.
+> The bttv driver seems to be experiencing problems in the 2.6.25-rcX kernels. I 
+> have the divided by error that  Robert Fitzsimons has already reported (I'll 
+> test his patch and see if it fixes it for me) and I have the following Oops 
+> when I try to use the radio:
 
-Suggest you try reverting that before doing the bisect.
+Have you tested Robert's patch?
+
+I can't see anything wrong on bttv_g_tuner lock. I suspect that the divide
+error caused some bad effects at some data on bttv.
+
+I've already applied his fix to my -git tree:
+
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git
+
+Hopefully, Linus will pull soon the fixes there.
+
 
 Cheers,
-FJP
+Mauro
