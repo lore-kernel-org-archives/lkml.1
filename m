@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbYBRNoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbYBRNpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755109AbYBRNoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:44:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYBRNoc
+	id S1756880AbYBRNpD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:45:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbYBRNor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:44:32 -0500
-Received: from styx.suse.cz ([82.119.242.94]:35127 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751495AbYBRNoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:44:30 -0500
-Date: Mon, 18 Feb 2008 14:44:29 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Laszlo Attila Toth <panther@balabit.hu>
-cc: David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
-In-Reply-To: <47B982C9.60207@balabit.hu>
-Message-ID: <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz>
-References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com>
- <Pine.LNX.4.64.0802171301430.7699@twin.jikos.cz> <20080217.183621.110686685.davem@davemloft.net>
- <47B982C9.60207@balabit.hu>
+	Mon, 18 Feb 2008 08:44:47 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:48004 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751616AbYBRNop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:44:45 -0500
+Date: Mon, 18 Feb 2008 07:44:43 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, charles.kirsch@internet.lu,
+       Andrew Morgan <morgan@kernel.org>, lkml <linux-kernel@vger.kernel.org>,
+       linux-security-module@vger.kernel.org,
+       Gerald Combs <gerald@wireshark.org>,
+       Gilbert Ramirez <gram@alumni.rice.edu>, Guy Harris <guy@alum.mit.edu>
+Subject: Re: Possible problem in linux file posix capabilities
+Message-ID: <20080218134443.GA22552@sergelap.austin.ibm.com>
+References: <20080217224851.GA9168@sergelap.austin.ibm.com> <728865.70879.qm@web36611.mail.mud.yahoo.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <728865.70879.qm@web36611.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Laszlo Attila Toth wrote:
+Quoting Casey Schaufler (casey@schaufler-ca.com):
+> 
+> --- "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+> 
+> > ....
+> > 
+> > Two quick fixes for you right now (apart from the one you've already
+> > got :)  would be
+> > 
+> > 	1. give wireshark cap_kill, by doing something like
+> > 
+> > 		capset cap_kill=ep /bin/wireshark
+> > 
+> > 	2. compile a kernel with SECURITY_FILE_CAPABILITIES=n
+> > 
+> > Andrew, this pretty much was bound to happen...  we need to figure out
+> > what our approach here should be.  My preference is still to allow
+> > signals when p->uid==current->uid so long as !SECURE_NOROOT.  Then as
+> > people start using secure_noroot process trees they at least must know
+> > what they're asking for.
+> > 
+> > An alternative stance is to accept these things as they come up and try
+> > to quickly work with the authors of such programs to work around it.  I
+> > suppose in a security sense that's the superior way :)  But it also
+> > seems likely to lead to most people choosing option 2 above and not
+> > bothering to fix the problem.
+> 
+> I probably just missed it when it went by, but do you have some
+> test cases for file capabilities lying about that I might use?
 
-> Okay, but I can't figure out what's the problem with it. I don't have 
-> wireless card on my linux box also I can't test it but everything else 
-> works. Swap is mounted. The concurrency cannot be a problem because the 
-> write operation is protected by a lock.
+Yup, please download the latest ltp cvs tree (I don't think it's in any
+release yet, though I may be wrong) and look under
+testcaes/kernel/security/filecaps.  Or just do
 
--               write_lock_bh(&dev_base_lock);
--               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
--               write_unlock_bh(&dev_base_lock);
-+               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
-+                       write_lock_bh(&dev_base_lock);
-+                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
-+                       write_lock_bh(&dev_base_lock);
-+                       modified = 1;
-+               }
-        }
+	cd ltp
+	make && make install && ./runltp -s filecap
 
-1) you are accessing dev->link_mode and tb[] outside the dev_base_lock 
-2) there is obvious and immediate deadlock -- you acquire the 
-   dev_base_lock twice, without any unlock, just look at the chunk above
-3) even with this deadlock fixed, Rafael states that either NM or 
-   wpa_supplicant (I don't recall from top of my head) still don't work
-
--- 
-Jiri Kosina
-SUSE Labs
+-serge
