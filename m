@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbYBRJoH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756296AbYBRJq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbYBRJoH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 04:44:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbYBRJns
+	id S1756296AbYBRJq6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 04:46:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751703AbYBRJqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 04:43:48 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:22627 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbYBRJnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 04:43:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VEqXV8Ncq0NrFKhyHeuZCAFBzY7610hHb5eU+81bgww0IZJIQmU6x5N/QnIDtsSQ2anHP3QEXaaOLarp5f6S0kz1yafJ3KwiCYH/BsDOOTm5wfjPczwdsrgfgSki8OA4+zu6EXZLOY8vXU8gyBl8Dcv1Bd/FXFlD0pJxWD1Yudo=
-Message-ID: <b6fcc0a0802180143u65120b97wa87d59eb17f37ed2@mail.gmail.com>
-Date: Mon, 18 Feb 2008 12:43:44 +0300
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Adrian Bunk" <bunk@kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Tilman Schmidt" <tilman@imap.cc>
-In-Reply-To: <47B9473D.20508@gmail.com>
+	Mon, 18 Feb 2008 04:46:50 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:50258 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751512AbYBRJqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 04:46:49 -0500
+Message-ID: <47B953A8.9030206@cn.fujitsu.com>
+Date: Mon, 18 Feb 2008 17:45:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Paul Menage <menage@google.com>
+CC: balbir@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com,
+       Pavel Emelianov <xemul@openvz.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/7] CGroup API: Add cgroup.api control file
+References: <20080215204418.535025000@menage.corp.google.com>	 <20080215204820.734926000@menage.corp.google.com>	 <47B6B5CA.7040201@linux.vnet.ibm.com> <6599ad830802160944v6d529570k1ade6df273ca3d0d@mail.gmail.com>
+In-Reply-To: <6599ad830802160944v6d529570k1ade6df273ca3d0d@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200802172304.00322.rjw@sisk.pl> <47B9473D.20508@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/18/08, Jiri Slaby <jirislaby@gmail.com> wrote:
-> On 02/17/2008 11:03 PM, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=10021
-> > Subject		: Linux 2.6.25-rc2 regression: LVM cannot find volume group
-> > Submitter	: Tilman Schmidt <tilman@imap.cc>
-> > Date		: 2008-02-16 20:14
-> > References	: http://lkml.org/lkml/2008/2/16/208
-> > Handled-By	: Alan Cox <alan@lxorguk.ukuu.org.uk>
->
-> NOTABUG, http://lkml.org/lkml/2008/2/17/386
+Paul Menage wrote:
+> On Feb 16, 2008 2:07 AM, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> Paul Menage wrote:
+>>
+>> Hi, Paul,
+>>
+>> Do we need to use a cgroup.api file? Why not keep up to date documentation and
+>> get users to use that. I fear that, cgroup.api will not be kept up-to-date,
+>> leading to confusion.
+> 
+> The cgroup.api file isn't meant to give complete documentation for a
+> control file, simply a brief indication of its usage.
+> 
 
-Wow! Please delete CONFIG_SYSFS_DEPRECATED and make it always Y, then.
+But we don't have /proc/proc.api or /sys/sysfs.api ...
 
-1. Box is running fine.
-2. Kernel upgrade -- sysfs layout changes -- box breaks.
-3. sysfs people tell everyone to upgrade userspace or turn on shiny new option
-4. Some believe this, upgrades userspace. Option is not needed now,
-BTW. It's turned off.
-5. Several more kernel upgrades were fine.
-6. 2.6.25-rc1 comes out and, who would have thought, requires to turn
-on that damn
-   option again or else box simply doesn't boot.
+> The aim is that most bits of the information reported in cgroup.api
+> are auto-generated, so there shouldn't be problems with it getting
+> out-of-date.
+> 
+> Is it just the space used by the documentation string that you're
+> objecting to? The other function of the file is to declare a type for
+> each variable.
+> 
 
-Why on earth do we have CONFIG_SYSFS_DEPRECATED at all if the only
-sane choice for someone who tests new kernels is to always turn it on?
+[root@localhost mnt]# cat cgroup.api
+debug.current_css_set_refcount  u64
+debug.current_css_set   u64
+debug.taskcount u64
+debug.cgroup_refcount   u64
+cgroup.release_agent    string  Path to release agent binary
+cgroup.api      unknown Control file descriptions
+cgroup.releasable       u64     Is this cgroup able to be freed when empty
+cgroup.notify_on_release        u64     Should the release agent trigger when this cgroup is empty
+cgroup.tasks    string  Thread ids of threads in this cgroup
+
+It seems to me this is a little messy.
+
+And is it better to describe the debug subsystem too?
+
