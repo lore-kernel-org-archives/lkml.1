@@ -1,122 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761034AbYBRVvj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761689AbYBRVxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761034AbYBRVvj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 16:51:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbYBRVvb
+	id S1761689AbYBRVxT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 16:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYBRVxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 16:51:31 -0500
-Received: from 209-198-142-2-host.prismnet.net ([209.198.142.2]:57839 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753027AbYBRVva (ORCPT
+	Mon, 18 Feb 2008 16:53:10 -0500
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:40940
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751538AbYBRVxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 16:51:30 -0500
-Subject: Re: 2.6.24: RPC: bad TCP reclen 0x00020090 (large)
-From: Tom Tucker <tom@opengridcomputing.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-nfs@vger.kernel.org
-In-Reply-To: <1203369909.24272.44.camel@trinity.ogc.int>
-References: <47B2F88D.7080300@msgid.tls.msk.ru>
-	 <20080218045812.f1dc6f71.akpm@linux-foundation.org>
-	 <1203369909.24272.44.camel@trinity.ogc.int>
-Content-Type: text/plain
-Organization: Open Grid Computing, Inc.
-Date: Mon, 18 Feb 2008 16:00:36 -0600
-Message-Id: <1203372036.24272.54.camel@trinity.ogc.int>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 16:53:09 -0500
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Roland McGrath <roland@redhat.com>
+Subject: Re: Compiling with 2.6.25-rc2 with binutils 2.17 fails?
+Date: Mon, 18 Feb 2008 15:53:04 -0600
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: linux-kernel@vger.kernel.org
+References: <200802161727.21312.rob@landley.net> <200802180439.41928.rob@landley.net> <20080218184037.AAE87270196@magilla.localdomain>
+In-Reply-To: <20080218184037.AAE87270196@magilla.localdomain>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_B5fuH8mszyT6GeY"
+Message-Id: <200802181553.05313.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_B5fuH8mszyT6GeY
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-On Mon, 2008-02-18 at 15:25 -0600, Tom Tucker wrote:
-> On Mon, 2008-02-18 at 04:58 -0800, Andrew Morton wrote:
-> > (suitable cc added)
-> > 
-> > (regression)
-> > 
-> > On Wed, 13 Feb 2008 17:02:53 +0300 Michael Tokarev <mjt@tls.msk.ru> wrote:
-> > 
-> > > Hello!
-> > > 
-> > > After upgrading to 2.6.24 (from .23), we're seeing ALOT
-> > > of messages like in $subj in dmesg:
-> > > 
-> > > Feb 13 13:21:39 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-> > > Feb 13 13:21:46 paltus kernel: printk: 3586 messages suppressed.
-> > > Feb 13 13:21:46 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-> > > Feb 13 13:21:49 paltus kernel: printk: 371 messages suppressed.
-> > > Feb 13 13:21:49 paltus kernel: RPC: bad TCP reclen 0x00020090 (large)
-> > > Feb 13 13:21:55 paltus kernel: printk: 2979 messages suppressed.
-> > > ...
-> > > 
-> > > with linux NFS server.  The clients are all linux too, mostly 2.6.23
-> > > and some 2.6.22.
-> > > 
-> > > I found the "offending" piece of code in net/sunrpc/svcsock.c,
-> > > in routine svc_tcp_recvfrom() with condition being:
-> > > 
-> > >    if (svsk->sk_reclen > serv->sv_max_mesg) ...
-> 
-> The problem might be that the client is setting a bit in the RPC message
-> length field that is meant to be interpreted and masked off by the
-> server -- and we're not doing it yet. My bet is that 0x20000 is the bit
-> we're looking for. I'll poke around...
+On Monday 18 February 2008 12:40:37 Roland McGrath wrote:
+> > I'm poking at it.  Something in my cross compiling setup is driving this
+> > bit screwy:
+> >
+> >   i686-nm arch/x86/vdso/vdso32-sysenter.so.dbg |
+>
+> Show me the output of just this.
 
-Never mind. The way this is supposed to work is that the transport is
-shut down. The code used to delete the socket directly, but I
-reorganized this code to just set the XPT_CLOSE bit and let the normal
-close path handle it when it came back through to retry. I'm not sure
-exactly what version of the code you have, but it may be that your
-missing the code from the close path that does this, or it may just not
-work. As a first shot, can you try this patch and tell me if the
-messages go away?
+Attached.
 
+> > sed -n -e 's/^00*/0/' -e 's/^\([0-9a-fA-F]*\) . \(VDSO[a-zA-Z0-9_]*\)$/ =
+> > 0x;/p' | LC_ALL=C sort > arch/x86/vdso/vdso32-sysenter-syms.lds
+>
+> Also show me the vdso32-sysenter-syms.lds file.
 
-diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-index 1d3e5fc..cf6150a 100644
---- a/net/sunrpc/svcsock.c
-+++ b/net/sunrpc/svcsock.c
-@@ -920,6 +920,7 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
- 
-  err_delete:
-        set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
-+       svc_delete_xprt(&svsk->sk_xprt);
-        return -EAGAIN;
- 
-  error:
+Attached.
 
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
 
-> 
-> > > 
-> > > This happens after a server reboot.  At this point, client(s) are trying
-> > > to perform some NFS transaction and fail, and server starts generating
-> > > the above messages - till I do a umount followed by mount on all clients.
-> > > Before, such situation (nfs server reboot) were handled transparently,
-> > > ie, there was nothing to do, the mount continued working just fine when
-> > > the server comes back online.
-> > > 
-> > > Now, I'm not sure if it's really 2.6.24-specific problem or a userspace
-> > > problem.  Some time ago we also upgraded nfs-kernel-server (Debian)
-> > > package, and the remount-after-nfs-server-reboot problem started to
-> > > occur at THAT time (and it is something to worry about as well, I just
-> > > had no time to deal with it); but the dmesg spamming only appeared
-> > > with 2.6.24.
-> > > 
-> > > How to debug the issue further on from this point?
-> > > 
-> > 
-> > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--Boundary-00=_B5fuH8mszyT6GeY
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="nm-out.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="nm-out.txt"
 
+0000000000000360 a _DYNAMIC
+00000000000003d8 a _GLOBAL_OFFSET_TABLE_
+000000000000040c T __kernel_rt_sigreturn
+0000000000000400 T __kernel_sigreturn
+0000000000000414 T __kernel_vsyscall
+0000000000000000 A LINUX_2.5
+0000000000000000 a VDSO32_PRELINK
+000000000000040c t VDSO32_rt_sigreturn
+0000000000000400 t VDSO32_sigreturn
+0000000000000424 t VDSO32_SYSENTER_RETURN
+0000000000000414 t VDSO32_vsyscall
+0000000000000040 a VDSO32_vsyscall_eh_frame_size
+
+--Boundary-00=_B5fuH8mszyT6GeY
+Content-Type: text/plain;
+  charset="iso-8859-1";
+  name="vdso32-sysenter-syms.lds"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="vdso32-sysenter-syms.lds"
+
+VDSO32_PRELINK = 0x0;
+VDSO32_SYSENTER_RETURN = 0x0424;
+VDSO32_rt_sigreturn = 0x040c;
+VDSO32_sigreturn = 0x0400;
+VDSO32_vsyscall = 0x0414;
+VDSO32_vsyscall_eh_frame_size = 0x040;
+
+--Boundary-00=_B5fuH8mszyT6GeY--
