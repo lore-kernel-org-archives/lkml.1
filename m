@@ -1,369 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbYBRSEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760103AbYBRSFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbYBRSEp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 13:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbYBRSEe
+	id S1760103AbYBRSFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 13:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbYBRSFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 13:04:34 -0500
-Received: from wa-out-1112.google.com ([209.85.146.178]:37884 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752337AbYBRSEc (ORCPT
+	Mon, 18 Feb 2008 13:05:40 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:62983 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbYBRSFj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 13:04:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=W0zE+gr0dqyIRjCxwQcK6OlM1UZ2EeedGokXBduP2E4P82BY58gr2btvntdvufE3/7IB91J7sgmQkrJSNGOBwda2W+YYxm3NG52uSWATA7eOwVVAW0phFeqwK9VG/oNhz4LdbbbV50xcp5tsSIHYm8SUi90e/tOz6Ckpe6J1QfA=
-Subject: [PATCH] tlan: add static to function definitions
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>, Samuel Chessman <chessman@tux.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-netdev <netdev@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 10:04:38 -0800
-Message-Id: <1203357878.5757.26.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 13:05:39 -0500
+X-IronPort-AV: E=Sophos;i="4.25,372,1199682000"; 
+   d="scan'208";a="48681797"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [BUG][RFC] [GENERIC IRQ] irq_chip_set_defaults shutdown / disable
+Date: Mon, 18 Feb 2008 18:04:54 -0000
+Message-ID: <600D5CB4DFD93545BF61FF01473D11AC125CC53A@limkexm2.ad.analog.com>
+In-Reply-To: <alpine.LFD.1.00.0802181814550.7583@apollo.tec.linutronix.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [BUG][RFC] [GENERIC IRQ] irq_chip_set_defaults shutdown / disable
+Thread-Index: AchyVpdNF7DIuTKZRjqg/Qo9s+AKiQAAQmQQ
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 18 Feb 2008 18:04:56.0555 (UTC) FILETIME=[C4DCC3B0:01C87258]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The forward declarations were already marked static, make the definitions
-be static as well.  Fixes the sparse warnings as well.
-
-drivers/net/tlan.c:1403:5: warning: symbol 'TLan_HandleInvalid' was not declared. Should it be static?
-drivers/net/tlan.c:1435:5: warning: symbol 'TLan_HandleTxEOF' was not declared. Should it be static?
-drivers/net/tlan.c:1521:5: warning: symbol 'TLan_HandleStatOverflow' was not declared. Should it be static?
-drivers/net/tlan.c:1557:5: warning: symbol 'TLan_HandleRxEOF' was not declared. Should it be static?
-drivers/net/tlan.c:1692:5: warning: symbol 'TLan_HandleDummy' was not declared. Should it be static?
-drivers/net/tlan.c:1722:5: warning: symbol 'TLan_HandleTxEOC' was not declared. Should it be static?
-drivers/net/tlan.c:1770:5: warning: symbol 'TLan_HandleStatusCheck' was not declared. Should it be static?
-drivers/net/tlan.c:1845:5: warning: symbol 'TLan_HandleRxEOC' was not declared. Should it be static?
-drivers/net/tlan.c:1905:6: warning: symbol 'TLan_Timer' was not declared. Should it be static?
-drivers/net/tlan.c:1986:6: warning: symbol 'TLan_ResetLists' was not declared. Should it be static?
-drivers/net/tlan.c:2046:6: warning: symbol 'TLan_FreeLists' was not declared. Should it be static?
-drivers/net/tlan.c:2095:6: warning: symbol 'TLan_PrintDio' was not declared. Should it be static?
-drivers/net/tlan.c:2130:6: warning: symbol 'TLan_PrintList' was not declared. Should it be static?
-drivers/net/tlan.c:2166:6: warning: symbol 'TLan_ReadAndClearStats' was not declared. Should it be static?
-drivers/net/tlan.c:2242:1: warning: symbol 'TLan_ResetAdapter' was not declared. Should it be static?
-drivers/net/tlan.c:2328:1: warning: symbol 'TLan_FinishReset' was not declared. Should it be static?
-drivers/net/tlan.c:2451:6: warning: symbol 'TLan_SetMac' was not declared. Should it be static?
-drivers/net/tlan.c:2493:6: warning: symbol 'TLan_PhyPrint' was not declared. Should it be static?
-drivers/net/tlan.c:2542:6: warning: symbol 'TLan_PhyDetect' was not declared. Should it be static?
-drivers/net/tlan.c:2589:6: warning: symbol 'TLan_PhyPowerDown' was not declared. Should it be static?
-drivers/net/tlan.c:2614:6: warning: symbol 'TLan_PhyPowerUp' was not declared. Should it be static?
-drivers/net/tlan.c:2635:6: warning: symbol 'TLan_PhyReset' was not declared. Should it be static?
-drivers/net/tlan.c:2663:6: warning: symbol 'TLan_PhyStartLink' was not declared. Should it be static?
-drivers/net/tlan.c:2750:6: warning: symbol 'TLan_PhyFinishAutoNeg' was not declared. Should it be static?
-drivers/net/tlan.c:2906:5: warning: symbol 'TLan_MiiReadReg' was not declared. Should it be static?
-drivers/net/tlan.c:2996:6: warning: symbol 'TLan_MiiSendData' was not declared. Should it be static?
-drivers/net/tlan.c:3038:6: warning: symbol 'TLan_MiiSync' was not declared. Should it be static?
-drivers/net/tlan.c:3077:6: warning: symbol 'TLan_MiiWriteReg' was not declared. Should it be static?
-drivers/net/tlan.c:3147:6: warning: symbol 'TLan_EeSendStart' was not declared. Should it be static?
-drivers/net/tlan.c:3187:5: warning: symbol 'TLan_EeSendByte' was not declared. Should it be static?
-drivers/net/tlan.c:3248:6: warning: symbol 'TLan_EeReceiveByte' was not declared. Should it be static?
-drivers/net/tlan.c:3306:5: warning: symbol 'TLan_EeReadByte' was not declared. Should it be static?
-
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Kept the style consistent with the rest of the file, checkpatch will complain.
- drivers/net/tlan.c |   64 ++++++++++++++++++++++++++--------------------------
- 1 files changed, 32 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/tlan.c b/drivers/net/tlan.c
-index 3af5b92..0166407 100644
---- a/drivers/net/tlan.c
-+++ b/drivers/net/tlan.c
-@@ -1400,7 +1400,7 @@ static void TLan_SetMulticastList( struct net_device *dev )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleInvalid( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleInvalid( struct net_device *dev, u16 host_int )
- {
- 	/* printk( "TLAN:  Invalid interrupt on %s.\n", dev->name ); */
- 	return 0;
-@@ -1432,7 +1432,7 @@ u32 TLan_HandleInvalid( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleTxEOF( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleTxEOF( struct net_device *dev, u16 host_int )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	int		eoc = 0;
-@@ -1518,7 +1518,7 @@ u32 TLan_HandleTxEOF( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleStatOverflow( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleStatOverflow( struct net_device *dev, u16 host_int )
- {
- 	TLan_ReadAndClearStats( dev, TLAN_RECORD );
- 
-@@ -1554,7 +1554,7 @@ u32 TLan_HandleStatOverflow( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleRxEOF( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleRxEOF( struct net_device *dev, u16 host_int )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u32		ack = 0;
-@@ -1689,7 +1689,7 @@ u32 TLan_HandleRxEOF( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleDummy( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleDummy( struct net_device *dev, u16 host_int )
- {
- 	printk( "TLAN:  Test interrupt on %s.\n", dev->name );
- 	return 1;
-@@ -1719,7 +1719,7 @@ u32 TLan_HandleDummy( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleTxEOC( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleTxEOC( struct net_device *dev, u16 host_int )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	TLanList		*head_list;
-@@ -1767,7 +1767,7 @@ u32 TLan_HandleTxEOC( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleStatusCheck( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleStatusCheck( struct net_device *dev, u16 host_int )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u32		ack;
-@@ -1842,7 +1842,7 @@ u32 TLan_HandleStatusCheck( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--u32 TLan_HandleRxEOC( struct net_device *dev, u16 host_int )
-+static u32 TLan_HandleRxEOC( struct net_device *dev, u16 host_int )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	dma_addr_t	head_list_phys;
-@@ -1902,7 +1902,7 @@ u32 TLan_HandleRxEOC( struct net_device *dev, u16 host_int )
- 	 *
- 	 **************************************************************/
- 
--void TLan_Timer( unsigned long data )
-+static void TLan_Timer( unsigned long data )
- {
- 	struct net_device	*dev = (struct net_device *) data;
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
-@@ -1983,7 +1983,7 @@ void TLan_Timer( unsigned long data )
- 	 *
- 	 **************************************************************/
- 
--void TLan_ResetLists( struct net_device *dev )
-+static void TLan_ResetLists( struct net_device *dev )
- {
- 	TLanPrivateInfo *priv = netdev_priv(dev);
- 	int		i;
-@@ -2043,7 +2043,7 @@ void TLan_ResetLists( struct net_device *dev )
- } /* TLan_ResetLists */
- 
- 
--void TLan_FreeLists( struct net_device *dev )
-+static void TLan_FreeLists( struct net_device *dev )
- {
- 	TLanPrivateInfo *priv = netdev_priv(dev);
- 	int		i;
-@@ -2092,7 +2092,7 @@ void TLan_FreeLists( struct net_device *dev )
- 	 *
- 	 **************************************************************/
- 
--void TLan_PrintDio( u16 io_base )
-+static void TLan_PrintDio( u16 io_base )
- {
- 	u32 data0, data1;
- 	int	i;
-@@ -2127,7 +2127,7 @@ void TLan_PrintDio( u16 io_base )
- 	 *
- 	 **************************************************************/
- 
--void TLan_PrintList( TLanList *list, char *type, int num)
-+static void TLan_PrintList( TLanList *list, char *type, int num)
- {
- 	int i;
- 
-@@ -2163,7 +2163,7 @@ void TLan_PrintList( TLanList *list, char *type, int num)
- 	 *
- 	 **************************************************************/
- 
--void TLan_ReadAndClearStats( struct net_device *dev, int record )
-+static void TLan_ReadAndClearStats( struct net_device *dev, int record )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u32		tx_good, tx_under;
-@@ -2238,7 +2238,7 @@ void TLan_ReadAndClearStats( struct net_device *dev, int record )
- 	 *
- 	 **************************************************************/
- 
--void
-+static void
- TLan_ResetAdapter( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
-@@ -2324,7 +2324,7 @@ TLan_ResetAdapter( struct net_device *dev )
- 
- 
- 
--void
-+static void
- TLan_FinishReset( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
-@@ -2448,7 +2448,7 @@ TLan_FinishReset( struct net_device *dev )
- 	 *
- 	 **************************************************************/
- 
--void TLan_SetMac( struct net_device *dev, int areg, char *mac )
-+static void TLan_SetMac( struct net_device *dev, int areg, char *mac )
- {
- 	int i;
- 
-@@ -2490,7 +2490,7 @@ void TLan_SetMac( struct net_device *dev, int areg, char *mac )
- 	 *
- 	 ********************************************************************/
- 
--void TLan_PhyPrint( struct net_device *dev )
-+static void TLan_PhyPrint( struct net_device *dev )
- {
- 	TLanPrivateInfo *priv = netdev_priv(dev);
- 	u16 i, data0, data1, data2, data3, phy;
-@@ -2539,7 +2539,7 @@ void TLan_PhyPrint( struct net_device *dev )
- 	 *
- 	 ********************************************************************/
- 
--void TLan_PhyDetect( struct net_device *dev )
-+static void TLan_PhyDetect( struct net_device *dev )
- {
- 	TLanPrivateInfo *priv = netdev_priv(dev);
- 	u16		control;
-@@ -2586,7 +2586,7 @@ void TLan_PhyDetect( struct net_device *dev )
- 
- 
- 
--void TLan_PhyPowerDown( struct net_device *dev )
-+static void TLan_PhyPowerDown( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u16		value;
-@@ -2611,7 +2611,7 @@ void TLan_PhyPowerDown( struct net_device *dev )
- 
- 
- 
--void TLan_PhyPowerUp( struct net_device *dev )
-+static void TLan_PhyPowerUp( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u16		value;
-@@ -2632,7 +2632,7 @@ void TLan_PhyPowerUp( struct net_device *dev )
- 
- 
- 
--void TLan_PhyReset( struct net_device *dev )
-+static void TLan_PhyReset( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u16		phy;
-@@ -2660,7 +2660,7 @@ void TLan_PhyReset( struct net_device *dev )
- 
- 
- 
--void TLan_PhyStartLink( struct net_device *dev )
-+static void TLan_PhyStartLink( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u16		ability;
-@@ -2747,7 +2747,7 @@ void TLan_PhyStartLink( struct net_device *dev )
- 
- 
- 
--void TLan_PhyFinishAutoNeg( struct net_device *dev )
-+static void TLan_PhyFinishAutoNeg( struct net_device *dev )
- {
- 	TLanPrivateInfo	*priv = netdev_priv(dev);
- 	u16		an_adv;
-@@ -2903,7 +2903,7 @@ void TLan_PhyMonitor( struct net_device *dev )
- 	 *
- 	 **************************************************************/
- 
--int TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
-+static int TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
- {
- 	u8	nack;
- 	u16	sio, tmp;
-@@ -2993,7 +2993,7 @@ int TLan_MiiReadReg( struct net_device *dev, u16 phy, u16 reg, u16 *val )
- 	 *
- 	 **************************************************************/
- 
--void TLan_MiiSendData( u16 base_port, u32 data, unsigned num_bits )
-+static void TLan_MiiSendData( u16 base_port, u32 data, unsigned num_bits )
- {
- 	u16 sio;
- 	u32 i;
-@@ -3035,7 +3035,7 @@ void TLan_MiiSendData( u16 base_port, u32 data, unsigned num_bits )
- 	 *
- 	 **************************************************************/
- 
--void TLan_MiiSync( u16 base_port )
-+static void TLan_MiiSync( u16 base_port )
- {
- 	int i;
- 	u16 sio;
-@@ -3074,7 +3074,7 @@ void TLan_MiiSync( u16 base_port )
- 	 *
- 	 **************************************************************/
- 
--void TLan_MiiWriteReg( struct net_device *dev, u16 phy, u16 reg, u16 val )
-+static void TLan_MiiWriteReg( struct net_device *dev, u16 phy, u16 reg, u16 val )
- {
- 	u16	sio;
- 	int	minten;
-@@ -3144,7 +3144,7 @@ void TLan_MiiWriteReg( struct net_device *dev, u16 phy, u16 reg, u16 val )
- 	 *
- 	 **************************************************************/
- 
--void TLan_EeSendStart( u16 io_base )
-+static void TLan_EeSendStart( u16 io_base )
- {
- 	u16	sio;
- 
-@@ -3184,7 +3184,7 @@ void TLan_EeSendStart( u16 io_base )
- 	 *
- 	 **************************************************************/
- 
--int TLan_EeSendByte( u16 io_base, u8 data, int stop )
-+static int TLan_EeSendByte( u16 io_base, u8 data, int stop )
- {
- 	int	err;
- 	u8	place;
-@@ -3245,7 +3245,7 @@ int TLan_EeSendByte( u16 io_base, u8 data, int stop )
- 	 *
- 	 **************************************************************/
- 
--void TLan_EeReceiveByte( u16 io_base, u8 *data, int stop )
-+static void TLan_EeReceiveByte( u16 io_base, u8 *data, int stop )
- {
- 	u8  place;
- 	u16 sio;
-@@ -3303,7 +3303,7 @@ void TLan_EeReceiveByte( u16 io_base, u8 *data, int stop )
- 	 *
- 	 **************************************************************/
- 
--int TLan_EeReadByte( struct net_device *dev, u8 ee_addr, u8 *data )
-+static int TLan_EeReadByte( struct net_device *dev, u8 ee_addr, u8 *data )
- {
- 	int err;
- 	TLanPrivateInfo *priv = netdev_priv(dev);
--- 
-1.5.4.1.1278.gc75be
 
 
+>From: Thomas Gleixner Montag, 18. Februar 2008 18:49
+>
+>On Mon, 18 Feb 2008, Hennerich, Michael wrote:
+>> RESENT: Add Maintainers
+>>
+>> free_irq() does not disable/mask the irq, in case disable or shutdown
+in
+>struct irq_chip is left uninitilazied.
+>>
+>> /**
+>>  * struct irq_chip - hardware interrupt chip descriptor
+>>  *
+>>  * @name:	name for /proc/interrupts
+>>  * @startup:	start up the interrupt (defaults to ->enable if NULL)
+>>  * @shutdown:	shut down the interrupt (defaults to ->disable
+if NULL)
+>>  * @enable:		enable the interrupt (defaults to chip->unmask
+if
+>NULL)
+>>  * @disable:	disable the interrupt (defaults to chip->mask if NULL)
+>>
+>>
+>> According to linux/irq.h struct irq_chip information,
+>> chip->disable should default to chip->mask if NULL.
+>> However irq_chip_set_defaults(struct irq_chip *chip) will set it to
+>default_disable an empty function.
+>>
+>> In earlier kernel versions such as 2.6.19 default_disable called
+chip-
+>>mask.
+>> In 2.6.22 and 2.6.24 default_disable is an empty function.
+>>
+>> Looking through various architectures, it's still pretty common that
+>disable and shutdown is NULL.
+>
+>Yeah, you are right. This was broken by commit
+>76d2160147f43f982dfe881404cfde9fd0a9da21
+>
+>> Do I miss something here?
+>
+>Just a small detail. The commit optimized the irq_disable/enable logic
+>by defaulting to delayed disable. So we want to keep that logic intact
+>in case that we still have a device which is handling this
+>interrupt. For the free_irq() case your patch is correct.
+>
+>The patch below fixes the shutdown case and keeps the delayed disable
+>logic intact.
+>
+>How did you notice ? I guess you got spurious interrupts after calling
+>free_irq(), right ?
 
+Exactly
+
+-Michael 
+
+
+>
+>Thanks for analyzing and reporting,
+>
+>	tglx
+>
+>------------->
+>Subject: genirq: do not leave interupts enabled on free_irq
+>From: Thomas Gleixner <tglx@linutronix.de>
+>Date: Mon, 18 Feb 2008 18:25:17 +0100
+>
+>The default_disable() function was changed in commit:
+>
+> 76d2160147f43f982dfe881404cfde9fd0a9da21
+> genirq: do not mask interrupts by default
+>
+>It removed the mask function in favour of the default delayed
+>interrupt disable handling. Unfortunately this also broke the shutdown
+>in free_irq() when the last handler is removed from the interrupt for
+>those architectures which rely on the default implementations. Now we
+>can end up with a enabled interrupt line after the last handler was
+>removed.
+>
+>Fix this by adding a default_shutdown function, which is only
+>installed, when the irqchip implementation does provide neither a
+>shutdown nor a disable function.
+>
+>Pointed-out-by: Michael Hennerich <Michael.Hennerich@analog.com>
+>Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>CC: stable@kernel.org
+>
+>---
+> kernel/irq/chip.c |   14 +++++++++++++-
+> 1 file changed, 13 insertions(+), 1 deletion(-)
+>
+>Index: linux-2.6/kernel/irq/chip.c
+>===================================================================
+>--- linux-2.6.orig/kernel/irq/chip.c
+>+++ linux-2.6/kernel/irq/chip.c
+>@@ -246,6 +246,17 @@ static unsigned int default_startup(unsi
+> }
+>
+> /*
+>+ * default shutdown function
+>+ */
+>+static void default_shutdown(unsigned int irq)
+>+{
+>+	struct irq_desc *desc = irq_desc + irq;
+>+
+>+	desc->chip->mask(irq);
+>+	desc->status &= ~IRQ_MASKED;
+>+}
+>+
+>+/*
+>  * Fixup enable/disable function pointers
+>  */
+> void irq_chip_set_defaults(struct irq_chip *chip)
+>@@ -257,7 +268,8 @@ void irq_chip_set_defaults(struct irq_ch
+> 	if (!chip->startup)
+> 		chip->startup = default_startup;
+> 	if (!chip->shutdown)
+>-		chip->shutdown = chip->disable;
+>+		chip->shutdown = chip->disable != default_disable ?
+>+			chip_disable : default_shutdown;
+> 	if (!chip->name)
+> 		chip->name = chip->typename;
+> 	if (!chip->end)
