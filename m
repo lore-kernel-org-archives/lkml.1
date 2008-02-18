@@ -1,42 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbYBRUi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbYBRUkk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758219AbYBRUi2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750907AbYBRUiU
+	id S1755481AbYBRUkk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:40:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbYBRUkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:38:20 -0500
-Received: from www.tglx.de ([62.245.132.106]:58308 "EHLO www.tglx.de"
+	Mon, 18 Feb 2008 15:40:31 -0500
+Received: from mx1.riseup.net ([204.13.164.18]:45523 "EHLO mx1.riseup.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750802AbYBRUiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:38:19 -0500
-Date: Mon, 18 Feb 2008 21:37:57 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: [BUG][RFC] [GENERIC IRQ] irq_chip_set_defaults shutdown /
- disable
-In-Reply-To: <600D5CB4DFD93545BF61FF01473D11AC125CC53A@limkexm2.ad.analog.com>
-Message-ID: <alpine.LFD.1.00.0802182135580.7583@apollo.tec.linutronix.de>
-References: <600D5CB4DFD93545BF61FF01473D11AC125CC53A@limkexm2.ad.analog.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1751263AbYBRUka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 15:40:30 -0500
+Message-Id: <20080218194533.546348043@kaehlcke.net>
+References: <20080218194533.185137318@kaehlcke.net>
+User-Agent: quilt/0.46-1
+Date: Mon, 18 Feb 2008 20:45:34 +0100
+From: matthias@kaehlcke.net
+To: wolfgang@iksw-muees.de, linux-usb@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Matthias Kaehlcke <matthias@kaehlcke.net>
+Subject: [patch 1/3] Convert stats_sem in a mutex
+Content-Disposition: inline; filename=usb-misc-auerswald-cp_mutex-to-mutex.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Hennerich, Michael wrote:
-> >The patch below fixes the shutdown case and keeps the delayed disable
-> >logic intact.
->
-> >How did you notice ? I guess you got spurious interrupts after calling
-> >free_irq(), right ?
-> 
-> Exactly
+The semaphore cp->mutex is used as mutex, convert it to the mutex API
 
-Can you please confirm, whether my version of the fix works for you as
-well.
+Signed-off-by: Matthias Kaehlcke <matthias@kaehlcke.net>
 
-Thanks,
+Index: linux-2.6/drivers/usb/misc/auerswald.c
+===================================================================
+--- linux-2.6.orig/drivers/usb/misc/auerswald.c	2008-02-18 19:47:18.000000000 +0100
++++ linux-2.6/drivers/usb/misc/auerswald.c	2008-02-18 19:51:52.000000000 +0100
+@@ -31,6 +31,7 @@
+ #include <linux/init.h>
+ #include <linux/wait.h>
+ #include <linux/usb.h>
++#include <linux/mutex.h>
+ 
+ /*-------------------------------------------------------------------*/
+ /* Debug support 						     */
+@@ -232,7 +233,7 @@
+ /* USB device context */
+ typedef struct
+ {
+-	struct semaphore 	mutex;         	    /* protection in user context */
++	struct mutex 	mutex;         	    /* protection in user context */
+ 	char 			name[20];	    /* name of the /dev/usb entry */
+ 	unsigned int		dtindex;	    /* index in the device table */
+ 	struct usb_device *	usbdev;      	    /* USB device handle */
+@@ -1376,7 +1377,7 @@
+ 	if (cp == NULL) {
+ 		return -ENODEV;
+ 	}
+-	if (down_interruptible (&cp->mutex)) {
++	if (mutex_lock_interruptible(&cp->mutex)) {
+ 		return -ERESTARTSYS;
+ 	}
+ 
+@@ -1405,7 +1406,7 @@
+ 	cp->open_count++;
+ 	ccp->auerdev = cp;
+ 	dbg("open %s as /dev/%s", cp->dev_desc, cp->name);
+-	up (&cp->mutex);
++	mutex_unlock(&cp->mutex);
+ 
+ 	/* file IO stuff */
+ 	file->f_pos = 0;
+@@ -1413,7 +1414,7 @@
+ 	return nonseekable_open(inode, file);
+ 
+ 	/* Error exit */
+-ofail:	up (&cp->mutex);
++ofail:	mutex_unlock(&cp->mutex);
+ 	auerchar_delete (ccp);
+ 	return ret;
+ }
+@@ -1440,14 +1441,14 @@
+ 		up (&ccp->mutex);
+                 return -ENODEV;
+ 	}
+-	if (down_interruptible (&cp->mutex)) {
++	if (mutex_lock_interruptible(&cp->mutex)) {
+ 		up(&ccp->mutex);
+ 		return -ERESTARTSYS;
+ 	}
+ 
+ 	/* Check for removal */
+ 	if (!cp->usbdev) {
+-		up(&cp->mutex);
++		mutex_unlock(&cp->mutex);
+ 		up(&ccp->mutex);
+                 return -ENODEV;
+ 	}
+@@ -1550,7 +1551,7 @@
+ 		break;
+         }
+ 	/* release the mutexes */
+-	up(&cp->mutex);
++	mutex_unlock(&cp->mutex);
+ 	up(&ccp->mutex);
+ 	return ret;
+ }
+@@ -1721,12 +1722,12 @@
+ 		up (&ccp->mutex);
+ 		return -ERESTARTSYS;
+ 	}
+-	if (down_interruptible (&cp->mutex)) {
++	if (mutex_lock_interruptible(&cp->mutex)) {
+ 		up (&ccp->mutex);
+ 		return -ERESTARTSYS;
+ 	}
+ 	if (!cp->usbdev) {
+-		up (&cp->mutex);
++		mutex_unlock(&cp->mutex);
+ 		up (&ccp->mutex);
+ 		return -EIO;
+ 	}
+@@ -1750,7 +1751,7 @@
+ 
+ 	/* are there any buffers left? */
+ 	if (!bp) {
+-		up (&cp->mutex);
++		mutex_unlock(&cp->mutex);
+ 		up (&ccp->mutex);
+ 
+ 		/* NONBLOCK: don't wait */
+@@ -1783,7 +1784,7 @@
+ 		auerbuf_releasebuf (bp);
+ 		/* Wake up all processes waiting for a buffer */
+ 		wake_up (&cp->bufferwait);
+-		up (&cp->mutex);
++		mutex_unlock(&cp->mutex);
+ 		up (&ccp->mutex);
+ 		return -EFAULT;
+ 	}
+@@ -1803,7 +1804,7 @@
+ 		    auerchar_ctrlwrite_complete, bp);
+ 	/* up we go */
+ 	ret = auerchain_submit_urb (&cp->controlchain, bp->urbp);
+-	up (&cp->mutex);
++	mutex_unlock(&cp->mutex);
+ 	if (ret) {
+ 		dbg ("auerchar_write: nonzero result of auerchain_submit_urb %d", ret);
+ 		auerbuf_releasebuf (bp);
+@@ -1830,16 +1831,16 @@
+ 	down(&ccp->mutex);
+ 	cp = ccp->auerdev;
+ 	if (cp) {
+-		down(&cp->mutex);
++		mutex_lock(&cp->mutex);
+ 		/* remove an open service */
+ 		auerswald_removeservice (cp, &ccp->scontext);
+ 		/* detach from device */
+ 		if ((--cp->open_count <= 0) && (cp->usbdev == NULL)) {
+ 			/* usb device waits for removal */
+-			up (&cp->mutex);
++			mutex_unlock(&cp->mutex);
+ 			auerswald_delete (cp);
+ 		} else {
+-			up (&cp->mutex);
++			mutex_unlock(&cp->mutex);
+ 		}
+ 		cp = NULL;
+ 		ccp->auerdev = NULL;
+@@ -1917,7 +1918,7 @@
+ 	}
+ 
+ 	/* Initialize device descriptor */
+-	init_MUTEX (&cp->mutex);
++	mutex_init(&cp->mutex);
+ 	cp->usbdev = usbdev;
+ 	auerchain_init (&cp->controlchain);
+         auerbuf_init (&cp->bufctl);
+@@ -2042,7 +2043,7 @@
+ 	/* give back our USB minor number */
+ 	usb_deregister_dev(intf, &auerswald_class);
+ 
+-	down (&cp->mutex);
++	mutex_lock(&cp->mutex);
+ 	info ("device /dev/%s now disconnecting", cp->name);
+ 
+ 	/* Stop the interrupt endpoint */
+@@ -2057,16 +2058,18 @@
+ 
+ 	if (cp->open_count == 0) {
+ 		/* nobody is using this device. So we can clean up now */
+-		up (&cp->mutex);/* up() is possible here because no other task
+-				   can open the device (see above). I don't want
+-				   to kfree() a locked mutex. */
++		mutex_unlock(&cp->mutex);
++		/* mutex_unlock() is possible here because no other task
++		   can open the device (see above). I don't want
++		   to kfree() a locked mutex. */
++
+ 		auerswald_delete (cp);
+ 	} else {
+ 		/* device is used. Remove the pointer to the
+ 		   usb device (it's not valid any more). The last
+ 		   release() will do the clean up */
+ 		cp->usbdev = NULL;
+-		up (&cp->mutex);
++		mutex_unlock(&cp->mutex);
+ 		/* Terminate waiting writers */
+ 		wake_up (&cp->bufferwait);
+ 		/* Inform all waiting readers */
 
-	tglx
+-- 
+Matthias Kaehlcke
+Linux System Developer
+Barcelona
+
+              We build too many walls and not enough bridges
+                             (Isaac Newton)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
