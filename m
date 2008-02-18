@@ -1,71 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbYBRDIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758076AbYBRDJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758360AbYBRDIj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 22:08:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbYBRDI1
+	id S1758076AbYBRDJX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 22:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbYBRDJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 22:08:27 -0500
-Received: from mfo32.po.2iij.net ([210.128.50.15]:11569 "EHLO
-	mfo32.po.2iij.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752013AbYBRDI0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 22:08:26 -0500
-X-Greylist: delayed 503 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 Feb 2008 22:08:26 EST
-Date: Mon, 18 Feb 2008 11:58:24 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: yoichi_yuasa@tripeaks.co.jp, Dmitry Torokhov <dtor@mail.ru>,
-       ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: cobalt_btns.c <-> struct platform_device compile error
-Message-Id: <20080218115824.3ae7cf29.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <20080217200935.GE1403@cs181133002.pp.htv.fi>
-References: <20080217200935.GE1403@cs181133002.pp.htv.fi>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 Feb 2008 22:09:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48677 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753632AbYBRDJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 22:09:13 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Rob Landley <rob@landley.net>
+X-Fcc: ~/Mail/linus
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Compiling with 2.6.25-rc2 with binutils 2.17 fails?
+In-Reply-To: Rob Landley's message of  Saturday, 16 February 2008 17:27:21 -0600 <200802161727.21312.rob@landley.net>
+References: <200802161727.21312.rob@landley.net>
+X-Zippy-Says: I'm QUIETLY reading the latest issue of ``BOWLING WORLD'' while my
+    wife and two children stand QUIETLY BY..
+Message-Id: <20080218030910.C2CB1270195@magilla.localdomain>
+Date: Sun, 17 Feb 2008 19:09:10 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Still trying to track down why, but it works on a toolchain built from 
+> binutils 2.18 and gcc 4.1.3, but not with a toolchain from binutils 2.17 and 
+> gcc 4.1.2.  And considering where it's failing...
 
-I already sent a patch to Dmitry.
+I don't think the vdso magic should require so new a binutils.  Please try
+to figure out which of the steps is producing different results between the
+two tool setups.
 
-Yoichi
 
-On Sun, 17 Feb 2008 22:09:35 +0200
-Adrian Bunk <bunk@stusta.de> wrote:
-
-> Commit b037b08e59633d939d79f1df9c43c6625f8db904 broke the compilation of 
-> cobalt_btns.c:
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      drivers/input/misc/cobalt_btns.o
-> ...
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c: In function 'cobalt_buttons_probe':
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:101: error: 'struct platform_device' has no member named 'keymap'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:102: error: 'struct platform_device' has no member named 'keymap'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:102: error: 'struct platform_device' has no member named 'keymap'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:102: error: 'struct platform_device' has no member named 'keymap'
-> /home/bunk/linux/kernel-2.6/git/linux-2.6/drivers/input/misc/cobalt_btns.c:102: error: 'struct platform_device' has no member named 'keymap'
-> ...
-> make[4]: *** [drivers/input/misc/cobalt_btns.o] Error 1
-> 
-> <--  snip  -->
-> 
-> cu
-> Adrian
-> 
-> -- 
-> 
->        "Is there not promise of rain?" Ling Tan asked suddenly out
->         of the darkness. There had been need of rain for many days.
->        "Only a promise," Lao Er said.
->                                        Pearl S. Buck - Dragon Seed
-> 
-> 
+Thanks,
+Roland
