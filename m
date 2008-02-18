@@ -1,80 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbYBRMXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbYBRMXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758765AbYBRMXV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 07:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758286AbYBRMXN
+	id S1760054AbYBRMXh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 07:23:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbYBRMXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Mon, 18 Feb 2008 07:23:13 -0500
-Received: from elvis.franken.de ([193.175.24.41]:56086 "EHLO elvis.franken.de"
+Received: from ns.suse.de ([195.135.220.2]:57035 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbYBRMXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 07:23:11 -0500
-Date: Mon, 18 Feb 2008 13:18:08 +0100
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25 patch] mips: fix SNI_RM EISA=n compilation
-Message-ID: <20080218121807.GA13080@alpha.franken.de>
-References: <20080217215948.GL1403@cs181133002.pp.htv.fi>
+	id S1752284AbYBRMXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 07:23:12 -0500
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>, lameter@sgi.com
+Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
+From: Andi Kleen <andi@firstfloor.org>
+References: <200802162302.04131.yinghai.lu@sun.com>
+Date: Mon, 18 Feb 2008 13:23:11 +0100
+In-Reply-To: <200802162302.04131.yinghai.lu@sun.com> (Yinghai Lu's message of "Sat\, 16 Feb 2008 23\:02\:03 -0800")
+Message-ID: <p73ve4mxxlc.fsf@bingen.suse.de>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080217215948.GL1403@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tsbogend@alpha.franken.de (Thomas Bogendoerfer)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 11:59:48PM +0200, Adrian Bunk wrote:
-> This patch fixes the following build error with CONFIG_EISA=n caused by 
-> commit 231a35d37293ab88d325a9cb94e5474c156282c0:
-> 
-> <--  snip -->
-> 
-> ...
->   LD      .tmp_vmlinux1
-> arch/mips/sni/built-in.o: In function `snirm_a20r_setup_devinit':
-> a20r.c:(.init.text+0x42c): undefined reference to `sni_eisa_root_init'
-> a20r.c:(.init.text+0x42c): relocation truncated to fit: R_MIPS_26 against `sni_eisa_root_init'
-> arch/mips/sni/built-in.o: In function `snirm_setup_devinit':
-> rm200.c:(.init.text+0x52c): undefined reference to `sni_eisa_root_init'
-> rm200.c:(.init.text+0x52c): relocation truncated to fit: R_MIPS_26 against `sni_eisa_root_init'
-> make[1]: *** [.tmp_vmlinux1] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+
+> we don't need copy too. already have x86_cpu_to_node_map
+
+That's a regression (probably from Mike's patches?). Until recently it was 
+used.
+
+The reason the node number was put in there is that it generates far
+shorter code to just fetch the local node number from the PDA than to
+first go through a array lookup from the cpu number. It also saves a
+costly cache line miss on the array if you're unlucky.
+
+It is far better to fix it than to remove it.
+
+I know Mike/Christoph want to get rid of the PDA and make per cpu data 
+as efficient as the PDA. If that happens the right fix is to create
+a new per CPU data variable for the node number again.
+
+Here's a quick patch (tested on kvm with numa emulation only) 
+
+It should be ok because PDA is set up early and
+the early node is always 0 and there is a 0 in there
+at early boot.
+
+Saves about 1.6k of text on a vmlinux here.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/include/asm-x86/topology.h
+===================================================================
+--- linux.orig/include/asm-x86/topology.h
++++ linux/include/asm-x86/topology.h
+@@ -34,11 +34,12 @@
+ extern int cpu_to_node_map[];
+ 
+ #else
++#include <asm/pda.h>
+ DECLARE_PER_CPU(int, x86_cpu_to_node_map);
+ extern int x86_cpu_to_node_map_init[];
+ extern void *x86_cpu_to_node_map_early_ptr;
+ /* Returns the number of the current Node. */
+-#define numa_node_id()		(early_cpu_to_node(raw_smp_processor_id()))
++#define numa_node_id()		(read_pda(nodenumber))
+ #endif
+ 
+ extern cpumask_t node_to_cpumask_map[];
 
 
-Thanks for your fix, Adrian.
 
-Ralf, please apply.
-
-Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-
-> 
-> ---
-> f6a6c34454cbe463e2d8d567d9e0659161a82a72 diff --git a/include/asm-mips/sni.h b/include/asm-mips/sni.h
-> index e716447..8c1eb02 100644
-> --- a/include/asm-mips/sni.h
-> +++ b/include/asm-mips/sni.h
-> @@ -228,7 +228,14 @@ extern void sni_pcimt_irq_init(void);
->  extern void sni_cpu_time_init(void);
->  
->  /* eisa init for RM200/400 */
-> +#ifdef CONFIG_EISA
->  extern int sni_eisa_root_init(void);
-> +#else
-> +static inline int sni_eisa_root_init(void)
-> +{
-> +	return 0;
-> +}
-> +#endif
->  
->  /* common irq stuff */
->  extern void (*sni_hwint)(void);
-
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessary a
-good idea.                                                [ RFC1925, 2.3 ]
