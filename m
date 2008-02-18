@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761797AbYBRNNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbYBRNNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761797AbYBRNNM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:13:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761577AbYBRNMw
+	id S1761910AbYBRNNe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:13:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761831AbYBRNNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:12:52 -0500
-Received: from www.tglx.de ([62.245.132.106]:41963 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760873AbYBRNMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:12:51 -0500
-Date: Mon, 18 Feb 2008 14:12:25 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Quel Qun <kelk1@comcast.net>
-cc: LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>, marcel@holtmann.org
-Subject: Re: Kernel oops with bluetooth usb dongle
-In-Reply-To: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net>
-Message-ID: <alpine.LFD.1.00.0802181245370.7583@apollo.tec.linutronix.de>
-References: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Mon, 18 Feb 2008 08:13:09 -0500
+Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:27029 "HELO
+	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760517AbYBRNNG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:13:06 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=4tBdFTDfRId4O3Iv6t3cyAEkUvQxc0W70oFsMuFFrxjl0G6k6XzX0dRGQ8WuDZPkQ2lIBObzICQEEZneNT3JcA+S1eF3J2pozhJpPEyjmv0/gAGv9vhRfGf9Dx3PSjjsIl2QacvkOhPyNHUmGDJ+SaAgGbG76lzSff50KQG6aVg=;
+X-YMail-OSG: S3i1f1EVM1mUJsM7GxJFlN5.utA_WtUwiGWgUw1dfFV2ijodMc0KC3RrMuaAfjSjmoUjHeFq4FnsjTDeeq23EP9z5yHc17BR_PxWLtI_7dQNJ.5NTT8ADQPprta70hNsW9UNaTb_qwBJ.gZH4rNkJJEm8A--
+Date: Mon, 18 Feb 2008 13:13:04 +0000 (GMT)
+From: Chris Rankin <rankincj@yahoo.com>
+Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080218050056.fb0fc0bf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <432054.54127.qm@web52910.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Quel Qun wrote:
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+> and here it hangs, I assume?
 
-Added bluetooth wizards to CC
+Oops, I think you have misunderstood. The hang happens if I *don't* specify acpi=noirq, whereas in
+this case I did. I have already reported the original hang under threads:
 
-> > Can you please enable CONFIG_SLUB_DEBUG=y and CONFIG_SLUB_DEBUG_ON=y
-> > and give it another try?
-> > 
-> > If we can not catch it that way, I'll whip up a patch which points us
-> > to the code which added the offending timer.
-> > 
-> Hi,
-> 
-> Note: I switched to 2.6.25-rc2. The only new thing I see is this message:
-> 
-> hci_cmd_task: hci0 command tx timeout
-> 
-> This comes from net/bluetooth/hci_core.c, line 1547
-> 
-> There is indeed a timeout message in the log (at the end of this
-> email). I tried to boot with slub_debug but did not get anything
-> more. slabinfo -v does not report anything either.
->
-> Crash log:
-> 
-> hci_cmd_task: hci0 command tx timeout
-> BUG: unable to handle kernel paging request at 6b6b6b6b
+http://www.ussg.iu.edu/hypermail/linux/kernel/0802.0/0895.html
+http://www.ussg.iu.edu/hypermail/linux/kernel/0802.0/0898.html
 
-We got some more info ---------------------------^^^^^^^^
-#define POISON_FREE      0x6b    /* for use-after-free poisoning */
+So I was actually reporting that I've *worked around* the hang here. The net result is that all my
+PCI devices are now placed on IRQ 9, instead of IRQs 16, 17 18 and 19.
 
-So the timer is in an allocated data structure, which is
-freed without having removed the timer first.
+Cheers,
+Chris
 
-> Sorry for the meager yield.
 
-Hey, we know already more :)
 
-Marcel, any idea on this one ?
-
-Thanks,
-	tglx
+      ___________________________________________________________
+Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
