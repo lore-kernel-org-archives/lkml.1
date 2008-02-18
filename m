@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757684AbYBRHe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755618AbYBRHgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757684AbYBRHe4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 02:34:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYBRHer
+	id S1755618AbYBRHgX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753940AbYBRHgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 02:34:47 -0500
-Received: from mail.southpole.se ([193.12.106.18]:33823 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753915AbYBRHeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 02:34:46 -0500
-Message-ID: <47B93512.6000107@southpole.se>
-Date: Mon, 18 Feb 2008 08:34:42 +0100
-From: Jonas Bonn <jonas@southpole.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071229)
+	Mon, 18 Feb 2008 02:36:16 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57607 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753804AbYBRHgP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 02:36:15 -0500
+Message-ID: <47B93518.6@cn.fujitsu.com>
+Date: Mon, 18 Feb 2008 15:34:48 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, olof@lixom.net, sam@ravnborg.com
-Subject: Re: [PATCH] Add PCI_DEVICE_TABLE macro
-References: <1203250205-5103-1-git-send-email-jonas@southpole.se> <1203250404.24325.1.camel@satguru> <20080218044834.GB14184@kroah.com>
-In-Reply-To: <20080218044834.GB14184@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: akpm@linux-foundation.org
+CC: balbir@linux.vnet.ibm.com, containers@lists.linux-foundation.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] memcgroup: remove a useless VM_BUG_ON()
+References: <47B9223C.9020106@linux.vnet.ibm.com> <20080218062209.DA59B1E3C58@siro.lan> <47B923C8.3090904@linux.vnet.ibm.com> <47B929EE.7080202@cn.fujitsu.com> <47B92D47.2050008@linux.vnet.ibm.com>
+In-Reply-To: <47B92D47.2050008@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> And again, what does this buy us?
-> 
+Remove this VM_BUG_ON(), as Balbir stated:
 
-Clarity and simplicity, I hope... there are a bunch of definitions 
-scattered about the kernel that omit the __devinitdata modifier despite 
-the documentation stating that it should always be there.  The 
-definition really should have been const, which wasn't possible before 
-but has become so with the addition of the __devinitconst attribute.
+We used to have a for loop with !list_empty() as a termination condition
+and VM_BUG_ON(!pc) is a spill over. With the new loop, VM_BUG_ON(!pc) does not
+make sense.
 
-Furthermore, there are definitions that use "const" and __devinitdata, 
-which is explicitly wrong but the compiler doesn't catch section 
-mismatches if there's only one such one case in the module (which is 
-often the case).
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ mm/memcontrol.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Adding the __devinitconst modifier where there was nothing before buys 
-us memory.  Adding the const modifier gives the compiler a chance to do 
-its thing.  Changing __devinitdata to __devinitconst where it was wrong 
-actually fixes some compiler errors in older (mid-release) kernels that 
-were patched over by "removing" the section attribute altogether (which 
-wastes memory).
-
-Adding the macro (Olof's idea, not mine) makes it pretty difficult to 
-get this definition wrong... I'll do the rest of the cleanup, but I need 
-to know whether it's better to use a macro like this, or to open code 
-the definitions.  I prefer the macro approach...
-
-Hope this makes some sense...
-
-/Jonas
-
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 718acf8..631002d 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -534,7 +534,6 @@ unsigned long mem_cgroup_isolate_pages(unsigned long nr_to_scan,
+ 		if (scan >= nr_to_scan)
+ 			break;
+ 		page = pc->page;
+-		VM_BUG_ON(!pc);
+ 
+ 		if (unlikely(!PageLRU(page)))
+ 			continue;
+-- 
+1.5.4.rc3
