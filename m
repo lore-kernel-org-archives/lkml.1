@@ -1,104 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760662AbYBRUPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761233AbYBRUQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760662AbYBRUPc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:15:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbYBRUPZ
+	id S1761233AbYBRUQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYBRUQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:15:25 -0500
-Received: from smtp-101-monday.nerim.net ([62.4.16.101]:63102 "EHLO
-	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752707AbYBRUPY (ORCPT
+	Mon, 18 Feb 2008 15:16:18 -0500
+Received: from wx-out-0506.google.com ([66.249.82.234]:29441 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753131AbYBRUQQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:15:24 -0500
-Date: Mon, 18 Feb 2008 21:15:19 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: benh@kernel.crashing.org
-Cc: Christian Krafft <krafft@de.ibm.com>, linux-kernel@vger.kernel.org,
-       parabelboi@bopserverein.de, linuxppc-dev@ozlabs.org
-Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
-Message-ID: <20080218211519.2b159ade@hyperion.delvare>
-In-Reply-To: <1202935374.7296.44.camel@pasglop>
-References: <20080213182800.5c6940a8@de.ibm.com>
-	<20080213183506.7f3e3145@de.ibm.com>
-	<1202935374.7296.44.camel@pasglop>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 Feb 2008 15:16:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K7NpneQp5GEoL2C0nTE2GoeQb7f2h5k0H3YGsZVxtsKUql3ULOn5inwpysJ5UHffFZ9cU1DdZcIjrkFRGb30f9JAhnKnxWmjD8wwtHxFllNhrGfA4pIEiZba5yDDEUoXKNPoEeHv0NlhI+7hs050ki08vk0Ctxe2m5IS+gjMghM=
+Message-ID: <86802c440802181216n113a5e66j68d6c9cdd950836d@mail.gmail.com>
+Date: Mon, 18 Feb 2008 12:16:14 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Mike Travis" <travis@sgi.com>, lameter@sgi.com
+In-Reply-To: <p73ve4mxxlc.fsf@bingen.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802162302.04131.yinghai.lu@sun.com>
+	 <p73ve4mxxlc.fsf@bingen.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben,
+On Feb 18, 2008 4:23 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+>
+> > we don't need copy too. already have x86_cpu_to_node_map
+>
+> That's a regression (probably from Mike's patches?). Until recently it was
+> used.
+>
+> The reason the node number was put in there is that it generates far
+> shorter code to just fetch the local node number from the PDA than to
+> first go through a array lookup from the cpu number. It also saves a
+> costly cache line miss on the array if you're unlucky.
+>
+> It is far better to fix it than to remove it.
+>
+> I know Mike/Christoph want to get rid of the PDA and make per cpu data
+> as efficient as the PDA. If that happens the right fix is to create
+> a new per CPU data variable for the node number again.
+>
+> Here's a quick patch (tested on kvm with numa emulation only)
+>
+> It should be ok because PDA is set up early and
+> the early node is always 0 and there is a 0 in there
+> at early boot.
+>
+> Saves about 1.6k of text on a vmlinux here.
 
-On Thu, 14 Feb 2008 07:42:54 +1100, Benjamin Herrenschmidt wrote:
-> 
-> On Wed, 2008-02-13 at 18:35 +0100, Christian Krafft wrote:
-> > sensors_detect crashes kernel on PowerPC, as it pokes directly to memory.
+that is because of the inline...
 
-For the records, sensors-detect accesses I/O ports, not memory.
+static inline int early_cpu_to_node(int cpu)
+{
+        int *cpu_to_node_map = x86_cpu_to_node_map_early_ptr;
 
-> > This patch adds a check_legacy_ioports to read_port and write_port.
-> > It will now return ENXIO, instead of oopsing.
-> > 
-> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> 
-> The problem is that this prevents using /proc/ioports to access PCI
-> IO space, which might be useful.
+        if (cpu_to_node_map)
+                return cpu_to_node_map[cpu];
+        else if (per_cpu_offset(cpu))
+                return per_cpu(x86_cpu_to_node_map, cpu);
+        else
+                return NUMA_NO_NODE;
+}
 
-Maybe Christian's patch can be improved to not do the check on these?
-As long as /dev/port exists, it seems reasonable that the kernel should
-behave, no matter what I/O ports are accessed from user-space.
+should use per_cpu(x86_cpu_to_node_map, cpu) instead.
+and limited using early_cpu_to_node etc.
 
-> I hate that sensors_detect.. or for that matter any other userland code
-> that pokes random ports like that. It should die.
-
-What do you propose as a replacement?
-
-And how is userland code poking at random ports different from kernel
-code poking at random ports? We could move sensors-detect inside the
-kernel (and I have some plan to do that) but I fail to see how this
-would solve this particular problem.
-
-> > Index: linux.git/drivers/char/mem.c
-> > ===================================================================
-> > --- linux.git.orig/drivers/char/mem.c
-> > +++ linux.git/drivers/char/mem.c
-> > @@ -566,8 +566,13 @@ static ssize_t read_port(struct file * f
-> >  	char __user *tmp = buf;
-> >  
-> >  	if (!access_ok(VERIFY_WRITE, buf, count))
-> > -		return -EFAULT; 
-> > +		return -EFAULT;
-> > +
-> >  	while (count-- > 0 && i < 65536) {
-> > +#ifdef CONFIG_PPC_MERGE
-> > +		if (check_legacy_ioport(i))
-> > +			return -ENXIO;
-> > +#endif
-> >  		if (__put_user(inb(i),tmp) < 0) 
-> >  			return -EFAULT;  
-> >  		i++;
-> > @@ -585,6 +590,7 @@ static ssize_t write_port(struct file * 
-> >  
-> >  	if (!access_ok(VERIFY_READ,buf,count))
-> >  		return -EFAULT;
-> > +
-> >  	while (count-- > 0 && i < 65536) {
-> >  		char c;
-> >  		if (__get_user(c, tmp)) {
-> > @@ -592,6 +598,10 @@ static ssize_t write_port(struct file * 
-> >  				break;
-> >  			return -EFAULT; 
-> >  		}
-> > +#ifdef CONFIG_PPC_MERGE
-> > +		if (check_legacy_ioport(i))
-> > +			return -ENXIO;
-> > +#endif
-> >  		outb(c,i);
-> >  		i++;
-> >  		tmp++;
-
-
--- 
-Jean Delvare
+YH
