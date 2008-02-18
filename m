@@ -1,45 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbYBRO1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYBRO2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756127AbYBRO1i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbYBRO11
+	id S1755025AbYBRO2R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYBRO2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:27:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:49471 "EHLO mx2.suse.de"
+	Mon, 18 Feb 2008 09:28:00 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:58097 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751824AbYBRO10 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:27:26 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [patch 2/2] x86: lds - Use THREAD_SIZE instead of =?iso-8859-1?q?numeric=09constant?=
-Date: Mon, 18 Feb 2008 15:27:22 +0100
-User-Agent: KMail/1.9.6
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-References: <20080217151716.274134094@gmail.com> <20080217200654.GF31968@cvg> <47B89501.5090108@zytor.com>
-In-Reply-To: <47B89501.5090108@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802181527.22502.ak@suse.de>
+	id S1752185AbYBRO17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:27:59 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
+References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be> <47B70A61.9030306@tiscali.nl> <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi> 
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: dhowells@redhat.com, Adrian Bunk <bunk@kernel.org>,
+       Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+       cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Mon, 18 Feb 2008 14:27:10 +0000
+Message-ID: <12131.1203344830@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> You're saying that it *must* be aligned, I don't think that's true 
-> anymore; I think nowadays it's more accurate to say that it *is* 
-> aligned, but I don't think that's fundamental.
+> Hence shouldn't we ask the gcc people what's the purpose of
+> __builtin_expect(), if it doesn't live up to its promise?
 
-At least in .25 mainline current_thread_info() is still using
-[re]sp arithmetic.  Also I think the stack backtracers also
-rely on suitable alignment of the stack top. So right now it is still 
-fundamental. Now that could be all fixed by using segment
-register references and might be, but so far that doesn't
-seem to be finished yet.
+__builtin_expect() is useful on FRV where you _have_ to give each branch and
+conditional branch instruction a measure of probability whether the branch
+will be taken.
 
-
--Andi
+David
