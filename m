@@ -1,121 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756792AbYBRQmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756132AbYBRQoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756792AbYBRQmj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbYBRQmb
+	id S1756132AbYBRQoh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751588AbYBRQo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:42:31 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44174 "EHLO ogre.sisk.pl"
+	Mon, 18 Feb 2008 11:44:28 -0500
+Received: from ns2.suse.de ([195.135.220.15]:44895 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751338AbYBRQma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:42:30 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Laszlo Attila Toth <panther@balabit.hu>
-Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
-Date: Mon, 18 Feb 2008 17:41:08 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
-       zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com> <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz> <47B9928A.60202@balabit.hu>
-In-Reply-To: <47B9928A.60202@balabit.hu>
+	id S1751089AbYBRQo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 11:44:27 -0500
+Date: Mon, 18 Feb 2008 17:44:25 +0100
+From: Jan Blunck <jblunck@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Erez Zadok <ezk@cs.sunysb.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mmotm] fs/sysfs/file.c d_path fix
+Message-ID: <20080218164425.GC26915@hasse.suse.de>
+References: <200802161912.m1GJC5Gt031939@agora.fsl.cs.sunysb.edu> <20080217130733.GA11483@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802181741.09046.rjw@sisk.pl>
+In-Reply-To: <20080217130733.GA11483@infradead.org>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 18 of February 2008, Laszlo Attila Toth wrote:
-> Jiri Kosina wrote:
-> > On Mon, 18 Feb 2008, Laszlo Attila Toth wrote:
-> > 
-> >> Okay, but I can't figure out what's the problem with it. I don't have 
-> >> wireless card on my linux box also I can't test it but everything else 
-> >> works. Swap is mounted. The concurrency cannot be a problem because the 
-> >> write operation is protected by a lock.
-> > 
-> > -               write_lock_bh(&dev_base_lock);
-> > -               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
-> > -               write_unlock_bh(&dev_base_lock);
-> > +               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
-> > +                       write_lock_bh(&dev_base_lock);
-> > +                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
-> > +                       write_lock_bh(&dev_base_lock);
-> > +                       modified = 1;
-> > +               }
-> >         }
-> > 
-> > 1) you are accessing dev->link_mode and tb[] outside the dev_base_lock 
-> 
-> yes, because tb[IFLA_LINKMODE] is not used by someone else in this case 
-> only dev->link_mode. Although its value is unpredictable in case of a 
-> concurrent access in the condition, it does not affect the final value 
-> of dev->link_mode but the length of the critical section remains 
-> minimal. The if statement may be inside the lock.
-> 
-> > 2) there is obvious and immediate deadlock -- you acquire the 
-> >    dev_base_lock twice, without any unlock, just look at the chunk above
-> 
-> Indeed:
-> "Feb 16 16:51:49 sandman kernel: BUG: rwlock recursion on CPU#0,"
-> 
-> I missed it. I copied the code from another patch which didn't contain 
-> the two locking statements and when I copied them back it became a 
-> copy-paste bug.
-> 
-> 
-> > 3) even with this deadlock fixed, Rafael states that either NM or 
-> >    wpa_supplicant (I don't recall from top of my head) still don't work
-> 
-> That's bad. Does my suggestion solve the problem? Again:
-> 
-> -      if (modified)
-> -                 netdev_state_change(dev);
-> +      if (modified && dev->flags & IFF_UP)
-> +                 call_netdevice_notifiers(NETDEV_CHANGE, dev)
+On Sun, Feb 17, Christoph Hellwig wrote:
 
-All in all, I gather you wanted me to test the patch below. :-)
+> On Sat, Feb 16, 2008 at 02:12:05PM -0500, Erez Zadok wrote:
+> > diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+> > index 02223e2..a57b024 100644
+> > --- a/fs/sysfs/file.c
+> > +++ b/fs/sysfs/file.c
+> > @@ -329,9 +329,11 @@ static int sysfs_open_file(struct inode *inode, struct file *file)
+> >  	struct sysfs_ops *ops;
+> >  	int error = -EACCES;
+> >  	char *p;
+> > +	struct path sysfs_path;
+> >  
+> > -	p = d_path(file->f_dentry, sysfs_mount, last_sysfs_file,
+> > -		   sizeof(last_sysfs_file));
+> > +	sysfs_path.dentry = file->f_dentry;
+> > +	sysfs_path.mnt = sysfs_mount;
+> > +	p = d_path(&sysfs_path, last_sysfs_file, sizeof(last_sysfs_file));
+> 
+> A d_path(file->f_path, ..); should do it, but I'd really like to know
+> what sysfs crowd was smoking when adding a d_path in ->open.  Guys,
+> please explain what's going on here.
+> 
 
-Yes, that helps.
-
-Thanks,
-Rafael
-
----
-Fix net/core/rtnetlink.c breakage caused by commit
-45b503548210fe6f23e92b856421c2a3f05fd034
-"[RTNETLINK]: Send a single notification on device state changes."
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- net/core/rtnetlink.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6/net/core/rtnetlink.c
-===================================================================
---- linux-2.6.orig/net/core/rtnetlink.c
-+++ linux-2.6/net/core/rtnetlink.c
-@@ -853,7 +853,7 @@ static int do_setlink(struct net_device 
- 		if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
- 			write_lock_bh(&dev_base_lock);
- 			dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
--			write_lock_bh(&dev_base_lock);
-+			write_unlock_bh(&dev_base_lock);
- 			modified = 1;
- 		}
- 	}
-@@ -870,8 +870,8 @@ errout:
- 	if (send_addr_notify)
- 		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
- 
--	if (modified)
--		netdev_state_change(dev);
-+	if (modified && dev->flags & IFF_UP)
-+		call_netdevice_notifiers(NETDEV_CHANGE, dev);
- 
- 	return err;
- }
+This is from gregkh-driver-sysfs-crash-debugging.patch which is only in -mm I
+guess.
