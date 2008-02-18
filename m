@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbYBRRO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbYBRRPQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbYBRRO3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:14:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbYBRROT
+	id S1760303AbYBRRPQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:15:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbYBRRPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:14:19 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:33906 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbYBRROS (ORCPT
+	Mon, 18 Feb 2008 12:15:01 -0500
+Received: from 206-248-169-182.dsl.ncf.ca ([206.248.169.182]:64251 "EHLO
+	phobos.cabal.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754689AbYBRRPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:14:18 -0500
-Date: Mon, 18 Feb 2008 09:13:57 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, scsi <linux-scsi@vger.kernel.org>,
-       mike.miller@hp.com
-Subject: Re: 2.6.25-rc2-mm1 (cciss build error)
-Message-Id: <20080218091357.eb119a08.randy.dunlap@oracle.com>
-In-Reply-To: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 18 Feb 2008 12:15:00 -0500
+Date: Mon, 18 Feb 2008 12:14:59 -0500
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: rubisher <rubisher@scarlet.be>
+Cc: kyle <kyle@mcmartin.ca>, clameter <clameter@sgi.com>,
+       bunk <bunk@kernel.org>, kyle <kyle@parisc-linux.org>,
+       matthew <matthew@wil.cx>, grundler <grundler@parisc-linux.org>,
+       linux-parisc <linux-parisc@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: parisc compile error
+Message-ID: <20080218171459.GC6912@phobos.i.cabal.ca>
+References: <JWFJYY$FFD787B99A1F5B88A6B9433FC2F06B18@scarlet.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <JWFJYY$FFD787B99A1F5B88A6B9433FC2F06B18@scarlet.be>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
-
+On Mon, Feb 18, 2008 at 11:32:58AM +0100, rubisher wrote:
+> > On Wed, Feb 13, 2008 at 01:42:10PM +0100, rubisher wrote:
+> > >
+> > 
+> > Can I get your Signed-off-by for this, Joel? (I assume you are Joel :)
+> > 
+> Yes the previous account seems to be a bit old and look more and more like a
+> gc; I so take the opportunity of ml's change to use another pseudo ;-)
 > 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+> That said those 2 hunks help build (even boot my 32bit up kernel on b2k and
+> d380 boxes):
+>
 
-cciss driver has a bad macro definition:
+ok, good to know.
+ 
+> Signed-off-by: Joel Soete <soete dot joel at scarlet dot be>
+> 
 
-#else /* no CONFIG_CISS_SCSI_TAPE */
+great, thanks!
 
-/* If no tape support, then these become defined out of existence */
+> (any advise is welcome obviously ;-)
+> 
 
-#define cciss_scsi_setup(cntl_num)
-#define cciss_unregister_scsi(ctlr)
-#define cciss_register_scsi(ctlr)
-#define cciss_seq_tape_report(struct seq_file *seq, int ctlr)
-
-#endif /* CONFIG_CISS_SCSI_TAPE */
-
-which causes this error:
-
-In file included from /local/linsrc/linux-2.6.25-rc2-mm1/drivers/block/cciss.c:231:
-/local/linsrc/linux-2.6.25-rc2-mm1/drivers/block/cciss_scsi.c:1498:38: error: macro parameters must be comma-separated
-make[3]: *** [drivers/block/cciss.o] Error 1
-
----
-~Randy
+cheers, kyle
