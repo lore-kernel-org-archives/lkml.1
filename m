@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbYBRP7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbYBRQFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbYBRP7b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:59:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbYBRP7X
+	id S1756843AbYBRQFO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbYBRQFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:59:23 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:28058 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbYBRP7W (ORCPT
+	Mon, 18 Feb 2008 11:05:00 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:37419 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977AbYBRQFA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:59:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=wTsIzLzbSgWzJQHH4GPTp77/dy1sftHrMsHETmLhQZ4PW4H7mhdzfwxPRQkSCEPriubYARFhl/8XmQtOS+Iz/gV/ya0XflLC8VFgCcPwY6vtISlybhmzx91qCckK7jzxa+PmVFfzjwfGZIzQLeyMWvZWPauO7i88HDIHCyVIFX8=
-Message-ID: <58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
-Date: Mon, 18 Feb 2008 16:59:20 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Andreas Schwab" <schwab@suse.de>
-Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
-Cc: linux-kernel@vger.kernel.org, "Kiyoshi Ueda" <k-ueda@ct.jp.nec.com>,
-       "Jens Axboe" <jens.axboe@oracle.com>,
-       "Borislav Petkov" <petkovbb@gmail.com>
-In-Reply-To: <jelk5k62uy.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 18 Feb 2008 11:05:00 -0500
+Date: Mon, 18 Feb 2008 17:04:25 +0100
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [Patch] Driver core: Fix error handling in bus_add_driver().
+Message-ID: <20080218170425.56d03e37@gondolin.boeblingen.de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <jelk5k62uy.fsf@sykes.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+- If the allocation of ->priv fails, the reference on the bus
+  must be dropped.
+- If adding the kobject fails, kobject_put must be called to
+  clean things up.
 
-On Feb 16, 2008 9:52 PM, Andreas Schwab <schwab@suse.de> wrote:
-> Since commit aaa04c28cb9a1efd42541fdb7ab648231c2a2263 [blk_end_request:
-> changing ide-cd (take 4)] I cannot burn any CD/DVD any more, getting the
-> following error from wodim:
->
-> Errno: 0 (Success), write_g1 scsi sendcmd: no error
-> CDB:  2A 00 00 00 00 00 00 00 1F 00
-> status: 0x2 (CHECK CONDITION)
-> Sense Bytes: 70 00 05 00 00 00 00 0E 00 00 00 00 21 02 00 00
-> Sense Key: 0x5 Illegal Request, Segment 0
-> Sense Code: 0x21 Qual 0x02 (invalid address for write) Fru 0x0
-> Sense flags: Blk 0 (not valid)
-> resid: 63488
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-blk_end_request: changing ide-cd (take 4)
+---
+ drivers/base/bus.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-This patch converts ide-cd (cdrom_newpc_intr()) to use blk_end_request
-interfaces.  Related 'uptodate' arguments are converted to 'error'.
-
-In PIO mode, ide-cd (cdrom_newpc_intr()) needs to defer
-end_that_request_last() until the device clears DRQ_STAT and raises
-an interrupt after end_that_request_first().
-So blk_end_request() has to return without completing request
-even if no leftover in the request.
-
-ide-cd uses blk_end_request_callback() and a dummy callback function,
-which just returns value '1', to tell blk_end_request_callback()
-about that.
-
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Signed-off-by: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Signed-off-by: Jun'ichi Nomura <j-nomura@ce.jp.nec.com>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-[...]
-
-I looked at the commit again but nothing seems obviously wrong (probably there
-was a silent change in the behavior of block layer API that upsets ide-cd)...
-
-Kiyoshi/Jens: please follow up on this bug.
-
-Thanks,
-Bart
+--- linux-2.6.orig/drivers/base/bus.c
++++ linux-2.6/drivers/base/bus.c
+@@ -658,9 +658,10 @@ int bus_add_driver(struct device_driver 
+ 	pr_debug("bus: '%s': add driver %s\n", bus->name, drv->name);
+ 
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+-	if (!priv)
+-		return -ENOMEM;
+-
++	if (!priv) {
++		error = -ENOMEM;
++		goto out_put_bus;
++	}
+ 	klist_init(&priv->klist_devices, NULL, NULL);
+ 	priv->driver = drv;
+ 	drv->p = priv;
+@@ -668,7 +669,7 @@ int bus_add_driver(struct device_driver 
+ 	error = kobject_init_and_add(&priv->kobj, &driver_ktype, NULL,
+ 				     "%s", drv->name);
+ 	if (error)
+-		goto out_put_bus;
++		goto out_unregister;
+ 
+ 	if (drv->bus->p->drivers_autoprobe) {
+ 		error = driver_attach(drv);
