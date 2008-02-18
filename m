@@ -1,68 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbYBRPDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757070AbYBRPEb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbYBRPDw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYBRPDm
+	id S1757070AbYBRPEb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:04:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752554AbYBRPEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:03:42 -0500
-Received: from www.church-of-our-saviour.org ([69.25.196.31]:42118 "EHLO
-	thunker.thunk.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752658AbYBRPDl (ORCPT
+	Mon, 18 Feb 2008 10:04:20 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:38913 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752391AbYBRPET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:03:41 -0500
-Date: Mon, 18 Feb 2008 10:03:33 -0500
-From: Theodore Tso <tytso@mit.edu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Tomasz Chmielewski <mangoo@wpkg.org>, LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: very poor ext3 write performance on big filesystems?
-Message-ID: <20080218150333.GA25098@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andi Kleen <andi@firstfloor.org>,
-	Tomasz Chmielewski <mangoo@wpkg.org>,
-	LKML <linux-fsdevel@vger.kernel.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de> <20080218141640.GC12568@mit.edu> <20080218151823.GA26622@one.firstfloor.org>
+	Mon, 18 Feb 2008 10:04:19 -0500
+Message-ID: <47B99E78.4070807@bull.net>
+Date: Mon, 18 Feb 2008 16:04:24 +0100
+From: Pierre Peiffer <pierre.peiffer@bull.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080218151823.GA26622@one.firstfloor.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH 2.6.24-mm1] error compiling net driver NE2000/NE1000
+References: <20080204162921.94984e72.pierre.peiffer@bull.net> <20080204131038.699c28c1.akpm@linux-foundation.org>
+In-Reply-To: <20080204131038.699c28c1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 04:18:23PM +0100, Andi Kleen wrote:
-> On Mon, Feb 18, 2008 at 09:16:41AM -0500, Theodore Tso wrote:
-> > ext3 tries to keep inodes in the same block group as their containing
-> > directory.  If you have lots of hard links, obviously it can't really
-> > do that, especially since we don't have a good way at mkdir time to
-> > tell the filesystem, "Psst!  This is going to be a hard link clone of
-> > that directory over there, put it in the same block group".
+Hi,
+
+	I don't know if I have to warn on this or not, but as I didn't find any
+discussion, it's probably better to mention it: the compiling error reported
+below (or here: http://lkml.org/lkml/2008/2/4/173 ) does not seem to be
+corrected in 2.6.25-rc2.mm1...  So, I don't know if a fix is going on somewhere
+or if the bug has fallen in a black hole.
+
+(In the original mail, I've proposed a patch as a quick fix, but I don't know if
+it can be considered as a definitive correction or not)
+
+Thanks,
+
+P.
+
+Andrew Morton wrote:
+> On Mon, 4 Feb 2008 16:29:21 +0100
+> Pierre Peiffer <pierre.peiffer@bull.net> wrote:
 > 
-> Hmm, you think such a hint interface would be worth it?
-
-It would definitely help ext2/3/4.  An interesting question is whether
-it would help enough other filesystems that's worth adding.  
-
-> > necessarily removing the dir_index feature.  Dir_index speeds up
-> > individual lookups, but it slows down workloads that do a readdir
+>> Hi,
+>>
+>> 	When I compile the kernel 2.6.24-mm1 with:
+>> CONFIG_NET_ISA=y
+>> CONFIG_NE2000=y
+>>
+>> I have the following compile error:
+>> ...
+>>   GEN     .version
+>>   CHK     include/linux/compile.h
+>>   UPD     include/linux/compile.h
+>>   CC      init/version.o
+>>   LD      init/built-in.o
+>>   LD      .tmp_vmlinux1
+>> drivers/built-in.o: In function `ne_block_output':
+>> linux-2.6.24-mm1/drivers/net/ne.c:797: undefined reference to `NS8390_init'
+>> drivers/built-in.o: In function `ne_drv_resume':
+>> linux-2.6.24-mm1/drivers/net/ne.c:858: undefined reference to `NS8390_init'
+>> drivers/built-in.o: In function `ne_probe1':
+>> linux-2.6.24-mm1/drivers/net/ne.c:539: undefined reference to `NS8390_init'
+>> make[1]: *** [.tmp_vmlinux1] Error 1
+>> make: *** [sub-make] Error 2
 > 
-> But only for large directories right? For kernel source like
-> directory sizes it seems to be a general loss.
+> Thanks for reporting this.
+> 
+>> As I saw that the file 8390p.c is compiled for this driver, but not the file 
+>> 8390.c which contains this function NS8390_init(), I fixed this error with
+>> the following patch.
+> 
+> Alan's
+> 8390-split-8390-support-into-a-pausing-and-a-non-pausing-driver-core.patch
+> would be a prime suspect.  I assume this bug isn't present ing mainline or
+> in 2.6.24?
+> 
+>> As NS8390p_init() does the same thing than NS8390_init(), I suppose that this is the right fix ?
+>>
+>> Signed-off-by: Pierre Peiffer <pierre.peiffer@bull.net>
+>> ---
+>>  drivers/net/ne.c |    6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> Index: b/drivers/net/ne.c
+>> ===================================================================
+>> --- a/drivers/net/ne.c
+>> +++ b/drivers/net/ne.c
+>> @@ -536,7 +536,7 @@ static int __init ne_probe1(struct net_d
+>>  #ifdef CONFIG_NET_POLL_CONTROLLER
+>>  	dev->poll_controller = eip_poll;
+>>  #endif
+>> -	NS8390_init(dev, 0);
+>> +	NS8390p_init(dev, 0);
+>>  
+>>  	ret = register_netdev(dev);
+>>  	if (ret)
+>> @@ -794,7 +794,7 @@ retry:
+>>  		if (time_after(jiffies, dma_start + 2*HZ/100)) {		/* 20ms */
+>>  			printk(KERN_WARNING "%s: timeout waiting for Tx RDC.\n", dev->name);
+>>  			ne_reset_8390(dev);
+>> -			NS8390_init(dev,1);
+>> +			NS8390p_init(dev,1);
+>>  			break;
+>>  		}
+>>  
+>> @@ -855,7 +855,7 @@ static int ne_drv_resume(struct platform
+>>  
+>>  	if (netif_running(dev)) {
+>>  		ne_reset_8390(dev);
+>> -		NS8390_init(dev, 1);
+>> +		NS8390p_init(dev, 1);
+>>  		netif_device_attach(dev);
+>>  	}
+>>  	return 0;
+> 
+> 
+> 
+> 
 
-On my todo list is a hack which does the sorting of directory inodes
-by inode number inside the kernel for smallish directories (say, less
-than 2-3 blocks) where using the kernel memory space to store the
-directory entries is acceptable, and which would speed up dir_index
-performance for kernel source-like directory sizes --- without needing
-to use the spd_readdir LD_PRELOAD hack.
-
-But yes, right now, if you know that your directories are almost
-always going to be kernel source like in size, then omitting dir_index
-is probably goint to be a good idea.  
-
-						- Ted
+-- 
+Pierre Peiffer
