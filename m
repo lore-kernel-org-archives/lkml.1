@@ -1,52 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758364AbYBRWZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762122AbYBRW0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758364AbYBRWZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:25:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYBRWZL
+	id S1762122AbYBRW0G (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:26:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753020AbYBRWZz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:25:11 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:51420 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752424AbYBRWZK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:25:10 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Date: Mon, 18 Feb 2008 23:24:44 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182308.56789.mb@bu3sch.de> <20080218221324.GB23181@flint.arm.linux.org.uk>
-In-Reply-To: <20080218221324.GB23181@flint.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 17:25:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34903 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753117AbYBRWZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 17:25:54 -0500
+Date: Mon, 18 Feb 2008 16:16:04 -0600
+From: David Teigland <teigland@redhat.com>
+To: Mark Fasheh <mark.fasheh@oracle.com>
+Cc: Joonwoo Park <joonwpark81@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, kurt.hackel@oracle.com
+Subject: Re: [PATCH 2/2] [RESENDING] fs/ocfs2: get rid of unnecessary initialization
+Message-ID: <20080218221604.GB5438@redhat.com>
+References: <12027209122955-git-send-email-joonwpark81@gmail.com> <12027209163465-git-send-email-joonwpark81@gmail.com> <20080218193030.GX22671@ca-server1.us.oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802182324.45267.mb@bu3sch.de>
+In-Reply-To: <20080218193030.GX22671@ca-server1.us.oracle.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008 23:13:24 Russell King wrote:
-> On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
-> > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
-> > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
-> > > box using a cross-compiler:
-> > > 
-> > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
-> > > not a modulo of the size of section __mod_ssb_device_table=64.
-> > > Fix definition of struct ssb_device_id in mod_devicetable.h
-> > 
-> > Why does ARM have this special requirement and what is it about?
+On Mon, Feb 18, 2008 at 11:30:30AM -0800, Mark Fasheh wrote:
+> On Mon, Feb 11, 2008 at 06:08:31PM +0900, Joonwoo Park wrote:
+> > default_groups was allocated with kcalloc, so initialize to NULL
+> > is unnecessary.
 > 
-> Because ARM is a 32 bit architecture.
+> NACK - this isn't a performance critical section of code and that line makes
+> the array termination obvious, so I'm inclined to leave it as is.
 
-Ehm, I didn't see this warning on any other architecture nor did we
-have _any_ problem with it on any other architecture.
-This code runs fine on x86_32, x86_64, powerpc and mips, at least.
+The same nack for the same patch under fs/dlm.
 
--- 
-Greetings Michael.
+Dave
+
