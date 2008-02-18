@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbYBRO2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbYBROcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755025AbYBRO2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYBRO2A
+	id S1753520AbYBROcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:32:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbYBROcP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:28:00 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58097 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752185AbYBRO17 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:27:59 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be>
-References: <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be> <47B70A61.9030306@tiscali.nl> <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi> 
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: dhowells@redhat.com, Adrian Bunk <bunk@kernel.org>,
-       Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-       cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Mon, 18 Feb 2008 14:27:10 +0000
-Message-ID: <12131.1203344830@redhat.com>
+	Mon, 18 Feb 2008 09:32:15 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:58190 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751339AbYBROcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:32:14 -0500
+Date: Mon, 18 Feb 2008 15:31:58 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: david-b@pacbell.net, spi-devel-general@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: atmel_spi clock polarity
+Message-ID: <20080218153158.2ff8842a@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080218.231243.41197917.anemo@mba.ocn.ne.jp>
+References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp>
+	<20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com>
+	<20080218.231243.41197917.anemo@mba.ocn.ne.jp>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+On Mon, 18 Feb 2008 23:12:43 +0900 (JST)
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-> Hence shouldn't we ask the gcc people what's the purpose of
-> __builtin_expect(), if it doesn't live up to its promise?
+> T0-T1 was relatively longer then T1-T2.  I suppose T1 is not the
+> point of updating MR register, but the point of starting DMA transfer.
 
-__builtin_expect() is useful on FRV where you _have_ to give each branch and
-conditional branch instruction a measure of probability whether the branch
-will be taken.
+Aw. I see.
 
-David
+> Anyway, I will try your patch in a few days.
+
+Ok, thanks. If it works, that would be great, but given your
+description above I'm not sure if I dare hope for it.
+
+Hmm...I suppose we could just use CSR0 for all transfers and not
+bother updating MR. That might actually be cheaper than doing it
+"the right way"...and allow us to support an arbitrary number of
+chipselects instead of just four.
+
+But I guess the AT91RM9200 won't be too happy about that...
+
+Haavard
