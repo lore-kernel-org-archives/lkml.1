@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759034AbYBRPXh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbYBRPYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759034AbYBRPXh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 10:23:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755615AbYBRPX1
+	id S1759326AbYBRPYS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 10:24:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbYBRPYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 10:23:27 -0500
-Received: from E23SMTP06.au.ibm.com ([202.81.18.175]:37148 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758328AbYBRPX0 (ORCPT
+	Mon, 18 Feb 2008 10:24:00 -0500
+Received: from server009.webpack.hosteurope.de ([80.237.130.17]:55970 "EHLO
+	server009.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754726AbYBRPX7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 10:23:26 -0500
-Message-ID: <47B9A206.5000008@linux.vnet.ibm.com>
-Date: Mon, 18 Feb 2008 20:49:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 18 Feb 2008 10:23:59 -0500
+From: Daniel Exner <dex@dragonslave.de>
+Reply-To: webmaster@dragonslave.de
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: 2.6.25 Regression: DriveStatusError
+Date: Mon, 18 Feb 2008 16:23:27 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200802110927.36109.dex@dragonslave.de> <200802112051.45395.bzolnier@gmail.com>
+In-Reply-To: <200802112051.45395.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: Regression with sched yield - 2.6.25-rc2-mm1
-References: <47B9775F.1050203@linux.vnet.ibm.com> <1203338377.10858.3.camel@lappy>  <47B99AB4.3020604@linux.vnet.ibm.com> <1203347933.10858.8.camel@lappy>
-In-Reply-To: <1203347933.10858.8.camel@lappy>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802181623.28009.dex@dragonslave.de>
+X-bounce-key: webpack.hosteurope.de;dex@dragonslave.de;1203348239;45a48a40;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2008-02-18 at 20:18 +0530, Balbir Singh wrote:
-> 
->>> Humm, the check that should have avoided that is:
->>>
->>>         /*
->>>          * Are we the only task in the tree?
->>>          */
->>>         if (unlikely(rq->load.weight == curr->se.load.weight))
->>>                 return;
->>>
->>>
->>> But I guess that overlooks rt tasks, they also increase the load.
->>> So I guess something like this ought to fix it..
->>>
->> Peter,
->>
->> I don't remember any real time tasks running on the system, so I would be
->> surprised if that is indeed the case.
-> 
-> Various kthreads have rt prio. Notably the load_balancer_monitor().
-> 
+Hi!
 
-OK, but does it belong to the cfs_rq?
+Bartlomiej Zolnierkiewicz wrote:
 
->>  Having said that, rightmost was indeed
->> NULL, so I need to figure out why it was. The other question is why would a real
->> time task be found by sched_yield_fair? 
-> 
-> Because a rt task contributes weight and would make the test above fail
-> because rt->load would be larger than expected.
-> 
+> On Monday 11 February 2008, Daniel Exner wrote:
+> > Hi!
+> >
+> > Please CC me as I'm not subscribed to any list, thx in advance.
+> >
+> > I tried all -git Kernels since begining of cycle and starting when they
+> > finaly compiled fine, they weren't able to mount my root.
+> >
+> > As my laptop with the serial cable is on the run currently I wasn't able
+> > to get a trace (perhaps by the we) but error written by hand from screen
+> > was this:
+> >
+> > hda: task_no_data_intr: status=0x51 {DriveReady SeekComplete Error}
+> > hda: task_no_data_intr: error=0x04 {DriveStatusError}
+> > failed opcode was: 0xe1
+>
+> [...]
+>
+> Could you please try 2.6.25-rc1-git1:
+>
+> http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.25-rc1-git1.bz2
+Fixed, as is in rc2.
 
-I thought we were searching an RBtree for the fair group scheduler. If what you
-say is indeed true, shouldn't we check if the task is an rt task in
-sched_yield_fair() instead of the !rightmost check?
+thx 
 
->>> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
->>> index b9ade89..83eb30c 100644
->>> --- a/kernel/sched_fair.c
->>> +++ b/kernel/sched_fair.c
->>> @@ -998,7 +998,7 @@ static void yield_task_fair(struct rq *rq)
->>>  	/*
->>>  	 * Already in the rightmost position?
->>>  	 */
->>> -	if (unlikely(rightmost->vruntime < se->vruntime))
->>> +	if (unlikely(!rightmost || rightmost->vruntime < se->vruntime))
->>>  		return;
->>>
->>>  	/*
->>>
-> 
-
+P.S. (OT)
+2.6.25-rc2 gives 200 points more in Geekbench then 2.6.24.x :)
 
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Greetings
+Daniel Exner
