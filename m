@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbYBRNaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbYBRNbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754096AbYBRNaW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760358AbYBRN3y
+	id S1760203AbYBRNbp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbYBRNbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:29:54 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:62088 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760315AbYBRN3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:29:52 -0500
-Date: Mon, 18 Feb 2008 14:29:49 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: "Nelson, Shannon" <shannon.nelson@intel.com>
-Cc: "Haavard Skinnemoen" <hskinnemoen@norway.atmel.com>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>, "David Brownell" <david-b@pacbell.net>,
-       <kernel@avr32linux.org>, "Francis Moreau" <francis.moro@gmail.com>,
-       "Paul Mundt" <lethal@linux-sh.org>,
-       "Vladimir A. Barinov" <vbarinov@ru.mvista.com>,
-       "Pierre Ossman" <drzeus-list@drzeus.cx>
-Subject: Re: [RFC v3 4/7] dmaengine: Add slave DMA interface
-Message-ID: <20080218142949.2c5b2810@dhcp-252-066.norway.atmel.com>
-In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C0407A37A@orsmsx418.amr.corp.intel.com>
-References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com>
-	<1202834638-9009-2-git-send-email-hskinnemoen@atmel.com>
-	<1202834638-9009-3-git-send-email-hskinnemoen@atmel.com>
-	<1202834638-9009-4-git-send-email-hskinnemoen@atmel.com>
-	<e9c3a7c20802131107x4c9e6859p3bc6527b19c416cb@mail.gmail.com>
-	<20080213202402.22818482@siona>
-	<20080215105302.1e4251a3@dhcp-252-066.norway.atmel.com>
-	<BAE9DCEF64577A439B3A37F36F9B691C0407A37A@orsmsx418.amr.corp.intel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 Feb 2008 08:31:36 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51677 "EHLO smtp6.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751197AbYBRNbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:31:35 -0500
+Date: Mon, 18 Feb 2008 15:31:04 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>, Russell Leidich <rml@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: 2.6.25-rc2-mm1 (x86 MCE build error)
+Message-ID: <20080218133104.GC21080@cs181133002.pp.htv.fi>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080217211755.8c2367cc.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20080217211755.8c2367cc.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 Feb 2008 09:12:35 -0800
-"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
+On Sun, Feb 17, 2008 at 09:17:55PM -0800, Randy Dunlap wrote:
+> On Sat, 16 Feb 2008 00:25:22 -0800 Andrew Morton wrote:
+> 
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/
+> 
+> It's possible to config a specific CPU and also enable Intel MCE checks
+> and AMD MCE checks, ending with this:
+> 
+> arch/x86/kernel/built-in.o: In function `smp_thermal_interrupt_init':
+> mce_amd_64.c:(.text+0xd7ea): undefined reference to `num_k8_northbridges'
+> mce_amd_64.c:(.text+0xd800): undefined reference to `k8_northbridges'
+> mce_amd_64.c:(.text+0xd863): undefined reference to `k8_northbridges'
+> mce_amd_64.c:(.text+0xd888): undefined reference to `k8_northbridges'
+> mce_amd_64.c:(.text+0xd8b1): undefined reference to `num_k8_northbridges'
+> mce_amd_64.c:(.text+0xd8d8): undefined reference to `num_k8_northbridges'
+> mce_amd_64.c:(.text+0xd8f3): undefined reference to `k8_northbridges'
+> mce_amd_64.c:(.text+0xd917): undefined reference to `num_k8_northbridges'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> 
+> .config file is attached.
 
-> I'll jump in here briefly - I'm okay with the direction this is going,
-> but I want to be protective of ioatdma performance.  As used in struct
-> ioat_desc_sw, the cookie and ack elements end up very close to the end
-> of a cache line and I'd like them to not get pushed out across the
-> boundry.  I don't think this proposal changes the layout, I'm just
-> bringing up my concern.
+That's x86-amd-thermal-interrupt-support.patch failing with 
+CONFIG_K8_NB=n.
 
-Sure, performance is very important, and it's good to see that you're
-critical about the changes I'm proposing. That said, the memory layout
-doesn't change at all with this patch -- the fields that didn't go into
-the generic dma descriptor were at the end of the struct to begin with.
+> ~Randy
 
-I can add a comment saying that cookie and ack must always come first.
-Any other fields that we need to be careful about?
+cu
+Adrian
 
-Haavard
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
