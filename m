@@ -1,105 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbYBRBjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757551AbYBRBoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756419AbYBRBjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 Feb 2008 20:39:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYBRBjo
+	id S1757551AbYBRBoa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 Feb 2008 20:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbYBRBoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 Feb 2008 20:39:44 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:51830 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750904AbYBRBjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 Feb 2008 20:39:43 -0500
-Date: Sun, 17 Feb 2008 19:39:43 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, charles.kirsch@internet.lu,
-       lkml <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org,
-       Gerald Combs <gerald@wireshark.org>,
-       Gilbert Ramirez <gram@alumni.rice.edu>, Guy Harris <guy@alum.mit.edu>
-Subject: Re: Possible problem in linux file posix capabilities
-Message-ID: <20080218013943.GA17142@sergelap.austin.ibm.com>
-References: <20080217224851.GA9168@sergelap.austin.ibm.com> <47B8DD55.5070800@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47B8DD55.5070800@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sun, 17 Feb 2008 20:44:19 -0500
+Received: from mga05.intel.com ([192.55.52.89]:10078 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751814AbYBRBoR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 Feb 2008 20:44:17 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,368,1199692800"; 
+   d="scan'208";a="520207266"
+Subject: Re: tbench regression in 2.6.25-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: herbert@gondor.apana.org.au, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <47B59FFC.4030603@cosmosbay.com>
+References: <1203040321.3027.131.camel@ymzhang>
+	 <47B52B95.3070607@cosmosbay.com> <1203057044.3027.134.camel@ymzhang>
+	 <47B59FFC.4030603@cosmosbay.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 18 Feb 2008 09:39:06 +0800
+Message-Id: <1203298746.3027.179.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Serge E. Hallyn wrote:
-> | Andrew, this pretty much was bound to happen...  we need to figure out
-> | what our approach here should be.  My preference is still to allow
-> | signals when p->uid==current->uid so long as !SECURE_NOROOT.  Then as
-> | people start using secure_noroot process trees they at least must know
-> | what they're asking for.
->
-> I don't think there is anything special about root.
->
-> I've been trying to advocate that we remove the *uid == 0 part of this
-> check since we discussed it in November:
->
-> As I said 11/29/07 [Re: [patch 31/55] file capabilities: don't prevent
-> signaling	setuid root programs]:
-> | I actually said (11/26/07):
-> |> >> Serge,
-> |> >>
-> |> >> I still feel a bit uneasy about this. Looking ahead, with filesystem
-> |> >> capabilities, one can simulate this same situation with a setuid
-> |> >> 'non-root' program as follows:
-> |> >>
-> |> >> [... example of simulating the same situation with setuid-non-root
-> ...]
-> |> >>
-> |> >> Is there a compelling reason to include the euid==0 check?
->
-> So, independent of whether SECURE_NOROOT is in effect or not, I think
-> this particular line should simply read:
->
-> ~        if (p->uid == current->uid)
-> ~                 return 0;
+On Fri, 2008-02-15 at 15:21 +0100, Eric Dumazet wrote:
+> Zhang, Yanmin a écrit :
+> > On Fri, 2008-02-15 at 07:05 +0100, Eric Dumazet wrote:
+> >   
+> >> Zhang, Yanmin a �crit :
+> >>     
+> >>> Comparing with kernel 2.6.24, tbench result has regression with
+> >>> 2.6.25-rc1.
+> >>>
+> >>> 1) On 2 quad-core processor stoakley: 4%.
+> >>> 2) On 4 quad-core processor tigerton: more than 30%.
+> >>>
+> >>> bisect located below patch.
+> >>>
+> >>> b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b is first bad commit
+> >>> commit b4ce92775c2e7ff9cf79cca4e0a19c8c5fd6287b
+> >>> Author: Herbert Xu <herbert@gondor.apana.org.au>
+> >>> Date:   Tue Nov 13 21:33:32 2007 -0800
+> >>>
+> >>>     [IPV6]: Move nfheader_len into rt6_info
+> >>>     
+> >>>     The dst member nfheader_len is only used by IPv6.  It's also currently
+> >>>     creating a rather ugly alignment hole in struct dst.  Therefore this patch
+> >>>     moves it from there into struct rt6_info.
+> >>>
+> >>>
+> >>> As tbench uses ipv4, so the patch's real impact on ipv4 is it deletes
+> >>> nfheader_len in dst_entry. It might change cache line alignment.
+> >>>
+> >>> To verify my finding, I just added nfheader_len back to dst_entry in 2.6.25-rc1
+> >>> and reran tbench on the 2 machines. Performance could be recovered completely.
+> >>>
+> >>> I started cpu_number*2 tbench processes. On my 16-core tigerton:
+> >>> #./tbench_srv &
+> >>> #./tbench 32 127.0.0.1
+> >>>
+> >>> -yanmin
+> >>>       
+> >> Yup. struct dst is sensitive to alignements, especially for benches.
+> >>
+> >> In the real world, we need to make sure that next pointer start at a cache 
+> >> line bondary (or a litle bit after), so that RT cache lookups use one cache 
+> >> line per entry instead of two. This permits better behavior in DDOS attacks.
+> >>
+> >> (check commit 1e19e02ca0c5e33ea73a25127dbe6c3b8fcaac4b for reference)
+> >>
+> >> Are you using a 64 or a 32 bit kernel ?
+> >>     
+> > 64bit x86-64 machine. On another 4-way Madison Itanium machine, tbench has the
+> > similiar regression.
+> >
+> >   
+> 
+> On linux-2.6.25-rc1 x86_64 :
+> 
+> offsetof(struct dst_entry, lastuse)=0xb0
+> offsetof(struct dst_entry, __refcnt)=0xb8
+> offsetof(struct dst_entry, __use)=0xbc
+> offsetof(struct dst_entry, next)=0xc0
+> 
+> So it should be optimal... I dont know why tbench prefers __refcnt being 
+> on 0xc0, since in this case lastuse will be on a different cache line...
+> 
+> Each incoming IP packet will need to change lastuse, __refcnt and __use, 
+> so keeping them in the same cache line is a win.
+> 
+> I suspect then that even this patch could help tbench, since it avoids 
+> writing lastuse...
+> 
+> diff --git a/include/net/dst.h b/include/net/dst.h
+> index e3ac7d0..24d3c4e 100644
+> --- a/include/net/dst.h
+> +++ b/include/net/dst.h
+> @@ -147,7 +147,8 @@ static inline void dst_use(struct dst_entry *dst, 
+> unsigned long time)
+>  {
+>         dst_hold(dst);
+>         dst->__use++;
+> -       dst->lastuse = time;
+> +       if (time != dst->lastuse)
+> +               dst->lastuse = time;
+>  }
+I did a quick test and this patch doesn't help tbench.
 
-Hmm, well unless I misunderstand I think I'm fine with that.  And I must
-have completely misunderstood you in November or my memory is just
-playing tricks.
+Thanks,
+-yanmin
 
-So the following patch against current -git is ok with you?
-
-thanks,
--serge
-
->From bd076c7245d02be0cc01b7c09bd7170ec5946492 Mon Sep 17 00:00:00 2001
-From: Serge E. Hallyn <serue@us.ibm.com>
-Date: Sun, 17 Feb 2008 20:28:07 -0500
-Subject: [PATCH 1/1] file capabilities: simplify signal check
-
-Simplify the uid equivalence check in cap_task_kill().  Anyone
-can kill a process owned by the same uid.
-
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
----
- security/commoncap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/security/commoncap.c b/security/commoncap.c
-index 5aba826..bb0c095 100644
---- a/security/commoncap.c
-+++ b/security/commoncap.c
-@@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
- 	 * allowed.
- 	 * We must preserve legacy signal behavior in this case.
- 	 */
--	if (p->euid == 0 && p->uid == current->uid)
-+	if (p->uid == current->uid)
- 		return 0;
- 
- 	/* sigcont is permitted within same session */
--- 
-1.5.1.1.GIT
 
