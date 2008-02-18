@@ -1,83 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758954AbYBRKjx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYBRKk6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758954AbYBRKjx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 05:39:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbYBRKjp
+	id S1759264AbYBRKk6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbYBRKku
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 05:39:45 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39350
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751767AbYBRKjp (ORCPT
+	Mon, 18 Feb 2008 05:40:50 -0500
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:39378 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753033AbYBRKku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 05:39:45 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: Roland McGrath <roland@redhat.com>
-Subject: Re: Compiling with 2.6.25-rc2 with binutils 2.17 fails?
-Date: Mon, 18 Feb 2008 04:39:41 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: linux-kernel@vger.kernel.org
-References: <200802161727.21312.rob@landley.net> <20080218030910.C2CB1270195@magilla.localdomain>
-In-Reply-To: <20080218030910.C2CB1270195@magilla.localdomain>
+	Mon, 18 Feb 2008 05:40:50 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=4tBUptGA/lK2dKjG9Rr1HMc7qF4+02ZhMNaYcj2RakR+Yl99piedcRlw8q8X3Cdfkg8vOU5HlZGqsCdk7jw7urWPWaQD1YAcnk4rsOONnNckf7hnbVefyR5EPSVCdl70CEOaHY+IOJg/Tbk6kkCAkdJDThmlk8viwEFgWvHQdfE=  ;
+X-YMail-OSG: LUz6h2wVM1nkVB9B7GDhlm.wARV9aL.ft3WvyF4xT0g.f1Do8fRfKcpqXTDgtSRbjIhLUetgNw--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] suspend/resume self-test
+Date: Mon, 18 Feb 2008 02:40:46 -0800
+User-Agent: KMail/1.9.6
+Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20080130131748.GA3796@elf.ucw.cz> <20080218094650.GA31970@elte.hu> <20080218095325.GA7198@elf.ucw.cz>
+In-Reply-To: <20080218095325.GA7198@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-Message-Id: <200802180439.41928.rob@landley.net>
+Message-Id: <200802180240.47510.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 February 2008 21:09:10 Roland McGrath wrote:
-> > Still trying to track down why, but it works on a toolchain built from
-> > binutils 2.18 and gcc 4.1.3, but not with a toolchain from binutils 2.17
-> > and gcc 4.1.2.  And considering where it's failing...
->
-> I don't think the vdso magic should require so new a binutils.  Please try
-> to figure out which of the steps is producing different results between the
-> two tool setups.
+> >   - Includes a command line parameter, which needs work yet ... it
+> >     currently turns this test off, but it should also let the target
+> >     state be specified (and maybe even default to "no test").
 
-I'm poking at it.  Something in my cross compiling setup is driving this bit 
-screwy:
+I think "no test" should be the default; STR working sanely on
+x86 is unfortunately too much a surprise.  Someone more active
+in PM testing should update that.
 
-  i686-nm arch/x86/vdso/vdso32-sysenter.so.dbg | 
-sed -n -e 's/^00*/0/' -e 's/^\([0-9a-fA-F]*\) . \(VDSO[a-zA-Z0-9_]*\)$/ = 
-0x;/p' | LC_ALL=C sort > arch/x86/vdso/vdso32-sysenter-syms.lds
-        if LC_ALL=C sort -u arch/x86/vdso/vdso32-int80-syms.lds 
-arch/x86/vdso/vdso32-sysenter-syms.lds > arch/x86/vdso/.tmp_vdso32-syms.lds 
-&&  if grep -q VDSO32_SYSENTER_RETURN arch/x86/vdso/vdso32-int80-syms.lds; 
-then diff -u arch/x86/vdso/.tmp_vdso32-syms.lds 
-arch/x86/vdso/vdso32-int80-syms.lds; else sed /VDSO32_SYSENTER_RETURN/d 
-arch/x86/vdso/.tmp_vdso32-syms.lds | diff -u - 
-arch/x86/vdso/vdso32-int80-syms.lds; fi &&  if grep -q VDSO32_SYSENTER_RETURN 
-arch/x86/vdso/vdso32-sysenter-syms.lds; then diff -u 
-arch/x86/vdso/.tmp_vdso32-syms.lds arch/x86/vdso/vdso32-sysenter-syms.lds; 
-else sed /VDSO32_SYSENTER_RETURN/d arch/x86/vdso/.tmp_vdso32-syms.lds | 
-diff -u - arch/x86/vdso/vdso32-sysenter-syms.lds; fi && : ; then mv -f 
-arch/x86/vdso/.tmp_vdso32-syms.lds arch/x86/vdso/vdso32-syms.lds; else rm -f 
-arch/x86/vdso/.tmp_vdso32-syms.lds; exit 1; fi
---- -   Sun Feb 17 20:24:03 2008
-+++ arch/x86/vdso/vdso32-int80-syms.lds Sun Feb 17 20:24:03 2008
-@@ -0,0 +1,5 @@
-+VDSO32_PRELINK = 0x0;
-+VDSO32_rt_sigreturn = 0x040c;
-+VDSO32_sigreturn = 0x0400;
-+VDSO32_vsyscall = 0x0414;
-+VDSO32_vsyscall_eh_frame_size = 0x040;
-make[1]: *** [arch/x86/vdso/vdso32-syms.lds] Error 1
-make: *** [arch/x86/vdso] Error 2
 
-If binutils is involved, it's due to i686-nm...
+> > Also includes some Kconfig tweaks to help reduce configuration bugs on
+> > x86, by avoiding the legacy RTC driver when the generic RTC framework
+> > is enabled ... those should become a separate patch.
 
-I'm still trying to puzzle out the "if thing && thing &&:; then" syntax above.  
-Never encountered that one before...  A colon?  I'll try to bang on it some 
-more tomorrow, it's gone 4am on me...
+That's already been split out in a separate patch, now in MM.
+Though it may deserve another tweak, forcing off *all* legacy
+RTC drivers if the new framework is enabled.
 
-> Thanks,
-> Roland
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
