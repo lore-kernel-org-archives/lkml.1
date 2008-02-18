@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbYBRNlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755109AbYBRNoj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759295AbYBRNlc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbYBRNlX
+	id S1755109AbYBRNoj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:44:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbYBRNoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:41:23 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:38348 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751549AbYBRNlW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:41:22 -0500
-Date: Mon, 18 Feb 2008 10:41:00 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       sam@ravnborg.org
-Subject: Re: Reducing debuginfo size by removing unneeded includes
-Message-ID: <20080218134100.GE4359@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-	linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20080207230304.GA4352@ghostprotocols.net> <p73ir0mxvby.fsf@bingen.suse.de>
+	Mon, 18 Feb 2008 08:44:32 -0500
+Received: from styx.suse.cz ([82.119.242.94]:35127 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751495AbYBRNoa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 08:44:30 -0500
+Date: Mon, 18 Feb 2008 14:44:29 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Laszlo Attila Toth <panther@balabit.hu>
+cc: David Miller <davem@davemloft.net>, zdenek.kabelac@gmail.com,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
+In-Reply-To: <47B982C9.60207@balabit.hu>
+Message-ID: <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz>
+References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com>
+ <Pine.LNX.4.64.0802171301430.7699@twin.jikos.cz> <20080217.183621.110686685.davem@davemloft.net>
+ <47B982C9.60207@balabit.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <p73ir0mxvby.fsf@bingen.suse.de>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Feb 18, 2008 at 02:12:01PM +0100, Andi Kleen escreveu:
-> Arnaldo Carvalho de Melo <acme@redhat.com> writes:
-> >
-> > [acme@doppio net-2.6]$ l /tmp/sys_ia32.o.before /tmp/sys_ia32.o.after
-> > -rw-rw-r-- 1 acme acme 185240 2008-02-06 19:19 /tmp/sys_ia32.o.after
-> > -rw-rw-r-- 1 acme acme 248328 2008-02-06 19:00 /tmp/sys_ia32.o.before
-> >
-> > 	Almost 64KB only on this object file!
-> 
-> Just FYI, newer gcc does this in theory automatically when you specify 
-> 
-> -feliminate-unused-debug-types -feliminate-unused-debug-symbols
-> 
-> But in my tests on gcc 4.1 / gcc 4.2 it doesn't seem to make any difference
-> currently :/ Not sure what is wrong. 
-> 
-> There is also -feliminate-dwarf2-dups, but it seems to even increase
-> obj dir size. Also -feliminate-dwarf2-dups seems to generate a lot of 
-> 
-> WARNING: vmlinux.o (.gnu.linkonce.wi.mmzone.h.97561702): unexpected section name.
-> The (.[number]+) following section name are ld generated and not expected.
-> Did you forget to use "ax"/"aw" in a .S file?
-> Note that for example <linux/init.h> contains
-> section definitions for use in .S files.
-> 
-> etc. warnings But the kernel builds fine even with those warnings.
-> 
-> Still if you just want to shrink objdir size then figuring out
-> what's wrong with these options and then specifying them would be 
-> probably the best strategy than to try to do it all manually.
-> 
-> That said removing unused includes is of course a valuable
-> clean up by itself, I'm just not sure it's the best way to get
-> smaller object dirs.
+On Mon, 18 Feb 2008, Laszlo Attila Toth wrote:
 
-I found just it to be another reason for cleaning up the includes hell,
-but I agree completely that the correct solution is for gcc to do the
-right thing and eliminate unused debug types.
+> Okay, but I can't figure out what's the problem with it. I don't have 
+> wireless card on my linux box also I can't test it but everything else 
+> works. Swap is mounted. The concurrency cannot be a problem because the 
+> write operation is protected by a lock.
 
-Thanks for showing that there is support for that in latest gccs, I'll
-try to use it when I get back to looking at this issue.
+-               write_lock_bh(&dev_base_lock);
+-               dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+-               write_unlock_bh(&dev_base_lock);
++               if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
++                       write_lock_bh(&dev_base_lock);
++                       dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
++                       write_lock_bh(&dev_base_lock);
++                       modified = 1;
++               }
+        }
 
-- Arnaldo
+1) you are accessing dev->link_mode and tb[] outside the dev_base_lock 
+2) there is obvious and immediate deadlock -- you acquire the 
+   dev_base_lock twice, without any unlock, just look at the chunk above
+3) even with this deadlock fixed, Rafael states that either NM or 
+   wpa_supplicant (I don't recall from top of my head) still don't work
+
+-- 
+Jiri Kosina
+SUSE Labs
