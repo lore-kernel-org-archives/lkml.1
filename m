@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbYBRQRX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbYBRQT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbYBRQRX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:17:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbYBRQRO
+	id S1758910AbYBRQT1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:19:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYBRQTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:17:14 -0500
-Received: from mail.syneticon.net ([213.239.212.131]:49989 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753321AbYBRQRM (ORCPT
+	Mon, 18 Feb 2008 11:19:19 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:14584 "EHLO
+	dwalker1.mvista.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753149AbYBRQTT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:17:12 -0500
-Message-ID: <47B9AF77.9040702@wpkg.org>
-Date: Mon, 18 Feb 2008 17:16:55 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Mon, 18 Feb 2008 11:19:19 -0500
+Date: Mon, 18 Feb 2008 08:13:15 -0800
+From: Daniel Walker <dwalker@mvista.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mike.miller@hp.com, alexn@dsv.su.se
+Subject: Re: 2.6.25-rc2-mm1: new create_proc_entry() users
+Message-ID: <20080218161315.GQ4391@dwalker1.mvista.com>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080217105050.GC6596@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Tomasz Chmielewski <mangoo@wpkg.org>,
-       Andi Kleen <andi@firstfloor.org>, LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: very poor ext3 write performance on big filesystems?
-References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de> <20080218141640.GC12568@mit.edu> <47B99E0C.8020706@wpkg.org> <20080218151632.GD25098@mit.edu>
-In-Reply-To: <20080218151632.GD25098@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080217105050.GC6596@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso schrieb:
-
->> Are there better choices than ext3 for a filesystem with lots of hardlinks? 
->> ext4, once it's ready? xfs?
+On Sun, Feb 17, 2008 at 01:50:50PM +0300, Alexey Dobriyan wrote:
+> > profile-likely-unlikely-macros
+> > page-owner-tracking-leak-detector
+> > cciss-procfs-updates-to-display-info-about-many-volumes
 > 
-> All filesystems are going to have problems keeping inodes close to
-> directories when you have huge numbers of hard links.
-> 
-> I'd really need to know exactly what kind of operations you were
-> trying to do that were causing problems before I could say for sure.
-> Yes, you said you were removing unneeded files, but how were you doing
-> it?  With rm -r of old hard-linked directories?
+> Guys, create_proc_entry() is slightly racy in case of modular code and
+> proc_create() was invented to fix it. Eventually all create_proc_entry()
+> users will be converted to proc_create(), so please do it for new code.
 
-Yes, with rm -r.
+profile-likely-unlikely-macros isn't new code, but I can still conver it
+to proc_create() if you like..
 
-
-> How big are the
-> average files involved?  Etc.
-
-It's hard to estimate the average size of a file. I'd say there are not 
-many files bigger than 50 MB.
-
-Basically, it's a filesystem where backups are kept. Backups are made 
-with BackupPC [1].
-
-Imagine a full rootfs backup of 100 Linux systems.
-
-Instead of compressing and writing "/bin/bash" 100 times for each 
-separate system, we do it once, and hardlink. Then, keep 40 copies back, 
-and you have 4000 hardlinks.
-
-For individual or user files, the number of hardlinks will be smaller of 
-course.
-
-The directories I want to remove have usually a structure of a "normal" 
-Linux rootfs, nothing special there (other than most of the files will 
-have multiple hardlinks).
-
-
-I noticed using write back helps a tiny bit, but as dm and md don't 
-support write barriers, I'm not very eager to use it.
-
-
-[1] http://backuppc.sf.net
-http://backuppc.sourceforge.net/faq/BackupPC.html#some_design_issues
-
-
-
--- 
-Tomasz Chmielewski
-http://wpkg.org
-
+Daniel
