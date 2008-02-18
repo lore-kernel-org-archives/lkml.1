@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbYBRWRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbYBRWT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761638AbYBRWRR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:17:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYBRWRH
+	id S1761790AbYBRWT7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbYBRWTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:17:07 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36874 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752826AbYBRWRG (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:17:06 -0500
-Date: Tue, 19 Feb 2008 09:16:44 +1100
-From: David Chinner <dgc@sgi.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Ric Wheeler <ric@emc.com>, device-mapper development <dm-devel@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
-Message-ID: <20080218221644.GN155407@sgi.com>
-References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru>
-Mime-Version: 1.0
+	Mon, 18 Feb 2008 17:19:52 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60867 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752808AbYBRWTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 17:19:51 -0500
+Date: Mon, 18 Feb 2008 23:20:14 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>
+Subject: Re: Status of storage autosuspend
+Message-ID: <20080218222014.GB31201@elf.ucw.cz>
+References: <20080218202749.GA2656@elf.ucw.cz> <Pine.LNX.4.44L0.0802181530330.31135-100000@netrider.rowland.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47B9870B.8060005@msgid.tls.msk.ru>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.44L0.0802181530330.31135-100000@netrider.rowland.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 04:24:27PM +0300, Michael Tokarev wrote:
-> First, I still don't understand why in God's sake barriers are "working"
-> while regular cache flushes are not.  Almost no consumer-grade hard drive
-> supports write barriers, but they all support regular cache flushes, and
-> the latter should be enough (while not the most speed-optimal) to ensure
-> data safety.  Why to require write cache disable (like in XFS FAQ) instead
-> of going the flush-cache-when-appropriate (as opposed to write-barrier-
-> when-appropriate) way?
+Hi!
 
-Devil's advocate:
+> > What is the status of USB storage/SCSI autosuspend patches? They work
+> > nicely here ;-).
+> 
+> I could submit them, but there is one outstanding problem I would like
+> to solve first.  Maybe you can suggest a solution.
+> 
+> The problem is how to handle SG_IOCTL calls.  It seems that the only
+> safe thing to do is to force an autoresume and prevent the device from
+> autosuspending until the device file is closed.  Unfortunately the
+> SG_IOCTL stuff is all handled inside the block layer, and there's no
+> apparent way (other than some dreadful hack) of passing the necessary
+> information down to the SCSI layer.
 
-Why should we need to support multiple different block layer APIs
-to do the same thing? Surely any hardware that doesn't support barrier
-operations can emulate them with cache flushes when they receive a
-barrier I/O from the filesystem....
+Hmm...
 
-Also, given that disabling the write cache still allows CTQ/NCQ to
-operate effectively and that in most cases WCD+CTQ is as fast as
-WCE+barriers, the simplest thing to do is turn off volatile write
-caches and not require any extra software kludges for safe
-operation.
+> Should we ignore this issue and submit the patches anyway?
 
-Cheers,
+I think you should. "Easy" (and clean) solution to that issue is to
+just return -EPERM from SG_IOCTL if autosuspend is configured in ;-).
 
-Dave.
+									Pavel
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
