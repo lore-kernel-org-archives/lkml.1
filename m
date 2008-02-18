@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbYBRHQH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbYBRHYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756791AbYBRHQH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 02:16:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbYBRHP4
+	id S1755519AbYBRHYr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:24:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbYBRHYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 02:15:56 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64003 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbYBRHPz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 02:15:55 -0500
-Message-ID: <47B93051.9020500@cn.fujitsu.com>
-Date: Mon, 18 Feb 2008 15:14:25 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 18 Feb 2008 02:24:37 -0500
+Received: from az33egw02.freescale.net ([192.88.158.103]:34354 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753082AbYBRHYg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 02:24:36 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: containers@lists.linux-foundation.org,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] memcgroup: fix typo in VM_BUG_ON()
-References: <47B9223C.9020106@linux.vnet.ibm.com> <20080218062209.DA59B1E3C58@siro.lan> <47B923C8.3090904@linux.vnet.ibm.com> <47B929EE.7080202@cn.fujitsu.com> <47B92D47.2050008@linux.vnet.ibm.com>
-In-Reply-To: <47B92D47.2050008@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 5/6] Add OF-tree support to RapidIO controller driver.
+Date: Mon, 18 Feb 2008 15:24:30 +0800
+Message-ID: <ABF87B0B6A38C0458E319AC973ED68AEC3DEF3@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4A9328DB-F68C-4C09-B762-44FEA85DD12E@kernel.crashing.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 5/6] Add OF-tree support to RapidIO controller driver.
+Thread-Index: AchoERbs1v3Yj8OsSOO+eGtlhY5ClQJ7hzFg
+References: <1201689053956-git-send-email-wei.zhang@freescale.com> <12016890621727-git-send-email-wei.zhang@freescale.com> <120168907160-git-send-email-wei.zhang@freescale.com> <12016890773706-git-send-email-wei.zhang@freescale.com> <12016890832943-git-send-email-wei.zhang@freescale.com> <20080205164425.b6af5bff.sfr@canb.auug.org.au> <4A9328DB-F68C-4C09-B762-44FEA85DD12E@kernel.crashing.org>
+From: "Zhang Wei" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>,
+       "Stephen Rothwell" <sfr@canb.auug.org.au>
+Cc: <mporter@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Li Zefan wrote:
->> Balbir Singh wrote:
->>> YAMAMOTO Takashi wrote:
->>>>> Li Zefan wrote:
->>>>>> No need for VM_BUG_ON(pc), since 'pc' is the list entry. This should
->>>>>> be VM_BUG_ON(page).
->>>>>>
->>>>>> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
->>>>>> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->>>>> pc is of type page_cgroup and we use list_for_each_entry_safe_reverse. Not sure
->>>>> why we can't bug on pc.
->>>> pc is dereferenced before this VM_BUG_ON.
->>>>
->>>> YAMAMOTO Takashi
->>>>
->>> OK, so the VM_BUG_ON needs to move to an earlier location. Agreed.
->>>
->> No, 'pc' has been dereferenced in list_for_each_entry_safe_reverse().
->>
->>
->> #define list_for_each_entry_safe_reverse(pos, n, head, member)		\
->> 	for (pos = list_entry((head)->prev, typeof(*pos), member),	\
->> 		n = list_entry(pos->member.prev, typeof(*pos), member);	\
->>                                ^^^^^^^^^^^
->> 	     &pos->member != (head); 					\
->>               ^^^^^^^^^^^
->> 	     pos = n, n = list_entry(n->member.prev, typeof(*n), member))
->>
+ 
+
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org] 
 > 
-> Hmm.. We used to have a for loop with !list_empty() as a termination condition
-> and VM_BUG_ON(!pc) is a spill over. With the new loop, VM_BUG_ON(!pc) does not
-> make sense.
 > 
+> On Feb 4, 2008, at 11:44 PM, Stephen Rothwell wrote:
+> 
+> >>
+> >> +	aw = *(u32 *)of_get_property(dev->node, "#address-cells", NULL);
+> >> +	sw = *(u32 *)of_get_property(dev->node, "#size-cells", NULL);
+> >
+> > What happens if either of these properties is missing?
+> 
+> Should we add __must_check to of_get_property?
 > 
 
-I see, and I'll post a new patch to just remove it.
+You are right, I'll add the checking here.
+
+Thanks!
+Wei.
