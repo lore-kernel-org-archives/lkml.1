@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbYBRUQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760939AbYBRURR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761358AbYBRUQl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 15:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761262AbYBRUQ3
+	id S1760939AbYBRURR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 15:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761276AbYBRUQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 15:16:29 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:43337 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761251AbYBRUQ1 (ORCPT
+	Mon, 18 Feb 2008 15:16:33 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:50502 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761265AbYBRUQa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 15:16:27 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=eNGWrGwPnsQnk4jdVW7rKzrcXpkDXLr0zav0ihyRDkMI4vdIR+HiLj6QdhI58o4LkiagAxTOn2ggQgwb8/C8taegd7WjvUYQqOB4kL2ESeN5pFmTImM6dQOcG6oCwdXHBAyIwARY/5AOlgesFKHj7qroAUdiBD0T82t5hn9i5fM=  ;
-X-YMail-OSG: Sk1_YNQVM1mFhKYxvi6tRiDUEEE0vkWrjpl0juLuEeVvLzGbUMWrYCne2XkLFRnrJozKk5ubJg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: spi-devel-general@lists.sourceforge.net
-Subject: Re: [spi-devel-general] atmel_spi clock polarity
-Date: Mon, 18 Feb 2008 11:57:56 -0800
-User-Agent: KMail/1.9.6
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, hskinnemoen@atmel.com,
-       linux-kernel@vger.kernel.org
-References: <20080216.223252.25909396.anemo@mba.ocn.ne.jp> <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com> <20080218.231243.41197917.anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080218.231243.41197917.anemo@mba.ocn.ne.jp>
+	Mon, 18 Feb 2008 15:16:30 -0500
+Date: Mon, 18 Feb 2008 12:14:53 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: kurt.hackel@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 3/7] fs/ocfs2: Use BUG_ON
+Message-ID: <20080218201453.GA22671@ca-server1.us.oracle.com>
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
+References: <Pine.LNX.4.64.0802171855070.28055@ask.diku.dk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802181157.57299.david-b@pacbell.net>
+In-Reply-To: <Pine.LNX.4.64.0802171855070.28055@ask.diku.dk>
+Organization: Oracle Corporation
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008, Atsushi Nemoto wrote:
-> 	 IIRC the clock state follows
-> CSRn.CPOL just before the real transfer.
-
-No ... clock state should be valid *before* chipselect goes
-active.  So I'm thinking the patch from Haavard is likely
-the right change.
-
-
-> Like this (previous transfer 
-> was MODE 0, new transfer is MODE 3):
+On Sun, Feb 17, 2008 at 06:55:49PM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
->            T0                T1 T2
+> if (...) BUG(); should be replaced with BUG_ON(...) when the test has no
+> side-effects to allow a definition of BUG_ON that drops the code completely.
 > 
-> CS      ~~~|________________________________________________
-
-So at T0, some chip is selected (and never deselected) ...
-
+> The semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
-> CLK     ______________________|~|___|~~~|___|~~~|___|~~~|___
-
-... and at T1 CPOL is changed??  That's wrong.  There should
-never be a partial clock period while a chipselect is active.
-While it's inactive, sure -- no chip should care.
-
-
+> // <smpl>
+> @ disable unlikely @ expression E,f; @@
 > 
-> SO      ~~~~~~~~~~~~~~~~~~~~~~~~~~|___|~~~|___|~~~|___|~~~|_
->                                    MSB
+> (
+>   if (<... f(...) ...>) { BUG(); }
+> |
+> - if (unlikely(E)) { BUG(); }
+> + BUG_ON(E);
+> )
 > 
-> T0-T1 was relatively longer then T1-T2.  I suppose T1 is not the
-> point of updating MR register, but the point of starting DMA transfer.
+> @@ expression E,f; @@
 > 
+> (
+>   if (<... f(...) ...>) { BUG(); }
+> |
+> - if (E) { BUG(); }
+> + BUG_ON(E);
+> )
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+Acked-by: Mark Fasheh <mark.fasheh@oracle.com>
+
+--
+Mark Fasheh
+Principal Software Developer, Oracle
+mark.fasheh@oracle.com
