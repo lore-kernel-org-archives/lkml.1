@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752948AbYBROSI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753830AbYBROXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752948AbYBROSI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 09:18:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYBRORz
+	id S1753830AbYBROXQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 09:23:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbYBROXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 09:17:55 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:47335 "EHLO mx2.suse.de"
+	Mon, 18 Feb 2008 09:23:01 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:55126 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751826AbYBRORx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 09:17:53 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, apw@shadowen.org
-Subject: Re: [PATCH] next-20080218 build failure at pmac_ide_macio_attach ()
-References: <20080218140159.GA31310@linux.vnet.ibm.com>
-X-Yow: How's the wife?  Is she at home enjoying capitalism?
-Date: Mon, 18 Feb 2008 15:17:49 +0100
-In-Reply-To: <20080218140159.GA31310@linux.vnet.ibm.com> (Kamalesh Babulal's
-	message of "Mon\, 18 Feb 2008 19\:31\:59 +0530")
-Message-ID: <jeodae4acy.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1750981AbYBROXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 09:23:00 -0500
+Date: Mon, 18 Feb 2008 11:22:43 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       sam@ravnborg.org
+Subject: Re: Reducing debuginfo size by removing unneeded includes
+Message-ID: <20080218142243.GI4359@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+	linux-kernel@vger.kernel.org, sam@ravnborg.org
+References: <20080207230304.GA4352@ghostprotocols.net> <p73ir0mxvby.fsf@bingen.suse.de> <20080218134100.GE4359@ghostprotocols.net> <20080218145006.GA26286@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218145006.GA26286@one.firstfloor.org>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal <kamalesh@linux.vnet.ibm.com> writes:
+Em Mon, Feb 18, 2008 at 03:50:06PM +0100, Andi Kleen escreveu:
+> > I found just it to be another reason for cleaning up the includes hell,
+> > but I agree completely that the correct solution is for gcc to do the
+> > right thing and eliminate unused debug types.
+> 
+> Yes, but I'm a little disappointed that it doesn't work either.
+> I remember long ago trying an original patch which did something
+> similar to -feliminate-dwarf2-* on a 3.3-hammer based gcc and
+> it actually shrunk the objdir size considerably.
 
-> --- linux-2.6.25-rc1/drivers/ide/ppc/pmac.c	2008-02-18 18:41:48.000000000 +0530
-> +++ linux-2.6.25-rc1/drivers/ide/ppc/~pmac.c	2008-02-18 19:20:37.000000000 +0530
-> @@ -1091,7 +1091,7 @@ pmac_ide_macio_attach(struct macio_dev *
->  	int irq, rc;
->  	hw_regs_t hw;
->  
-> -	pmif = (struct pmac_ide_hwif)kzalloc(sizeof(*pmif), GFP_KERNEL);
-> +	pmif = (struct pmac_ide_hwif*)kzalloc(sizeof(*pmif), GFP_KERNEL);
+>From my limited set of tests I expect it to shrunk the objdir by a lot
+:-)
 
-Just remove the cast.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+- Arnaldo
