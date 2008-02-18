@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbYBRRCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759998AbYBRRD6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbYBRRCt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 12:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYBRRCj
+	id S1759998AbYBRRD6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 12:03:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752171AbYBRRDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 12:02:39 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:61699 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752116AbYBRRCi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 12:02:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CHFPZWHp/gPdIXlCF7d0SM1Ih9VgzGhm21o9J+iWUDnsvJIjoqsjXrfcPOSS3tnD3HR1Q8cmD0hCL4sCaFYK45KO2ixPUZn/1fbMPBaJSPCZTFhH5uuA/VSzROW1AucZX9iYoalPZby08xfz6ql1eSTdcGDImOh+OiQL6DAPh0w=
-Message-ID: <58cb370e0802180902i1c66713dmeb7f52dc444947f5@mail.gmail.com>
-Date: Mon, 18 Feb 2008 18:02:36 +0100
-From: "Bartlomiej Zolnierkiewicz" <bzolnier@gmail.com>
-To: "Sergei Shtylyov" <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 1/5] ide: remove PIO "downgrade" quirk
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <47B9AD1D.4020307@ru.mvista.com>
+	Mon, 18 Feb 2008 12:03:50 -0500
+Received: from www.balabit.hu ([212.92.18.33]:54354 "EHLO lists.balabit.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751792AbYBRRDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 12:03:50 -0500
+Message-ID: <47B9BA73.7020909@balabit.hu>
+Date: Mon, 18 Feb 2008 18:03:47 +0100
+From: Laszlo Attila Toth <panther@balabit.hu>
+Organization: BalaBit IT Ltd.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jiri Kosina <jkosina@suse.cz>, David Miller <davem@davemloft.net>,
+       zdenek.kabelac@gmail.com, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: My system stops during startup with curretn git tree of 2.6.25-rc2
+References: <c4e36d110802170255x19755c03s33502ddf7410f324@mail.gmail.com> <Pine.LNX.4.64.0802181441300.30955@jikos.suse.cz> <47B9928A.60202@balabit.hu> <200802181741.09046.rjw@sisk.pl>
+In-Reply-To: <200802181741.09046.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080217185105.16210.26582.sendpatchset@localhost.localdomain>
-	 <47B9AD1D.4020307@ru.mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sergei,
+Hello,
 
-On Feb 18, 2008 5:06 PM, Sergei Shtylyov <sshtylyov@ru.mvista.com> wrote:
-> Bartlomiej Zolnierkiewicz wrote:
+Rafael J. Wysocki wrote:
+> On Monday, 18 of February 2008, Laszlo Attila Toth wrote:
 >
-> > No need for it nowadays
->
->     Since which moment, could you elaborate
+> 
+> All in all, I gather you wanted me to test the patch below. :-)
+> 
+> Yes, that helps.
 
-We fixed:
+Thanks for the testing. Dave already reverted the patch, also I don't 
+know I should resend it or leave it as is.
 
-- PIO auto-tuning in core code
+Regards,
+Attila
 
-- PIO programming in host drivers
-
-- IORDY handling in core code and in host drivers (it could be that the
-  incorrect IORDY handling was the main reason behind the "downgrade")
-
-and
-
-- lack of corresponding "quirk" in libata hasn't been problematic so far
-
-so IMO there is no longer a valid reason to punish PIO performance
-and the said "quirk" should be removed (in 2.6.26 after long time in -mm).
-
-> > so remove quirk code from ide_get_best_pio_mode()
-> > and IDE_HFLAG_PIO_DOWNGRADE host flag.
->
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Thanks,
+> Rafael
+> 
+> ---
+> Fix net/core/rtnetlink.c breakage caused by commit
+> 45b503548210fe6f23e92b856421c2a3f05fd034
+> "[RTNETLINK]: Send a single notification on device state changes."
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  net/core/rtnetlink.c |    6 +++---
+>  1 file changed, 3 insertions(+), 3 deletions(-)
+> 
+> Index: linux-2.6/net/core/rtnetlink.c
+> ===================================================================
+> --- linux-2.6.orig/net/core/rtnetlink.c
+> +++ linux-2.6/net/core/rtnetlink.c
+> @@ -853,7 +853,7 @@ static int do_setlink(struct net_device 
+>  		if (dev->link_mode != nla_get_u8(tb[IFLA_LINKMODE])) {
+>  			write_lock_bh(&dev_base_lock);
+>  			dev->link_mode = nla_get_u8(tb[IFLA_LINKMODE]);
+> -			write_lock_bh(&dev_base_lock);
+> +			write_unlock_bh(&dev_base_lock);
+>  			modified = 1;
+>  		}
+>  	}
+> @@ -870,8 +870,8 @@ errout:
+>  	if (send_addr_notify)
+>  		call_netdevice_notifiers(NETDEV_CHANGEADDR, dev);
+>  
+> -	if (modified)
+> -		netdev_state_change(dev);
+> +	if (modified && dev->flags & IFF_UP)
+> +		call_netdevice_notifiers(NETDEV_CHANGE, dev);
+>  
+>  	return err;
+>  }
+> 
