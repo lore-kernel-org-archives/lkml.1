@@ -1,117 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752018AbYBRNw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbYBRNx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752018AbYBRNw6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750894AbYBRNwu
+	id S1752634AbYBRNx0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:53:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYBRNxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:52:50 -0500
-Received: from mexforward.lss.emc.com ([128.222.32.20]:20012 "EHLO
-	mexforward.lss.emc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbYBRNwt (ORCPT
+	Mon, 18 Feb 2008 08:53:00 -0500
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:22949 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751958AbYBRNw5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:52:49 -0500
-Message-ID: <47B98D8A.7090506@emc.com>
-Date: Mon, 18 Feb 2008 08:52:10 -0500
-From: Ric Wheeler <ric@emc.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 18 Feb 2008 08:52:57 -0500
+Date: Mon, 18 Feb 2008 14:57:16 +0100
+From: Ursula Braun <ubraun@linux.vnet.ibm.com>
+To: Julia Lawall <julia@diku.dk>
+cc: schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 4/4] : More use DIV_ROUND_UP
+Message-ID: <68587704F64C6C25633773DB@USCHI.ibm.com>
+In-Reply-To: <Pine.LNX.4.58.0802161552070.1185@pc-041.diku.dk>
+References: <Pine.LNX.4.58.0802161552070.1185@pc-041.diku.dk>
+X-Mailer: Mulberry/4.0.8 (Win32)
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: device-mapper development <dm-devel@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device
- DM devices
-References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru>
-In-Reply-To: <47B9870B.8060005@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-PMX-Version: 4.7.1.128075, Antispam-Engine: 2.5.1.298604, Antispam-Data: 2007.8.30.51425
-X-PerlMx-Spam: Gauge=, SPAM=1%, Reason='EMC_FROM_0+ -3, __CT 0, __CTE 0, __CT_TEXT_PLAIN 0, __HAS_MSGID 0, __MIME_TEXT_ONLY 0, __MIME_VERSION 0, __SANE_MSGID 0, __USER_AGENT 0'
-X-Tablus-Inspected: yes
-X-Tablus-Classifications: public
-X-Tablus-Action: allow
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> Ric Wheeler wrote:
->> Alasdair G Kergon wrote:
->>> On Fri, Feb 15, 2008 at 03:20:10PM +0100, Andi Kleen wrote:
->>>> On Fri, Feb 15, 2008 at 04:07:54PM +0300, Michael Tokarev wrote:
->>>>> I wonder if it's worth the effort to try to implement this.
->>> My personal view (which seems to be in the minority) is that it's a
->>> waste of our development time *except* in the (rare?) cases similar to
->>> the ones Andi is talking about.
->> Using working barriers is important for normal users when you really
->> care about data loss and have normal drives in a box. We do power fail
->> testing on boxes (with reiserfs and ext3) and can definitely see a lot
->> of file system corruption eliminated over power failures when barriers
->> are enabled properly.
->>
->> It is not unreasonable for some machines to disable barriers to get a
->> performance boost, but I would not do that when you are storing things
->> you really need back.
-> 
-> The talk here is about something different - about supporting barriers
-> on md/dm devices, i.e., on pseudo-devices which uses multiple real devices
-> as components (software RAIDs etc).  In this "world" it's nearly impossible
-> to support barriers if there are more than one underlying component device,
-> barriers only works if there's only one component.  And the talk is about
-> supporting barriers only in "minority" of cases - mostly for simplest
-> device-mapper case only, NOT covering any raid1 or other "fancy" configurations.
+Equivalent patch submitted for 2.6.25. Thanks.
 
-I understand that. Most of the time, dm or md devices are composed of 
-uniform components which will uniformly support (or not) the cache flush 
-commands used by barriers.
+--On Samstag, 16. Februar 2008 15:52 +0100 Julia Lawall <julia@diku.dk> 
+wrote:
 
-> 
->> Of course, you don't need barriers when you either disable the write
->> cache on the drives or use a battery backed RAID array which gives you a
->> write cache that will survive power outages...
-> 
-> Two things here.
-> 
-> First, I still don't understand why in God's sake barriers are "working"
-> while regular cache flushes are not.  Almost no consumer-grade hard drive
-> supports write barriers, but they all support regular cache flushes, and
-> the latter should be enough (while not the most speed-optimal) to ensure
-> data safety.  Why to require write cache disable (like in XFS FAQ) instead
-> of going the flush-cache-when-appropriate (as opposed to write-barrier-
-> when-appropriate) way?
+> From: Julia Lawall <julia@diku.dk>
+>
+> The kernel.h macro DIV_ROUND_UP performs the computation (((n) + (d) - 1)
+> / (d)) but is perhaps more readable.
+>
+> An extract of the semantic patch that makes this change is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+>
+> // <smpl>
+> @haskernel@
+> @@
+>
+># include <linux/kernel.h>
+>
+> @depends on haskernel@
+> expression n,d;
+> @@
+>
+> (
+> - (n + d - 1) / d
+> + DIV_ROUND_UP(n,d)
+>|
+> - (n + (d - 1)) / d
+> + DIV_ROUND_UP(n,d)
+> )
+>
+> @depends on haskernel@
+> expression n,d;
+> @@
+>
+> - DIV_ROUND_UP((n),d)
+> + DIV_ROUND_UP(n,d)
+>
+> @depends on haskernel@
+> expression n,d;
+> @@
+>
+> - DIV_ROUND_UP(n,(d))
+> + DIV_ROUND_UP(n,d)
+> // </smpl>
+>
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+>
+> ---
+>
+> diff -u -p a/drivers/s390/net/claw.c b/drivers/s390/net/claw.c
+> --- a/drivers/s390/net/claw.c 2008-02-02 15:28:31.000000000 +0100
+> +++ b/drivers/s390/net/claw.c 2008-02-15 22:29:44.000000000 +0100
+> @@ -2114,8 +2114,7 @@ init_ccw_bk(struct net_device *dev)
+>          */
+>          ccw_blocks_perpage= PAGE_SIZE /  CCWBK_SIZE;
+>          ccw_pages_required=
+> -		(ccw_blocks_required+ccw_blocks_perpage -1) /
+> -			 ccw_blocks_perpage;
+> +		DIV_ROUND_UP(ccw_blocks_required, ccw_blocks_perpage);
+>
+>  #ifdef DEBUGMSG
+>          printk(KERN_INFO "%s: %s() > ccw_blocks_perpage=%d\n",
+> @@ -2133,12 +2132,12 @@ init_ccw_bk(struct net_device *dev)
+>           */
+>          if (privptr->p_env->read_size < PAGE_SIZE) {
+>              claw_reads_perpage= PAGE_SIZE / privptr->p_env->read_size;
+> -            claw_read_pages= (privptr->p_env->read_buffers +
+> -	    	claw_reads_perpage -1) / claw_reads_perpage;
+> +	     claw_read_pages=
+> +		DIV_ROUND_UP(privptr->p_env->read_buffers, claw_reads_perpage);
+>           }
+>           else {       /* > or equal  */
+>              privptr->p_buff_pages_perread=
+> -	    	(privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
+> +		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
+>              claw_read_pages=
+>  	    	privptr->p_env->read_buffers * privptr->p_buff_pages_perread;
+>           }
+> @@ -2146,13 +2145,13 @@ init_ccw_bk(struct net_device *dev)
+>              claw_writes_perpage=
+>  	    	PAGE_SIZE / privptr->p_env->write_size;
+>              claw_write_pages=
+> -	    	(privptr->p_env->write_buffers + claw_writes_perpage -1) /
+> -			claw_writes_perpage;
+> +		DIV_ROUND_UP(privptr->p_env->write_buffers,
+> +			     claw_writes_perpage);
+>
+>          }
+>          else {      /* >  or equal  */
+>              privptr->p_buff_pages_perwrite=
+> -	    	 (privptr->p_env->read_size + PAGE_SIZE - 1) / PAGE_SIZE;
+> +		DIV_ROUND_UP(privptr->p_env->read_size, PAGE_SIZE);
+>              claw_write_pages=
+>  	     	privptr->p_env->write_buffers * privptr->p_buff_pages_perwrite;
+>          }
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Barriers have different flavors, but can be composed of "cache" flushes 
-which are supported on all drives that I have seen (S-ATA and ATA) for 
-many years now. That is the flavor of barriers that we test with S-ATA & 
-ATA drives.
 
-The issue is that without flushing/invalidating (or other way of 
-controlling the behavior of your storage), the file system has no way to 
-make sure that all data is on persistent & non-volatile media.
 
-> 
-> And second, "surprisingly", battery-backed RAID write caches tends to fail
-> too, sometimes... ;)  Usually, such a battery is enough to keep the data
-> in memory for several hours only (sine many RAID controllers uses regular
-> RAM for memory caches, which requires some power to keep its state), --
-> I come across this issue the hard way, and realized that only very few
-> persons around me who manages raid systems even knows about this problem -
-> that the battery-backed cache is only for some time...  For example,
-> power failed at evening, and by tomorrow morning, batteries are empty
-> already.  Or, with better batteries, think about a weekend... ;)
-> (I've seen some vendors now uses flash-based backing store for caches
-> instead, which should ensure far better results here).
-> 
-> /mjt
-> 
 
-That is why you need to get a good array, not just a simple controller ;-)
-
-Most arrays do not use batteries to hold up the write cache, they use 
-the batteries to move any cached data to non-volatile media in the time 
-that the batteries hold up.
-
-You could certainly get this kind of behavior from the flash scheme you 
-describe above as well...
-
-ric
 
