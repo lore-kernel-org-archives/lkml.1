@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760755AbYBRWdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbYBRWec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760755AbYBRWdz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbYBRWdr
+	id S1762101AbYBRWec (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:34:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760172AbYBRWeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:33:47 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:31272 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbYBRWdp (ORCPT
+	Mon, 18 Feb 2008 17:34:23 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46586 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbYBRWeW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:33:45 -0500
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Kanoj Sarcar <kanojsarcar@yahoo.com>, steiner@sgi.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 1/6] mmu_notifier: Core code
-X-Message-Flag: Warning: May contain useful information
-References: <20080215064859.384203497@sgi.com>
-	<20080215064932.371510599@sgi.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 18 Feb 2008 14:33:32 -0800
-In-Reply-To: <20080215064932.371510599@sgi.com> (Christoph Lameter's message of "Thu, 14 Feb 2008 22:49:00 -0800")
-Message-ID: <adawsp1hp37.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
+	Mon, 18 Feb 2008 17:34:22 -0500
+Date: Mon, 18 Feb 2008 22:34:10 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Message-ID: <20080218223410.GD23181@flint.arm.linux.org.uk>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182308.56789.mb@bu3sch.de> <20080218221324.GB23181@flint.arm.linux.org.uk> <200802182324.45267.mb@bu3sch.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 18 Feb 2008 22:33:33.0055 (UTC) FILETIME=[4B0B80F0:01C8727E]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <200802182324.45267.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that we've come up with two reasonable cases where it makes
-sense to use these notifiers for InfiniBand/RDMA:
+On Mon, Feb 18, 2008 at 11:24:44PM +0100, Michael Buesch wrote:
+> On Monday 18 February 2008 23:13:24 Russell King wrote:
+> > On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
+> > > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
+> > > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
+> > > > box using a cross-compiler:
+> > > > 
+> > > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
+> > > > not a modulo of the size of section __mod_ssb_device_table=64.
+> > > > Fix definition of struct ssb_device_id in mod_devicetable.h
+> > > 
+> > > Why does ARM have this special requirement and what is it about?
+> > 
+> > Because ARM is a 32 bit architecture.
+> 
+> Ehm, I didn't see this warning on any other architecture nor did we
+> have _any_ problem with it on any other architecture.
+> This code runs fine on x86_32, x86_64, powerpc and mips, at least.
 
-First, the ability to safely to DMA to/from userspace memory with the
-memory regions mlock()ed but the pages not pinned.  In this case the
-notifiers here would seem to suit us well:
+Well, don't expect this driver to work until you fix your broken
+assumptions about alignment requirements.
 
- > +	void (*invalidate_range_begin)(struct mmu_notifier *mn,
- > +				 struct mm_struct *mm,
- > +				 unsigned long start, unsigned long end,
- > +				 int atomic);
- > +
- > +	void (*invalidate_range_end)(struct mmu_notifier *mn,
- > +				 struct mm_struct *mm,
- > +				 unsigned long start, unsigned long end,
- > +				 int atomic);
-
-If I understand correctly, the IB stack would have to get the hardware
-driver to shoot down translation entries and suspend access to the
-region when an invalidate_range_begin notifier is called, and wait for
-the invalidate_range_end notifier to repopulate the adapter
-translation tables.  This will probably work OK as long as the
-interval between the invalidate_range_begin and invalidate_range_end
-calls is not "too long."
-
-Also, using this effectively requires us to figure out how we want to
-mlock() regions that are going to be used for RDMA.  We could require
-userspace to do it, but it's not clear to me that we're safe in the
-case where userspace decides not to... what happens if some pages get
-swapped out after the invalidate_range_begin notifier?
-
-The second case where some form of notifiers are useful is for
-userspace to know when a memory registration is still valid, ie Pete
-Wyckoff's work:
-
-    http://www.osc.edu/~pw/papers/wyckoff-memreg-ccgrid05.pdf
-    http://www.osc.edu/~pw/dreg/
-
-however these MMU notifiers seem orthogonal to that: the registration
-cache is concerned with address spaces, not page mapping, and hence
-the existing vma operations seem to be a better fit.
-
- - R.
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
