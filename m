@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758361AbYBRHtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbYBRHuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758361AbYBRHtp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 02:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbYBRHth
+	id S1754678AbYBRHuG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 02:50:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757015AbYBRHtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 02:49:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:60823 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754150AbYBRHtg (ORCPT
+	Mon, 18 Feb 2008 02:49:51 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:9631 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756944AbYBRHtu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 02:49:36 -0500
+	Mon, 18 Feb 2008 02:49:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=vF5iW/dgdz8m5ZM6qJoMPoK63Ijw2N0y4aEJ6x+m0nLH/x0ZbqPLN6LchV/53NPr4RlFFUXHMBM5TGxwY+JYfizlUMxxdCU3H1sBdx/V/rcfFbl77FgfNb7pz2o9zJqiqpYGxt9cvSA3n0DuwWtGQx+f8qsK6oW31UjEfqYp320=
-Date: Mon, 18 Feb 2008 07:50:26 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] workqueues: shrink cpu_populated_map when CPU dies
-Message-ID: <20080218075025.GA3923@ff.dom.local>
-References: <20080216172259.GA18524@tv-sign.ru> <20080217202739.GA2994@ami.dom.local> <20080217234556.GA655@tv-sign.ru>
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=XOJ946Nd37GQ/Pta2yghVZnbe5EikGSgwNYE/u0OkBt2gEvEVOwq5gmhQ4mi0ENxJzRW8vEZNSYrr2bpvwv0HCc/8SsglhKqeUHLYx4tEi9vwYSExQEojvO+WHy8QxhZQJRIqZY5E4/aazq9+kSJtuWYm/ZceBiZIbDfXkUhXvU=
+Date: Mon, 18 Feb 2008 15:55:55 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: marcel@holtmann.org
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: [PATCH 1/2] bluetooth : put hci dev after del conn
+Message-ID: <20080218075555.GA5940@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080217234556.GA655@tv-sign.ru>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 02:45:56AM +0300, Oleg Nesterov wrote:
-> On 02/17, Jarek Poplawski wrote:
-...
-> > 1) ... workqueue_cpu_callback(...)
-...
-> Yes, but this is harmless. cpu-hotplug callbacks are not time-critical,
-> and cpu_down/cpu_up happens not often, and LIST_HEAD(workqueues) is not
-> very long, so ...
-> 
-> > 2) ... __create_workqueue_key(...)
-...
-> > Shouldn't this list_add() be done after all these inits below?
-> This doesn't matter. Please note that get_online_cpus() blocks
-> cpu_up/cpu_down, they take cpu_hotplug_begin().
+Move hci_dev_put to del_conn to avoid hci dev going away before hci conn.
 
-You are completely right. It looks like this was only about ..."look".
-(But adding only "default:" in 1) would make it look nicer to me...)
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
-Regards,
-Jarek P.
+---
+net/bluetooth/hci_conn.c  |    1 -
+net/bluetooth/hci_sysfs.c |    5 ++++-
+2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff -upr linux/net/bluetooth/hci_conn.c linux.new/net/bluetooth/hci_conn.c
+--- linux/net/bluetooth/hci_conn.c	2008-02-16 06:38:56.000000000 +0800
++++ linux.new/net/bluetooth/hci_conn.c	2008-02-16 06:54:17.000000000 +0800
+@@ -260,7 +260,6 @@ int hci_conn_del(struct hci_conn *conn)
+ 	tasklet_enable(&hdev->tx_task);
+ 	skb_queue_purge(&conn->data_q);
+ 	hci_conn_del_sysfs(conn);
+-	hci_dev_put(hdev);
+ 
+ 	return 0;
+ }
+diff -upr linux/net/bluetooth/hci_sysfs.c linux.new/net/bluetooth/hci_sysfs.c
+--- linux/net/bluetooth/hci_sysfs.c	2008-02-16 06:38:56.000000000 +0800
++++ linux.new/net/bluetooth/hci_sysfs.c	2008-02-16 06:54:17.000000000 +0800
+@@ -333,15 +333,18 @@ static int __match_tty(struct device *de
+ 
+ static void del_conn(struct work_struct *work)
+ {
+-	struct device *dev;
+ 	struct hci_conn *conn = container_of(work, struct hci_conn, work);
++	struct hci_dev *hdev = conn->hdev;
++	struct device *dev;
+ 
+ 	while (dev = device_find_child(&conn->dev, NULL, __match_tty)) {
+ 		device_move(dev, NULL);
+ 		put_device(dev);
+ 	}
++
+ 	device_del(&conn->dev);
+ 	put_device(&conn->dev);
++	hci_dev_put(hdev);
+ }
+ 
+ void hci_conn_del_sysfs(struct hci_conn *conn)
