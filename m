@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762041AbYBRWOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761638AbYBRWRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762041AbYBRWOg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:14:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbYBRWO0
+	id S1761638AbYBRWRR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 17:17:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbYBRWRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:14:26 -0500
-Received: from ns2.g-housing.de ([81.169.133.75]:44780 "EHLO mail.g-house.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753139AbYBRWOZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:14:25 -0500
-Date: Mon, 18 Feb 2008 23:14:04 +0100 (CET)
-From: Christian Kujau <lists@nerdbynature.de>
-X-X-Sender: evil@sheep.housecafe.de
-To: Sergio Luis <sergio@larces.uece.br>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [build bug] lguest build failure: drivers/lguest/x86/switcher_32.S:(.text+0x3815f8):
- undefined reference to `LGUEST_PAGES_regs_trapnum'
-In-Reply-To: <47B8DFD8.6040602@larces.uece.br>
-Message-ID: <alpine.DEB.1.00.0802182305590.6469@sheep.housecafe.de>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <alpine.LFD.1.00.0802171451060.7583@apollo.tec.linutronix.de> <47B83F90.7000203@larces.uece.br> <alpine.DEB.1.00.0802172109590.6469@sheep.housecafe.de>
- <47B8D99A.3020202@larces.uece.br> <47B8DFD8.6040602@larces.uece.br>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	Mon, 18 Feb 2008 17:17:07 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36874 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752826AbYBRWRG (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 17:17:06 -0500
+Date: Tue, 19 Feb 2008 09:16:44 +1100
+From: David Chinner <dgc@sgi.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Ric Wheeler <ric@emc.com>, device-mapper development <dm-devel@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
+Message-ID: <20080218221644.GN155407@sgi.com>
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B9870B.8060005@msgid.tls.msk.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 Feb 2008, Sergio Luis wrote:
-> oops. sorry, I just realized I missed the makefile part. I changed
-> the config symbol to CONFIG_LGUEST_HYPERVISOR so I should change it on 
-> the makefile as well. reposting an updated patch for testing:
+On Mon, Feb 18, 2008 at 04:24:27PM +0300, Michael Tokarev wrote:
+> First, I still don't understand why in God's sake barriers are "working"
+> while regular cache flushes are not.  Almost no consumer-grade hard drive
+> supports write barriers, but they all support regular cache flushes, and
+> the latter should be enough (while not the most speed-optimal) to ensure
+> data safety.  Why to require write cache disable (like in XFS FAQ) instead
+> of going the flush-cache-when-appropriate (as opposed to write-barrier-
+> when-appropriate) way?
 
-Hm, now I cannot select LGUEST as a module any more:
+Devil's advocate:
 
-$ make clean && time make
-   [...]
-   HOSTCC  scripts/kconfig/zconf.tab.o
-   HOSTLD  scripts/kconfig/conf
-scripts/kconfig/conf -s arch/x86/Kconfig
-.config:1793:warning: symbol value 'm' invalid for LGUEST
-   [...]
-   Linux hypervisor (LGUEST) [Y/n/?] (NEW)
+Why should we need to support multiple different block layer APIs
+to do the same thing? Surely any hardware that doesn't support barrier
+operations can emulate them with cache flushes when they receive a
+barrier I/O from the filesystem....
 
-Is this intentional? I've tried your patch with or without Rusty's patch, 
-both gave me the same results. My .config:
-http://nerdbynature.de/bits/2.6.25-rc2/lguest/
+Also, given that disabling the write cache still allows CTQ/NCQ to
+operate effectively and that in most cases WCD+CTQ is as fast as
+WCE+barriers, the simplest thing to do is turn off volatile write
+caches and not require any extra software kludges for safe
+operation.
 
-Thanks,
-Christian.
+Cheers,
+
+Dave.
 -- 
-BOFH excuse #400:
-
-We are Microsoft.  What you are experiencing is not a problem; it is an undocumented feature.
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
