@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbYBRW5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbYBRXBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762161AbYBRW5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 17:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753760AbYBRW5c
+	id S1760157AbYBRXBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 18:01:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754180AbYBRXBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 17:57:32 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:54319 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753576AbYBRW5b (ORCPT
+	Mon, 18 Feb 2008 18:01:14 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34323 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753760AbYBRXBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 17:57:31 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Date: Mon, 18 Feb 2008 23:56:45 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>,
+	Mon, 18 Feb 2008 18:01:13 -0500
+Date: Mon, 18 Feb 2008 23:00:58 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
        linux-kernel@vger.kernel.org, linville@tuxdriver.com,
        stefano.brivio@polimi.it
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182343.12749.mb@bu3sch.de> <1203375030.5757.75.camel@brick>
-In-Reply-To: <1203375030.5757.75.camel@brick>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Message-ID: <20080218230058.GA32357@flint.arm.linux.org.uk>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802182324.45267.mb@bu3sch.de> <20080218223410.GD23181@flint.arm.linux.org.uk> <200802182343.12749.mb@bu3sch.de> <20080218225354.GE23181@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802182356.45858.mb@bu3sch.de>
+In-Reply-To: <20080218225354.GE23181@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 February 2008 23:50:30 Harvey Harrison wrote:
-> On Mon, 2008-02-18 at 23:43 +0100, Michael Buesch wrote:
+On Mon, Feb 18, 2008 at 10:53:54PM +0000, Russell King wrote:
+> On Mon, Feb 18, 2008 at 11:43:12PM +0100, Michael Buesch wrote:
 > > On Monday 18 February 2008 23:34:10 Russell King wrote:
+> > > On Mon, Feb 18, 2008 at 11:24:44PM +0100, Michael Buesch wrote:
+> > > > On Monday 18 February 2008 23:13:24 Russell King wrote:
+> > > > > On Mon, Feb 18, 2008 at 11:08:56PM +0100, Michael Buesch wrote:
+> > > > > > On Monday 18 February 2008 23:03:10 Gordon Farquharson wrote:
+> > > > > > > The b43 driver in 2.6.25-rc[12] fails to build for arm on an x86_64
+> > > > > > > box using a cross-compiler:
+> > > > > > > 
+> > > > > > > FATAL: drivers/net/wireless/b43/b43: sizeof(struct ssb_device_id)=6 is
+> > > > > > > not a modulo of the size of section __mod_ssb_device_table=64.
+> > > > > > > Fix definition of struct ssb_device_id in mod_devicetable.h
+> > > > > > 
+> > > > > > Why does ARM have this special requirement and what is it about?
+> > > > > 
+> > > > > Because ARM is a 32 bit architecture.
+> > > > 
+> > > > Ehm, I didn't see this warning on any other architecture nor did we
+> > > > have _any_ problem with it on any other architecture.
+> > > > This code runs fine on x86_32, x86_64, powerpc and mips, at least.
 > > > 
 > > > Well, don't expect this driver to work until you fix your broken
 > > > assumptions about alignment requirements.
 > > 
 > > Mr King, I'm not an idiot!
-> > 
+> 
+> I get extremely pissed off everytime I have to try to explain random
+> alignment issues to people.  "It doesn't work like i386 so it must be
+> broken" is a rediculous position to take.
+> 
 > > Can you _please_ explain what makes ARM so special here?
+> 
+> No because I don't really know.
+> 
 > > Why can't we have an array of this structure on ARM?
 > > 
 > > struct ssb_device_id {
 > >        __u16   vendor;
+> 
+> 2 bytes
+> 
 > >        __u16   coreid;
+> 
+> 2 bytes
+> 
 > >        __u8    revision;
+> 
+> 1 byte
+> 
 > > };
-> > 
-> > I will not apply any patches that I don't understand.
-> > Why doesn't the compiler handle this? What's special? Can you please explain?
-> > 
 > 
-> I believe this is a good place to start (although I could be totally
-> off-base)
-> 
-> http://lkml.org/lkml/2007/11/22/120
+> and therefore sizeof this structure will be 5 bytes, but because of the
+> ABI rules (which are _explicitly_ allowed by the C standard), it'll
+> become 8 bytes due to padding afterwards.
 
-I know very well what unaligned access is. As I said the code
-works on MIPS, which can't do unaligned accesses.
+Another guess might be that, if using AEABI, this structure might
+be 6 bytes in size, but the linker will align structures to 4 bytes.
 
-The _real_ question is, why doesn't align the compiler the stuff properly
-on ARM? It does the right thing on x86_32/64, powerpc and MIPS. Why doesn't
-it do the right thing on ARM and we have to manually align stuff?
-
-See section "Code that doesn't cause unaligned access"
+As I say, this is all guess work.  I don't know for sure.
 
 -- 
-Greetings Michael.
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
