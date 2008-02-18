@@ -1,90 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762428AbYBRVGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761930AbYBRVHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762428AbYBRVGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 16:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762635AbYBRVFA
+	id S1761930AbYBRVHP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 16:07:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762682AbYBRVF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 16:05:00 -0500
-Received: from agminet01.oracle.com ([141.146.126.228]:64864 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762626AbYBRVE7 (ORCPT
+	Mon, 18 Feb 2008 16:05:29 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:49521 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762181AbYBRVF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 16:04:59 -0500
-Date: Mon, 18 Feb 2008 13:04:45 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: axboe@kernel.dk
-Subject: [PATCH] block: fix kernel-docbook parameters and files
-Message-Id: <20080218130445.f5f5a205.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 18 Feb 2008 16:05:27 -0500
+Date: Mon, 18 Feb 2008 13:04:22 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: benh@kernel.crashing.org, Christian Krafft <krafft@de.ibm.com>,
+       linux-kernel@vger.kernel.org, parabelboi@bopserverein.de,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [Patch 0/2] powerpc: avoid userspace poking to legacy ioports
+Message-ID: <20080218130422.6ee10099@laptopd505.fenrus.org>
+In-Reply-To: <20080218215842.66bb004f@hyperion.delvare>
+References: <20080213182800.5c6940a8@de.ibm.com>
+	<20080213183506.7f3e3145@de.ibm.com>
+	<1202935374.7296.44.camel@pasglop>
+	<20080218211519.2b159ade@hyperion.delvare>
+	<1203367323.6740.21.camel@pasglop>
+	<20080218215842.66bb004f@hyperion.delvare>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, 18 Feb 2008 21:58:42 +0100
+Jean Delvare <khali@linux-fr.org> wrote:
 
-kernel-doc for block/:
-- add missing parameters
-- fix one function's parameter list (remove blank line)
-- add 2 source files to docbook for non-exported kernel-doc functions
+> On Tue, 19 Feb 2008 07:42:03 +1100, Benjamin Herrenschmidt wrote:
+> > 
+> > > Maybe Christian's patch can be improved to not do the check on
+> > > these? As long as /dev/port exists, it seems reasonable that the
+> > > kernel should behave, no matter what I/O ports are accessed from
+> > > user-space.
+> > 
+> > nonsense.
+> > 
+> >  /dev/mem exists for example, but you are still not supposed to go
+> > bang all over the place in it.
+> 
+> You should at least be able to read from it without crashing the
+> machine. Of course writing is a different story.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/DocBook/kernel-api.tmpl |    2 ++
- block/blk-core.c                      |    2 ++
- block/blk-settings.c                  |    1 -
- 3 files changed, 4 insertions(+), 1 deletion(-)
+keep dreaming. This is not how /dev/mem works today, not on x86 and very likely not on ppc either.
 
---- linux-2.6.25-rc1-git4.orig/block/blk-core.c
-+++ linux-2.6.25-rc1-git4/block/blk-core.c
-@@ -1767,6 +1767,7 @@ static inline void __end_request(struct 
- 
- /**
-  * blk_rq_bytes - Returns bytes left to complete in the entire request
-+ * @rq: the request being processed
-  **/
- unsigned int blk_rq_bytes(struct request *rq)
- {
-@@ -1779,6 +1780,7 @@ EXPORT_SYMBOL_GPL(blk_rq_bytes);
- 
- /**
-  * blk_rq_cur_bytes - Returns bytes left to complete in the current segment
-+ * @rq: the request being processed
-  **/
- unsigned int blk_rq_cur_bytes(struct request *rq)
- {
---- linux-2.6.25-rc1-git4.orig/block/blk-settings.c
-+++ linux-2.6.25-rc1-git4/block/blk-settings.c
-@@ -294,7 +294,6 @@ EXPORT_SYMBOL(blk_queue_stack_limits);
- 
- /**
-  * blk_queue_dma_drain - Set up a drain buffer for excess dma.
-- *
-  * @q:  the request queue for the device
-  * @buf:	physically contiguous buffer
-  * @size:	size of the buffer in bytes
---- linux-2.6.25-rc1-git4.orig/Documentation/DocBook/kernel-api.tmpl
-+++ linux-2.6.25-rc1-git4/Documentation/DocBook/kernel-api.tmpl
-@@ -361,12 +361,14 @@ X!Edrivers/pnp/system.c
-   <chapter id="blkdev">
-      <title>Block Devices</title>
- !Eblock/blk-core.c
-+!Iblock/blk-core.c
- !Eblock/blk-map.c
- !Iblock/blk-sysfs.c
- !Eblock/blk-settings.c
- !Eblock/blk-exec.c
- !Eblock/blk-barrier.c
- !Eblock/blk-tag.c
-+!Iblock/blk-tag.c
-   </chapter>
- 
-   <chapter id="chrdev">
