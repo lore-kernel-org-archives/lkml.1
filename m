@@ -1,75 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbYBRNQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760499AbYBRNS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760056AbYBRNQd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:16:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbYBRNQY
+	id S1760499AbYBRNS2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:18:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbYBRNST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:16:24 -0500
-Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:28987 "HELO
-	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750984AbYBRNQX (ORCPT
+	Mon, 18 Feb 2008 08:18:19 -0500
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:19706 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753429AbYBRNSS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:16:23 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=ar1B0sF0Y+ZUErLyIaauE09gpfRplqvGs/5uquQlJN4soY8QHIGuVGPfOa4XAbF1iq+c+pRATop/RcLyb0LIc0Y4q7g92uyH1CBrBb43ncRmwdLho6a+wcA5qP2uggRnN0ru+a1HRhxB7zs5Li0D4ZNKnSklrw0Vu9gkFF+kw50=;
-X-YMail-OSG: awTuutUVM1kGqg6pgfXJ6AOQzMYKla0IIW2816OE4.e_NDLJOpR3KvgXe5PIR2xYDsh4myfio7o6k93ZoywxALhbRi3EawPbQ3.dGuyiFBHVXVj.UG1Moi3xvjXJxQ--
-Date: Mon, 18 Feb 2008 13:16:21 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: Linux 2.6.24.1  - kernel does not boot; IRQ trouble?
+	Mon, 18 Feb 2008 08:18:18 -0500
+Date: Mon, 18 Feb 2008 14:18:13 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-In-Reply-To: <20080218050049.12bcc596.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       tglx@linutronix.de, buytenh@wantstofly.org, mingo@elte.hu,
+       riku.voipio@movial.fi, stable@kernel.org, schwidefsky@de.ibm.com
+Subject: Re: + futex-runtime-enable-pi-and-robust-functionality.patch added
+	to -mm tree
+Message-ID: <20080218131813.GA14536@osiris.boeblingen.de.ibm.com>
+References: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org> <20080216124248.GA4900@osiris.boeblingen.de.ibm.com> <20080218050030.658f524d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <71379.56187.qm@web52910.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218050030.658f524d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Andrew Morton <akpm@linux-foundation.org> wrote:
-> > sysfs: duplicate filename 'bridge' can not be created
-> > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
-> >  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
-> >  [<c0105990>] show_trace+0x12/0x14
-> >  [<c010613d>] dump_stack+0x6c/0x72
-> >  [<c01991bf>] sysfs_add_one+0x57/0xbc
-> >  [<c0199e41>] sysfs_create_link+0xc2/0x10d
-> >  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
-> >  [<c034016c>] pci_legacy_init+0x56/0xe3
-> >  [<c03274e1>] kernel_init+0x157/0x2c3
-> >  [<c0104c83>] kernel_thread_helper+0x7/0x10
-> >  =======================
-> > pci 0000:00:01.0: Error creating sysfs bridge symlink, continuing...
-> > sysfs: duplicate filename 'bridge' can not be created
-> > WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
-> > Pid: 1, comm: swapper Not tainted 2.6.24.1 #1
-> >  [<c0105020>] show_trace_log_lvl+0x1a/0x2f
-> >  [<c0105990>] show_trace+0x12/0x14
-> >  [<c010613d>] dump_stack+0x6c/0x72
-> >  [<c01991bf>] sysfs_add_one+0x57/0xbc
-> >  [<c0199e41>] sysfs_create_link+0xc2/0x10d
-> >  [<c01bae9a>] pci_bus_add_devices+0xbd/0x103
-> >  [<c01bae82>] pci_bus_add_devices+0xa5/0x103
-> >  [<c034016c>] pci_legacy_init+0x56/0xe3
-> >  [<c03274e1>] kernel_init+0x157/0x2c3
-> >  [<c0104c83>] kernel_thread_helper+0x7/0x10
-> >  =======================
+On Mon, Feb 18, 2008 at 05:00:30AM -0800, Andrew Morton wrote:
+> On Sat, 16 Feb 2008 13:42:48 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 > 
-> I have a vague feeling that this was fixed, perhaps in 2.6.24.x?
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > To: linux-kernel@vger.kernel.org
+> > Cc: mm-commits@vger.kernel.org, tglx@linutronix.de, buytenh@wantstofly.org, mingo@elte.hu, riku.voipio@movial.fi, stable@kernel.org, schwidefsky@de.ibm.com
+> 
+> Hrm, people have suddenly started removing me from the cc's on mm-commits
+> replies.  Please don't, else I'll end up sending dud patches into mainline.
 
-Obviously not in 2.6.24.1, and I thought that 2.6.24.2 just added the fix for the vmsplice
-exploit. So unless 2.6.24.3 has been released...?
+Ah.. not a bug but a feature: your mails sent via mm-commit have you as
+sender but also
 
-Cheers,
-Chris
+Reply-to: linux-kernel@vger.kernel.org
 
-
-
-      ___________________________________________________________
-Support the World Aids Awareness campaign this month with Yahoo! For Good http://uk.promotions.yahoo.com/forgood/
+in the mail header. That's why this happens.
