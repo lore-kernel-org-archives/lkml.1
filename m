@@ -1,127 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762158AbYBRNKJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760786AbYBRNLs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762158AbYBRNKJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 08:10:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYBRNJz
+	id S1760786AbYBRNLs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 08:11:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbYBRNLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 08:09:55 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:60648 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761420AbYBRNJy (ORCPT
+	Mon, 18 Feb 2008 08:11:40 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:26262 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbYBRNLj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 08:09:54 -0500
-Message-ID: <47B9835A.3060507@bull.net>
-Date: Mon, 18 Feb 2008 14:08:42 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
+	Mon, 18 Feb 2008 08:11:39 -0500
+Date: Mon, 18 Feb 2008 14:10:59 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, y-goto@jp.fujitsu.com, linux-mm@kvack.org,
-       containers@lists.linux-foundation.org, matthltc@us.ibm.com,
-       cmm@us.ibm.com, ltp-list@lists.sourceforge.net
-Subject: Re: [PATCH 1/8] Scaling msgmni to the amount of lowmem
-References: <20080211141646.948191000@bull.net>	<20080211141813.354484000@bull.net> <20080215215916.8566d337.akpm@linux-foundation.org> <47B94D8C.8040605@bull.net>
-In-Reply-To: <47B94D8C.8040605@bull.net>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       tglx@linutronix.de, buytenh@wantstofly.org, mingo@elte.hu,
+       riku.voipio@movial.fi, stable@kernel.org, schwidefsky@de.ibm.com
+Subject: Re: + futex-runtime-enable-pi-and-robust-functionality.patch added
+	to -mm tree
+Message-ID: <20080218131059.GA20564@osiris.boeblingen.de.ibm.com>
+References: <200802150149.m1F1n8Gx013909@imap1.linux-foundation.org> <20080216124248.GA4900@osiris.boeblingen.de.ibm.com> <20080218050030.658f524d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080218050030.658f524d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nadia Derbey wrote:
-> Andrew Morton wrote:
+On Mon, Feb 18, 2008 at 05:00:30AM -0800, Andrew Morton wrote:
+> On Sat, 16 Feb 2008 13:42:48 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 > 
->> On Mon, 11 Feb 2008 15:16:47 +0100 Nadia.Derbey@bull.net wrote:
->>
->>
->>> [PATCH 01/08]
->>>
->>> This patch computes msg_ctlmni to make it scale with the amount of 
->>> lowmem.
->>> msg_ctlmni is now set to make the message queues occupy 1/32 of the 
->>> available
->>> lowmem.
->>>
->>> Some cleaning has also been done for the MSGPOOL constant: the msgctl 
->>> man page
->>> says it's not used, but it also defines it as a size in bytes (the code
->>> expresses it in Kbytes).
->>>
->>
->>
->> Something's wrong here.  Running LTP's msgctl08 (specifically:
->> ltp-full-20070228) cripples the machine.  It's a 4-way 4GB x86_64.
->>
->> http://userweb.kernel.org/~akpm/config-x.txt
->> http://userweb.kernel.org/~akpm/dmesg-x.txt
->>
->> Normally msgctl08 will complete in a second or two.  With this patch I
->> don't know how long it will take to complete, and the machine is horridly
->> bogged down.  It does recover if you manage to kill msgctl08.  Feels like
->> a terrible memory shortage, but there's plenty of memory free and it 
->> isn't
->> swapping.
->>
->>
->>
+> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > To: linux-kernel@vger.kernel.org
+> > Cc: mm-commits@vger.kernel.org, tglx@linutronix.de, buytenh@wantstofly.org, mingo@elte.hu, riku.voipio@movial.fi, stable@kernel.org, schwidefsky@de.ibm.com
 > 
-> Before the patchset, msgctl08 used to be run with the old msgmni value: 
-> 16. Now it is run with a much higher msgmni value (1746 in my case), 
-> since it scales to the memory size.
-> When I call "msgctl08 100000 16" it completes fast.
-> 
-> Doing the follwing on the ref kernel:
-> echo 1746 > /proc/sys/kernel/msgmni
-> msgctl08 100000 1746
-> 
-> makes th test block too :-(
-> 
-> Will check to see where the problem comes from.
-> 
+> Hrm, people have suddenly started removing me from the cc's on mm-commits
+> replies.  Please don't, else I'll end up sending dud patches into mainline.
 
-Well, actually, the test does not block, it only takes much much more 
-time to be executed:
-
-doing this:
-date; ./msgctl08 100000 XXX; date
-
-
-gives us the following results:
-XXX           16   32   64   128   256   512   1024   1746
-time(secs)     2    4    8    16    32    64    132    241
-
-XXX is the # of msg queues to be created = # of processes to be forked 
-as readers = # of processes to be created as writers
-time is approximative since it is obtained by a "date" before and after.
-
-XXX used to be 16 before the patchset  ---> 1st column
-     --> 16 processes forked as reader
-     --> + 16 processes forked as writers
-     --> + 16 msg queues
-XXX = 1746 (on my victim) after the patchset ---> last column
-     --> 1746 reader processes forked
-     --> + 1746 writers forked
-     --> + 1746 msg queues created
-
-The same tests on the ref kernel give approximatly the same results.
-
-So if we don't want this longer time to appear as a regression, the LTP 
-should be changed:
-1) either by setting the result of get_max_msgqueues() as the MSGMNI 
-constant (16) (that would be the best solution in my mind)
-2) or by warning the tester that it may take a long time to finish.
-
-There would be 3 tests impacted:
-
-kernel/syscalls/ipc/msgctl/msgctl08.c
-kernel/syscalls/ipc/msgctl/msgctl09.c
-kernel/syscalls/ipc/msgget/msgget03.c
-
-Cc-ing ltp mailing list ...
-
-Regards,
-Nadia
-
-
+Sorry.. I didn't remove you at all. That seems to be a bug in my mail client,
+for some reason it removes you from the To:/Cc: list when I hit "g" for
+reply-to-all on all mails that come via mm-commits.
+Strange.
