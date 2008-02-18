@@ -1,66 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbYBRII4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758097AbYBRIKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbYBRII4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 03:08:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYBRIIt
+	id S1758097AbYBRIKt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 03:10:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYBRIKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 03:08:49 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43844 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753920AbYBRIIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 03:08:48 -0500
-Date: Mon, 18 Feb 2008 19:08:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for Feb 18
-Message-Id: <20080218190841.eeed735f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	Mon, 18 Feb 2008 03:10:42 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:59499 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754471AbYBRIKl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 03:10:41 -0500
+Date: Mon, 18 Feb 2008 13:50:21 +0530
+From: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Lukas Hejtmanek <xhejtman@ics.muni.cz>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, aneesh.kumar@in.ibm.com
+Subject: Re: 2.6.24-git4+ regression
+Message-ID: <20080218082021.GD14419@linux.vnet.ibm.com>
+Reply-To: vatsa@linux.vnet.ibm.com
+References: <20080130135609.GA5100@ics.muni.cz> <20080214165551.GA21963@linux.vnet.ibm.com> <20080217202642.GA4327@ics.muni.cz> <20080218042831.GJ30201@elte.hu> <1203320304.26269.3.camel@homer.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__18_Feb_2008_19_08_41_+1100_R_Y7sFpy8SihYhid"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203320304.26269.3.camel@homer.simson.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__18_Feb_2008_19_08_41_+1100_R_Y7sFpy8SihYhid
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Feb 18, 2008 at 08:38:24AM +0100, Mike Galbraith wrote:
+> Here, it does not.  It seems fine without CONFIG_FAIR_GROUP_SCHED.
 
-Hi all,
+My hunch is its because of the vruntime driven preemption which shoots
+up latencies (and the fact perhaps that Peter hasnt't focused more on SMP case
+yet!).
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+Curiously, do you observe the same results when in UP mode (maxcpus=1)? 
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
+> Oddity:  mainline git with Srivatsa's test patch improves markedly, and
+> using sched_latency_ns and sched_wakeup_granularity_ns, I can tweak the
 
-The tree is now tagged with a tag like next-YYYYMMDD and has a
-localversion-next file which adds "-next-YYYYMMDD" to the kernel revision.
+Lukas,
+	Does tweaking these make any difference for you?
 
-There were a couple of merge conflicts and a couple of build failures and
-the appropriate people contacted.
+	# echo 10000000 > /proc/sys/kernel/sched_latency_ns
+	# echo 10000000 > /proc/sys/kernel/sched_wakeup_granularity_ns
 
-We are up to 24 trees, more are welcome.
+[or some other lower value]
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+> regression into submission.  With sched-devel, I cannot tweak it away
+> with or without the test patch.  Dunno how useful that info is.
 
---Signature=_Mon__18_Feb_2008_19_08_41_+1100_R_Y7sFpy8SihYhid
-Content-Type: application/pgp-signature
+FWIW, my test patch I had sent earlier didnt address the needs of UP, as Peter 
+pointed me out. In that direction, I had done more experimentation with the 
+patch below, which seemed to improve UP latencies also. Note that I
+don't particularly like the first hunk below, perhaps it needs to be
+surrounded by an if(something) ..
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+---
+ kernel/sched_fair.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-iD8DBQFHuT0OTgG2atn1QN8RAvtKAJ0VjrmGhHhY1D+o0fhd86Fg1qo8ngCfV+4o
-O3c3rRUEpOfkoQFmqsjvoK8=
-=0PhT
------END PGP SIGNATURE-----
+Index: current/kernel/sched_fair.c
+===================================================================
+--- current.orig/kernel/sched_fair.c
++++ current/kernel/sched_fair.c
+@@ -523,8 +523,6 @@ place_entity(struct cfs_rq *cfs_rq, stru
+ 		if (sched_feat(NEW_FAIR_SLEEPERS))
+ 			vruntime -= sysctl_sched_latency;
+ 
+-		/* ensure we never gain time by being placed backwards. */
+-		vruntime = max_vruntime(se->vruntime, vruntime);
+ 	}
+ 
+ 	se->vruntime = vruntime;
+@@ -816,6 +814,13 @@ hrtick_start_fair(struct rq *rq, struct 
+ }
+ #endif
+ 
++static inline void dequeue_stack(struct sched_entity *se)
++{
++	for_each_sched_entity(se)
++		if (se->on_rq)
++			dequeue_entity(cfs_rq_of(se), se, 0);
++}
++
+ /*
+  * The enqueue_task method is called before nr_running is
+  * increased. Here we update the fair scheduling stats and
+@@ -828,6 +833,9 @@ static void enqueue_task_fair(struct rq 
+ 			    *topse = NULL;	/* Highest schedulable entity */
+ 	int incload = 1;
+ 
++	if (wakeup)
++		dequeue_stack(se);
++
+ 	for_each_sched_entity(se) {
+ 		topse = se;
+ 		if (se->on_rq) {
 
---Signature=_Mon__18_Feb_2008_19_08_41_+1100_R_Y7sFpy8SihYhid--
+
+
+P.S : Sorry about slow responses, since I am now in a different project :(
+
+-- 
+Regards,
+vatsa
