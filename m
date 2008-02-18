@@ -1,53 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757885AbYBRQLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbYBRQL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757885AbYBRQLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 11:11:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbYBRQLG
+	id S1759411AbYBRQL4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 11:11:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbYBRQLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 11:11:06 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:43882 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753550AbYBRQLF (ORCPT
+	Mon, 18 Feb 2008 11:11:48 -0500
+Received: from hpsmtp-eml15.kpnxchange.com ([213.75.38.115]:24345 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754100AbYBRQLr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 11:11:05 -0500
-To: haveblue@us.ibm.com
-CC: linux-kernel@vger.kernel.org, hch@lst.de, miklos@szeredi.hu, akpm@osdl.org,
-       haveblue@us.ibm.com
-In-reply-to: <20080215223759.6B1F044A@kernel> (message from Dave Hansen on
-	Fri, 15 Feb 2008 14:37:59 -0800)
-Subject: Re: [PATCH 28/30] r/o bind mounts: track numbers of writers to mounts
-References: <20080215223721.9E0A088A@kernel> <20080215223759.6B1F044A@kernel>
-Message-Id: <E1JR8a0-0003sT-8d@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 Feb 2008 17:10:56 +0100
+	Mon, 18 Feb 2008 11:11:47 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [BUG] Linux 2.6.25-rc2 - Kernel Ooops while running dbench
+Cc: akpm@linux-foundation.org, apw@shadowen.org, balbir@linux.vnet.ibm.com,
+       clameter@sgi.com, kamalesh@linux.vnet.ibm.com,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-reply-To: <47B9956B.8060506@garzik.org>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <47B6784E.2090401@linux.vnet.ibm.com> <20080218045954.50503fb1.akpm@linux-foundation.org> <20080218045954.50503fb1.akpm@linux-foundation.org> <47B9956B.8060506@garzik.org>
+Message-Id: <E1JR8aj-0004bH-Er@faramir.fjphome.nl>
+From: Frans Pop <elendil@planet.nl>
+Date: Mon, 18 Feb 2008 17:11:41 +0100
+X-OriginalArrivalTime: 18 Feb 2008 16:11:41.0867 (UTC) FILETIME=[F2E9A7B0:01C87248]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -327,7 +514,30 @@ static struct vfsmount *clone_mnt(struct
->  
->  static inline void __mntput(struct vfsmount *mnt)
->  {
-> +	int cpu;
->  	struct super_block *sb = mnt->mnt_sb;
-> +	/*
-> +	 * We don't have to hold all of the locks at the
-> +	 * same time here because we know that we're the
-> +	 * last reference to mnt and that no new writers
-> +	 * can come in.
-> +	 */
-> +	for_each_possible_cpu(cpu) {
-> +		struct mnt_writer *cpu_writer = &per_cpu(mnt_writers, cpu);
-> +		if (cpu_writer->mnt != mnt)
-> +			continue;
-> +		spin_lock(&cpu_writer->lock);
-> +		atomic_add(cpu_writer->count, &mnt->__mnt_writers);
-> +		cpu_writer->count = 0;
+Jeff Garzik wrote:
+> Two x86-64 boxes here lock up here on 2.6.25-rc2, shortly after boot.
+> One running Fedora 8 + X (GNOME) and one a headless file server.
+> configs and lspci attached.  Unable to capture any splatter so far.
 
-I think you should also add a
+Sounds like it may be http://lkml.org/lkml/2008/2/17/78.
 
-		cpu_writer->mnt = NULL;
+Suggest you try reverting that before doing the bisect.
 
-here.  It's not a bug, but I had to think a bit about why it's not a bug.
-
-Miklos
+Cheers,
+FJP
