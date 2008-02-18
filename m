@@ -1,407 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbYBRJ7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752582AbYBRKAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbYBRJ7p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 04:59:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754186AbYBRJ7X
+	id S1752582AbYBRKAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:00:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbYBRJ7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 04:59:23 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:52144 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752684AbYBRJ7U (ORCPT
+	Mon, 18 Feb 2008 04:59:24 -0500
+Received: from viefep31-int.chello.at ([62.179.121.49]:56682 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbYBRJ7V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 04:59:20 -0500
-Message-Id: <20080218095625.084960000@chello.nl>
+	Mon, 18 Feb 2008 04:59:21 -0500
+Message-Id: <20080218095625.836989000@chello.nl>
 References: <20080218095535.629736000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 18 Feb 2008 10:55:39 +0100
+Date: Mon, 18 Feb 2008 10:55:42 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
        Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
        dhaval@linux.vnet.ibm.com, tong.n.li@intel.com
 Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/7] sched: fair-group: single RQ approach
-Content-Disposition: inline; filename=sched-fair-group-single-rq.patch
+Subject: [PATCH 7/7] sched: fair: vruntime spread
+Content-Disposition: inline; filename=sched-fair-spread.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current hierarchical RQ group scheduler suffers from a number of problems:
- - yield
- - wakeup preemption
- - sleeper fairness
+By its very nature we try to converge vruntime between tasks. This makes it
+very hard to interleave the groups that have varying latency requirements,
+they end up in a single 'lump'. Avoid this by introducing an artificial
+vruntime offset:
 
-All these problems are due to the isolation caused by the multiple RQ design.
-They are caused by the fact that vruntime becomes a local property.
+A1 |--------------|
+A2      |--------------|
+A3           |--------------|
 
-Solve this by returning to a single RQ model.
+New            |--------------|
+
+Because tasks have no stable (dense) enumeration within a group
+and we'd want the tasks evenly spaced within the period in a regular
+fashion, we use an ascending iterator (nr_iter).
+
+This ensures that in a steady state, each task will have the same offset
+
+However, when a new task gets inserted we cannot re-adjust all offsets,
+hence we will approximate by inserting the new task at p(1-1/n).
+This is why account_entity_enqueue() sets nr_iter to nr_running-1.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched.c      |    9 --
- kernel/sched_fair.c |  160 +++++++++++++++++++++++++++++++++-------------------
- 2 files changed, 105 insertions(+), 64 deletions(-)
+ include/linux/sched.h |    1 
+ kernel/sched.c        |    2 +
+ kernel/sched_fair.c   |   56 ++++++++++++++++++++++++++++++++++++++++++++++----
+ 3 files changed, 55 insertions(+), 4 deletions(-)
 
-Index: linux-2.6/kernel/sched.c
+Index: linux-2.6/include/linux/sched.h
 ===================================================================
---- linux-2.6.orig/kernel/sched.c
-+++ linux-2.6/kernel/sched.c
-@@ -1197,6 +1197,9 @@ static void __resched_task(struct task_s
-  */
- #define SRR(x, y) (((x) + (1UL << ((y) - 1))) >> (y))
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -923,6 +923,7 @@ struct sched_entity {
+ 	u64			exec_start;
+ 	u64			sum_exec_runtime;
+ 	u64			vruntime;
++	u64			voffset;
+ 	u64			prev_sum_exec_runtime;
  
-+/*
-+ * delta *= weight / lw
-+ */
- static unsigned long
- calc_delta_mine(unsigned long delta_exec, unsigned long weight,
- 		struct load_weight *lw)
-@@ -1219,12 +1222,6 @@ calc_delta_mine(unsigned long delta_exec
- 	return (unsigned long)min(tmp, (u64)(unsigned long)LONG_MAX);
- }
- 
--static inline unsigned long
--calc_delta_fair(unsigned long delta_exec, struct load_weight *lw)
--{
--	return calc_delta_mine(delta_exec, NICE_0_LOAD, lw);
--}
--
- static inline void update_load_add(struct load_weight *lw, unsigned long inc)
- {
- 	lw->weight += inc;
+ #ifdef CONFIG_SCHEDSTATS
 Index: linux-2.6/kernel/sched_fair.c
 ===================================================================
 --- linux-2.6.orig/kernel/sched_fair.c
 +++ linux-2.6/kernel/sched_fair.c
-@@ -238,12 +238,22 @@ static inline s64 entity_key(struct cfs_
-  */
- static void __enqueue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
+@@ -220,9 +220,11 @@ static inline u64 min_vruntime(u64 min_v
+ 
+ static inline s64 entity_key(struct cfs_rq *cfs_rq, struct sched_entity *se)
  {
--	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
-+	struct rb_node **link;
- 	struct rb_node *parent = NULL;
- 	struct sched_entity *entry;
--	s64 key = entity_key(cfs_rq, se);
-+	s64 key;
- 	int leftmost = 1;
- 
-+	if (!entity_is_task(se))
-+		return;
-+
-+	if (se == cfs_rq->curr)
-+		return;
-+
-+	cfs_rq = &rq_of(cfs_rq)->cfs;
-+
-+	link = &cfs_rq->tasks_timeline.rb_node;
-+	key = entity_key(cfs_rq, se);
- 	/*
- 	 * Find the right place in the rbtree:
- 	 */
-@@ -275,6 +285,14 @@ static void __enqueue_entity(struct cfs_
- 
- static void __dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
-+	if (!entity_is_task(se))
-+		return;
-+
-+	if (se == cfs_rq->curr)
-+		return;
-+
-+	cfs_rq = &rq_of(cfs_rq)->cfs;
-+
- 	if (cfs_rq->rb_leftmost == &se->run_node)
- 		cfs_rq->rb_leftmost = rb_next(&se->run_node);
- 
-@@ -358,6 +376,13 @@ static u64 sched_slice(struct cfs_rq *cf
- {
- 	u64 slice = __sched_period(cfs_rq->nr_running);
- 
-+	/*
-+	 * FIXME: curious 'hack' to make it boot - when the tick is started we
-+	 * hit this with the init_task, which is not actually enqueued.
-+	 */
-+	if (unlikely(rq_of(cfs_rq)->load.weight <= se->load.weight))
-+		goto out;
-+
- 	for_each_sched_entity(se) {
- 		cfs_rq = cfs_rq_of(se);
- 
-@@ -365,37 +390,66 @@ static u64 sched_slice(struct cfs_rq *cf
- 		do_div(slice, cfs_rq->load.weight);
- 	}
- 
-+out:
- 	return slice;
+-	return se->vruntime - cfs_rq->min_vruntime;
++	return se->vruntime + se->voffset - cfs_rq->min_vruntime;
  }
  
++static u64 sched_voffset(struct cfs_rq *cfs_rq, struct sched_entity *se);
++
  /*
-  * We calculate the vruntime slice of a to be inserted task
-  *
-- * vs = s/w = p/rw
-+ * vs = s*rw/w = p
+  * Enqueue an entity into the rb-tree:
   */
- static u64 sched_vslice_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
+@@ -240,6 +242,8 @@ static void __enqueue_entity(struct cfs_
+ 	if (se == cfs_rq->curr)
+ 		return;
+ 
++	se->voffset = sched_voffset(cfs_rq, se);
++
+ 	cfs_rq = &rq_of(cfs_rq)->cfs;
+ 
+ 	link = &cfs_rq->tasks_timeline.rb_node;
+@@ -387,7 +391,7 @@ out:
+  *
+  * vs = s*rw/w = p
+  */
+-static u64 sched_vslice_add(struct cfs_rq *cfs_rq, struct sched_entity *se)
++static inline u64 sched_vslice(struct cfs_rq *cfs_rq, struct sched_entity *se)
  {
  	unsigned long nr_running = cfs_rq->nr_running;
--	unsigned long weight;
--	u64 vslice;
  
- 	if (!se->on_rq)
- 		nr_running++;
- 
--	vslice = __sched_period(nr_running);
-+	return __sched_period(nr_running);
-+}
- 
-+static inline unsigned long
-+calc_delta_fair(unsigned long delta, struct sched_entity *se)
-+{
- 	for_each_sched_entity(se) {
--		cfs_rq = cfs_rq_of(se);
-+		delta = calc_delta_mine(delta,
-+				cfs_rq_of(se)->load.weight, &se->load);
-+	}
- 
--		weight = cfs_rq->load.weight;
--		if (!se->on_rq)
--			weight += se->load.weight;
-+	return delta;
-+}
- 
--		vslice *= NICE_0_LOAD;
--		do_div(vslice, weight);
-+/*
-+ * The goal of calc_delta_asym() is to be asymmetrically around NICE_0_LOAD, in
-+ * that it favours >=0 over <0.
-+ *
-+ *   -20         |
-+ *               |
-+ *     0 --------+-------
-+ *             .'
-+ *    19     .'
-+ *
-+ */
-+static unsigned long
-+calc_delta_asym(unsigned long delta, struct sched_entity *se)
-+{
-+	struct load_weight lw = {
-+		.weight = NICE_0_LOAD,
-+		.inv_weight = 1UL << (WMULT_SHIFT-NICE_0_SHIFT)
-+	};
-+
-+	for_each_sched_entity(se) {
-+		struct load_weight *se_lw = &se->load;
-+
-+		if (se->load.weight < NICE_0_LOAD)
-+			se_lw = &lw;
-+
-+		delta = calc_delta_mine(delta,
-+				cfs_rq_of(se)->load.weight, se_lw);
- 	}
- 
--	return vslice;
-+	return delta;
+@@ -397,6 +401,46 @@ static u64 sched_vslice_add(struct cfs_r
+ 	return __sched_period(nr_running);
  }
  
- /*
-@@ -413,13 +467,14 @@ __update_curr(struct cfs_rq *cfs_rq, str
- 
- 	curr->sum_exec_runtime += delta_exec;
- 	schedstat_add(cfs_rq, exec_clock, delta_exec);
--	delta_exec_weighted = delta_exec;
--	if (unlikely(curr->load.weight != NICE_0_LOAD)) {
--		delta_exec_weighted = calc_delta_fair(delta_exec_weighted,
--							&curr->load);
--	}
-+	delta_exec_weighted = calc_delta_fair(delta_exec, curr);
- 	curr->vruntime += delta_exec_weighted;
- 
-+	if (!entity_is_task(curr))
-+		return;
++/*
++ * By its very nature we try to converge vruntime between tasks. This makes it
++ * very hard to interleave the groups that have varying latency requirements,
++ * they end up in a single 'lump'. Avoid this by introducing an artificial
++ * vruntime offset:
++ *
++ * A1 |--------------|
++ * A2      |--------------|
++ * A3           |--------------|
++ *
++ * New            |--------------|
++ *
++ * Because tasks have no stable (dense) enumeration within a group [*]
++ * and we'd want the tasks evenly spaced within the period in a regular
++ * fashion, we use an ascending iterator (nr_iter).
++ *
++ * This ensures that in a steady state, each task will have the same offset
++ *
++ * However, when a new task gets inserted we cannot re-adjust all offsets,
++ * hence we will approximate by inserting the new task at p(1-1/n).
++ * This is why account_entity_enqueue() sets nr_iter to nr_running-1.
++ *
++ * [*] it would be possible to arrange for one, but it seems unnecessarily
++ *     complex, esp. as we still can't re-adjust all tasks on insert.
++ */
++static u64 sched_voffset(struct cfs_rq *cfs_rq, struct sched_entity *se)
++{
++	/*
++	 * approximate p/n with min_granularity
++	 */
++	u64 frac = sysctl_sched_min_granularity;
 +
-+	cfs_rq = &rq_of(cfs_rq)->cfs;
++	frac *= cfs_rq->nr_iter;
++	cfs_rq->nr_iter++;
++	if (cfs_rq->nr_iter >= cfs_rq->nr_running)
++		cfs_rq->nr_iter = 0;
 +
- 	/*
- 	 * maintain cfs_rq->min_vruntime to be a monotonic increasing
- 	 * value tracking the leftmost vruntime in the tree.
-@@ -599,6 +654,11 @@ place_entity(struct cfs_rq *cfs_rq, stru
++	return frac;
++}
++
+ static inline unsigned long
+ calc_delta_fair(unsigned long delta, struct sched_entity *se)
  {
- 	u64 vruntime;
+@@ -564,6 +608,7 @@ static void
+ account_entity_enqueue(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ {
+ 	update_load_add(&cfs_rq->load, se->load.weight);
++	cfs_rq->nr_iter = cfs_rq->nr_running;
+ 	cfs_rq->nr_running++;
+ 	se->on_rq = 1;
+ 	list_add(&se->group_node, &cfs_rq->tasks);
+@@ -574,6 +619,8 @@ account_entity_dequeue(struct cfs_rq *cf
+ {
+ 	update_load_sub(&cfs_rq->load, se->load.weight);
+ 	cfs_rq->nr_running--;
++	if (cfs_rq->nr_iter >= cfs_rq->nr_running)
++		cfs_rq->nr_iter = 0;
+ 	se->on_rq = 0;
+ 	list_del_init(&se->group_node);
+ }
+@@ -656,7 +703,7 @@ place_entity(struct cfs_rq *cfs_rq, stru
+ 	 * stays open at the end.
+ 	 */
+ 	if (initial && sched_feat(START_DEBIT))
+-		vruntime += sched_vslice_add(cfs_rq, se);
++		vruntime += sched_vslice(cfs_rq, se);
  
-+	if (!entity_is_task(se))
-+		return;
-+
-+	cfs_rq = &rq_of(cfs_rq)->cfs;
-+
- 	vruntime = cfs_rq->min_vruntime;
- 
- 	/*
-@@ -613,7 +673,7 @@ place_entity(struct cfs_rq *cfs_rq, stru
  	if (!initial) {
  		/* sleeps upto a single latency don't count. */
- 		if (sched_feat(NEW_FAIR_SLEEPERS))
--			vruntime -= sysctl_sched_latency;
-+			vruntime -= calc_delta_asym(sysctl_sched_latency, se);
- 
- 		/* ensure we never gain time by being placed backwards. */
- 		vruntime = max_vruntime(se->vruntime, vruntime);
-@@ -637,8 +697,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, st
- 
- 	update_stats_enqueue(cfs_rq, se);
- 	check_spread(cfs_rq, se);
--	if (se != cfs_rq->curr)
--		__enqueue_entity(cfs_rq, se);
-+	__enqueue_entity(cfs_rq, se);
- 	account_entity_enqueue(cfs_rq, se);
- }
- 
-@@ -664,8 +723,7 @@ dequeue_entity(struct cfs_rq *cfs_rq, st
- #endif
- 	}
- 
--	if (se != cfs_rq->curr)
--		__dequeue_entity(cfs_rq, se);
-+	__dequeue_entity(cfs_rq, se);
- 	account_entity_dequeue(cfs_rq, se);
- }
- 
-@@ -694,6 +752,8 @@ set_next_entity(struct cfs_rq *cfs_rq, s
- 		 * runqueue.
- 		 */
- 		update_stats_wait_end(cfs_rq, se);
-+		if (WARN_ON_ONCE(cfs_rq->curr))
-+			cfs_rq->curr = NULL;
- 		__dequeue_entity(cfs_rq, se);
- 	}
- 
-@@ -713,18 +773,6 @@ set_next_entity(struct cfs_rq *cfs_rq, s
- 	se->prev_sum_exec_runtime = se->sum_exec_runtime;
- }
- 
--static struct sched_entity *pick_next_entity(struct cfs_rq *cfs_rq)
--{
--	struct sched_entity *se = NULL;
--
--	if (first_fair(cfs_rq)) {
--		se = __pick_next_entity(cfs_rq);
--		set_next_entity(cfs_rq, se);
--	}
--
--	return se;
--}
--
- static void put_prev_entity(struct cfs_rq *cfs_rq, struct sched_entity *prev)
- {
- 	/*
-@@ -735,12 +783,12 @@ static void put_prev_entity(struct cfs_r
- 		update_curr(cfs_rq);
- 
- 	check_spread(cfs_rq, prev);
-+	cfs_rq->curr = NULL;
- 	if (prev->on_rq) {
- 		update_stats_wait_start(cfs_rq, prev);
- 		/* Put 'current' back into the tree. */
- 		__enqueue_entity(cfs_rq, prev);
- 	}
--	cfs_rq->curr = NULL;
- }
- 
- static void
-@@ -751,6 +799,9 @@ entity_tick(struct cfs_rq *cfs_rq, struc
+@@ -678,6 +725,8 @@ enqueue_entity(struct cfs_rq *cfs_rq, st
  	 */
  	update_curr(cfs_rq);
  
-+	if (!entity_is_task(curr))
-+		return;
++	account_entity_enqueue(cfs_rq, se);
 +
- #ifdef CONFIG_SCHED_HRTICK
- 	/*
- 	 * queued ticks are scheduled to match the slice, so don't bother
-@@ -766,7 +817,8 @@ entity_tick(struct cfs_rq *cfs_rq, struc
- 		return;
- #endif
- 
--	if (cfs_rq->nr_running > 1 || !sched_feat(WAKEUP_PREEMPT))
-+	if (rq_of(cfs_rq)->load.weight != curr->load.weight ||
-+			!sched_feat(WAKEUP_PREEMPT))
- 		check_preempt_tick(cfs_rq, curr);
+ 	if (wakeup) {
+ 		place_entity(cfs_rq, se, 0);
+ 		enqueue_sleeper(cfs_rq, se);
+@@ -686,7 +735,6 @@ enqueue_entity(struct cfs_rq *cfs_rq, st
+ 	update_stats_enqueue(cfs_rq, se);
+ 	check_spread(cfs_rq, se);
+ 	__enqueue_entity(cfs_rq, se);
+-	account_entity_enqueue(cfs_rq, se);
  }
  
-@@ -891,7 +943,7 @@ static void yield_task_fair(struct rq *r
- 	/*
- 	 * Are we the only task in the tree?
- 	 */
--	if (unlikely(cfs_rq->nr_running == 1))
-+	if (unlikely(rq->load.weight == curr->se.load.weight))
- 		return;
+ static void
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -425,6 +425,8 @@ struct cfs_rq {
+ 	struct load_weight load;
+ 	unsigned long nr_running;
  
- 	if (likely(!sysctl_sched_compat_yield) && curr->policy != SCHED_BATCH) {
-@@ -906,7 +958,7 @@ static void yield_task_fair(struct rq *r
- 	/*
- 	 * Find the rightmost entry in the rbtree:
- 	 */
--	rightmost = __pick_last_entity(cfs_rq);
-+	rightmost = __pick_last_entity(&rq->cfs);
- 	/*
- 	 * Already in the rightmost position?
- 	 */
-@@ -1068,7 +1120,6 @@ out_set_cpu:
- }
- #endif /* CONFIG_SMP */
++	unsigned long nr_iter;
++
+ 	u64 exec_clock;
+ 	u64 min_vruntime;
  
--
- /*
-  * Preempt the current task with a newly woken task if needed:
-  */
-@@ -1095,19 +1146,11 @@ static void check_preempt_wakeup(struct 
- 	if (!sched_feat(WAKEUP_PREEMPT))
- 		return;
- 
--	while (!is_same_group(se, pse)) {
--		se = parent_entity(se);
--		pse = parent_entity(pse);
--	}
--
--	gran = sysctl_sched_wakeup_granularity;
- 	/*
--	 * More easily preempt - nice tasks, while not making
--	 * it harder for + nice tasks.
-+	 * More easily preempt - nice tasks, while not making it harder for
-+	 * + nice tasks.
- 	 */
--	if (unlikely(se->load.weight > NICE_0_LOAD))
--		gran = calc_delta_fair(gran, &se->load);
--
-+	gran = calc_delta_asym(sysctl_sched_wakeup_granularity, se);
- 	if (pse->vruntime + gran < se->vruntime)
- 		resched_task(curr);
- }
-@@ -1116,17 +1159,18 @@ static struct task_struct *pick_next_tas
- {
- 	struct task_struct *p;
- 	struct cfs_rq *cfs_rq = &rq->cfs;
--	struct sched_entity *se;
-+	struct sched_entity *se, *next;
- 
--	if (unlikely(!cfs_rq->nr_running))
-+	if (!first_fair(cfs_rq))
- 		return NULL;
- 
--	do {
--		se = pick_next_entity(cfs_rq);
--		cfs_rq = group_cfs_rq(se);
--	} while (cfs_rq);
-+	next = se = __pick_next_entity(cfs_rq);
-+	for_each_sched_entity(se) {
-+		cfs_rq = cfs_rq_of(se);
-+		set_next_entity(cfs_rq, se);
-+	}
- 
--	p = task_of(se);
-+	p = task_of(next);
- 	hrtick_start_fair(rq, p);
- 
- 	return p;
 
 --
 
