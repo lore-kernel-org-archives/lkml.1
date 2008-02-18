@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759264AbYBRKk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759129AbYBRKmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759264AbYBRKk6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 05:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755917AbYBRKku
+	id S1759129AbYBRKmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 05:42:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbYBRKmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 05:40:50 -0500
-Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:39378 "HELO
-	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753033AbYBRKku (ORCPT
+	Mon, 18 Feb 2008 05:42:05 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:21033 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753080AbYBRKmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 05:40:50 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=4tBUptGA/lK2dKjG9Rr1HMc7qF4+02ZhMNaYcj2RakR+Yl99piedcRlw8q8X3Cdfkg8vOU5HlZGqsCdk7jw7urWPWaQD1YAcnk4rsOONnNckf7hnbVefyR5EPSVCdl70CEOaHY+IOJg/Tbk6kkCAkdJDThmlk8viwEFgWvHQdfE=  ;
-X-YMail-OSG: LUz6h2wVM1nkVB9B7GDhlm.wARV9aL.ft3WvyF4xT0g.f1Do8fRfKcpqXTDgtSRbjIhLUetgNw--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Pavel Machek <pavel@ucw.cz>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] suspend/resume self-test
-Date: Mon, 18 Feb 2008 02:40:46 -0800
-User-Agent: KMail/1.9.6
-Cc: rjw@sisk.pl, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20080130131748.GA3796@elf.ucw.cz> <20080218094650.GA31970@elte.hu> <20080218095325.GA7198@elf.ucw.cz>
-In-Reply-To: <20080218095325.GA7198@elf.ucw.cz>
+	Mon, 18 Feb 2008 05:42:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Hn0iG5VcNSJh+EDhlfYcITt8WmnkkDvqVQtaYDyl9rdBWUOyaizXoXiO34X5aNcJw/RqIX4G2LhJ4xI+z/sBwYzk9iU8wXrZXNd0oTbJIlbzmYrZeCvYsqWA1fdiSF1P5yqowewPKic175veVNIa1Fk8ZTfy1uSQto07lbAOve8=
+Message-ID: <b6fcc0a0802180242w6464b0dbk986f640e828030b3@mail.gmail.com>
+Date: Mon, 18 Feb 2008 13:42:00 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Jiri Slaby" <jirislaby@gmail.com>
+Subject: Re: 2.6.25-rc2: Reported regressions from 2.6.24
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@kernel.org>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Tilman Schmidt" <tilman@imap.cc>, "Greg KH" <gregkh@suse.de>
+In-Reply-To: <47B956EE.7020804@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802180240.47510.david-b@pacbell.net>
+References: <200802172304.00322.rjw@sisk.pl> <47B9473D.20508@gmail.com>
+	 <b6fcc0a0802180143u65120b97wa87d59eb17f37ed2@mail.gmail.com>
+	 <20080218094939.GB31970@elte.hu> <47B956EE.7020804@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >   - Includes a command line parameter, which needs work yet ... it
-> >     currently turns this test off, but it should also let the target
-> >     state be specified (and maybe even default to "no test").
+On 2/18/08, Jiri Slaby <jirislaby@gmail.com> wrote:
+> On 02/18/2008 10:49 AM, Ingo Molnar wrote:
+> > * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> >
+> >> Why on earth do we have CONFIG_SYSFS_DEPRECATED at all if the only
+> >> sane choice for someone who tests new kernels is to always turn it on?
+> >
+> > seconded ...
+> >
+> > it's insane how inconvenient certain storage systems are to use, and
+> > people get turned away with NOATBUG. ITISABUG every time user-space
+> > breaks or the user has to do _anything_ to get the box working as it
+> > should.
+>
+> No, user needn't to do anything. Just turn that default y option really to y
 
-I think "no test" should be the default; STR working sanely on
-x86 is unfortunately too much a surprise.  Someone more active
-in PM testing should update that.
+Suprise, surprise, make oldconfig won't tell you anything about defaults
+because you already turned it off moons ago.
 
+> (yes, you are right, the help text of this option is misleading...).
 
-> > Also includes some Kconfig tweaks to help reduce configuration bugs on
-> > x86, by avoiding the legacy RTC driver when the generic RTC framework
-> > is enabled ... those should become a separate patch.
+Agree, reference to 2006 is particularly pathetic, given that breakage
+happened on recent fedora (sorry, box was reinstalled since then,
+I can't recall which fedora exactly).
 
-That's already been split out in a separate patch, now in MM.
-Though it may deserve another tweak, forcing off *all* legacy
-RTC drivers if the new framework is enabled.
+> It's like you turn off old acpi events option and scream that you acpi daemon
+> doesn't work  for instance.
+> There are many instances of this behaviour in the kernel.
 
+Indeed, but don't mix types of breakage, please.
+You can turn off ACPI or CPU_FREQ or SMP and forget.
+You can't turn off SYSFS_DEPRECATED and forget.
+
+> And yes, many people don't need that option tuyrned on --
+
+Wish them luck.
+
+/me goes on thinking about cpufreqfs to eventually turn off SYSFS
+completely.
