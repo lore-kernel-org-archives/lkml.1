@@ -1,102 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYBSPJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbYBSPKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbYBSPJY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:09:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbYBSPIz
+	id S1755704AbYBSPKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 10:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbYBSPKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:08:55 -0500
-Received: from lazybastard.de ([212.112.238.170]:57673 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753539AbYBSPIw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:08:52 -0500
-Date: Tue, 19 Feb 2008 16:08:22 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Stephane Chazelas <stephane.chazelas@emerson.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
-Message-ID: <20080219150822.GA29587@lazybastard.org>
-References: <chaz20080212134751.GI30304@artesyncp.com> <20080212152124.GA21878@lazybastard.org> <chaz20080212161034.GJ30304@artesyncp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <chaz20080212161034.GJ30304@artesyncp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 19 Feb 2008 10:10:19 -0500
+Received: from zombie.ncsc.mil ([144.51.88.131]:34501 "EHLO zombie.ncsc.mil"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752399AbYBSPKR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 10:10:17 -0500
+Subject: Re: [PATCH] [RFC] Smack update for file capabilities
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: casey@schaufler-ca.com
+Cc: linux-security-module@vger.kernel.org, serue@us.ibm.com, morgan@kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47BA1BAE.6020001@schaufler-ca.com>
+References: <47BA1BAE.6020001@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 19 Feb 2008 10:09:53 -0500
+Message-Id: <1203433793.9902.61.camel@moss-spartans.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Just returned home. ]
 
-On Tue, 12 February 2008 16:10:34 +0000, Stephane Chazelas wrote:
+On Mon, 2008-02-18 at 15:58 -0800, Casey Schaufler wrote:
+> From: Casey Schaufler <casey@schaufler-ca.com>
 > 
-> OK, I can do that. Would the "simple" fix go to the
-> trivial@kernel.org Trivial Patch Monkey?
-
-That or to me or to dwmw2...  I'm not too picky about the path, as long
-as it gets merged eventually.
-
-> > The core of remove_device_by_name() is shared with block2mtd_exit(),
-> > so a common helper would be good.  Your error handling is better, so
-> > let's keep that version.
+> This patch assumes "Smack unlabeled outgoing ambient packets - v4"
+> which is one reason it's RFC.
 > 
-> Well, yes that raised a concern to me, the "exit" function
-> returns "void". If the del_mtd_device fails with EBUSY at the
-> moment (such as when a /dev/mtdblock<x> is mounted), we ignore
-> it and go on with freeing everything leaving a dangling mtd.
+> Update the Smack LSM to allow the registration of the capability
+> "module" as a secondary LSM. Integrate the new hooks required for
+> file based capabilities.
 > 
-> Is there a way around that?
-
-For module unload we should be safe.  Errors are only returned if the
-device doesn't exist (a clear bug) or if the device is still being used.
-Module refcounting should prevent the latter case, so either way we have
-a bug if del_mtd_device returns an error.
-
-When removing the device via your proposed interface we should simply
-return the error to userspace, if the interface permits.  Sysfs doesn't
-seem to permit error returns, so we should keep the device alive and do
-nothing.
-
-> Another problem is that it's not easy to check whether a mtd
-> creation was successful or not. Basically, you have to write to
-> a /sys file and then parse /proc/mtd to get the result.
-
-Agreed, sysfs' lack of error indication isn't ideal.
-
-> What about having a /dev/block2mtd (with owner/permissions that
-> could allow non-root users to use it), with 2 ioctls:
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 > 
-> - one to "link" a block dev to a mtd that would take as
->   parameter a fd to an open block dev (again allowing for
->   flexible permissions) and would return the number of the
->   allocated mtd and success/failure in errno. Upon sucess it
->   would increase the refcnt of block2mtd.
+> ---
 > 
-> - and one to "release" the link. That would fail if the mtd is
->   in use and decrease block2mtd's refcnt upon success.
+>  security/smack/smack_lsm.c |   63 +++++++++++++++++++++++++++++++++--
+>  1 file changed, 60 insertions(+), 3 deletions(-)
 > 
-> A bit like the loop devices (or /dev/ptmx) actually. What do you
-> think?
+> diff -uprN -X linux-2.6.25-g0216-precap//Documentation/dontdiff linux-2.6.25-g0216-precap/security/smack/smack_lsm.c linux-2.6.25-g0216/security/smack/smack_lsm.c
+> --- linux-2.6.25-g0216-precap/security/smack/smack_lsm.c	2008-02-18 10:53:45.000000000 -0800
+> +++ linux-2.6.25-g0216/security/smack/smack_lsm.c	2008-02-18 14:15:25.000000000 -0800
+> @@ -584,6 +584,12 @@ static int smack_inode_getattr(struct vf
+>  static int smack_inode_setxattr(struct dentry *dentry, char *name,
+>  				void *value, size_t size, int flags)
+>  {
+> +	int rc;
+> +
+> +	rc = cap_inode_setxattr(dentry, name, value, size, flags);
+> +	if (rc != 0)
+> +		return rc;
 
-Could work.  Passing the fd raises several alarm bells.  Arnd, any
-comments from you?
+You only want to do that if the attribute isn't one of the Smack
+attributes.  Otherwise, the capability module will apply a CAP_SYS_ADMIN
+check on setting anything in the security namespace, including the Smack
+attributes.
 
-In general I'd like to see some good reasons for adding an ioctl (or any
-other) interface first.  Creating interfaces is hard and you rarely get
-a second chance to fix the mess you created before you knew all the
-consequenses.
+> +
+>  	if (!capable(CAP_MAC_ADMIN)) {
+>  		if (strcmp(name, XATTR_NAME_SMACK) == 0 ||
+>  		    strcmp(name, XATTR_NAME_SMACKIPIN) == 0 ||
+> @@ -658,6 +664,12 @@ static int smack_inode_getxattr(struct d
+>   */
+>  static int smack_inode_removexattr(struct dentry *dentry, char *name)
+>  {
+> +	int rc;
+> +
+> +	rc = cap_inode_removexattr(dentry, name);
+> +	if (rc != 0)
+> +		return rc;
 
-> (also, with the /sys interface, isn't there a potential problem
-> with chroots wrt the path given to the /sys file?)
+Ditto.
 
-There may be.  Can you check if there is?
-
-Jörn
-
+> +
+>  	if (strcmp(name, XATTR_NAME_SMACK) == 0 && !capable(CAP_MAC_ADMIN))
+>  		return -EPERM;
+>  
+> @@ -1016,7 +1028,12 @@ static void smack_task_getsecid(struct t
+>   */
+>  static int smack_task_setnice(struct task_struct *p, int nice)
+>  {
+> -	return smk_curacc(p->security, MAY_WRITE);
+> +	int rc;
+> +
+> +	rc = cap_task_setnice(p, nice);
+> +	if (rc == 0)
+> +		rc = smk_curacc(p->security, MAY_WRITE);
+> +	return rc;
+>  }
+>  
+>  /**
+> @@ -1028,7 +1045,12 @@ static int smack_task_setnice(struct tas
+>   */
+>  static int smack_task_setioprio(struct task_struct *p, int ioprio)
+>  {
+> -	return smk_curacc(p->security, MAY_WRITE);
+> +	int rc;
+> +
+> +	rc = cap_task_setioprio(p, ioprio);
+> +	if (rc == 0)
+> +		rc = smk_curacc(p->security, MAY_WRITE);
+> +	return rc;
+>  }
+>  
+>  /**
+> @@ -1053,7 +1075,12 @@ static int smack_task_getioprio(struct t
+>  static int smack_task_setscheduler(struct task_struct *p, int policy,
+>  				   struct sched_param *lp)
+>  {
+> -	return smk_curacc(p->security, MAY_WRITE);
+> +	int rc;
+> +
+> +	rc = cap_task_setscheduler(p, policy, lp);
+> +	if (rc == 0)
+> +		rc = smk_curacc(p->security, MAY_WRITE);
+> +	return rc;
+>  }
+>  
+>  /**
+> @@ -1093,6 +1120,11 @@ static int smack_task_movememory(struct 
+>  static int smack_task_kill(struct task_struct *p, struct siginfo *info,
+>  			   int sig, u32 secid)
+>  {
+> +	int rc;
+> +
+> +	rc = cap_task_kill(p, info, sig, secid);
+> +	if (rc != 0)
+> +		return rc;
+>  	/*
+>  	 * Special cases where signals really ought to go through
+>  	 * in spite of policy. Stephen Smalley suggests it may
+> @@ -1778,6 +1810,27 @@ static int smack_ipc_permission(struct k
+>  	return smk_curacc(isp, may);
+>  }
+>  
+> +/* module stacking operations */
+> +
+> +/**
+> + * smack_register_security - stack capability module
+> + * @name: module name
+> + * @ops: module operations - ignored
+> + *
+> + * Allow the capability module to register.
+> + */
+> +static int smack_register_security(const char *name,
+> +				   struct security_operations *ops)
+> +{
+> +	if (strcmp(name, "capability") != 0)
+> +		return -EINVAL;
+> +
+> +	printk(KERN_INFO "%s:  Registering secondary module %s\n",
+> +	       __func__, name);
+> +
+> +	return 0;
+> +}
+> +
+>  /**
+>   * smack_d_instantiate - Make sure the blob is correct on an inode
+>   * @opt_dentry: unused
+> @@ -2412,6 +2465,8 @@ static struct security_operations smack_
+>  	.inode_post_setxattr = 		smack_inode_post_setxattr,
+>  	.inode_getxattr = 		smack_inode_getxattr,
+>  	.inode_removexattr = 		smack_inode_removexattr,
+> +	.inode_need_killpriv =		cap_inode_need_killpriv,
+> +	.inode_killpriv =		cap_inode_killpriv,
+>  	.inode_getsecurity = 		smack_inode_getsecurity,
+>  	.inode_setsecurity = 		smack_inode_setsecurity,
+>  	.inode_listsecurity = 		smack_inode_listsecurity,
+> @@ -2471,6 +2526,8 @@ static struct security_operations smack_
+>  	.netlink_send =			cap_netlink_send,
+>  	.netlink_recv = 		cap_netlink_recv,
+>  
+> +	.register_security = 		smack_register_security,
+> +
+>  	.d_instantiate = 		smack_d_instantiate,
+>  
+>  	.getprocattr = 			smack_getprocattr,
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 -- 
-Debugging is twice as hard as writing the code in the first place.
-Therefore, if you write the code as cleverly as possible, you are,
-by definition, not smart enough to debug it.
--- Brian W. Kernighan
+Stephen Smalley
+National Security Agency
+
