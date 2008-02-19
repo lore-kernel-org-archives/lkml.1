@@ -1,187 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbYBSGp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759839AbYBSGyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761280AbYBSGp5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 01:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYBSGpH
+	id S1759839AbYBSGyd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 01:54:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbYBSGyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 01:45:07 -0500
-Received: from n22.bullet.mail.mud.yahoo.com ([68.142.200.113]:43741 "HELO
-	n22.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753839AbYBSGpE (ORCPT
+	Tue, 19 Feb 2008 01:54:22 -0500
+Received: from mga05.intel.com ([192.55.52.89]:11920 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753718AbYBSGyV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 01:45:04 -0500
-X-Yahoo-Newman-Id: 278903.44072.bm@omp411.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Z9rB9lTsCj1jtfUE2ZMn3mYUOdOZrkoCuCdzYx3mQaWvubtzUz/54oCRKkiOWs1fUIXceuwyJIyNktHJxwYlovYom3wyewvPILEpL6KXOkteLutHXXlDdTdK911eZKa9STPX5NJv6GqdKumTajM5PsIMQCTUEDziZ3c1RUWwkI4=  ;
-X-YMail-OSG: I.ow6Z8VM1mQw6wCUw_pEFA2H.G1I8.mTzbU4RSxoXhZkLBlYbN8bXBV6mujsSx7mnrExBIu3g--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: Re: [PATCH, RFC] kthread: (possibly) a missing memory barrier in kthread_stop()
-Date: Tue, 19 Feb 2008 17:44:45 +1100
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Rusty Russel <rusty@rustcorp.com.au>
-References: <1203375817.7619.73.camel@earth>
-In-Reply-To: <1203375817.7619.73.camel@earth>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 19 Feb 2008 01:54:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,375,1199692800"; 
+   d="scan'208";a="520828595"
+Subject: Re: tbench regression in 2.6.25-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: David Miller <davem@davemloft.net>, dada1@cosmosbay.com,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+In-Reply-To: <20040.1203356033@turing-police.cc.vt.edu>
+References: <47B52B95.3070607@cosmosbay.com>
+	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>
+	 <20080215.152200.145584182.davem@davemloft.net>
+	 <1203322358.3027.200.camel@ymzhang>
+	 <20040.1203356033@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 19 Feb 2008 14:51:43 +0800
+Message-Id: <1203403903.3248.29.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802191744.45281.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 10:03, Dmitry Adamushko wrote:
-> Hi,
->
->
-> [ description ]
->
-> Subject: kthread: add a memory barrier to kthread_stop()
->
-> 'kthread' threads do a check in the following order:
-> - set_current_state(TASK_INTERRUPTIBLE);
-> - kthread_should_stop();
->
-> and set_current_state() implies an smp_mb().
->
-> on another side (kthread_stop), wake_up_process() does not seem to
-> guarantee a full mb.
->
-> And 'kthread_stop_info.k' must be visible before wake_up_process()
-> checks for/modifies a state of the 'kthread' task.
->
-> (the patch is at the end of the message)
->
->
-> [ more detailed description ]
->
-> the current code might well be safe in case a to-be-stopped 'kthread'
-> task is _not_ running on another CPU at the moment when kthread_stop()
-> is called (in this case, 'rq->lock' will act as a kind of synch.
-> point/barrier).
->
-> Another case is as follows:
->
-> CPU#0:
->
-> ...
-> while (kthread_should_stop()) {
->
->        if (condition)
->              schedule();
->
->        /* ... do something useful ... */   <--- EIP
->
->        set_current_state(TASK_INTERRUPTIBLE);
-> }
->
-> so a 'kthread' task is about to call
-> set_current_state(TASK_INTERRUPTIBLE) ...
->
->
-> (in the mean time)
->
-> CPU#1:
->
-> kthread_stop()
->
-> -> kthread_stop_info.k = k                 (*)
-> -> wake_up_process()
->
-> wake_up_process() looks like:
->
-> (try_to_wake_up)
->
-> IRQ_OFF
-> LOCK
->
-> old_state = p->state;
-> if (!(old_state & state))                  (**)
->          goto out;
->
-> ...
->
-> UNLOCK
-> IRQ_ON
->
->
-> let's suppose (*) and (**) are reordered
-> (according to Documentation/memory-barriers.txt, neither IRQ_OFF nor
-> LOCK may prevent it from happening).
->
-> - the state is TASK_RUNNING, so we are about to return.
->
-> - CPU#1 is about to execute (*) (it's guaranteed to be done before
-> spin_unlock(&rq->lock) at the end of try_to_wake_up())
->
->
-> (in the mean time)
->
-> CPU#0:
->
-> - set_current_state(TASK_INTERRUPTIBLE);
-> - kthread_should_stop();
->
-> here, kthread_stop_info.k is not yet visible
->
-> - schedule()
->
-> ...
->
-> we missed a 'kthread_stop' event.
->
-> hum?
+On Mon, 2008-02-18 at 12:33 -0500, Valdis.Kletnieks@vt.edu wrote: 
+> On Mon, 18 Feb 2008 16:12:38 +0800, "Zhang, Yanmin" said:
+> 
+> > I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
+> > pading before lastuse, so the 3 members are moved to next cache line. The performance is
+> > recovered.
+> > 
+> > How about below patch? Almost all performance is recovered with the new patch.
+> > 
+> > Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+> 
+> Could you add a comment someplace that says "refcnt wants to be on a different
+> cache line from input/output/ops or performance tanks badly", to warn some
+> future kernel hacker who starts adding new fields to the structure?
+Ok. Below is the new patch.
 
-Looks like you are correct to me.
+1) Move tclassid under ops in case CONFIG_NET_CLS_ROUTE=y. So sizeof(dst_entry)=200
+no matter if CONFIG_NET_CLS_ROUTE=y/n. I tested many patches on my 16-core tigerton by
+moving tclassid to different place. It looks like tclassid could also have impact on
+performance.
+If moving tclassid before metrics, or just don't move tclassid, the performance isn't
+good. So I move it behind metrics.
 
+2) Add comments before __refcnt.
 
-> TIA,
->
-> ---
->
-> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> Subject: kthread: add a memory barrier to kthread_stop()
->
-> 'kthread' threads do a check in the following order:
-> - set_current_state(TASK_INTERRUPTIBLE);
-> - kthread_should_stop();
->
-> and set_current_state() implies an smp_mb().
->
-> on another side (kthread_stop), wake_up_process() is not guaranteed to
-> act as a full mb.
->
-> 'kthread_stop_info.k' must be visible before wake_up_process() checks
-> for/modifies a state of the 'kthread' task.
->
->
-> Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
->
->
-> diff --git a/kernel/kthread.c b/kernel/kthread.c
-> index 0ac8878..5167110 100644
-> --- a/kernel/kthread.c
-> +++ b/kernel/kthread.c
-> @@ -211,6 +211,10 @@ int kthread_stop(struct task_struct *k)
->
->  	/* Now set kthread_should_stop() to true, and wake it up. */
->  	kthread_stop_info.k = k;
-> +
-> +	/* The previous store operation must not get ahead of the wakeup. */
-> +	smp_mb();
-> +
->  	wake_up_process(k);
->  	put_task_struct(k);
->
->
->
-> --
+If CONFIG_NET_CLS_ROUTE=y, the result with below patch is about 18% better than
+the one without the patch.
+
+If CONFIG_NET_CLS_ROUTE=n, the result with below patch is about 30% better than
+the one without the patch.
+
+Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+
+---
+
+--- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
++++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-22 12:52:19.000000000 +0800
+@@ -52,15 +52,10 @@ struct dst_entry
+ 	unsigned short		header_len;	/* more space at head required */
+ 	unsigned short		trailer_len;	/* space to reserve at tail */
+ 
+-	u32			metrics[RTAX_MAX];
+-	struct dst_entry	*path;
+-
+-	unsigned long		rate_last;	/* rate limiting for ICMP */
+ 	unsigned int		rate_tokens;
++	unsigned long		rate_last;	/* rate limiting for ICMP */
+ 
+-#ifdef CONFIG_NET_CLS_ROUTE
+-	__u32			tclassid;
+-#endif
++	struct dst_entry	*path;
+ 
+ 	struct neighbour	*neighbour;
+ 	struct hh_cache		*hh;
+@@ -70,10 +65,20 @@ struct dst_entry
+ 	int			(*output)(struct sk_buff*);
+ 
+ 	struct  dst_ops	        *ops;
+-		
+-	unsigned long		lastuse;
++
++	u32			metrics[RTAX_MAX];
++
++#ifdef CONFIG_NET_CLS_ROUTE
++	__u32			tclassid;
++#endif
++
++	/*
++	 * __refcnt wants to be on a different cache line from
++	 * input/output/ops or performance tanks badly
++	 */
+ 	atomic_t		__refcnt;	/* client references	*/
+ 	int			__use;
++	unsigned long		lastuse;
+ 	union {
+ 		struct dst_entry *next;
+ 		struct rtable    *rt_next;
+
 
