@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYBSXkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759254AbYBSXlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbYBSXkj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:40:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYBSXkc
+	id S1759254AbYBSXlI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:41:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbYBSXky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:40:32 -0500
-Received: from an-out-0708.google.com ([209.85.132.245]:41906 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751458AbYBSXkb (ORCPT
+	Tue, 19 Feb 2008 18:40:54 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:36485 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755053AbYBSXkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:40:31 -0500
-Message-ID: <47BB68ED.4070105@xaerolimit.net>
-Date: Tue, 19 Feb 2008 18:40:29 -0500
-From: Chris Brennan <xaero@xaerolimit.net>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080209)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: BT8x8 support
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 18:40:52 -0500
+Date: Tue, 19 Feb 2008 17:40:50 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080219234049.GA27856@sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219231157.GC18912@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have the following hardware installed in my Linux Box.
-
-01:07.0 Multimedia video controller: Brooktree Corporation Bt878 Video
-Capture (rev 11)
-01:07.1 Multimedia controller: Brooktree Corporation Bt878 Audio
-Capture (rev 11)
-
-and the following devices installed in /dev
-
-0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/radio -> /dev/radio0
-0 crw-rw-rw- 1 root video 81,  64 Feb 19 17:45 /dev/radio0
-0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vbi -> /dev/vbi0
-0 crw-rw-rw- 1 root video 81, 224 Feb 19 17:45 /dev/vbi0
-0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/video -> /dev/video0
-0 lrwxrwxrwx 1 root root       10 Feb 19 11:59 /dev/video0 -> v4l/video0
-0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vtx -> /dev/vtx0
-0 crw-rw-rw- 1 root video 81, 192 Feb 19 17:45 /dev/vtx0
-
-As far as I can tell, I have bt8x8 support compiled as modules. here
-is a link to a copy of my .config. If someone can help me w/ making
-sure I have the right stuff in and what I don't need out as far as
-this card goes, I would be much appreciative.
+On Wed, Feb 20, 2008 at 12:11:57AM +0100, Nick Piggin wrote:
+> On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
+> > On Tue, Feb 19, 2008 at 09:43:57AM +0100, Nick Piggin wrote:
+> > > anything when changing the pte to be _more_ permissive, and I don't
+> > 
+> > Note that in my patch the invalidate_pages in mprotect can be
+> > trivially switched to a mprotect_pages with proper params. This will
+> > prevent page faults completely in the secondary MMU (there will only
+> > be tlb misses after the tlb flush just like for the core linux pte),
+> > and it'll allow all the secondary MMU pte blocks (512/1024 at time
+> > with my PT lock design) to be updated to have proper permissions
+> > matching the core linux pte.
+> 
+> Sorry, I realise I still didn't get this through my head yet (and also
+> have not seen your patch recently). So I don't know exactly what you
+> are doing...
+> 
+> But why does _anybody_ (why does Christoph's patches) need to invalidate
+> when they are going to be more permissive? This should be done lazily by
+> the driver, I would have thought.
 
 
+Agree. Although for most real applications, the performance difference
+is probably negligible.
+
+--- jack
