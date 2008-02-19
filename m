@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbYBSSBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYBSSJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759929AbYBSSBQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758058AbYBSSA4
+	id S1758271AbYBSSJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYBSSIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:00:56 -0500
-Received: from mga02.intel.com ([134.134.136.20]:53793 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758042AbYBSSAy convert rfc822-to-8bit (ORCPT
+	Tue, 19 Feb 2008 13:08:53 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54069 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753686AbYBSSIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:00:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,377,1199692800"; 
-   d="scan'208";a="258584575"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: iwl3945 not working properly.
-Date: Tue, 19 Feb 2008 10:00:40 -0800
-Message-ID: <D936D925018D154694D8A362EEB0892003AF2CA1@orsmsx416.amr.corp.intel.com>
-In-Reply-To: <20080218154713.GC3098@tuxdriver.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: iwl3945 not working properly.
-Thread-Index: AchyS9tAssQoFNALRkep3jl1zNzP3AA1B1eQ
-References: <20080218045425.GA7381@phoenix.nasreddine.info> <20080218154713.GC3098@tuxdriver.com>
-From: "Chatre, Reinette" <reinette.chatre@intel.com>
-To: "John W. Linville" <linville@tuxdriver.com>,
-       "Wael Nasreddine" <mla@nasreddine.com>
-Cc: "LKML" <linux-kernel@vger.kernel.org>, "Zhu, Yi" <yi.zhu@intel.com>
-X-OriginalArrivalTime: 19 Feb 2008 18:00:41.0624 (UTC) FILETIME=[57532180:01C87321]
+	Tue, 19 Feb 2008 13:08:52 -0500
+Date: Tue, 19 Feb 2008 19:08:55 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Mike Travis <travis@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lameter@sgi.com
+Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
+Message-ID: <20080219180855.GB12010@one.firstfloor.org>
+References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BAFA66.2040603@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, February 18, 2008 7:47 AM, John W. Linville  wrote:
-
-> On Mon, Feb 18, 2008 at 05:54:25AM +0100, Wael Nasreddine wrote:
->> Hello,
->> 
->> I have a Toshiba Satellite A135-S4427 with and Intel 3945ABG card,
->> the driver is not working properly.
->> 
->> When I turn on my PC it works fine, but If I ever bring the interface
->> down, I no longer can associate it with any AP without rebooting,
->> even the one I was using, I tried rmmod/modprobe iwl3945, didn't do
->> anything, 
->> 
->> iwconfig shows that the wlan0 has the radio turned off, and
->> 
->> $ cat /sys/bus/pci/drivers/iwl3945/0000:04:00.0/rf_kill 1
->> 
->> Even If I echo 0 > /sys/bus/pci/drivers/iwl3945/0000:04:00.0/rf_kill
->> whenever I try to associate the interface with an AP it turns back to
->> 1, I tried both iwconfig and NetworkManager, same problem.
->> 
->> There's a button on my laptop for Radio SoftKill (fn+F8) but it's not
->> working, the soft kill is being enabled/disabled without my
->> interference. 
->> 
->> I tried it on kernel-2.6.24 and kernel-2.6.25-rc2 same result...
->> 
->> Any help is appreciated...
->> 
->> P.S: Please Cc to me, I am not subscribed to the mailing list.
+On Tue, Feb 19, 2008 at 07:48:54AM -0800, Mike Travis wrote:
+> Andi Kleen wrote:
+> > Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+> > 
+> >> we don't need copy too. already have x86_cpu_to_node_map
+> > 
+> > That's a regression (probably from Mike's patches?). Until recently it was 
+> > used.
 > 
-> This sounds similar to the bug here:
-> 
-> 	https://bugzilla.redhat.com/show_bug.cgi?id=432264
-> 
-> The OP in that bug reports that the problem continues even after
-> reverting to older kernels that worked previously.
-> 
-> Hopefully part of the Intel crew will have some clue as to what is
-> happending here? 
+> Yes, I had removed it because I couldn't find any references to it.
 
-Wael,
+Hmm, maybe it regressed earlier. Sorry if I blamed you incorrectly.
+Anyways at some point this definitely worked. I remember writing
+the code ;-) 
 
-Could you please help us debug this issue? Unfortunately none of the
-bugs reported about this issue
-(http://bughost.org/bugzilla/show_bug.cgi?id=1454 and
-https://bugzilla.redhat.com/show_bug.cgi?id=432264) have any debugging
-output. Please reopen bug
-http://bughost.org/bugzilla/show_bug.cgi?id=1454 and add debugging
-(loading module with debug=0x43fff) to your report to help us find out
-what happens on your system when the driver loads as well as when you
-change the rfkill settings.
+> And reading one's own percpu variables should be as efficient as
+> reading one's own pda.
 
-Thank you very much
+Sure, but the point is that getting the current node is a common
+operation, so it should be a single reference and not go through a 
+lookup table.
 
-Reinette
+How it is actually implemented -- through PDA or through you new
+equivalent per cpu variables -- does not really matter as long 
+as the resulting code is only a single instruction. Using
+the lookup array from the cpu number is wrong.
+
+My patch just fixed it back to use the PDA in the old style for now,
+but if all your per cpu stuff is merged (I admit I haven't tracked 
+if it is or not) replacing that with a per cpu variable would work too
+if it then generates the same code as with PDA.
+
+-Andi
+
