@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763282AbYBSXv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763311AbYBSXxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763282AbYBSXv5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:51:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYBSXvt
+	id S1763311AbYBSXxn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:53:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbYBSXxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:51:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52010 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752331AbYBSXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:51:49 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-rc2 regression - hang on suspend
-Date: Wed, 20 Feb 2008 00:50:09 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1203422386.10992.2.camel@localhost> <200802192206.13350.rjw@sisk.pl> <1203458394.28475.7.camel@localhost>
-In-Reply-To: <1203458394.28475.7.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802200050.10158.rjw@sisk.pl>
+	Tue, 19 Feb 2008 18:53:36 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:16725 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755956AbYBSXxf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 18:53:35 -0500
+Date: Tue, 19 Feb 2008 17:52:54 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Intel Core2Duo mobile - how does the VID get set?
+In-reply-to: <fa.2QH6xosNob5B2/8HmS0yYeHCvG4@ifi.uio.no>
+To: Brian Morrison <bdm@fenrir.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <47BB6BD6.1090105@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.PElYyuLIylS1JDURm06DXLz2hAs@ifi.uio.no>
+ <fa.pELF6tZ3LC4Qymp4Nyy0opWOQCE@ifi.uio.no>
+ <fa.2QH6xosNob5B2/8HmS0yYeHCvG4@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > Hi,
-> > 
-> > Hi,
-> > 
-> > > since 2.6.25-rc1 (first version I tried) and still in rc2 (and git), I
-> > > see a hang on s2ram already when trying to suspend.
-> > 
-> > Does it work with 2.6.24?
+Brian Morrison wrote:
+> Pallipadi, Venkatesh wrote:
 > 
-> yes.
+>>> After a fair bit of Googling and reading around, I'm none the wiser 
+>>> about exactly how Linux 2.6.x sets the processor VID (or for that 
+>>> matter how it decides the FID settings) when using the ondemand 
+>>> governor and cpufreq stuff.
+>>>
+>>> Can anyone tell me a) whether this is obtained from the BIOS, 
+>>> something in the MSR of the processor or elsewhere and
+>>
+>> Yes. The freq and voltage supported comes from the platform BIOS. BIOS
+>> exports this in an ACPI table which is handled by acpi-cpufreq driver in
+>> Linux kernel.
+>>
+> 
+> OK, thanks for that.
+> 
+>>  
+>>> b) whether there is an interface in /proc or /sys where one can find 
+>>> out what is set and modify it?
+>>
+>> There is no way of modifying and using new VIDs etc in Linux kernel
+>> (other than exporting your own DSDT and hacking the related code).
+> 
+> Is there a way of viewing the ACPI table contents relating to the VIDs
+> and FIDs?
 
-Please take the current mainline (there are a couple of nasty bugs fixed in
-it), configure it with CONFIG_PM_DEBUG set, boot it with "no_console_suspend",
-run
-
-# echo 8 > /proc/sys/kernel/printk
-# echo devices > /sys/power/pm_test
-# echo mem > /sys/power/state
-
-If it hangs, it should leave a stack trace before and I need that trace to see
-what's going on.  If it doesn't hang, I'll tell you what to do next.
-
-Thanks,
-Rafael
+Viewing the decompiled ACPI DSDT may provide some hints, however the 
+kernel itself knows nothing about VID/FID settings for acpi-cpufreq, 
+basically the kernel writes to magic ACPI registers and the BIOS or 
+hardware take over to do what's required..
