@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbYBSOBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbYBSOBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbYBSOBJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 09:01:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbYBSOA4
+	id S1756002AbYBSOBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 09:01:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754838AbYBSOBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 09:00:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42830 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752244AbYBSOAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 09:00:55 -0500
-Date: Tue, 19 Feb 2008 15:00:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: Linux 2.6.25-rc2
-Message-ID: <20080219140033.GA9965@elte.hu>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219102700.GC14092@elte.hu> <20080219130253.GA29804@Krystal>
+	Tue, 19 Feb 2008 09:01:25 -0500
+Received: from ug-out-1314.google.com ([66.249.92.171]:21927 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbYBSOBY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 09:01:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=W2SDKkpEdNz4ajLwBw+9w6lNHCX7xAv323SWP61jrCnZoSbNWfr+o+i7qWlsGoJt+mCv7mHyaYWjEnmMEtrBw/YzS2Ne6QkCSkpfMuLJ22HoXq+HqeWwEz1d0US+NJTm0/c3/NdZzlxh3FKckKFftRyhnlVsKRKQaCs+55jy5oM=
+Message-ID: <146444620802190601t63ac667cpd41d834cc98d10df@mail.gmail.com>
+Date: Tue, 19 Feb 2008 14:01:21 +0000
+From: "James Crosby" <jc4.james@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Ideal Architecture for Linux
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080219130253.GA29804@Krystal>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>From the point of view of one about to try to port the Linux kernel to a new
+architecture:
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+I have recently been examining some of the existing ports of Linux to
+architectures like various ARMs, SuperH, MIPS, m68k and nios2, and I
+have realised that there are hardware features that are completely unused
+(ARM system mode), and hardware features (kernel stack pointer in the
+Motorola Coldfire port) that are completely absent, and emulated in
+software.
 
-> Ingo, a comment in slub.c explains it :
-> 
-> /*
->  * The SLUB_FASTPATH path is provisional and is currently disabled if the
->  * kernel is compiled with preemption or if the arch does not support
->  * fast cmpxchg operations. There are a couple of coming changes that will
->  * simplify matters and allow preemption. Ultimately we may end up making
->  * SLUB_FASTPATH the default.
+Well aware that Linux was designed around the x86 architecture, and then
+only at a later date were things restructured to make porting easier, and
+with this in mind;
+I am wondering what would be the best theoretical architecture to run Linux
+on.
 
-well the feature is not complete and there are no reasons given _why_ 
-it's not complete ... and even if there's a reason it should have been 
-deferred to the next merge window. We still have 10 year old "this is a 
-temporary hack" comments in the kernel ;-)
+Clearly asking any 'best' question makes little sense without some kind of
+benchmarks, so the things that I have in mind are:
 
-"hardware does not support it" is a valid argument, "kernel developer 
-had no time to implement it properly" is not ;-)
+System call (kernel entry/exit) overhead
+Ease of saving and restoring a thread's context
+Interrupt latency
+Security
+Memory requirements
 
-	Ingo
+
+Some of my own, quite conventional, thoughts are:
+
+A stack based architecture is best, it makes nested interrupts, and general
+interruptibility very easy.
+
+Two hardware stack pointers, one for kernel stack and one for user mode
+stack of each task, but maybe a third, interrupt stack.
+
+At least two corresponding processor modes, a user mode with access only
+to 'safe' instructions, and a privileged one that can do anything. But would
+additional modes for interrupt handlers and system call handlers be
+beneficial?
+
+I would also consider it a significant security problem if when a task enters
+the kernel, kernel data is stored on the task's user-mode stack, since the
+task could fish around beyond the end of its stack and sniff private data. (This
+is, if I understand correctly, the reason ARM system mode is unused.)
+
+But on the other hand, if each task didn't need a separate kernel stack, then
+there could be 4k or 8k less memory use per thread.
+
+Is it necessarily the case that the more similar to x86, the better Linux 'fits'
+the architecture?
+
+
+
+I apologise if theoretical questions of this nature are not appropriate, and
+appreciate any redirection to anywhere where they might be more so.
+
+-- 
+James Crosby
