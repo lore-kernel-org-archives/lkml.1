@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYBSScu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbYBSSdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbYBSScu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:32:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYBSScm
+	id S1758424AbYBSSdd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYBSSdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:32:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49631 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752549AbYBSScl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:32:41 -0500
-Message-ID: <47BB20C6.7050205@sgi.com>
-Date: Tue, 19 Feb 2008 10:32:38 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 19 Feb 2008 13:33:24 -0500
+Received: from mx.fenrir.org.uk ([81.168.115.223]:52926 "EHLO mx.fenrir.org.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbYBSSdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 13:33:23 -0500
+Message-ID: <47BB20F0.8030506@fenrir.org.uk>
+Date: Tue, 19 Feb 2008 18:33:20 +0000
+From: Brian Morrison <bdm@fenrir.org.uk>
+Organization: The Fool and Bladder Face-Jumping Team
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lameter@sgi.com
-Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
-References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com> <20080219180855.GB12010@one.firstfloor.org>
-In-Reply-To: <20080219180855.GB12010@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org
+Subject: Re: Intel Core2Duo mobile - how does the VID get set?
+References: <47BAC961.6030808@fenrir.org.uk> <924EFEDD5F540B4284297C4DC59F3DEE90C8BD@orsmsx423.amr.corp.intel.com>
+In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE90C8BD@orsmsx423.amr.corp.intel.com>
+X-Enigmail-Version: 0.95.6
+OpenPGP: id=E79E0778
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEU8PDpvaFEREREpKiXC
+ wsD//////v6hSyaYAAABLElEQVQ4jZ3TwW7DIAwAUFOqnbFCf4DtA5K62jloTu+VWs6rFPL/nzAg
+ WUY7qNb5EqInY8dW4FIJ+C84X4GRR+apCGgRNR/vge0WERvN/g5QiQhSiCGDkSclAQAboajzObCS
+ JgRtOqLhmgqB44nZzmDMK5H+OCzAETY0iyHs33y6amLNFjaGliTQVh9TDRf6Adgb00I0AIU4JLCo
+ IEmo0Yb2Quc6AXPIAJD7+arYOM7tohUxJwZReszgJhYINyGWkZzXjDtwqTyI8EnLaV2UjXfpdBzZ
+ 4u5ntbGz7fdLWOgKrpd0+L3BECei7jk4E7VlkES+BC7A8BRcmgewK0L/AF5q8F6ET8qHlcGpCjIf
+ VgbnB9BWwZfgdlj57ww1UPlM/gR97SqLXOzqNqrwBbAjNHgb3BUMAAAAAElFTkSuQmCC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Tue, Feb 19, 2008 at 07:48:54AM -0800, Mike Travis wrote:
->> Andi Kleen wrote:
->>> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
->>>
->>>> we don't need copy too. already have x86_cpu_to_node_map
->>> That's a regression (probably from Mike's patches?). Until recently it was 
->>> used.
->> Yes, I had removed it because I couldn't find any references to it.
-> 
-> Hmm, maybe it regressed earlier. Sorry if I blamed you incorrectly.
-> Anyways at some point this definitely worked. I remember writing
-> the code ;-) 
-> 
->> And reading one's own percpu variables should be as efficient as
->> reading one's own pda.
-> 
-> Sure, but the point is that getting the current node is a common
-> operation, so it should be a single reference and not go through a 
-> lookup table.
-> 
-> How it is actually implemented -- through PDA or through you new
-> equivalent per cpu variables -- does not really matter as long 
-> as the resulting code is only a single instruction. Using
-> the lookup array from the cpu number is wrong.
-> 
-> My patch just fixed it back to use the PDA in the old style for now,
-> but if all your per cpu stuff is merged (I admit I haven't tracked 
-> if it is or not) replacing that with a per cpu variable would work too
-> if it then generates the same code as with PDA.
-> 
-> -Andi
+Pallipadi, Venkatesh wrote:
 
-I'll look at it some more as I don't really have a preference either.
-One thing that also bothered me was other cpus read the per cpu
-variable to get the node number whilst the current cpu reads the pda
-variable.  I'll see about resolving that quirky-ness.  (All one or all
-the other.)
+>> After a fair bit of Googling and reading around, I'm none the wiser 
+>> about exactly how Linux 2.6.x sets the processor VID (or for 
+>> that matter 
+>> how it decides the FID settings) when using the ondemand governor and 
+>> cpufreq stuff.
+>>
+>> Can anyone tell me a) whether this is obtained from the BIOS, 
+>> something 
+>> in the MSR of the processor or elsewhere and
+> 
+> Yes. The freq and voltage supported comes from the platform BIOS. BIOS
+> exports this in an ACPI table which is handled by acpi-cpufreq driver in
+> Linux kernel.
+> 
 
-(And of course the problem with cpus on nodes with no local memory
-needs to be resolved as well.)
+OK, thanks for that.
 
-Thanks,
-Mike
+>  
+>> b) whether there is an 
+>> interface in /proc or /sys where one can find out what is set 
+>> and modify it?
+> 
+> There is no way of modifying and using new VIDs etc in Linux kernel
+> (other than exporting your own DSDT and hacking the related code).
+
+Is there a way of viewing the ACPI table contents relating to the VIDs
+and FIDs?
+
+-- 
+
+Brian Morrison
+
+bdm@fenrir.org.uk
+
