@@ -1,424 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760123AbYBSEMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYBSEMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760123AbYBSEMc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 23:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYBSELr
+	id S1752791AbYBSEMu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 23:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYBSELu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 23:11:47 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:53760 "EHLO
+	Mon, 18 Feb 2008 23:11:50 -0500
+Received: from moutng.kundenserver.de ([212.227.126.183]:55170 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbYBSELo (ORCPT
+	with ESMTP id S1752159AbYBSELr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 23:11:44 -0500
-Message-Id: <20080219040829.217204571@arndb.de>
+	Mon, 18 Feb 2008 23:11:47 -0500
+Message-Id: <20080219040828.954859181@arndb.de>
 References: <20080219040435.825494460@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Tue, 19 Feb 2008 05:04:41 +0100
+Date: Tue, 19 Feb 2008 05:04:39 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@lst.de>, Greg KH <gregkh@suse.de>,
        David Howells <dhowells@redhat.com>
-Subject: [RFC 06/11] split out linux/libfs.h from linux/fs.h
-Content-Disposition: inline; filename=libfs-header.diff
-X-Provags-ID: V01U2FsdGVkX1+NMIWL8JS6oW26aCxZJRhCzAB79VEPDmdG63W
- awUi1m7cCvsVjYTtb0BBKcccDuG/u+P0/i95vxD/QyUYRTmtM+
- G/9YYi56mocC+BcEFAc3A==
+Subject: [RFC 04/11] slim down securityfs
+Content-Disposition: inline; filename=slim-down-securityfs.diff
+X-Provags-ID: V01U2FsdGVkX186sJrlot7UvwkMdHNDNYvvVHttyt3zxFZKAh0
+ IXnY5PT/oApBRJLD9037zbRKSK2tRnjv7eE67fjQBsgj0fqkkX
+ 1oxKcyKJafdY8NkWr6+Hw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With libfs turning into a larger subsystem, it makes
-sense to have a separate header that is not included
-by the low-level vfs code.
+With the new simple_fs_type in place, securityfs practically
+becomes a nop and we just need to leave code around to manage
+its mount point.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/fs/debugfs/inode.c
-===================================================================
---- linux-2.6.orig/fs/debugfs/inode.c
-+++ linux-2.6/fs/debugfs/inode.c
-@@ -18,6 +18,7 @@
- 
- #include <linux/module.h>
- #include <linux/fs.h>
-+#include <linux/libfs.h>
- #include <linux/mount.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
-Index: linux-2.6/fs/dcache.c
-===================================================================
---- linux-2.6.orig/fs/dcache.c
-+++ linux-2.6/fs/dcache.c
-@@ -947,6 +947,7 @@ struct dentry *d_alloc_name(struct dentr
- 	q.hash = full_name_hash(q.name, q.len);
- 	return d_alloc(parent, &q);
- }
-+EXPORT_SYMBOL(d_alloc_name);
- 
- /**
-  * d_instantiate - fill in inode information for a dentry
-Index: linux-2.6/drivers/usb/core/inode.c
-===================================================================
---- linux-2.6.orig/drivers/usb/core/inode.c
-+++ linux-2.6/drivers/usb/core/inode.c
-@@ -27,6 +27,7 @@
- 
- /*****************************************************************************/
- 
-+#include <linux/libfs.h>
- #include <linux/module.h>
- #include <linux/fs.h>
- #include <linux/mount.h>
-Index: linux-2.6/fs/binfmt_misc.c
-===================================================================
---- linux-2.6.orig/fs/binfmt_misc.c
-+++ linux-2.6/fs/binfmt_misc.c
-@@ -16,6 +16,7 @@
-  *  2001-02-28 AV: rewritten into something that resembles C. Original didn't.
-  */
- 
-+#include <linux/libfs.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/sched.h>
-Index: linux-2.6/fs/configfs/mount.c
-===================================================================
---- linux-2.6.orig/fs/configfs/mount.c
-+++ linux-2.6/fs/configfs/mount.c
-@@ -25,6 +25,7 @@
-  */
- 
- #include <linux/fs.h>
-+#include <linux/libfs.h>
- #include <linux/module.h>
- #include <linux/mount.h>
- #include <linux/pagemap.h>
-Index: linux-2.6/fs/debugfs/file.c
-===================================================================
---- linux-2.6.orig/fs/debugfs/file.c
-+++ linux-2.6/fs/debugfs/file.c
-@@ -15,6 +15,7 @@
- 
- #include <linux/module.h>
- #include <linux/fs.h>
-+#include <linux/libfs.h>
- #include <linux/pagemap.h>
- #include <linux/namei.h>
- #include <linux/debugfs.h>
-Index: linux-2.6/fs/fuse/control.c
-===================================================================
---- linux-2.6.orig/fs/fuse/control.c
-+++ linux-2.6/fs/fuse/control.c
-@@ -9,6 +9,7 @@
- #include "fuse_i.h"
- 
- #include <linux/init.h>
-+#include <linux/libfs.h>
- #include <linux/module.h>
- 
- #define FUSE_CTL_SUPER_MAGIC 0x65735543
-Index: linux-2.6/fs/nfsd/nfsctl.c
-===================================================================
---- linux-2.6.orig/fs/nfsd/nfsctl.c
-+++ linux-2.6/fs/nfsd/nfsctl.c
-@@ -8,6 +8,7 @@
- 
- #include <linux/module.h>
- 
-+#include <linux/libfs.h>
- #include <linux/linkage.h>
- #include <linux/time.h>
- #include <linux/errno.h>
-Index: linux-2.6/net/sunrpc/rpc_pipe.c
-===================================================================
---- linux-2.6.orig/net/sunrpc/rpc_pipe.c
-+++ linux-2.6/net/sunrpc/rpc_pipe.c
-@@ -8,6 +8,7 @@
-  * Copyright (c) 2002, Trond Myklebust <trond.myklebust@fys.uio.no>
-  *
-  */
-+#include <linux/libfs.h>
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/string.h>
 Index: linux-2.6/security/inode.c
 ===================================================================
 --- linux-2.6.orig/security/inode.c
 +++ linux-2.6/security/inode.c
-@@ -16,6 +16,7 @@
+@@ -13,176 +13,14 @@
+  */
  
+ /* #define DEBUG */
++
  #include <linux/module.h>
+-#include <linux/fs.h>
+-#include <linux/mount.h>
+-#include <linux/pagemap.h>
  #include <linux/init.h>
-+#include <linux/libfs.h>
+-#include <linux/namei.h>
  #include <linux/security.h>
  
  #define SECURITYFS_MAGIC	0x73636673
-Index: linux-2.6/security/selinux/selinuxfs.c
-===================================================================
---- linux-2.6.orig/security/selinux/selinuxfs.c
-+++ linux-2.6/security/selinux/selinuxfs.c
-@@ -14,6 +14,7 @@
-  *	the Free Software Foundation, version 2.
-  */
  
-+#include <linux/libfs.h>
- #include <linux/kernel.h>
- #include <linux/pagemap.h>
- #include <linux/slab.h>
-Index: linux-2.6/virt/kvm/kvm_main.c
-===================================================================
---- linux-2.6.orig/virt/kvm/kvm_main.c
-+++ linux-2.6/virt/kvm/kvm_main.c
-@@ -40,6 +40,7 @@
- #include <linux/kvm_para.h>
- #include <linux/pagemap.h>
- #include <linux/mman.h>
-+#include <linux/libfs.h>
- 
- #include <asm/processor.h>
- #include <asm/io.h>
-Index: linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-+++ linux-2.6/arch/powerpc/platforms/cell/spufs/spufs.h
-@@ -27,6 +27,7 @@
- #include <linux/spinlock.h>
- #include <linux/fs.h>
- #include <linux/cpumask.h>
-+#include <linux/libfs.h>
- 
- #include <asm/spu.h>
- #include <asm/spu_csa.h>
-Index: linux-2.6/fs/autofs4/autofs_i.h
-===================================================================
---- linux-2.6.orig/fs/autofs4/autofs_i.h
-+++ linux-2.6/fs/autofs4/autofs_i.h
-@@ -22,6 +22,7 @@
- #define AUTOFS_IOC_COUNT     32
- 
- #include <linux/kernel.h>
-+#include <linux/libfs.h>
- #include <linux/slab.h>
- #include <linux/time.h>
- #include <linux/string.h>
-Index: linux-2.6/include/linux/fs.h
-===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -1957,12 +1957,7 @@ extern struct dentry *simple_lookup(stru
- extern ssize_t generic_read_dir(struct file *, char __user *, size_t, loff_t *);
- extern const struct file_operations simple_dir_operations;
- extern const struct inode_operations simple_dir_inode_operations;
--struct tree_descr { char *name; const struct file_operations *ops; int mode; };
- struct dentry *d_alloc_name(struct dentry *, const char *);
--extern int simple_fill_super(struct super_block *, int, const struct tree_descr *);
--extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
--extern void simple_release_fs(struct vfsmount **mount, int *count);
--
- extern ssize_t simple_read_from_buffer(void __user *, size_t, loff_t *, const void *, size_t);
- 
- #ifdef CONFIG_MIGRATION
-@@ -1993,92 +1988,6 @@ static inline ino_t parent_ino(struct de
- /* kernel/fork.c */
- extern int unshare_files(void);
- 
--/* Transaction based IO helpers */
+-static struct vfsmount *mount;
+-static int mount_count;
 -
 -/*
-- * An argresp is stored in an allocated page and holds the
-- * size of the argument or response, along with its content
+- * TODO:
+- *   I think I can get rid of these default_file_ops, but not quite sure...
 - */
--struct simple_transaction_argresp {
--	ssize_t size;
--	char data[0];
+-static ssize_t default_read_file(struct file *file, char __user *buf,
+-				 size_t count, loff_t *ppos)
+-{
+-	return 0;
+-}
+-
+-static ssize_t default_write_file(struct file *file, const char __user *buf,
+-				   size_t count, loff_t *ppos)
+-{
+-	return count;
+-}
+-
+-static int default_open(struct inode *inode, struct file *file)
+-{
+-	if (inode->i_private)
+-		file->private_data = inode->i_private;
+-
+-	return 0;
+-}
+-
+-static const struct file_operations default_file_ops = {
+-	.read =		default_read_file,
+-	.write =	default_write_file,
+-	.open =		default_open,
 -};
 -
--#define SIMPLE_TRANSACTION_LIMIT (PAGE_SIZE - sizeof(struct simple_transaction_argresp))
--
--char *simple_transaction_get(struct file *file, const char __user *buf,
--				size_t size);
--ssize_t simple_transaction_read(struct file *file, char __user *buf,
--				size_t size, loff_t *pos);
--int simple_transaction_release(struct inode *inode, struct file *file);
--
--static inline void simple_transaction_set(struct file *file, size_t n)
+-static struct inode *get_inode(struct super_block *sb, int mode, dev_t dev)
 -{
--	struct simple_transaction_argresp *ar = file->private_data;
+-	struct inode *inode = new_inode(sb);
 -
--	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
+-	if (inode) {
+-		inode->i_mode = mode;
+-		inode->i_uid = 0;
+-		inode->i_gid = 0;
+-		inode->i_blocks = 0;
+-		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
+-		switch (mode & S_IFMT) {
+-		default:
+-			init_special_inode(inode, mode, dev);
+-			break;
+-		case S_IFREG:
+-			inode->i_fop = &default_file_ops;
+-			break;
+-		case S_IFDIR:
+-			inode->i_op = &simple_dir_inode_operations;
+-			inode->i_fop = &simple_dir_operations;
 -
--	/*
--	 * The barrier ensures that ar->size will really remain zero until
--	 * ar->data is ready for reading.
+-			/* directory inodes start off with i_nlink == 2 (for "." entry) */
+-			inc_nlink(inode);
+-			break;
+-		}
+-	}
+-	return inode;
+-}
+-
+-/* SMP-safe */
+-static int mknod(struct inode *dir, struct dentry *dentry,
+-			 int mode, dev_t dev)
+-{
+-	struct inode *inode;
+-	int error = -EPERM;
+-
+-	if (dentry->d_inode)
+-		return -EEXIST;
+-
+-	inode = get_inode(dir->i_sb, mode, dev);
+-	if (inode) {
+-		d_instantiate(dentry, inode);
+-		dget(dentry);
+-		error = 0;
+-	}
+-	return error;
+-}
+-
+-static int mkdir(struct inode *dir, struct dentry *dentry, int mode)
+-{
+-	int res;
+-
+-	mode = (mode & (S_IRWXUGO | S_ISVTX)) | S_IFDIR;
+-	res = mknod(dir, dentry, mode, 0);
+-	if (!res)
+-		inc_nlink(dir);
+-	return res;
+-}
+-
+-static int create(struct inode *dir, struct dentry *dentry, int mode)
+-{
+-	mode = (mode & S_IALLUGO) | S_IFREG;
+-	return mknod(dir, dentry, mode, 0);
+-}
+-
+-static inline int positive(struct dentry *dentry)
+-{
+-	return dentry->d_inode && !d_unhashed(dentry);
+-}
+-
+-static int fill_super(struct super_block *sb, void *data, int silent)
+-{
+-	static struct tree_descr files[] = {{""}};
+-
+-	return simple_fill_super(sb, SECURITYFS_MAGIC, files);
+-}
+-
+-static int get_sb(struct file_system_type *fs_type,
+-		  int flags, const char *dev_name,
+-		  void *data, struct vfsmount *mnt)
+-{
+-	return get_sb_single(fs_type, flags, data, fill_super, mnt);
+-}
+-
+-static struct file_system_type fs_type = {
+-	.owner =	THIS_MODULE,
+-	.name =		"securityfs",
+-	.get_sb =	get_sb,
+-	.kill_sb =	kill_litter_super,
+-};
+-
+-static int create_by_name(const char *name, mode_t mode,
+-			  struct dentry *parent,
+-			  struct dentry **dentry)
+-{
+-	int error = 0;
+-
+-	*dentry = NULL;
+-
+-	/* If the parent is not specified, we create it in the root.
+-	 * We need the root dentry to do this, which is in the super
+-	 * block. A pointer to that is in the struct vfsmount that we
+-	 * have around.
 -	 */
--	smp_mb();
--	ar->size = n;
+-	if (!parent ) {
+-		if (mount && mount->mnt_sb) {
+-			parent = mount->mnt_sb->s_root;
+-		}
+-	}
+-	if (!parent) {
+-		pr_debug("securityfs: Ah! can not find a parent!\n");
+-		return -EFAULT;
+-	}
+-
+-	mutex_lock(&parent->d_inode->i_mutex);
+-	*dentry = lookup_one_len(name, parent, strlen(name));
+-	if (!IS_ERR(dentry)) {
+-		if ((mode & S_IFMT) == S_IFDIR)
+-			error = mkdir(parent->d_inode, *dentry, mode);
+-		else
+-			error = create(parent->d_inode, *dentry, mode);
+-	} else
+-		error = PTR_ERR(dentry);
+-	mutex_unlock(&parent->d_inode->i_mutex);
+-
+-	return error;
 -}
--
--/*
-- * simple attribute files
-- *
-- * These attributes behave similar to those in sysfs:
-- *
-- * Writing to an attribute immediately sets a value, an open file can be
-- * written to multiple times.
-- *
-- * Reading from an attribute creates a buffer from the value that might get
-- * read with multiple read calls. When the attribute has been read
-- * completely, no further read calls are possible until the file is opened
-- * again.
-- *
-- * All attributes contain a text representation of a numeric value
-- * that are accessed with the get() and set() functions.
-- */
--#define __DEFINE_SIMPLE_ATTRIBUTE(__static, __fops, __get, __set, __fmt)\
--static int __fops ## _open(struct inode *inode, struct file *file)	\
--{									\
--	__simple_attr_check_format(__fmt, 0ull);			\
--	return simple_attr_open(inode, file, __get, __set, __fmt);	\
--}									\
--__static const struct file_operations __fops = {			\
--	.owner	 = THIS_MODULE,						\
--	.open	 = __fops ## _open,					\
--	.release = simple_attr_release,					\
--	.read	 = simple_attr_read,					\
--	.write	 = simple_attr_write,					\
--}
--
--#define DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)		\
--	__DEFINE_SIMPLE_ATTRIBUTE(static, __fops, __get, __set, __fmt)
--
--#define DEFINE_SIMPLE_EXPORTED_ATTRIBUTE(__fops, __get, __set, __fmt)	\
--	__DEFINE_SIMPLE_ATTRIBUTE(/**/, __fops, __get, __set, __fmt);	\
--	EXPORT_SYMBOL_GPL(__fops)
--
--static inline void __attribute__((format(printf, 1, 2)))
--__simple_attr_check_format(const char *fmt, ...)
--{
--	/* don't do anything, just let the compiler check the arguments; */
--}
--
--int simple_attr_open(struct inode *inode, struct file *file,
--		     int (*get)(void *, u64 *), int (*set)(void *, u64),
--		     const char *fmt);
--int simple_attr_release(struct inode *inode, struct file *file);
--ssize_t simple_attr_read(struct file *file, char __user *buf,
--			 size_t len, loff_t *ppos);
--ssize_t simple_attr_write(struct file *file, const char __user *buf,
--			  size_t len, loff_t *ppos);
--
--
- #ifdef CONFIG_SECURITY
- static inline char *alloc_secdata(void)
++static struct dentry *securityfs_root;
+ 
+ /**
+  * securityfs_create_file - create a file in the securityfs filesystem
+@@ -217,32 +55,12 @@ struct dentry *securityfs_create_file(co
+ 				   struct dentry *parent, void *data,
+ 				   const struct file_operations *fops)
  {
-Index: linux-2.6/include/linux/libfs.h
-===================================================================
---- linux-2.6.orig/include/linux/libfs.h
-+++ linux-2.6/include/linux/libfs.h
-@@ -3,6 +3,11 @@
+-	struct dentry *dentry = NULL;
+-	int error;
++	if (!parent)
++		parent = securityfs_root;
  
- #include <linux/fs.h>
+ 	pr_debug("securityfs: creating file '%s'\n",name);
  
-+struct tree_descr { char *name; const struct file_operations *ops; int mode; };
-+extern int simple_fill_super(struct super_block *, int, const struct tree_descr *);
-+extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
-+extern void simple_release_fs(struct vfsmount **mount, int *count);
-+
- /* simple_fs interface */
- struct simple_fs_type {
- 	struct file_system_type fstype;
-@@ -26,6 +31,91 @@ struct simple_fs_type _type = {		\
- extern struct dentry *simple_register_filesystem(struct simple_fs_type *type);
- extern void simple_unregister_filesystem(struct simple_fs_type *type);
+-	error = simple_pin_fs(&fs_type, &mount, &mount_count);
+-	if (error) {
+-		dentry = ERR_PTR(error);
+-		goto exit;
+-	}
+-
+-	error = create_by_name(name, mode, parent, &dentry);
+-	if (error) {
+-		dentry = ERR_PTR(error);
+-		simple_release_fs(&mount, &mount_count);
+-		goto exit;
+-	}
+-
+-	if (dentry->d_inode) {
+-		if (fops)
+-			dentry->d_inode->i_fop = fops;
+-		if (data)
+-			dentry->d_inode->i_private = data;
+-	}
+-exit:
+-	return dentry;
++	return simple_create_file(name, mode, parent, data, fops);
+ }
+ EXPORT_SYMBOL_GPL(securityfs_create_file);
  
-+/* Transaction based IO helpers */
-+
-+/*
-+ * An argresp is stored in an allocated page and holds the
-+ * size of the argument or response, along with its content
-+ */
-+struct simple_transaction_argresp {
-+	ssize_t size;
-+	char data[0];
-+};
-+
-+#define SIMPLE_TRANSACTION_LIMIT (PAGE_SIZE - sizeof(struct simple_transaction_argresp))
-+
-+char *simple_transaction_get(struct file *file, const char __user *buf,
-+				size_t size);
-+ssize_t simple_transaction_read(struct file *file, char __user *buf,
-+				size_t size, loff_t *pos);
-+int simple_transaction_release(struct inode *inode, struct file *file);
-+
-+static inline void simple_transaction_set(struct file *file, size_t n)
-+{
-+	struct simple_transaction_argresp *ar = file->private_data;
-+
-+	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
-+
-+	/*
-+	 * The barrier ensures that ar->size will really remain zero until
-+	 * ar->data is ready for reading.
-+	 */
-+	smp_mb();
-+	ar->size = n;
-+}
-+
-+/*
-+ * simple attribute files
-+ *
-+ * These attributes behave similar to those in sysfs:
-+ *
-+ * Writing to an attribute immediately sets a value, an open file can be
-+ * written to multiple times.
-+ *
-+ * Reading from an attribute creates a buffer from the value that might get
-+ * read with multiple read calls. When the attribute has been read
-+ * completely, no further read calls are possible until the file is opened
-+ * again.
-+ *
-+ * All attributes contain a text representation of a numeric value
-+ * that are accessed with the get() and set() functions.
-+ */
-+#define __DEFINE_SIMPLE_ATTRIBUTE(__static, __fops, __get, __set, __fmt)\
-+static int __fops ## _open(struct inode *inode, struct file *file)	\
-+{									\
-+	__simple_attr_check_format(__fmt, 0ull);			\
-+	return simple_attr_open(inode, file, __get, __set, __fmt);	\
-+}									\
-+__static const struct file_operations __fops = {			\
-+	.owner	 = THIS_MODULE,						\
-+	.open	 = __fops ## _open,					\
-+	.release = simple_attr_release,					\
-+	.read	 = simple_attr_read,					\
-+	.write	 = simple_attr_write,					\
-+}
-+
-+#define DEFINE_SIMPLE_ATTRIBUTE(__fops, __get, __set, __fmt)		\
-+	__DEFINE_SIMPLE_ATTRIBUTE(static, __fops, __get, __set, __fmt)
-+
-+#define DEFINE_SIMPLE_EXPORTED_ATTRIBUTE(__fops, __get, __set, __fmt)	\
-+	__DEFINE_SIMPLE_ATTRIBUTE(/**/, __fops, __get, __set, __fmt);	\
-+	EXPORT_SYMBOL_GPL(__fops)
-+
-+static inline void __attribute__((format(printf, 1, 2)))
-+__simple_attr_check_format(const char *fmt, ...)
-+{
-+	/* don't do anything, just let the compiler check the arguments; */
-+}
-+
-+int simple_attr_open(struct inode *inode, struct file *file,
-+		     int (*get)(void *, u64 *), int (*set)(void *, u64),
-+		     const char *fmt);
-+int simple_attr_release(struct inode *inode, struct file *file);
-+ssize_t simple_attr_read(struct file *file, char __user *buf,
-+			 size_t len, loff_t *ppos);
-+ssize_t simple_attr_write(struct file *file, const char __user *buf,
-+			  size_t len, loff_t *ppos);
-+
- extern const struct file_operations simple_fops_u8;
- extern const struct file_operations simple_fops_x8;
- extern const struct file_operations simple_fops_u16;
+@@ -291,31 +109,12 @@ EXPORT_SYMBOL_GPL(securityfs_create_dir)
+  */
+ void securityfs_remove(struct dentry *dentry)
+ {
+-	struct dentry *parent;
+-
+-	if (!dentry)
+-		return;
+-
+-	parent = dentry->d_parent;
+-	if (!parent || !parent->d_inode)
+-		return;
+-
+-	mutex_lock(&parent->d_inode->i_mutex);
+-	if (positive(dentry)) {
+-		if (dentry->d_inode) {
+-			if (S_ISDIR(dentry->d_inode->i_mode))
+-				simple_rmdir(parent->d_inode, dentry);
+-			else
+-				simple_unlink(parent->d_inode, dentry);
+-			dput(dentry);
+-		}
+-	}
+-	mutex_unlock(&parent->d_inode->i_mutex);
+-	simple_release_fs(&mount, &mount_count);
++	return simple_remove(dentry);
+ }
+ EXPORT_SYMBOL_GPL(securityfs_remove);
+ 
+ static struct kobject *security_kobj;
++static DEFINE_SIMPLE_FS(fs_type, "securityfs", NULL, SECURITYFS_MAGIC);
+ 
+ static int __init securityfs_init(void)
+ {
+@@ -325,12 +124,14 @@ static int __init securityfs_init(void)
+ 	if (!security_kobj)
+ 		return -EINVAL;
+ 
+-	retval = register_filesystem(&fs_type);
+-	if (retval)
++	retval = 0;
++	securityfs_root = simple_register_filesystem(&fs_type);
++	if (IS_ERR(securityfs_root)) {
+ 		kobject_put(security_kobj);
++		retval = PTR_ERR(securityfs_root);
++	}
+ 	return retval;
+ }
+ 
+ core_initcall(securityfs_init);
+ MODULE_LICENSE("GPL");
+-
 
 -- 
 
