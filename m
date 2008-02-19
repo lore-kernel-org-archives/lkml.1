@@ -1,92 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762867AbYBSHIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761740AbYBSHKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762867AbYBSHIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762218AbYBSHHc
+	id S1761740AbYBSHKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:10:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbYBSHK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:07:32 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38747 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762144AbYBSHH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:07:29 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Hugh Dickins <hugh@veritas.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Herbert Poetzl <herbert@13thfloor.at>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	Tue, 19 Feb 2008 02:10:28 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48937 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754238AbYBSHK1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:10:27 -0500
+Date: Tue, 19 Feb 2008 16:09:07 +0900
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [RFC][PATCH] the proposal of improve page reclaim by throttle
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik Van Riel <riel@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 19 Feb 2008 12:33:25 +0530
-Message-Id: <20080219070325.25349.13889.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080219070232.25349.21196.sendpatchset@localhost.localdomain>
-References: <20080219070232.25349.21196.sendpatchset@localhost.localdomain>
-Subject: [mm] [PATCH 4/4] Add soft limit documentation v2
+       Rik van Riel <riel@redhat.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802191735.00222.nickpiggin@yahoo.com.au>
+References: <20080219134715.7E90.KOSAKI.MOTOHIRO@jp.fujitsu.com> <200802191735.00222.nickpiggin@yahoo.com.au>
+Message-Id: <20080219160711.7E99.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Nick,
 
-Add documentation for the soft limit feature.
+> Yeah this is definitely needed and a nice result.
+> 
+> I'm worried about a) placing a global limit on parallelism, and b)
+> placing a limit on parallelism at all.
 
-Changelog v2 (Thanks to the review by Randy Dunlap)
-1. Change several misuses of it's to its
-2. Fix spelling errors and punctuation
+sorry, i don't understand yet.
+a) and b) have any relation?
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+> 
+> I think it should maybe be a per-zone thing...
+> 
+> What happens if you make it a per-zone mutex, and allow just a single
+> process to reclaim pages from a given zone at a time? I guess that is
+> going to slow down throughput a little bit in some cases though...
 
- Documentation/controllers/memory.txt |   18 +++++++++++++++++-
- 1 file changed, 17 insertions(+), 1 deletion(-)
+That makes sense.
 
-diff -puN Documentation/controllers/memory.txt~memory-controller-add-soft-limit-documentation Documentation/controllers/memory.txt
---- linux-2.6.25-rc2/Documentation/controllers/memory.txt~memory-controller-add-soft-limit-documentation	2008-02-19 12:31:53.000000000 +0530
-+++ linux-2.6.25-rc2-balbir/Documentation/controllers/memory.txt	2008-02-19 12:31:53.000000000 +0530
-@@ -201,6 +201,22 @@ The memory.force_empty gives an interfac
- 
- will drop all charges in cgroup. Currently, this is maintained for test.
- 
-+The file memory.soft_limit_in_bytes allows users to set soft limits. A soft
-+limit is set in a manner similar to limit. The limit feature described
-+earlier is a hard limit. A group can never exceed its hard limit. A soft
-+limit on the other hand can be exceeded. A group will be shrunk back
-+to its soft limit, when there is memory pressure/contention.
-+
-+Ideally the soft limit should always be set to a value smaller than the
-+hard limit. However, the code does not force the user to do so. The soft
-+limit can be greater than the hard limit; then the soft limit has
-+no meaning in that setup, since the group will always be restrained to its
-+hard limit.
-+
-+Example setting of soft limit
-+
-+# echo -n 100M > memory.soft_limit_in_bytes
-+
- 4. Testing
- 
- Balbir posted lmbench, AIM9, LTP and vmmstress results [10] and [11].
-@@ -221,7 +237,7 @@ some of the pages cached in the cgroup (
- 
- 4.2 Task migration
- 
--When a task migrates from one cgroup to another, it's charge is not
-+When a task migrates from one cgroup to another, its charge is not
- carried forward. The pages allocated from the original cgroup still
- remain charged to it, the charge is dropped when the page is freed or
- reclaimed.
-_
+OK.
+I'll repost after 2-3 days.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Thanks.
+
+- kosaki
+
+
