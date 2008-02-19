@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762290AbYBSXub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763282AbYBSXv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762290AbYBSXub (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:50:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBSXuS
+	id S1763282AbYBSXv5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbYBSXvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:50:18 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:4104 "EHLO mms1.broadcom.com"
+	Tue, 19 Feb 2008 18:51:49 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52010 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751703AbYBSXuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:50:16 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Tony Battersby" <tonyb@cybernetics.com>
-cc: "David Miller" <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47BB54C2.6090501@cybernetics.com>
-References: <47BA0984.2070306@cybernetics.com>
- <1203381120.13495.78.camel@dell>
- <20080218.163554.74130592.davem@davemloft.net>
- <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com>
- <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com>
-Date: Tue, 19 Feb 2008 15:52:43 -0800
-Message-ID: <1203465163.13495.102.camel@dell>
+	id S1752331AbYBSXvt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 18:51:49 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: 2.6.25-rc2 regression - hang on suspend
+Date: Wed, 20 Feb 2008 00:50:09 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <1203422386.10992.2.camel@localhost> <200802192206.13350.rjw@sisk.pl> <1203458394.28475.7.camel@localhost>
+In-Reply-To: <1203458394.28475.7.camel@localhost>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6BA5B4BB3ZO5787033-01-01
-Content-Type: text/plain
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802200050.10158.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-19 at 17:14 -0500, Tony Battersby wrote:
-
+On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
+> > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> > > Hi,
+> > 
+> > Hi,
+> > 
+> > > since 2.6.25-rc1 (first version I tried) and still in rc2 (and git), I
+> > > see a hang on s2ram already when trying to suspend.
+> > 
+> > Does it work with 2.6.24?
 > 
-> Update: when I revert Herbert's patch in addition to applying your
-> patch, the iSCSI performance goes back up to 115 MB/s again in both
-> directions.  So it looks like turning off SG for TX didn't itself cause
-> the performance drop, but rather that the performance drop is just
-> another manifestation of whatever bug is causing the data corruption.
-> 
-> I do not regularly use wireshark or look at network packet dumps, so I
-> am not really sure what to look for.  Given the above information, do
-> you still believe that there is value in examining the packet dump?
-> 
+> yes.
 
-Can you confirm whether you're getting TCP checksum errors on the other
-side that is receiving packets from the 5701?  You can just check
-statistics using netstat -s.  I suspect that after we turn off SG,
-checksum is no longer offloaded and we are getting lots of TCP checksum
-errors instead that are slowing the performance.
+Please take the current mainline (there are a couple of nasty bugs fixed in
+it), configure it with CONFIG_PM_DEBUG set, boot it with "no_console_suspend",
+run
 
+# echo 8 > /proc/sys/kernel/printk
+# echo devices > /sys/power/pm_test
+# echo mem > /sys/power/state
+
+If it hangs, it should leave a stack trace before and I need that trace to see
+what's going on.  If it doesn't hang, I'll tell you what to do next.
+
+Thanks,
+Rafael
