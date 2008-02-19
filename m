@@ -1,99 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbYBSQsD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbYBSQsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbYBSQsD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:48:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYBSQrw
+	id S1758198AbYBSQsc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:48:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752965AbYBSQsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:47:52 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:44670 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbYBSQru convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:47:50 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Date: Tue, 19 Feb 2008 16:46:50 +0000
-Subject: RE: [PATCH 1/1] cciss: procfs updates to display info about many
- volumes
-Thread-Topic: [PATCH 1/1] cciss: procfs updates to display info about many
- volumes
-Thread-Index: Achy7xU/+y4vrHn6RYiE+pnzdDE/VAAJ9FnA
-Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE0427C1C4C2@G6W0268.americas.hpqcorp.net>
-References: <20080211220906.GA24835@roadking.usa.hp.com>
-	<20080219104818.GX23197@kernel.dk>
- <20080219035956.d66052af.akpm@linux-foundation.org>
-In-Reply-To: <20080219035956.d66052af.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 19 Feb 2008 11:48:22 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54759 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754796AbYBSQsV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:48:21 -0500
+Date: Tue, 19 Feb 2008 17:48:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: Linux 2.6.25-rc2
+Message-ID: <20080219164803.GA9148@elte.hu>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com> <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com> <alpine.LFD.1.00.0802190806330.7833@woody.linux-foundation.org> <20080219164525.GA4396@elte.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219164525.GA4396@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> -----Original Message-----
-> From: Andrew Morton [mailto:akpm@linux-foundation.org]
-> Sent: Tuesday, February 19, 2008 6:00 AM
-> To: Jens Axboe
-> Cc: Miller, Mike (OS Dev); LKML; LKML-scsi
-> Subject: Re: [PATCH 1/1] cciss: procfs updates to display
-> info about many volumes
->
-> On Tue, 19 Feb 2008 11:48:18 +0100 Jens Axboe
-> <jens.axboe@oracle.com> wrote:
->
-> > On Mon, Feb 11 2008, Mike Miller wrote:
-> > > Patch 1 of 1
-> > >
-> > > This patch allows us to display information about all of
-> the logical
-> > > volumes configured on a particular without stepping on
-> memory even
-> > > when there are many volumes (128 or more) configured. This patch
-> > > replaces the one submitted on 20071214. See
-> > >
-> http://groups.google.com/group/linux.kernel/browse_thread/thread/49a
-> > >
-> 50244b19f8855/ba3dc95b23391521?hl=en&lnk=gst&q=cciss#ba3dc95b2339152
-> > > 1 which has not been merged. That patch displayed
-> information about
-> > > only the first logical volume on each controller and had negative
-> > > side effects for some installers.
-> > > Please consider this for inclusion.
-> >
-> > It looks ok, but has some flaws. Try to disable cciss scsi and tape
-> > support:
-> >
-> > In file included from drivers/block/cciss.c:231:
-> > drivers/block/cciss_scsi.c:1498:38: error: macro parameters must be
-> > comma-separated
-> > drivers/block/cciss.c: In function 'cciss_seq_show_header':
-> > drivers/block/cciss.c:272: error: implicit declaration of function
-> > 'cciss_seq_tape_report'
-> > drivers/block/cciss.c: In function 'cciss_proc_write':
-> > drivers/block/cciss.c:393: error: implicit declaration of function
-> > 'cciss_engage_scsi'
-> >
-> > You macro definition of cciss_seq_tape_report() is totally busted.
-> > Either write is as a macro OR as a function.
-> >
-> > Fix these up and resubmit, then I'll take it.
-> >
->
-> It also need to be updated to use the non-racy proc_create(),
-> please, as per Alexey's comments.
+> Earlier today i turned off local-cmpxchg and havent had a crash or 
+> hang since then - but at 200 bootups and 4-5 crashes in a week that's 
+> not conclusive yet. I think others might have workloads that trigger 
+> this bug more often.
 
-Thanks all, I'll fix and resubmit.
+i mean, today i've only done 200 randconfig bootups since i did the 
+cmpxchg SLUB revert, and given the statistics of the bug (thousands of 
+bootups and just 3 provable crashes) i cannot yet conclude that the bug 
+is truly gone.
 
--- mikem
->
+	Ingo
