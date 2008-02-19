@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYBSVic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757352AbYBSVsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761374AbYBSVic (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 16:38:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760094AbYBSViQ
+	id S1757352AbYBSVsG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 16:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbYBSVry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 16:38:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:34037 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758982AbYBSViO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 16:38:14 -0500
-Message-ID: <47BB4BB5.20709@redhat.com>
-Date: Tue, 19 Feb 2008 16:35:49 -0500
-From: Larry Woodman <lwoodman@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040301
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Problem with /proc/sys/vm/lowmem_reserve_ratio
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Feb 2008 16:47:54 -0500
+Received: from mail.gmx.net ([213.165.64.20]:59696 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753940AbYBSVrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 16:47:53 -0500
+X-Authenticated: #36809985
+X-Provags-ID: V01U2FsdGVkX18IaHEBUtEIxAfyOK1e6cZe8rmzMmCfZiXexTGB2Z
+	i3ey1+Odc9kmLk
+Subject: Re: [PATCH] splice: fix problem with sys_tee and SPLICE_F_NONBLOCK
+From: Johann Felix Soden <johfel@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Johann Felix Soden <johfel@gmx.de>, Patrick McManus <mcmanus@ducksong.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080219212530.GN23197@kernel.dk>
+References: <1203452091.7758.5.camel@localhost>
+	 <20080219202543.GK23197@kernel.dk> <1203455538.7758.17.camel@localhost>
+	 <20080219212530.GN23197@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 22:47:41 +0100
+Message-Id: <1203457661.7758.31.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-balance_pgdat() calls zone_watermark_ok() three times, the first call
-passes a zero(0) in as the 4th argument.  This 4th argument is the
-classzone_idx which is used as the index into the zone->lowmem_reserve[] 
-array. 
-Since setup_per_zone_lowmem_reserve()
-always sets the zone->lowmem_reserve[0] = 0(because there is nothing
-below the DMA zone), zone_watermark_ok() will not consider the
-lowmem_reserve pages when zero is passed as the 4th arg.   The
-4th argument must be "i" or balance_pgdat wont even get into the main loop
-when lowmem_reserve_ratio is lowered.
 
--------------------------------------------------------------------------
---- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
-11:14:55.000000000 -0500
-+++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:15:02.000000000
--0500
-@@ -1375,7 +1375,7 @@ loop_again:
-                               continue;
+Am Dienstag, den 19.02.2008, 22:25 +0100 schrieb Jens Axboe:
+> On Tue, Feb 19 2008, Johann Felix Soden wrote:
+> > > On Tue, Feb 19 2008, Johann Felix Soden wrote:
+> > > > From: Johann Felix Soden <johfel@users.sourceforge.net>
+> > > > 
+> > > > With SPLICE_F_NONBLOCK sys_tee should return number of duplicated bytes,
+> > > > not only -EAGAIN on success.
+> > > 
+> > > ?
+> > > 
+> > > The current behaviour is to return bytes tee'd, or return -EAGAIN for
+> > > zero bytes if SPLICE_F_NONBLOCK is set. It doesn't return "-EAGAIN on
+> > > success", not sure what you mean there.
+> > > 
+> > Sorry, my patch description was not correct. 
+> > 
+> > The new behavior of sys_tee with my patch is: 
+> > 	- return -EAGAIN if there are no data in the pipe, but writer
+> > 	  connected to the pipe, 
+> > 	- return 0 if there are not writers connected
+> > 	- else return number of duplicated byte 
+> > 
+> > The old behavior was: return -EAGAIN or the number (>0) of duplicated
+> > bytes.
+> 
+> Your patch has an odd way of achieving that goal, modify the real
+> location of the assignment instead of overriding something. That has the
+> potential to turn into another confusing bug later on, wondering why the
+> heck your return value isn't being passed back.
+> 
+> Improvement is welcome though, you can't distuingish -EAGAIN on the
+> input side from the output side currently.
+> 
 
-                       if (!zone_watermark_ok(zone, order, 
-zone->pages_high,
+I thought again about the problem and my patch: you are right, the patch
+is nonsense. I have learnt, that the correctness of a patch is not
+guaranteed by the (bad, but anyhow working) solution of the problem the
+patch was written for.
+Sorry for wasting your time.
+--
+ J. F. Soden
 
--                                              0, 0)) {
-+                                              i, 0)) {
-                               end_zone = i;
-                               break;
 
