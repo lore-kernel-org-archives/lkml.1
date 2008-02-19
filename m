@@ -1,177 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbYBSIbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbYBSIgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbYBSIbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 03:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbYBSIau
+	id S1754946AbYBSIgr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 03:36:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbYBSIgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 03:30:50 -0500
-Received: from wilson.telenet-ops.be ([195.130.132.42]:39698 "EHLO
-	wilson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbYBSIas (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 03:30:48 -0500
-Date: Tue, 19 Feb 2008 09:30:42 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Alexander van Heukelum <heukelum@mailshack.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Alexander van Heukelum <heukelum@fastmail.fm>
-Subject: Re: Solve section mismatch for free_area_init_core.
-In-Reply-To: <20080218210115.GA24592@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0802190930320.25052@anakin>
-References: <20080203172148.GA17875@mailshack.com> <20080218210115.GA24592@uranus.ravnborg.org>
+	Tue, 19 Feb 2008 03:36:38 -0500
+Received: from brick.kernel.dk ([87.55.233.238]:21315 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750761AbYBSIgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 03:36:37 -0500
+Date: Tue, 19 Feb 2008 09:36:34 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Andy Whitcroft <apw@shadowen.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [BUG] Linux 2.6.25-rc2 - Regression from 2.6.24-rc1-git1  softlockup  while bootup on powerpc
+Message-ID: <20080219083633.GN23197@kernel.dk>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <47B67E5E.4010001@linux.vnet.ibm.com> <20080217192913.GO23197@kernel.dk> <20080219170432.9c04376f.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219170432.9c04376f.kamezawa.hiroyu@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Sam Ravnborg wrote:
-> I have (triggered by Geert) spend some time reviewing this patch
-> and I see no better way to fix it.
+On Tue, Feb 19 2008, KAMEZAWA Hiroyuki wrote:
+> On Sun, 17 Feb 2008 20:29:13 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> So it gets my:
-> 
-> Reviewed-by: Sam Ravnborg <sam@ravnborg.org>
+> > It's odd stuff. Could you perhaps try and add some printks to
+> > block/cfq-iosched.c:call_for_each_cic(), like dumping the 'nr' return
+> > from radix_tree_gang_lookup() and the pointer value of cics[i] in the
+> > for() loop after the lookup?
+> > 
+> I met the same issue on ia64/NUMA box.
+> seems cisc[]->key is NULL and index for radix_tree_gang_lookup() was
+> always '1'.
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Why does it keep repeating then? If ->key is NULL, the next lookup index
+should be 1UL.
 
-> Original mail is here:
-> http://lkml.org/lkml/2008/2/3/129
-> 
-> Can you take it in -mm so we get some testing coverage.
-> 
-> Thanks,
-> 	Sam
-> 
-> On Sun, Feb 03, 2008 at 06:21:48PM +0100, Alexander van Heukelum wrote:
-> > Solve section mismatch for free_area_init_core:
-> > 
-> > WARNING: vmlinux.o(.meminit.text+0x649): 
-> > Section mismatch in reference from the 
-> > function free_area_init_core() to the function .init.text:setup_usemap()
-> > The function __meminit free_area_init_core() references
-> > a function __init setup_usemap().
-> > If free_area_init_core is only used by setup_usemap then
-> > annotate free_area_init_core with a matching annotation.
-> > 
-> > The warning is covers this stack of functions in mm/page_alloc.c:
-> > 
-> > alloc_bootmem_node must be marked __init.
-> > alloc_bootmem_node is used by setup_usemap, if !SPARSEMEM.
-> > (usemap_size is only used by setup_usemap, if !SPARSEMEM.)
-> > setup_usemap is only used by free_area_init_core.
-> > free_area_init_core is only used by free_area_init_node.
-> > 
-> > free_area_init_node is used by:
-> > arch/alpha/mm/numa.c: __init paging_init()
-> > arch/arm/mm/init.c: __init bootmem_init_node()
-> > arch/avr32/mm/init.c: __init paging_init()
-> > arch/cris/arch-v10/mm/init.c: __init paging_init()
-> > arch/cris/arch-v32/mm/init.c: __init paging_init()
-> > arch/m32r/mm/discontig.c: __init zone_sizes_init()
-> > arch/m32r/mm/init.c: __init zone_sizes_init()
-> > arch/m68k/mm/motorola.c: __init paging_init()
-> > arch/m68k/mm/sun3mmu.c: __init paging_init()
-> > arch/mips/sgi-ip27/ip27-memory.c: __init paging_init()
-> > arch/parisc/mm/init.c: __init paging_init()
-> > arch/sparc/mm/srmmu.c: __init srmmu_paging_init()
-> > arch/sparc/mm/sun4c.c: __init sun4c_paging_init()
-> > arch/sparc64/mm/init.c: __init paging_init()
-> > mm/page_alloc.c: __init free_area_init_nodes()
-> > mm/page_alloc.c: __init free_area_init()
-> > and
-> > mm/memory_hotplug.c: hotadd_new_pgdat()
-> > 
-> > hotadd_new_pgdat can not be an __init function, but:
-> > 
-> > It is compiled for MEMORY_HOTPLUG configurations only
-> > MEMORY_HOTPLUG depends on SPARSEMEM || X86_64_ACPI_NUMA
-> > X86_64_ACPI_NUMA depends on X86_64
-> > ARCH_FLATMEM_ENABLE depends on X86_32
-> > ARCH_DISCONTIGMEM_ENABLE depends on X86_32
-> > So X86_64_ACPI_NUMA implies SPARSEMEM, right?
-> > 
-> > So we can mark the stack of functions __init for !SPARSEMEM,
-> > but we must mark them __meminit for SPARSEMEM configurations.
-> > This is ok, because then the calls to alloc_bootmem_node are
-> > also avoided.
-> > 
-> > Compile-tested on:
-> > silly minimal config
-> > defconfig x86_32
-> > defconfig x86_64
-> > defconfig x86_64 -HIBERNATION +MEMORY_HOTPLUG
-> > 
-> > Comments?
-> > 
-> > Signed-off-by: Alexander van Heukelum <heukelum@fastmail.fm>
-> > 
-> > 
-> > diff --git a/mm/internal.h b/mm/internal.h
-> > index 953f941..5b46b32 100644
-> > --- a/mm/internal.h
-> > +++ b/mm/internal.h
-> > @@ -47,4 +47,17 @@ static inline unsigned long page_order(struct page *page)
-> >  	VM_BUG_ON(!PageBuddy(page));
-> >  	return page_private(page);
-> >  }
-> > +
-> > +/*
-> > + * FLATMEM and DISCONTIGMEM configurations use alloc_bootmem_node,
-> > + * so all functions starting at paging_init should be marked __init
-> > + * in those cases. SPARSEMEM, however, allows for memory hotplug,
-> > + * and alloc_bootmem_node is not used.
-> > + */
-> > +#ifdef CONFIG_SPARSEMEM
-> > +#define __paginginit __meminit
-> > +#else
-> > +#define __paginginit __init
-> > +#endif
-> > +
-> >  #endif
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index b2838c2..859be40 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -3321,7 +3321,7 @@ static inline int pageblock_default_order(unsigned int order)
-> >   *   - mark all memory queues empty
-> >   *   - clear the memory bitmaps
-> >   */
-> > -static void __meminit free_area_init_core(struct pglist_data *pgdat,
-> > +static void __paginginit free_area_init_core(struct pglist_data *pgdat,
-> >  		unsigned long *zones_size, unsigned long *zholes_size)
-> >  {
-> >  	enum zone_type j;
-> > @@ -3445,7 +3445,7 @@ static void __init_refok alloc_node_mem_map(struct pglist_data *pgdat)
-> >  #endif /* CONFIG_FLAT_NODE_MEM_MAP */
-> >  }
-> >  
-> > -void __meminit free_area_init_node(int nid, struct pglist_data *pgdat,
-> > +void __paginginit free_area_init_node(int nid, struct pglist_data *pgdat,
-> >  		unsigned long *zones_size, unsigned long node_start_pfn,
-> >  		unsigned long *zholes_size)
-> >  {
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+But I think the radix 'scan over entire tree' is a bit fragile. This
+patch adds a parallel hlist for ease of properly browsing the members,
+does that work for you? It compiles, but I haven't booted it here yet...
 
-Gr{oetje,eeting}s,
+> Attached patch works well for me, but I don't know much about cfq.
+> please confirm. 
 
-						Geert
+It doesn't make a lot of sense, I'm afraid.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ block/blk-ioc.c           |   35 +++++++++++++++--------------------
+ block/cfq-iosched.c       |   37 +++++++++++--------------------------
+ include/linux/iocontext.h |    2 ++
+ 3 files changed, 28 insertions(+), 46 deletions(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff --git a/block/blk-ioc.c b/block/blk-ioc.c
+index 80245dc..73c7002 100644
+--- a/block/blk-ioc.c
++++ b/block/blk-ioc.c
+@@ -17,17 +17,13 @@ static struct kmem_cache *iocontext_cachep;
+ 
+ static void cfq_dtor(struct io_context *ioc)
+ {
+-	struct cfq_io_context *cic[1];
+-	int r;
++	if (!hlist_empty(&ioc->cic_list)) {
++		struct cfq_io_context *cic;
+ 
+-	/*
+-	 * We don't have a specific key to lookup with, so use the gang
+-	 * lookup to just retrieve the first item stored. The cfq exit
+-	 * function will iterate the full tree, so any member will do.
+-	 */
+-	r = radix_tree_gang_lookup(&ioc->radix_root, (void **) cic, 0, 1);
+-	if (r > 0)
+-		cic[0]->dtor(ioc);
++		cic = list_entry(ioc->cic_list.first, struct cfq_io_context,
++								cic_list);
++		cic->dtor(ioc);
++	}
+ }
+ 
+ /*
+@@ -57,18 +53,16 @@ EXPORT_SYMBOL(put_io_context);
+ 
+ static void cfq_exit(struct io_context *ioc)
+ {
+-	struct cfq_io_context *cic[1];
+-	int r;
+-
+ 	rcu_read_lock();
+-	/*
+-	 * See comment for cfq_dtor()
+-	 */
+-	r = radix_tree_gang_lookup(&ioc->radix_root, (void **) cic, 0, 1);
+-	rcu_read_unlock();
+ 
+-	if (r > 0)
+-		cic[0]->exit(ioc);
++	if (!hlist_empty(&ioc->cic_list)) {
++		struct cfq_io_context *cic;
++
++		cic = list_entry(ioc->cic_list.first, struct cfq_io_context,
++								cic_list);
++		cic->exit(ioc);
++	}
++	rcu_read_unlock();
+ }
+ 
+ /* Called by the exitting task */
+@@ -105,6 +99,7 @@ struct io_context *alloc_io_context(gfp_t gfp_flags, int node)
+ 		ret->nr_batch_requests = 0; /* because this is 0 */
+ 		ret->aic = NULL;
+ 		INIT_RADIX_TREE(&ret->radix_root, GFP_ATOMIC | __GFP_HIGH);
++		INIT_HLIST_HEAD(&ret->cic_list);
+ 		ret->ioc_data = NULL;
+ 	}
+ 
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index ca198e6..62eda3f 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1145,38 +1145,19 @@ static void cfq_put_queue(struct cfq_queue *cfqq)
+ /*
+  * Call func for each cic attached to this ioc. Returns number of cic's seen.
+  */
+-#define CIC_GANG_NR	16
+ static unsigned int
+ call_for_each_cic(struct io_context *ioc,
+ 		  void (*func)(struct io_context *, struct cfq_io_context *))
+ {
+-	struct cfq_io_context *cics[CIC_GANG_NR];
+-	unsigned long index = 0;
+-	unsigned int called = 0;
+-	int nr;
++	struct cfq_io_context *cic;
++	struct hlist_node *n;
++	int called = 0;
+ 
+ 	rcu_read_lock();
+-
+-	do {
+-		int i;
+-
+-		/*
+-		 * Perhaps there's a better way - this just gang lookups from
+-		 * 0 to the end, restarting after each CIC_GANG_NR from the
+-		 * last key + 1.
+-		 */
+-		nr = radix_tree_gang_lookup(&ioc->radix_root, (void **) cics,
+-						index, CIC_GANG_NR);
+-		if (!nr)
+-			break;
+-
+-		called += nr;
+-		index = 1 + (unsigned long) cics[nr - 1]->key;
+-
+-		for (i = 0; i < nr; i++)
+-			func(ioc, cics[i]);
+-	} while (nr == CIC_GANG_NR);
+-
++	hlist_for_each_entry_rcu(cic, n, &ioc->cic_list, cic_list) {
++		func(ioc, cic);
++		called++;
++	}
+ 	rcu_read_unlock();
+ 
+ 	return called;
+@@ -1190,6 +1171,7 @@ static void cic_free_func(struct io_context *ioc, struct cfq_io_context *cic)
+ 
+ 	spin_lock_irqsave(&ioc->lock, flags);
+ 	radix_tree_delete(&ioc->radix_root, cic->dead_key);
++	hlist_del_rcu(&cic->cic_list);
+ 	spin_unlock_irqrestore(&ioc->lock, flags);
+ 
+ 	kmem_cache_free(cfq_ioc_pool, cic);
+@@ -1280,6 +1262,7 @@ cfq_alloc_io_context(struct cfq_data *cfqd, gfp_t gfp_mask)
+ 	if (cic) {
+ 		cic->last_end_request = jiffies;
+ 		INIT_LIST_HEAD(&cic->queue_list);
++		INIT_HLIST_NODE(&cic->cic_list);
+ 		cic->dtor = cfq_free_io_context;
+ 		cic->exit = cfq_exit_io_context;
+ 		elv_ioc_count_inc(ioc_count);
+@@ -1501,6 +1484,7 @@ cfq_drop_dead_cic(struct cfq_data *cfqd, struct io_context *ioc,
+ 		rcu_assign_pointer(ioc->ioc_data, NULL);
+ 
+ 	radix_tree_delete(&ioc->radix_root, (unsigned long) cfqd);
++	hlist_del_rcu(&cic->cic_list);
+ 	spin_unlock_irqrestore(&ioc->lock, flags);
+ 
+ 	cfq_cic_free(cic);
+@@ -1561,6 +1545,7 @@ static int cfq_cic_link(struct cfq_data *cfqd, struct io_context *ioc,
+ 		spin_lock_irqsave(&ioc->lock, flags);
+ 		ret = radix_tree_insert(&ioc->radix_root,
+ 						(unsigned long) cfqd, cic);
++		hlist_add_head_rcu(&cic->cic_list, &ioc->cic_list);
+ 		spin_unlock_irqrestore(&ioc->lock, flags);
+ 
+ 		radix_tree_preload_end();
+diff --git a/include/linux/iocontext.h b/include/linux/iocontext.h
+index 593b222..1b4ccf2 100644
+--- a/include/linux/iocontext.h
++++ b/include/linux/iocontext.h
+@@ -50,6 +50,7 @@ struct cfq_io_context {
+ 	sector_t seek_mean;
+ 
+ 	struct list_head queue_list;
++	struct hlist_node cic_list;
+ 
+ 	void (*dtor)(struct io_context *); /* destructor */
+ 	void (*exit)(struct io_context *); /* called on task exit */
+@@ -77,6 +78,7 @@ struct io_context {
+ 
+ 	struct as_io_context *aic;
+ 	struct radix_tree_root radix_root;
++	struct hlist_head cic_list;
+ 	void *ioc_data;
+ };
+ 
+
+-- 
+Jens Axboe
+
