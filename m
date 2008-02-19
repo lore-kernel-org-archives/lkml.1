@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754407AbYBSFcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbYBSFh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754407AbYBSFcc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 00:32:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbYBSFcW
+	id S1755332AbYBSFh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 00:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbYBSFhN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 00:32:22 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:36287 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbYBSFcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 00:32:22 -0500
-Date: Tue, 19 Feb 2008 06:32:29 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Message-ID: <20080219053229.GB25680@uranus.ravnborg.org>
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802190017.04432.mb@bu3sch.de> <20080218234212.GA25680@uranus.ravnborg.org> <200802190101.27429.mb@bu3sch.de>
+	Tue, 19 Feb 2008 00:37:13 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:44490 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751552AbYBSFhL (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 00:37:11 -0500
+Date: Tue, 19 Feb 2008 16:36:40 +1100
+From: David Chinner <dgc@sgi.com>
+To: David Chinner <dgc@sgi.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Ric Wheeler <ric@emc.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
+Message-ID: <20080219053640.GC155407@sgi.com>
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru> <20080218221644.GN155407@sgi.com> <20080219025643.GD4066@agk.fab.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802190101.27429.mb@bu3sch.de>
+In-Reply-To: <20080219025643.GD4066@agk.fab.redhat.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 
-> > It is a consistencycheck between host and target
-> > layout of data.
-> > You need to pad the structure so it becomes 8 byte in size.
-> 
-> Ok, I looked at the code and it is hightly questionable to me that this
-> check does work in a crosscompile environment (which the ARM build
-> most likely is).
-> 
-> It seems to check the size of the structure in the .o file against
-> the size of the structure on the _host_ where it is compiled.
-> I can't see why we would want to check _anything_ of the target stuff
-> to the host this stuff is compiled on.
-> I can compile an ARM kernel on any machine I want.
-> 
-> There actually is a comment:
->  * Check that sizeof(device_id type) are consistent with size of section
->  * in .o file. If in-consistent then userspace and kernel does not agree
->  * on actual size which is a bug.
-> 
-> So it seems what this check _wants_ to compare the sizeof the structure
-> in the kernel to the size of the stucture in the userland of the target system.
-> But it does _not_ do that.
-> It does compare the size of the structure in the kernel against the size of
-> the stucture in userland on the machine it is _compiled_ on.
-> That is wrong.
-In at least 99% of the cases this is OK and the check has found
-several bugs where things would not have worked due to different
-alignmnet between kernel and userland. Just think about the
-issues in a mixed 32/64 bit world.
+On Tue, Feb 19, 2008 at 02:56:43AM +0000, Alasdair G Kergon wrote:
+> On Tue, Feb 19, 2008 at 09:16:44AM +1100, David Chinner wrote:
+> > Surely any hardware that doesn't support barrier
+> > operations can emulate them with cache flushes when they receive a
+> > barrier I/O from the filesystem....
+>  
+> My complaint about having to support them within dm when more than one
+> device is involved is because any efficiencies disappear: you can't send
+> further I/O to any one device until all the other devices have completed
+> their barrier (or else later I/O to that device could overtake the
+> barrier on another device).
 
-In this particular case you _could_ be right that it would work
-on ARM userland. But the only way to be sure is to pad the
-structure so it become 8 byte in size.
-Or as was recently done in the m68k case to tell the
-compiler to specifically align it to 8 byte boundary.
+Right - it's a horrible performance hit.
 
-	Sam
+But - how is what you describe any different to the filesystem doing:
+
+	- flush block device
+	- issue I/O
+	- wait for completion
+	- flush block device
+
+around any I/O that it would otherwise simply tag as a barrier?
+That serialisation at the filesystem layer is a horrible, horrible
+performance hi.
+
+And then there's the fact that we can't implement that in XFS
+because all the barrier I/Os we issue are asynchronous.  We'd
+basically have to serialise all metadata operations and now we
+are talking about far worse performance hits than implementing
+barrier emulation in the block device.
+
+Also, it's instructive to look at the implementation of
+blkdev_issue_flush() - the API one is supposed to use to trigger a
+full block device flush. It doesn't work on DM/MD either, because
+it uses a no-I/O barrier bio:
+
+        bio->bi_end_io = bio_end_empty_barrier;
+        bio->bi_private = &wait;
+        bio->bi_bdev = bdev;
+        submit_bio(1 << BIO_RW_BARRIER, bio);
+
+        wait_for_completion(&wait);
+
+So, if the underlying block device doesn't support barriers,
+there's no point in changing the filesystem to issue flushes,
+either...
+
+> And then I argue that it would be better
+> for the filesystem to have the information that these are not hardware
+> barriers so it has the opportunity of tuning its behaviour (e.g.
+> flushing less often because it's a more expensive operation).
+
+There is generally no option from the filesystem POV to "flush
+less". Either we use barrier I/Os where we need to and are safe with
+volatile caches or we corrupt filesystems with volatile caches when
+power loss occurs. There is no in-between where "flushing less"
+will save us from corruption....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
