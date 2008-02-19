@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759690AbYBSLLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbYBSLMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759690AbYBSLLx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:11:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758073AbYBSLLX
+	id S1760023AbYBSLMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbYBSLMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:11:23 -0500
-Received: from mx1.melware.net ([78.47.171.162]:58504 "EHLO mx1.melware.net"
+	Tue, 19 Feb 2008 06:12:14 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36596 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757981AbYBSLLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:11:21 -0500
-X-Greylist: delayed 1209 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 06:11:21 EST
-Date: Tue, 19 Feb 2008 11:51:11 +0100 (CET)
-From: Armin Schindler <armin@melware.de>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-In-Reply-To: <20080219095834.GB6940@one.firstfloor.org>
-Message-ID: <alpine.DEB.0.99.0802191148040.6445@k10.melware.de>
-References: <098123kjff90231nv098233rnvd908u234@garzik.org>
- <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com>
- <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org>
- <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org>
- <20080219095834.GB6940@one.firstfloor.org>
-Organization: Cytronics & Melware
+	id S1752847AbYBSLMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:12:12 -0500
+Date: Tue, 19 Feb 2008 12:11:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Shi Weihua <shiwh@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 3/5] signal(x86_ia32): add a signal stack overflow check
+Message-ID: <20080219111157.GC2683@elte.hu>
+References: <47B95D24.8020601@cn.fujitsu.com> <47BA3D96.8070208@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BA3D96.8070208@cn.fujitsu.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008, Andi Kleen wrote:
-> On Tue, Feb 19, 2008 at 10:56:22AM +0100, Sam Ravnborg wrote:
->>>
->>>> If noone in the isdn community step up and take some responsibility
->>>> for the current isdn drivers in Linux then we should just delete them.
->>>
->>> So you're saying anything that has no active maintainer should
->>> be immediately deleted?
->>
->> You do not recognize a provocation when you see it?
->> I wanted a reaction from the isdn community - and I got so.
->> So lets look forward.
->
-> Well it was more a lie because you couldn't possibly make up to your
-> threat anyways.
->
-> I'm not sure either it's a good idea to try to merge mISDN if the
-> maintainers don't think it is ready yet.
 
-Without having any opinion here or understanding what the problem is, I just
-want to remind everyone that ISDN in the linux kernel (isdn4linux) is not
-just mISDN.
-There are drivers for common devices/interfaces, the CAPI interface and of
-course hardware drivers for other ISDN cards like the active ones as well.
+* Shi Weihua <shiwh@cn.fujitsu.com> wrote:
 
-Armin
+> The similar check has been added to x86_32(i386) in commit id 
+> 83bd01024b1fdfc41d9b758e5669e80fca72df66. So we add this check to 
+> x86_ia32 and improve it a liitle bit in that we need to check for 
+> stack overflow only when the signal is on stack.
 
+thanks, applied.
+
+	Ingo
