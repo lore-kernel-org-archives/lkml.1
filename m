@@ -1,102 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbYBSTc1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbYBSTfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760848AbYBSTc1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761370AbYBSTbe
+	id S1757403AbYBSTfx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:35:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbYBSTfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:31:34 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:49220 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761348AbYBSTbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:31:33 -0500
-Date: Tue, 19 Feb 2008 21:30:57 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jonathan Brassow <jbrassow@redhat.com>, Alasdair G Kergon <agk@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6.25 patch] dm-raid1.c: fix NULL dereferences
-Message-ID: <20080219193057.GJ31955@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 19 Feb 2008 14:35:44 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:42564 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751161AbYBSTfo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:35:44 -0500
+Date: Tue, 19 Feb 2008 11:34:22 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
+Message-Id: <20080219113422.ade12e7b.randy.dunlap@oracle.com>
+In-Reply-To: <20080219190745.GA4876@suse.de>
+References: <20080213070215.GA11969@kroah.com>
+	<20080212.230423.172781444.davem@davemloft.net>
+	<1202887323.3129.10.camel@localhost>
+	<20080213165924.GB10129@suse.de>
+	<1202923995.3129.26.camel@localhost>
+	<alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
+	<20080219190745.GA4876@suse.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes two NULL dereferences introduced by
-commit 06386bbfd2441416875d0403d405c56822f6ebac and spotted by the 
-Coverity checker.
+On Tue, 19 Feb 2008 11:07:45 -0800 Greg KH wrote:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> On Wed, Feb 13, 2008 at 10:13:42AM -0800, Linus Torvalds wrote:
+> > 
+> > 
+> > On Wed, 13 Feb 2008, Joe Perches wrote:
+> > > 
+> > > MAINTAINERS is the most frequently patched file
+> > 
+> > Almost all of them merge perfectly, with no problems what-so-ever. And the 
+> > merge conflicts, when they happen, are generally really trivial, and never 
+> > cause any subtle run-time bugs even if they were to happen.
+> > 
+> > So in that sense, I think both MAINTAINERS and the deprecation schedule 
+> > are totally uninteresting. Yes, they have merge conflicts. But those merge 
+> > conflicts are really really easy to handle.
+> 
+> Yes, they are easy to handle, but for trees that have to deal with these
+> merge issues all the time, they are a pain (hit this one again today.)
+> It takes a few minutes to fix up the resolution by hand (using either
+> git or quilt), as we do want the new addition to be in the file, so by
+> splitting it up, it makes our (the sub-tree maintainers) lives easier.
+> 
+> I've never had a problem with the MAINTAINERS file, as it is pretty big
+> and conflicts for me seem to never happen, but the feature-removal file
+> does cause problems as it changes over time and things need to get added
+> and removed.
+> 
+> Also, there are already remants of a bad-merge in that file, which
+> somehow sneaked through.
+> 
+> Yes, these files can not cause kernel bugs, but they are semi-important
+> to at least get correct.  So I'd ask you to reconsider for the
+> feature-removal stuff at the very least.
+> 
+> If you do, the git tree is still there at:
+> 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+> 
+> to pull from :)
+
+Alternatively, since they are easy to fix, I'll volunteer to fix them
+(after notified of problems :).  (and not split up the file)
 
 ---
-
- drivers/md/dm-raid1.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
---- linux-2.6/drivers/md/dm-raid1.c.old	2008-02-19 21:14:33.000000000 +0200
-+++ linux-2.6/drivers/md/dm-raid1.c	2008-02-19 21:17:04.000000000 +0200
-@@ -1673,58 +1673,59 @@ static int mirror_end_io(struct dm_targe
- 	struct mirror *m = NULL;
- 	struct dm_bio_details *bd = NULL;
- 	struct dm_raid1_read_record *read_record = map_context->ptr;
- 
- 	/*
- 	 * We need to dec pending if this was a write.
- 	 */
- 	if (rw == WRITE) {
- 		rh_dec(&ms->rh, map_context->ll);
- 		return error;
- 	}
- 
- 	if (error == -EOPNOTSUPP)
- 		goto out;
- 
- 	if ((error == -EWOULDBLOCK) && bio_rw_ahead(bio))
- 		goto out;
- 
- 	if (unlikely(error)) {
- 		if (!read_record) {
- 			/*
- 			 * There wasn't enough memory to record necessary
- 			 * information for a retry or there was no other
- 			 * mirror in-sync.
- 			 */
--			DMERR_LIMIT("Mirror read failed from %s.",
--				    m->dev->name);
-+			DMERR_LIMIT("Mirror read failed.");
- 			return -EIO;
- 		}
-+
-+		m = read_record->m;
-+
- 		DMERR("Mirror read failed from %s. Trying alternative device.",
- 		      m->dev->name);
- 
--		m = read_record->m;
- 		fail_mirror(m, DM_RAID1_READ_ERROR);
- 
- 		/*
- 		 * A failed read is requeued for another attempt using an intact
- 		 * mirror.
- 		 */
- 		if (default_ok(m) || mirror_available(ms, bio)) {
- 			bd = &read_record->details;
- 
- 			dm_bio_restore(bd, bio);
- 			mempool_free(read_record, ms->read_record_pool);
- 			map_context->ptr = NULL;
- 			queue_bio(ms, bio, rw);
- 			return 1;
- 		}
- 		DMERR("All replicated volumes dead, failing I/O");
- 	}
- 
- out:
- 	if (read_record) {
- 		mempool_free(read_record, ms->read_record_pool);
- 		map_context->ptr = NULL;
- 	}
- 
- 	return error;
-
+~Randy
