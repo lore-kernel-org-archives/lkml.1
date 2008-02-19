@@ -1,177 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbYBSS74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbYBSTA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760567AbYBSS74 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:59:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759725AbYBSS7L
+	id S1760702AbYBSTA1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759096AbYBSTAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:59:11 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47409 "EHLO mx1.redhat.com"
+	Tue, 19 Feb 2008 14:00:06 -0500
+Received: from mga01.intel.com ([192.55.52.88]:34472 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759687AbYBSS7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:59:09 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 4/4] MN10300: Update asb2303_defconfig
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-am33-list@redhat.com, linux-kernel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Tue, 19 Feb 2008 18:59:04 +0000
-Message-ID: <20080219185904.22304.1711.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080219185848.22304.75764.stgit@warthog.procyon.org.uk>
-References: <20080219185848.22304.75764.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	id S1759023AbYBSTAB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:00:01 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,377,1199692800"; 
+   d="scan'208";a="521180270"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: ioatdma Self-test copy timeout
+Date: Tue, 19 Feb 2008 10:59:09 -0800
+Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C040CB64C@orsmsx418.amr.corp.intel.com>
+In-Reply-To: <47B8EBB2.7060807@elfove.cz>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: ioatdma Self-test copy timeout
+Thread-Index: Achx1k5KgPdHHp+xRg6+iERjETg4TwBUaPrw
+References: <47B8EBB2.7060807@elfove.cz>
+From: "Nelson, Shannon" <shannon.nelson@intel.com>
+To: "Tomas Hlavacek" <brill@elfove.cz>, <linux-kernel@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+X-OriginalArrivalTime: 19 Feb 2008 18:59:10.0107 (UTC) FILETIME=[828B26B0:01C87329]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the ASB2303 default configuration.
+>-----Original Message-----
+>From: Tomas Hlavacek [mailto:brill@elfove.cz] 
+>Sent: Sunday, February 17, 2008 6:22 PM
+>To: Nelson, Shannon; linux-kernel@vger.kernel.org
+>Subject: ioatdma Self-test copy timeout
+>
+>Short description: In 2.6.25-rc2 ioatdma driver fails to 
+>initialize due 
+>to Self-test timeout when the ioatdma is linked into the kernel.
+>
+>
+>Long descr: When I select to compile ioatdma into the kernel I get:
+>
+>ACPI: PCI Interrupt 0000:00:08.0[A] -> GSI 16 (level, low) -> IRQ 16
+>PCI: Setting latency timer of device 0000:00:08.0 to 64
+>ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine found, 4 channels, 
+>device version 0x12, driver version 2.04
+>ioatdma: ioat_dma_test_callback(0000000000008086)
+>ioatdma 0000:00:08.0: Self-test copy timed out, disabling
+>ioatdma 0000:00:08.0: Intel(R) I/OAT DMA Engine initialization failed
+>ACPI: PCI interrupt for device 0000:00:08.0 disabled
+>
+>As a kernel module ioatdma initializes just fine with the same 
+>kernel on 
+>the same HW without any other changes than selecting it to be 
+>a module. 
+>And it also succeeded to initialize when i tried to do this:
+>
+>--- a/drivers/dma/ioat_dma.c    2008-02-17 01:52:19.000000000 +0100
+>+++ b/drivers/dma/ioat_dma.c    2008-02-18 02:47:27.000000000 +0100
+>@@ -1089,7 +1089,7 @@
+>                goto free_resources;
+>        }
+>        device->common.device_issue_pending(dma_chan);
+>-       msleep(1);
+>+       msleep(100);
+> 
+>        if (device->common.device_is_tx_complete(dma_chan, 
+>cookie, NULL, 
+>NULL)
+>                                        != DMA_SUCCESS) {
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Hmmm - interesting.  I'm not good enough with the kernel startup
+sequence to know what it might be waiting for.  I don't see any problem
+with a longer wait other than perhaps delaying the kernel startup.  We
+left it a module and never really worked with it linked into the kernel,
+primarily because its performance can be dependant on the work load, and
+some folks will want the flexibility that a module gives.  We didn't let
+it autoload at boot time for a similar reason.
 
- arch/mn10300/configs/asb2303_defconfig |   33 +++++++++++++++++++++++---------
- 1 files changed, 24 insertions(+), 9 deletions(-)
+If you want it to autoload at boot, you might want to add a modprobe
+command to an init script.
 
-
-diff --git a/arch/mn10300/configs/asb2303_defconfig b/arch/mn10300/configs/asb2303_defconfig
-index ca9876a..3aa8906 100644
---- a/arch/mn10300/configs/asb2303_defconfig
-+++ b/arch/mn10300/configs/asb2303_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.24-rc2
--# Fri Nov 16 13:36:38 2007
-+# Linux kernel version: 2.6.25-rc2
-+# Tue Feb 19 18:52:24 2008
- #
- CONFIG_MN10300=y
- CONFIG_AM33=y
-@@ -21,6 +21,7 @@ CONFIG_ARCH_HAS_ILOG2_U32=y
- # CONFIG_ARCH_SUPPORTS_AOUT is not set
- CONFIG_GENERIC_HARDIRQS=y
- # CONFIG_HOTPLUG_CPU is not set
-+CONFIG_HZ=1000
- CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
- 
- #
-@@ -38,15 +39,16 @@ CONFIG_SYSVIPC_SYSCTL=y
- CONFIG_BSD_PROCESS_ACCT=y
- # CONFIG_BSD_PROCESS_ACCT_V3 is not set
- # CONFIG_TASKSTATS is not set
--# CONFIG_USER_NS is not set
--# CONFIG_PID_NS is not set
- # CONFIG_AUDIT is not set
- # CONFIG_IKCONFIG is not set
- CONFIG_LOG_BUF_SHIFT=14
- # CONFIG_CGROUPS is not set
--# CONFIG_FAIR_GROUP_SCHED is not set
-+# CONFIG_GROUP_SCHED is not set
-+# CONFIG_USER_SCHED is not set
-+# CONFIG_CGROUP_SCHED is not set
- # CONFIG_SYSFS_DEPRECATED is not set
- # CONFIG_RELAY is not set
-+# CONFIG_NAMESPACES is not set
- # CONFIG_BLK_DEV_INITRD is not set
- # CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
- CONFIG_SYSCTL=y
-@@ -57,22 +59,33 @@ CONFIG_SYSCTL_SYSCALL=y
- CONFIG_PRINTK=y
- CONFIG_BUG=y
- CONFIG_ELF_CORE=y
-+CONFIG_COMPAT_BRK=y
- CONFIG_BASE_FULL=y
- CONFIG_FUTEX=y
- CONFIG_ANON_INODES=y
- CONFIG_EPOLL=y
- CONFIG_SIGNALFD=y
-+CONFIG_TIMERFD=y
- CONFIG_EVENTFD=y
- CONFIG_SHMEM=y
- # CONFIG_VM_EVENT_COUNTERS is not set
- CONFIG_SLAB=y
- # CONFIG_SLUB is not set
- # CONFIG_SLOB is not set
-+CONFIG_PROFILING=y
-+# CONFIG_MARKERS is not set
-+CONFIG_OPROFILE=y
-+# CONFIG_HAVE_OPROFILE is not set
-+# CONFIG_HAVE_KPROBES is not set
-+# CONFIG_PROC_PAGE_MONITOR is not set
-+CONFIG_SLABINFO=y
- CONFIG_RT_MUTEXES=y
- # CONFIG_TINY_SHMEM is not set
- CONFIG_BASE_SMALL=0
- # CONFIG_MODULES is not set
- # CONFIG_BLOCK is not set
-+CONFIG_CLASSIC_RCU=y
-+# CONFIG_PREEMPT_RCU is not set
- 
- #
- # Matsushita MN10300 system setup
-@@ -206,6 +219,7 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
- #
- # CONFIG_NET_PKTGEN is not set
- # CONFIG_HAMRADIO is not set
-+# CONFIG_CAN is not set
- # CONFIG_IRDA is not set
- # CONFIG_BT is not set
- # CONFIG_AF_RXRPC is not set
-@@ -311,6 +325,8 @@ CONFIG_MTD_PHYSMAP_BANKWIDTH=2
- # CONFIG_PARPORT is not set
- CONFIG_MISC_DEVICES=y
- # CONFIG_EEPROM_93CX6 is not set
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_HAVE_IDE is not set
- 
- #
- # SCSI device support
-@@ -345,7 +361,6 @@ CONFIG_SMC91X=y
- # CONFIG_WAN is not set
- # CONFIG_PPP is not set
- # CONFIG_SLIP is not set
--# CONFIG_SHAPER is not set
- # CONFIG_NETCONSOLE is not set
- # CONFIG_NETPOLL is not set
- # CONFIG_NET_POLL_CONTROLLER is not set
-@@ -405,6 +420,7 @@ CONFIG_RTC=y
- # CONFIG_W1 is not set
- # CONFIG_POWER_SUPPLY is not set
- # CONFIG_HWMON is not set
-+# CONFIG_THERMAL is not set
- # CONFIG_WATCHDOG is not set
- 
- #
-@@ -444,6 +460,7 @@ CONFIG_SSB_POSSIBLE=y
- # CONFIG_SOUND is not set
- # CONFIG_USB_SUPPORT is not set
- # CONFIG_MMC is not set
-+# CONFIG_MEMSTICK is not set
- # CONFIG_NEW_LEDS is not set
- # CONFIG_RTC_CLASS is not set
- 
-@@ -455,10 +472,10 @@ CONFIG_SSB_POSSIBLE=y
- #
- # File systems
- #
-+CONFIG_DNOTIFY=y
- CONFIG_INOTIFY=y
- CONFIG_INOTIFY_USER=y
- # CONFIG_QUOTA is not set
--CONFIG_DNOTIFY=y
- # CONFIG_AUTOFS_FS is not set
- # CONFIG_AUTOFS4_FS is not set
- # CONFIG_FUSE_FS is not set
-@@ -554,5 +571,3 @@ CONFIG_HAS_DMA=y
- #
- # Profiling support
- #
--CONFIG_PROFILING=y
--CONFIG_OPROFILE=y
-
+sln
