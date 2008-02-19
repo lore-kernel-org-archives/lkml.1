@@ -1,76 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbYBSTyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761100AbYBSTza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760851AbYBSTyz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758021AbYBSTyo
+	id S1761100AbYBSTza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbYBSTzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:54:44 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51272 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753112AbYBSTyn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:54:43 -0500
-Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: davem@davemloft.net
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero base
-Message-ID: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
+	Tue, 19 Feb 2008 14:55:17 -0500
+Received: from [90.184.2.114] ([90.184.2.114]:17491 "EHLO mail.jaquet.dk"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754067AbYBSTzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:55:15 -0500
+Date: Tue, 19 Feb 2008 20:55:13 +0100
+From: Rasmus Andersen <rasmus@avlebavle.dk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: LILO fatal error after going from 2.6.22 to 2.6.24.2
+Message-ID: <20080219195513.GA25217@avlebavle.dk>
+References: <20080219070201.GA7353@avlebavle.dk> <47BB1053.60409@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BB1053.60409@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we add to an empty lmb region with a non-zero base we will not coalesce
-the number of regions down to one.  This causes problems on ppc32 for the
-memory region as its assumed to only have one region.
+On Tue, Feb 19, 2008 at 09:22:27AM -0800, H. Peter Anvin wrote:
+> Rasmus Andersen wrote:
+[...]
+> You have at least one file on a device mapper device (possibly an LVM 
+> module), and LILO doesn't understand it.
 
-We can fix this easily by causing the initial add to replace the dummy
-region.
+Hi Peter, and thanks for your reply. That was indeed the issue, my /boot
+was not mounted and my / is on a LVM partition. So this was merely a
+user issue, my specialty.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
+Thanks for your time.
 
-Fix a bug the initial patch introduced if we have a region that gets added
-at the beginning of the list we wouldn't actually add it.
-
-Dave can you replace the patch in you tree with this one.
-
- arch/powerpc/mm/lmb.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/mm/lmb.c b/arch/powerpc/mm/lmb.c
-index 4ce23bc..4bf8f19 100644
---- a/arch/powerpc/mm/lmb.c
-+++ b/arch/powerpc/mm/lmb.c
-@@ -141,6 +141,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
- 	unsigned long coalesced = 0;
- 	long adjacent, i;
-
-+	if ((rgn->cnt == 1) && (rgn->region[0].size == 0)) {
-+		rgn->region[0].base = base;
-+		rgn->region[0].size = size;
-+		return 0;
-+	}
-+
- 	/* First try and coalesce this LMB with another. */
- 	for (i=0; i < rgn->cnt; i++) {
- 		unsigned long rgnbase = rgn->region[i].base;
-@@ -185,6 +191,12 @@ static long __init lmb_add_region(struct lmb_region *rgn, unsigned long base,
- 			break;
- 		}
- 	}
-+
-+	if (base < rgn->region[0].base) {
-+		rgn->region[0].base = base;
-+		rgn->region[0].size = size;
-+	}
-+
- 	rgn->cnt++;
-
- 	return 0;
--- 
-1.5.3.8
-
+Cheers,
+  Rasmus
