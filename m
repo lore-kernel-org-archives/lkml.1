@@ -1,50 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYBSNxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbYBSNyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbYBSNxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 08:53:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYBSNxg
+	id S1754895AbYBSNyj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 08:54:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYBSNyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 08:53:36 -0500
-Received: from raffaello.crs4.it ([156.148.72.33]:47874 "EHLO
-	raffaello.crs4.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751710AbYBSNxf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 08:53:35 -0500
-From: Omar Schiaratura <omar@crs4.it>
-To: linux-kernel@vger.kernel.org
-Subject: sun neptune driver
-Date: Tue, 19 Feb 2008 14:53:35 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Organization: CRS4
+	Tue, 19 Feb 2008 08:54:31 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40401 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbYBSNy3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 08:54:29 -0500
+Date: Tue, 19 Feb 2008 14:54:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>, lguest@ozlabs.org
+Subject: Re: [PATCH] Fix building lguest as module.
+Message-ID: <20080219135401.GA9192@elte.hu>
+References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <20080219034404.GT6887@bakeyournoodle.com> <20080219073205.GA12375@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802191453.35210.omar@crs4.it>
+In-Reply-To: <20080219073205.GA12375@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-i'm trying to write a back-porting of the Sun neptune NIC driver(niu module) in kernel 2.6.24 to the kernel 2.6.20
-because i need that driver in a xen linux environment.
-The driver now compile and goes up clearly, NIC is configured, but doesn't work properly.
-If i send packets to another machine with the same NIC and kernel 2.6.24,I saw with tcpdump that the packets was received and the answer was sent,
-but at the other end (kernel 2.6.20 with my backported driver, and without XEN) nothing appens (tcpdump report sent packages, but i can't see anything sent from other side)
-Do you have some tricks for me or can you suggest me something to do?
 
-Some of the problem i encountered during port is that i can't find a function equivalent to compound_head, and if i port it to the source i can't find a way to use
-an equivalent variable like page->first_page found in compound_head.
-another proble was the folowing function:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-static inline unsigned char *skb_transport_header(const struct sk_buff *skb)
-{
-        return (unsigned char *)((unsigned int)skb->head + (unsigned int)skb->h.raw);
-}
+> > +#endif
+> > +
+> > +#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_MODULE)
+> > +	BLANK();
+> 
+> hm. Rusty's original fix is now upstream. I've done a delta to your 
+> patch, find the fix is below.
 
-that get the error: "error: invalid operands to binary +"
-if i can't cast it in unsigned int, the same in skb_network_header (both back-ported from include/skbuff.h)
+the right one is below. There's no 'LGUEST_MODULE' anymore - 
+'LGUEST_GUEST' is what should be used.
 
-thanks,
-Omar
+	Ingo
+
+------------------->
+Subject: lguest: fix build breakage
+From: Tony Breeds <tony@bakeyournoodle.com>
+Date: Tue Feb 19 08:16:03 CET 2008
+
+[ mingo@elte.hu: merged to Rusty's patch ]
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ arch/x86/kernel/asm-offsets_32.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-x86.q/arch/x86/kernel/asm-offsets_32.c
+===================================================================
+--- linux-x86.q.orig/arch/x86/kernel/asm-offsets_32.c
++++ linux-x86.q/arch/x86/kernel/asm-offsets_32.c
+@@ -128,7 +128,7 @@ void foo(void)
+ 	OFFSET(XEN_vcpu_info_pending, vcpu_info, evtchn_upcall_pending);
+ #endif
+ 
+-#ifdef CONFIG_LGUEST_GUEST
++#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_GUEST)
+ 	BLANK();
+ 	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
+ 	OFFSET(LGUEST_DATA_pgdir, lguest_data, pgdir);
