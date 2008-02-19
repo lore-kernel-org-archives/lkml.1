@@ -1,145 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbYBSX6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYBSX7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763663AbYBSX6f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:58:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYBSX60
+	id S1763549AbYBSX7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:59:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYBSX7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:58:26 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:60955 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756140AbYBSX6Z (ORCPT
+	Tue, 19 Feb 2008 18:59:40 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:54380 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753891AbYBSX7j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:58:25 -0500
-Message-ID: <47BB6DAB.5050506@keyaccess.nl>
-Date: Wed, 20 Feb 2008 01:00:43 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Tue, 19 Feb 2008 18:59:39 -0500
+Date: Tue, 19 Feb 2008 15:45:29 -0800
+From: Greg KH <greg@kroah.com>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       matthew@wil.cx, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [bootup crash, -git] Re: patch
+	pci-pcie-aspm-support.patchadded to gregkh-2.6 tree
+Message-ID: <20080219234529.GA12967@kroah.com>
+References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com> <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu> <20080202185145.GA13005@kroah.com> <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: ambx1@neo.rr.com, linux-kernel@vger.kernel.org,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: Re: pnp_bus_resume(): inconsequent NULL checking
-References: <20080219224908.GM31955@cs181133002.pp.htv.fi>
-In-Reply-To: <20080219224908.GM31955@cs181133002.pp.htv.fi>
-Content-Type: multipart/mixed;
- boundary="------------010405010000090802070009"
-X-Spam-Score: -1.0 (-)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010405010000090802070009
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, Feb 19, 2008 at 01:45:45PM +0800, Shaohua Li wrote:
+> Sorry for the long delay, I just back from vocation. I fixed all the
+> issues I found in the list (except one hang issue, which should be fixed
+> in specific driver, I'll reply that thread soon), can you re-add the
+> patch to your test tree.
 
-On 19-02-08 23:49, Adrian Bunk wrote:
+Hm, I get the following build error with this patch:
+	  CC      drivers/pci/pcie/aspm.o
+	distcc[13135] ERROR: compile /home/gregkh/.ccache/aspm.tmp.mini.13131.i on localhost failed
+	In file included from drivers/pci/pcie/aspm.c:21:
+	include/linux/pci-acpi.h:66: error: expected ')' before 'handle'
+	make[2]: *** [drivers/pci/pcie/aspm.o] Error 1
+	make[1]: *** [drivers/pci/pcie] Error 2
+	make: *** [_module_drivers/pci] Error 2
 
-> The Coverity checker spotted the following inconsequent NULL checking 
-> introduced by commit 5d38998ed15b31f524bde9a193d60150af30d916:
-> 
-> <--  snip  -->
-> 
-> ...
-> static int pnp_bus_resume(struct device *dev)
-> {
-> ...
->         if (pnp_dev->protocol && pnp_dev->protocol->resume)
->                 pnp_dev->protocol->resume(pnp_dev);
-> 
->         if (pnp_can_write(pnp_dev)) {
-> ...
-> 
-> <--  snip  -->
-> 
-> pnp_can_write(pnp_dev) dereferences pnp_dev->protocol.
 
-I see, thanks. pnp_bus_suspend() has the same problem (I added this test to 
-complete the mirror in fact) and/but is not a real problem since the tests 
-are also the first things done inside the blocks they protect -- if 
-pnp_dev->protocol isn't set here, we're dead anyway therefore.
+Also, can you rename your new header file to have "pci-" in front of it?
 
-That probably means we can just delete the pnp_dev->protocol tests but this 
-  would need an ack from for example Bjorn Helgaas who might have an idea 
-about how generically useful this is designed to be. The no brain thing to 
-do would be just as per attached.
+thanks,
 
-Bjorn?
-
---------------010405010000090802070009
-Content-Type: text/plain;
- name="coverity-pnp_bus_suspend_resume.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="coverity-pnp_bus_suspend_resume.diff"
-
-pnp: be consistent about testing pnp_dev->protocol in pnp_bus_{suspend,resume}
-
-pnp_can_{disable,write}() dereference pnp_dev->protocol. So do the
-pnp_{stop,start}_dev() the tests protect, but let's be consistent
-at least.
-
-Spotted by Adrian Bunk <bunk@kernel.org> and the Coverity checker.
-
-Signed-off-by: Rene Herman <rene.herman@gmail.com>
-
-diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
-index 12a1645..170af61 100644
---- a/drivers/pnp/driver.c
-+++ b/drivers/pnp/driver.c
-@@ -160,15 +160,15 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
- 		if (error)
- 			return error;
- 	}
--
--	if (pnp_can_disable(pnp_dev)) {
--		error = pnp_stop_dev(pnp_dev);
--		if (error)
--			return error;
-+	if (pnp_dev->protocol) {
-+		if (pnp_can_disable(pnp_dev)) {
-+			error = pnp_stop_dev(pnp_dev);
-+			if (error)
-+				return error;
-+		}
-+		if (pnp_dev->protocol->suspend)
-+			pnp_dev->protocol->suspend(pnp_dev, state);
- 	}
--
--	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
--		pnp_dev->protocol->suspend(pnp_dev, state);
- 	return 0;
- }
- 
-@@ -181,21 +181,21 @@ static int pnp_bus_resume(struct device *dev)
- 	if (!pnp_drv)
- 		return 0;
- 
--	if (pnp_dev->protocol && pnp_dev->protocol->resume)
--		pnp_dev->protocol->resume(pnp_dev);
-+	if (pnp_dev->protocol) {
-+		if (pnp_dev->protocol->resume)
-+			pnp_dev->protocol->resume(pnp_dev);
- 
--	if (pnp_can_write(pnp_dev)) {
--		error = pnp_start_dev(pnp_dev);
--		if (error)
--			return error;
-+		if (pnp_can_write(pnp_dev)) {
-+			error = pnp_start_dev(pnp_dev);
-+			if (error)
-+				return error;
-+		}
- 	}
--
- 	if (pnp_drv->resume) {
- 		error = pnp_drv->resume(pnp_dev);
- 		if (error)
- 			return error;
- 	}
--
- 	return 0;
- }
- 
-
---------------010405010000090802070009--
+greg k-h
