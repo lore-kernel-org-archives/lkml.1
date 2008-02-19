@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbYBSLXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762800AbYBSLXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762029AbYBSLXg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759607AbYBSLWv
+	id S1762800AbYBSLXx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:23:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbYBSLW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:22:51 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45881 "EHLO amd.ucw.cz"
+	Tue, 19 Feb 2008 06:22:56 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45879 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759474AbYBSLWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:22:50 -0500
-Date: Tue, 19 Feb 2008 11:02:30 +0100
+	id S1758665AbYBSLWy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:22:54 -0500
+Date: Tue, 19 Feb 2008 11:11:16 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>, jbohac@suse.cz
-Cc: kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@osdl.org>
-Subject: notsc is ignored on common configurations
-Message-ID: <20080219100230.GA1688@elf.ucw.cz>
-References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
+To: David Brownell <david-b@pacbell.net>
+Cc: Ingo Molnar <mingo@elte.hu>, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] suspend/resume self-test
+Message-ID: <20080219101116.GA2202@elf.ucw.cz>
+References: <20080130131748.GA3796@elf.ucw.cz> <200802180240.47510.david-b@pacbell.net> <20080218130914.GC17697@elte.hu> <200802181216.25350.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802181216.25350.david-b@pacbell.net>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon 2008-02-18 12:16:24, David Brownell wrote:
+> On Monday 18 February 2008, Ingo Molnar wrote:
+> > 
+> > * David Brownell <david-b@pacbell.net> wrote:
+> > 
+> > > > >   - Includes a command line parameter, which needs work yet ... it
+> > > > >     currently turns this test off, but it should also let the target
+> > > > >     state be specified (and maybe even default to "no test").
+> > > 
+> > > I think "no test" should be the default; STR working sanely on x86 is 
+> > > unfortunately too much a surprise.  Someone more active in PM testing 
+> > > should update that.
+> > 
+> > All i'm asking for is to make the self-test easily accessible. Not for 
+> > it to blow up in the face of users who do not ask for it.
+> 
+> I'm all for that, but also I don't want to see it blow up regularly
+> in the face of people who just enable all the selftest options.  The
+> other tests have a much better expectation of working "by default".
 
-notsc is ignored in 32-bit kernels if CONFIG_X86_TSC is on.. which is
-bad, fix it.
+> > And, at least to me, there seems to be a rather apparent correlation 
+> > between "suspend/resume regressions caught as early as possible" and the 
+> > future, desired state of: "STR working sanely on x86" ;-)
+> 
+> Thing is, this will catch not just regressions ... but cases where
+> STR never worked in the first place.  Video problems, etc.  Also
+> various system startup races, as in the PCMCIA and MMC/SD/SDIO
+> cases I noted.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/arch/x86/kernel/tsc_32.c b/arch/x86/kernel/tsc_32.c
-index fafd9dc..3804fbe 100644
---- a/arch/x86/kernel/tsc_32.c
-+++ b/arch/x86/kernel/tsc_32.c
-@@ -28,7 +28,8 @@ #ifdef CONFIG_X86_TSC
- static int __init tsc_setup(char *str)
- {
- 	printk(KERN_WARNING "notsc: Kernel compiled with CONFIG_X86_TSC, "
--				"cannot disable TSC.\n");
-+				"cannot disable TSC completely.\n");
-+	mark_tsc_unstable("user disabled TSC");
- 	return 1;
- }
- #else
-@@ -221,9 +222,9 @@ #ifdef CONFIG_CPU_FREQ
-  * if the CPU frequency is scaled, TSC-based delays will need a different
-  * loops_per_jiffy value to function properly.
-  */
--static unsigned int ref_freq = 0;
--static unsigned long loops_per_jiffy_ref = 0;
--static unsigned long cpu_khz_ref = 0;
-+static unsigned int ref_freq;
-+static unsigned long loops_per_jiffy_ref;
-+static unsigned long cpu_khz_ref;
- 
- static int
- time_cpufreq_notifier(struct notifier_block *nb, unsigned long val, void *data)
-@@ -285,7 +286,7 @@ #endif
- 
- /* clock source code */
- 
--static unsigned long current_tsc_khz = 0;
-+static unsigned long current_tsc_khz;
- 
- static cycle_t read_tsc(void)
- {
-
+David is right here. At minimum, s2ram needs acpi_sleep=... options to
+tell it how to set up the video. That is not issue for you, but it
+means we should not be doing it by default.
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
