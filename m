@@ -1,331 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYBSRRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757048AbYBSRT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755717AbYBSRRc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 12:17:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYBSRRV
+	id S1757048AbYBSRT7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 12:19:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYBSRTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 12:17:21 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32832 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751632AbYBSRRU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 12:17:20 -0500
-Message-ID: <47BB0EDC.5000002@bull.net>
-Date: Tue, 19 Feb 2008 18:16:12 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Tue, 19 Feb 2008 12:19:49 -0500
+Received: from mga09.intel.com ([134.134.136.24]:16849 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752494AbYBSRTs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 12:19:48 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,377,1199692800"; 
+   d="scan'208";a="299909522"
+Message-ID: <47BB0F76.1040808@intel.com>
+Date: Tue, 19 Feb 2008 09:18:46 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
 MIME-Version: 1.0
-To: subrata@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>, ltp-list@lists.sourceforge.net,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cmm@us.ibm.com, matthltc@us.ibm.com,
-       y-goto@jp.fujitsu.com
-Subject: Re: [LTP] [PATCH 1/8] Scaling msgmni to the amount of lowmem
-References: <20080211141646.948191000@bull.net>	 <20080211141813.354484000@bull.net>	 <20080215215916.8566d337.akpm@linux-foundation.org>	 <47B94D8C.8040605@bull.net>  <47B9835A.3060507@bull.net> <1203411055.4612.5.camel@subratamodak.linux.ibm.com>
-In-Reply-To: <1203411055.4612.5.camel@subratamodak.linux.ibm.com>
-Content-Type: multipart/mixed;
- boundary="------------070801070409020708020001"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andrey Borzenkov <arvidjaar@mail.ru>, e1000-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.25-rc2] e100: Trying to free already-free IRQ 11 during
+ suspend ...
+References: <200802171536.51695.arvidjaar@mail.ru> <20080218050113.1b4b0897.akpm@linux-foundation.org>
+In-Reply-To: <20080218050113.1b4b0897.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 19 Feb 2008 17:19:37.0765 (UTC) FILETIME=[9AC01550:01C8731B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070801070409020708020001
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Subrata Modak wrote:
->>Nadia Derbey wrote:
->>
->>>Andrew Morton wrote:
->>>
->>>
->>>>On Mon, 11 Feb 2008 15:16:47 +0100 Nadia.Derbey@bull.net wrote:
->>>>
->>>>
->>>>
->>>>>[PATCH 01/08]
->>>>>
->>>>>This patch computes msg_ctlmni to make it scale with the amount of 
->>>>>lowmem.
->>>>>msg_ctlmni is now set to make the message queues occupy 1/32 of the 
->>>>>available
->>>>>lowmem.
->>>>>
->>>>>Some cleaning has also been done for the MSGPOOL constant: the msgctl 
->>>>>man page
->>>>>says it's not used, but it also defines it as a size in bytes (the code
->>>>>expresses it in Kbytes).
->>>>>
->>>>
->>>>
->>>>Something's wrong here.  Running LTP's msgctl08 (specifically:
->>>>ltp-full-20070228) cripples the machine.  It's a 4-way 4GB x86_64.
->>>>
->>>>http://userweb.kernel.org/~akpm/config-x.txt
->>>>http://userweb.kernel.org/~akpm/dmesg-x.txt
->>>>
->>>>Normally msgctl08 will complete in a second or two.  With this patch I
->>>>don't know how long it will take to complete, and the machine is horridly
->>>>bogged down.  It does recover if you manage to kill msgctl08.  Feels like
->>>>a terrible memory shortage, but there's plenty of memory free and it 
->>>>isn't
->>>>swapping.
->>>>
->>>>
->>>>
->>>
->>>Before the patchset, msgctl08 used to be run with the old msgmni value: 
->>>16. Now it is run with a much higher msgmni value (1746 in my case), 
->>>since it scales to the memory size.
->>>When I call "msgctl08 100000 16" it completes fast.
->>>
->>>Doing the follwing on the ref kernel:
->>>echo 1746 > /proc/sys/kernel/msgmni
->>>msgctl08 100000 1746
->>>
->>>makes th test block too :-(
->>>
->>>Will check to see where the problem comes from.
->>>
->>
->>Well, actually, the test does not block, it only takes much much more 
->>time to be executed:
->>
->>doing this:
->>date; ./msgctl08 100000 XXX; date
->>
->>
->>gives us the following results:
->>XXX           16   32   64   128   256   512   1024   1746
->>time(secs)     2    4    8    16    32    64    132    241
->>
->>XXX is the # of msg queues to be created = # of processes to be forked 
->>as readers = # of processes to be created as writers
->>time is approximative since it is obtained by a "date" before and after.
->>
->>XXX used to be 16 before the patchset  ---> 1st column
->>     --> 16 processes forked as reader
->>     --> + 16 processes forked as writers
->>     --> + 16 msg queues
->>XXX = 1746 (on my victim) after the patchset ---> last column
->>     --> 1746 reader processes forked
->>     --> + 1746 writers forked
->>     --> + 1746 msg queues created
->>
->>The same tests on the ref kernel give approximatly the same results.
->>
->>So if we don't want this longer time to appear as a regression, the LTP 
->>should be changed:
->>1) either by setting the result of get_max_msgqueues() as the MSGMNI 
->>constant (16) (that would be the best solution in my mind)
->>2) or by warning the tester that it may take a long time to finish.
->>
->>There would be 3 tests impacted:
->>
->>kernel/syscalls/ipc/msgctl/msgctl08.c
->>kernel/syscalls/ipc/msgctl/msgctl09.c
->>kernel/syscalls/ipc/msgget/msgget03.c
+Andrew Morton wrote:
+> On Sun, 17 Feb 2008 15:36:50 +0300 Andrey Borzenkov <arvidjaar@mail.ru> wrote:
 > 
+>> ... and possibly reboot/poweroff (it flows by too fast to be legible).
+>>
+>> [ 8803.850634] ACPI: Preparing to enter system sleep state S3
+>> [ 8803.853141] Suspending console(s)
+>> [ 8805.287505] serial 00:09: disabled
+>> [ 8805.291564] Trying to free already-free IRQ 11
+>> [ 8805.291579] Pid: 6920, comm: pm-suspend Not tainted 2.6.25-rc2-1avb #2
+>> [ 8805.291628]  [<c0152127>] free_irq+0xb7/0x130
+>> [ 8805.291675]  [<c024bd80>] e100_suspend+0xc0/0x100
+>> [ 8805.291724]  [<c01eaa36>] pci_device_suspend+0x26/0x70
+>> [ 8805.291747]  [<c0243674>] suspend_device+0x94/0xd0
+>> [ 8805.291763]  [<c02439a3>] device_suspend+0x153/0x240
+>> [ 8805.291784]  [<c014314f>] suspend_devices_and_enter+0x4f/0xf0
+>> [ 8805.291808]  [<c0143a5f>] ? freeze_processes+0x3f/0x80
+>> [ 8805.291825]  [<c01432fa>] enter_state+0xaa/0x140
+>> [ 8805.291840]  [<c014341f>] state_store+0x8f/0xd0
+>> [ 8805.291852]  [<c0143390>] ? state_store+0x0/0xd0
+>> [ 8805.291866]  [<c01d3404>] kobj_attr_store+0x24/0x30
+>> [ 8805.291901]  [<c01b547b>] sysfs_write_file+0xbb/0x110
+>> [ 8805.291936]  [<c0177d79>] vfs_write+0x99/0x130
+>> [ 8805.291963]  [<c01b53c0>] ? sysfs_write_file+0x0/0x110
+>> [ 8805.291979]  [<c01782fd>] sys_write+0x3d/0x70
+>> [ 8805.291998]  [<c010409a>] sysenter_past_esp+0x5f/0xa5
+>> [ 8805.292038]  =======================
+>> [ 8805.347640] ACPI: PCI interrupt for device 0000:00:06.0 disabled
+>> [ 8805.361128] ACPI: PCI interrupt for device 0000:00:02.0 disabled
+>> [ 8805.376670]  hwsleep-0322 [00] enter_sleep_state     : Entering sleep state [S3]
+>> [ 8805.376670] Back to C!
+>>
+>> Interface is unused normally (only for netconsole sometimes). dmesg and config
+>> attached.
 > 
-> We will change the test case if need that be. Nadia, kindly send us the
-> patch set which will do the necessary changes.
+> Does reverting this:
 > 
-> Regards--
-> Subrata
+> commit 8543da6672b0994921f014f2250e27ae81645580
+> Author: Auke Kok <auke-jan.h.kok@intel.com>
+> Date:   Wed Dec 12 16:30:42 2007 -0800
 > 
+>     e100: free IRQ to remove warningwhenrebooting
+>     
+> with this patch:
+> 
+> --- a/drivers/net/e100.c~revert-1
+> +++ a/drivers/net/e100.c
+> @@ -2804,9 +2804,8 @@ static int e100_suspend(struct pci_dev *
+>  		pci_enable_wake(pdev, PCI_D3cold, 0);
+>  	}
+>  
+> -	free_irq(pdev->irq, netdev);
+> -
+>  	pci_disable_device(pdev);
+> +	free_irq(pdev->irq, netdev);
+>  	pci_set_power_state(pdev, PCI_D3hot);
+>  
+>  	return 0;
+> @@ -2848,8 +2847,6 @@ static void e100_shutdown(struct pci_dev
+>  		pci_enable_wake(pdev, PCI_D3cold, 0);
+>  	}
+>  
+> -	free_irq(pdev->irq, netdev);
+> -
+>  	pci_disable_device(pdev);
+>  	pci_set_power_state(pdev, PCI_D3hot);
+>  }
+> _
+> 
+> fix it?
+> 
+>> Hmm ... after resume device has disappeared at all ...
+>>
+>> {pts/1}% cat /proc/interrupts
+>>            CPU0
+>>   0:    1290492    XT-PIC-XT        timer
+>>   1:       6675    XT-PIC-XT        i8042
+>>   2:          0    XT-PIC-XT        cascade
+>>   3:          2    XT-PIC-XT
+>>   4:          2    XT-PIC-XT
+>>   5:          3    XT-PIC-XT
+>>   7:          4    XT-PIC-XT        irda0
+>>   8:          0    XT-PIC-XT        rtc0
+>>   9:        583    XT-PIC-XT        acpi
+>>  10:          2    XT-PIC-XT
+>>  11:      31483    XT-PIC-XT        yenta, yenta, yenta, ohci_hcd:usb1, ALI 5451, pcmcia0.0
+>>  12:      28070    XT-PIC-XT        i8042
+>>  14:      21705    XT-PIC-XT        ide0
+>>  15:      82123    XT-PIC-XT        ide1
+>> NMI:          0   Non-maskable interrupts
+>> TRM:          0   Thermal event interrupts
+>> SPU:          0   Spurious interrupts
+>> ERR:          0
+> 
+> I hope that's not a separate bug...
 
-Subrata,
+I'll take a look at this as well. thanks for reporting.
 
-You'll find the patch in attachment.
-FYI I didn't change msgget03.c since we need to get the actual max value 
-in order to generate an error.
-
-Regards,
-Nadia
-
-
---------------070801070409020708020001
-Content-Type: text/x-patch;
- name="ipc_ltp_full_20080131.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ipc_ltp_full_20080131.patch"
-
-Since msgmni now scales to the memory size, it may reach big values.
-To avoid forking 2*msgmni processes and create msgmni msg queues, do not take
-msgmni from procfs anymore.
-Just define it as 16 (which is the MSGMNI constant value in linux/msg.h)
-
-Also fixed the Makefiles in ipc/lib and ipc/msgctl: there was no dependency
-on the lib/ipc*.h header files.
-
-Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
-
----
- testcases/kernel/syscalls/ipc/lib/Makefile      |    3 +++
- testcases/kernel/syscalls/ipc/lib/ipcmsg.h      |    2 ++
- testcases/kernel/syscalls/ipc/msgctl/Makefile   |    3 +++
- testcases/kernel/syscalls/ipc/msgctl/msgctl08.c |   23 ++---------------------
- testcases/kernel/syscalls/ipc/msgctl/msgctl09.c |   24 ++----------------------
- 5 files changed, 12 insertions(+), 43 deletions(-)
-
-Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c
-===================================================================
---- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c	2006-02-11 05:46:36.000000000 +0100
-+++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c	2008-02-19 18:45:27.000000000 +0100
-@@ -50,6 +50,7 @@
- #include <sys/msg.h>
- #include "test.h"
- #include "usctest.h"
-+#include "ipcmsg.h"
- 
- void setup();
- void cleanup();
-@@ -479,26 +480,6 @@ static int get_used_msgqueues()
-         return used_queues;
- }
- 
--/** Get the max number of message queues allowed on system */
--static int get_max_msgqueues()
--{
--        FILE *f;
--        char buff[BUFSIZE];
--
--        /* Get the max number of message queues allowed on system */
--        f = fopen("/proc/sys/kernel/msgmni", "r");
--        if (!f){
--                tst_resm(TBROK,"Could not open /proc/sys/kernel/msgmni");
--                tst_exit();
--        }
--        if (!fgets(buff, BUFSIZE, f)) {
--                tst_resm(TBROK,"Could not read /proc/sys/kernel/msgmni");
--                tst_exit();
--        }
--        fclose(f);
--        return atoi(buff);
--}
--
- /***************************************************************
-  * setup() - performs all ONE TIME setup for this test.
-  *****************************************************************/
-@@ -520,7 +501,7 @@ setup()
- 	 */
-         TEST_PAUSE;
- 
--        MSGMNI = get_max_msgqueues() - get_used_msgqueues();
-+        MSGMNI = MAX_MSGQUEUES - get_used_msgqueues();
- 	if (MSGMNI <= 0){
- 		tst_resm(TBROK,"Max number of message queues already used, cannot create more.");
- 		cleanup(); 
-Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c
-===================================================================
---- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c	2006-02-11 05:46:36.000000000 +0100
-+++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c	2008-02-19 18:46:44.000000000 +0100
-@@ -49,6 +49,7 @@
- #include <unistd.h>
- #include "test.h"
- #include "usctest.h"
-+#include "ipcmsg.h"
- 
- #define MAXNREPS	1000
- #ifndef CONFIG_COLDFIRE
-@@ -649,26 +650,6 @@ static int get_used_msgqueues()
-         return used_queues;
- }
- 
--/** Get the max number of message queues allowed on system */
--static int get_max_msgqueues()
--{
--        FILE *f;
--        char buff[BUFSIZE];
--
--        /* Get the max number of message queues allowed on system */
--        f = fopen("/proc/sys/kernel/msgmni", "r");
--        if (!f){
--                tst_resm(TBROK,"Could not open /proc/sys/kernel/msgmni");
--                tst_exit();
--        }
--        if (!fgets(buff, BUFSIZE, f)) {
--                tst_resm(TBROK,"Could not read /proc/sys/kernel/msgmni");
--                tst_exit();
--        }
--        fclose(f);
--        return atoi(buff);
--}
--
- /***************************************************************
-  * setup() - performs all ONE TIME setup for this test.
-  *****************************************************************/
-@@ -689,12 +670,11 @@ setup()
-          */
-         TEST_PAUSE;
- 
--        MSGMNI = get_max_msgqueues() - get_used_msgqueues();
-+        MSGMNI = MAX_MSGQUEUES - get_used_msgqueues();
-         if (MSGMNI <= 0){
-                 tst_resm(TBROK,"Max number of message queues already used, cannot create more.");
-                 cleanup();
-         }
--
- }
- 
- 
-Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/ipcmsg.h
-===================================================================
---- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/lib/ipcmsg.h	2005-12-22 21:18:23.000000000 +0100
-+++ ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/ipcmsg.h	2008-02-19 18:51:38.000000000 +0100
-@@ -41,6 +41,8 @@ void setup(void);
- #define MSGSIZE	1024		/* a resonable size for a message */
- #define MSGTYPE 1		/* a type ID for a message */
- 
-+#define MAX_MSGQUEUES	16	/* MSGMNI as defined in linux/msg.h */
-+
- typedef struct mbuf {		/* a generic message structure */
- 	long mtype;
- 	char mtext[MSGSIZE + 1];  /* add 1 here so the message can be 1024   */
-Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/Makefile
-===================================================================
---- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/lib/Makefile	2006-08-21 08:58:39.000000000 +0200
-+++ ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/Makefile	2008-02-19 18:50:19.000000000 +0100
-@@ -19,6 +19,7 @@
- SRCS   = libipc.c
- OBJS   = $(SRCS:.c=.o)
- LIBIPC = ../libipc.a
-+LIBIPC_HEADERS	= ipcmsg.h ipcsem.h
- 
- CFLAGS += -I../../../../../include -Wall
- 
-@@ -27,6 +28,8 @@ all: $(LIBIPC)
- $(LIBIPC): $(OBJS)
- 	$(AR) -rc $@ $(OBJS)
- 
-+$(OBJS): $(LIBIPC_HEADERS)
-+
- install:
- 
- clean:
-Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/Makefile
-===================================================================
---- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/Makefile	2006-08-23 07:46:27.000000000 +0200
-+++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/Makefile	2008-02-19 19:02:26.000000000 +0100
-@@ -18,12 +18,15 @@
- 
- CFLAGS += -I../lib -I../../../../../include -Wall
- LDLIBS += -L../../../../../lib -lltp -L.. -lipc
-+LIBIPC_HEADERS	= ../lib/ipcmsg.h
- 
- SRCS    = $(wildcard *.c)
- TARGETS = $(patsubst %.c,%,$(SRCS))
- 
- all: $(TARGETS)
- 
-+$(TARGETS): $(LIBIPC_HEADERS)
-+
- install:
- 	@set -e; for i in $(TARGETS); do ln -f $$i ../../../../bin/$$i ; done
- 
-
---------------070801070409020708020001--
+Auke
