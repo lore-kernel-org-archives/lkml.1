@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbYBSOb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757806AbYBSOcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbYBSOb3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 09:31:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbYBSObV
+	id S1757806AbYBSOcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 09:32:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbYBSOcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 09:31:21 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:35846 "EHLO smtp3-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753441AbYBSObV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 09:31:21 -0500
-From: Jim Meyering <jim@meyering.net>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] lib: Handle failed malloc.
-Date: Tue, 19 Feb 2008 15:31:19 +0100
-Message-ID: <87hcg5nhl4.fsf@rho.meyering.net>
+	Tue, 19 Feb 2008 09:32:36 -0500
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:7389 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbYBSOcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 09:32:35 -0500
+Date: Tue, 19 Feb 2008 15:32:32 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jonathan Brassow <jbrassow@redhat.com>,
+       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com
+Subject: [PATCH] dm raid1: bitops bug.
+Message-ID: <20080219143232.GA10994@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-* lib/inflate.c (inflate_dynamic): Don't deref NULL upon failed malloc.
+Commit 8f0205b798f926e2745de5fdebf0a8605c621de6
+"dm raid1: handle recovery failures" introduces a test_bit on an
+integer. test_bit is only defined to do something useful on arrays
+of long. Remove the test_bit code and use hand coded test bit
+instead.
 
-Signed-off-by: Jim Meyering <meyering@redhat.com>
+Cc: Jonathan Brassow <jbrassow@redhat.com>
+Cc: Alasdair G Kergon <agk@redhat.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 ---
-diff --git a/lib/inflate.c b/lib/inflate.c
-index 845f91d..9762294 100644
---- a/lib/inflate.c
-+++ b/lib/inflate.c
-@@ -811,6 +811,9 @@ DEBG("<dyn");
-   ll = malloc(sizeof(*ll) * (286+30));  /* literal/length and distance code lengths */
- #endif
 
-+  if (ll == NULL)
-+    return 1;
-+
-   /* make local bit buffer */
-   b = bb;
-   k = bk;
---
-1.5.4.19.gd3dfd
+Completely untested, but should hopefully do what was intended.
+
+ drivers/md/dm-raid1.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
+
+Index: linux-2.6/drivers/md/dm-raid1.c
+===================================================================
+--- linux-2.6.orig/drivers/md/dm-raid1.c
++++ linux-2.6/drivers/md/dm-raid1.c
+@@ -758,7 +758,8 @@ static void recovery_complete(int read_e
+ {
+ 	struct region *reg = (struct region *)context;
+ 	struct mirror_set *ms = reg->rh->ms;
+-	int m, bit = 0;
++	unsigned int mask = 1;
++	int m;
+ 
+ 	if (read_err) {
+ 		/* Read error means the failure of default mirror. */
+@@ -776,10 +777,10 @@ static void recovery_complete(int read_e
+ 		for (m = 0; m < ms->nr_mirrors; m++) {
+ 			if (&ms->mirror[m] == get_default_mirror(ms))
+ 				continue;
+-			if (test_bit(bit, &write_err))
++			if (write_err & mask)
+ 				fail_mirror(ms->mirror + m,
+ 					    DM_RAID1_SYNC_ERROR);
+-			bit++;
++			mask <<= 1;
+ 		}
+ 	}
+ 
