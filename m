@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763550AbYBSXAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbYBSXDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763550AbYBSXAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760488AbYBSW7l
+	id S1761531AbYBSXDp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:03:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYBSXDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:59:41 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38533 "EHLO smtp5.pp.htv.fi"
+	Tue, 19 Feb 2008 18:03:35 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42026 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759821AbYBSW7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:59:40 -0500
-Date: Wed, 20 Feb 2008 00:59:03 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Mattia Dongili <malattia@linux.it>, Len Brown <len.brown@intel.com>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] sony-laptop.c: fix off-by-one
-Message-ID: <20080219225903.GS31955@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1753869AbYBSXDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 18:03:34 -0500
+Date: Wed, 20 Feb 2008 10:03:29 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Teigland <teigland@redhat.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for Feb 19
+Message-Id: <20080220100329.51e57eab.sfr@canb.auug.org.au>
+In-Reply-To: <20080219200450.GD5411@redhat.com>
+References: <20080219183825.1c71c9b2.sfr@canb.auug.org.au>
+	<20080219200450.GD5411@redhat.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes an off-by-one spotted by the Coverity checker.
+--Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Hi David,
 
----
---- linux-2.6/drivers/misc/sony-laptop.c.old	2008-02-20 00:26:21.000000000 +0200
-+++ linux-2.6/drivers/misc/sony-laptop.c	2008-02-20 00:26:38.000000000 +0200
-@@ -314,9 +314,9 @@ static void sony_laptop_report_input_eve
- 		kp.dev = jog_dev;
- 		break;
- 
- 	default:
--		if (event > ARRAY_SIZE(sony_laptop_input_index)) {
-+		if (event >= ARRAY_SIZE(sony_laptop_input_index)) {
- 			dprintk("sony_laptop_report_input_event, event not known: %d\n", event);
- 			break;
- 		}
- 		if (sony_laptop_input_index[event] != -1) {
+On Tue, 19 Feb 2008 14:04:50 -0600 David Teigland <teigland@redhat.com> wro=
+te:
+>
+> dlm (distributed lock manager) tree:
+>=20
+>  git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git next
 
+Thanks, added.
+
+Does the URL in the MAINTAINERS file need updating/augmenting?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHu2BETgG2atn1QN8RAnCpAJ4nerYkv0H9Rpajg4zlDeZWDa9DagCbBZw0
+z8Dt7FSR/gWWAuaTgtb8zJ0=
+=/8Mv
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ--
