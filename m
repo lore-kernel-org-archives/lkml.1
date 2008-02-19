@@ -1,75 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbYBSQHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYBSQMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbYBSQHw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:07:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYBSQHl
+	id S1754984AbYBSQMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYBSQML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:07:41 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:40474 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751655AbYBSQHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:07:40 -0500
-From: Chris Mason <chris.mason@oracle.com>
-To: Tomasz Chmielewski <mangoo@wpkg.org>
-Subject: Re: very poor ext3 write performance on big filesystems?
-Date: Tue, 19 Feb 2008 11:04:49 -0500
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <47B980AC.2080806@wpkg.org> <200802191006.50693.chris.mason@oracle.com> <47BAF3FF.3070300@wpkg.org>
-In-Reply-To: <47BAF3FF.3070300@wpkg.org>
+	Tue, 19 Feb 2008 11:12:11 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:57561 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752778AbYBSQMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:12:10 -0500
+Message-ID: <47BAFFD3.1070606@sgi.com>
+Date: Tue, 19 Feb 2008 08:12:03 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de, Christoph Lameter <clameter@sgi.com>,
+       Jack Steiner <steiner@sgi.com>
+Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing
+ boot failure
+References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com>
+In-Reply-To: <47B77E90.5050809@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802191104.49482.chris.mason@oracle.com>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008, Tomasz Chmielewski wrote:
-> Chris Mason schrieb:
-> > On Tuesday 19 February 2008, Tomasz Chmielewski wrote:
-> >> Theodore Tso schrieb:
-> >>
-> >> (...)
-> >>
-> >>> The following ld_preload can help in some cases.  Mutt has this hack
-> >>> encoded in for maildir directories, which helps.
-> >>
-> >> It doesn't work very reliable for me.
-> >>
-> >> For some reason, it hangs for me sometimes (doesn't remove any files, rm
-> >> -rf just stalls), or segfaults.
-> >
-> > You can go the low-tech route (assuming your file names don't have spaces
-> > in them)
-> >
-> > find . -printf "%i %p\n" | sort -n | awk '{print $2}' | xargs rm
->
-> Why should it make a difference?
+Mike Travis wrote:
+> Mel Gorman wrote:
+> 
+>> If you send me patches to apply on top of 2.6.25-rc1, I'll give them a spin
+>> on the machine in question. Reverting didn't work out very well as there are
+>> too many collisions with patches that were applied later. I eventually got
+>> the machine booting but it only succeeds because it only brings up one core
+>> on each processor.  The patch, which is pretty brain damaged is below in case
+>> it helps you guess what the real problem is. dmesg logs are attached of the
+>> vanilla failure with acpi=debug and the log with the patch applied showing
+>> "__cpu_up: bad cpu 1" and "__cpu_up: bad cpu3" (i.e. the second cores of
+>> each machine).
+>>
+> 
+> This should completely undo the change to 16 bit apic ids until we can figure
+> out the problem with the memory-less nodes.  I checked it on both the numa
+> and non-numa x86_64 box.
+> 
+> Thanks,
+> Mike
+> 
 
-It does something similar to Ted's ld preload, sorting the results from 
-readdir by inode number before using them.  You will still seek quite a lot 
-between the directory entries, but operations on the files themselves will go 
-in a much more optimal order.  It might help.
+Hi Mel,
 
->
-> Does "find" find filenames/paths faster than "rm -r"?
->
-> Or is "find once/remove once" faster than "find files/rm files/find
-> files/rm files/...", which I suppose "rm -r" does?
+Did you get a chance to try out this patch to see if it cleared up the problem
+booting on your x86_64 numa box?
 
-rm -r does removes things in the order that readdir returns.  In your hard 
-linked tree (on almost any FS), this will be very random.  The sorting is 
-probably the best you can do from userland to optimize the ordering.
-
--chris
-
+Thanks,
+Mike
