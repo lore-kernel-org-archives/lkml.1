@@ -1,293 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759027AbYBSSvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbYBSSwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759027AbYBSSvz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYBSSvr
+	id S1759479AbYBSSwR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:52:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYBSSvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:51:47 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:61238 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753448AbYBSSvq (ORCPT
+	Tue, 19 Feb 2008 13:51:50 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:20089 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755254AbYBSSvs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:51:46 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=o2wIqdPzuhj6rSehjjYg22ZyVJFqIA1dndqs5wgH3QKXP3lT+gkWy8CqHhDq4KuRh
-	Fk7W4go2MjPMu/+xM5laA==
-Message-ID: <3f1a065b0802191051k2c89ecdek769c83d628fac4b4@mail.gmail.com>
-Date: Tue, 19 Feb 2008 10:51:35 -0800
-From: "Russell Leidich" <rml@google.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc2-mm1: build failure (x86)
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Pavel Machek" <pavel@suse.cz>, "Len Brown" <lenb@kernel.org>,
-       "Marcin Slusarz" <marcin.slusarz@gmail.com>
-In-Reply-To: <20080217095641.GB6054@joi>
+	Tue, 19 Feb 2008 13:51:48 -0500
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 19 Feb 2008 10:51:40 -0800
+Message-ID: <adatzk4g4oz.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	 <20080216030949.5b11ba4c.akpm@linux-foundation.org>
-	 <20080216113722.GA9041@joi> <200802170237.10816.rjw@sisk.pl>
-	 <20080217095641.GB6054@joi>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 19 Feb 2008 18:51:43.0281 (UTC) FILETIME=[7836EA10:01C87328]
+Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim7002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 17, 2008 1:56 AM, Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> On Sun, Feb 17, 2008 at 02:37:09AM +0100, Rafael J. Wysocki wrote:
-> > On Saturday, 16 of February 2008, Marcin Slusarz wrote:
-> > > On Sat, Feb 16, 2008 at 03:09:49AM -0800, Andrew Morton wrote:
-> > > > On Sat, 16 Feb 2008 11:59:07 +0100 Marcin Slusarz <marcin.slusarz@gmail.com> wrote:
-> > > >
-> > > > > arch/x86/kernel/built-in.o: In function `amd_smp_thermal_interrupt':
-> > > > > (.text+0xe03b): undefined reference to `mce_log_therm_throt_event'
-> > > > > arch/x86/kernel/built-in.o: In function `acpi_save_state_mem':
-> > > > > (.text+0x12239): undefined reference to `setup_trampoline'
-> > > > >
-> > > > > #
-> > > > > # Automatically generated make config: don't edit
-> > > > > # Linux kernel version: 2.6.25-rc2-mm1
-> > > > > # Sat Feb 16 11:32:49 2008
-> > > >
-> > > > ho hum, thanks.  I think I'll drop x86-amd-thermal-interrupt-support.patch.
-> > > >  I don't think it's the final version anwyay.
-> > > >
-> > > Ok, I had to revert x86-remove-pt_regs-arg-from-smp_thermal_interrupt before x86-amd-thermal-interrupt-support.
-> > >
-> > > Second error vanished when I reverted "suspend: wakeup code in C".
-> >
-> > The appended patch should fix the second error.
+Linus, please pull from
 
-Thanks for fixing this, Rafael.
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-I must admit that I'm puzzled as to why this should fail, since my
-Kconfig change forces K8_NB=y when X86_MCE_AMD=y -- unless this is a
-discussion of my earlier patch, which did not include this change.
+This tree is also available from kernel.org mirrors at:
 
-Anyhow, I'm pleased that you've created a fix which seems to solve the problem.
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-> Yes, it did.
->
->
-> > Thanks,
-> > Rafael
-> >
-> > ---
-> > On x86-64 the CPU trampoline code is now used while waking up from ACPI
-> > suspend to RAM.  For this reason, make it depend on
-> > (64BIT && ACPI_SLEEP) as well as on SMP, move the relevant declarations
-> > to a separate header and move the definition of setup_trampoline() from
-> > smpboot_64.c .
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  arch/x86/Kconfig             |    2 +-
-> >  arch/x86/kernel/acpi/sleep.c |    1 -
-> >  arch/x86/kernel/acpi/sleep.h |    3 ++-
-> >  arch/x86/kernel/e820_64.c    |    5 +++--
-> >  arch/x86/kernel/setup_64.c   |   16 ++++++++++++++++
-> >  arch/x86/kernel/smpboot_64.c |   23 ++---------------------
-> >  include/asm-x86/smp_64.h     |    2 --
-> >  include/asm-x86/trampoline.h |   18 ++++++++++++++++++
-> >  8 files changed, 42 insertions(+), 28 deletions(-)
-> >
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/Kconfig
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/Kconfig
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/Kconfig
-> > @@ -180,7 +180,7 @@ config X86_BIOS_REBOOT
-> >
-> >  config X86_TRAMPOLINE
-> >       bool
-> > -     depends on X86_SMP || (X86_VOYAGER && SMP)
-> > +     depends on X86_SMP || (X86_VOYAGER && SMP) || (64BIT && ACPI_SLEEP)
-> >       default y
-> >
-> >  config KTIME_SCALAR
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/kernel/e820_64.c
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/kernel/e820_64.c
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/kernel/e820_64.c
-> > @@ -27,6 +27,7 @@
-> >  #include <asm/setup.h>
-> >  #include <asm/sections.h>
-> >  #include <asm/kdebug.h>
-> > +#include <asm/trampoline.h>
-> >
-> >  struct e820map e820;
-> >
-> > @@ -58,8 +59,8 @@ struct early_res {
-> >  };
-> >  static struct early_res early_res[MAX_EARLY_RES] __initdata = {
-> >       { 0, PAGE_SIZE, "BIOS data page" },                     /* BIOS data page */
-> > -#ifdef CONFIG_SMP
-> > -     { SMP_TRAMPOLINE_BASE, SMP_TRAMPOLINE_BASE + 2*PAGE_SIZE, "SMP_TRAMPOLINE" },
-> > +#ifdef CONFIG_X86_TRAMPOLINE
-> > +     { TRAMPOLINE_BASE, TRAMPOLINE_BASE + 2 * PAGE_SIZE, "TRAMPOLINE" },
-> >  #endif
-> >       {}
-> >  };
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/kernel/smpboot_64.c
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/kernel/smpboot_64.c
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/kernel/smpboot_64.c
-> > @@ -59,6 +59,7 @@
-> >  #include <asm/irq.h>
-> >  #include <asm/hw_irq.h>
-> >  #include <asm/numa.h>
-> > +#include <asm/trampoline.h>
-> >
-> >  /* Number of siblings per CPU package */
-> >  int smp_num_siblings = 1;
-> > @@ -96,13 +97,6 @@ EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
-> >  DEFINE_PER_CPU(cpumask_t, cpu_core_map);
-> >  EXPORT_PER_CPU_SYMBOL(cpu_core_map);
-> >
-> > -/*
-> > - * Trampoline 80x86 program as an array.
-> > - */
-> > -
-> > -extern const unsigned char trampoline_data[];
-> > -extern const unsigned char trampoline_end[];
-> > -
-> >  /* State of each CPU */
-> >  DEFINE_PER_CPU(int, cpu_state) = { 0 };
-> >
-> > @@ -127,19 +121,6 @@ struct task_struct *idle_thread_array[NR
-> >
-> >
-> >  /*
-> > - * Currently trivial. Write the real->protected mode
-> > - * bootstrap into the page concerned. The caller
-> > - * has made sure it's suitably aligned.
-> > - */
-> > -
-> > -unsigned long __cpuinit setup_trampoline(void)
-> > -{
-> > -     void *tramp = __va(SMP_TRAMPOLINE_BASE);
-> > -     memcpy(tramp, trampoline_data, trampoline_end - trampoline_data);
-> > -     return virt_to_phys(tramp);
-> > -}
-> > -
-> > -/*
-> >   * The bootstrap kernel entry code has set these up. Save them for
-> >   * a given CPU
-> >   */
-> > @@ -690,7 +671,7 @@ do_rest:
-> >                       Dprintk("CPU has booted.\n");
-> >               } else {
-> >                       boot_error = 1;
-> > -                     if (*((volatile unsigned char *)phys_to_virt(SMP_TRAMPOLINE_BASE))
-> > +                     if (*((unsigned char *)phys_to_virt(TRAMPOLINE_BASE))
-> >                                       == 0xA5)
-> >                               /* trampoline started but...? */
-> >                               printk("Stuck ??\n");
-> > Index: linux-2.6.25-rc2-mm1/include/asm-x86/smp_64.h
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/include/asm-x86/smp_64.h
-> > +++ linux-2.6.25-rc2-mm1/include/asm-x86/smp_64.h
-> > @@ -47,8 +47,6 @@ static inline int cpu_present_to_apicid(
-> >
-> >  #ifdef CONFIG_SMP
-> >
-> > -#define SMP_TRAMPOLINE_BASE 0x6000
-> > -
-> >  extern int __cpu_disable(void);
-> >  extern void __cpu_die(unsigned int cpu);
-> >  extern void prefill_possible_map(void);
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/kernel/acpi/sleep.h
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/kernel/acpi/sleep.h
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/kernel/acpi/sleep.h
-> > @@ -2,6 +2,8 @@
-> >   *   Variables and functions used by the code in sleep.c
-> >   */
-> >
-> > +#include <asm/trampoline.h>
-> > +
-> >  extern char wakeup_code_start, wakeup_code_end;
-> >
-> >  extern unsigned long saved_video_mode;
-> > @@ -13,5 +15,4 @@ extern int wakeup_pmode_return;
-> >  extern char swsusp_pg_dir[PAGE_SIZE];
-> >
-> >  extern unsigned long acpi_copy_wakeup_routine(unsigned long);
-> > -extern unsigned long setup_trampoline(void);
-> >  extern void wakeup_long64(void);
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/kernel/setup_64.c
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/kernel/setup_64.c
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/kernel/setup_64.c
-> > @@ -66,6 +66,7 @@
-> >  #include <asm/mce.h>
-> >  #include <asm/ds.h>
-> >  #include <asm/topology.h>
-> > +#include <asm/trampoline.h>
-> >
-> >  #ifdef CONFIG_PARAVIRT
-> >  #include <asm/paravirt.h>
-> > @@ -1184,3 +1185,18 @@ const struct seq_operations cpuinfo_op =
-> >       .stop = c_stop,
-> >       .show = show_cpuinfo,
-> >  };
-> > +
-> > +#ifdef CONFIG_X86_TRAMPOLINE
-> > +/*
-> > + * Currently trivial. Write the real->protected mode
-> > + * bootstrap into the page concerned. The caller
-> > + * has made sure it's suitably aligned.
-> > + */
-> > +
-> > +unsigned long setup_trampoline(void)
-> > +{
-> > +     void *tramp = __va(TRAMPOLINE_BASE);
-> > +     memcpy(tramp, trampoline_data, trampoline_end - trampoline_data);
-> > +     return virt_to_phys(tramp);
-> > +}
-> > +#endif /* CONFIG_X86_TRAMPOLINE */
-> > Index: linux-2.6.25-rc2-mm1/arch/x86/kernel/acpi/sleep.c
-> > ===================================================================
-> > --- linux-2.6.25-rc2-mm1.orig/arch/x86/kernel/acpi/sleep.c
-> > +++ linux-2.6.25-rc2-mm1/arch/x86/kernel/acpi/sleep.c
-> > @@ -10,7 +10,6 @@
-> >  #include <linux/dmi.h>
-> >  #include <linux/cpumask.h>
-> >
-> > -#include <asm/smp.h>
-> >  #include "realmode/wakeup.h"
-> >  #include "sleep.h"
-> >
-> > Index: linux-2.6.25-rc2-mm1/include/asm-x86/trampoline.h
-> > ===================================================================
-> > --- /dev/null
-> > +++ linux-2.6.25-rc2-mm1/include/asm-x86/trampoline.h
-> > @@ -0,0 +1,18 @@
-> > +#ifndef __TRAMPOLINE_HEADER
-> > +#define __TRAMPOLINE_HEADER
-> > +
-> > +#ifndef __ASSEMBLY__
-> > +
-> > +#define TRAMPOLINE_BASE 0x6000
-> > +
-> > +/*
-> > + * Trampoline 80x86 program as an array.
-> > + */
-> > +extern const unsigned char trampoline_data[];
-> > +extern const unsigned char trampoline_end[];
-> > +
-> > +extern unsigned long setup_trampoline(void);
-> > +
-> > +#endif /* __ASSEMBLY__ */
-> > +
-> > +#endif /* __TRAMPOLINE_HEADER */
->
+This will get a couple of small post-2.6.25-rc2 fixes:
+
+Pradeep Satyanarayana (1):
+      IPoIB/cm: Fix ipoib_cm_dev_stop() cleanup when drain times out
+
+Roland Dreier (1):
+      IB/mthca: Free correct MPT on error exit from mthca_fmr_alloc()
+
+ drivers/infiniband/hw/mthca/mthca_mr.c  |    2 +-
+ drivers/infiniband/ulp/ipoib/ipoib_cm.c |   10 ++++++----
+ 2 files changed, 7 insertions(+), 5 deletions(-)
 
 
-
--- 
-Russell Leidich
+diff --git a/drivers/infiniband/hw/mthca/mthca_mr.c b/drivers/infiniband/hw/mthca/mthca_mr.c
+index 3b69855..3538da1 100644
+--- a/drivers/infiniband/hw/mthca/mthca_mr.c
++++ b/drivers/infiniband/hw/mthca/mthca_mr.c
+@@ -686,7 +686,7 @@ err_out_table:
+ 	mthca_table_put(dev, dev->mr_table.mpt_table, key);
+ 
+ err_out_mpt_free:
+-	mthca_free(&dev->mr_table.mpt_alloc, mr->ibmr.lkey);
++	mthca_free(&dev->mr_table.mpt_alloc, key);
+ 	return err;
+ }
+ 
+diff --git a/drivers/infiniband/ulp/ipoib/ipoib_cm.c b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+index 7dd2ec4..52b1beb 100644
+--- a/drivers/infiniband/ulp/ipoib/ipoib_cm.c
++++ b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
+@@ -824,7 +824,6 @@ void ipoib_cm_dev_stop(struct net_device *dev)
+ 	struct ipoib_dev_priv *priv = netdev_priv(dev);
+ 	struct ipoib_cm_rx *p;
+ 	unsigned long begin;
+-	LIST_HEAD(list);
+ 	int ret;
+ 
+ 	if (!IPOIB_CM_SUPPORTED(dev->dev_addr) || !priv->cm.id)
+@@ -857,9 +856,12 @@ void ipoib_cm_dev_stop(struct net_device *dev)
+ 			/*
+ 			 * assume the HW is wedged and just free up everything.
+ 			 */
+-			list_splice_init(&priv->cm.rx_flush_list, &list);
+-			list_splice_init(&priv->cm.rx_error_list, &list);
+-			list_splice_init(&priv->cm.rx_drain_list, &list);
++			list_splice_init(&priv->cm.rx_flush_list,
++					 &priv->cm.rx_reap_list);
++			list_splice_init(&priv->cm.rx_error_list,
++					 &priv->cm.rx_reap_list);
++			list_splice_init(&priv->cm.rx_drain_list,
++					 &priv->cm.rx_reap_list);
+ 			break;
+ 		}
+ 		spin_unlock_irq(&priv->lock);
