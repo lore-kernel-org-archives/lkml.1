@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbYBSTbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761380AbYBSTbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755387AbYBSTbP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:31:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760628AbYBST37
+	id S1761380AbYBSTbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbYBSTaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:29:59 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:36968 "EHLO smtp6.pp.htv.fi"
+	Tue, 19 Feb 2008 14:30:06 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:55859 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756175AbYBST36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:29:58 -0500
-Date: Tue, 19 Feb 2008 21:29:22 +0200
+	id S1760629AbYBSTaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:30:00 -0500
+Date: Tue, 19 Feb 2008 21:29:24 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: David Somayajulu <david.somayajulu@qlogic.com>,
-       James Bottomley <James.Bottomley@SteelEye.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Message-ID: <20080219192922.GH31955@cs181133002.pp.htv.fi>
+To: David Sterba <dsterba@suse.cz>, jkosina@suse.cz
+Cc: Jiri Slaby <jslaby@suse.cz>, linux-kernel@vger.kernel.org
+Subject: ipwireless_network_packet_received(): inconsequent NULL checking
+Message-ID: <20080219192924.GI31955@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,55 +23,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes dead code spotted by the Coverity checker.
+The Coverity checker spotted the following inconsequent NULL checking in 
+drivers/char/pcmcia/ipwireless/network.c:
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+<--  snip  -->
 
----
+void ipwireless_network_packet_received(struct ipw_network *network,
+                                        unsigned int channel_idx,
+                                        unsigned char *data,
+                                        unsigned int length)
+{
+...
+                /*
+                 * If it's associated with a tty (other than the RAS channel
+                 * when we're online), then send the data to that tty. The RAS
+                 * channel's data is handled above - it always goes through
+                 * ppp_generic.
+                 */
+                if (tty && channel_idx == IPW_CHANNEL_RAS
+                                && (network->ras_control_lines &
+                                        IPW_CONTROL_LINE_DCD) != 0
+                                && ipwireless_tty_is_modem(tty)) {
+...
+                /* Otherwise we send it out the tty. */
+                else
+                        ipwireless_tty_received(tty, data, length);
+...
 
- drivers/scsi/qla4xxx/ql4_isr.c |   18 +-----------------
- 1 file changed, 1 insertion(+), 17 deletions(-)
+<--  snip  -->
 
---- linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c.old	2008-02-19 20:29:16.000000000 +0200
-+++ linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c	2008-02-19 20:30:37.000000000 +0200
-@@ -91,38 +91,22 @@ static void qla4xxx_status_entry(struct 
- 		if (scsi_status == 0) {
- 			cmd->result = DID_OK << 16;
- 			break;
- 		}
- 
- 		if (sts_entry->iscsiFlags & ISCSI_FLAG_RESIDUAL_OVER) {
- 			cmd->result = DID_ERROR << 16;
- 			break;
- 		}
- 
--		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
-+		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
- 			scsi_set_resid(cmd, residual);
--			if (!scsi_status && ((scsi_bufflen(cmd) - residual) <
--				cmd->underflow)) {
--
--				cmd->result = DID_ERROR << 16;
--
--				DEBUG2(printk("scsi%ld:%d:%d:%d: %s: "
--					"Mid-layer Data underrun0, "
--					"xferlen = 0x%x, "
--					"residual = 0x%x\n", ha->host_no,
--					cmd->device->channel,
--					cmd->device->id,
--					cmd->device->lun, __func__,
--					scsi_bufflen(cmd), residual));
--				break;
--			}
--		}
- 
- 		cmd->result = DID_OK << 16 | scsi_status;
- 
- 		if (scsi_status != SCSI_CHECK_CONDITION)
- 			break;
- 
- 		/* Copy Sense Data into sense buffer. */
- 		memset(cmd->sense_buffer, 0, SCSI_SENSE_BUFFERSIZE);
- 
- 		sensebytecnt = le16_to_cpu(sts_entry->senseDataByteCnt);
+ipwireless_tty_received() dereferences "tty".
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
