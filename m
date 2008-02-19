@@ -1,70 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbYBSTD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYBSTIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757797AbYBSTD0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:03:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbYBSTDQ
+	id S1758189AbYBSTIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYBSTIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:03:16 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:44269 "EHLO mx1.redhat.com"
+	Tue, 19 Feb 2008 14:08:40 -0500
+Received: from mms1.broadcom.com ([216.31.210.17]:2237 "EHLO mms1.broadcom.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753674AbYBSTDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:03:14 -0500
-Date: Tue, 19 Feb 2008 14:02:22 -0500
-From: Rik van Riel <riel@redhat.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-fsdevel@vger.kernel.org, pavel@ucw.cz, a1426z@gawab.com,
-       jonathan@jonmasters.org, zlynx@acm.org
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Message-ID: <20080219140222.4cee07ab@cuia.boston.redhat.com>
-In-Reply-To: <20080219090008.bb6cbe2f.pj@sgi.com>
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
-	<20080217084906.e1990b11.pj@sgi.com>
-	<20080219145108.7E96.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080219090008.bb6cbe2f.pj@sgi.com>
-Organization: Red Hat, Inc
-X-Mailer: Claws Mail 3.1.0 (GTK+ 2.12.1; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1752696AbYBSTIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:08:39 -0500
+X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Tony Battersby" <tonyb@cybernetics.com>
+cc: "David Miller" <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <47BB00EC.3010607@cybernetics.com>
+References: <47BA0984.2070306@cybernetics.com>
+ <1203381120.13495.78.camel@dell>
+ <20080218.163554.74130592.davem@davemloft.net>
+ <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com>
+Date: Tue, 19 Feb 2008 11:11:05 -0800
+Message-ID: <1203448265.13495.95.camel@dell>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6BA5F6A53ZO5572808-01-01
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008 09:00:08 -0600
-Paul Jackson <pj@sgi.com> wrote:
+On Tue, 2008-02-19 at 11:16 -0500, Tony Battersby wrote:
+> iSCSI
+> performance drops to 6 - 15 MB/s when the 3Com NIC is doing heavy rx
+> with light tx,
 
-> Depending on what we're trying to do:
->  1) warn applications of swap coming soon (your case),
->  2) show how close we are to swapping,
->  3) show how much swap has happened already,
->  4) kill instantly if try to swap (my hpc case),
->  5) measure file i/o caused by memory pressure, or
->  6) perhaps other goals,
-> we will need to hook different places in the kernel.
+That's strange.  The patch should only affect TX performance slightly
+since we are just turning off SG for TX.  Please take an ethereal trace
+to see what's happening and compare with a good trace.
+
+> but remains at a decent 115 MB/s when the 3Com NIC is
+> doing heavy tx with light rx.  When I revert Herbert's patch instead
+> of
+> applying the patch above, I get 115 MB/s in both cases.  (With a stock
+> unpatched kernel, the test fails almost immediately because the iSCSI
+> control PDUs are corrupted, causing the TCP connection to be dropped.)
 > 
-> It may well be that your hooks for embedded are simply in different
-> places than my hooks for HPC.  If so, that's fine.
+> The SysKonnect NIC that does not exhibit this problem has a chip that
+> says "BCM5411KQM" "TT0128 P2Q" and "56975E".
+> 
 
-Don't forget the "hooks for desktop" :)
+I think this is the 5700, but please send me the tg3 output that
+identifies the chip and the revision.  Something like this:
 
-Basically in all situations, the kernel needs to warn at the same point
-in time: when the system is about to run out of RAM for anonymous pages.
+eth2: Tigon3 [partno(BCM95705) rev 3003 PHY(5705)] (PCI:66MHz:32-bit) 10/100/1000Base-T Ethernet 00:10:18:04:57:0d
+eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
 
-In the desktop case, that leads to swapping (and programs can free memory).
 
-In the embedded case, it leads to OOM (and a management program can kill or
-restart something else, or a program can restart itself).
 
-In the HPC case, it leads to swapping (and a management program can kill or
-restart something else).
 
-I do not see the kernel side being different between these situations, only
-userspace reacts differently in the different scenarios.
 
-Am I overlooking something?
-
--- 
-All Rights Reversed
