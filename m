@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762666AbYBSWBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbYBSWBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762666AbYBSWBF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:01:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762501AbYBSWAu
+	id S1760038AbYBSWBa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:01:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759113AbYBSWBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:00:50 -0500
-Received: from mail.free-electrons.com ([88.191.46.45]:3187 "EHLO
-	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762464AbYBSWAs (ORCPT
+	Tue, 19 Feb 2008 17:01:15 -0500
+Received: from hu-out-0506.google.com ([72.14.214.239]:22012 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761817AbYBSWBN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:00:48 -0500
-Date: Tue, 19 Feb 2008 23:00:16 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       len.brown@intel.com, linux-acpi@vger.kernel.org,
-       michael@free-electrons.com
-Subject: Re: 2.6.25-rc2-mm1 (x64 thermal build failure)
-Message-ID: <20080219230016.5b7ff43d@crazy>
-In-Reply-To: <20080219094147.b9e0e99b.randy.dunlap@oracle.com>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	<20080216211603.bb4f3582.randy.dunlap@oracle.com>
-	<20080216214410.b9699910.akpm@linux-foundation.org>
-	<20080218111536.511c4fbc@crazy>
-	<20080218041340.f1e46ec9.akpm@linux-foundation.org>
-	<20080219165502.2c202759@crazy>
-	<20080219094147.b9e0e99b.randy.dunlap@oracle.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Tue, 19 Feb 2008 17:01:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=QfO8byzqC5ua+LKLCzYuLxbZBZzJXVw0dvml4R/Y8NFutQaoc9aFaE6WgiNcbYznxbquBiQ9BNf5auOGBxYFdxfjc6JoTri3UkpJ/15WtyHowU6dZGHIopG/Kpw8Asu+VIq+wVCSVdrK1kt9dY4RYJi7FJypz+59oFoFzob8ukQ=
+Date: Wed, 20 Feb 2008 01:01:06 +0300
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.24-sha1: RIP  [<ffffffff802596c8>] iov_iter_advance+0x38/0x70
+Message-ID: <20080219220106.GB1756@martell.zuzino.mipt.ru>
+References: <20080210140031.GA1754@martell.zuzino.mipt.ru> <20080212222704.GC2144@martell.zuzino.mipt.ru> <200802131117.37389.nickpiggin@yahoo.com.au> <200802131542.03026.nickpiggin@yahoo.com.au> <20080219204711.GA1756@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219204711.GA1756@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le Tue, 19 Feb 2008 09:41:47 -0800,
-Randy Dunlap <randy.dunlap@oracle.com> a écrit :
+On Tue, Feb 19, 2008 at 11:47:11PM +0300,  wrote:
+> On Wed, Feb 13, 2008 at 03:42:02PM +1100, Nick Piggin wrote:
+> > On Wednesday 13 February 2008 11:17, Nick Piggin wrote:
+> > > On Wednesday 13 February 2008 09:27, Alexey Dobriyan wrote:
+> > 
+> > > > It's a trivial dumb module which does nothing but loads and unloads.
+> > > > I redid ftest03 later without any suspicious activity and it oopsed the
+> > > > same way.
+> > >
+> > > Ah crap. Hmm, maybe I didn't consider all cases with my last patch to
+> > > that code... is there an easy way to get the ftest03 source and run
+> > > it?
+> > 
+> > OK I didn't realise it is a test from ltp.
+> > 
+> > But I can't reproduce it for the life of me with the latest git kernel
+> > and latest ltp tarball.
+> > 
+> > Is it easy to reproduce?
+> 
+> Well, yes. SMP, non-preemptible kernel, (and maxcpus=1 really helps!)
+> 
+> 	while true; do
+> 		./ftest03
+> 	done
+> 
+> This alone seems stable, but starting whole LTP in parallel downs the box
+> very quickly.
+> 
+> > Are you reproducing it simply by running the
+> > ftest03 binary directly from the shell? How many times between oopses?
+> > It is multi-process but no threads, so races should be minimal down
+> > this path -- can you get an strace of the failing process?
 
-> Does this patch apply to -mm?  Seem like No.
-
-No, it was generated against 2.6.25-rc2.
-
-> After converting it from mime(?) to ASCII
-
-Probably due to my PGP-MIME signature. Will try to remember that
-I should disable it next time.
-
-> and fixing one #if (change "and" to "&&")
-
-Oops. Fixed on my side too.
-
-> & fixing patch rejects, it does build cleanly.
-
-The rejects are probably due to the patch being applied to -mm. It
-applies fine on -rc here.
-
-Any opinion about whether the patch is clean ? Worth it ?
-
-Thanks for testing the patch,
-
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Free Embedded Linux Training Materials
-on http://free-electrons.com/training
-(More than 1500 pages!)
+Speaking of multi-proceseness, changing MAXCHILD to 1, nchild to 1,
+AFAICS, generates one child which oopses the very same way (in parallel
+with generic LTP) But, lowering MAXIOVCNT to 8 generates no oops.
