@@ -1,39 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755948AbYBSRKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755717AbYBSRRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755948AbYBSRKt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 12:10:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbYBSRKk
+	id S1755717AbYBSRRc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 12:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbYBSRRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 12:10:40 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:38659 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752807AbYBSRKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 12:10:40 -0500
-Date: Tue, 19 Feb 2008 19:10:35 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: random wedges with 2.6.25-rc*
-Message-ID: <20080219191035.252d5787@mjolnir.drzeus.cx>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 12:17:21 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:32832 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbYBSRRU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 12:17:20 -0500
+Message-ID: <47BB0EDC.5000002@bull.net>
+Date: Tue, 19 Feb 2008 18:16:12 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: subrata@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, ltp-list@lists.sourceforge.net,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, cmm@us.ibm.com, matthltc@us.ibm.com,
+       y-goto@jp.fujitsu.com
+Subject: Re: [LTP] [PATCH 1/8] Scaling msgmni to the amount of lowmem
+References: <20080211141646.948191000@bull.net>	 <20080211141813.354484000@bull.net>	 <20080215215916.8566d337.akpm@linux-foundation.org>	 <47B94D8C.8040605@bull.net>  <47B9835A.3060507@bull.net> <1203411055.4612.5.camel@subratamodak.linux.ibm.com>
+In-Reply-To: <1203411055.4612.5.camel@subratamodak.linux.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------070801070409020708020001"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Somewhere post 2.6.24, the kernel started getting very temperamentful. I experience random hangs and wedges very often.
+This is a multi-part message in MIME format.
+--------------070801070409020708020001
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Primarily, the udev startup locks up. If I abort it, it just locks up on more or less every action after that. Some quick debugging showed that I had a whole bunch of modprobe processes sitting around. The new CONFIG_USB_ANNOUNCE_NEW_DEVICES setting makes every startup of udev lock up consistently on at least two machines. It does not seem to be the root of the problem as disabling the option just makes the bug very unlikely.
+Subrata Modak wrote:
+>>Nadia Derbey wrote:
+>>
+>>>Andrew Morton wrote:
+>>>
+>>>
+>>>>On Mon, 11 Feb 2008 15:16:47 +0100 Nadia.Derbey@bull.net wrote:
+>>>>
+>>>>
+>>>>
+>>>>>[PATCH 01/08]
+>>>>>
+>>>>>This patch computes msg_ctlmni to make it scale with the amount of 
+>>>>>lowmem.
+>>>>>msg_ctlmni is now set to make the message queues occupy 1/32 of the 
+>>>>>available
+>>>>>lowmem.
+>>>>>
+>>>>>Some cleaning has also been done for the MSGPOOL constant: the msgctl 
+>>>>>man page
+>>>>>says it's not used, but it also defines it as a size in bytes (the code
+>>>>>expresses it in Kbytes).
+>>>>>
+>>>>
+>>>>
+>>>>Something's wrong here.  Running LTP's msgctl08 (specifically:
+>>>>ltp-full-20070228) cripples the machine.  It's a 4-way 4GB x86_64.
+>>>>
+>>>>http://userweb.kernel.org/~akpm/config-x.txt
+>>>>http://userweb.kernel.org/~akpm/dmesg-x.txt
+>>>>
+>>>>Normally msgctl08 will complete in a second or two.  With this patch I
+>>>>don't know how long it will take to complete, and the machine is horridly
+>>>>bogged down.  It does recover if you manage to kill msgctl08.  Feels like
+>>>>a terrible memory shortage, but there's plenty of memory free and it 
+>>>>isn't
+>>>>swapping.
+>>>>
+>>>>
+>>>>
+>>>
+>>>Before the patchset, msgctl08 used to be run with the old msgmni value: 
+>>>16. Now it is run with a much higher msgmni value (1746 in my case), 
+>>>since it scales to the memory size.
+>>>When I call "msgctl08 100000 16" it completes fast.
+>>>
+>>>Doing the follwing on the ref kernel:
+>>>echo 1746 > /proc/sys/kernel/msgmni
+>>>msgctl08 100000 1746
+>>>
+>>>makes th test block too :-(
+>>>
+>>>Will check to see where the problem comes from.
+>>>
+>>
+>>Well, actually, the test does not block, it only takes much much more 
+>>time to be executed:
+>>
+>>doing this:
+>>date; ./msgctl08 100000 XXX; date
+>>
+>>
+>>gives us the following results:
+>>XXX           16   32   64   128   256   512   1024   1746
+>>time(secs)     2    4    8    16    32    64    132    241
+>>
+>>XXX is the # of msg queues to be created = # of processes to be forked 
+>>as readers = # of processes to be created as writers
+>>time is approximative since it is obtained by a "date" before and after.
+>>
+>>XXX used to be 16 before the patchset  ---> 1st column
+>>     --> 16 processes forked as reader
+>>     --> + 16 processes forked as writers
+>>     --> + 16 msg queues
+>>XXX = 1746 (on my victim) after the patchset ---> last column
+>>     --> 1746 reader processes forked
+>>     --> + 1746 writers forked
+>>     --> + 1746 msg queues created
+>>
+>>The same tests on the ref kernel give approximatly the same results.
+>>
+>>So if we don't want this longer time to appear as a regression, the LTP 
+>>should be changed:
+>>1) either by setting the result of get_max_msgqueues() as the MSGMNI 
+>>constant (16) (that would be the best solution in my mind)
+>>2) or by warning the tester that it may take a long time to finish.
+>>
+>>There would be 3 tests impacted:
+>>
+>>kernel/syscalls/ipc/msgctl/msgctl08.c
+>>kernel/syscalls/ipc/msgctl/msgctl09.c
+>>kernel/syscalls/ipc/msgget/msgget03.c
+> 
+> 
+> We will change the test case if need that be. Nadia, kindly send us the
+> patch set which will do the necessary changes.
+> 
+> Regards--
+> Subrata
+> 
 
-I've also seen a couple of lockups in X. Might be a different expression of the same bug, but the effect here is a complete wedge of the user interface. It seems the rest of the machine also locks up, but I haven't confirmed this.
+Subrata,
 
-Anyone else seeing these problems? Someone should as I've seen the problem on both a Lenovo and a HP laptop here.
+You'll find the patch in attachment.
+FYI I didn't change msgget03.c since we need to get the actual max value 
+in order to generate an error.
 
-Rgds
--- 
-     -- Pierre Ossman
+Regards,
+Nadia
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+
+--------------070801070409020708020001
+Content-Type: text/x-patch;
+ name="ipc_ltp_full_20080131.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ipc_ltp_full_20080131.patch"
+
+Since msgmni now scales to the memory size, it may reach big values.
+To avoid forking 2*msgmni processes and create msgmni msg queues, do not take
+msgmni from procfs anymore.
+Just define it as 16 (which is the MSGMNI constant value in linux/msg.h)
+
+Also fixed the Makefiles in ipc/lib and ipc/msgctl: there was no dependency
+on the lib/ipc*.h header files.
+
+Signed-off-by: Nadia Derbey <Nadia.Derbey@bull.net>
+
+---
+ testcases/kernel/syscalls/ipc/lib/Makefile      |    3 +++
+ testcases/kernel/syscalls/ipc/lib/ipcmsg.h      |    2 ++
+ testcases/kernel/syscalls/ipc/msgctl/Makefile   |    3 +++
+ testcases/kernel/syscalls/ipc/msgctl/msgctl08.c |   23 ++---------------------
+ testcases/kernel/syscalls/ipc/msgctl/msgctl09.c |   24 ++----------------------
+ 5 files changed, 12 insertions(+), 43 deletions(-)
+
+Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c
+===================================================================
+--- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c	2006-02-11 05:46:36.000000000 +0100
++++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl08.c	2008-02-19 18:45:27.000000000 +0100
+@@ -50,6 +50,7 @@
+ #include <sys/msg.h>
+ #include "test.h"
+ #include "usctest.h"
++#include "ipcmsg.h"
+ 
+ void setup();
+ void cleanup();
+@@ -479,26 +480,6 @@ static int get_used_msgqueues()
+         return used_queues;
+ }
+ 
+-/** Get the max number of message queues allowed on system */
+-static int get_max_msgqueues()
+-{
+-        FILE *f;
+-        char buff[BUFSIZE];
+-
+-        /* Get the max number of message queues allowed on system */
+-        f = fopen("/proc/sys/kernel/msgmni", "r");
+-        if (!f){
+-                tst_resm(TBROK,"Could not open /proc/sys/kernel/msgmni");
+-                tst_exit();
+-        }
+-        if (!fgets(buff, BUFSIZE, f)) {
+-                tst_resm(TBROK,"Could not read /proc/sys/kernel/msgmni");
+-                tst_exit();
+-        }
+-        fclose(f);
+-        return atoi(buff);
+-}
+-
+ /***************************************************************
+  * setup() - performs all ONE TIME setup for this test.
+  *****************************************************************/
+@@ -520,7 +501,7 @@ setup()
+ 	 */
+         TEST_PAUSE;
+ 
+-        MSGMNI = get_max_msgqueues() - get_used_msgqueues();
++        MSGMNI = MAX_MSGQUEUES - get_used_msgqueues();
+ 	if (MSGMNI <= 0){
+ 		tst_resm(TBROK,"Max number of message queues already used, cannot create more.");
+ 		cleanup(); 
+Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c
+===================================================================
+--- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c	2006-02-11 05:46:36.000000000 +0100
++++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/msgctl09.c	2008-02-19 18:46:44.000000000 +0100
+@@ -49,6 +49,7 @@
+ #include <unistd.h>
+ #include "test.h"
+ #include "usctest.h"
++#include "ipcmsg.h"
+ 
+ #define MAXNREPS	1000
+ #ifndef CONFIG_COLDFIRE
+@@ -649,26 +650,6 @@ static int get_used_msgqueues()
+         return used_queues;
+ }
+ 
+-/** Get the max number of message queues allowed on system */
+-static int get_max_msgqueues()
+-{
+-        FILE *f;
+-        char buff[BUFSIZE];
+-
+-        /* Get the max number of message queues allowed on system */
+-        f = fopen("/proc/sys/kernel/msgmni", "r");
+-        if (!f){
+-                tst_resm(TBROK,"Could not open /proc/sys/kernel/msgmni");
+-                tst_exit();
+-        }
+-        if (!fgets(buff, BUFSIZE, f)) {
+-                tst_resm(TBROK,"Could not read /proc/sys/kernel/msgmni");
+-                tst_exit();
+-        }
+-        fclose(f);
+-        return atoi(buff);
+-}
+-
+ /***************************************************************
+  * setup() - performs all ONE TIME setup for this test.
+  *****************************************************************/
+@@ -689,12 +670,11 @@ setup()
+          */
+         TEST_PAUSE;
+ 
+-        MSGMNI = get_max_msgqueues() - get_used_msgqueues();
++        MSGMNI = MAX_MSGQUEUES - get_used_msgqueues();
+         if (MSGMNI <= 0){
+                 tst_resm(TBROK,"Max number of message queues already used, cannot create more.");
+                 cleanup();
+         }
+-
+ }
+ 
+ 
+Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/ipcmsg.h
+===================================================================
+--- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/lib/ipcmsg.h	2005-12-22 21:18:23.000000000 +0100
++++ ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/ipcmsg.h	2008-02-19 18:51:38.000000000 +0100
+@@ -41,6 +41,8 @@ void setup(void);
+ #define MSGSIZE	1024		/* a resonable size for a message */
+ #define MSGTYPE 1		/* a type ID for a message */
+ 
++#define MAX_MSGQUEUES	16	/* MSGMNI as defined in linux/msg.h */
++
+ typedef struct mbuf {		/* a generic message structure */
+ 	long mtype;
+ 	char mtext[MSGSIZE + 1];  /* add 1 here so the message can be 1024   */
+Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/Makefile
+===================================================================
+--- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/lib/Makefile	2006-08-21 08:58:39.000000000 +0200
++++ ltp-full-20080131/testcases/kernel/syscalls/ipc/lib/Makefile	2008-02-19 18:50:19.000000000 +0100
+@@ -19,6 +19,7 @@
+ SRCS   = libipc.c
+ OBJS   = $(SRCS:.c=.o)
+ LIBIPC = ../libipc.a
++LIBIPC_HEADERS	= ipcmsg.h ipcsem.h
+ 
+ CFLAGS += -I../../../../../include -Wall
+ 
+@@ -27,6 +28,8 @@ all: $(LIBIPC)
+ $(LIBIPC): $(OBJS)
+ 	$(AR) -rc $@ $(OBJS)
+ 
++$(OBJS): $(LIBIPC_HEADERS)
++
+ install:
+ 
+ clean:
+Index: ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/Makefile
+===================================================================
+--- ltp-full-20080131.orig/testcases/kernel/syscalls/ipc/msgctl/Makefile	2006-08-23 07:46:27.000000000 +0200
++++ ltp-full-20080131/testcases/kernel/syscalls/ipc/msgctl/Makefile	2008-02-19 19:02:26.000000000 +0100
+@@ -18,12 +18,15 @@
+ 
+ CFLAGS += -I../lib -I../../../../../include -Wall
+ LDLIBS += -L../../../../../lib -lltp -L.. -lipc
++LIBIPC_HEADERS	= ../lib/ipcmsg.h
+ 
+ SRCS    = $(wildcard *.c)
+ TARGETS = $(patsubst %.c,%,$(SRCS))
+ 
+ all: $(TARGETS)
+ 
++$(TARGETS): $(LIBIPC_HEADERS)
++
+ install:
+ 	@set -e; for i in $(TARGETS); do ln -f $$i ../../../../bin/$$i ; done
+ 
+
+--------------070801070409020708020001--
