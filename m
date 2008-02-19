@@ -1,89 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755528AbYBSPtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753008AbYBSPu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755528AbYBSPtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbYBSPsw
+	id S1753008AbYBSPu0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 10:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751026AbYBSPuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:48:52 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:55170 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751211AbYBSPsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:48:51 -0500
-Message-ID: <47BAFA66.2040603@sgi.com>
-Date: Tue, 19 Feb 2008 07:48:54 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 19 Feb 2008 10:50:13 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:37619 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752842AbYBSPuL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 10:50:11 -0500
+Date: Tue, 19 Feb 2008 09:50:07 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Nick Andrew <nick@nick-andrew.net>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
+Subject: Re: Improve init/Kconfig help descriptions [PATCH 3/9]
+Message-ID: <20080219155007.GA19362@sergelap.austin.ibm.com>
+References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lameter@sgi.com
-Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
-References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de>
-In-Reply-To: <p73ve4mxxlc.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BAF2E5.8050001@openvz.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+Quoting Pavel Emelyanov (xemul@openvz.org):
+> Nick Andrew wrote:
+> > On Tue, Feb 19, 2008 at 05:42:07PM +0300, Pavel Emelyanov wrote:
+> >> Nick Andrew wrote:
+> >>> On Wed, Feb 20, 2008 at 01:06:09AM +1100, Nick Andrew wrote:
+> >>>> Here is a series of 9 patches to init/Kconfig intended to improve the
+> >>>> usefulness and consistency of the help descriptions. The patches are
+> >>>> against linux-2.6.24.2.
+> >>>> [...]
+> >>>> Patch 3
+> >>>> 	USER_NS
+> >>>> 	PID_NS
+> >> What about UTS_NS, IPC_NS and NET_NS? 
+> >> Their descriptions can be improved in the same way :)
+> > 
+> > So far I have edited only init/Kconfig, that's what these 9
+> > patches are for. Next I'll do block/Kconfig. Eventually I expect
+> > to get to net/Kconfig which is where NET_NS is configured,
+> > but I don't know where UTS_NS and IPC_NS come from in 2.6.24.2.
+> > 
+> > I expect I'll have to start patching against a git tree soon,
+> > to be sure to see the latest code. I assume this should be
+> > Linus' tree?
 > 
->> we don't need copy too. already have x86_cpu_to_node_map
+> Both UTS_NS and IPC_NS are in init/Kconfg. At least they are
+> in 2.6.25-rc2 :)
 > 
-> That's a regression (probably from Mike's patches?). Until recently it was 
-> used.
+> > Is there any actual documentation on user namespaces and friends?
+> 
+> Hardly :(
+> 
+> > I think I grasp the pid namespaces concept; I am having a little
+> > difficulty visualising what function user namespaces performs.
+> > "provide different user info" isn't a very useful description and
+> > I'd fix it if I understood what it is supposed to mean.
+> 
+> The pid namespaces are described here: http://lwn.net/Articles/259217/
+> 
+> > To make a guess at it, how about:
+> > 
+> >    Enable support for user namespaces.
+> > 
+> >    This is a function used by container-based virtualisation systems
+> >    (e.g. vservers). User namespaces ensures that processes with the
+> >    same uid which are in different containers are isolated from each other.
+> > 
+> >    Answer Y if you require container-based virtualisation like
+> >    vservers. If unsure, say N.
+> 
+> You'd better talk to Serge Hallyn (in Cc) about them. He had some
+> thoughts on how to complete them :)
 
-Yes, I had removed it because I couldn't find any references to it.
-And reading one's own percpu variables should be as efficient as
-reading one's own pda.
+That describes the final intent for user namespaces.  Currently all they
+do is provide for separate accounting for the same uid in different user
+namespaces.  To provide actual isolation/security, you would currently
+want to use an LSM.  I'm currently playing with some selinux policy
+infrastructure to make that easier.
 
-But if I missed something, I apologize.  Thanks for catching the problem.
+So as for the description, for now it should probably read something
+like:
 
--Mike
+    Enable experimental support for user namespaces.
+ 
+    This is a function used by container-based virtualisation systems
+    (e.g. vservers). User namespaces are intended to ensure that
+    processes with the same uid which are in different containers are
+    isolated from each other.
+
+    Currently user namespaces provide separate accounting, while
+    isolation must be provided using SELinux or a custom security
+    module.
+ 
+    Answer Y if you require container-based virtualisation like
+    vservers. If unsure, say N.
 
 > 
-> The reason the node number was put in there is that it generates far
-> shorter code to just fetch the local node number from the PDA than to
-> first go through a array lookup from the cpu number. It also saves a
-> costly cache line miss on the array if you're unlucky.
-> 
-> It is far better to fix it than to remove it.
-> 
-> I know Mike/Christoph want to get rid of the PDA and make per cpu data 
-> as efficient as the PDA. If that happens the right fix is to create
-> a new per CPU data variable for the node number again.
-> 
-> Here's a quick patch (tested on kvm with numa emulation only) 
-> 
-> It should be ok because PDA is set up early and
-> the early node is always 0 and there is a 0 in there
-> at early boot.
-> 
-> Saves about 1.6k of text on a vmlinux here.
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> Index: linux/include/asm-x86/topology.h
-> ===================================================================
-> --- linux.orig/include/asm-x86/topology.h
-> +++ linux/include/asm-x86/topology.h
-> @@ -34,11 +34,12 @@
->  extern int cpu_to_node_map[];
->  
->  #else
-> +#include <asm/pda.h>
->  DECLARE_PER_CPU(int, x86_cpu_to_node_map);
->  extern int x86_cpu_to_node_map_init[];
->  extern void *x86_cpu_to_node_map_early_ptr;
->  /* Returns the number of the current Node. */
-> -#define numa_node_id()		(early_cpu_to_node(raw_smp_processor_id()))
-> +#define numa_node_id()		(read_pda(nodenumber))
->  #endif
->  
->  extern cpumask_t node_to_cpumask_map[];
-> 
-> 
+> > Nick.
 
+thanks,
+-serge
