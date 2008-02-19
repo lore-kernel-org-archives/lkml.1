@@ -1,129 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759262AbYBSUTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbYBSUZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759262AbYBSUTY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:19:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbYBSUTQ
+	id S1756690AbYBSUZc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYBSUZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:19:16 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:63357 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbYBSUTP (ORCPT
+	Tue, 19 Feb 2008 15:25:22 -0500
+Received: from hs-out-0708.google.com ([64.233.178.244]:17064 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbYBSUZU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:19:15 -0500
-Date: Tue, 19 Feb 2008 12:17:36 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Nick Andrew <nick@nick-andrew.net>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Improve init/Kconfig help descriptions [PATCH 5/9]
-Message-Id: <20080219121736.c4936240.randy.dunlap@oracle.com>
-In-Reply-To: <20080219145309.GC27352@tull.net>
-References: <20080219140609.GA26619@tull.net>
-	<20080219145309.GC27352@tull.net>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 Feb 2008 15:25:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TVwzOANE974K+4PJaOO6GZKkeDFveGOC0JkLnY5EQpzeUxjpqM+ImJpff0yWwDxO5CvymUI4d5a800qBSjCeetjo+l9E6hXq65aPZO7xPLtZrEqz9eWJMQfjZQ+Mjaj9D/jJPSQmKdUF2stSlZfrt2BpE6jeuDwhqeEIF+qbxKQ=
+Message-ID: <72dbd3150802191225v3d3363ffq8289159807988e46@mail.gmail.com>
+Date: Tue, 19 Feb 2008 12:25:18 -0800
+From: "David Rees" <drees76@gmail.com>
+To: "Pierre Ossman" <drzeus-list@drzeus.cx>
+Subject: Re: random wedges with 2.6.25-rc*
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080219191035.252d5787@mjolnir.drzeus.cx>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <20080219191035.252d5787@mjolnir.drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 01:53:09 +1100 Nick Andrew wrote:
+On Feb 19, 2008 10:10 AM, Pierre Ossman <drzeus-list@drzeus.cx> wrote:
+> Somewhere post 2.6.24, the kernel started getting very
+> temperamentful. I experience random hangs and wedges very often.
 
-> On Wed, Feb 20, 2008 at 01:06:09AM +1100, Nick Andrew wrote:
-> > Here is a series of 9 patches to init/Kconfig intended to improve the
-> > usefulness and consistency of the help descriptions. The patches are
-> > against linux-2.6.24.2.
-> > [...]
-> > Patch 5
-> > 	IKCONFIG
-> > 	IKCONFIG_PROC
-> > 	LOG_BUF_SHIFT
+FWIW, on my Fedora 8 Dell Vostro 1000 notebook, ever since updating to
+kernel 2.6.23.15-137 I am getting frequent udev startup lockups on
+boot.  Resetting and rebooting will get things past udev startup some
+of the time, so it doesn't always hang. I'd guess it hangs about half
+the time. Once past udev startup, everything works fine, no hangs. I
+haven't seen this on a half dozen other desktops/servers running
+Fedora 8.
 
-Those parts are fine.  Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Aside from that, everything else works fine. The previous kernel was
+2.6.23.14-115, so I suspect that if these were related, the changes
+were backported into the 2.6.23 stable tree in 2.6.23.15?
 
+You can view the reported list of differences between the two kernels
+in the package announcement:
+https://www.redhat.com/archives/fedora-package-announce/2008-February/msg00255.html
 
-Please read http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt,
-esp. section 2, Subject.
-
-
-> Changelog:
-> 
-> Improve usefulness and consistency of kernel configuration help messages.
-> 
-> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
-> 
-> 
-> --- a/init/Kconfig	2008-02-20 00:45:07.000000000 +1100
-> +++ b/init/Kconfig	2008-02-20 00:52:07.000000000 +1100
-> @@ -254,20 +254,30 @@ config IKCONFIG
->  	tristate "Kernel .config support"
->  	---help---
->  	  This option enables the complete Linux kernel ".config" file
-> -	  contents to be saved in the kernel. It provides documentation
-> -	  of which kernel options are used in a running kernel or in an
-> -	  on-disk kernel.  This information can be extracted from the kernel
-> -	  image file with the script scripts/extract-ikconfig and used as
-> -	  input to rebuild the current kernel or to build another kernel.
-> -	  It can also be extracted from a running kernel by reading
-> -	  /proc/config.gz if enabled (below).
-> +	  contents to be saved in the kernel.
-> +
-> +	  It provides documentation of which kernel options are used in
-> +	  a running kernel or in an on-disk kernel.  This information
-> +	  can be extracted from the kernel image file with the script
-> +	  "scripts/extract-ikconfig" and used as input to rebuild the
-> +	  current kernel or to build another kernel.
-> +
-> +	  It can also be extracted from a running kernel with
-> +	  "zcat /proc/config.gz" if CONFIG_IKCONFIG_PROC is enabled
-> +	  below.
-> +
-> +	  Your kernel size will increase by around 14k.
-> +
-> +	  If unsure, say N.
->  
->  config IKCONFIG_PROC
->  	bool "Enable access to .config through /proc/config.gz"
->  	depends on IKCONFIG && PROC_FS
->  	---help---
-> -	  This option enables access to the kernel configuration file
-> -	  through /proc/config.gz.
-> +	  This option enables access to the configuration of the running
-> +	  kernel through /proc/config.gz.
-> +
-> +	  If unsure, say Y.
->  
->  config LOG_BUF_SHIFT
->  	int "Kernel log buffer size (16 => 64KB, 17 => 128KB)"
-> @@ -277,14 +287,15 @@ config LOG_BUF_SHIFT
->  	default 15 if SMP
->  	default 14
->  	help
-> -	  Select kernel log buffer size as a power of 2.
-> -	  Defaults and Examples:
-> +	  Select the kernel log buffer size as a power of 2.
-> +
-> +	  Defaults and examples:
->  	  	     17 => 128 KB for S/390
-> -		     16 => 64 KB for x86 NUMAQ or IA-64
-> -	             15 => 32 KB for SMP
-> -	             14 => 16 KB for uniprocessor
-> -		     13 =>  8 KB
-> -		     12 =>  4 KB
-> +		     16 =>  64 KB for x86 NUMAQ or IA-64
-> +	             15 =>  32 KB for SMP
-> +	             14 =>  16 KB for uniprocessor
-> +		     13 =>   8 KB
-> +		     12 =>   4 KB
->  
->  config CGROUPS
->  	bool "Control Group support"
-
-
----
-~Randy
+-Dave
