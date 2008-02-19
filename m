@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbYBSApT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbYBSApm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756084AbYBSApT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:45:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbYBSApH
+	id S1761012AbYBSApm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756585AbYBSApb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:45:07 -0500
-Received: from www.tglx.de ([62.245.132.106]:50402 "EHLO www.tglx.de"
+	Mon, 18 Feb 2008 19:45:31 -0500
+Received: from ns2.suse.de ([195.135.220.15]:32936 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbYBSApF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:45:05 -0500
-Subject: [PATCH] queue usb USB_CDC_GET_ENCAPSULATED_RESPONSE message
-From: Jan Altenberg <jan.altenberg@linutronix.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: tglx@linutronix.de, Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 19 Feb 2008 01:44:50 +0100
-Message-Id: <1203381890.3923.60.camel@bender.lan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	id S1751051AbYBSAp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 19:45:29 -0500
+Message-ID: <47BA269B.9060107@suse.de>
+Date: Tue, 19 Feb 2008 01:45:15 +0100
+From: Frank Seidel <fseidel@suse.de>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+References: <20080212120208.f7168a91.sfr@canb.auug.org.au> <20080212132548.698aa712.sfr@canb.auug.org.au> <47B2E85C.70109@suse.de>
+In-Reply-To: <47B2E85C.70109@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Frank Seidel wrote:
+> Lets get serious. I cannot speak for Ann and Harvey, but I'm quite sure they
+> also really hope - at least i very strongly do - you not only call on us when
+> things become a burden, but let us help and assist you right from the start.
 
-commit 0cf4f2de0a0f4100795f38ef894d4910678c74f8 introduced a bug, which
-prevents sending an USB_CDC_GET_ENCAPSULATED_RESPONSE message. This
-breaks the RNDIS initialization (especially / only Windoze machines
-dislike this behavior...).
+I just started a little naive webpage where i collected some of the main
+infos about linux-next on
 
-Signed-off-by: Benedikt Spranger <b.spranger@linutronix.de>
-Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
+http://linux.f-seidel.de/linux-next/
 
----
- drivers/usb/gadget/ether.c |    1 +
- 1 file changed, 1 insertion(+)
+while the wiki there is probably the best filled part. Does this
+make any sense to you to continue this? Or do you already have something
+else in mind or even already prepared?
 
-Index: linux-2.6.24/drivers/usb/gadget/ether.c
-===================================================================
---- linux-2.6.24.orig/drivers/usb/gadget/ether.c
-+++ linux-2.6.24/drivers/usb/gadget/ether.c
-@@ -1568,6 +1568,7 @@ done_set_intf:
- 				memcpy(req->buf, buf, n);
- 				req->complete = rndis_response_complete;
- 				rndis_free_response(dev->rndis_config, buf);
-+				value = n;
- 			}
- 			/* else stalls ... spec says to avoid that */
- 		}
-
-
+Thanks,
+Frank
