@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbYBSAe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYBSAfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757569AbYBSAe3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYBSAeV
+	id S1760767AbYBSAfb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYBSAfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:34:21 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:57455 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750919AbYBSAeU (ORCPT
+	Mon, 18 Feb 2008 19:35:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43691
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751203AbYBSAfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:34:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:user-agent:mime-version:content-type;
-	b=IGlfn+3kJRjZdWxVZ5hTTzmnj2oEt9iK7LwYXqNgkNn1in1GmrLbvgQdin2FFotgq
-	WAhcUNrkL2sDlZJ6TRNAQ==
-Date: Mon, 18 Feb 2008 16:32:40 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
- build
-In-Reply-To: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.1.00.0802181629180.15109@chino.kir.corp.google.com>
-References: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 18 Feb 2008 19:35:18 -0500
+Date: Mon, 18 Feb 2008 16:35:54 -0800 (PST)
+Message-Id: <20080218.163554.74130592.davem@davemloft.net>
+To: mchan@broadcom.com
+Cc: tonyb@cybernetics.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1203381120.13495.78.camel@dell>
+References: <47BA0984.2070306@cybernetics.com>
+	<1203381120.13495.78.camel@dell>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 18 Feb 2008, Randy Dunlap wrote:
+From: "Michael Chan" <mchan@broadcom.com>
+Date: Mon, 18 Feb 2008 16:32:00 -0800
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+> On Mon, 2008-02-18 at 17:41 -0500, Tony Battersby wrote:
+> > I am experiencing network data corruption with a 3Com 3C996B-T NIC
+> > (Broadcom NetXtreme BCM5701; driver tg3.ko).  I have identified the
+> > following patch as the trigger:
 > 
-> Fix firmware_sample_firmware_class module to build without error.
-> sysfs.h already has the function prototypes and has them correctly.
-> 
-> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
-> include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> --- linux-2625-rc2-docsrc.orig/Documentation/firmware_class/firmware_sample_firmware_class.c
-> +++ linux-2625-rc2-docsrc/Documentation/firmware_class/firmware_sample_firmware_class.c
-> @@ -33,9 +33,6 @@ struct class_device_attribute *to_class_
->  	return container_of(_attr,struct class_device_attribute,attr);
->  }
->  
-> -int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
-> -int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
-> -
->  struct firmware_priv {
->  	char fw_id[FIRMWARE_NAME_MAX];
->  	s32 loading:2;
+> Assuming this problem is unique to the 5701, I'm not sure how it is
+> exposed by Herbert's patch.  One thing unique on the 5701 is that it
+> double-copies all RX packets so that the data starts at offset 2, but
+> that's quite unrelated to the patch below.
 
-You'll need this as well, for the !CONFIG_SYSFS case.
-
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/sysfs.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -169,8 +169,8 @@ static inline int sysfs_create_bin_file(struct kobject *kobj,
- 	return 0;
- }
- 
--static inline int sysfs_remove_bin_file(struct kobject *kobj,
--					struct bin_attribute *attr)
-+static inline void sysfs_remove_bin_file(struct kobject *kobj,
-+					 struct bin_attribute *attr)
- {
- 	return 0;
- }
+One consequence of Herbert's change is that the chip will see a
+different datastream.  The initial skb->data linear area will be
+smaller, and the transition to the fragmented area of pages will be
+quicker.
