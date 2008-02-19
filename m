@@ -1,74 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbYBSUJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759032AbYBSULT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760406AbYBSUJM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYBSUI7
+	id S1759032AbYBSULT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:11:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753390AbYBSULI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:08:59 -0500
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:34112 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751783AbYBSUI6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:08:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAGfGukdMQWRV/2dsb2JhbACBWa4C
-Date: Tue, 19 Feb 2008 15:08:52 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Torsten Kaiser <just.for.lkml@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: Linux 2.6.25-rc2
-Message-ID: <20080219200852.GC11197@Krystal>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+	Tue, 19 Feb 2008 15:11:08 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:33040 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751679AbYBSULF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 15:11:05 -0500
+Date: Tue, 19 Feb 2008 21:11:14 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>
+Subject: [GIT PULL] 2 x kbuild fixes
+Message-ID: <20080219201114.GA12272@uranus.ravnborg.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:07:03 up 8 days, 16:07,  4 users,  load average: 0.69, 0.87,
-	0.98
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Pekka Enberg (penberg@cs.helsinki.fi) wrote:
-> Hi Mathieu,
-> 
-> On Feb 19, 2008 4:02 PM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > - stat(c, ALLOC_FASTPATH); seems to be using a var++, therefore
-> >   indicating it is not reentrant if IRQs are disabled. Since those are
-> >   only stats, I guess it's ok, but still weird.
-> 
-> What is not re-entrant?
-> 
+Hi Linus.
 
-incrementing the variable with a "++" when interrupts are not disabled.
-It's not an atomic add and it's racy. The code within stat() does
-exactly this.
+Please pull two kbuild fixes from:
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/kbuild-linus.git
 
-> On Feb 19, 2008 4:02 PM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > Since this shows mostly with network card drivers, I think the most
-> > plausible cause would be an IRQ nesting over kmem_cache_alloc_node and
-> > calling it.
-> 
-> Yes, this can happen. Are you saying it is not safe to be in the
-> lockless path when an IRQ triggers?
+Note - new git tree to avoid clash with new stuff.
+Full diff below the details.
 
-It should be safe, but I think Eric pointed the correct problem in his
-reply.
+	Sam
 
-Thanks,
 
-Mathieu
+Geert Uytterhoeven (1):
+      kbuild: fix reversed symbol name order in modpost
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Sam Ravnborg (1):
+      Add missing init section definitions
+
+ include/asm-generic/vmlinux.lds.h |    3 +++
+ include/linux/init.h              |    2 ++
+ scripts/mod/modpost.c             |    2 +-
+ 3 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
+index f784d2f..f054778 100644
+--- a/include/asm-generic/vmlinux.lds.h
++++ b/include/asm-generic/vmlinux.lds.h
+@@ -238,6 +238,9 @@
+ 		*(.kprobes.text)					\
+ 		VMLINUX_SYMBOL(__kprobes_text_end) = .;
+ 
++/* Section used for early init (in .S files) */
++#define HEAD_TEXT  *(.head.text)
++
+ /* init and exit section handling */
+ #define INIT_DATA							\
+ 	*(.init.data)							\
+diff --git a/include/linux/init.h b/include/linux/init.h
+index a404a00..fb58c04 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -42,6 +42,7 @@
+    discard it in modules) */
+ #define __init		__section(.init.text) __cold
+ #define __initdata	__section(.init.data)
++#define __initconst	__section(.init.rodata)
+ #define __exitdata	__section(.exit.data)
+ #define __exit_call	__used __section(.exitcall.exit)
+ 
+@@ -106,6 +107,7 @@
+ #define __memexitconst   __section(.memexit.rodata)
+ 
+ /* For assembly routines */
++#define __HEAD		.section	".head.text","ax"
+ #define __INIT		.section	".init.text","ax"
+ #define __FINIT		.previous
+ 
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 6174277..695b5d6 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -1200,7 +1200,7 @@ static void report_sec_mismatch(const char *modname, enum mismatch mismatch,
+ 		"annotate %s with a matching annotation.\n",
+ 		from, sec2annotation(fromsec), fromsym, from_p,
+ 		to, sec2annotation(tosec), tosym, to_p,
+-		fromsym, tosym, fromsym);
++		tosym, fromsym, tosym);
+ 		break;
+ 	case INIT_TO_EXIT:
+ 		fprintf(stderr,
+
