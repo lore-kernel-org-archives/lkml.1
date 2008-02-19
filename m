@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761531AbYBSXDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762548AbYBSXEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761531AbYBSXDp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:03:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754568AbYBSXDf
+	id S1762548AbYBSXEh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbYBSXE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:03:35 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42026 "EHLO smtps.tip.net.au"
+	Tue, 19 Feb 2008 18:04:29 -0500
+Received: from mx1.suse.de ([195.135.220.2]:60273 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753869AbYBSXDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:03:34 -0500
-Date: Wed, 20 Feb 2008 10:03:29 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Teigland <teigland@redhat.com>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 19
-Message-Id: <20080220100329.51e57eab.sfr@canb.auug.org.au>
-In-Reply-To: <20080219200450.GD5411@redhat.com>
-References: <20080219183825.1c71c9b2.sfr@canb.auug.org.au>
-	<20080219200450.GD5411@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	id S1750994AbYBSXE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 18:04:28 -0500
+Date: Wed, 20 Feb 2008 00:04:27 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080219230427.GB18912@wotan.suse.de>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219142725.GA23200@sgi.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219142725.GA23200@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Feb 19, 2008 at 08:27:25AM -0600, Jack Steiner wrote:
+> > On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
+> > > understand the need for invalidate_begin/invalidate_end pairs at all.
+> > 
+> > The need of the pairs is crystal clear to me: range_begin is needed
+> > for GRU _but_only_if_ range_end is called after releasing the
+> > reference that the VM holds on the page. _begin will flush the GRU tlb
+> > and at the same time it will take a mutex that will block further GRU
+> > tlb-miss-interrupts (no idea how they manange those nightmare locking,
+> > I didn't even try to add more locking to KVM and I get away with the
+> > fact KVM takes the pin on the page itself).
+> 
+> As it turns out, no actual mutex is required. _begin_ simply increments a
+> count of active range invalidates, _end_ decrements the count. New TLB
+> dropins are deferred while range callouts are active.
+> 
+> This would appear to be racy but the GRU has special hardware that
+> simplifies locking. When the GRU sees a TLB invalidate, all outstanding
+> misses & potentially inflight TLB dropins are marked by the GRU with a
+> "kill" bit. When the dropin finally occurs, the dropin is ignored & the
+> instruction is simply restarted. The instruction will fault again & the TLB
+> dropin will be repeated.  This is optimized for the case where invalidates
+> are rare - true for users of the GRU.
 
-Hi David,
+OK (thanks to Robin as well). Now I understand why you are using it,
+but I don't understand why you don't defer new TLBs after the point
+where the linux pte changes. If you can do that, then you look and
+act much more like a TLB from the point of view of the Linux vm.
 
-On Tue, 19 Feb 2008 14:04:50 -0600 David Teigland <teigland@redhat.com> wro=
-te:
->
-> dlm (distributed lock manager) tree:
->=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/teigland/dlm.git next
 
-Thanks, added.
-
-Does the URL in the MAINTAINERS file need updating/augmenting?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHu2BETgG2atn1QN8RAnCpAJ4nerYkv0H9Rpajg4zlDeZWDa9DagCbBZw0
-z8Dt7FSR/gWWAuaTgtb8zJ0=
-=/8Mv
------END PGP SIGNATURE-----
-
---Signature=_Wed__20_Feb_2008_10_03_29_+1100_xUTXuUcABUqNdybQ--
