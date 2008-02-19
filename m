@@ -1,59 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbYBSUPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756217AbYBSUSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758295AbYBSUPP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:15:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbYBSUPE
+	id S1756217AbYBSUSi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:18:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYBSUS2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:15:04 -0500
-Received: from mail.gmx.net ([213.165.64.20]:33530 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750792AbYBSUPB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:15:01 -0500
-X-Authenticated: #36809985
-X-Provags-ID: V01U2FsdGVkX19Jx0R9vn1JE/g0w/1y/rqwQz1/OzTmoon6l0YKi0
-	OpBG9Wjs4DW8OT
-Subject: [PATCH] splice: fix problem with sys_tee and SPLICE_F_NONBLOCK
-From: Johann Felix Soden <johfel@gmx.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Patrick McManus <mcmanus@ducksong.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 19 Feb 2008 21:14:51 +0100
-Message-Id: <1203452091.7758.5.camel@localhost>
+	Tue, 19 Feb 2008 15:18:28 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:54991 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751574AbYBSUS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 15:18:26 -0500
+Date: Tue, 19 Feb 2008 14:18:20 -0600
+From: Paul Jackson <pj@sgi.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-fsdevel@vger.kernel.org, pavel@ucw.cz, a1426z@gawab.com,
+       jonathan@jonmasters.org, zlynx@acm.org
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Message-Id: <20080219141820.f7132b62.pj@sgi.com>
+In-Reply-To: <20080219140222.4cee07ab@cuia.boston.redhat.com>
+References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+	<20080217084906.e1990b11.pj@sgi.com>
+	<20080219145108.7E96.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080219090008.bb6cbe2f.pj@sgi.com>
+	<20080219140222.4cee07ab@cuia.boston.redhat.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Johann Felix Soden <johfel@users.sourceforge.net>
+Rik wrote:
+> Basically in all situations, the kernel needs to warn at the same point
+> in time: when the system is about to run out of RAM for anonymous pages.
+>
+> ...
+> 
+> In the HPC case, it leads to swapping (and a management program can kill or
+> restart something else).
 
-With SPLICE_F_NONBLOCK sys_tee should return number of duplicated bytes,
-not only -EAGAIN on success.
+Thanks for stopping by ...
 
-This patch also solves the problem, which is described on
-http://article.gmane.org/gmane.linux.kernel/642502.
+Perhaps with the cgroup based memory controller in progress, or with
+other work I'm overlooking, this is or will no longer be a problem,
+but on 2.6.16 kernels (the latest ones I have in major production HPC
+use) this is not sufficient.
 
-Signed-off-by: Johann Felix Soden <johfel@users.sourceforge.net>
----
- fs/splice.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+As of at least that point, we don't (didn't ?) have sufficiently
+accurate numbers of when we were "about to run out".  We can only
+detect when "we just did run out", as evidenced by entering the direct
+reclaim code, or as by slightly later events such as starting to push
+Anon pages to the swap device from direct reclaim.
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 9b559ee..184fd66 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1711,7 +1711,7 @@ static long do_tee(struct file *in, struct file *out, size_t len,
- 			ret = link_opipe_prep(opipe, flags);
- 			if (!ret) {
- 				ret = link_pipe(ipipe, opipe, len, flags);
--				if (!ret && (flags & SPLICE_F_NONBLOCK))
-+				if (ret < 0 && (flags & SPLICE_F_NONBLOCK))
- 					ret = -EAGAIN;
- 			}
- 		}
+Actually, even the point that we enter direct reclaim, near the bottom
+of __alloc_pages(), isn't adequate either, as we could be there because
+some thread in that cpuset is trying to write out a results file that
+is larger than that cpusets memory.   In that case, we really don't want
+to kill the job ... it just needs to be (and routinely is) throttled
+back to disk speeds as it completes the write out of dirty file system
+pages.
+
+So the first clear spot that we -know- serious swapping is commencing
+is where the direct reclaim code calls a writepage op with an Anon
+page. At that point, having a management program intervene is entirely
+too late.  Even having the task at that instant, inline, tag itself
+with a SIGKILL, as it queues that first Anon page to a swap device, is
+too late.  The direct reclaim code can loop, pushing hundreds or
+thousand of pages, on big memory systems, to the swapper, in the
+current reclaim loop, before it pops the stack far enough back to even
+notice that it has a SIGKILL pending on it.  The suppression of pushing
+pages to the swapper has to happen right there, inline in some
+mm/vmscan.c code, as part of the direct reclaim loops.
+
+(Hopefully I said something stupid in that last paragraph, and you will
+be able to correct it ... it sure would be useful ;).
+
+A year or two ago, I added the 'memory_pressure' per-cpuset meter to
+Linux, in an effort to realize just what you suggest, Rik.  My colleagues
+at SGI (mostly) and myself (a little) have proven to ourselves that this
+doesn't work, for our HPC needs, for two reasons:
+
+ 1) once swapping begins, issuing a SIGKILL, no matter how instantly,
+    is too late, as explained above, and
+
+ 2) that memory_pressure combines and confuses memory pressure due to
+    dirty file system buffers filling memory, with memory pressure due
+    to anonymous swappable pages filling memory, also as explained above.
+
+I do have a patch in my playarea that adds two more of the
+memory_pressure meters, one for swapouts, and one for flushing dirty
+file system buffers, both hooking into the spot in the vmscan reclaim
+code where the writepage op is called.  This patch ~might~ address the
+desktop need here.  It nicely generates two clean, sharp indicators
+that we're getting throttled by direct reclaim of dirty file buffers,
+and that we're starting to reclaim anon pages to the swappers.  Of course
+for embedded use, I'd have to adapt it to a non-cpuset based mechanism
+(not difficult), as embedded definitely doesn't do cpusets.
+
+> Don't forget the "hooks for desktop" :)
+
+I'll agree (perhaps out of ignorance) that the desktop (and normal sized
+server) cases are like the embedded case ... in that they need to
+distribute some event to user space tasks that want to know that memory
+is short, so that that user space code can do what it will (reclaim
+some user space memory or restart or kill or throttle something?)
+
+However, I'm still stuck carrying a patch out of the community kernel,
+to get my HPC customers the "instant kill on direct reclaim swap" they
+need, as this still seems to be the special case.  Which is rather
+unfortunate, from the business perspective of my good employer, as it
+the -only- out of mainline patch, so far as I know, that we have been
+having to carry, continuously, for several years now.  But for that
+single long standing issue (and now and then various more short term
+issues), a vanilla distribution kernel, using the vanilla distribution
+config and build, runs production on our one or two thousand CPU,
+several terabyte big honkin NUMA boxes.
+
+Part of my motivation for engaging Kosaki-san in this discussion was
+to reinvigorate this discussion, as it's getting to be time I took
+another shot at getting something in the community kernel that addresses
+this.  The more overlap the HPC fix here is with the other 99.978% of
+the worlds Linux systems that are desktop, laptop, (ordinary sized)
+server or embedded, the better my chances (he said hopefully.)
+
+(Now if I could just get us to consider systems in proportion to
+how much power & cooling they need, rather than in proportion to
+unit sales ... ;)
+
 -- 
-1.5.4.2
-
-
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
