@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbYBSX1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762262AbYBSX2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbYBSX1S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbYBSX1J
+	id S1762262AbYBSX2D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:28:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754348AbYBSX1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:27:09 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54240 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751401AbYBSX1H (ORCPT
+	Tue, 19 Feb 2008 18:27:54 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:65343 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753078AbYBSX1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:27:07 -0500
-Message-ID: <47BB6558.4020201@zytor.com>
-Date: Tue, 19 Feb 2008 15:25:12 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-CC: Ingo Molnar <mingo@elte.hu>, Shi Weihua <shiwh@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Roland McGrath <roland@redhat.com>, torvalds@linux-foundation.org
-Subject: Re: [PATCH 1/5] signal(x86_32): Improve the signal stack overflow
- check
-References: <47B95C4D.6080000@cn.fujitsu.com>	<47BA3CAB.30905@cn.fujitsu.com>	<20080219110536.GA2683@elte.hu> <18363.25743.402510.695150@cargo.ozlabs.ibm.com>
-In-Reply-To: <18363.25743.402510.695150@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 18:27:53 -0500
+Date: Tue, 19 Feb 2008 15:35:54 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] x86_64: not set node to cpu_to_node if the node is not online
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200802191535.54686.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
-> Ingo Molnar writes:
->> * Shi Weihua <shiwh@cn.fujitsu.com> wrote:
->>
->>> We need to check for stack overflow only when the signal is on stack. 
->>> So we can improve the patch "http://lkml.org/lkml/2007/11/27/101" as 
->>> following.
->> thanks, applied.
-> 
-> These patches change the behaviour of programs that longjmp out of a
-> signal handler on an alternate stack, don't they?
-> 
-> I'm interested to know what gave you confidence that changing that
-> behaviour won't break existing working programs.
-> 
 
-Shouldn't such programs use sigsetjmp/siglongjmp, which should reset the 
-signal stack state?
+numa_init_array will set round-bin to all cpu to online nodes.
+init_cpu_to_node will use cpu->apic (from MADT or mptable) and
+apic->node(from SRAT or AMD config space with k8_bus_64.c) to have cpu->node mapping.
+and later identify_cpu will overwrite them again...(with nearby_node...)
 
-	-hpa
+this patch will check if the node is online, otherwise will not update cpu_node map.
+so keep cpu_node map to online node before identify_cpu..., to prevent possible  error.
+
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+Index: linux-2.6/arch/x86/mm/numa_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -622,13 +622,17 @@ void __init init_cpu_to_node(void)
+ 	int i;
+ 
+ 	for (i = 0; i < NR_CPUS; i++) {
++		int node;
+ 		u16 apicid = x86_cpu_to_apicid_init[i];
+ 
+ 		if (apicid == BAD_APICID)
+ 			continue;
+-		if (apicid_to_node[apicid] == NUMA_NO_NODE)
++		node = apicid_to_node[apicid];
++		if (node == NUMA_NO_NODE)
+ 			continue;
+-		numa_set_node(i, apicid_to_node[apicid]);
++		if (!node_online(node))
++			continue;
++		numa_set_node(i, node);
+ 	}
+ }
+ 
