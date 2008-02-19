@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbYBSSwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbYBSSx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759479AbYBSSwR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:52:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbYBSSvu
+	id S1758291AbYBSSx4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:53:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbYBSSxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:51:50 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:20089 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755254AbYBSSvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:51:48 -0500
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 19 Feb 2008 10:51:40 -0800
-Message-ID: <adatzk4g4oz.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 19 Feb 2008 18:51:43.0281 (UTC) FILETIME=[7836EA10:01C87328]
-Authentication-Results: sj-dkim-7; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim7002 verified; ); 
+	Tue, 19 Feb 2008 13:53:48 -0500
+Received: from mx2.suse.de ([195.135.220.15]:46428 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753668AbYBSSxs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 13:53:48 -0500
+Subject: patch debugfs-fix-sparse-warnings.patch added to gregkh-2.6 tree
+To: harvey.harrison@gmail.com, akpm@linux-foundation.org, greg@kroah.com,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Tue, 19 Feb 2008 10:50:40 -0800
+In-Reply-To: <1202951296.18204.39.camel@brick>
+Message-ID: <1203447040988@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+This is a note to let you know that I've just added the patch titled
 
-This tree is also available from kernel.org mirrors at:
+     Subject: debugfs: fix sparse warnings
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+to my gregkh-2.6 tree.  Its filename is
 
-This will get a couple of small post-2.6.25-rc2 fixes:
+     debugfs-fix-sparse-warnings.patch
 
-Pradeep Satyanarayana (1):
-      IPoIB/cm: Fix ipoib_cm_dev_stop() cleanup when drain times out
-
-Roland Dreier (1):
-      IB/mthca: Free correct MPT on error exit from mthca_fmr_alloc()
-
- drivers/infiniband/hw/mthca/mthca_mr.c  |    2 +-
- drivers/infiniband/ulp/ipoib/ipoib_cm.c |   10 ++++++----
- 2 files changed, 7 insertions(+), 5 deletions(-)
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
-diff --git a/drivers/infiniband/hw/mthca/mthca_mr.c b/drivers/infiniband/hw/mthca/mthca_mr.c
-index 3b69855..3538da1 100644
---- a/drivers/infiniband/hw/mthca/mthca_mr.c
-+++ b/drivers/infiniband/hw/mthca/mthca_mr.c
-@@ -686,7 +686,7 @@ err_out_table:
- 	mthca_table_put(dev, dev->mr_table.mpt_table, key);
+>From harvey.harrison@gmail.com Wed Feb 13 17:08:21 2008
+From: Harvey Harrison <harvey.harrison@gmail.com>
+Date: Wed, 13 Feb 2008 17:08:16 -0800
+Subject: debugfs: fix sparse warnings
+To: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-ID: <1202951296.18204.39.camel@brick>
+
+
+extern does not belong in C files, move declaration to linux/debugfs.h
+fs/debugfs/file.c:42:30: warning: symbol 'debugfs_file_operations' was not declared. Should it be static?
+fs/debugfs/file.c:54:31: warning: symbol 'debugfs_link_operations' was not declared. Should it be static?
+
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/debugfs/inode.c      |    4 ----
+ include/linux/debugfs.h |    5 +++++
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -29,10 +29,6 @@
  
- err_out_mpt_free:
--	mthca_free(&dev->mr_table.mpt_alloc, mr->ibmr.lkey);
-+	mthca_free(&dev->mr_table.mpt_alloc, key);
- 	return err;
- }
+ #define DEBUGFS_MAGIC	0x64626720
  
-diff --git a/drivers/infiniband/ulp/ipoib/ipoib_cm.c b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-index 7dd2ec4..52b1beb 100644
---- a/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-+++ b/drivers/infiniband/ulp/ipoib/ipoib_cm.c
-@@ -824,7 +824,6 @@ void ipoib_cm_dev_stop(struct net_device *dev)
- 	struct ipoib_dev_priv *priv = netdev_priv(dev);
- 	struct ipoib_cm_rx *p;
- 	unsigned long begin;
--	LIST_HEAD(list);
- 	int ret;
+-/* declared over in file.c */
+-extern struct file_operations debugfs_file_operations;
+-extern struct inode_operations debugfs_link_operations;
+-
+ static struct vfsmount *debugfs_mount;
+ static int debugfs_mount_count;
  
- 	if (!IPOIB_CM_SUPPORTED(dev->dev_addr) || !priv->cm.id)
-@@ -857,9 +856,12 @@ void ipoib_cm_dev_stop(struct net_device *dev)
- 			/*
- 			 * assume the HW is wedged and just free up everything.
- 			 */
--			list_splice_init(&priv->cm.rx_flush_list, &list);
--			list_splice_init(&priv->cm.rx_error_list, &list);
--			list_splice_init(&priv->cm.rx_drain_list, &list);
-+			list_splice_init(&priv->cm.rx_flush_list,
-+					 &priv->cm.rx_reap_list);
-+			list_splice_init(&priv->cm.rx_error_list,
-+					 &priv->cm.rx_reap_list);
-+			list_splice_init(&priv->cm.rx_drain_list,
-+					 &priv->cm.rx_reap_list);
- 			break;
- 		}
- 		spin_unlock_irq(&priv->lock);
+--- a/include/linux/debugfs.h
++++ b/include/linux/debugfs.h
+@@ -27,6 +27,11 @@ struct debugfs_blob_wrapper {
+ };
+ 
+ #if defined(CONFIG_DEBUG_FS)
++
++/* declared over in file.c */
++extern const struct file_operations debugfs_file_operations;
++extern const struct inode_operations debugfs_link_operations;
++
+ struct dentry *debugfs_create_file(const char *name, mode_t mode,
+ 				   struct dentry *parent, void *data,
+ 				   const struct file_operations *fops);
+
+
+Patches currently in gregkh-2.6 which might be from harvey.harrison@gmail.com are
+
+driver/debugfs-fix-sparse-warnings.patch
