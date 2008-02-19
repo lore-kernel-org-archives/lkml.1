@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763858AbYBTAVy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764060AbYBTAWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763858AbYBTAVy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:21:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbYBTAVo
+	id S1764060AbYBTAWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:22:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763509AbYBTAVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:21:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:52171 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756286AbYBTAVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:21:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [patch] move wakeup code to .c
-Date: Wed, 20 Feb 2008 01:20:07 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pavel Machek <pavel@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>, hpa@zytor.com,
-       sam@ravnborg.org
-References: <20080210222723.GA1865@elf.ucw.cz> <200802151819.23413.lenb@kernel.org> <200802180049.56029.rjw@sisk.pl>
-In-Reply-To: <200802180049.56029.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 19 Feb 2008 19:21:49 -0500
+Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:45540 "EHLO
+	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761683AbYBTAVr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:21:47 -0500
+X-Greylist: delayed 4430 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 19:21:46 EST
+X-ME-UUID: 20080219230752780.BE7D27000085@mwinf3108.me.freeserve.com
+Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
+From: Chris Vine <chris@cvine.freeserve.co.uk>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: chris2553@googlemail.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, rt2400-devel@lists.sourceforge.net
+In-Reply-To: <200802192046.14184.IvDoorn@gmail.com>
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
+	 <200802191026.57640.IvDoorn@gmail.com>
+	 <200802191900.09543.chris2553@googlemail.com>
+	 <200802192046.14184.IvDoorn@gmail.com>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 23:04:07 +0000
+Message-Id: <1203462247.6397.15.camel@boulder.homenet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802200120.08448.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 18 of February 2008, Rafael J. Wysocki wrote:
-> On Saturday, 16 of February 2008, Len Brown wrote:
-> > On Friday 15 February 2008 17:22, Rafael J. Wysocki wrote:
-> > 
-> > > Ok, below is the version that survives checkpatch.pl, compiles on x86-32
-> > > and has been successfully tested on 32-bit and 64-bit systems.
-> > 
-> > works on my t61 in 64-bit mode too.
-> > 
-> > applied to acpi-test.
+On Tue, 2008-02-19 at 20:46 +0100, Ivo van Doorn wrote:
+> Hi,
 > 
-> Below is an updated version of this patch, addressing the following problem
-> reports related to it:
-> http://lkml.org/lkml/2008/2/16/178
-> http://lkml.org/lkml/2008/2/16/74
-> http://marc.info/?l=linux-acpi&m=120313725501682&w=4
+> [added rt2400-devel (rt2x00 development mailinglist) to the CC list.]
 > 
-> Please replace the previous version with this one.
+> > > > > I have a series of tests I would like to request from you,
+> > > > > you mentioned you already enabled debugfs, and that is just what we need. ;)
+> > > > > Please use attached script to create dumps of the hardware register contents.
+> > > > > 
+> > > > > There are specific moments that should be dumped:
+> > > > > - kernel 2.6.24 (last known working version for you).
+> > > > > - kernel 2.6.25-rc2 (after ifup, before TX dies)
+> > > > > - kernel 2.6.25-rc2 (after ifup, after TX dies)
+> > > > >  
+> > > > 
+> > > > These diagnostics are attached, with obvious filenames.
+> > > 
+> > > Thanks. I think I found something, please test below patch:
+> > > 
+> > 
+> > I've tried the patch but, unfortunately, my wireless LAN still dies after a few pings.
 
-Please disregard it, I'm going to send an updated version in a while.
+rt2x00 2.0.14 is broken with my rt73 stick in the vanilla 2.6.25-rc2
+kernel (not wireless-2.6/rt2x00 git).  The modules load when I plug the
+stick in but I then get a complete kernel lock up with two flashing
+leds.  Nothing is recorded to system logs.  The last logged messages are
+that usbcore has registered new interface driver rt73usb, and that the
+rate control algorithm has been selected on phy0.  This happens whether
+the simple or pid mac80211 rate control algorithms have been chosen.
 
-Thanks,
-Rafael
+This is a shame because 2.0.14 was working really well for me until the
+mac80211 changes 2 or 3 weeks ago broke it.  (Shortly followed by the
+release of 2.1.*).
+
+Chris
+
+
+
