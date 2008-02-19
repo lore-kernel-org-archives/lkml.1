@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758487AbYBSUHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbYBSUJM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758487AbYBSUHb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:07:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYBSUHX
+	id S1760406AbYBSUJM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:09:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbYBSUI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:07:23 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:58233 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbYBSUHW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:07:22 -0500
-Date: Tue, 19 Feb 2008 22:06:46 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+	Tue, 19 Feb 2008 15:08:59 -0500
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:34112 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751783AbYBSUI6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 15:08:58 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAGfGukdMQWRV/2dsb2JhbACBWa4C
+Date: Tue, 19 Feb 2008 15:08:52 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
-Message-ID: <20080219200646.GK31955@cs181133002.pp.htv.fi>
-References: <20080213070215.GA11969@kroah.com> <20080212.230423.172781444.davem@davemloft.net> <1202887323.3129.10.camel@localhost> <20080213165924.GB10129@suse.de> <1202923995.3129.26.camel@localhost> <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org> <20080219190745.GA4876@suse.de> <20080219113422.ade12e7b.randy.dunlap@oracle.com> <20080219194909.GA17802@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: Linux 2.6.25-rc2
+Message-ID: <20080219200852.GC11197@Krystal>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080219194909.GA17802@suse.de>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:07:03 up 8 days, 16:07,  4 users,  load average: 0.69, 0.87,
+	0.98
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 11:49:10AM -0800, Greg KH wrote:
-> On Tue, Feb 19, 2008 at 11:34:22AM -0800, Randy Dunlap wrote:
-> > On Tue, 19 Feb 2008 11:07:45 -0800 Greg KH wrote:
-> > 
-> > > On Wed, Feb 13, 2008 at 10:13:42AM -0800, Linus Torvalds wrote:
-> > > > 
-> > > > 
-> > > > On Wed, 13 Feb 2008, Joe Perches wrote:
-> > > > > 
-> > > > > MAINTAINERS is the most frequently patched file
-> > > > 
-> > > > Almost all of them merge perfectly, with no problems what-so-ever. And the 
-> > > > merge conflicts, when they happen, are generally really trivial, and never 
-> > > > cause any subtle run-time bugs even if they were to happen.
-> > > > 
-> > > > So in that sense, I think both MAINTAINERS and the deprecation schedule 
-> > > > are totally uninteresting. Yes, they have merge conflicts. But those merge 
-> > > > conflicts are really really easy to handle.
-> > > 
-> > > Yes, they are easy to handle, but for trees that have to deal with these
-> > > merge issues all the time, they are a pain (hit this one again today.)
-> > > It takes a few minutes to fix up the resolution by hand (using either
-> > > git or quilt), as we do want the new addition to be in the file, so by
-> > > splitting it up, it makes our (the sub-tree maintainers) lives easier.
-> > > 
-> > > I've never had a problem with the MAINTAINERS file, as it is pretty big
-> > > and conflicts for me seem to never happen, but the feature-removal file
-> > > does cause problems as it changes over time and things need to get added
-> > > and removed.
-> > > 
-> > > Also, there are already remants of a bad-merge in that file, which
-> > > somehow sneaked through.
-> > > 
-> > > Yes, these files can not cause kernel bugs, but they are semi-important
-> > > to at least get correct.  So I'd ask you to reconsider for the
-> > > feature-removal stuff at the very least.
-> > > 
-> > > If you do, the git tree is still there at:
-> > > 	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
-> > > 
-> > > to pull from :)
-> > 
-> > Alternatively, since they are easy to fix, I'll volunteer to fix them
-> > (after notified of problems :).  (and not split up the file)
+* Pekka Enberg (penberg@cs.helsinki.fi) wrote:
+> Hi Mathieu,
 > 
-> Well, the problem is that when someone sends me a patch, I have to do
-> the fixups by hand (same goes for Jeff), in order for you, or anyone
-> else to even be able to see the patch show up anywhere.
+> On Feb 19, 2008 4:02 PM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > - stat(c, ALLOC_FASTPATH); seems to be using a var++, therefore
+> >   indicating it is not reentrant if IRQs are disabled. Since those are
+> >   only stats, I guess it's ok, but still weird.
 > 
-> That's why having this split up will help make the sub-tree maintainers
-> lives easier, it's not an issue for Andrew and Linus, as usually the
-> problem is all fixed up by the time the patch makes it there :)
-
-I'm not sure whether it's feasible, but there's a tricky alternative 
-solution:
-Adding or removing entries must not add or remove any empty or dash lines.
-
-With this rule, all other entries would be outside of the context of
-patches touching feature-removal-schedule.txt...
-
-> thanks,
+> What is not re-entrant?
 > 
-> greg k-h
 
-cu
-Adrian
+incrementing the variable with a "++" when interrupts are not disabled.
+It's not an atomic add and it's racy. The code within stat() does
+exactly this.
+
+> On Feb 19, 2008 4:02 PM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > Since this shows mostly with network card drivers, I think the most
+> > plausible cause would be an IRQ nesting over kmem_cache_alloc_node and
+> > calling it.
+> 
+> Yes, this can happen. Are you saying it is not safe to be in the
+> lockless path when an IRQ triggers?
+
+It should be safe, but I think Eric pointed the correct problem in his
+reply.
+
+Thanks,
+
+Mathieu
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
