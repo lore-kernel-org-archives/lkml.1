@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbYBSXjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbYBSXkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbYBSXjS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:39:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbYBSXjD
+	id S1759880AbYBSXkj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbYBSXkc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:39:03 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:52281 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752487AbYBSXjA (ORCPT
+	Tue, 19 Feb 2008 18:40:32 -0500
+Received: from an-out-0708.google.com ([209.85.132.245]:41906 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751458AbYBSXkb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:39:00 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=GJNq812dc0P6k3p9n7xwYiGqbXg0vWLqO+ybswOHkgrs50DPEvajHE0HnHr/ciSHXXyzfASdIfKkx9tKmviYu4osQUD0aWm2yO/JPJL/gBJkwGhjEzx1NKLbJ8PVTCdmIaPN9p2Q5LP3VzHzoLynMWaBa9jBrTUR7HPK26iJZXc=
-Message-ID: <2c0942db0802191538k79f93ca5p93a1883a449f3bb0@mail.gmail.com>
-Date: Tue, 19 Feb 2008 15:38:58 -0800
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Greg KH" <gregkh@suse.de>
-Subject: Re: usb/serial/io_ti.c: inconsequent NULL checking
-Cc: "Adrian Bunk" <bunk@kernel.org>, "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080219232556.GB1963@suse.de>
+	Tue, 19 Feb 2008 18:40:31 -0500
+Message-ID: <47BB68ED.4070105@xaerolimit.net>
+Date: Tue, 19 Feb 2008 18:40:29 -0500
+From: Chris Brennan <xaero@xaerolimit.net>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: BT8x8 support
+X-Enigmail-Version: 0.95.5
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080219224915.GN31955@cs181133002.pp.htv.fi>
-	 <20080219232556.GB1963@suse.de>
-X-Google-Sender-Auth: a14e544e8c2840e1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 19, 2008 3:25 PM, Greg KH <gregkh@suse.de> wrote:
-> On Wed, Feb 20, 2008 at 12:49:15AM +0200, Adrian Bunk wrote:
-> > The Coverity checker spotted the following inconsequent NULL checking
-> > introduced by commit d5f5bcd425b771c0b7ff5a650b2ce061ac8bbb87:
-> >
-> > <--  snip  -->
->
-> It's not a real problem, that pointer can't go away.
+I have the following hardware installed in my Linux Box.
 
-I think he meant inconsistent not "inconsequent."
+01:07.0 Multimedia video controller: Brooktree Corporation Bt878 Video
+Capture (rev 11)
+01:07.1 Multimedia controller: Brooktree Corporation Bt878 Audio
+Capture (rev 11)
 
-Either the test of port->tty here is unneeded:
+and the following devices installed in /dev
 
- if (port->tty)
-               port->tty->low_latency = low_latency;
+0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/radio -> /dev/radio0
+0 crw-rw-rw- 1 root video 81,  64 Feb 19 17:45 /dev/radio0
+0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vbi -> /dev/vbi0
+0 crw-rw-rw- 1 root video 81, 224 Feb 19 17:45 /dev/vbi0
+0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/video -> /dev/video0
+0 lrwxrwxrwx 1 root root       10 Feb 19 11:59 /dev/video0 -> v4l/video0
+0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vtx -> /dev/vtx0
+0 crw-rw-rw- 1 root video 81, 192 Feb 19 17:45 /dev/vtx0
 
-...or the lack of test of port->tty here is a mistake:
+As far as I can tell, I have bt8x8 support compiled as modules. here
+is a link to a copy of my .config. If someone can help me w/ making
+sure I have the right stuff in and what I don't need out as far as
+this card goes, I would be much appreciative.
 
-	 edge_set_termios (port, port->tty->termios);
+
