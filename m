@@ -1,158 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbYBSHfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbYBSHf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762109AbYBSHfi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:35:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYBSHfa
+	id S1762658AbYBSHf7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:35:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762194AbYBSHfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:35:30 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:64651 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754468AbYBSHfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:35:30 -0500
-Message-ID: <47BA8665.3080302@cn.fujitsu.com>
-Date: Tue, 19 Feb 2008 15:33:57 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 19 Feb 2008 02:35:46 -0500
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:35260
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755438AbYBSHfp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:35:45 -0500
+Message-ID: <47BA86C8.4050207@cosmosbay.com>
+Date: Tue, 19 Feb 2008 08:35:36 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Herbert Poetzl <herbert@13thfloor.at>, Paul Menage <menage@google.com>,
-       linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Rik Van Riel <riel@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [mm] [PATCH 2/4] Add the soft limit interface v2
-References: <20080219070232.25349.21196.sendpatchset@localhost.localdomain> <20080219070258.25349.25994.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080219070258.25349.25994.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: tbench regression in 2.6.25-rc1
+References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20080218111101.6d590c04.dada1@cosmosbay.com> <1203389095.3248.6.camel@ymzhang>
+In-Reply-To: <1203389095.3248.6.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> A new configuration file called soft_limit_in_bytes is added. The parsing
-> and configuration rules remain the same as for the limit_in_bytes user
-> interface.
+Zhang, Yanmin a écrit :
+> On Mon, 2008-02-18 at 11:11 +0100, Eric Dumazet wrote:
+>> On Mon, 18 Feb 2008 16:12:38 +0800
+>> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
+>>
+>>> On Fri, 2008-02-15 at 15:22 -0800, David Miller wrote:
+>>>> From: Eric Dumazet <dada1@cosmosbay.com>
+>>>> Date: Fri, 15 Feb 2008 15:21:48 +0100
+>>>>
+>>>>> On linux-2.6.25-rc1 x86_64 :
+>>>>>
+>>>>> offsetof(struct dst_entry, lastuse)=0xb0
+>>>>> offsetof(struct dst_entry, __refcnt)=0xb8
+>>>>> offsetof(struct dst_entry, __use)=0xbc
+>>>>> offsetof(struct dst_entry, next)=0xc0
+>>>>>
+>>>>> So it should be optimal... I dont know why tbench prefers __refcnt being 
+>>>>> on 0xc0, since in this case lastuse will be on a different cache line...
+>>>>>
+>>>>> Each incoming IP packet will need to change lastuse, __refcnt and __use, 
+>>>>> so keeping them in the same cache line is a win.
+>>>>>
+>>>>> I suspect then that even this patch could help tbench, since it avoids 
+>>>>> writing lastuse...
+>>>> I think your suspicions are right, and even moreso
+>>>> it helps to keep __refcnt out of the same cache line
+>>>> as input/output/ops which are read-almost-entirely :-
+>>> I think you are right. The issue is these three variables sharing the same cache line
+>>> with input/output/ops.
+>>>
+>>>> )
+>>>>
+>>>> I haven't done an exhaustive analysis, but it seems that
+>>>> the write traffic to lastuse and __refcnt are about the
+>>>> same.  However if we find that __refcnt gets hit more
+>>>> than lastuse in this workload, it explains the regression.
+>>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
+>>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
+>>> recovered.
+>>>
+>>> How about below patch? Almost all performance is recovered with the new patch.
+>>>
+>>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+>>>
+>>> ---
+>>>
+>>> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
+>>> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-21 14:36:22.000000000 +0800
+>>> @@ -52,11 +52,10 @@ struct dst_entry
+>>>  	unsigned short		header_len;	/* more space at head required */
+>>>  	unsigned short		trailer_len;	/* space to reserve at tail */
+>>>  
+>>> -	u32			metrics[RTAX_MAX];
+>>> -	struct dst_entry	*path;
+>>> -
+>>> -	unsigned long		rate_last;	/* rate limiting for ICMP */
+>>>  	unsigned int		rate_tokens;
+>>> +	unsigned long		rate_last;	/* rate limiting for ICMP */
+>>> +
+>>> +	struct dst_entry	*path;
+>>>  
+>>>  #ifdef CONFIG_NET_CLS_ROUTE
+>>>  	__u32			tclassid;
+>>> @@ -70,10 +69,12 @@ struct dst_entry
+>>>  	int			(*output)(struct sk_buff*);
+>>>  
+>>>  	struct  dst_ops	        *ops;
+>>> -		
+>>> -	unsigned long		lastuse;
+>>> +
+>>> +	u32			metrics[RTAX_MAX];
+>>> +
+>>>  	atomic_t		__refcnt;	/* client references	*/
+>>>  	int			__use;
+>>> +	unsigned long		lastuse;
+>>>  	union {
+>>>  		struct dst_entry *next;
+>>>  		struct rtable    *rt_next;
+>>>
+>>>
+>> Well, after this patch, we grow dst_entry by 8 bytes :
+> With my .config, it doesn't grow. Perhaps because of CONFIG_NET_CLS_ROUTE, I don't
+> enable it. I will move tclassid under ops.
 > 
-> A global list of all memory cgroups over their soft limit is maintained.
-> This list is then used to reclaim memory on global pressure. A cgroup is
-> removed from the list when the cgroup is deleted.
-> 
-> The global list is protected with a read-write spinlock.
+>> sizeof(struct dst_entry)=0xd0
+>> offsetof(struct dst_entry, input)=0x68
+>> offsetof(struct dst_entry, output)=0x70
+>> offsetof(struct dst_entry, __refcnt)=0xb4
+>> offsetof(struct dst_entry, lastuse)=0xc0
+>> offsetof(struct dst_entry, __use)=0xb8
+>> sizeof(struct rtable)=0x140
+>>
+>>
+>> So we dirty two cache lines instead of one, unless your cpu have 128 bytes cache lines ?
+>>
+>> I am quite suprised that my patch to not change lastuse if already set to jiffies changes nothing...
+>>
+>> If you have some time, could you also test this (unrelated) patch ?
+>>
+>> We can avoid dirty all the time a cache line of loopback device.
+>>
+>> diff --git a/drivers/net/loopback.c b/drivers/net/loopback.c
+>> index f2a6e71..0a4186a 100644
+>> --- a/drivers/net/loopback.c
+>> +++ b/drivers/net/loopback.c
+>> @@ -150,7 +150,10 @@ static int loopback_xmit(struct sk_buff *skb, struct net_device *dev)
+>>                 return 0;
+>>         }
+>>  #endif
+>> -       dev->last_rx = jiffies;
+>> +#ifdef CONFIG_SMP
+>> +       if (dev->last_rx != jiffies)
+>> +#endif
+>> +               dev->last_rx = jiffies;
+>>  
+>>         /* it's OK to use per_cpu_ptr() because BHs are off */
+>>         pcpu_lstats = netdev_priv(dev);
+>>
+> Although I didn't test it, I don't think it's ok. The key is __refcnt shares the same
+> cache line with ops/input/output.
 > 
 
-You are not using read-write spinlock..
+Note it was unrelated to struct dst, but dirtying of one cache line of 
+'loopback netdevice'
 
-> 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
-> 
->  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
->  1 file changed, 32 insertions(+), 1 deletion(-)
-> 
-> diff -puN mm/memcontrol.c~memory-controller-add-soft-limit-interface mm/memcontrol.c
-> --- linux-2.6.25-rc2/mm/memcontrol.c~memory-controller-add-soft-limit-interface	2008-02-19 12:31:49.000000000 +0530
-> +++ linux-2.6.25-rc2-balbir/mm/memcontrol.c	2008-02-19 12:31:49.000000000 +0530
-> @@ -35,6 +35,10 @@
->  
->  struct cgroup_subsys mem_cgroup_subsys;
->  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
-> +static spinlock_t mem_cgroup_sl_list_lock;	/* spin lock that protects */
-> +						/* the list of cgroups over*/
-> +						/* their soft limit */
-> +static struct list_head mem_cgroup_sl_exceeded_list;
->  
->  /*
->   * Statistics for memory cgroup.
-> @@ -136,6 +140,10 @@ struct mem_cgroup {
->  	 * statistics.
->  	 */
->  	struct mem_cgroup_stat stat;
-> +	/*
-> +	 * List of all mem_cgroup's that exceed their soft limit
-> +	 */
-> +	struct list_head sl_exceeded_list;
->  };
->  
->  /*
-> @@ -679,6 +687,18 @@ retry:
->  		goto retry;
->  	}
->  
-> +	/*
-> +	 * If we exceed our soft limit, we get added to the list of
-> +	 * cgroups over their soft limit
-> +	 */
-> +	if (!res_counter_check_under_limit(&mem->res, RES_SOFT_LIMIT)) {
-> +		spin_lock_irqsave(&mem_cgroup_sl_list_lock, flags);
-> +		if (list_empty(&mem->sl_exceeded_list))
-> +			list_add_tail(&mem->sl_exceeded_list,
-> +						&mem_cgroup_sl_exceeded_list);
-> +		spin_unlock_irqrestore(&mem_cgroup_sl_list_lock, flags);
-> +	}
-> +
->  	mz = page_cgroup_zoneinfo(pc);
->  	spin_lock_irqsave(&mz->lru_lock, flags);
->  	/* Update statistics vector */
-> @@ -736,13 +756,14 @@ void mem_cgroup_uncharge(struct page_cgr
->  	if (atomic_dec_and_test(&pc->ref_cnt)) {
->  		page = pc->page;
->  		mz = page_cgroup_zoneinfo(pc);
-> +		mem = pc->mem_cgroup;
->  		/*
->  		 * get page->cgroup and clear it under lock.
->  		 * force_empty can drop page->cgroup without checking refcnt.
->  		 */
->  		unlock_page_cgroup(page);
-> +
->  		if (clear_page_cgroup(page, pc) == pc) {
-> -			mem = pc->mem_cgroup;
->  			css_put(&mem->css);
->  			res_counter_uncharge(&mem->res, PAGE_SIZE);
->  			spin_lock_irqsave(&mz->lru_lock, flags);
-> @@ -1046,6 +1067,12 @@ static struct cftype mem_cgroup_files[] 
->  		.name = "stat",
->  		.open = mem_control_stat_open,
->  	},
-> +	{
-> +		.name = "soft_limit_in_bytes",
-> +		.private = RES_SOFT_LIMIT,
-> +		.write = mem_cgroup_write,
-> +		.read = mem_cgroup_read,
-> +	},
->  };
->  
->  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
-> @@ -1097,6 +1124,9 @@ mem_cgroup_create(struct cgroup_subsys *
->  	if (unlikely((cont->parent) == NULL)) {
->  		mem = &init_mem_cgroup;
->  		init_mm.mem_cgroup = mem;
-> +		INIT_LIST_HEAD(&mem->sl_exceeded_list);
-> +		spin_lock_init(&mem_cgroup_sl_list_lock);
-> +		INIT_LIST_HEAD(&mem_cgroup_sl_exceeded_list);
->  	} else
->  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
->  
-> @@ -1104,6 +1134,7 @@ mem_cgroup_create(struct cgroup_subsys *
->  		return NULL;
->  
->  	res_counter_init(&mem->res);
-> +	INIT_LIST_HEAD(&mem->sl_exceeded_list);
->  
+I tested it, and tbench result was better with this patch : 890 MB/s instead 
+of 870 MB/s on a bi dual core machine.
 
-mem->sl_exceeded_list initialized twice ?
 
->  	memset(&mem->info, 0, sizeof(mem->info));
->  
-> _
-> 
+I was curious of the potential gain on your 16 cores (4x4) machine.
