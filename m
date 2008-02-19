@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbYBSOdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbYBSOjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755290AbYBSOdv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 09:33:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753003AbYBSOdl
+	id S1755385AbYBSOjB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 09:39:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbYBSOix
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 09:33:41 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:34456 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1750997AbYBSOdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 09:33:40 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Wed, 20 Feb 2008 01:33:07 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Improve init/Kconfig help descriptions [PATCH 3/9]
-Message-ID: <20080219143307.GA27352@tull.net>
-References: <20080219140609.GA26619@tull.net>
+	Tue, 19 Feb 2008 09:38:53 -0500
+Received: from rv-out-0910.google.com ([209.85.198.189]:58370 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751613AbYBSOiw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 09:38:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fr3bYiaNF6MV3KxSLY3jAQBLJu3mb5Io0gp9KEPFNsZ8P9XHvygAO/3laYk+D0iE7P38hCar0L37I/8hgvzowSFiTqDAXm1ydj7WH3eTu2gulgPX0IxCeO9oeXHF5uKUVuNWiXYyUPK7Tmcgp8LGs/FMOSq3BJrSKTTo1B99N+A=
+Message-ID: <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
+Date: Tue, 19 Feb 2008 16:38:50 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>
+Subject: Re: Linux 2.6.25-rc2
+Cc: "Torsten Kaiser" <just.for.lkml@googlemail.com>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080219140609.GA26619@tull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
+	 <20080219061107.GA23229@elte.hu>
+	 <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
+	 <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+	 <20080219140230.GA32236@Krystal>
+	 <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+X-Google-Sender-Auth: aa0176030513cce2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:06:09AM +1100, Nick Andrew wrote:
-> Here is a series of 9 patches to init/Kconfig intended to improve the
-> usefulness and consistency of the help descriptions. The patches are
-> against linux-2.6.24.2.
-> [...]
-> Patch 3
-> 	USER_NS
-> 	PID_NS
+Hi Mathieu,
 
-Changelog:
+On Feb 19, 2008 4:02 PM, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> > Since this shows mostly with network card drivers, I think the most
+> > plausible cause would be an IRQ nesting over kmem_cache_alloc_node and
+> > calling it.
 
-Improve usefulness and consistency of kernel configuration help messages.
+On Feb 19, 2008 4:21 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Yes, this can happen. Are you saying it is not safe to be in the
+> lockless path when an IRQ triggers?
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
-
---- a/init/Kconfig	2008-02-20 00:45:07.000000000 +1100
-+++ b/init/Kconfig	2008-02-20 00:52:07.000000000 +1100
-@@ -211,21 +211,25 @@ config USER_NS
- 	default n
- 	depends on EXPERIMENTAL
- 	help
--	  Support user namespaces.  This allows containers, i.e.
--	  vservers, to use user namespaces to provide different
--	  user info for different servers.  If unsure, say N.
-+	  Enable support for user namespaces.
-+
-+	  This allows containers (i.e. vservers) to use user namespaces
-+	  to provide different user info for different servers.
-+
-+	  If unsure, say N.
- 
- config PID_NS
- 	bool "PID Namespaces (EXPERIMENTAL)"
- 	default n
- 	depends on EXPERIMENTAL
- 	help
--	  Suport process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
--	  pid namespaces.  This is a building block of containers.
-+	  Enable support for process id namespaces.
- 
--	  Unless you want to work with an experimental feature
--	  say N here.
-+	  This allows having multiple processes with the same PID as
-+	  long as they are in different PID namespaces.  This is used
-+	  by containers (i.e. vservers).
-+
-+	  If unsure, say N.
- 
- config AUDIT
- 	bool "Auditing support"
+Hmm. The barrier() in slab_free() looks fishy. The comment says it's
+there to make sure we've retrieved c->freelist before c->page but then
+it uses a _compiler barrier_ which doesn't affect the CPU and the
+reads may still be re-ordered... Not sure if that matters here though.
