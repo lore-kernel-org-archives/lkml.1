@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762836AbYBSWOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761905AbYBSWPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762836AbYBSWOq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:14:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbYBSWNo
+	id S1761905AbYBSWPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:15:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757535AbYBSWNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:13:44 -0500
-Received: from smtp3-g19.free.fr ([212.27.42.29]:54070 "EHLO smtp3-g19.free.fr"
+	Tue, 19 Feb 2008 17:13:45 -0500
+Received: from smtp3-g19.free.fr ([212.27.42.29]:54057 "EHLO smtp3-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754941AbYBSWNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754954AbYBSWNl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Feb 2008 17:13:41 -0500
 From: Jim Meyering <jim@meyering.net>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Markus Armbruster <armbru@redhat.com>, Jim Meyering <jim@meyering.net>
-Subject: [PATCH] hfsplus: handle match_strdup failure
-Date: Tue, 19 Feb 2008 23:13:38 +0100
-Message-Id: <1203459219-14719-6-git-send-email-jim@meyering.net>
+Subject: handle memory allocation failure
+Date: Tue, 19 Feb 2008 23:13:33 +0100
+Message-Id: <1203459219-14719-1-git-send-email-jim@meyering.net>
 X-Mailer: git-send-email 1.5.4.2.134.g82883
-In-Reply-To: <1203459219-14719-5-git-send-email-jim@meyering.net>
-References: <1203459219-14719-1-git-send-email-jim@meyering.net>
- <1203459219-14719-2-git-send-email-jim@meyering.net>
- <1203459219-14719-3-git-send-email-jim@meyering.net>
- <1203459219-14719-4-git-send-email-jim@meyering.net>
- <1203459219-14719-5-git-send-email-jim@meyering.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* fs/hfsplus/options.c (hfsplus_parse_options): Handle match_strdup failure.
+Hello,
 
-Signed-off-by: Jim Meyering <meyering@redhat.com>
----
- fs/hfsplus/options.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+I spotted a few unchecked memory allocation failures recently,
+and went looking for more.  I found and fixed seven others.
+I posted them all in one change-set, here:
+Thanks again to Markus Armbruster for a rigorous review.
 
-diff --git a/fs/hfsplus/options.c b/fs/hfsplus/options.c
-index dc64fac..9997cbf 100644
---- a/fs/hfsplus/options.c
-+++ b/fs/hfsplus/options.c
-@@ -132,7 +132,8 @@ int hfsplus_parse_options(char *input, struct hfsplus_sb_info *sbi)
- 				return 0;
- 			}
- 			p = match_strdup(&args[0]);
--			sbi->nls = load_nls(p);
-+			if (p)
-+				sbi->nls = load_nls(p);
- 			if (!sbi->nls) {
- 				printk(KERN_ERR "hfs: unable to load nls mapping \"%s\"\n", p);
- 				kfree(p);
--- 
-1.5.4.2.134.g82883
+    Subject: [PATCH] Handle memory allocation failure.
+    http://thread.gmane.org/gmane.linux.kernel/636710
 
+Andrew Morton suggested posting them separately, with each
+subject indicating the affected subsection, per #14 in
+Documentation/SubmittingPatches, so this series is the result:
+
+    Subject: [PATCH] alpha: handle kcalloc failure
+    Subject: [PATCH] 9p: handle kstrdup and match_strdup failure
+    Subject: [PATCH] affs: handle match_strdup failure
+    Subject: [PATCH] hfs: handle match_strdup failure
+    Subject: [PATCH] hfsplus: handle match_strdup failure
+    Subject: [PATCH] usbaudio: handle kcalloc failure
