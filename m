@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbYBSTkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbYBSToO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbYBSTkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:40:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbYBSTjv
+	id S1758574AbYBSToO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:44:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbYBSTn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:39:51 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48473 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbYBSTju (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:39:50 -0500
-Date: Tue, 19 Feb 2008 11:32:50 -0800
-From: Greg KH <greg@kroah.com>
-To: Scott Murray <scottm@somanetworks.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       pcihpd-discuss@lists.sourceforge.net
-Subject: Re: [Pcihpd-discuss] [PATCH 06/12] PCI Hotplug: make cpcihp driver
-	use modern apis
-Message-ID: <20080219193250.GB5088@kroah.com>
-References: <20080215003909.GA27981@kroah.com> <1203036010-27988-6-git-send-email-gregkh@suse.de> <alpine.LFD.0.9999.0802151744330.3386@rancor.yyz.somanetworks.com>
-MIME-Version: 1.0
+	Tue, 19 Feb 2008 14:43:59 -0500
+Received: from mga09.intel.com ([134.134.136.24]:44375 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752459AbYBSTn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:43:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,377,1199692800"; 
+   d="scan'208";a="299952765"
+Date: Tue, 19 Feb 2008 11:42:46 -0800
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Unable to continue testing of 2.6.25
+Message-ID: <20080219194246.GA20438@linux-os.sc.intel.com>
+References: <200802171025.30590.elendil@planet.nl> <20080217124650.576990ce@laptopd505.fenrus.org> <p73mypyxx6z.fsf@bingen.suse.de> <20080218085018.05f3190a@laptopd505.fenrus.org> <20080218171159.GA24090@basil.nowhere.org> <20080218093215.5cf611a8@laptopd505.fenrus.org> <adalk5ijdu1.fsf@cisco.com> <20080218110706.221d3015@laptopd505.fenrus.org> <adahcg6jco7.fsf@cisco.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.9999.0802151744330.3386@rancor.yyz.somanetworks.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <adahcg6jco7.fsf@cisco.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 05:45:47PM -0500, Scott Murray wrote:
-> On Thu, 14 Feb 2008, Greg Kroah-Hartman wrote:
+On Mon, Feb 18, 2008 at 11:18:48AM -0800, Roland Dreier wrote:
+>  > > AFAIK mapping PCI memory WB is not allowed, so WC is really our only
+>  > > choice.
 > 
-> > This removes the depandancy of the cpcihp driver from the PCI_LEGACY
-> > config option by removing its usage of the pci_find_bus() function.
-> >
-> >
-> > Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > Cc: Scott Murray <scottm@somanetworks.com>
-> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+>  > afaik that depends on the BAR being prefetchable or not.
 > 
-> Sorry for the slow reply, this looks fine to me.
-> 
-> Signed-off-by: Scott Murray <scottm@somanetworks.com>
+> In my case the BAR is prefetchable.
 
-Great, thanks for reviewing it.
+Even if the BAR is prefetchable, on some platforms mapping MMIO space
+as WB can cause bad results like machine check etc.
 
-greg k-h
+>  > (and by your argument, ioremap_cached() would not be useful, and since that was, until
+>  > 2.6.25-rc1, the default behavior for ioremap(), would have caused massive problems)
+> 
+> I'm not sure what ioremap_cached() would really do in my case, since
+> the MTRRs for PCI memory are set to UC, so without monkeying with MTRR
+> contents (which can't really be done safely) the only choices we have
+> are leaving the mapping as UC or using PAT to get WC.
+
+thanks,
+suresh
