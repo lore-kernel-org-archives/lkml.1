@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYBSKXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbYBSKZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760455AbYBSKXa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:23:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYBSKXV
+	id S1761768AbYBSKZc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:25:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYBSKZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:23:21 -0500
-Received: from mail.parknet.ad.jp ([210.171.162.6]:60369 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752969AbYBSKXU (ORCPT
+	Tue, 19 Feb 2008 05:25:25 -0500
+Received: from nwd2mail11.analog.com ([137.71.25.57]:41743 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752625AbYBSKZY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:23:20 -0500
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: vfat32 Free Cluster Count Update
-References: <fp77bc$akv$1@ger.gmane.org>
-Date: Tue, 19 Feb 2008 19:23:12 +0900
-In-Reply-To: <fp77bc$akv$1@ger.gmane.org> (Gunter Ohrner's message of "Sat, 16
-	Feb 2008 18:43:47 +0100")
-Message-ID: <877ih1w8hb.fsf@duaron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
+	Tue, 19 Feb 2008 05:25:24 -0500
+X-IronPort-AV: E=Sophos;i="4.25,375,1199682000"; 
+   d="scan'208";a="48712892"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: [BUG][RFC][GENERIC IRQ] linux-2.6.24 (delayed) disable IRQ feature not functional for handle_simple_irq
+Date: Tue, 19 Feb 2008 10:25:13 -0000
+Message-ID: <600D5CB4DFD93545BF61FF01473D11AC125CCE48@limkexm2.ad.analog.com>
+In-Reply-To: <alpine.LFD.1.00.0802182146020.7583@apollo.tec.linutronix.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [BUG][RFC][GENERIC IRQ] linux-2.6.24 (delayed) disable IRQ feature not functional for handle_simple_irq
+Thread-Index: Achyb3TQz2NvObX/T5SJEJDgOk1szgAZQDhg
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Hennerich, Michael" <Michael.Hennerich@analog.com>
+Cc: <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 19 Feb 2008 10:25:22.0936 (UTC) FILETIME=[BC1E2780:01C872E1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gunter Ohrner <G.Ohrner@post.rwth-aachen.de> writes:
+Thomas,
 
-> Doesn't the Linux vfat driver update the FAT32's free cluster summary count?
->
-> Zweiblum:~# dosfsck /dev/sda11
-> dosfsck 2.11, 12 Mar 2005, FAT32, LFN
-> /dev/sda11: 2451 files, 28218/1918827 clusters
->
-> Zweiblum:~# mount /dev/sda11 /mnt/win_daten/
->
-> Zweiblum:~# cp /etc/motd /mnt/win_daten/
->
-> Zweiblum:~# umount /mnt/win_daten/
->
-> Zweiblum:~# dosfsck /dev/sda11
-> dosfsck 2.11, 12 Mar 2005, FAT32, LFN
-> Free cluster summary wrong (1890609 vs. really 1890608)
-> 1) Correct
-> 2) Don't correct
-> ? ^C
+I have reasonable doubt that the delayed disable feature on linux-2.6.24 for handle_simple_irq is broken.
 
-This problem was introduced by it ignores a free cluster count (not
-"usefree"). If we was not using "usefree" option, FAT doesn't trust the
-"free cluster count" anymore.
+In 2.6.22 there was something like this:
 
-So, it doesn't update until re-count.  Um.. yes, it's a bit
-problem. Ah.. it can fix "we can trust now"-flag or something.
+	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
+		if (desc->chip->mask)
+			desc->chip->mask(irq);
+...
 
-I'll dig it more, later. And for right now, please run "df" command, it
-will fix free cluster count.
+However in 2.6.24 the "DISABLED" IRQ in case it happens is never going to be masked.  
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
+		goto out_unlock;
+
+
+I see a disabled IRQ being invoked in an endless loop.
+
+-Michael
+
+------------------------------------------------------------------
+********* Analog Devices GmbH         michael.hennerich@analog.com
+**  *****                                      Systems Engineering
+**     ** Wilhelm-Wagenfeld-Strasse 6       
+**  ***** D-80807 Munich                      
+********* Germany                          
+Registergericht München HRB 40368,  Geschäftsführer:  Thomas Wessel,  Vincent Roche,  Joseph E. McDonough 
