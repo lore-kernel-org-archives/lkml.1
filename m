@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760110AbYBSL1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbYBSL2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760110AbYBSL1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:27:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBSL06
+	id S1761765AbYBSL2T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbYBSL2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:26:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36386 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752507AbYBSL05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:26:57 -0500
-Date: Tue, 19 Feb 2008 12:26:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Thomas Gleixner <tglx@linutronix.de>, jbohac@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
-Subject: Re: notsc is ignored on common configurations
-Message-ID: <20080219112632.GA10798@elte.hu>
-References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de> <20080219100230.GA1688@elf.ucw.cz>
+	Tue, 19 Feb 2008 06:28:10 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:50580 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbYBSL2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:28:09 -0500
+Message-ID: <47BABD3A.7010102@anagramm.de>
+Date: Tue, 19 Feb 2008 12:27:54 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219100230.GA1688@elf.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: benh@kernel.crashing.org
+CC: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for	foreign	endianness
+References: <20080205154432.GA8749@localhost.localdomain>	 <20080214224942.a0cb6218.akpm@linux-foundation.org>	 <20080215164542.GB16810@localhost.localdomain>	 <Pine.LNX.4.64.0802171030330.6848@anakin>	 <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	 <19805.1203355811@turing-police.cc.vt.edu>  <47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>
+In-Reply-To: <1203381353.6740.59.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/94AUoCbWfzoajqLAHXgRSu9pA7Rz6gV/RLHD
+ JKAI+Ji7ftNXf/Ooh2qzVKn3DaL4dNW4LmdRb5cSzNWpH0yJrp
+ 9s8Ie3kmdHhzjKrxbdbJA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Herrenschmidt schrieb:
+> On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
+>> Valdis.Kletnieks@vt.edu schrieb:
+>>> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
+>>>> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
+>>>> Both resolve endianess at driver level. Actually, both handle it by setting special
+>>>> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
+>>>> I understand that this patch is for chips which cannot reorder bytes by themselves.
+>>> Does anybody know of such a chip that's actually available in the wild?  Or are
+>>> we writing drivers for speculative possible chips?
+>>>
+>> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
+>> The chip also has a register to swap endianess, but that seems to only affect some
+>> LocalBus modes.
+>> The current fb and X drivers are working, but when it comes to font
+>> aliasing and hw-acceleration, the problems start to rise again...
+> 
+> Most "sane" gfx chips nowadays provide configurable surfaces that allow
+> to perform the swap when writing/reading from regions of the
+> framebuffer, with the ability to set a different swapper setting (based
+> on bit depth) per region.
 
-* Pavel Machek <pavel@ucw.cz> wrote:
+Most! But not the SM50x. I still hope I would be wrong here. :-(
 
-> notsc is ignored in 32-bit kernels if CONFIG_X86_TSC is on.. which is 
-> bad, fix it.
+> Then there is also the risk that your PCI<->Localbus has been wired
+> improperly :-)
 
-thanks, applied.
+That's not an issue in my case. The SM50x can be connected to
+either an PCI or some Local/CPU-whateverbus IF.
+I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
+If the sm501 is attached to the MPC85xx' PCI like any other video card,
+the PCI config-space is can be accessed as usual, whereas the framebuffer
+memory area is byte-swapped compared to other common video cards.
 
-> -static unsigned int ref_freq = 0;
-> -static unsigned long loops_per_jiffy_ref = 0;
-> -static unsigned long cpu_khz_ref = 0;
-> +static unsigned int ref_freq;
-> +static unsigned long loops_per_jiffy_ref;
-> +static unsigned long cpu_khz_ref;
+So, to get back on topic:
+I would welcome endianess swapping in SW. Some architectures (PowerPC)
+should also be able to do swapped-endian mmapping. I just haven't
+had time for a closer look but it looks also interesting way to do it
+that way.
 
-i have split these changes into the separate patch below.
+Regards,
 
-	Ingo
-
----------------->
-Subject: x86: clean up =0 initializations in arch/x86/kernel/tsc_32.c
-From: Pavel Machek <pavel@ucw.cz>
-Date: Tue, 19 Feb 2008 11:02:30 +0100
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/tsc_32.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-x86.q/arch/x86/kernel/tsc_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/tsc_32.c
-+++ linux-x86.q/arch/x86/kernel/tsc_32.c
-@@ -222,9 +222,9 @@ EXPORT_SYMBOL(recalibrate_cpu_khz);
-  * if the CPU frequency is scaled, TSC-based delays will need a different
-  * loops_per_jiffy value to function properly.
-  */
--static unsigned int ref_freq = 0;
--static unsigned long loops_per_jiffy_ref = 0;
--static unsigned long cpu_khz_ref = 0;
-+static unsigned int ref_freq;
-+static unsigned long loops_per_jiffy_ref;
-+static unsigned long cpu_khz_ref;
- 
- static int
- time_cpufreq_notifier(struct notifier_block *nb, unsigned long val, void *data)
-@@ -286,7 +286,7 @@ core_initcall(cpufreq_tsc);
- 
- /* clock source code */
- 
--static unsigned long current_tsc_khz = 0;
-+static unsigned long current_tsc_khz;
- 
- static cycle_t read_tsc(void)
- {
+Clemens
