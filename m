@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbYBST0l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbYBST17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760301AbYBST0l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:26:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYBST0b
+	id S1759803AbYBST17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbYBST1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:26:31 -0500
-Received: from qb-out-0506.google.com ([72.14.204.229]:56994 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755026AbYBST0a (ORCPT
+	Tue, 19 Feb 2008 14:27:50 -0500
+Received: from py-out-1112.google.com ([64.233.166.180]:21115 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753695AbYBST1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:26:30 -0500
+	Tue, 19 Feb 2008 14:27:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=B7k9paIuBtCixtMtNZy0XHF09EEYBRgZC9k99VwctZ6YaloIx6r/Zu8gfl/9jwlmxWCN33jlIonw2wp2zIWUITK/wYaK+ZK7m7K+2Ms+rl5LK99OHff17dlD4mUMwUpPIFRncT68qF82UCDlXr2sxPOj3L9ap8bjHCwOrGagf6o=
-Subject: [PATCH] ata: simplify clock divisor logic in pata_amd.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Tue, 19 Feb 2008 11:26:36 -0800
-Message-Id: <1203449196.10464.19.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Hj3aYnhKJlBQRid1PYipHUrgdrcu6t0tskV86UvaEchGcEJ6xomX3MNuCTXzWWcAm5VlfOLZQZ7OVPdS6zHwpT0ROYWPBJ/qq2Aij4g1ho6OQ8hPFlQNydPyXo59PJlJPn9Ic6cZztIMh4lGgmsmdFNtyfF8zZAD7RBFhVktKnA=
+Message-ID: <64bb37e0802191127k2a202f4fm4bed2ea61c0fd7a8@mail.gmail.com>
+Date: Tue, 19 Feb 2008 20:27:47 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.25-rc2
+Cc: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Christoph Lameter" <clameter@sgi.com>
+In-Reply-To: <alpine.LFD.1.00.0802190806330.7833@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
+	 <20080219061107.GA23229@elte.hu>
+	 <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
+	 <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+	 <20080219140230.GA32236@Krystal>
+	 <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+	 <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
+	 <alpine.LFD.1.00.0802190806330.7833@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current code is essentially choosing between dividing by 1 or
-dividing by two, make the conditions a little more obvious.
+On Feb 19, 2008 5:20 PM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> So:
+>  - it might be something else entirely
+>  - it might still be the local cmpxchg, just Torsten didn't happen to
+>    notice it until later.
 
-As a bonus, removes a sparse error:
-drivers/ata/pata_amd.c:59:11: warning: symbol '__x' shadows an earlier one
-drivers/ata/pata_amd.c:59:11: originally declared here
+My new hackbench-testcase also killed 2.6.24-rc2-mm1, so I really
+noticed to late.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Andrew, this is a replacement for:
-pata_amd-replace-macro-with-static-inline-in-libatah.patch
+>  - it might still be the local cmpxchg, but something else changed its
+>    patterns to actually make it start triggering.
+>
+> and in general I don't think we should revert it unless we have stronger
+> indications that it really is the problem (eg somebody finds the actual
+> bug, or a reporter can confirm that it goes away when the local cmpxchg
+> optimization is disabled).
 
-It is the same patch, but with a corrected description.
+I tried the following three patches:
 
- drivers/ata/pata_amd.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+switching the barrier() for a smp_mb() in 2.6.25-rc2-mm1:
+-> crashed
 
-diff --git a/drivers/ata/pata_amd.c b/drivers/ata/pata_amd.c
-index 4b8d9b5..7ef4847 100644
---- a/drivers/ata/pata_amd.c
-+++ b/drivers/ata/pata_amd.c
-@@ -56,7 +56,9 @@ static void timing_setup(struct ata_port *ap, struct ata_device *adev, int offse
- 	u8 t;
- 
- 	T = 1000000000 / amd_clock;
--	UT = T / min_t(int, max_t(int, clock, 1), 2);
-+	UT = T;
-+	if (clock >= 2)
-+		UT = T / 2;
- 
- 	if (ata_timing_compute(adev, speed, &at, T, UT) < 0) {
- 		dev_printk(KERN_ERR, &pdev->dev, "unknown mode %d.\n", speed);
--- 
-1.5.4.1.1278.gc75be
+reverting the FASTPATH-patch in 2.6.25-rc2:
+-> worked
 
+only removed FAST_CMPXCHG_LOCAL from arch/x86/Kconfig
+-> worked
 
+So all of these tests seem to confirm, that the bug is in the new SLUB fastpath.
 
+Torsten
