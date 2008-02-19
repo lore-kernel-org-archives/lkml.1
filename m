@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758271AbYBSSJF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbYBSSLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758271AbYBSSJF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:09:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYBSSIx
+	id S1756173AbYBSSLw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:11:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbYBSSLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:08:53 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54069 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753686AbYBSSIw (ORCPT
+	Tue, 19 Feb 2008 13:11:44 -0500
+Received: from dbservice.com ([213.239.204.14]:56990 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751052AbYBSSLo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:08:52 -0500
-Date: Tue, 19 Feb 2008 19:08:55 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Yinghai Lu <Yinghai.Lu@Sun.COM>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lameter@sgi.com
-Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
-Message-ID: <20080219180855.GB12010@one.firstfloor.org>
-References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BAFA66.2040603@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 19 Feb 2008 13:11:44 -0500
+Message-ID: <47BB1BD3.3040609@dbservice.com>
+Date: Tue, 19 Feb 2008 19:11:31 +0100
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20080211)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: hid device not claimed but /dev/input/event exists
+References: <47BB041F.4060003@dbservice.com> <Pine.LNX.4.64.0802191751040.7699@twin.jikos.cz> <47BB1515.1070608@dbservice.com> <Pine.LNX.4.64.0802191846250.30955@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0802191846250.30955@jikos.suse.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-2.257, required 5, AWL 0.24, BAYES_00 -2.60,
+	RDNS_DYNAMIC 0.10)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 07:48:54AM -0800, Mike Travis wrote:
-> Andi Kleen wrote:
-> > Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
-> > 
-> >> we don't need copy too. already have x86_cpu_to_node_map
-> > 
-> > That's a regression (probably from Mike's patches?). Until recently it was 
-> > used.
+Jiri Kosina wrote:
+> On Tue, 19 Feb 2008, Tomas Carnecky wrote:
 > 
-> Yes, I had removed it because I couldn't find any references to it.
+>> The device apparently has four 'interfaces' - whatever that is, see [1]. 
+>> It seems like usbhid probes interface 2 (which is the LCD plus a few 
+>> buttons, probably the four just under the LCD, as described [1]). 
+>> Because usbhid doesn't know how to handle the buttons, it fails. But 
+>> then it probes interface 3 which is a 'proper' HID device with 
+>> well-defined buttons.
+> 
+> Yes, the dump clearly shows that.
+> 
+> Does anything appear in dmesg when you press those buttons? There should 
+> be messages resembling the one you already have there:
+> 
+> drivers/hid/hid-core.c: report (size 8) (unnumbered)
+> drivers/hid/hid-core.c: report 0 (size 8) =  00 00 28 00 00 00 00 00
+> 
+> and they should react to keys such as FastForward, Play, Mute, Volume Up, 
+> etc.
 
-Hmm, maybe it regressed earlier. Sorry if I blamed you incorrectly.
-Anyways at some point this definitely worked. I remember writing
-the code ;-) 
+Nothing. Not even after I removed the alsa-usb-audio driver. All I see 
+is Keyboard.*, but the events from the speaker should be Key.*, right?
 
-> And reading one's own percpu variables should be as efficient as
-> reading one's own pda.
+It looks like the speaker goes into a different mode once the USB cable 
+is plugged in. Without the USB cable, the Z-10 acts as simple/dumb 
+speaker, the volume up/down buttons change the internal volume, and I 
+see that on the display, too. The play/next/prev song buttons don't do 
+anything, which is quite obvious.
+But once the USB cable is plugged in, the volume up/down buttons stop 
+reacting. I assume they are now meant to send events to the computer so 
+that some software can decide what to do. But features that are not 
+useful for the computer (bass/treble), can still be controlled using the 
+buttons on the speaker. The buttons are not dead. I can see that because 
+the display goes to sleep after a few seconds of inactivity, and when I 
+press the volume buttons, it wakes up and displays the current volume. 
+So the speaker is definitely seeing that the buttons are being pressed.
 
-Sure, but the point is that getting the current node is a common
-operation, so it should be a single reference and not go through a 
-lookup table.
+Is there a USB packet inspector/dumper, like libpcap for network?
 
-How it is actually implemented -- through PDA or through you new
-equivalent per cpu variables -- does not really matter as long 
-as the resulting code is only a single instruction. Using
-the lookup array from the cpu number is wrong.
-
-My patch just fixed it back to use the PDA in the old style for now,
-but if all your per cpu stuff is merged (I admit I haven't tracked 
-if it is or not) replacing that with a per cpu variable would work too
-if it then generates the same code as with PDA.
-
--Andi
-
+tom
