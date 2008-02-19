@@ -1,159 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762658AbYBSHf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762244AbYBSHij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762658AbYBSHf7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:35:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762194AbYBSHfq
+	id S1762244AbYBSHij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758306AbYBSHib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:35:46 -0500
-Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:35260
-	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755438AbYBSHfp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:35:45 -0500
-Message-ID: <47BA86C8.4050207@cosmosbay.com>
-Date: Tue, 19 Feb 2008 08:35:36 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-CC: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: tbench regression in 2.6.25-rc1
-References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20080218111101.6d590c04.dada1@cosmosbay.com> <1203389095.3248.6.camel@ymzhang>
-In-Reply-To: <1203389095.3248.6.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 19 Feb 2008 02:38:31 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44151 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754280AbYBSHia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:38:30 -0500
+Date: Tue, 19 Feb 2008 18:38:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for Feb 19
+Message-Id: <20080219183825.1c71c9b2.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__19_Feb_2008_18_38_25_+1100_tfLhtywO+un4stiJ"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang, Yanmin a écrit :
-> On Mon, 2008-02-18 at 11:11 +0100, Eric Dumazet wrote:
->> On Mon, 18 Feb 2008 16:12:38 +0800
->> "Zhang, Yanmin" <yanmin_zhang@linux.intel.com> wrote:
->>
->>> On Fri, 2008-02-15 at 15:22 -0800, David Miller wrote:
->>>> From: Eric Dumazet <dada1@cosmosbay.com>
->>>> Date: Fri, 15 Feb 2008 15:21:48 +0100
->>>>
->>>>> On linux-2.6.25-rc1 x86_64 :
->>>>>
->>>>> offsetof(struct dst_entry, lastuse)=0xb0
->>>>> offsetof(struct dst_entry, __refcnt)=0xb8
->>>>> offsetof(struct dst_entry, __use)=0xbc
->>>>> offsetof(struct dst_entry, next)=0xc0
->>>>>
->>>>> So it should be optimal... I dont know why tbench prefers __refcnt being 
->>>>> on 0xc0, since in this case lastuse will be on a different cache line...
->>>>>
->>>>> Each incoming IP packet will need to change lastuse, __refcnt and __use, 
->>>>> so keeping them in the same cache line is a win.
->>>>>
->>>>> I suspect then that even this patch could help tbench, since it avoids 
->>>>> writing lastuse...
->>>> I think your suspicions are right, and even moreso
->>>> it helps to keep __refcnt out of the same cache line
->>>> as input/output/ops which are read-almost-entirely :-
->>> I think you are right. The issue is these three variables sharing the same cache line
->>> with input/output/ops.
->>>
->>>> )
->>>>
->>>> I haven't done an exhaustive analysis, but it seems that
->>>> the write traffic to lastuse and __refcnt are about the
->>>> same.  However if we find that __refcnt gets hit more
->>>> than lastuse in this workload, it explains the regression.
->>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
->>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
->>> recovered.
->>>
->>> How about below patch? Almost all performance is recovered with the new patch.
->>>
->>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
->>>
->>> ---
->>>
->>> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
->>> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-21 14:36:22.000000000 +0800
->>> @@ -52,11 +52,10 @@ struct dst_entry
->>>  	unsigned short		header_len;	/* more space at head required */
->>>  	unsigned short		trailer_len;	/* space to reserve at tail */
->>>  
->>> -	u32			metrics[RTAX_MAX];
->>> -	struct dst_entry	*path;
->>> -
->>> -	unsigned long		rate_last;	/* rate limiting for ICMP */
->>>  	unsigned int		rate_tokens;
->>> +	unsigned long		rate_last;	/* rate limiting for ICMP */
->>> +
->>> +	struct dst_entry	*path;
->>>  
->>>  #ifdef CONFIG_NET_CLS_ROUTE
->>>  	__u32			tclassid;
->>> @@ -70,10 +69,12 @@ struct dst_entry
->>>  	int			(*output)(struct sk_buff*);
->>>  
->>>  	struct  dst_ops	        *ops;
->>> -		
->>> -	unsigned long		lastuse;
->>> +
->>> +	u32			metrics[RTAX_MAX];
->>> +
->>>  	atomic_t		__refcnt;	/* client references	*/
->>>  	int			__use;
->>> +	unsigned long		lastuse;
->>>  	union {
->>>  		struct dst_entry *next;
->>>  		struct rtable    *rt_next;
->>>
->>>
->> Well, after this patch, we grow dst_entry by 8 bytes :
-> With my .config, it doesn't grow. Perhaps because of CONFIG_NET_CLS_ROUTE, I don't
-> enable it. I will move tclassid under ops.
-> 
->> sizeof(struct dst_entry)=0xd0
->> offsetof(struct dst_entry, input)=0x68
->> offsetof(struct dst_entry, output)=0x70
->> offsetof(struct dst_entry, __refcnt)=0xb4
->> offsetof(struct dst_entry, lastuse)=0xc0
->> offsetof(struct dst_entry, __use)=0xb8
->> sizeof(struct rtable)=0x140
->>
->>
->> So we dirty two cache lines instead of one, unless your cpu have 128 bytes cache lines ?
->>
->> I am quite suprised that my patch to not change lastuse if already set to jiffies changes nothing...
->>
->> If you have some time, could you also test this (unrelated) patch ?
->>
->> We can avoid dirty all the time a cache line of loopback device.
->>
->> diff --git a/drivers/net/loopback.c b/drivers/net/loopback.c
->> index f2a6e71..0a4186a 100644
->> --- a/drivers/net/loopback.c
->> +++ b/drivers/net/loopback.c
->> @@ -150,7 +150,10 @@ static int loopback_xmit(struct sk_buff *skb, struct net_device *dev)
->>                 return 0;
->>         }
->>  #endif
->> -       dev->last_rx = jiffies;
->> +#ifdef CONFIG_SMP
->> +       if (dev->last_rx != jiffies)
->> +#endif
->> +               dev->last_rx = jiffies;
->>  
->>         /* it's OK to use per_cpu_ptr() because BHs are off */
->>         pcpu_lstats = netdev_priv(dev);
->>
-> Although I didn't test it, I don't think it's ok. The key is __refcnt shares the same
-> cache line with ops/input/output.
-> 
+--Signature=_Tue__19_Feb_2008_18_38_25_+1100_tfLhtywO+un4stiJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Note it was unrelated to struct dst, but dirtying of one cache line of 
-'loopback netdevice'
+Hi all,
 
-I tested it, and tbench result was better with this patch : 890 MB/s instead 
-of 870 MB/s on a bi dual core machine.
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
 
-I was curious of the potential gain on your 16 cores (4x4) machine.
+There were a couple of merge conflicts and a couple of build failures and
+the appropriate people contacted.
+
+We are up to 26 trees, more are welcome (even if they are currently empty).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__19_Feb_2008_18_38_25_+1100_tfLhtywO+un4stiJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHuod1TgG2atn1QN8RAsReAKCFDZAKWIsG1iFifU9ZCRyJAbL6qwCgk6ra
+V92DgfZisdh2VMb0xRDYg88=
+=gSDO
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__19_Feb_2008_18_38_25_+1100_tfLhtywO+un4stiJ--
