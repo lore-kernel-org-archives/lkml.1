@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763456AbYBSXL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbYBSXMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763456AbYBSXL1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:11:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755186AbYBSXLT
+	id S1762378AbYBSXMO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:12:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbYBSXL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:11:19 -0500
-Received: from az33egw02.freescale.net ([192.88.158.103]:35750 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754749AbYBSXLT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:11:19 -0500
-Message-ID: <47BB6209.5080706@freescale.com>
-Date: Tue, 19 Feb 2008 17:11:05 -0600
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-CC: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Difference between vmlinux and vmlinux.bin
-References: <47BB5D82.6070806@freescale.com>
-In-Reply-To: <47BB5D82.6070806@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 18:11:59 -0500
+Received: from ns2.suse.de ([195.135.220.15]:47309 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755186AbYBSXL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 18:11:59 -0500
+Date: Wed, 20 Feb 2008 00:11:57 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080219231157.GC18912@wotan.suse.de>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219135851.GI7128@v2.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Timur Tabi wrote:
+On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
+> On Tue, Feb 19, 2008 at 09:43:57AM +0100, Nick Piggin wrote:
+> > anything when changing the pte to be _more_ permissive, and I don't
+> 
+> Note that in my patch the invalidate_pages in mprotect can be
+> trivially switched to a mprotect_pages with proper params. This will
+> prevent page faults completely in the secondary MMU (there will only
+> be tlb misses after the tlb flush just like for the core linux pte),
+> and it'll allow all the secondary MMU pte blocks (512/1024 at time
+> with my PT lock design) to be updated to have proper permissions
+> matching the core linux pte.
 
-> So when Kbuild creates vmlinux.bin, what does it do besides extract the PT_LOAD 
-> segment?
+Sorry, I realise I still didn't get this through my head yet (and also
+have not seen your patch recently). So I don't know exactly what you
+are doing...
 
-Never mind, I was doing something stupid which was trashing my in-memory copy of 
-vmlinux.bin.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+But why does _anybody_ (why does Christoph's patches) need to invalidate
+when they are going to be more permissive? This should be done lazily by
+the driver, I would have thought.
