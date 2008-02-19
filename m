@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYBSL3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbYBSLkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760990AbYBSL3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYBSL3c
+	id S1758232AbYBSLkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:40:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752958AbYBSLko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:29:32 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60279 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753305AbYBSL3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:29:31 -0500
-Date: Tue, 19 Feb 2008 12:29:52 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, jbohac@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
-Subject: Re: notsc is ignored on common configurations
-Message-ID: <20080219112952.GA2885@elf.ucw.cz>
-References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de> <20080219100230.GA1688@elf.ucw.cz> <20080219112632.GA10798@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219112632.GA10798@elte.hu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 19 Feb 2008 06:40:44 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53914
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752211AbYBSLkh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:40:37 -0500
+Date: Tue, 19 Feb 2008 03:41:10 -0800 (PST)
+Message-Id: <20080219.034110.191579889.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: Yinghai.Lu@Sun.COM, greg@kroah.com, akpm@linux-foundation.org,
+       jeff@garzik.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/8] net: use numa_node in net_devcice->dev instead of
+ parent
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080219112146.GC7204@elte.hu>
+References: <200802190311.44404.yinghai.lu@sun.com>
+	<200802190320.58561.yinghai.lu@sun.com>
+	<20080219112146.GC7204@elte.hu>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2008-02-19 12:26:32, Ingo Molnar wrote:
-> 
-> * Pavel Machek <pavel@ucw.cz> wrote:
-> 
-> > notsc is ignored in 32-bit kernels if CONFIG_X86_TSC is on.. which is 
-> > bad, fix it.
-> 
-> thanks, applied.
-> 
-> > -static unsigned int ref_freq = 0;
-> > -static unsigned long loops_per_jiffy_ref = 0;
-> > -static unsigned long cpu_khz_ref = 0;
-> > +static unsigned int ref_freq;
-> > +static unsigned long loops_per_jiffy_ref;
-> > +static unsigned long cpu_khz_ref;
-> 
-> i have split these changes into the separate patch below.
+From: Ingo Molnar <mingo@elte.hu>
+Date: Tue, 19 Feb 2008 12:21:46 +0100
 
-Yep, thanks.
-								Pavel
+> 
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+> 
+> >  struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
+> >  		unsigned int length, gfp_t gfp_mask)
+> >  {
+> > -	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
+> > +	int node = dev_to_node(&dev->dev);
+> 
+> i think this is a fix for the networking folks. (Dave Cc:-ed)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+It keeps getting NAK's because it's wrong.
+
+The author of the patch hasn't convinced folks why this is really
+necessary, and using the net_device embedded device struct is
+definitely wrong here.  It doesn't contain the NUMA node information,
+the physical device does, and that is what the parent it.
