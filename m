@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759222AbYBSJnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbYBSJnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759222AbYBSJnU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 04:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYBSJnH
+	id S1762983AbYBSJnd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 04:43:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbYBSJnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 04:43:07 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:10305 "EHLO kernel.dk"
+	Tue, 19 Feb 2008 04:43:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53227 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752100AbYBSJnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 04:43:05 -0500
-Date: Tue, 19 Feb 2008 10:43:02 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kyungmin Park <kmpark@infradead.org>
-Cc: "'Thomas Petazzoni'" <thomas.petazzoni@free-electrons.com>,
-       "'Linux Filesystem Mailing List'" 
-	<linux-fsdevel@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about synchronous write on SSD
-Message-ID: <20080219094301.GU23197@kernel.dk>
-References: <9c9fda240802182148m6fd632pa7988530c5387245@mail.gmail.com> <20080219091608.1da174c1@crazy> <002f01c872db$69c854c0$1fa9580a@swcenter.sec.samsung.co.kr>
+	id S1757842AbYBSJnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 04:43:17 -0500
+Date: Tue, 19 Feb 2008 10:42:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "David P. Reed" <dpreed@reed.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: define outb_pic and inb_pic to stop using outb_p
+	and inb_p
+Message-ID: <20080219094256.GC7628@elte.hu>
+References: <6gr00g$g7qpsd@smtp01.lnh.mail.rcn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <002f01c872db$69c854c0$1fa9580a@swcenter.sec.samsung.co.kr>
+In-Reply-To: <6gr00g$g7qpsd@smtp01.lnh.mail.rcn.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19 2008, Kyungmin Park wrote:
-> > Le Tue, 19 Feb 2008 14:48:18 +0900,
-> > "Kyungmin Park" <kmpark@infradead.org> a écrit :
-> > 
-> > > +               /* Write synchronous */
-> > > +               bio->bi_rw |= (1 << BIO_RW_SYNC);
-> > 
-> > Adding BIO_RW_SYNC doesn't make generic_make_request() synchronous as
-> > in "generic_make_request() returns only after write completion".
-> > BIO_RW_SYNC only asks the I/O layer to unplug immediatly. But
-> > generic_make_request() still returns before the completion of the I/O,
-> > and the completion is notified asynchronously.
-> > 
-> 
-> Agree, however see the following sequence.
-> 
-> __generic_make_request call q->make_request_fn(q, bio);
-> It was set by blk_init_queue_node with __make_request.
-> There are two ways in __make_request.
-> Case 1, get_rq
-> Case 2, out or merged (otherwise you mean unplug case)
-> 
-> In case 1, if the BIO_RW_SYNC is set, the request gets the REQ_RW_SYNC
-> And REQ_RW_SYNC says 
-> "include/linux/blkdev.h":112: __REQ_RW_SYNC,          /* request is sync (O_DIRECT) */
-> It means it acts as O_DIRECT flag. Is it right?
-> And it also is same as case 2. Unplug the device.
-> So next time it hasn't chance to merge???
 
-But that still doesn't make it sync. I think you are working the wrong
-way. For ssd we still want merging and plugging also makes sense to some
-degree, though it probably should be minimized. It'll only cause an
-initial latency, for busy IO workloads you wont be plugging/unplugging
-much anyway.
+* David P. Reed <dpreed@reed.com> wrote:
 
-In fact your patch makes things WORSE, since the io schedulers will now
-treat the IO as sync and introduce idling for the disk head. And you
-definitely don't want that.
+> x86: define outb_pic and inb_pic to stop using outb_p and inb_p
+>  
+> The delay between io port accesses to the PIC is now defined using 
+> outb_pic and inb_pic.  This fix provides the next step, using 
+> udelay(2) to define the *PIC specific* timing requirements, rather 
+> than on bus-oriented timing, which is not well calibrated.
 
--- 
-Jens Axboe
+thanks David, applied.
 
+minor nit:
+
+> +	/* delay for some accesses to PIC on motherboard or in chipset must be
+> +	   at least one microsecond, but be safe here. */
+
+i changed this to the standard multi-line comment style of:
+
+> +	/*
+> +      * Delay for some accesses to PIC on motherboard or in chipset 
+> +      * must be at least one microsecond, but be safe here:
+> +      */
+
+	Ingo
