@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbYBSQ2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757577AbYBSQaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbYBSQ2q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:28:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbYBSQ2h
+	id S1757577AbYBSQaM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:30:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbYBSQ37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:28:37 -0500
-Received: from lizzard.sbs.de ([194.138.37.39]:15406 "EHLO lizzard.sbs.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751103AbYBSQ2g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:28:36 -0500
-Message-ID: <47BB037C.6060306@siemens.com>
-Date: Tue, 19 Feb 2008 17:27:40 +0100
-From: Jan Kiszka <jan.kiszka@siemens.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Tue, 19 Feb 2008 11:29:59 -0500
+Received: from ug-out-1314.google.com ([66.249.92.172]:43160 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbYBSQ36 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:29:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=WcMp++YANo9CcIuo4ReiXcgt5RoWFT89dLmJJEuzTpVNUTUzsl7KMVyWnbJGQtBOkW0bdJBs17a65mT3usgtj/UwCSEzQoWjnY2zQP3Ds6mRulyz8N6SRFELno7ZtrLw1pzUwN7kZnp7G2AI0hsFbIavF1VGxbu9yacoaE6pgVM=
+Date: Tue, 19 Feb 2008 18:27:18 +0200
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Tasklets: Avoid duplicating __tasklet_{,hi_}schedule()
+	code
+Message-ID: <20080219162718.GA3372@ubuntu>
+References: <20080219153720.GA2967@ubuntu> <20080219155252.GA27280@elte.hu>
 MIME-Version: 1.0
-To: paulmck@linux.vnet.ibm.com
-CC: prasad@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Gautham R Shenoy <ego@in.ibm.com>, mathieu.desnoyers@polymtl.ca,
-       linux-rt-users@vger.kernel.org, dipankar@in.ibm.com
-Subject: Markers: multi-probe locking fun (was: Re: [PATCH 0/2] Markers Implementation
- for RCU Tracing - Ver II)
-References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal> <20080107195038.GA5119@in.ibm.com> <47B97E63.3070205@siemens.com> <20080218194825.GF10471@linux.vnet.ibm.com>
-In-Reply-To: <20080218194825.GF10471@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219155252.GA27280@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul E. McKenney wrote:
-> On Mon, Feb 18, 2008 at 01:47:31PM +0100, Jan Kiszka wrote:
->> K. Prasad wrote:
->>> Hi Ingo,
->>> 	Please accept these patches into the rt tree which convert the
->>> existing RCU tracing mechanism for Preempt RCU and RCU Boost into
->>> markers.
->>>  
->>> These patches are based upon the 2.6.24-rc5-rt1 kernel tree.
->>>  
->>> Along with marker transition, the RCU Tracing infrastructure has also
->>> been modularised to be built as a kernel module, thereby enabling
->>> runtime changes to the RCU Tracing infrastructure.
->>>  
->>> Patch [1/2] - Patch that converts the Preempt RCU tracing in
->>> rcupreempt.c into markers.
->>>  
->>> Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
->>> rcupreempt-boost.c into markers.
->>>  
->> I have a technical problem with marker-based RCU tracing: It causes
->> nasty recursions with latest multi-probe marker patches (sorry, no link
->> at hand, can be found in latest LTTng, maybe also already in -mm). Those
->> patches introduce a marker probe trampoline like this:
->>
->> void marker_probe_cb(const struct marker *mdata, void *call_private,
->> 	const char *fmt, ...)
->> {
->> 	va_list args;
->> 	char ptype;
->>
->> 	/*
->> 	 * rcu_read_lock does two things : disabling preemption to make sure the
->> 	 * teardown of the callbacks can be done correctly when they are in
->> 	 * modules and they insure RCU read coherency.
->> 	 */
->> 	rcu_read_lock();
->> 	preempt_disable();
->> 	...
->>
->> Can we do multi-probe with pure preempt_disable/enable protection? I
->> guess it's fine with classic RCU, but what about preemptible RCU? Any
->> suggestion appreciated!
+On Tue, Feb 19, 2008 at 04:52:52PM +0100, Ingo Molnar wrote:
 > 
-> If you substitute synchronize_sched() for synchronize_rcu(), this should
-> work fine.  Of course, this approach would cause RCU tracing to degrade
-> latencies somewhat in -rt.
+> * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
 > 
-> If tracing is using call_rcu(), we will need to add a call_sched()
-> or some such.
+> > -		local_irq_disable();
+> > -		t->next = __get_cpu_var(tasklet_vec).list;
+> > -		__get_cpu_var(tasklet_vec).list = t;
+> > -		__raise_softirq_irqoff(TASKLET_SOFTIRQ);
+> > -		local_irq_enable();
+> > +		/* We were not lucky enough to run, reschedule. */
+> > +		__tasklet_schedule(t);
+> 
+> i think there's a subtle difference that you missed: this one does 
+> __raise_softirq_irqoff(), while __tasklet_schedule() does a 
+> raise_softirq_irqoff(). (note the lack of undescores)
+> 
+> the reason is to avoid infinitely self-activating tasklets.
+> 
 
-You mean something like "#define call_sched call_rcu_classic"?
+Indeed, thanks a lot for the explanation. (maybe it's time to check
+for new eyeglasses ;)).
 
-I just learned that there is another reason for killing
-rcu_read_lock&friends from the marker probes: It can deadlock on -rt
-with PREEMPT_RCU_BOOST (hit probe inside rq-lock protected region =>
-rcu_read_unlock triggers unboost => stuck on rq_lock :( ).
-
-Jan
+Regards
 
 -- 
-Siemens AG, Corporate Technology, CT SE 2
-Corporate Competence Center Embedded Linux
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
+
