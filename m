@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762425AbYBSCQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbYBSCV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762425AbYBSCQE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 21:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758167AbYBSCPu
+	id S1761481AbYBSCV3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 21:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756208AbYBSCVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 21:15:50 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:40428 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758008AbYBSCPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 21:15:49 -0500
-Message-ID: <47BA39FA.7050102@redhat.com>
-Date: Mon, 18 Feb 2008 23:07:54 -0300
-From: Glauber Costa <gcosta@redhat.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Mon, 18 Feb 2008 21:21:21 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55030 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755693AbYBSCVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 21:21:20 -0500
+Message-ID: <47BA3CAB.30905@cn.fujitsu.com>
+Date: Tue, 19 Feb 2008 10:19:23 +0800
+From: Shi Weihua <shiwh@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Li Zefan <lizf@cn.fujitsu.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       andrew.grover@intel.com, paul.s.diefenbaugh@intel.com, linux@brodo.de,
-       anil.s.keshavamurthy@intel.com, lenb@kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: [PATCH 4/4] remove goto statement
-References: <1203368213-30528-1-git-send-email-gcosta@redhat.com> <1203368213-30528-2-git-send-email-gcosta@redhat.com> <1203368213-30528-3-git-send-email-gcosta@redhat.com> <1203368213-30528-4-git-send-email-gcosta@redhat.com> <47BA2E93.4040002@cn.fujitsu.com>
-In-Reply-To: <47BA2E93.4040002@cn.fujitsu.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/5] signal(x86_32): Improve the signal stack overflow
+ check
+References: <47B95C4D.6080000@cn.fujitsu.com>
+In-Reply-To: <47B95C4D.6080000@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Zefan wrote:
-> Glauber Costa Ð´µÀ:
->> This patch removes goto statements in favour of plain returns
->> in places that had nothing left behind that would justify
->> such construction
->> ---
->>  drivers/acpi/processor_core.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/acpi/processor_core.c b/drivers/acpi/processor_core.c
->> index 06a230a..70f62b6 100644
->> --- a/drivers/acpi/processor_core.c
->> +++ b/drivers/acpi/processor_core.c
->> @@ -651,7 +651,7 @@ static int __cpuinit acpi_processor_star
->>  
->>  	result = acpi_processor_add_fs(device);
->>  	if (result)
->> -		goto end;
->> +		return result;
->>  
->>  	status = acpi_install_notify_handler(pr->handle, ACPI_DEVICE_NOTIFY,
->>  					     acpi_processor_notify, pr);
->> @@ -675,7 +675,7 @@ #endif
->>  			"%s is registered as cooling_device%d\n",
->>  			device->dev.bus_id, cdev->id);
->>  	else
->> -		goto end;
->> +		return result;
->>  
->>  	result = sysfs_create_link(&device->dev.kobj, &cdev->device.kobj,
->>  					"thermal_cooling");
-> 
-> Seems you forgot to remove the 'end' label ?
-yes, in fact, thanks for pointing.
+We need to check for stack overflow only when the signal is on stack.
+So we can improve the patch "http://lkml.org/lkml/2007/11/27/101" as following. 
 
-However, the patches are as split up as I could do, and it should not
-affect the others. I can re send this one, the whole series, or
-whatever, depending on what the maintainer wants.
+Signed-off-by: Shi Weihua <shiwh@cn.fujitsu.com> 
 
-So, what's gonna be?
+---
+
+The previous patch has a comment mistake. Now I correct it.
+
+---
+--- linux-2.6.25-rc2.orig/arch/x86/kernel/signal_32.c	2008-02-16 04:57:20.000000000 +0800
++++ linux-2.6.25-rc2/arch/x86/kernel/signal_32.c	2008-02-19 09:55:59.000000000 +0800
+@@ -299,17 +299,21 @@ get_sigframe(struct k_sigaction *ka, str
+ 	/* Default to using normal stack */
+ 	sp = regs->sp;
+ 
+-	/*
+-	 * If we are on the alternate signal stack and would overflow it, don't.
+-	 * Return an always-bogus address instead so we will die with SIGSEGV.
+-	 */
+-	if (on_sig_stack(sp) && !likely(on_sig_stack(sp - frame_size)))
+-		return (void __user *) -1L;
+-
+ 	/* This is the X/Open sanctioned signal stack switching.  */
+ 	if (ka->sa.sa_flags & SA_ONSTACK) {
+-		if (sas_ss_flags(sp) == 0)
++		int onstack = sas_ss_flags(sp);
++
++		if (onstack == 0)
+ 			sp = current->sas_ss_sp + current->sas_ss_size;
++		else if (onstack == SS_ONSTACK) {
++			/*
++			 * If we are on the alternate signal stack and would
++			 * overflow it, don't. Return an always-bogus address
++			 * instead so we will die with SIGSEGV.
++			 */
++			if (!likely(on_sig_stack(sp - frame_size)))
++				return (void __user *) -1L;
++		}
+ 	}
+ 
+ 	/* This is the legacy signal stack switching. */
+
