@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758424AbYBSSdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbYBSSfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758424AbYBSSdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:33:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753989AbYBSSdY
+	id S1757209AbYBSSfZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbYBSSfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:33:24 -0500
-Received: from mx.fenrir.org.uk ([81.168.115.223]:52926 "EHLO mx.fenrir.org.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbYBSSdX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:33:23 -0500
-Message-ID: <47BB20F0.8030506@fenrir.org.uk>
-Date: Tue, 19 Feb 2008 18:33:20 +0000
-From: Brian Morrison <bdm@fenrir.org.uk>
-Organization: The Fool and Bladder Face-Jumping Team
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Intel Core2Duo mobile - how does the VID get set?
-References: <47BAC961.6030808@fenrir.org.uk> <924EFEDD5F540B4284297C4DC59F3DEE90C8BD@orsmsx423.amr.corp.intel.com>
-In-Reply-To: <924EFEDD5F540B4284297C4DC59F3DEE90C8BD@orsmsx423.amr.corp.intel.com>
-X-Enigmail-Version: 0.95.6
-OpenPGP: id=E79E0778
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEU8PDpvaFEREREpKiXC
- wsD//////v6hSyaYAAABLElEQVQ4jZ3TwW7DIAwAUFOqnbFCf4DtA5K62jloTu+VWs6rFPL/nzAg
- WUY7qNb5EqInY8dW4FIJ+C84X4GRR+apCGgRNR/vge0WERvN/g5QiQhSiCGDkSclAQAboajzObCS
- JgRtOqLhmgqB44nZzmDMK5H+OCzAETY0iyHs33y6amLNFjaGliTQVh9TDRf6Adgb00I0AIU4JLCo
- IEmo0Yb2Quc6AXPIAJD7+arYOM7tohUxJwZReszgJhYINyGWkZzXjDtwqTyI8EnLaV2UjXfpdBzZ
- 4u5ntbGz7fdLWOgKrpd0+L3BECei7jk4E7VlkES+BC7A8BRcmgewK0L/AF5q8F6ET8qHlcGpCjIf
- VgbnB9BWwZfgdlj57ww1UPlM/gR97SqLXOzqNqrwBbAjNHgb3BUMAAAAAElFTkSuQmCC
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Feb 2008 13:35:13 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:56328 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752752AbYBSSfL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 13:35:11 -0500
+Subject: Re: [PATCH] hugetlb: ensure we do not reference a surplus page
+	after handing it to buddy
+From: Adam Litke <agl@us.ibm.com>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@osdl.org>, Nishanth Aravamudan <nacc@us.ibm.com>,
+       William Irwin <wli@holomorphy.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1203445688.0@pinky>
+References: <1203445688.0@pinky>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 19 Feb 2008 12:41:51 -0600
+Message-Id: <1203446512.11987.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pallipadi, Venkatesh wrote:
+Indeed.  I'll take credit for this thinko...
 
->> After a fair bit of Googling and reading around, I'm none the wiser 
->> about exactly how Linux 2.6.x sets the processor VID (or for 
->> that matter 
->> how it decides the FID settings) when using the ondemand governor and 
->> cpufreq stuff.
->>
->> Can anyone tell me a) whether this is obtained from the BIOS, 
->> something 
->> in the MSR of the processor or elsewhere and
+On Tue, 2008-02-19 at 18:28 +0000, Andy Whitcroft wrote:
+> When we free a page via free_huge_page and we detect that we are in
+> surplus the page will be returned to the buddy.  After this we no longer
+> own the page.  However at the end free_huge_page we clear out our mapping
+> pointer from page private.  Even where the page is not a surplus we
+> free the page to the hugepage pool, drop the pool locks and then clear
+> page private.  In either case the page may have been reallocated.  BAD.
 > 
-> Yes. The freq and voltage supported comes from the platform BIOS. BIOS
-> exports this in an ACPI table which is handled by acpi-cpufreq driver in
-> Linux kernel.
+> Make sure we clear out page private before we free the page.
 > 
+> Signed-off-by: Andy Whitcroft <apw@shadowen.org>
 
-OK, thanks for that.
-
->  
->> b) whether there is an 
->> interface in /proc or /sys where one can find out what is set 
->> and modify it?
-> 
-> There is no way of modifying and using new VIDs etc in Linux kernel
-> (other than exporting your own DSDT and hacking the related code).
-
-Is there a way of viewing the ACPI table contents relating to the VIDs
-and FIDs?
+Acked-by: Adam Litke <agl@us.ibm.com>
 
 -- 
-
-Brian Morrison
-
-bdm@fenrir.org.uk
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
 
