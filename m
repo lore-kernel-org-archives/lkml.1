@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYBSKjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756983AbYBSKmd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbYBSKjp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYBSKjh
+	id S1756983AbYBSKmd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:42:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbYBSKmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:39:37 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:36382 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752480AbYBSKjg (ORCPT
+	Tue, 19 Feb 2008 05:42:25 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:55224 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752857AbYBSKmZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:39:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UdndVHmP/dWpREJ7NnBqhAmAN8ykNmJjGmWpVQWTpFTzgQYJdi/txIiJR94qwHt+zjbMwT3+QxTa8woUaAQgkc+Luc7W/cK7V4JeMPd7BCX+mJ5NIq14ASZ/ujRr08BeVN/X4t1/27JSeljsXAnguz8LYp/QeX/aHasS9y06gk0=
-Message-ID: <86802c440802190239p3e105842lb8c069c111f1f9a4@mail.gmail.com>
-Date: Tue, 19 Feb 2008 02:39:33 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 4/5] x86_64: check msr to get mmconfig for amd family 10h opteron v3
-Cc: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Greg KH" <greg@kroah.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080219101335.GB14092@elte.hu>
+	Tue, 19 Feb 2008 05:42:25 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Gordon Farquharson" <gordonfarquharson@gmail.com>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Date: Tue, 19 Feb 2008 11:41:26 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Sam Ravnborg" <sam@ravnborg.org>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it, "Linus Torvalds" <torvalds@osdl.org>,
+       "Andrew Morton" <akpm@osdl.org>, viro@ftp.linux.org.uk
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802190101.27429.mb@bu3sch.de> <97a0a9ac0802182059h36d32ac6o841bb0a1b766b74@mail.gmail.com>
+In-Reply-To: <97a0a9ac0802182059h36d32ac6o841bb0a1b766b74@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200802150127.21247.yinghai.lu@sun.com>
-	 <200802150128.41638.yinghai.lu@sun.com>
-	 <200802150130.14915.yinghai.lu@sun.com>
-	 <200802150131.16816.yinghai.lu@sun.com>
-	 <86802c440802181959t762bc242n79d2f0d93b224f31@mail.gmail.com>
-	 <20080219101335.GB14092@elte.hu>
+Message-Id: <200802191141.26952.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 19, 2008 2:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
->
-> > > Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
-> > > ===================================================================
-> > > --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-> > > +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-> >
-> > Ingo/Thomas,
-> >
-> > It seems you missed this one in the 5.
-> >
-> > this one should be safe. it only reads msr.
->
-> we picked up all of your patches - have you checked the x86.git#testing
-> branch, or only the x86.git#mm branch? We started x86.git#testing
-> recently, it includes more bleeding-edge stuff and wider, cross-tree
-> features as well.
->
-> > Andi had concern with other one that was touching msr. I will keep
-> > that one in my local tree.
->
-> We've got that one queued up in x86.git#testing as well. Someone on lkml
-> having concerns is not a basis to not deal with a patch. What matters
-> is: are those concerns well-founded? If you do not agree with the
-> concerns then just indicate it to us when re-submitting but do not drop
-> patches. Your patches have a good track record so please do not let
-> yourself get scared away from contributing. Please do not keep patches
-> in your local tree, we'd like Linux to work fine out of box, on as broad
-> range of hardware as possible.
+On Tuesday 19 February 2008 05:59:21 Gordon Farquharson wrote:
+> Does this thread [1] provide any clues as to the Right Thing (TM) to do?
+> 
+> It should be noted that Linus and Andrew signed off on the m68k fix
+> [2]. I'm CC'ing them and Al Viro on this email to solicit their input.
+> 
+> Gordon
+> 
+> [1] http://www.gossamer-threads.com/lists/linux/kernel/801528
+> [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7492d4a416d68ab4bd254b36ffcc4e0138daa8ff
+> 
 
-good, I will send out the left over according to testing.
+That doesn't cause me to magically sign off this sort of patches, too.
+The sanity check is clearly broken in file2alias.c, as it checks something
+from the target kernel against the host environment it is compiled on.
+That doesn't make any sense at all.
 
-YH
+I also don't see why we want to compare the size of the struct in kernel
+and userland. It is not used in userland.
+
+So NACK for this SSB patch.
+
+-- 
+Greetings Michael.
