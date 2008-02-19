@@ -1,50 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758072AbYBSWwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbYBSWw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758072AbYBSWwQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbYBSWv7
+	id S1763626AbYBSWw3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:52:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762806AbYBSWwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:51:59 -0500
-Received: from az33egw01.freescale.net ([192.88.158.102]:43180 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754473AbYBSWv6 (ORCPT
+	Tue, 19 Feb 2008 17:52:14 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:37618 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762252AbYBSWwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:51:58 -0500
-Message-ID: <47BB5D82.6070806@freescale.com>
-Date: Tue, 19 Feb 2008 16:51:46 -0600
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+	Tue, 19 Feb 2008 17:52:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tPAAKxDLB/Kwo6n+4imm8/WY+ClWehAugA46LTQ90iTez91Zx7OVG6CUBZp2zcPW17ki707U3+IohvARRP0OCuMH4r+95hXDzhB48M2r3LuW6uK8Y+fR6Lw/n8emM5DUdK489SUQWiHVuHhFN153d+VPsfTGi8hvWAdyMTqbB+E=
+Message-ID: <b647ffbd0802191452j33d04868xcc36bdd36a1ecb07@mail.gmail.com>
+Date: Tue, 19 Feb 2008 23:52:11 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH, RFC] kthread: (possibly) a missing memory barrier in kthread_stop()
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rusty Russel" <rusty@rustcorp.com.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       "Andy Whitcroft" <apw@shadowen.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <b647ffbd0802190541k1428623fv23f000642c75d43b@mail.gmail.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, lkml <linux-kernel@vger.kernel.org>
-Subject: Difference between vmlinux and vmlinux.bin
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203375817.7619.73.camel@earth>
+	 <200802191744.45281.nickpiggin@yahoo.com.au>
+	 <1203413060.10858.82.camel@lappy>
+	 <b647ffbd0802190541k1428623fv23f000642c75d43b@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to write an ELF loader for a PowerPC vmlinux, and I've come across 
-something I don't understand.
+humm... following the same logic, there is also a problem in kthread.c.
 
-In vmlinux, there are two Program Segments, the first of which is PT_LOAD.  What 
-is the difference between the block of data inside this section, and 
-vmlinux.bin?  I thought that vmlinux.bin is nothing more than the PT_LOAD 
-section of vmlinux.  However, when I do a memcmp, there is a difference at 
-offset 3080192 (vmlinux.bin is 4874532 bytes long):
+(1) the main loop of kthreadd() :
 
-memcmp @ 3080192 125 != 31
-32 bytes @ 412f0000:
+                set_current_state(TASK_INTERRUPTIBLE);
+                if (list_empty(&kthread_create_list))
+                        schedule();
 
-7d 20 00 28 31 29 ff ff 7d 20 01 2d 40 a2 ff f4
-2f 89 00 00 41 9e 01 9c 7f e3 fb 78 4b d7 b0 75
-32 bytes @ 42300000:
+and
 
-1f 8b 08 08 b7 e7 7a 44 00 03 62 75 73 79 62 6f
-78 2d 31 2e 31 2e 33 2e 69 6d 67 00 ec 5d 7d 74
+(2) kthread_create() does:
 
-So when Kbuild creates vmlinux.bin, what does it do besides extract the PT_LOAD 
-segment?
+spin_lock(&kthread_create_lock);
+list_add_tail(&create.list, &kthread_create_list);
+wake_up_process(kthreadd_task);
+spin_unlock(&kthread_create_lock);
+
+provided,
+
+- (1) doesn't want to take the 'kthread_create_lock' in order to do a
+check for list_empty(&kthread_create_list)
+[ which can be possible if list_empty() results in a single word-size
+aligned read op. -- which is guaranteed to be atomic on any arch, iirc
+]
+
+and
+
+- (1) and (2) can run in parallel.
+
+then it's crucial that a modification of the list (i.e.
+list_add_tail()) is completed by the moment a state of the task
+(kthreadd_task->state) is checked in try_to_wake_up(). i.e. they must
+not be re-ordered.
+
+which makes me think that try_to_wake_up() could be better off just
+acting as a full mb.
+
+otherwise, a possible fix would be:
+
+this way we get a pair of UNLOCK/LOCK which is guaranteed to be a full mb
+(the LOCK is in try_to_wake_up())
+
+[ moreover, there seems to be no need to call wake_up_process() with
+'kthread_create_lock' being held ]
+
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -145,8 +145,8 @@ struct task_struct *kthread_create(int
+(*threadfn)(void *data),
+
+        spin_lock(&kthread_create_lock);
+        list_add_tail(&create.list, &kthread_create_list);
+-       wake_up_process(kthreadd_task);
+        spin_unlock(&kthread_create_lock);
++       wake_up_process(kthreadd_task);
+
+        wait_for_completion(&create.done);
+
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+Best regards,
+Dmitry Adamushko
