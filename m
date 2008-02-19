@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYBSX7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762429AbYBTAC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763549AbYBSX7t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752862AbYBSX7k
+	id S1762429AbYBTAC0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:02:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbYBTACT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:59:40 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:54380 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbYBSX7j (ORCPT
+	Tue, 19 Feb 2008 19:02:19 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41312 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752487AbYBTACS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:59:39 -0500
-Date: Tue, 19 Feb 2008 15:45:29 -0800
-From: Greg KH <greg@kroah.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, gregkh@suse.de,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       matthew@wil.cx, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bootup crash, -git] Re: patch
-	pci-pcie-aspm-support.patchadded to gregkh-2.6 tree
-Message-ID: <20080219234529.GA12967@kroah.com>
-References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com> <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu> <20080202185145.GA13005@kroah.com> <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 19 Feb 2008 19:02:18 -0500
+Date: Tue, 19 Feb 2008 15:59:02 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "alexn@dsv.su.se" <alexn@dsv.su.se>,
+       "dwalker@mvista.com" <dwalker@mvista.com>
+Subject: Re: 2.6.25-rc2-mm1: new create_proc_entry() users
+Message-Id: <20080219155902.759604a2.akpm@linux-foundation.org>
+In-Reply-To: <DEE40752C8AF224BB890E455C7B8E0FE0427C1CB86@G6W0268.americas.hpqcorp.net>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+	<20080217105050.GC6596@martell.zuzino.mipt.ru>
+	<DEE40752C8AF224BB890E455C7B8E0FE0427C1CB86@G6W0268.americas.hpqcorp.net>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 01:45:45PM +0800, Shaohua Li wrote:
-> Sorry for the long delay, I just back from vocation. I fixed all the
-> issues I found in the list (except one hang issue, which should be fixed
-> in specific driver, I'll reply that thread soon), can you re-add the
-> patch to your test tree.
+On Tue, 19 Feb 2008 22:25:00 +0000 "Miller, Mike (OS Dev)" <Mike.Miller@hp.com> wrote:
 
-Hm, I get the following build error with this patch:
-	  CC      drivers/pci/pcie/aspm.o
-	distcc[13135] ERROR: compile /home/gregkh/.ccache/aspm.tmp.mini.13131.i on localhost failed
-	In file included from drivers/pci/pcie/aspm.c:21:
-	include/linux/pci-acpi.h:66: error: expected ')' before 'handle'
-	make[2]: *** [drivers/pci/pcie/aspm.o] Error 1
-	make[1]: *** [drivers/pci/pcie] Error 2
-	make: *** [_module_drivers/pci] Error 2
+> 
+> 
+> > -----Original Message-----
+> > From: Alexey Dobriyan [mailto:adobriyan@gmail.com]
+> > Sent: Sunday, February 17, 2008 4:51 AM
+> > To: Andrew Morton
+> > Cc: linux-kernel@vger.kernel.org; Miller, Mike (OS Dev);
+> > alexn@dsv.su.se; dwalker@mvista.com
+> > Subject: 2.6.25-rc2-mm1: new create_proc_entry() users
+> >
+> > > profile-likely-unlikely-macros
+> > > page-owner-tracking-leak-detector
+> > > cciss-procfs-updates-to-display-info-about-many-volumes
+> >
+> > Guys, create_proc_entry() is slightly racy in case of modular code and
+> > proc_create() was invented to fix it. Eventually all
+> > create_proc_entry() users will be converted to proc_create(),
+> > so please do it for new code.
+> >
+> Why am I getting "implicit declaration of function 'proc_create'" when I try to use that function? I have kernel version 2.6.24, gcc version 4.1.1 20070105 (Red Hat 4.1.1-51). Am I missing a header file?
+> 
 
-
-Also, can you rename your new header file to have "pci-" in front of it?
-
-thanks,
-
-greg k-h
+2.6.24 is 47MB of diff ago.  Please always develop and test against
+development kernels!
