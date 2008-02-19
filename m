@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYBSQM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbYBSQOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbYBSQM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYBSQMt
+	id S1755767AbYBSQOt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:14:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYBSQOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:12:49 -0500
-Received: from smtp01.isdsl.net ([196.26.208.190]:51283 "EHLO smtp01.isdsl.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752798AbYBSQMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:12:48 -0500
-X-netsentry.modernarch.co.za-MailScanner-Watermark: 1204042340.51694@JJpm7JOAmwTTo4yUrihDog
-Message-ID: <47BAFFE9.6050707@networksentry.co.za>
-Date: Tue, 19 Feb 2008 18:12:25 +0200
-From: Gregory Nietsky <gregory@networksentry.co.za>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>, isdn4linux@listserv.isdn4linux.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org> <20080219115537.GB5604@uranus.ravnborg.org>
-In-Reply-To: <20080219115537.GB5604@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 19 Feb 2008 11:14:41 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:36394 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751295AbYBSQOl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:14:41 -0500
+Cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Message-Id: <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20080219095834.GB6940@one.firstfloor.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
-X-netsentry.modernarch.co.za-MailScanner-Information: Please contact Network Sentry  for more information (www.networksentry.co.za)
-X-netsentry.modernarch.co.za-MailScanner: Found to be clean
-X-netsentry.modernarch.co.za-MailScanner-From: gregory@networksentry.co.za
-X-Scan-Signature: 1e5579062dd15e064ef5c9c6f539d932{40}}
-X-Trace: smtp01.isdsl.net 1JRV4z-0006Go-Cw cb15d2461ca67bd8f29af2fbb766b3cc
+Mime-Version: 1.0 (Apple Message framework v915)
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Date: Tue, 19 Feb 2008 17:14:36 +0100
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org>
+X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> I'm not sure either it's a good idea to try to merge mISDN if the
->> maintainers don't think it is ready yet.
-> 
-> In the spirit of relase early - relase often we should at
-> least see what is going on.
-> 
-well to add mISDN to the kernel tree is straight forward
+Hi Andi,
 
-./std2kern
+>>>> If noone in the isdn community step up and take some responsibility
+>>>> for the current isdn drivers in Linux then we should just delete  
+>>>> them.
+>>>
+>>> So you're saying anything that has no active maintainer should
+>>> be immediately deleted?
+>>
+>> You do not recognize a provocation when you see it?
+>> I wanted a reaction from the isdn community - and I got so.
+>> So lets look forward.
+>
+> Well it was more a lie because you couldn't possibly make up to your
+> threat anyways.
+>
+> I'm not sure either it's a good idea to try to merge mISDN if the
+> maintainers don't think it is ready yet.
 
-and the out of tree set becomes in tree a bit of git magic and you have 
-a patch.
+you can't wait until it is perfect. Then it never gets merged. The out- 
+of-tree ISDN stuff has always been painful. And that was already in  
+the ISDN4Linux days which were Linux 2.2 days or even earlier.
 
-im advocating it for now alongside isdn4linux prehaps marked as 
-"EXPERIMENTAL" im not involved in the mISDN team im a contributor/hacker.
+My proposal is to merge mISDN and then see what falls out. My guess it  
+won't be that bad as everybody thinks and then we go from there. Next  
+step is to remove ISDN4Linux since that should not be used at all  
+anymore.
 
-need the buy in from Cristian R/Karsten K.
+Regards
 
-FYI here in south africa ISDN BRI is widely available with the high 
-costs of ISDN PRI this is the best/most practical solution for VOIP.with 
-ADSL only now becoming availble on mass the "fastest" connection is 
-still 64/128k ISDN in many areas.the hardware is easily available from 
-all outlets.my device of choice is a cheap USB modem that comes in @ 30$ 
-US per port (can use upto 8) the 4 port digium card comes in @ 650$.
-
-
-Greg
-
---
-
-This message has been scanned for viruses and
-
-dangerous content by Superset Technology, and 
-
-is believed to be clean.
-
-http://www.superset.co.za
-
+Marcel
 
