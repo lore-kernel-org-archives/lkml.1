@@ -1,51 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbYBSLWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760210AbYBSLW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbYBSLWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbYBSLWI
+	id S1760210AbYBSLW5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754179AbYBSLWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:22:08 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40368 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753141AbYBSLWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:22:06 -0500
-Date: Tue, 19 Feb 2008 12:21:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 6/8] net: use numa_node in net_devcice->dev instead of
-	parent
-Message-ID: <20080219112146.GC7204@elte.hu>
-References: <200802190311.44404.yinghai.lu@sun.com> <200802190320.58561.yinghai.lu@sun.com>
+	Tue, 19 Feb 2008 06:22:47 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45882 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759213AbYBSLWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:22:46 -0500
+Date: Tue, 19 Feb 2008 11:00:29 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Thomas Gleixner <tglx@linutronix.de>, Len Brown <len.brown@intel.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz
+Cc: kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
+       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: tsc breaks atkbd suspend
+Message-ID: <20080219100029.GA1637@elf.ucw.cz>
+References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802190320.58561.yinghai.lu@sun.com>
+In-Reply-To: <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC
+means _require_ TSC), but it is not properly disabled when it is
+unusable, because acpi code understood the config switch as "may use
+TSC".
 
->  struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
->  		unsigned int length, gfp_t gfp_mask)
->  {
-> -	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-> +	int node = dev_to_node(&dev->dev);
+This actually fixes suspend problems on my x60.
 
-i think this is a fix for the networking folks. (Dave Cc:-ed)
+Signed-off-by: Pavel Machek <pavel@suse.cz>
 
-	Ingo
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index 980e1c3..6f3b217 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -364,7 +364,7 @@ int acpi_processor_resume(struct acpi_de
+ 	return 0;
+ }
+ 
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
++#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ static int tsc_halts_in_c(int state)
+ {
+ 	switch (boot_cpu_data.x86_vendor) {
+@@ -544,7 +544,7 @@ #endif
+ 		/* Get end time (ticks) */
+ 		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+ 
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
++#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ 		/* TSC halts in C2, so notify users */
+ 		if (tsc_halts_in_c(ACPI_STATE_C2))
+ 			mark_tsc_unstable("possible TSC halt in C2");
+@@ -609,7 +609,7 @@ #endif
+ 			acpi_set_register(ACPI_BITREG_ARB_DISABLE, 0);
+ 		}
+ 
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
++#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ 		/* TSC halts in C3, so notify users */
+ 		if (tsc_halts_in_c(ACPI_STATE_C3))
+ 			mark_tsc_unstable("TSC halts in C3");
+@@ -1500,7 +1500,7 @@ static int acpi_idle_enter_simple(struct
+ 	acpi_idle_do_entry(cx);
+ 	t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
+ 
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
++#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ 	/* TSC could halt in idle, so notify users */
+ 	if (tsc_halts_in_c(cx->type))
+ 		mark_tsc_unstable("TSC halts in idle");;
+@@ -1614,7 +1614,7 @@ static int acpi_idle_enter_bm(struct cpu
+ 		spin_unlock(&c3_lock);
+ 	}
+ 
+-#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86_TSC)
++#if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+ 	/* TSC could halt in idle, so notify users */
+ 	if (tsc_halts_in_c(ACPI_STATE_C3))
+ 		mark_tsc_unstable("TSC halts in idle");
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
