@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759591AbYBSC5F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759124AbYBSDJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759591AbYBSC5F (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 21:57:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752363AbYBSC4x
+	id S1759124AbYBSDJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 22:09:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBSDJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 21:56:53 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:47693 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752222AbYBSC4w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 21:56:52 -0500
-Date: Tue, 19 Feb 2008 02:56:43 +0000
-From: Alasdair G Kergon <agk@redhat.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Michael Tokarev <mjt@tls.msk.ru>, Ric Wheeler <ric@emc.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
-Message-ID: <20080219025643.GD4066@agk.fab.redhat.com>
-Mail-Followup-To: David Chinner <dgc@sgi.com>,
-	Michael Tokarev <mjt@tls.msk.ru>, Ric Wheeler <ric@emc.com>,
-	device-mapper development <dm-devel@redhat.com>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru> <20080218221644.GN155407@sgi.com>
-Mime-Version: 1.0
+	Mon, 18 Feb 2008 22:09:33 -0500
+Received: from emerald.lightlink.com ([205.232.34.14]:27176 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753860AbYBSDJc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 22:09:32 -0500
+Date: Mon, 18 Feb 2008 22:06:02 -0500
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: "Darrick J. Wong" <djwong@us.ibm.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] [PATCH v2] adt7473: New driver for Analog Devices
+	ADT7473 sensor chip
+Message-ID: <20080219030602.GA2859@jupiter.solarsys.private>
+References: <20071219034116.GM6870@tree.beaverton.ibm.com> <20071219154759.7be5025c@hyperion.delvare> <20071219231437.GR6870@tree.beaverton.ibm.com> <20080217200250.GD2916@jupiter.solarsys.private> <20080218213322.GD5784@tree.beaverton.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080218221644.GN155407@sgi.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+In-Reply-To: <20080218213322.GD5784@tree.beaverton.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 09:16:44AM +1100, David Chinner wrote:
-> Surely any hardware that doesn't support barrier
-> operations can emulate them with cache flushes when they receive a
-> barrier I/O from the filesystem....
- 
-My complaint about having to support them within dm when more than one
-device is involved is because any efficiencies disappear: you can't send
-further I/O to any one device until all the other devices have completed
-their barrier (or else later I/O to that device could overtake the
-barrier on another device).  And then I argue that it would be better
-for the filesystem to have the information that these are not hardware
-barriers so it has the opportunity of tuning its behaviour (e.g.
-flushing less often because it's a more expensive operation).
+Hi Darrick:
 
-Alasdair
+* Darrick J. Wong <djwong@us.ibm.com> [2008-02-18 13:33:23 -0800]:
+> adt7473: New driver for Analog Devices ADT7473 sensor chip
+> 
+> This driver reports voltage, temperature and fan sensor readings
+> on an ADT7473 chip.
+> 
+> Signed-off-by: Darrick J. Wong <djwong@us.ibm.com>
+> ---
+> 
+>  Documentation/hwmon/adt7473 |   79 +++
+>  drivers/hwmon/Kconfig       |   10 
+>  drivers/hwmon/Makefile      |    1 
+>  drivers/hwmon/adt7473.c     | 1157 +++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 1247 insertions(+), 0 deletions(-)
+> 
+
+Applied to hwmon-2.6.git/testing, thanks.
+
 -- 
-agk@redhat.com
+Mark M. Hoffman
+mhoffman@lightlink.com
+
