@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbYBSQua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758011AbYBSQwL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbYBSQua (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:50:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbYBSQuW
+	id S1758011AbYBSQwL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:52:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbYBSQv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:50:22 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:52741 "EHLO mail.dvmed.net"
+	Tue, 19 Feb 2008 11:51:58 -0500
+Received: from twin.jikos.cz ([213.151.79.26]:51296 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083AbYBSQuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:50:22 -0500
-Message-ID: <47BB08C3.4070807@garzik.org>
-Date: Tue, 19 Feb 2008 11:50:11 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753681AbYBSQv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:51:57 -0500
+Date: Tue, 19 Feb 2008 17:51:53 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Tomas Carnecky <tom@dbservice.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: hid device not claimed but /dev/input/event exists
+In-Reply-To: <47BB041F.4060003@dbservice.com>
+Message-ID: <Pine.LNX.4.64.0802191751040.7699@twin.jikos.cz>
+References: <47BB041F.4060003@dbservice.com>
 MIME-Version: 1.0
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-CC: Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/8] AMD opteron mm config numa etc
-References: <200802190319.28699.yinghai.lu@sun.com>
-In-Reply-To: <200802190319.28699.yinghai.lu@sun.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu wrote:
-> please check some amd opteron related mmconf and numa patches
-> 
-> could make up for system that system have acpi problem
-> or still can mmconf and numa when acpi=off
+On Tue, 19 Feb 2008, Tomas Carnecky wrote:
 
-ACK for my parts (stuff associated with PCI domain support on x86)
+> usb 1-2.2: new full speed USB device using ehci_hcd and address 6
+> usb 1-2.2: configuration #1 chosen from 1 choice
+> HID device claimed by neither input, hiddev nor hidraw
+> input: Logitech Z-10 USB Speaker as
+> /devices/pci0000:00/0000:00:02.1/usb1/1-2/1-2.2/1-2.2:1.3/input/input4
+> input: USB HID v1.10 Device [Logitech Z-10 USB Speaker] on
+> usb-0000:00:02.1-2.2
+> Nobody claims the device and yet an evdev device shows up in /dev/input? That
 
-	Jeff
+Yes, that looks indeed bogus.
 
+> I enabled HID_DEBUG, but no debug messages show up in my dmesg output, 
+> which is strange. 
 
+You have to modprobe the 'hid' module with 'debug=1' parameter. Please 
+send me the resulting output.
 
+-- 
+Jiri Kosina
+SUSE Labs
 
