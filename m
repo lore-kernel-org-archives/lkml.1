@@ -1,98 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbYBSEMu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761861AbYBSENP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbYBSEMu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 23:12:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbYBSELu
+	id S1761861AbYBSENP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 23:13:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbYBSELz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 23:11:50 -0500
-Received: from moutng.kundenserver.de ([212.227.126.183]:55170 "EHLO
+	Mon, 18 Feb 2008 23:11:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:55962 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbYBSELr (ORCPT
+	with ESMTP id S1752479AbYBSELt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 23:11:47 -0500
-Message-Id: <20080219040828.954859181@arndb.de>
+	Mon, 18 Feb 2008 23:11:49 -0500
+Message-Id: <20080219040829.085901516@arndb.de>
 References: <20080219040435.825494460@arndb.de>
 User-Agent: quilt/0.46-1
-Date: Tue, 19 Feb 2008 05:04:39 +0100
+Date: Tue, 19 Feb 2008 05:04:40 +0100
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
        Christoph Hellwig <hch@lst.de>, Greg KH <gregkh@suse.de>,
        David Howells <dhowells@redhat.com>
-Subject: [RFC 04/11] slim down securityfs
-Content-Disposition: inline; filename=slim-down-securityfs.diff
-X-Provags-ID: V01U2FsdGVkX186sJrlot7UvwkMdHNDNYvvVHttyt3zxFZKAh0
- IXnY5PT/oApBRJLD9037zbRKSK2tRnjv7eE67fjQBsgj0fqkkX
- 1oxKcyKJafdY8NkWr6+Hw==
+Subject: [RFC 05/11] slim down usbfs
+Content-Disposition: inline; filename=slim-down-usbfs.diff
+X-Provags-ID: V01U2FsdGVkX19xfs2bFRMK4PDmFw/0cQiFIVbqeNHQDIbWZp6
+ 9y5jrBGszEnur0OMKuHgly6BHPt8rHa5v7+qhCGk+tiQ5jlb02
+ 1ZfxJv1NfnmtnifdLcCAQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the new simple_fs_type in place, securityfs practically
-becomes a nop and we just need to leave code around to manage
-its mount point.
+Half of the usbfs code is the same as debugfs, so we can
+replace it now with calls to the generic libfs versions.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Index: linux-2.6/security/inode.c
+Index: linux-2.6/drivers/usb/core/inode.c
 ===================================================================
---- linux-2.6.orig/security/inode.c
-+++ linux-2.6/security/inode.c
-@@ -13,176 +13,14 @@
-  */
+--- linux-2.6.orig/drivers/usb/core/inode.c
++++ linux-2.6/drivers/usb/core/inode.c
+@@ -47,11 +47,10 @@
+ #define USBFS_DEFAULT_BUSMODE (S_IXUGO | S_IRUGO)
+ #define USBFS_DEFAULT_LISTMODE S_IRUGO
  
- /* #define DEBUG */
+-static struct super_operations usbfs_ops;
+-static const struct file_operations default_file_operations;
+-static struct vfsmount *usbfs_mount;
+-static int usbfs_mount_count;	/* = 0 */
+-static int ignore_mount = 0;
++static DEFINE_SIMPLE_FS(usb_fs_type, "usbfs", NULL, USBDEVICE_SUPER_MAGIC);
++static struct dentry *usbfs_root;
 +
- #include <linux/module.h>
--#include <linux/fs.h>
--#include <linux/mount.h>
--#include <linux/pagemap.h>
- #include <linux/init.h>
--#include <linux/namei.h>
- #include <linux/security.h>
++static int ignore_mount = 1;
  
- #define SECURITYFS_MAGIC	0x73636673
+ static struct dentry *devices_usbfs_dentry;
+ static int num_buses;	/* = 0 */
+@@ -263,186 +262,11 @@ static int remount(struct super_block *s
+ 		return -EINVAL;
+ 	}
  
--static struct vfsmount *mount;
--static int mount_count;
--
--/*
-- * TODO:
-- *   I think I can get rid of these default_file_ops, but not quite sure...
-- */
--static ssize_t default_read_file(struct file *file, char __user *buf,
--				 size_t count, loff_t *ppos)
--{
--	return 0;
--}
--
--static ssize_t default_write_file(struct file *file, const char __user *buf,
--				   size_t count, loff_t *ppos)
--{
--	return count;
--}
--
--static int default_open(struct inode *inode, struct file *file)
--{
--	if (inode->i_private)
--		file->private_data = inode->i_private;
+-	if (usbfs_mount && usbfs_mount->mnt_sb)
+-		update_sb(usbfs_mount->mnt_sb);
 -
 -	return 0;
 -}
 -
--static const struct file_operations default_file_ops = {
--	.read =		default_read_file,
--	.write =	default_write_file,
--	.open =		default_open,
--};
--
--static struct inode *get_inode(struct super_block *sb, int mode, dev_t dev)
+-static struct inode *usbfs_get_inode (struct super_block *sb, int mode, dev_t dev)
 -{
 -	struct inode *inode = new_inode(sb);
 -
 -	if (inode) {
 -		inode->i_mode = mode;
--		inode->i_uid = 0;
--		inode->i_gid = 0;
+-		inode->i_uid = current->fsuid;
+-		inode->i_gid = current->fsgid;
 -		inode->i_blocks = 0;
 -		inode->i_atime = inode->i_mtime = inode->i_ctime = CURRENT_TIME;
 -		switch (mode & S_IFMT) {
@@ -100,7 +77,7 @@ Index: linux-2.6/security/inode.c
 -			init_special_inode(inode, mode, dev);
 -			break;
 -		case S_IFREG:
--			inode->i_fop = &default_file_ops;
+-			inode->i_fop = &default_file_operations;
 -			break;
 -		case S_IFDIR:
 -			inode->i_op = &simple_dir_inode_operations;
@@ -111,20 +88,19 @@ Index: linux-2.6/security/inode.c
 -			break;
 -		}
 -	}
--	return inode;
+-	return inode; 
 -}
 -
 -/* SMP-safe */
--static int mknod(struct inode *dir, struct dentry *dentry,
--			 int mode, dev_t dev)
+-static int usbfs_mknod (struct inode *dir, struct dentry *dentry, int mode,
+-			dev_t dev)
 -{
--	struct inode *inode;
+-	struct inode *inode = usbfs_get_inode(dir->i_sb, mode, dev);
 -	int error = -EPERM;
 -
 -	if (dentry->d_inode)
 -		return -EEXIST;
 -
--	inode = get_inode(dir->i_sb, mode, dev);
 -	if (inode) {
 -		d_instantiate(dentry, inode);
 -		dget(dentry);
@@ -133,177 +109,388 @@ Index: linux-2.6/security/inode.c
 -	return error;
 -}
 -
--static int mkdir(struct inode *dir, struct dentry *dentry, int mode)
+-static int usbfs_mkdir (struct inode *dir, struct dentry *dentry, int mode)
 -{
 -	int res;
 -
 -	mode = (mode & (S_IRWXUGO | S_ISVTX)) | S_IFDIR;
--	res = mknod(dir, dentry, mode, 0);
+-	res = usbfs_mknod (dir, dentry, mode, 0);
 -	if (!res)
 -		inc_nlink(dir);
 -	return res;
 -}
 -
--static int create(struct inode *dir, struct dentry *dentry, int mode)
+-static int usbfs_create (struct inode *dir, struct dentry *dentry, int mode)
 -{
 -	mode = (mode & S_IALLUGO) | S_IFREG;
--	return mknod(dir, dentry, mode, 0);
+-	return usbfs_mknod (dir, dentry, mode, 0);
 -}
 -
--static inline int positive(struct dentry *dentry)
+-static inline int usbfs_positive (struct dentry *dentry)
 -{
 -	return dentry->d_inode && !d_unhashed(dentry);
 -}
 -
--static int fill_super(struct super_block *sb, void *data, int silent)
+-static int usbfs_empty (struct dentry *dentry)
 -{
--	static struct tree_descr files[] = {{""}};
+-	struct list_head *list;
 -
--	return simple_fill_super(sb, SECURITYFS_MAGIC, files);
+-	spin_lock(&dcache_lock);
+-
+-	list_for_each(list, &dentry->d_subdirs) {
+-		struct dentry *de = list_entry(list, struct dentry, d_u.d_child);
+-		if (usbfs_positive(de)) {
+-			spin_unlock(&dcache_lock);
+-			return 0;
+-		}
+-	}
+-
+-	spin_unlock(&dcache_lock);
+-	return 1;
 -}
 -
--static int get_sb(struct file_system_type *fs_type,
--		  int flags, const char *dev_name,
--		  void *data, struct vfsmount *mnt)
+-static int usbfs_unlink (struct inode *dir, struct dentry *dentry)
 -{
--	return get_sb_single(fs_type, flags, data, fill_super, mnt);
+-	struct inode *inode = dentry->d_inode;
+-	mutex_lock(&inode->i_mutex);
+-	drop_nlink(dentry->d_inode);
+-	dput(dentry);
+-	mutex_unlock(&inode->i_mutex);
+-	d_delete(dentry);
+-	return 0;
 -}
 -
--static struct file_system_type fs_type = {
--	.owner =	THIS_MODULE,
--	.name =		"securityfs",
--	.get_sb =	get_sb,
--	.kill_sb =	kill_litter_super,
+-static int usbfs_rmdir(struct inode *dir, struct dentry *dentry)
+-{
+-	int error = -ENOTEMPTY;
+-	struct inode * inode = dentry->d_inode;
+-
+-	mutex_lock(&inode->i_mutex);
+-	dentry_unhash(dentry);
+-	if (usbfs_empty(dentry)) {
+-		drop_nlink(dentry->d_inode);
+-		drop_nlink(dentry->d_inode);
+-		dput(dentry);
+-		inode->i_flags |= S_DEAD;
+-		drop_nlink(dir);
+-		error = 0;
+-	}
+-	mutex_unlock(&inode->i_mutex);
+-	if (!error)
+-		d_delete(dentry);
+-	dput(dentry);
+-	return error;
+-}
+-
+-
+-/* default file operations */
+-static ssize_t default_read_file (struct file *file, char __user *buf,
+-				  size_t count, loff_t *ppos)
+-{
+-	return 0;
+-}
+-
+-static ssize_t default_write_file (struct file *file, const char __user *buf,
+-				   size_t count, loff_t *ppos)
+-{
+-	return count;
+-}
+-
+-static loff_t default_file_lseek (struct file *file, loff_t offset, int orig)
+-{
+-	loff_t retval = -EINVAL;
+-
+-	mutex_lock(&file->f_path.dentry->d_inode->i_mutex);
+-	switch(orig) {
+-	case 0:
+-		if (offset > 0) {
+-			file->f_pos = offset;
+-			retval = file->f_pos;
+-		} 
+-		break;
+-	case 1:
+-		if ((offset + file->f_pos) > 0) {
+-			file->f_pos += offset;
+-			retval = file->f_pos;
+-		} 
+-		break;
+-	default:
+-		break;
+-	}
+-	mutex_unlock(&file->f_path.dentry->d_inode->i_mutex);
+-	return retval;
+-}
+-
+-static int default_open (struct inode *inode, struct file *file)
+-{
+-	if (inode->i_private)
+-		file->private_data = inode->i_private;
++	update_sb(usb_fs_type.mount->mnt_sb);
+ 
+ 	return 0;
+ }
+ 
+-static const struct file_operations default_file_operations = {
+-	.read =		default_read_file,
+-	.write =	default_write_file,
+-	.open =		default_open,
+-	.llseek =	default_file_lseek,
 -};
 -
--static int create_by_name(const char *name, mode_t mode,
--			  struct dentry *parent,
--			  struct dentry **dentry)
+ static struct super_operations usbfs_ops = {
+ 	.statfs =	simple_statfs,
+ 	.drop_inode =	generic_delete_inode,
+@@ -450,145 +274,32 @@ static struct super_operations usbfs_ops
+ 	.show_options = usbfs_show_options,
+ };
+ 
+-static int usbfs_fill_super(struct super_block *sb, void *data, int silent)
+-{
+-	struct inode *inode;
+-	struct dentry *root;
+-
+-	sb->s_blocksize = PAGE_CACHE_SIZE;
+-	sb->s_blocksize_bits = PAGE_CACHE_SHIFT;
+-	sb->s_magic = USBDEVICE_SUPER_MAGIC;
+-	sb->s_op = &usbfs_ops;
+-	sb->s_time_gran = 1;
+-	inode = usbfs_get_inode(sb, S_IFDIR | 0755, 0);
+-
+-	if (!inode) {
+-		dbg("%s: could not get inode!",__FUNCTION__);
+-		return -ENOMEM;
+-	}
+-
+-	root = d_alloc_root(inode);
+-	if (!root) {
+-		dbg("%s: could not get root dentry!",__FUNCTION__);
+-		iput(inode);
+-		return -ENOMEM;
+-	}
+-	sb->s_root = root;
+-	return 0;
+-}
+-
+-/*
+- * fs_create_by_name - create a file, given a name
+- * @name:	name of file
+- * @mode:	type of file
+- * @parent:	dentry of directory to create it in
+- * @dentry:	resulting dentry of file
+- *
+- * This function handles both regular files and directories.
+- */
+-static int fs_create_by_name (const char *name, mode_t mode,
+-			      struct dentry *parent, struct dentry **dentry)
 -{
 -	int error = 0;
 -
--	*dentry = NULL;
--
 -	/* If the parent is not specified, we create it in the root.
--	 * We need the root dentry to do this, which is in the super
+-	 * We need the root dentry to do this, which is in the super 
 -	 * block. A pointer to that is in the struct vfsmount that we
 -	 * have around.
 -	 */
 -	if (!parent ) {
--		if (mount && mount->mnt_sb) {
--			parent = mount->mnt_sb->s_root;
+-		if (usbfs_mount && usbfs_mount->mnt_sb) {
+-			parent = usbfs_mount->mnt_sb->s_root;
 -		}
 -	}
+-
 -	if (!parent) {
--		pr_debug("securityfs: Ah! can not find a parent!\n");
+-		dbg("Ah! can not find a parent!");
 -		return -EFAULT;
 -	}
 -
+-	*dentry = NULL;
 -	mutex_lock(&parent->d_inode->i_mutex);
 -	*dentry = lookup_one_len(name, parent, strlen(name));
 -	if (!IS_ERR(dentry)) {
 -		if ((mode & S_IFMT) == S_IFDIR)
--			error = mkdir(parent->d_inode, *dentry, mode);
--		else
--			error = create(parent->d_inode, *dentry, mode);
+-			error = usbfs_mkdir (parent->d_inode, *dentry, mode);
+-		else 
+-			error = usbfs_create (parent->d_inode, *dentry, mode);
 -	} else
 -		error = PTR_ERR(dentry);
 -	mutex_unlock(&parent->d_inode->i_mutex);
 -
 -	return error;
 -}
-+static struct dentry *securityfs_root;
- 
- /**
-  * securityfs_create_file - create a file in the securityfs filesystem
-@@ -217,32 +55,12 @@ struct dentry *securityfs_create_file(co
- 				   struct dentry *parent, void *data,
- 				   const struct file_operations *fops)
+-
+ static struct dentry *fs_create_file (const char *name, mode_t mode,
+ 				      struct dentry *parent, void *data,
+ 				      const struct file_operations *fops,
+ 				      uid_t uid, gid_t gid)
  {
--	struct dentry *dentry = NULL;
+ 	struct dentry *dentry;
 -	int error;
+ 
+ 	dbg("creating file '%s'",name);
+ 
+-	error = fs_create_by_name (name, mode, parent, &dentry);
+-	if (error) {
+-		dentry = NULL;
+-	} else {
+-		if (dentry->d_inode) {
+-			if (data)
+-				dentry->d_inode->i_private = data;
+-			if (fops)
+-				dentry->d_inode->i_fop = fops;
+-			dentry->d_inode->i_uid = uid;
+-			dentry->d_inode->i_gid = gid;
+-		}
++	/* If the parent is not specified, we create it in the root.  */
 +	if (!parent)
-+		parent = securityfs_root;
++		parent = usbfs_root;
++
++	dentry = simple_create_file(name, mode, parent, data, fops);
++	if (dentry && dentry->d_inode) {
++		dentry->d_inode->i_uid = uid;
++		dentry->d_inode->i_gid = gid;
+ 	}
  
- 	pr_debug("securityfs: creating file '%s'\n",name);
- 
--	error = simple_pin_fs(&fs_type, &mount, &mount_count);
--	if (error) {
--		dentry = ERR_PTR(error);
--		goto exit;
--	}
--
--	error = create_by_name(name, mode, parent, &dentry);
--	if (error) {
--		dentry = ERR_PTR(error);
--		simple_release_fs(&mount, &mount_count);
--		goto exit;
--	}
--
--	if (dentry->d_inode) {
--		if (fops)
--			dentry->d_inode->i_fop = fops;
--		if (data)
--			dentry->d_inode->i_private = data;
--	}
--exit:
--	return dentry;
-+	return simple_create_file(name, mode, parent, data, fops);
+ 	return dentry;
  }
- EXPORT_SYMBOL_GPL(securityfs_create_file);
  
-@@ -291,31 +109,12 @@ EXPORT_SYMBOL_GPL(securityfs_create_dir)
-  */
- void securityfs_remove(struct dentry *dentry)
- {
--	struct dentry *parent;
--
--	if (!dentry)
--		return;
--
--	parent = dentry->d_parent;
+-static void fs_remove_file (struct dentry *dentry)
+-{
+-	struct dentry *parent = dentry->d_parent;
+-	
 -	if (!parent || !parent->d_inode)
 -		return;
 -
--	mutex_lock(&parent->d_inode->i_mutex);
--	if (positive(dentry)) {
+-	mutex_lock_nested(&parent->d_inode->i_mutex, I_MUTEX_PARENT);
+-	if (usbfs_positive(dentry)) {
 -		if (dentry->d_inode) {
 -			if (S_ISDIR(dentry->d_inode->i_mode))
--				simple_rmdir(parent->d_inode, dentry);
+-				usbfs_rmdir(parent->d_inode, dentry);
 -			else
--				simple_unlink(parent->d_inode, dentry);
--			dput(dentry);
+-				usbfs_unlink(parent->d_inode, dentry);
+-		dput(dentry);
 -		}
 -	}
 -	mutex_unlock(&parent->d_inode->i_mutex);
--	simple_release_fs(&mount, &mount_count);
-+	return simple_remove(dentry);
- }
- EXPORT_SYMBOL_GPL(securityfs_remove);
+-}
+-
+-/* --------------------------------------------------------------------- */
+-
+-static int usb_get_sb(struct file_system_type *fs_type,
+-	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+-{
+-	return get_sb_single(fs_type, flags, data, usbfs_fill_super, mnt);
+-}
+-
+-static struct file_system_type usb_fs_type = {
+-	.owner =	THIS_MODULE,
+-	.name =		"usbfs",
+-	.get_sb =	usb_get_sb,
+-	.kill_sb =	kill_litter_super,
+-};
+-
+ /* --------------------------------------------------------------------- */
  
- static struct kobject *security_kobj;
-+static DEFINE_SIMPLE_FS(fs_type, "securityfs", NULL, SECURITYFS_MAGIC);
- 
- static int __init securityfs_init(void)
+ static int create_special_files (void)
  {
-@@ -325,12 +124,14 @@ static int __init securityfs_init(void)
- 	if (!security_kobj)
- 		return -EINVAL;
+-	struct dentry *parent;
+ 	int retval;
  
--	retval = register_filesystem(&fs_type);
--	if (retval)
-+	retval = 0;
-+	securityfs_root = simple_register_filesystem(&fs_type);
-+	if (IS_ERR(securityfs_root)) {
- 		kobject_put(security_kobj);
-+		retval = PTR_ERR(securityfs_root);
-+	}
+ 	/* the simple_pin_fs calls will call remount with no options
+@@ -596,8 +307,7 @@ static int create_special_files (void)
+ 	 */
+ 	ignore_mount = 1;
+ 
+-	/* create the devices special file */
+-	retval = simple_pin_fs(&usb_fs_type, &usbfs_mount, &usbfs_mount_count);
++	retval = simple_pin_fs(&usb_fs_type.fstype, &usb_fs_type.mount, &usb_fs_type.mount_count);
+ 	if (retval) {
+ 		err ("Unable to get usbfs mount");
+ 		goto exit;
+@@ -605,9 +315,8 @@ static int create_special_files (void)
+ 
+ 	ignore_mount = 0;
+ 
+-	parent = usbfs_mount->mnt_sb->s_root;
+ 	devices_usbfs_dentry = fs_create_file ("devices",
+-					       listmode | S_IFREG, parent,
++					       listmode | S_IFREG, usbfs_root,
+ 					       NULL, &usbfs_devices_fops,
+ 					       listuid, listgid);
+ 	if (devices_usbfs_dentry == NULL) {
+@@ -617,9 +326,9 @@ static int create_special_files (void)
+ 	}
+ 
+ 	goto exit;
+-	
++
+ error_clean_mounts:
+-	simple_release_fs(&usbfs_mount, &usbfs_mount_count);
++	simple_release_fs(&usb_fs_type.mount, &usb_fs_type.mount_count);
+ exit:
  	return retval;
  }
+@@ -627,9 +336,8 @@ exit:
+ static void remove_special_files (void)
+ {
+ 	if (devices_usbfs_dentry)
+-		fs_remove_file (devices_usbfs_dentry);
++		simple_remove(devices_usbfs_dentry);
+ 	devices_usbfs_dentry = NULL;
+-	simple_release_fs(&usbfs_mount, &usbfs_mount_count);
+ }
  
- core_initcall(securityfs_init);
- MODULE_LICENSE("GPL");
+ void usbfs_update_special (void)
+@@ -659,7 +367,7 @@ static void usbfs_add_bus(struct usb_bus
+ 
+ 	sprintf (name, "%03d", bus->busnum);
+ 
+-	parent = usbfs_mount->mnt_sb->s_root;
++	parent = usbfs_root;
+ 	bus->usbfs_dentry = fs_create_file (name, busmode | S_IFDIR, parent,
+ 					    bus, NULL, busuid, busgid);
+ 	if (bus->usbfs_dentry == NULL) {
+@@ -671,7 +379,7 @@ static void usbfs_add_bus(struct usb_bus
+ static void usbfs_remove_bus(struct usb_bus *bus)
+ {
+ 	if (bus->usbfs_dentry) {
+-		fs_remove_file (bus->usbfs_dentry);
++		simple_remove(bus->usbfs_dentry);
+ 		bus->usbfs_dentry = NULL;
+ 	}
+ 
+@@ -716,7 +424,7 @@ static void usbfs_remove_device(struct u
+ 	struct siginfo sinfo;
+ 
+ 	if (dev->usbfs_dentry) {
+-		fs_remove_file (dev->usbfs_dentry);
++		simple_remove(dev->usbfs_dentry);
+ 		dev->usbfs_dentry = NULL;
+ 	}
+ 	while (!list_empty(&dev->filelist)) {
+@@ -764,11 +472,11 @@ static struct proc_dir_entry *usbdir = N
+ 
+ int __init usbfs_init(void)
+ {
+-	int retval;
 -
+-	retval = register_filesystem(&usb_fs_type);
+-	if (retval)
+-		return retval;
++	usb_fs_type.super_ops = &usbfs_ops;
++	usbfs_root = simple_register_filesystem(&usb_fs_type);
++	if (IS_ERR(usbfs_root))
++		return PTR_ERR(usbfs_root);
++	ignore_mount = 0;
+ 
+ 	usb_register_notify(&usbfs_nb);
+ 
+@@ -781,7 +489,7 @@ int __init usbfs_init(void)
+ void usbfs_cleanup(void)
+ {
+ 	usb_unregister_notify(&usbfs_nb);
+-	unregister_filesystem(&usb_fs_type);
++	simple_unregister_filesystem(&usb_fs_type);
+ 	if (usbdir)
+ 		remove_proc_entry("usb", proc_bus);
+ }
 
 -- 
 
