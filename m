@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbYBSAWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYBSAXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755183AbYBSAWp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:22:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbYBSAWf
+	id S1756533AbYBSAXW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBSAXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:22:35 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:22775 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750728AbYBSAWe (ORCPT
+	Mon, 18 Feb 2008 19:23:13 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:45819 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750730AbYBSAXM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:22:34 -0500
-Date: Mon, 18 Feb 2008 16:22:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] documentation: fix firmware_sample_firmware_class to build
-Message-Id: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 18 Feb 2008 19:23:12 -0500
+Date: Mon, 18 Feb 2008 19:22:31 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Kevin Winchester <kjwinchester@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.25-rc2-mm1
+In-Reply-To: <20080218161558.d315f9a0.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.58.0802181921490.14755@gandalf.stny.rr.com>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+ <47BA1DE3.7030407@gmail.com> <20080218161558.d315f9a0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix firmware_sample_firmware_class module to build without error.
-sysfs.h already has the function prototypes and has them correctly.
 
-Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
-include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
+On Mon, 18 Feb 2008, Andrew Morton wrote:
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
- 1 file changed, 3 deletions(-)
+> >
+> > I don't think I've seen anyone else report this, but if I'm wrong, I'm
+> > sure someone will point me to the thread.
+>
+> No, I think it's new.
+>
 
---- linux-2625-rc2-docsrc.orig/Documentation/firmware_class/firmware_sample_firmware_class.c
-+++ linux-2625-rc2-docsrc/Documentation/firmware_class/firmware_sample_firmware_class.c
-@@ -33,9 +33,6 @@ struct class_device_attribute *to_class_
- 	return container_of(_attr,struct class_device_attribute,attr);
- }
- 
--int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
--int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
--
- struct firmware_priv {
- 	char fw_id[FIRMWARE_NAME_MAX];
- 	s32 loading:2;
+> Looks like an ftrace-vs-lockdep problem.
+>
+
+Is there a .config around to look at?
+
+Thanks,
+
+-- Steve
+
