@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758829AbYBSRz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYBSR5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758829AbYBSRz2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 12:55:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbYBSRzS
+	id S1758625AbYBSR5Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 12:57:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYBSR5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 12:55:18 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:36863 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752630AbYBSRzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 12:55:16 -0500
-Message-ID: <47BB1801.1000008@garzik.org>
-Date: Tue, 19 Feb 2008 12:55:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 19 Feb 2008 12:57:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44544 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753972AbYBSR5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 12:57:01 -0500
+Date: Tue, 19 Feb 2008 09:54:23 -0800
+From: Greg KH <greg@kroah.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/8] try parent numa_node at first before using default
+	v2
+Message-ID: <20080219175423.GC8344@kroah.com>
+References: <200802190311.44404.yinghai.lu@sun.com> <200802190320.41210.yinghai.lu@sun.com>
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: random wedges with 2.6.25-rc*
-References: <20080219191035.252d5787@mjolnir.drzeus.cx>
-In-Reply-To: <20080219191035.252d5787@mjolnir.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802190320.41210.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Somewhere post 2.6.24, the kernel started getting very temperamentful. I experience random hangs and wedges very often.
+On Tue, Feb 19, 2008 at 03:20:41AM -0800, Yinghai Lu wrote:
 > 
-> Primarily, the udev startup locks up. If I abort it, it just locks up on more or less every action after that. Some quick debugging showed that I had a whole bunch of modprobe processes sitting around. The new CONFIG_USB_ANNOUNCE_NEW_DEVICES setting makes every startup of udev lock up consistently on at least two machines. It does not seem to be the root of the problem as disabling the option just makes the bug very unlikely.
+> in the device_add, we try to use use parent numa_node.
+> need to make sure pci root bus's bridge device numa_node is set.
+> then we could use device->numa_node direclty for all device.
+> and don't need to call pcibus_to_node().
 > 
-> I've also seen a couple of lockups in X. Might be a different expression of the same bug, but the effect here is a complete wedge of the user interface. It seems the rest of the machine also locks up, but I haven't confirmed this.
-> 
-> Anyone else seeing these problems? Someone should as I've seen the problem on both a Lenovo and a HP laptop here.
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
+This should be split into different patches, one for the driver core,
+and one for the PCI stuff as they are doing totally different things
+here.
 
-I'm definitely seeing lockups here too.  2.6.24 is fine, 2.6.24-rc1 or 
--rc2 locks up a minute or so after a successful boot (either to console 
-or to X).
+thanks,
 
-Does the following shed any light?
-
-http://lkml.org/lkml/2008/2/17/78
-
-	Jeff
-
-
-
+greg k-h
