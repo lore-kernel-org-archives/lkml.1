@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbYBST0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760301AbYBST0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759298AbYBST0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbYBST0I
+	id S1760301AbYBST0l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:26:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYBST0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:26:08 -0500
-Received: from host64.cybernetics.com ([70.169.137.4]:3056 "EHLO
-	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754500AbYBST0H (ORCPT
+	Tue, 19 Feb 2008 14:26:31 -0500
+Received: from qb-out-0506.google.com ([72.14.204.229]:56994 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755026AbYBST0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:26:07 -0500
-Message-ID: <47BB2D50.2060805@cybernetics.com>
-Date: Tue, 19 Feb 2008 14:26:08 -0500
-From: Tony Battersby <tonyb@cybernetics.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Michael Chan <mchan@broadcom.com>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell>
-In-Reply-To: <1203448265.13495.95.camel@dell>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Feb 2008 14:26:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=B7k9paIuBtCixtMtNZy0XHF09EEYBRgZC9k99VwctZ6YaloIx6r/Zu8gfl/9jwlmxWCN33jlIonw2wp2zIWUITK/wYaK+ZK7m7K+2Ms+rl5LK99OHff17dlD4mUMwUpPIFRncT68qF82UCDlXr2sxPOj3L9ap8bjHCwOrGagf6o=
+Subject: [PATCH] ata: simplify clock divisor logic in pata_amd.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 11:26:36 -0800
+Message-Id: <1203449196.10464.19.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Chan wrote:
->> The SysKonnect NIC that does not exhibit this problem has a chip that
->> says "BCM5411KQM" "TT0128 P2Q" and "56975E".
-> I think this is the 5700, but please send me the tg3 output that
-> identifies the chip and the revision.  Something like this:
->
-> eth2: Tigon3 [partno(BCM95705) rev 3003 PHY(5705)] (PCI:66MHz:32-bit) 10/100/1000Base-T Ethernet 00:10:18:04:57:0d
-> eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
->   
-Here is the dmesg output for the SysKonnect NIC:
+Current code is essentially choosing between dividing by 1 or
+dividing by two, make the conditions a little more obvious.
 
-eth0: Tigon3 [partno(SK-9D21) rev 7104 PHY(5411)] (PCI:66MHz:64-bit)
-10/100/1000Base-T Ethernet 00:00:5a:9d:0c:4a
-eth0: RXcsums[1] LinkChgREG[1] MIirq[1] ASF[0] WireSpeed[0] TSOcap[0]
-eth0: dma_rwctrl[76ff000f] dma_mask[64-bit]
+As a bonus, removes a sparse error:
+drivers/ata/pata_amd.c:59:11: warning: symbol '__x' shadows an earlier one
+drivers/ata/pata_amd.c:59:11: originally declared here
 
-Tony
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+Andrew, this is a replacement for:
+pata_amd-replace-macro-with-static-inline-in-libatah.patch
+
+It is the same patch, but with a corrected description.
+
+ drivers/ata/pata_amd.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/ata/pata_amd.c b/drivers/ata/pata_amd.c
+index 4b8d9b5..7ef4847 100644
+--- a/drivers/ata/pata_amd.c
++++ b/drivers/ata/pata_amd.c
+@@ -56,7 +56,9 @@ static void timing_setup(struct ata_port *ap, struct ata_device *adev, int offse
+ 	u8 t;
+ 
+ 	T = 1000000000 / amd_clock;
+-	UT = T / min_t(int, max_t(int, clock, 1), 2);
++	UT = T;
++	if (clock >= 2)
++		UT = T / 2;
+ 
+ 	if (ata_timing_compute(adev, speed, &at, T, UT) < 0) {
+ 		dev_printk(KERN_ERR, &pdev->dev, "unknown mode %d.\n", speed);
+-- 
+1.5.4.1.1278.gc75be
+
+
 
