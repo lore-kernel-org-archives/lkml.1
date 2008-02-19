@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbYBSR5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbYBSR53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbYBSR5Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 12:57:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbYBSR5D
+	id S1759605AbYBSR53 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 12:57:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbYBSR5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 12:57:03 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:44544 "EHLO
+	Tue, 19 Feb 2008 12:57:08 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:44546 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753972AbYBSR5B (ORCPT
+	with ESMTP id S1755823AbYBSR5G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 12:57:01 -0500
-Date: Tue, 19 Feb 2008 09:54:23 -0800
+	Tue, 19 Feb 2008 12:57:06 -0500
+Date: Tue, 19 Feb 2008 09:53:39 -0800
 From: Greg KH <greg@kroah.com>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
        Jeff Garzik <jeff@garzik.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/8] try parent numa_node at first before using default
-	v2
-Message-ID: <20080219175423.GC8344@kroah.com>
-References: <200802190311.44404.yinghai.lu@sun.com> <200802190320.41210.yinghai.lu@sun.com>
+Subject: Re: [PATCH 0/8] AMD opteron mm config numa etc
+Message-ID: <20080219175339.GB8344@kroah.com>
+References: <200802190319.28699.yinghai.lu@sun.com> <20080219112322.GD7204@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802190320.41210.yinghai.lu@sun.com>
+In-Reply-To: <20080219112322.GD7204@elte.hu>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 03:20:41AM -0800, Yinghai Lu wrote:
+On Tue, Feb 19, 2008 at 12:23:22PM +0100, Ingo Molnar wrote:
 > 
-> in the device_add, we try to use use parent numa_node.
-> need to make sure pci root bus's bridge device numa_node is set.
-> then we could use device->numa_node direclty for all device.
-> and don't need to call pcibus_to_node().
+> * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 > 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> > please check some amd opteron related mmconf and numa patches
+> > 
+> > could make up for system that system have acpi problem or still can 
+> > mmconf and numa when acpi=off
+> 
+> Greg, any deep objections against these patches? (other than that they 
+> need a good amount of testing) I personally think that the more 
+> independent the kernel is of the whims of the BIOS, the better ...
 
-This should be split into different patches, one for the driver core,
-and one for the PCI stuff as they are doing totally different things
-here.
+No objection from me, other than they need a LOT of testing.  Oh, and
+the networking patch is still wrong, and the poster has been told this
+numerous times, which makes me wonder how well the pci bridge patch was
+tested...
 
 thanks,
 
