@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbYBSPJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbYBSPJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756804AbYBSPJE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753928AbYBSPIu
+	id S1758229AbYBSPJY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 10:09:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbYBSPIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:08:50 -0500
-Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:50394 "EHLO
-	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753384AbYBSPIt convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:08:49 -0500
-Date: Tue, 19 Feb 2008 15:08:41 +0000
-From: Ken Moffat <zarniwhoop@ntlworld.com>
-To: Greg KH <greg@kroah.com>
-Cc: bzolnier@gmail.com, muli@il.ibm.com, jdmason@kudzu.us,
-       linux-ide@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, discuss@x86-64.org
-Subject: Re: "ide=reverse" do we still need this?
-Message-ID: <20080219150841.GA2965@deepthought>
-References: <20080213001506.GA13933@kroah.com> <20080213024329.GA6912@deepthought> <20080213044304.GA10101@kroah.com> <20080213153249.GA21749@deepthought>
+	Tue, 19 Feb 2008 10:08:55 -0500
+Received: from lazybastard.de ([212.112.238.170]:57673 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753539AbYBSPIw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 10:08:52 -0500
+Date: Tue, 19 Feb 2008 16:08:22 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stephane Chazelas <stephane.chazelas@emerson.com>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
+Message-ID: <20080219150822.GA29587@lazybastard.org>
+References: <chaz20080212134751.GI30304@artesyncp.com> <20080212152124.GA21878@lazybastard.org> <chaz20080212161034.GJ30304@artesyncp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080213153249.GA21749@deepthought>
-User-Agent: Mutt/1.5.12-2006-07-14
-Content-Transfer-Encoding: 8BIT
-X-Cloudmark-Analysis: v=1.0 c=1 a=9vzMQgj8eMJxLs+ya4Hk2A==:17 a=9QFRMDK4vBXlya-CaTsA:9 a=kEgXtOSe9zXi93A6tpAA:7 a=jEXbjMmYjDFcuTPzp5c3B4ShsRoA:4 a=LY0hPdMaydYA:10
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <chaz20080212161034.GJ30304@artesyncp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 13, 2008 at 03:32:49PM +0000, Ken Moffat wrote:
-> On Tue, Feb 12, 2008 at 08:43:04PM -0800, Greg KH wrote:
-> > 
-> > Can't you just boot with /dev/disk/by-id/ and an initramfs to not have
-> > to worry about such a thing in the future?
-> > 
+[ Just returned home. ]
 
- Initramfs isn't something I've ever tried, so I'm not about to rush
-into it on the server.  Maybe I'll try it on a desktop one day.
-Anyway, I've now got it running without ide=reverse, details follow
-for anybody else who gets a similar problem in the future.
-
->  Can comebody remind me what the initramfs is for in that situation,
-> please ?  From the little I've noticed, I thought the /dev/disk/by-id
-> part went into fstab ?  At the moment, I just build the things I
-> think I need in to the kernel on that box, without modules.
+On Tue, 12 February 2008 16:10:34 +0000, Stephane Chazelas wrote:
 > 
- And for the next person asking this, it seems to be so that you
-can specify the root= parameter.
+> OK, I can do that. Would the "simple" fix go to the
+> trivial@kernel.org Trivial Patch Monkey?
 
->  Anyway, I'll try to find time to read my notes to see if I can
-> identify what happened/when, and to take the box down again so I
-> can try to confirm exactly what the problem is, if it still exists.
-> I certainly won't be taking it down until I've written my weekly
-> backups to tape at the weekend, so maybe not before next week.
+That or to me or to dwmw2...  I'm not too picky about the path, as long
+as it gets merged eventually.
+
+> > The core of remove_device_by_name() is shared with block2mtd_exit(),
+> > so a common helper would be good.  Your error handling is better, so
+> > let's keep that version.
 > 
-
- Turns out I was wrong about having a SATA disk for the system - I
-used to, but then I needed to separate the backups into separate r/o
-and r/w filesystems when nfs no longer let me export part of a ro fs
-as rw.  In the change, my staging area for writing to tape or DVD
-moved to the system disk, and the only big-enough disk I could get
-locally was parallel ide.  So in that setup, ide on a card comes
-first.
-> > Have you tried the PATA drivers instead of IDE to see if this solves the
-> > "moves around" issue?  If they work, then you would not need the command
-> > line option at all.
+> Well, yes that raised a concern to me, the "exit" function
+> returns "void". If the del_mtd_device fails with EBUSY at the
+> moment (such as when a /dev/mtdblock<x> is mounted), we ignore
+> it and go on with freeing everything leaving a dangling mtd.
 > 
+> Is there a way around that?
 
- My first thought was to try using libata for the drives on the
-add-on card (sii0680), although it's marked as experimental.  Maybe
-I picked the wrong driver, but they didn't show up.  Reverted to
-previous config.
+For module unload we should be safe.  Errors are only returned if the
+device doesn't exist (a clear bug) or if the device is still being used.
+Module refcounting should prevent the latter case, so either way we have
+a bug if del_mtd_device returns an error.
 
- Changed to mount-by-label so that I don't have to change fstab for
-the old and new kernels.
+When removing the device via your proposed interface we should simply
+return the error to userspace, if the interface permits.  Sysfs doesn't
+seem to permit error returns, so we should keep the device alive and do
+nothing.
 
- Moved the main drive and the CD to libata (sii still old IDE) -
-specify sda instead of hda in root=, change system scripts referencing
-drives by name (for SMART - system disk is again -d ata, the data raid
-moved from hd{e,g} to hd{a,c}), now seems to be working but I expect
-I'll notice a few things more in my scripts over the next days.
+> Another problem is that it's not easy to check whether a mtd
+> creation was successful or not. Basically, you have to write to
+> a /sys file and then parse /proc/mtd to get the result.
 
- I also discovered that lilo needed the real node specified in root=
-to exist.  It complained, so I added a symlink to the hdaX node -
-panic'd trying to load rootfs from 0307.  Reboot to old kernel, run mknod on /dev,
-repeat, booted.
+Agreed, sysfs' lack of error indication isn't ideal.
 
-Ken
+> What about having a /dev/block2mtd (with owner/permissions that
+> could allow non-root users to use it), with 2 ioctls:
+> 
+> - one to "link" a block dev to a mtd that would take as
+>   parameter a fd to an open block dev (again allowing for
+>   flexible permissions) and would return the number of the
+>   allocated mtd and success/failure in errno. Upon sucess it
+>   would increase the refcnt of block2mtd.
+> 
+> - and one to "release" the link. That would fail if the mtd is
+>   in use and decrease block2mtd's refcnt upon success.
+> 
+> A bit like the loop devices (or /dev/ptmx) actually. What do you
+> think?
+
+Could work.  Passing the fd raises several alarm bells.  Arnd, any
+comments from you?
+
+In general I'd like to see some good reasons for adding an ioctl (or any
+other) interface first.  Creating interfaces is hard and you rarely get
+a second chance to fix the mess you created before you knew all the
+consequenses.
+
+> (also, with the /sys interface, isn't there a potential problem
+> with chroots wrt the path given to the /sys file?)
+
+There may be.  Can you check if there is?
+
+JÃ¶rn
+
 -- 
-das eine Mal als Tragödie, das andere Mal als Farce
+Debugging is twice as hard as writing the code in the first place.
+Therefore, if you write the code as cleverly as possible, you are,
+by definition, not smart enough to debug it.
+-- Brian W. Kernighan
