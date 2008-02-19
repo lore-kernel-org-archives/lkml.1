@@ -1,89 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbYBSNmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbYBSNxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbYBSNmI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 08:42:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbYBSNl4
+	id S1753603AbYBSNxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 08:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751855AbYBSNxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 08:41:56 -0500
-Received: from wx-out-0506.google.com ([66.249.82.232]:10627 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbYBSNlz (ORCPT
+	Tue, 19 Feb 2008 08:53:36 -0500
+Received: from raffaello.crs4.it ([156.148.72.33]:47874 "EHLO
+	raffaello.crs4.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751710AbYBSNxf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 08:41:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=WlOq9xw9CB962lZqPvXRyPZbk/htI0mWiSl4Sni8LB1FSM81wFG7MgIfxKVY33O0lZ60O+pm6tEdQwkTf2oO79pLQLGexz5CjcOWAkw1xdgeYq5qNeMlalEjYlj1niZead1x3+gVWInIqHO8fnwjImTERWe+2XmqWcE4j8CWP5c=
-Message-ID: <b647ffbd0802190541k1428623fv23f000642c75d43b@mail.gmail.com>
-Date: Tue, 19 Feb 2008 14:41:52 +0100
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+	Tue, 19 Feb 2008 08:53:35 -0500
+From: Omar Schiaratura <omar@crs4.it>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH, RFC] kthread: (possibly) a missing memory barrier in kthread_stop()
-Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Rusty Russel" <rusty@rustcorp.com.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       "Andy Whitcroft" <apw@shadowen.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-In-Reply-To: <1203413060.10858.82.camel@lappy>
+Subject: sun neptune driver
+Date: Tue, 19 Feb 2008 14:53:35 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Organization: CRS4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1203375817.7619.73.camel@earth>
-	 <200802191744.45281.nickpiggin@yahoo.com.au>
-	 <1203413060.10858.82.camel@lappy>
+Message-Id: <200802191453.35210.omar@crs4.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-btw.,
+Hi all,
+i'm trying to write a back-porting of the Sun neptune NIC driver(niu module) in kernel 2.6.24 to the kernel 2.6.20
+because i need that driver in a xen linux environment.
+The driver now compile and goes up clearly, NIC is configured, but doesn't work properly.
+If i send packets to another machine with the same NIC and kernel 2.6.24,I saw with tcpdump that the packets was received and the answer was sent,
+but at the other end (kernel 2.6.20 with my backported driver, and without XEN) nothing appens (tcpdump report sent packages, but i can't see anything sent from other side)
+Do you have some tricks for me or can you suggest me something to do?
 
-(a bit more of 'nit-picking' :-)
+Some of the problem i encountered during port is that i can't find a function equivalent to compound_head, and if i port it to the source i can't find a way to use
+an equivalent variable like page->first_page found in compound_head.
+another proble was the folowing function:
 
-to work properly, kthread_stop() should also impose one of the
-following requirements on a 'kthread' loop:
-
-- a loop can be interrupted _only_ as a result of
-'kthread_should_stop() == true'
-and no concurrent kthread_stop() calls are possible;
-
-or
-
-- if it can exit due to another reason, a user has to use additional
-synchronization means to make sure than kthread_stop() is never
-called/running after a main loop has finished (makes sense as 'struct
-task_struct *' can be 'obsolete')
-
-otherwise,
-
-note, the comment in kthread() that says "It might have exited on its
-own, w/o kthread_stop.  Check."
-
-so let's suppose a 'kthread' is really "exiting on its own" and at the
-same time, kthread_stop() is running on another CPU... as a result, we
-may end up with kthread_stop() being blocked on
-wait_for_completion(&kthread_stop_info.done) without anybody to call
-complete().
-
-Although, the requirements above don't seem to be so insane in this case.
-
-
-static int kthread(void *_create)
+static inline unsigned char *skb_transport_header(const struct sk_buff *skb)
 {
-...
-         if (!kthread_should_stop())
-                ret = threadfn(data);     <---- our main loop is
-inside this function
-
-         /* It might have exited on its own, w/o kthread_stop.  Check. */
-         if (kthread_should_stop()) {
-                 kthread_stop_info.err = ret;
-                 complete(&kthread_stop_info.done);
-         }
-         return 0;
+        return (unsigned char *)((unsigned int)skb->head + (unsigned int)skb->h.raw);
 }
 
--- 
-Best regards,
-Dmitry Adamushko
+that get the error: "error: invalid operands to binary +"
+if i can't cast it in unsigned int, the same in skb_network_header (both back-ported from include/skbuff.h)
+
+thanks,
+Omar
