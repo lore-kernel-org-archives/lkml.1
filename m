@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYBSHjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbYBSHkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbYBSHjQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:39:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762396AbYBSHin
+	id S1762739AbYBSHkw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:40:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbYBSHki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:38:43 -0500
-Received: from rv-out-0910.google.com ([209.85.198.185]:49637 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759059AbYBSHik (ORCPT
+	Tue, 19 Feb 2008 02:40:38 -0500
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:59677
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759875AbYBSHkg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:38:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=AIzQtkVscgJ8luE6qBAEGalqkTWvzIn/h5Xea+0glyrdEEjOjHGRWVCpb5JEEQF1Hrj1UzgBBq5nAYmZaftJfzgmrrqvjxdbCcNX2JbHvnAK1ISKL6mjIc7MNdzPXSsVx48Yf277WGxcm95rX6LFJlW3FoM9WC/LAP0InIVf/7A=
-Message-ID: <84144f020802182338p68d412f6sa9e0f8975344a9c0@mail.gmail.com>
-Date: Tue, 19 Feb 2008 09:38:40 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: NULL pointer in kmem_cache_alloc with 2.6.25-rc1
-Cc: "Christoph Lameter" <clameter@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Torsten Kaiser" <just.for.lkml@googlemail.com>
-In-Reply-To: <1203404594.3248.32.camel@ymzhang>
+	Tue, 19 Feb 2008 02:40:36 -0500
+Message-ID: <47BA87F0.1050709@cosmosbay.com>
+Date: Tue, 19 Feb 2008 08:40:32 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203058021.3027.143.camel@ymzhang>
-	 <Pine.LNX.4.64.0802150839180.12023@schroedinger.engr.sgi.com>
-	 <1203404594.3248.32.camel@ymzhang>
-X-Google-Sender-Auth: f968e3dbb7a1ac6b
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: tbench regression in 2.6.25-rc1
+References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20040.1203356033@turing-police.cc.vt.edu> <1203403903.3248.29.camel@ymzhang>
+In-Reply-To: <1203403903.3248.29.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Yanmin,
+Zhang, Yanmin a écrit :
+> On Mon, 2008-02-18 at 12:33 -0500, Valdis.Kletnieks@vt.edu wrote: 
+>> On Mon, 18 Feb 2008 16:12:38 +0800, "Zhang, Yanmin" said:
+>>
+>>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
+>>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
+>>> recovered.
+>>>
+>>> How about below patch? Almost all performance is recovered with the new patch.
+>>>
+>>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+>> Could you add a comment someplace that says "refcnt wants to be on a different
+>> cache line from input/output/ops or performance tanks badly", to warn some
+>> future kernel hacker who starts adding new fields to the structure?
+> Ok. Below is the new patch.
+> 
+> 1) Move tclassid under ops in case CONFIG_NET_CLS_ROUTE=y. So sizeof(dst_entry)=200
+> no matter if CONFIG_NET_CLS_ROUTE=y/n. I tested many patches on my 16-core tigerton by
+> moving tclassid to different place. It looks like tclassid could also have impact on
+> performance.
+> If moving tclassid before metrics, or just don't move tclassid, the performance isn't
+> good. So I move it behind metrics.
+> 
+> 2) Add comments before __refcnt.
+> 
+> If CONFIG_NET_CLS_ROUTE=y, the result with below patch is about 18% better than
+> the one without the patch.
+> 
+> If CONFIG_NET_CLS_ROUTE=n, the result with below patch is about 30% better than
+> the one without the patch.
+> 
+> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+> 
+> ---
+> 
+> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
+> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-22 12:52:19.000000000 +0800
+> @@ -52,15 +52,10 @@ struct dst_entry
+>  	unsigned short		header_len;	/* more space at head required */
+>  	unsigned short		trailer_len;	/* space to reserve at tail */
+>  
+> -	u32			metrics[RTAX_MAX];
+> -	struct dst_entry	*path;
+> -
+> -	unsigned long		rate_last;	/* rate limiting for ICMP */
+>  	unsigned int		rate_tokens;
+> +	unsigned long		rate_last;	/* rate limiting for ICMP */
+>  
+> -#ifdef CONFIG_NET_CLS_ROUTE
+> -	__u32			tclassid;
+> -#endif
+> +	struct dst_entry	*path;
+>  
+>  	struct neighbour	*neighbour;
+>  	struct hh_cache		*hh;
+> @@ -70,10 +65,20 @@ struct dst_entry
+>  	int			(*output)(struct sk_buff*);
+>  
+>  	struct  dst_ops	        *ops;
+> -		
+> -	unsigned long		lastuse;
+> +
+> +	u32			metrics[RTAX_MAX];
+> +
+> +#ifdef CONFIG_NET_CLS_ROUTE
+> +	__u32			tclassid;
+> +#endif
+> +
+> +	/*
+> +	 * __refcnt wants to be on a different cache line from
+> +	 * input/output/ops or performance tanks badly
+> +	 */
+>  	atomic_t		__refcnt;	/* client references	*/
+>  	int			__use;
+> +	unsigned long		lastuse;
+>  	union {
+>  		struct dst_entry *next;
+>  		struct rtable    *rt_next;
+> 
+> 
+> 
 
-> On Fri, 2008-02-15 at 08:42 -0800, Christoph Lameter wrote:
-> > > Kernel panic at line 1637 in file mm/slub.c because object=c->freelist=NULL.
-> >
-> > Hmmmm. freelist should never be NULL. Could you rerun the test and boot with
-> > slub_debug to make sure that there is no memory corruption?
+I prefer this patch, but unfortunatly your perf numbers are for 64 bits kernels.
 
-On Feb 19, 2008 9:03 AM, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
-> 1) Without slub_debug option, sometime I could trigger it, sometimes not.
-> 2) With slub_debug option, or just enable debug for slab skbuff_fclone_cache
-> and skbuff_head_cache, I couldn't trigger it.
->
-> I will do more testing and investigation, as the bug also exists in 2.6.25-rc2.
+Could you please test now with 32 bits one ?
 
-Could you please try Ingo's patch: http://lkml.org/lkml/2008/2/19/13
-
-Looks like there are some problems with SLUB_FASTPATH.
-
-                                    Pekka
+Thank you
