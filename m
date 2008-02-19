@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbYBSScD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbYBSScu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757170AbYBSScD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:32:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYBSSby
+	id S1757884AbYBSScu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:32:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753001AbYBSScm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:31:54 -0500
-Received: from qb-out-0506.google.com ([72.14.204.225]:20601 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbYBSSbx (ORCPT
+	Tue, 19 Feb 2008 13:32:42 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49631 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752549AbYBSScl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:31:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=DaQEpCbB2g+WTCUum5ZHVxFj0gFpBi1N643lJdZV1Z4QBoTBWcKQsyHh08RrCeiBk9SZdhdq+55rqs202aqIqg+2H3znCtmvUNwwz0uCPDeygm3Ft9bZRUmR3q/h7yh12BQPkLmW29jcInTNBHGq15q6TYqw41+ADaCll1Agk1s=
-Subject: [PATCH] kvm: make iopm_base static
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Avi Kivity <avi@qumranet.com>
-Cc: kvm-devel <kvm-devel@lists.sourceforge.net>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 19 Feb 2008 10:32:02 -0800
-Message-Id: <1203445922.10464.12.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+	Tue, 19 Feb 2008 13:32:41 -0500
+Message-ID: <47BB20C6.7050205@sgi.com>
+Date: Tue, 19 Feb 2008 10:32:38 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lameter@sgi.com
+Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
+References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com> <20080219180855.GB12010@one.firstfloor.org>
+In-Reply-To: <20080219180855.GB12010@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixes sparse warning as well.
-arch/x86/kvm/svm.c:69:15: warning: symbol 'iopm_base' was not declared. Should it be static?
+Andi Kleen wrote:
+> On Tue, Feb 19, 2008 at 07:48:54AM -0800, Mike Travis wrote:
+>> Andi Kleen wrote:
+>>> Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+>>>
+>>>> we don't need copy too. already have x86_cpu_to_node_map
+>>> That's a regression (probably from Mike's patches?). Until recently it was 
+>>> used.
+>> Yes, I had removed it because I couldn't find any references to it.
+> 
+> Hmm, maybe it regressed earlier. Sorry if I blamed you incorrectly.
+> Anyways at some point this definitely worked. I remember writing
+> the code ;-) 
+> 
+>> And reading one's own percpu variables should be as efficient as
+>> reading one's own pda.
+> 
+> Sure, but the point is that getting the current node is a common
+> operation, so it should be a single reference and not go through a 
+> lookup table.
+> 
+> How it is actually implemented -- through PDA or through you new
+> equivalent per cpu variables -- does not really matter as long 
+> as the resulting code is only a single instruction. Using
+> the lookup array from the cpu number is wrong.
+> 
+> My patch just fixed it back to use the PDA in the old style for now,
+> but if all your per cpu stuff is merged (I admit I haven't tracked 
+> if it is or not) replacing that with a per cpu variable would work too
+> if it then generates the same code as with PDA.
+> 
+> -Andi
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- arch/x86/kvm/svm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+I'll look at it some more as I don't really have a preference either.
+One thing that also bothered me was other cpus read the per cpu
+variable to get the node number whilst the current cpu reads the pda
+variable.  I'll see about resolving that quirky-ness.  (All one or all
+the other.)
 
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index e1d139f..28ad3c4 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -66,7 +66,7 @@ static inline struct vcpu_svm *to_svm(struct kvm_vcpu *vcpu)
- 	return container_of(vcpu, struct vcpu_svm, vcpu);
- }
- 
--unsigned long iopm_base;
-+static unsigned long iopm_base;
- 
- struct kvm_ldttss_desc {
- 	u16 limit0;
--- 
-1.5.4.2.200.g99e75
+(And of course the problem with cpus on nodes with no local memory
+needs to be resolved as well.)
 
-
-
+Thanks,
+Mike
