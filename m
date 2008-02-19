@@ -1,90 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbYBSAcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbYBSAe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760006AbYBSAcO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:32:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751437AbYBSAb6
+	id S1757569AbYBSAe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:34:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbYBSAeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:31:58 -0500
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:43029 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751414AbYBSAb6 (ORCPT
+	Mon, 18 Feb 2008 19:34:21 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:57455 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750919AbYBSAeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:31:58 -0500
-Message-ID: <47BA2356.90203@tiscali.nl>
-Date: Tue, 19 Feb 2008 01:31:18 +0100
-From: Roel Kluin <12o3l@tiscali.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Mon, 18 Feb 2008 19:34:20 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:user-agent:mime-version:content-type;
+	b=IGlfn+3kJRjZdWxVZ5hTTzmnj2oEt9iK7LwYXqNgkNn1in1GmrLbvgQdin2FFotgq
+	WAhcUNrkL2sDlZJ6TRNAQ==
+Date: Mon, 18 Feb 2008 16:32:40 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
+ build
+In-Reply-To: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.1.00.0802181629180.15109@chino.kir.corp.google.com>
+References: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: sct@redhat.com, akpm@linux-foundation.org, adilger@clusterfs.com
-CC: linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fs/ext4/mballoc.c: Convert to list_for_each_entry_rcu()
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please verify, this patch was not yet tested
----
-Convert list_for_each_rcu() to list_for_each_entry_rcu()
+On Mon, 18 Feb 2008, Randy Dunlap wrote:
 
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix firmware_sample_firmware_class module to build without error.
+> sysfs.h already has the function prototypes and has them correctly.
+> 
+> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
+> include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
+>  1 file changed, 3 deletions(-)
+> 
+> --- linux-2625-rc2-docsrc.orig/Documentation/firmware_class/firmware_sample_firmware_class.c
+> +++ linux-2625-rc2-docsrc/Documentation/firmware_class/firmware_sample_firmware_class.c
+> @@ -33,9 +33,6 @@ struct class_device_attribute *to_class_
+>  	return container_of(_attr,struct class_device_attribute,attr);
+>  }
+>  
+> -int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
+> -int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
+> -
+>  struct firmware_priv {
+>  	char fw_id[FIRMWARE_NAME_MAX];
+>  	s32 loading:2;
+
+You'll need this as well, for the !CONFIG_SYSFS case.
+
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: David Rientjes <rientjes@google.com>
 ---
-diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-index dd0fcfc..0c4dd13 100644
---- a/fs/ext4/mballoc.c
-+++ b/fs/ext4/mballoc.c
-@@ -3127,6 +3127,7 @@ static void ext4_mb_normalize_request(struct ext4_allocation_context *ac,
- 	loff_t size, orig_size, start_off;
- 	ext4_lblk_t start, orig_start;
- 	struct ext4_inode_info *ei = EXT4_I(ac->ac_inode);
-+	struct ext4_prealloc_space *pa;
+ include/linux/sysfs.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -169,8 +169,8 @@ static inline int sysfs_create_bin_file(struct kobject *kobj,
+ 	return 0;
+ }
  
- 	/* do normalize only data requests, metadata requests
- 	   do not need preallocation */
-@@ -3212,12 +3213,9 @@ static void ext4_mb_normalize_request(struct ext4_allocation_context *ac,
- 
- 	/* check we don't cross already preallocated blocks */
- 	rcu_read_lock();
--	list_for_each_rcu(cur, &ei->i_prealloc_list) {
--		struct ext4_prealloc_space *pa;
-+	list_for_each_entry_rcu(pa, cur, &ei->i_prealloc_list, pa_inode_list) {
- 		unsigned long pa_end;
- 
--		pa = list_entry(cur, struct ext4_prealloc_space, pa_inode_list);
--
- 		if (pa->pa_deleted)
- 			continue;
- 		spin_lock(&pa->pa_lock);
-@@ -3259,10 +3257,8 @@ static void ext4_mb_normalize_request(struct ext4_allocation_context *ac,
- 
- 	/* XXX: extra loop to check we really don't overlap preallocations */
- 	rcu_read_lock();
--	list_for_each_rcu(cur, &ei->i_prealloc_list) {
--		struct ext4_prealloc_space *pa;
-+	list_for_each_entry_rcu(pa, cur, &ei->i_prealloc_list, pa_inode_list) {
- 		unsigned long pa_end;
--		pa = list_entry(cur, struct ext4_prealloc_space, pa_inode_list);
- 		spin_lock(&pa->pa_lock);
- 		if (pa->pa_deleted == 0) {
- 			pa_end = pa->pa_lstart + pa->pa_len;
-@@ -3397,8 +3393,7 @@ static int ext4_mb_use_preallocated(struct ext4_allocation_context *ac)
- 
- 	/* first, try per-file preallocation */
- 	rcu_read_lock();
--	list_for_each_rcu(cur, &ei->i_prealloc_list) {
--		pa = list_entry(cur, struct ext4_prealloc_space, pa_inode_list);
-+	list_for_each_entry_rcu(pa, cur, &ei->i_prealloc_list, pa_inode_list) {
- 
- 		/* all fields in this condition don't change,
- 		 * so we can skip locking for them */
-@@ -3430,8 +3425,7 @@ static int ext4_mb_use_preallocated(struct ext4_allocation_context *ac)
- 		return 0;
- 
- 	rcu_read_lock();
--	list_for_each_rcu(cur, &lg->lg_prealloc_list) {
--		pa = list_entry(cur, struct ext4_prealloc_space, pa_inode_list);
-+	list_for_each_entry_rcu(pa, cur, &lg->lg_prealloc_list, pa_inode_list) {
- 		spin_lock(&pa->pa_lock);
- 		if (pa->pa_deleted == 0 && pa->pa_free >= ac->ac_o_ex.fe_len) {
- 			atomic_inc(&pa->pa_count);
+-static inline int sysfs_remove_bin_file(struct kobject *kobj,
+-					struct bin_attribute *attr)
++static inline void sysfs_remove_bin_file(struct kobject *kobj,
++					 struct bin_attribute *attr)
+ {
+ 	return 0;
+ }
