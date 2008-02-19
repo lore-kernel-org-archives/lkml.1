@@ -1,242 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762891AbYBTDIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763785AbYBTDJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762891AbYBTDIh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:08:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750900AbYBTDIa
+	id S1763785AbYBTDJv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYBTDJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:08:30 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:10692 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750773AbYBTDI2 (ORCPT
+	Tue, 19 Feb 2008 22:09:43 -0500
+Received: from n12.bullet.mail.mud.yahoo.com ([209.191.125.209]:39293 "HELO
+	n12.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750773AbYBTDJm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:08:28 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=AM63OiQ4nU3qKZgEui+7D9b5psKcqLXPjrJ7GsGRqqTSNSApjCi282Qx5+5gIGb33
-	vvd0vvDz99i6zEq7va7LA==
-Message-ID: <6599ad830802191908n3e2f308dt4ae19359ee27f518@mail.gmail.com>
-Date: Tue, 19 Feb 2008 19:08:21 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 1/7] cgroup: fix and update documentation
-Cc: akpm@linux-foundation.org, "Paul Jackson" <pj@sgi.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-In-Reply-To: <47B94433.4010808@cn.fujitsu.com>
+	Tue, 19 Feb 2008 22:09:42 -0500
+X-Greylist: delayed 368 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 22:09:42 EST
+X-Yahoo-Newman-Id: 912088.21310.bm@omp417.mail.mud.yahoo.com
+X-YMail-OSG: Ub5pKJEVM1kHFElg_loIUgdvKluZrR2kVJbTHAJIJhFsvXqnoH0m3eh8LZI5rVpQHcOPA2ow6pyrXdcXmi62_tEaJgOi6AKcAZTMnUBguP0qLDHOjQ--
+X-Yahoo-Newman-Property: ymail-3
+Message-ID: <47BB4437.8020600@schaufler-ca.com>
+Date: Tue, 19 Feb 2008 13:03:51 -0800
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       casey@schaufler-ca.com
+Subject: [PATCH] (linus git 02/19/08) Smack update for file capabilities
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B91C75.6000907@cn.fujitsu.com>
-	 <20080218010255.a808714f.pj@sgi.com> <47B940EA.5000305@cn.fujitsu.com>
-	 <47B94433.4010808@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 18, 2008 12:39 AM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Misc fixes and updates, make the doc consistent with current
-> cgroup implementation.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+From: Casey Schaufler <casey@schaufler-ca.com>
 
-Acked-by: Paul Menage <menage@google.com>
+Update the Smack LSM to allow the registration of the capability
+"module" as a secondary LSM. Integrate the new hooks required for
+file based capabilities.
 
-Thanks for these cleanups.
+Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-Paul
+---
 
-> ---
->  Documentation/cgroups.txt |   66 ++++++++++++++++++++++----------------------
->  1 files changed, 33 insertions(+), 33 deletions(-)
->
-> diff --git a/Documentation/cgroups.txt b/Documentation/cgroups.txt
-> index 42d7c4c..31d12e2 100644
->
-> --- a/Documentation/cgroups.txt
-> +++ b/Documentation/cgroups.txt
-> @@ -28,7 +28,7 @@ CONTENTS:
->  4. Questions
->
->  1. Control Groups
-> -==========
-> +=================
->
->  1.1 What are cgroups ?
->  ----------------------
-> @@ -143,10 +143,10 @@ proliferation of such cgroups.
->
->  Also lets say that the administrator would like to give enhanced network
->  access temporarily to a student's browser (since it is night and the user
-> -wants to do online gaming :)  OR give one of the students simulation
-> +wants to do online gaming :))  OR give one of the students simulation
->  apps enhanced CPU power,
->
-> -With ability to write pids directly to resource classes, its just a
-> +With ability to write pids directly to resource classes, it's just a
->  matter of :
->
->         # echo pid > /mnt/network/<new_class>/tasks
-> @@ -227,10 +227,13 @@ Each cgroup is represented by a directory in the cgroup file system
->  containing the following files describing that cgroup:
->
->   - tasks: list of tasks (by pid) attached to that cgroup
-> - - notify_on_release flag: run /sbin/cgroup_release_agent on exit?
-> + - releasable flag: cgroup currently removeable?
-> + - notify_on_release flag: run the release agent on exit?
-> + - release_agent: the path to use for release notifications (this file
-> +   exists in the top cgroup only)
->
->  Other subsystems such as cpusets may add additional files in each
-> -cgroup dir
-> +cgroup dir.
->
->  New cgroups are created using the mkdir system call or shell
->  command.  The properties of a cgroup, such as its flags, are
-> @@ -257,7 +260,7 @@ performance.
->  To allow access from a cgroup to the css_sets (and hence tasks)
->  that comprise it, a set of cg_cgroup_link objects form a lattice;
->  each cg_cgroup_link is linked into a list of cg_cgroup_links for
-> -a single cgroup on its cont_link_list field, and a list of
-> +a single cgroup on its cgrp_link_list field, and a list of
->  cg_cgroup_links for a single css_set on its cg_link_list.
->
->  Thus the set of tasks in a cgroup can be listed by iterating over
-> @@ -271,9 +274,6 @@ for cgroups, with a minimum of additional kernel code.
->  1.4 What does notify_on_release do ?
->  ------------------------------------
->
-> -*** notify_on_release is disabled in the current patch set. It will be
-> -*** reactivated in a future patch in a less-intrusive manner
-> -
->  If the notify_on_release flag is enabled (1) in a cgroup, then
->  whenever the last task in the cgroup leaves (exits or attaches to
->  some other cgroup) and the last child cgroup of that cgroup
-> @@ -360,8 +360,8 @@ Now you want to do something with this cgroup.
->
->  In this directory you can find several files:
->  # ls
-> -notify_on_release release_agent tasks
-> -(plus whatever files are added by the attached subsystems)
-> +notify_on_release releasable tasks
-> +(plus whatever files added by the attached subsystems)
->
->  Now attach your shell to this cgroup:
->  # /bin/echo $$ > tasks
-> @@ -404,19 +404,13 @@ with a subsystem id which will be assigned by the cgroup system.
->  Other fields in the cgroup_subsys object include:
->
->  - subsys_id: a unique array index for the subsystem, indicating which
-> -  entry in cgroup->subsys[] this subsystem should be
-> -  managing. Initialized by cgroup_register_subsys(); prior to this
-> -  it should be initialized to -1
-> +  entry in cgroup->subsys[] this subsystem should be managing.
->
-> -- hierarchy: an index indicating which hierarchy, if any, this
-> -  subsystem is currently attached to. If this is -1, then the
-> -  subsystem is not attached to any hierarchy, and all tasks should be
-> -  considered to be members of the subsystem's top_cgroup. It should
-> -  be initialized to -1.
-> +- name: should be initialized to a unique subsystem name. Should be
-> +  no longer than MAX_CGROUP_TYPE_NAMELEN.
->
-> -- name: should be initialized to a unique subsystem name prior to
-> -  calling cgroup_register_subsystem. Should be no longer than
-> -  MAX_CGROUP_TYPE_NAMELEN
-> +- early_init: indicate if the subsystem needs early initialization
-> +  at system boot.
->
->  Each cgroup object created by the system has an array of pointers,
->  indexed by subsystem id; this pointer is entirely managed by the
-> @@ -434,8 +428,6 @@ situation.
->  See kernel/cgroup.c for more details.
->
->  Subsystems can take/release the cgroup_mutex via the functions
-> -cgroup_lock()/cgroup_unlock(), and can
-> -take/release the callback_mutex via the functions
->  cgroup_lock()/cgroup_unlock().
->
->  Accessing a task's cgroup pointer may be done in the following ways:
-> @@ -444,7 +436,7 @@ Accessing a task's cgroup pointer may be done in the following ways:
->  - inside an rcu_read_lock() section via rcu_dereference()
->
->  3.3 Subsystem API
-> ---------------------------
-> +-----------------
->
->  Each subsystem should:
->
-> @@ -455,7 +447,8 @@ Each subsystem may export the following methods. The only mandatory
->  methods are create/destroy. Any others that are null are presumed to
->  be successful no-ops.
->
-> -struct cgroup_subsys_state *create(struct cgroup *cont)
-> +struct cgroup_subsys_state *create(struct cgroup_subsys *ss,
-> +                                  struct cgroup *cgrp)
->  (cgroup_mutex held by caller)
->
->  Called to create a subsystem state object for a cgroup. The
-> @@ -470,7 +463,7 @@ identified by the passed cgroup object having a NULL parent (since
->  it's the root of the hierarchy) and may be an appropriate place for
->  initialization code.
->
-> -void destroy(struct cgroup *cont)
-> +void destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
->  (cgroup_mutex held by caller)
->
->  The cgroup system is about to destroy the passed cgroup; the subsystem
-> @@ -481,7 +474,14 @@ cgroup->parent is still valid. (Note - can also be called for a
->  newly-created cgroup if an error occurs after this subsystem's
->  create() method has been called for the new cgroup).
->
-> -int can_attach(struct cgroup_subsys *ss, struct cgroup *cont,
-> +void pre_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp);
-> +(cgroup_mutex held by caller)
-> +
-> +Called before checking the reference count on each subsystem. This may
-> +be useful for subsystems which have some extra references even if
-> +there are not tasks in the cgroup.
-> +
-> +int can_attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
->                struct task_struct *task)
->  (cgroup_mutex held by caller)
->
-> @@ -492,8 +492,8 @@ unspecified task can be moved into the cgroup. Note that this isn't
->  called on a fork. If this method returns 0 (success) then this should
->  remain valid while the caller holds cgroup_mutex.
->
-> -void attach(struct cgroup_subsys *ss, struct cgroup *cont,
-> -           struct cgroup *old_cont, struct task_struct *task)
-> +void attach(struct cgroup_subsys *ss, struct cgroup *cgrp,
-> +           struct cgroup *old_cgrp, struct task_struct *task)
->
->  Called after the task has been attached to the cgroup, to allow any
->  post-attachment activity that requires memory allocations or blocking.
-> @@ -505,9 +505,9 @@ registration for all existing tasks.
->
->  void exit(struct cgroup_subsys *ss, struct task_struct *task)
->
-> -Called during task exit
-> +Called during task exit.
->
-> -int populate(struct cgroup_subsys *ss, struct cgroup *cont)
-> +int populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
->
->  Called after creation of a cgroup to allow a subsystem to populate
->  the cgroup directory with file entries.  The subsystem should make
-> @@ -516,7 +516,7 @@ include/linux/cgroup.h for details).  Note that although this
->
->  method can return an error code, the error code is currently not
->  always handled well.
->
-> -void post_clone(struct cgroup_subsys *ss, struct cgroup *cont)
-> +void post_clone(struct cgroup_subsys *ss, struct cgroup *cgrp)
->
->  Called at the end of cgroup_clone() to do any paramater
->  initialization which might be required before a task could attach.  For
-> --
-> 1.5.4.rc3
->
->
+ security/smack/smack_lsm.c |   87 +++++++++++++++++++++++++++++------
+ 1 file changed, 74 insertions(+), 13 deletions(-)
+
+diff -uprN -X linux-2.6.25-g0219-precap/Documentation/dontdiff linux-2.6.25-g0219-precap/security/smack/smack_lsm.c linux-2.6.25-g0219/security/smack/smack_lsm.c
+--- linux-2.6.25-g0219-precap/security/smack/smack_lsm.c	2008-02-19 10:15:30.000000000 -0800
++++ linux-2.6.25-g0219/security/smack/smack_lsm.c	2008-02-19 09:24:19.000000000 -0800
+@@ -584,14 +584,20 @@ static int smack_inode_getattr(struct vf
+ static int smack_inode_setxattr(struct dentry *dentry, char *name,
+ 				void *value, size_t size, int flags)
+ {
+-	if (!capable(CAP_MAC_ADMIN)) {
+-		if (strcmp(name, XATTR_NAME_SMACK) == 0 ||
+-		    strcmp(name, XATTR_NAME_SMACKIPIN) == 0 ||
+-		    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0)
+-			return -EPERM;
+-	}
++	int rc = 0;
++
++	if (strcmp(name, XATTR_NAME_SMACK) == 0 ||
++	    strcmp(name, XATTR_NAME_SMACKIPIN) == 0 ||
++	    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0) {
++		if (!capable(CAP_MAC_ADMIN))
++			rc = -EPERM;
++	} else
++		rc = cap_inode_setxattr(dentry, name, value, size, flags);
++
++	if (rc == 0)
++		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
+ 
+-	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
++	return rc;
+ }
+ 
+ /**
+@@ -658,10 +664,20 @@ static int smack_inode_getxattr(struct d
+  */
+ static int smack_inode_removexattr(struct dentry *dentry, char *name)
+ {
+-	if (strcmp(name, XATTR_NAME_SMACK) == 0 && !capable(CAP_MAC_ADMIN))
+-		return -EPERM;
++	int rc = 0;
+ 
+-	return smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
++	if (strcmp(name, XATTR_NAME_SMACK) == 0 ||
++	    strcmp(name, XATTR_NAME_SMACKIPIN) == 0 ||
++	    strcmp(name, XATTR_NAME_SMACKIPOUT) == 0) {
++		if (!capable(CAP_MAC_ADMIN))
++			rc = -EPERM;
++	} else
++		rc = cap_inode_removexattr(dentry, name);
++
++	if (rc == 0)
++		rc = smk_curacc(smk_of_inode(dentry->d_inode), MAY_WRITE);
++
++	return rc;
+ }
+ 
+ /**
+@@ -1016,7 +1032,12 @@ static void smack_task_getsecid(struct t
+  */
+ static int smack_task_setnice(struct task_struct *p, int nice)
+ {
+-	return smk_curacc(p->security, MAY_WRITE);
++	int rc;
++
++	rc = cap_task_setnice(p, nice);
++	if (rc == 0)
++		rc = smk_curacc(p->security, MAY_WRITE);
++	return rc;
+ }
+ 
+ /**
+@@ -1028,7 +1049,12 @@ static int smack_task_setnice(struct tas
+  */
+ static int smack_task_setioprio(struct task_struct *p, int ioprio)
+ {
+-	return smk_curacc(p->security, MAY_WRITE);
++	int rc;
++
++	rc = cap_task_setioprio(p, ioprio);
++	if (rc == 0)
++		rc = smk_curacc(p->security, MAY_WRITE);
++	return rc;
+ }
+ 
+ /**
+@@ -1053,7 +1079,12 @@ static int smack_task_getioprio(struct t
+ static int smack_task_setscheduler(struct task_struct *p, int policy,
+ 				   struct sched_param *lp)
+ {
+-	return smk_curacc(p->security, MAY_WRITE);
++	int rc;
++
++	rc = cap_task_setscheduler(p, policy, lp);
++	if (rc == 0)
++		rc = smk_curacc(p->security, MAY_WRITE);
++	return rc;
+ }
+ 
+ /**
+@@ -1093,6 +1124,11 @@ static int smack_task_movememory(struct 
+ static int smack_task_kill(struct task_struct *p, struct siginfo *info,
+ 			   int sig, u32 secid)
+ {
++	int rc;
++
++	rc = cap_task_kill(p, info, sig, secid);
++	if (rc != 0)
++		return rc;
+ 	/*
+ 	 * Special cases where signals really ought to go through
+ 	 * in spite of policy. Stephen Smalley suggests it may
+@@ -1778,6 +1814,27 @@ static int smack_ipc_permission(struct k
+ 	return smk_curacc(isp, may);
+ }
+ 
++/* module stacking operations */
++
++/**
++ * smack_register_security - stack capability module
++ * @name: module name
++ * @ops: module operations - ignored
++ *
++ * Allow the capability module to register.
++ */
++static int smack_register_security(const char *name,
++				   struct security_operations *ops)
++{
++	if (strcmp(name, "capability") != 0)
++		return -EINVAL;
++
++	printk(KERN_INFO "%s:  Registering secondary module %s\n",
++	       __func__, name);
++
++	return 0;
++}
++
+ /**
+  * smack_d_instantiate - Make sure the blob is correct on an inode
+  * @opt_dentry: unused
+@@ -2412,6 +2469,8 @@ static struct security_operations smack_
+ 	.inode_post_setxattr = 		smack_inode_post_setxattr,
+ 	.inode_getxattr = 		smack_inode_getxattr,
+ 	.inode_removexattr = 		smack_inode_removexattr,
++	.inode_need_killpriv =		cap_inode_need_killpriv,
++	.inode_killpriv =		cap_inode_killpriv,
+ 	.inode_getsecurity = 		smack_inode_getsecurity,
+ 	.inode_setsecurity = 		smack_inode_setsecurity,
+ 	.inode_listsecurity = 		smack_inode_listsecurity,
+@@ -2471,6 +2530,8 @@ static struct security_operations smack_
+ 	.netlink_send =			cap_netlink_send,
+ 	.netlink_recv = 		cap_netlink_recv,
+ 
++	.register_security = 		smack_register_security,
++
+ 	.d_instantiate = 		smack_d_instantiate,
+ 
+ 	.getprocattr = 			smack_getprocattr,
+
+
