@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756533AbYBSAXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbYBSAZz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756533AbYBSAXW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:23:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbYBSAXN
+	id S1754665AbYBSAZz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:25:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751022AbYBSAZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:23:13 -0500
-Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:45819 "EHLO
-	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750730AbYBSAXM (ORCPT
+	Mon, 18 Feb 2008 19:25:44 -0500
+Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:56520 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbYBSAZn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:23:12 -0500
-Date: Mon, 18 Feb 2008 19:22:31 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Kevin Winchester <kjwinchester@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.25-rc2-mm1
-In-Reply-To: <20080218161558.d315f9a0.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.58.0802181921490.14755@gandalf.stny.rr.com>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
- <47BA1DE3.7030407@gmail.com> <20080218161558.d315f9a0.akpm@linux-foundation.org>
+	Mon, 18 Feb 2008 19:25:43 -0500
+Message-ID: <47BA21F0.90405@pobox.com>
+Date: Mon, 18 Feb 2008 19:25:20 -0500
+From: Mark Lord <mlord@pobox.com>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       ballen@gravity.phys.uwm.edu, Ric Wheeler <ric@emc.com>
+Subject: hdparm-8.2 now available
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hdparm for SATA/PATA has now been updated to version 8.2.
+ 
+Upgrading is strongly recommended for all users.
+This version fixes several bugs in earlier 7.x/8.x releases
+that could cause issues when advanced features are attempted
+on devices being driven by the old drivers/ide subsystem.
 
+libata devices were unaffected, but drivers/ide devices could
+misbehave or even be corrupted by some operations.
 
-On Mon, 18 Feb 2008, Andrew Morton wrote:
+hdparm-8.2 is available at http://sourceforge.net/projects/hdparm/ 
 
-> >
-> > I don't think I've seen anyone else report this, but if I'm wrong, I'm
-> > sure someone will point me to the thread.
->
-> No, I think it's new.
->
+Upgrading from any earlier 7.x or 8.x version
+is strongly recommended for all users.
 
-> Looks like an ftrace-vs-lockdep problem.
->
-
-Is there a .config around to look at?
-
-Thanks,
-
--- Steve
-
+Cheers
+-- 
+Mark Lord
+Real-Time Remedies Inc.
+mlord@pobox.com
