@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbYBSTIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759434AbYBSTKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbYBSTIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:08:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbYBSTIk
+	id S1759434AbYBSTKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:10:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbYBSTJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:08:40 -0500
-Received: from mms1.broadcom.com ([216.31.210.17]:2237 "EHLO mms1.broadcom.com"
+	Tue, 19 Feb 2008 14:09:52 -0500
+Received: from cantor.suse.de ([195.135.220.2]:59086 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752696AbYBSTIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:08:39 -0500
-X-Server-Uuid: 02CED230-5797-4B57-9875-D5D2FEE4708A
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Tony Battersby" <tonyb@cybernetics.com>
-cc: "David Miller" <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <47BB00EC.3010607@cybernetics.com>
-References: <47BA0984.2070306@cybernetics.com>
- <1203381120.13495.78.camel@dell>
- <20080218.163554.74130592.davem@davemloft.net>
- <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com>
-Date: Tue, 19 Feb 2008 11:11:05 -0800
-Message-ID: <1203448265.13495.95.camel@dell>
+	id S1754446AbYBSTJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:09:51 -0500
+Date: Tue, 19 Feb 2008 11:07:45 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Joe Perches <joe@perches.com>, David Miller <davem@davemloft.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] split up feature-removal-schedule.txt
+Message-ID: <20080219190745.GA4876@suse.de>
+References: <20080213070215.GA11969@kroah.com> <20080212.230423.172781444.davem@davemloft.net> <1202887323.3129.10.camel@localhost> <20080213165924.GB10129@suse.de> <1202923995.3129.26.camel@localhost> <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6BA5F6A53ZO5572808-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802131012040.2920@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2008-02-19 at 11:16 -0500, Tony Battersby wrote:
-> iSCSI
-> performance drops to 6 - 15 MB/s when the 3Com NIC is doing heavy rx
-> with light tx,
-
-That's strange.  The patch should only affect TX performance slightly
-since we are just turning off SG for TX.  Please take an ethereal trace
-to see what's happening and compare with a good trace.
-
-> but remains at a decent 115 MB/s when the 3Com NIC is
-> doing heavy tx with light rx.  When I revert Herbert's patch instead
-> of
-> applying the patch above, I get 115 MB/s in both cases.  (With a stock
-> unpatched kernel, the test fails almost immediately because the iSCSI
-> control PDUs are corrupted, causing the TCP connection to be dropped.)
+On Wed, Feb 13, 2008 at 10:13:42AM -0800, Linus Torvalds wrote:
 > 
-> The SysKonnect NIC that does not exhibit this problem has a chip that
-> says "BCM5411KQM" "TT0128 P2Q" and "56975E".
 > 
+> On Wed, 13 Feb 2008, Joe Perches wrote:
+> > 
+> > MAINTAINERS is the most frequently patched file
+> 
+> Almost all of them merge perfectly, with no problems what-so-ever. And the 
+> merge conflicts, when they happen, are generally really trivial, and never 
+> cause any subtle run-time bugs even if they were to happen.
+> 
+> So in that sense, I think both MAINTAINERS and the deprecation schedule 
+> are totally uninteresting. Yes, they have merge conflicts. But those merge 
+> conflicts are really really easy to handle.
 
-I think this is the 5700, but please send me the tg3 output that
-identifies the chip and the revision.  Something like this:
+Yes, they are easy to handle, but for trees that have to deal with these
+merge issues all the time, they are a pain (hit this one again today.)
+It takes a few minutes to fix up the resolution by hand (using either
+git or quilt), as we do want the new addition to be in the file, so by
+splitting it up, it makes our (the sub-tree maintainers) lives easier.
 
-eth2: Tigon3 [partno(BCM95705) rev 3003 PHY(5705)] (PCI:66MHz:32-bit) 10/100/1000Base-T Ethernet 00:10:18:04:57:0d
-eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
+I've never had a problem with the MAINTAINERS file, as it is pretty big
+and conflicts for me seem to never happen, but the feature-removal file
+does cause problems as it changes over time and things need to get added
+and removed.
 
+Also, there are already remants of a bad-merge in that file, which
+somehow sneaked through.
 
+Yes, these files can not cause kernel bugs, but they are semi-important
+to at least get correct.  So I'd ask you to reconsider for the
+feature-removal stuff at the very least.
 
+If you do, the git tree is still there at:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
 
+to pull from :)
 
+thanks,
+
+greg k-h
