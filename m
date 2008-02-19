@@ -1,133 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbYBSIEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbYBSIGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbYBSIEB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 03:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750798AbYBSIDx
+	id S1754903AbYBSIGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 03:06:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbYBSIF6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 03:03:53 -0500
-Received: from n19.bullet.mail.mud.yahoo.com ([68.142.200.46]:32126 "HELO
-	n19.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750774AbYBSIDw (ORCPT
+	Tue, 19 Feb 2008 03:05:58 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39513 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750822AbYBSIF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 03:03:52 -0500
-X-Yahoo-Newman-Id: 238041.43690.bm@omp412.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Ypsff5wg3ZZBr8LcOEabsYxOysoA1nr2tyo1WCz5vrr/9nh5vJGBDodvOTRiGIQVRcUlJ9tvi/DED5PJYNk3KvQgkgMP1cu24fwjfHHeSurI6XHe4k9H7W0BuIE66KfVmwAZEcIHPTqhs0w6hpoCXgDRaz7tfYXxJl6d8soZF44=  ;
-X-YMail-OSG: 38IbXeoVM1mm2TBRqfaXydjGOx_tOKzoO3t.fcIa_uiHTCs4y3P6a1tBOLJAK3eYxkESpr91MyUPgtYMp4G6kBJzr72OBShvGWj_hiiw1gl0h0E4xG5TwXIhsR0Zbg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [RFC][PATCH] the proposal of improve page reclaim by throttle
-Date: Tue, 19 Feb 2008 17:34:59 +1100
-User-Agent: KMail/1.9.5
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20080219134715.7E90.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-In-Reply-To: <20080219134715.7E90.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 19 Feb 2008 03:05:57 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 19 Feb 2008 09:05:49 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH update] firewire: fw-sbp2: fix NULL pointer deref in
+ scsi_remove_device
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <tkrat.bc89a18c9ce7df0b@s5r6.in-berlin.de>
+Message-ID: <tkrat.c814d52432988f28@s5r6.in-berlin.de>
+References: <tkrat.e8f3d31fb5f9fe01@s5r6.in-berlin.de>
+ <tkrat.9103805c20697161@s5r6.in-berlin.de>
+ <tkrat.bc89a18c9ce7df0b@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802191735.00222.nickpiggin@yahoo.com.au>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 16:44, KOSAKI Motohiro wrote:
-> background
-> ========================================
-> current VM implementation doesn't has limit of # of parallel reclaim.
-> when heavy workload, it bring to 2 bad things
->   - heavy lock contention
->   - unnecessary swap out
->
-> abount 2 month ago, KAMEZA Hiroyuki proposed the patch of page
-> reclaim throttle and explain it improve reclaim time.
-> 	http://marc.info/?l=linux-mm&m=119667465917215&w=2
->
-> but unfortunately it works only memcgroup reclaim.
-> Today, I implement it again for support global reclaim and mesure it.
->
->
-> test machine, method and result
-> ==================================================
-> <test machine>
-> 	CPU:  IA64 x8
-> 	MEM:  8GB
-> 	SWAP: 2GB
->
-> <test method>
-> 	got hackbench from
-> 		http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
->
-> 	$ /usr/bin/time hackbench 120 process 1000
->
-> 	this parameter mean consume all physical memory and
-> 	1GB swap space on my test environment.
->
-> <test result (average of 3 times measurement)>
->
-> before:
-> 	hackbench result:		282.30
-> 	/usr/bin/time result
-> 		user:			14.16
-> 		sys:			1248.47
-> 		elapse:			432.93
-> 		major fault:		29026
-> 	max parallel reclaim tasks:	1298
-> 	max consumption time of
-> 	 try_to_free_pages():		70394
->
-> after:
-> 	hackbench result:		30.36
-> 	/usr/bin/time result
-> 		user:			14.26
-> 		sys:			294.44
-> 		elapse:			118.01
-> 		major fault:		3064
-> 	max parallel reclaim tasks:	4
-> 	max consumption time of
-> 	 try_to_free_pages():		12234
->
->
-> conclusion
-> =========================================
-> this patch improve 3 things.
-> 1. reduce unnecessary swap
->    (see above major fault. about 90% reduced)
-> 2. improve throughput performance
->    (see above hackbench result. about 90% reduced)
-> 3. improve interactive performance.
->    (see above max consumption of try_to_free_pages.
->     about 80% reduced)
-> 4. reduce lock contention.
->    (see above sys time. about 80% reduced)
->
->
-> Now, we got about 1000% performance improvement of hackbench :)
->
->
->
-> foture works
-> ==========================================================
->  - more discussion with memory controller guys.
+Fix a kernel bug when unplugging an SBP-2 device after having its
+scsi_device already removed via the "delete" sysfs attribute.
 
-Hi,
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
 
-Yeah this is definitely needed and a nice result.
+Update:  A _put was missing in a failure path.
 
-I'm worried about a) placing a global limit on parallelism, and b)
-placing a limit on parallelism at all.
+ drivers/firewire/fw-sbp2.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-I think it should maybe be a per-zone thing...
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -762,9 +762,10 @@ static void sbp2_release_target(struct k
+ 	sbp2_unblock(tgt);
+ 
+ 	list_for_each_entry_safe(lu, next, &tgt->lu_list, link) {
+-		if (lu->sdev)
++		if (lu->sdev) {
+ 			scsi_remove_device(lu->sdev);
+-
++			scsi_device_put(lu->sdev);
++		}
+ 		sbp2_send_management_orb(lu, tgt->node_id, lu->generation,
+ 				SBP2_LOGOUT_REQUEST, lu->login_id, NULL);
+ 
+@@ -886,12 +887,11 @@ static void sbp2_login(struct work_struc
+ 	if (IS_ERR(sdev))
+ 		goto out_logout_login;
+ 
+-	scsi_device_put(sdev);
+-
+ 	/* Unreported error during __scsi_add_device() */
+ 	smp_rmb(); /* get current card generation */
+ 	if (generation != device->card->generation) {
+ 		scsi_remove_device(sdev);
++		scsi_device_put(sdev);
+ 		goto out_logout_login;
+ 	}
+ 
 
-What happens if you make it a per-zone mutex, and allow just a single
-process to reclaim pages from a given zone at a time? I guess that is
-going to slow down throughput a little bit in some cases though...
+-- 
+Stefan Richter
+-=====-==--- --=- =--==
+http://arcgraph.de/sr/
 
