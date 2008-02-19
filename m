@@ -1,88 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760769AbYBSUgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760754AbYBSUiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760769AbYBSUgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbYBSUgA
+	id S1760754AbYBSUiT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbYBSUiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:36:00 -0500
-Received: from ti-out-0910.google.com ([209.85.142.187]:20803 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753715AbYBSUf6 (ORCPT
+	Tue, 19 Feb 2008 15:38:10 -0500
+Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:52152 "EHLO
+	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753672AbYBSUiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:35:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=drlUsXWZG0X98gSl1lv+xP9afmeDJjGoqMf60E3xFx8spQm+ZA+JV0upUCptJLp6uqKngIPg0y5rPyYMJp7q7K9rlS+ywf3sB/XLxKWjfjTsRTyrwuUGKLAf6nNIRQCUd2gyGWlaDii0X89/PFNJRw3o31tyom2nevCBCN2awUs=
-Message-ID: <47BB3DA1.8040001@gmail.com>
-Date: Tue, 19 Feb 2008 15:35:45 -0500
-From: Andrew Buehler <abuehler.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 19 Feb 2008 15:38:07 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAI7MukfEAmHElWdsb2JhbACQUAEBAQEHChEYnj8
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
+Date: Tue, 19 Feb 2008 22:37:57 +0200
+User-Agent: KMail/1.9.8
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+References: <200802171036.19619.bonganilinux@mweb.co.za> <200802190121.36280.bonganilinux@mweb.co.za> <20080219111640.409870a9@gaivota>
+In-Reply-To: <20080219111640.409870a9@gaivota>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Oliver Pinter <oliver.pntr@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]* - mostly resolved
-References: <Pine.LNX.4.44L0.0802162210110.13745-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802162210110.13745-100000@netrider.rowland.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802192237.58082.bonganilinux@mweb.co.za>
+X-Original-Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
+X-Scan-Signature: 61da069ffb8bcac1acef27ac92205280
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/16/2008 10:35 PM, Alan Stern wrote:
+More info add Ingo to CC, maybe he can explain what might cause such failure 
+in the mutex code (sorry Ingo, I need to bother you once more)
 
-> On Sat, 16 Feb 2008, Andrew Buehler wrote:
+Ingo:
 
->> Until this thread, I was not even aware that ACPI was related to
->> USB; I had largely conflated it with a similar acronym which I
->> think is related to power management and which I can suddenly not
->> even find in my kernel config. I will, however, look into
->> linux-acpi.
-> 
-> ACPI isn't directly related to USB; rather it has to do with
-> transferring information between the OS and the
-> BIOS/vendor-specific-hardware. Power management is example where such
-> a transfer is needed. In your case, the relevant information is
-> which IRQ is connected to which motherboard device. If you don't have
-> ACPI enabled in your configuration, then perhaps that's the problem
-> -- try enabling it.
-
-Apparently it was the problem; enabling ACPI has fixed not only the USB
-problem but also the network problem (somewhat miraculously, since I'm
-quite certain that I had ACPI enabled in a 2.6.23.x kernel where the
-network did not work despite an apparently matching driver).
-
-I feel somewhat foolish for having reported a regression over what turns
-out to have been a simple misconfiguration, but I still do think it's
-somewhat misleading at best for something so potentially important to
-completely non-power-related things to be buried under the heading of
-power management... I would suggest moving it somewhere else in the
-config and the dependencies, except that I have neither a suggestion for
-a possible place nor any idea of how much actual work that would
-involve.
+I got the oops bellow whilst using the radio functionality of the 
+bttv-drivers, nothing seems obvious except that I dies while calling 
+__mutex_lock_slowpath. I've been trying to follow Linus' and Al's advise on 
+oops tracing and I got as far as the _spin_lock code:
 
 
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
+IP: [<ffffffff8045723d>] __mutex_lock_slowpath+0x3b/0xb2
+PGD 67671067 PUD 63f47067 PMD 0
+Oops: 0002 [1] PREEMPT SMP
+CPU 0
+Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq 
+binfmt_misc loop nls_cp437 vfat fat nls_iso8859_1 ntfs dm_mod thermal 
+processor fan container button pcspkr snd_pcm_oss snd_mixer_oss tuner tea5767 
+tda8290 tuner_xc2028 tda9887 tuner_simple mt20xx tea5761 snd_emu10k1 
+snd_rawmidi bttv snd_ac97_codec videodev ac97_bus v4l1_compat snd_pcm 
+ir_common firewire_ohci firewire_core snd_seq_device compat_ioctl32 snd_timer 
+uhci_hcd ehci_hcd v4l2_common ide_cd_mod crc_itu_t snd_page_alloc usbcore 
+videobuf_dma_sg snd_util_mem videobuf_core ohci1394 btcx_risc i2c_viapro 
+sr_mod snd_hwdep ieee1394 emu10k1_gp snd tg3 cdrom tveeprom gameport sg evdev 
+soundcore
+Pid: 7197, comm: radio Tainted: G   M     2.6.25-rc1 #20
+RIP: 0010:[<ffffffff8045723d>]  [<ffffffff8045723d>] 
+__mutex_lock_slowpath+0x3b/0xb2
+RSP: 0018:ffff81007df515e8  EFLAGS: 00010246
+RAX: ffff81007f13ef10 RBX: ffff81007f13ef08 RCX: 0000000000000000
+RDX: ffff81007df515e8 RSI: ffffffff88184050 RDI: ffff81007f13ef0c
+RBP: ffff81007df51628 R08: 0000000000000004 R09: ffff81007df51aa8
+R10: ffff81007e680a40 R11: 0000000000000202 R12: ffff81007f13ef0c
+R13: ffff81007f13ef08 R14: ffff810063cfc040 R15: ffffffff88184050
+FS:  00007fa8d92ba6f0(0000) GS:ffffffff805b2000(0000) knlGS:00000000f61fb980
+CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+CR2: 0000000000000000 CR3: 00000000676dc000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process radio (pid: 7197, threadinfo ffff81007df50000, task ffff810063cfc040)
+Stack:  ffff81007f13ef10 0005049900000000 018060f7018060fa 0000000000000024
+ ffff81007df51aa8 ffff81007f13e800 ffff81007f13ef08 ffff81007e0e5800
+ ffff81007df51638 ffffffff80457083 ffff81007df51668 ffffffff88162f2f
+Call Trace:
+ [<ffffffff80457083>] 
+ [<ffffffff88162f2f>] :bttv:radio_g_tuner+0x40/0xa6
+ [<ffffffff8813df7d>] :videodev:__video_do_ioctl+0x2a6e/0x2e25
+ [<ffffffff8813503c>] :v4l1_compat:v4l_compat_translate_ioctl+0xea9/0x1af5
+ [<ffffffff8813b50f>] ? :videodev:__video_do_ioctl+0x0/0x2e25
+ [<ffffffff80301f4b>] ? blk_recount_segments+0x3e/0x62
+ [<ffffffff80260f7b>] ? mempool_alloc_slab+0x11/0x13
+ [<ffffffff80261085>] ? mempool_alloc+0x48/0xf9
+ [<ffffffff802e3369>] ? ext3_get_acl+0x87/0x332
+ [<ffffffff80296c65>] ? __d_lookup+0x125/0x137
+ [<ffffffff8028d54f>] ? do_lookup+0x63/0x1b1
+ [<ffffffff802961c3>] ? dput+0x22/0x120
+ [<ffffffff8028f6a6>] ? __link_path_walk+0xbbd/0xd1b
+ [<ffffffff802e3369>] ? ext3_get_acl+0x87/0x332
+ [<ffffffff802115d1>] ? native_read_tsc+0x11/0x22
+ [<ffffffff80310e1b>] ? __delay+0x27/0x59
+last message repeated 2 times
+ [<ffffffff80310ecf>] ? __udelay+0x40/0x42
+ [<ffffffff803c0950>] ? i2c_stop+0x47/0x4b
+ [<ffffffff803c1117>] ? bit_xfer+0x412/0x423
+ [<ffffffff803bef99>] ? i2c_transfer+0x79/0x85
+ [<ffffffff881cc31c>] ? :tuner_simple:simple_set_params+0x2bd/0xc1c
+ [<ffffffff80284607>] ? get_unused_fd_flags+0x10d/0x11c
+ [<ffffffff8029965b>] ? touch_atime+0xe3/0xec
+ [<ffffffff8029b113>] ? mntput_no_expire+0x20/0x8f
+ [<ffffffff881e3447>] ? :tuner:fe_set_params+0x46/0x48
+ [<ffffffff881e285c>] ? :tuner:set_radio_freq+0x159/0x162
+ [<ffffffff80449dfb>] ? klist_dec_and_del+0x14/0x16
+ [<ffffffff80449e68>] ? klist_next+0x6b/0x8a
+ [<ffffffff803c075a>] ? i2c_cmd+0x0/0x3e
+ [<ffffffff8037c62f>] ? device_for_each_child+0x4c/0x5c
+ [<ffffffff8813b648>] :videodev:__video_do_ioctl+0x139/0x2e25
+ [<ffffffff88168b56>] ? :bttv:bttv_call_i2c_clients+0x16/0x18
+ [<ffffffff88161ed2>] ? :bttv:audio_mux+0x105/0x1b5
+ [<ffffffff80260d39>] ? filemap_fault+0x1fe/0x371
+ [<ffffffff8813e6d4>] :videodev:video_ioctl2+0x1b8/0x259
+ [<ffffffff8026dc63>] ? handle_mm_fault+0x341/0x697
+ [<ffffffff80291c36>] vfs_ioctl+0x5e/0x77
+ [<ffffffff80291e9c>] do_vfs_ioctl+0x24d/0x262
+ [<ffffffff8045a9d7>] ? do_page_fault+0x434/0x7aa
+ [<ffffffff80291ef3>] sys_ioctl+0x42/0x67
+ [<ffffffff8020b36b>] system_call_after_swapgs+0x7b/0x80
+Feb 15 08:42:03 bongani64 kernel:
+Feb 15 08:42:03 bongani64 kernel:
+Code: 89 fb 4c 89 e7 48 83 ec 20 65 4c 8b 34 25 00 00 00 00 e8 19 12 00 00 48 
+8d 43 08 48 8d 55 c0 48 8b 48 08 48 89 45 c0 48 89 50 08 <48> 89 11 48 83 ca 
+ff 48 89 4d c8 4c 89 75 d0 48 89 d0 87 03 ff
+RIP  [<ffffffff8045723d>] __mutex_lock_slowpath+0x3b/0xb2
+ RSP <ffff81007df515e8>
+CR2: 0000000000000000
+---[ end trace fdf145f4fc51dccd ]---
+note: radio[7197] exited with preempt_count 1
 
-With those two problems out of the way, what is left is the hard-drive
-issue, and that is also halfway fixed by enabling ACPI. Specifically, it
-is "fixed" in that the kernel sees the hard drive and I can mount it,
-but it is not fixed in that the program we need to use in this
-environment does not see the drive.
+Code dissamble:
 
-I have a config from a boot disc running 2.6.5 (that's not a typo) under
-which the program in question *does* see the drive, but there are
-massive differences between that config and the one I am using now, and
-narrowing the critical difference down is likely to be somewhat
-difficult - particularly since some of the "differences" are merely
-renamed config symbols (i.e. the CONFIG_SCSI_SATA_*->CONFIG_SATA_*
-switchover), and I have limited ability to tell which without intensive
-investigation. Are there any established techniques for simplifying this
-kind of comparison?
+0x4005c0 <array>:       mov    %edi,%ebx
+0x4005c2 <array+2>:     mov    %r12,%rdi
+0x4005c5 <array+5>:     sub    $0x20,%rsp
+0x4005c9 <array+9>:     mov    %gs:0x0,%r14
+0x4005d2 <array+18>:    callq  0x4017f0
+0x4005d7 <array+23>:    lea    0x8(%rbx),%rax
+0x4005db <array+27>:    lea    0xffffffffffffffc0(%rbp),%rdx
+0x4005df <array+31>:    mov    0x8(%rax),%rcx
+0x4005e3 <array+35>:    mov    %rax,0xffffffffffffffc0(%rbp)
+0x4005e7 <array+39>:    mov    %rdx,0x8(%rax)
+0x4005eb <array+43>:    mov    %rdx,(%rcx) 	<============= Here
+0x4005ee <array+46>:    or     $0xffffffffffffffff,%rdx
+0x4005f2 <array+50>:    mov    %rcx,0xffffffffffffffc8(%rbp)
+0x4005f6 <array+54>:    mov    %r14,0xffffffffffffffd0(%rbp)
+0x4005fa <array+58>:    mov    %rdx,%rax
+0x4005fd <array+61>:    xchg   %eax,(%rbx)
+0x4005ff <array+63>:    incl   (%rax)
+0x400601:       and    $0xa70,%eax
+0x400606:       add    %al,(%rax)
+0x400608:       add    %ebx,(%rbx)
 
--- 
-    Andrew Buehler
+kernel/mutext.c dissamble:
+
+__mutex_lock_slowpath:
+        pushq   %rbp    #
+        movq    %rsp, %rbp      #,
+        pushq   %r14    #
+        pushq   %r13    #
+        pushq   %r12    #
+        leaq    4(%rdi), %r12   #, D.13845
+        pushq   %rbx    #
+        movq    %rdi, %rbx      # lock_count, lock
+        movq    %r12, %rdi      # D.13845, D.13845
+        subq    $32, %rsp       #,
+#APP
+        movq %gs:0,%r14 #, tsk
+#NO_APP
+        call    _spin_lock      #
+        leaq    8(%rbx), %rax   #, next
+        leaq    -64(%rbp), %rdx #, tmp81
+        movq    8(%rax), %rcx   # <variable>.prev, prev
+        movq    %rax, -64(%rbp) # next, waiter.list.next
+        movq    %rdx, 8(%rax)   # tmp81, <variable>.prev
+        movq    %rdx, (%rcx)    # tmp81, <variable>.next <========= Here
+        orq     $-1, %rdx       #, tmp83
+        movq    %rcx, -56(%rbp) # prev, waiter.list.prev
+        movq    %r14, -48(%rbp) # tsk, waiter.task
+        movq    %rdx, %rax      # tmp83, x
+
+Hope this helps
