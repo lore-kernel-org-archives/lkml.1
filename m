@@ -1,154 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761175AbYBSVzF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbYBSVzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761175AbYBSVzF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 16:55:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbYBSVyj
+	id S1761563AbYBSVzb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 16:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761362AbYBSVzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 16:54:39 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44360 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754452AbYBSVyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 16:54:36 -0500
-Subject: Re: [PATCH] procfs task exe symlink
-From: Matt Helsley <matthltc@us.ibm.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       David Howells <dhowells@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Christoph Hellwig <chellwig@de.ibm.com>,
-       Al Viro <viro@zeniv.linux.org.uk>, Hugh Dickins <hugh@veritas.com>,
-       Bryan Wu <Bryan.Wu@analog.com>
-In-Reply-To: <8bd0f97a0802160412ve49103cya446b89d8560458b@mail.gmail.com>
-References: <1202348669.9062.271.camel@localhost.localdomain>
-	 <8bd0f97a0802160412ve49103cya446b89d8560458b@mail.gmail.com>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 19 Feb 2008 13:54:25 -0800
-Message-Id: <1203458065.7408.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Tue, 19 Feb 2008 16:55:09 -0500
+Received: from hpsmtp-eml16.kpnxchange.com ([213.75.38.116]:3367 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761271AbYBSVzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 16:55:07 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: Unable to continue testing of 2.6.25
+Date: Tue, 19 Feb 2008 22:55:01 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200802171025.30590.elendil@planet.nl> <20080217131611.GA1403@cs181133002.pp.htv.fi>
+In-Reply-To: <20080217131611.GA1403@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802192255.02152.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Feb 2008 21:55:02.0967 (UTC) FILETIME=[1489CC70:01C87342]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sunday 17 February 2008, Adrian Bunk wrote:
+> The real problem is that the kernel seems to lack functionality you
+> require for doing some work.
 
-On Sat, 2008-02-16 at 07:12 -0500, Mike Frysinger wrote:
-> On Feb 6, 2008 8:44 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
-> > The kernel implements readlink of /proc/pid/exe by getting the file from the
-> > first executable VMA. Then the path to the file is reconstructed and reported as
-> > the result.
-> >
-> > Because of the VMA walk the code is slightly different on nommu systems. This
-> > patch avoids separate /proc/pid/exe code on nommu systems. Instead of walking
-> > the VMAs to find the first executable file-backed VMA we store a reference to
-> > the exec'd file in the mm_struct.
-> >
-> > That reference would prevent the filesystem holding the executable file from
-> > being unmounted even after unmapping the VMAs. So we track the number of
-> > VM_EXECUTABLE VMAs and drop the new reference when the last one is unmapped.
-> > This avoids pinning the mounted filesystem.
-> >
-> > Andrew, these are the updates I promised. Please consider this patch for
-> > inclusion in -mm.
-> 
-> mm/nommu.c wasnt compiled tested, it's trivially broken:
+Not sure how you reached that conclusion.
 
-Thanks for the report. I've looked into this and the "obvious" fix,
-using vma->vm_mm, isn't correct since it's never set. This means the
-portions of the procfs task exe symlink patch using vma->vm_mm in
-mm/nommu.c are incorrect.
+> Why does your work on the Debian Installer depend on VirtualBox and
+> can't be done with what the kernel already ships?
 
-The patch below attempts to fix this by using current->mm during mmap
-and passing the current mm to put_vma() as well.
+Work on the installer does not so much hard depend on VirtualBox (or any 
+other emulator), but can be done much more effectively and efficiently 
+using one.
 
-Mike, does this patch fix the compile problem(s)?
+It allows me to run the installer inside the emulator without the need for a 
+second computer (and using the same keyboard). It allows me to take 
+snapshots just before stages I'm interested in and then add debugging or 
+try changes. If what I tried does not work, I can just revert to the 
+snapshot and try something else without having to run the full installation 
+from scratch. It allows me to easily test RAID setups without having 
+multiple physical disks. Etc.
 
-Signed-off-by: Matt Helsley <matthltc@us.ibm.com>
-
----
-Mike, I don't have a nommu compile or test environment. I have yet
-to to generate a good CONFIG_MMU=n config on i386 (got one?). Since I
-don't have any nommu hardware I'm also looking into using qemu. It looks
-like I may need to build my own image from scratch. Do you have any
-recommendations on testing nommu configs without hardware?
-
- mm/nommu.c |   14 ++++++++------
- 1 file changed, 8 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.24/mm/nommu.c
-===================================================================
---- linux-2.6.24.orig/mm/nommu.c
-+++ linux-2.6.24/mm/nommu.c
-@@ -962,12 +962,14 @@ unsigned long do_mmap_pgoff(struct file 
- 
- 	INIT_LIST_HEAD(&vma->anon_vma_node);
- 	atomic_set(&vma->vm_usage, 1);
- 	if (file) {
- 		get_file(file);
--		if (vm_flags & VM_EXECUTABLE)
--			added_exe_file_vma(mm);
-+		if (vm_flags & VM_EXECUTABLE) {
-+			added_exe_file_vma(current->mm);
-+			vma->vm_mm = current->mm;
-+		}
- 	}
- 	vma->vm_file	= file;
- 	vma->vm_flags	= vm_flags;
- 	vma->vm_start	= addr;
- 	vma->vm_end	= addr + len;
-@@ -1053,11 +1055,11 @@ unsigned long do_mmap_pgoff(struct file 
- EXPORT_SYMBOL(do_mmap_pgoff);
- 
- /*
-  * handle mapping disposal for uClinux
-  */
--static void put_vma(struct vm_area_struct *vma)
-+static void put_vma(struct mm_struct *mm, struct vm_area_struct *vma)
- {
- 	if (vma) {
- 		down_write(&nommu_vma_sem);
- 
- 		if (atomic_dec_and_test(&vma->vm_usage)) {
-@@ -1078,11 +1080,11 @@ static void put_vma(struct vm_area_struc
- 			askedalloc -= sizeof(*vma);
- 
- 			if (vma->vm_file) {
- 				fput(vma->vm_file);
- 				if (vma->vm_flags & VM_EXECUTABLE)
--					removed_exe_file_vma(vma->vm_mm);
-+					removed_exe_file_vma(mm);
- 			}
- 			kfree(vma);
- 		}
- 
- 		up_write(&nommu_vma_sem);
-@@ -1116,11 +1118,11 @@ int do_munmap(struct mm_struct *mm, unsi
- 	return -EINVAL;
- 
-  found:
- 	vml = *parent;
- 
--	put_vma(vml->vma);
-+	put_vma(mm, vml->vma);
- 
- 	*parent = vml->next;
- 	realalloc -= kobjsize(vml);
- 	askedalloc -= sizeof(*vml);
- 	kfree(vml);
-@@ -1161,11 +1163,11 @@ void exit_mmap(struct mm_struct * mm)
- 
- 		mm->total_vm = 0;
- 
- 		while ((tmp = mm->context.vmlist)) {
- 			mm->context.vmlist = tmp->next;
--			put_vma(tmp->vma);
-+			put_vma(mm, tmp->vma);
- 
- 			realalloc -= kobjsize(tmp);
- 			askedalloc -= sizeof(*tmp);
- 			kfree(tmp);
- 		}
-
-
+The fact that VirtualBox does not (yet) work for me with 2.6.25 means that 
+I'm unable to run 2.6.25 on my main desktop and do any real work. Rebooting 
+my desktop whenever I want to use VirtualBox is just not a realistic 
+option.
+That in turn means that I cannot do any more testing of 2.6.25, because most 
+of the testing I do consists of just using a new kernel and critically 
+observing the behavior of my system. As I've caught a fair number of bugs 
+that way for the past few releases, I'd say that's a useful contribution.
