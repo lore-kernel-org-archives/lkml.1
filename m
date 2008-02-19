@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbYBSWur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763577AbYBSWvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763446AbYBSWur (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762212AbYBSWuA
+	id S1763577AbYBSWvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:51:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761835AbYBSWua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:50:00 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:60773 "EHLO smtp4.pp.htv.fi"
+	Tue, 19 Feb 2008 17:50:30 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:47460 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762165AbYBSWt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:49:59 -0500
-Date: Wed, 20 Feb 2008 00:49:22 +0200
+	id S1758837AbYBSWu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 17:50:28 -0500
+Date: Wed, 20 Feb 2008 00:49:51 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Christoph Lameter <clameter@sgi.com>, penberg@cs.helsinki.fi,
-       mpm@selenic.com
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: mm/slub.c: inconsequent NULL checking
-Message-ID: <20080219224922.GO31955@cs181133002.pp.htv.fi>
+To: Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [RFC: 2.6.25 patch] ipv4/fib_hash.c: fix NULL dereference
+Message-ID: <20080219224951.GP31955@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,50 +24,95 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted the following inconsequent NULL checking 
-introduced by commit 8ff12cfc009a2a38d87fa7058226fe197bb2696f:
+Unless I miss a guaranteed relation between between "f" and 
+"new_fa->fa_info" this patch is required for fixing a NULL dereference
+introduced by commit a6501e080c318f8d4467679d17807f42b3a33cd5 and 
+spotted by the Coverity checker.
 
-<--  snip  -->
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-...
-static inline int is_end(void *addr)
-{
-        return (unsigned long)addr & PAGE_MAPPING_ANON;
-}
-...
-static void deactivate_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
-{
-...
-        if (c->freelist)    <----------------------------------------
-                stat(c, DEACTIVATE_REMOTE_FREES);
-        /*
-         * Merge cpu freelist into freelist. Typically we get here
-         * because both freelists are empty. So this is unlikely
-         * to occur.
-         *
-         * We need to use _is_end here because deactivate slab may
-         * be called for a debug slab. Then c->freelist may contain
-         * a dummy pointer.
-         */
-        while (unlikely(!is_end(c->freelist))) {
-                void **object;
+---
 
-                tail = 0;       /* Hot objects. Put the slab first */
+ net/ipv4/fib_hash.c |   10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-                /* Retrieve object from cpu_freelist */
-                object = c->freelist;
-                c->freelist = c->freelist[c->offset];
-...                           ^^^^^^^^^^^^^^^^^^^^^^
-
-<--  snip  -->
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- linux-2.6/net/ipv4/fib_hash.c.old	2008-02-19 23:23:14.000000000 +0200
++++ linux-2.6/net/ipv4/fib_hash.c	2008-02-19 23:38:28.000000000 +0200
+@@ -367,17 +367,18 @@ static struct fib_node *fib_find_node(st
+ 	}
+ 
+ 	return NULL;
+ }
+ 
+ static int fn_hash_insert(struct fib_table *tb, struct fib_config *cfg)
+ {
+ 	struct fn_hash *table = (struct fn_hash *) tb->tb_data;
+-	struct fib_node *new_f, *f;
++	struct fib_node *new_f = NULL;
++	struct fib_node *f;
+ 	struct fib_alias *fa, *new_fa;
+ 	struct fn_zone *fz;
+ 	struct fib_info *fi;
+ 	u8 tos = cfg->fc_tos;
+ 	__be32 key;
+ 	int err;
+ 
+ 	if (cfg->fc_dst_len > 32)
+@@ -491,33 +492,32 @@ static int fn_hash_insert(struct fib_tab
+ 	}
+ 
+ 	err = -ENOENT;
+ 	if (!(cfg->fc_nlflags & NLM_F_CREATE))
+ 		goto out;
+ 
+ 	err = -ENOBUFS;
+ 
+-	new_f = NULL;
+ 	if (!f) {
+ 		new_f = kmem_cache_zalloc(fn_hash_kmem, GFP_KERNEL);
+ 		if (new_f == NULL)
+ 			goto out;
+ 
+ 		INIT_HLIST_NODE(&new_f->fn_hash);
+ 		INIT_LIST_HEAD(&new_f->fn_alias);
+ 		new_f->fn_key = key;
+ 		f = new_f;
+ 	}
+ 
+ 	new_fa = &f->fn_embedded_alias;
+ 	if (new_fa->fa_info != NULL) {
+ 		new_fa = kmem_cache_alloc(fn_alias_kmem, GFP_KERNEL);
+ 		if (new_fa == NULL)
+-			goto out_free_new_f;
++			goto out;
+ 	}
+ 	new_fa->fa_info = fi;
+ 	new_fa->fa_tos = tos;
+ 	new_fa->fa_type = cfg->fc_type;
+ 	new_fa->fa_scope = cfg->fc_scope;
+ 	new_fa->fa_state = 0;
+ 
+ 	/*
+@@ -535,19 +535,19 @@ static int fn_hash_insert(struct fib_tab
+ 	if (new_f)
+ 		fz->fz_nent++;
+ 	rt_cache_flush(-1);
+ 
+ 	rtmsg_fib(RTM_NEWROUTE, key, new_fa, cfg->fc_dst_len, tb->tb_id,
+ 		  &cfg->fc_nlinfo, 0);
+ 	return 0;
+ 
+-out_free_new_f:
+-	kmem_cache_free(fn_hash_kmem, new_f);
+ out:
++	if (new_f)
++		kmem_cache_free(fn_hash_kmem, new_f);
+ 	fib_release_info(fi);
+ 	return err;
+ }
+ 
+ 
+ static int fn_hash_delete(struct fib_table *tb, struct fib_config *cfg)
+ {
+ 	struct fn_hash *table = (struct fn_hash*)tb->tb_data;
 
