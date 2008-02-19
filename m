@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbYBSAfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbYBSAhA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760767AbYBSAfb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 19:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbYBSAfT
+	id S1760310AbYBSAhA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 19:37:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbYBSAgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 19:35:19 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43691
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751203AbYBSAfS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 19:35:18 -0500
-Date: Mon, 18 Feb 2008 16:35:54 -0800 (PST)
-Message-Id: <20080218.163554.74130592.davem@davemloft.net>
-To: mchan@broadcom.com
-Cc: tonyb@cybernetics.com, herbert@gondor.apana.org.au, netdev@vger.kernel.org,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1203381120.13495.78.camel@dell>
-References: <47BA0984.2070306@cybernetics.com>
-	<1203381120.13495.78.camel@dell>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 18 Feb 2008 19:36:53 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53265 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbYBSAgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 Feb 2008 19:36:52 -0500
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for
+	foreign	endianness
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Clemens Koller <clemens.koller@anagramm.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <47BA162C.5000807@anagramm.de>
+References: <20080205154432.GA8749@localhost.localdomain>
+	 <20080214224942.a0cb6218.akpm@linux-foundation.org>
+	 <20080215164542.GB16810@localhost.localdomain>
+	 <Pine.LNX.4.64.0802171030330.6848@anakin>
+	 <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
+	 <19805.1203355811@turing-police.cc.vt.edu>  <47BA162C.5000807@anagramm.de>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 11:35:53 +1100
+Message-Id: <1203381353.6740.59.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Michael Chan" <mchan@broadcom.com>
-Date: Mon, 18 Feb 2008 16:32:00 -0800
 
-> On Mon, 2008-02-18 at 17:41 -0500, Tony Battersby wrote:
-> > I am experiencing network data corruption with a 3Com 3C996B-T NIC
-> > (Broadcom NetXtreme BCM5701; driver tg3.ko).  I have identified the
-> > following patch as the trigger:
+On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
+> Valdis.Kletnieks@vt.edu schrieb:
+> > On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
+> >> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
+> >> Both resolve endianess at driver level. Actually, both handle it by setting special
+> >> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
+> >> I understand that this patch is for chips which cannot reorder bytes by themselves.
+> > 
+> > Does anybody know of such a chip that's actually available in the wild?  Or are
+> > we writing drivers for speculative possible chips?
+> > 
 > 
-> Assuming this problem is unique to the 5701, I'm not sure how it is
-> exposed by Herbert's patch.  One thing unique on the 5701 is that it
-> double-copies all RX packets so that the data starts at offset 2, but
-> that's quite unrelated to the patch below.
+> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
+> The chip also has a register to swap endianess, but that seems to only affect some
+> LocalBus modes.
+> The current fb and X drivers are working, but when it comes to font
+> aliasing and hw-acceleration, the problems start to rise again...
 
-One consequence of Herbert's change is that the chip will see a
-different datastream.  The initial skb->data linear area will be
-smaller, and the transition to the fragmented area of pages will be
-quicker.
+Most "sane" gfx chips nowadays provide configurable surfaces that allow
+to perform the swap when writing/reading from regions of the
+framebuffer, with the ability to set a different swapper setting (based
+on bit depth) per region.
+
+Then there is also the risk that your PCI<->Localbus has been wired
+improperly :-)
+
+Ben.
+
+
