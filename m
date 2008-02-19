@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbYBSQMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbYBSQM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbYBSQMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbYBSQML
+	id S1753524AbYBSQM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbYBSQMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:12:11 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:57561 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752778AbYBSQMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:12:10 -0500
-Message-ID: <47BAFFD3.1070606@sgi.com>
-Date: Tue, 19 Feb 2008 08:12:03 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 19 Feb 2008 11:12:49 -0500
+Received: from smtp01.isdsl.net ([196.26.208.190]:51283 "EHLO smtp01.isdsl.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752798AbYBSQMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:12:48 -0500
+X-netsentry.modernarch.co.za-MailScanner-Watermark: 1204042340.51694@JJpm7JOAmwTTo4yUrihDog
+Message-ID: <47BAFFE9.6050707@networksentry.co.za>
+Date: Tue, 19 Feb 2008 18:12:25 +0200
+From: Gregory Nietsky <gregory@networksentry.co.za>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de, Christoph Lameter <clameter@sgi.com>,
-       Jack Steiner <steiner@sgi.com>
-Subject: Re: 2.6.24 git2/mm1: cpu_to_node mapping to non-existant nodes causing
- boot failure
-References: <20080203171634.58ab668b.akpm@linux-foundation.org> <20080213175241.GA327@csn.ul.ie> <47B33ACF.5030700@sgi.com> <20080214201727.GC30841@csn.ul.ie> <47B4A774.7050509@sgi.com> <20080215020208.GA6500@csn.ul.ie> <47B77E90.5050809@sgi.com>
-In-Reply-To: <47B77E90.5050809@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Sam Ravnborg <sam@ravnborg.org>, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org> <20080219115537.GB5604@uranus.ravnborg.org>
+In-Reply-To: <20080219115537.GB5604@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-netsentry.modernarch.co.za-MailScanner-Information: Please contact Network Sentry  for more information (www.networksentry.co.za)
+X-netsentry.modernarch.co.za-MailScanner: Found to be clean
+X-netsentry.modernarch.co.za-MailScanner-From: gregory@networksentry.co.za
+X-Scan-Signature: 1e5579062dd15e064ef5c9c6f539d932{40}}
+X-Trace: smtp01.isdsl.net 1JRV4z-0006Go-Cw cb15d2461ca67bd8f29af2fbb766b3cc
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Travis wrote:
-> Mel Gorman wrote:
+Sam Ravnborg wrote:
+>> I'm not sure either it's a good idea to try to merge mISDN if the
+>> maintainers don't think it is ready yet.
 > 
->> If you send me patches to apply on top of 2.6.25-rc1, I'll give them a spin
->> on the machine in question. Reverting didn't work out very well as there are
->> too many collisions with patches that were applied later. I eventually got
->> the machine booting but it only succeeds because it only brings up one core
->> on each processor.  The patch, which is pretty brain damaged is below in case
->> it helps you guess what the real problem is. dmesg logs are attached of the
->> vanilla failure with acpi=debug and the log with the patch applied showing
->> "__cpu_up: bad cpu 1" and "__cpu_up: bad cpu3" (i.e. the second cores of
->> each machine).
->>
+> In the spirit of relase early - relase often we should at
+> least see what is going on.
 > 
-> This should completely undo the change to 16 bit apic ids until we can figure
-> out the problem with the memory-less nodes.  I checked it on both the numa
-> and non-numa x86_64 box.
-> 
-> Thanks,
-> Mike
-> 
+well to add mISDN to the kernel tree is straight forward
 
-Hi Mel,
+./std2kern
 
-Did you get a chance to try out this patch to see if it cleared up the problem
-booting on your x86_64 numa box?
+and the out of tree set becomes in tree a bit of git magic and you have 
+a patch.
 
-Thanks,
-Mike
+im advocating it for now alongside isdn4linux prehaps marked as 
+"EXPERIMENTAL" im not involved in the mISDN team im a contributor/hacker.
+
+need the buy in from Cristian R/Karsten K.
+
+FYI here in south africa ISDN BRI is widely available with the high 
+costs of ISDN PRI this is the best/most practical solution for VOIP.with 
+ADSL only now becoming availble on mass the "fastest" connection is 
+still 64/128k ISDN in many areas.the hardware is easily available from 
+all outlets.my device of choice is a cheap USB modem that comes in @ 30$ 
+US per port (can use upto 8) the 4 port digium card comes in @ 650$.
+
+
+Greg
+
+--
+
+This message has been scanned for viruses and
+
+dangerous content by Superset Technology, and 
+
+is believed to be clean.
+
+http://www.superset.co.za
+
+
