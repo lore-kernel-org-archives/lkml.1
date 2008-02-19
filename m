@@ -1,297 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbYBSORL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbYBSOR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbYBSORL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 09:17:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751764AbYBSOQ6
+	id S1756883AbYBSOR2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 09:17:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbYBSORG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 09:16:58 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:46253 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1752537AbYBSOQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 09:16:56 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Wed, 20 Feb 2008 01:09:40 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Improve init/Kconfig help descriptions [PATCH 1/9]
-Message-ID: <20080219140940.GA26697@tull.net>
-References: <20080219140609.GA26619@tull.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219140609.GA26619@tull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+	Tue, 19 Feb 2008 09:17:06 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:52618 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754136AbYBSORD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 09:17:03 -0500
+Date: Tue, 19 Feb 2008 11:16:40 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Bongani Hlope <bonganilinux@mweb.co.za>
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.25-rc[12] Video4Linux Bttv Regression
+Message-ID: <20080219111640.409870a9@gaivota>
+In-Reply-To: <200802190121.36280.bonganilinux@mweb.co.za>
+References: <200802171036.19619.bonganilinux@mweb.co.za>
+ <20080218131125.2857f7c7@gaivota>
+ <200802182320.40732.bonganilinux@mweb.co.za>
+ <200802190121.36280.bonganilinux@mweb.co.za>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.7; x86_64-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:06:09AM +1100, Nick Andrew wrote:
-> Here is a series of 9 patches to init/Kconfig intended to improve the
-> usefulness and consistency of the help descriptions. The patches are
-> against linux-2.6.24.2.
-> [...]
-> Patch 1
-> 	EXPERIMENTAL
-> 	LOCALVERSION
-> 	LOCALVERSION_AUTO
-> 	SWAP
-> 	SYSVIPC
-> 	POSIX_MQUEUE
-> 	BSD_PROCESS_ACCT
-> 	BSD_PROCESS_ACCT_V3
+On Tue, 19 Feb 2008 01:21:36 +0200
+Bongani Hlope <bonganilinux@mweb.co.za> wrote:
 
-Changelog:
+> On Monday 18 February 2008 23:20:40 Bongani Hlope wrote:
+> > On Monday 18 February 2008 18:11:25 Mauro Carvalho Chehab wrote:
+> > > Have you tested Robert's patch?
+> >
+> > Sorry almost forgot, I have and it fixes the TV but not the radio.
+> >
+> > > I can't see anything wrong on bttv_g_tuner lock. I suspect that the
+> > > divide error caused some bad effects at some data on bttv.
+> >
+> >  The problems don't seem related because one is caused by opening the
+> > "radio" application, the divide error is caused by using a TV viewing
+> > application (I tried fbtv)
+> >
+> > > I've already applied his fix to my -git tree:
+> >
+> > Thanx, I'll try to bisect
+> 
+> I tried to bisect but the V4L/DVB changes are not bisect friendly, on two 
+> occursions I just selected "git bisect bad" because the bttv driver wouldn't 
+> compile, so I couldn't pin-point what causes the oops and hang.
+> 
+> Here are some few observations I made though (I started bisecting between 
+> 2.6.24 and 2.6.25-rc1, saved me ~1000 commits):
+> 1. On the third bisect, there's no oops my PC just hangs a I can't use any 
+> open terminals
+> 2. When I reached the V4L/DVB changes, my PC did not hag or oops, the radio 
+> just didn't work (something about invalid VID**AUD**). This made it harder to 
+> bisect, because it is not working and not breaking so is it good or bad...
 
-Improve usefulness and consistency of kernel configuration help messages.
+Bisecting this won't be that easy. The support for the depreciated V4L1 API
+were removed from bttv driver. Now, it uses v4l1-compat module, that translates
+a V4L1 call into a V4L2 one. I'll try to seek for troubles at the current code.
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
- 
---- a/init/Kconfig	2008-02-20 00:45:07.000000000 +1100
-+++ b/init/Kconfig	2008-02-20 00:52:07.000000000 +1100
-@@ -12,33 +12,45 @@ menu "General setup"
- config EXPERIMENTAL
- 	bool "Prompt for development and/or incomplete code/drivers"
- 	---help---
--	  Some of the various things that Linux supports (such as network
--	  drivers, file systems, network protocols, etc.) can be in a state
--	  of development where the functionality, stability, or the level of
--	  testing is not yet high enough for general use. This is usually
--	  known as the "alpha-test" phase among developers. If a feature is
--	  currently in alpha-test, then the developers usually discourage
--	  uninformed widespread use of this feature by the general public to
--	  avoid "Why doesn't this work?" type mail messages. However, active
--	  testing and use of these systems is welcomed. Just be aware that it
--	  may not meet the normal level of reliability or it may fail to work
--	  in some special cases. Detailed bug reports from people familiar
--	  with the kernel internals are usually welcomed by the developers
--	  (before submitting bug reports, please read the documents
--	  <file:README>, <file:MAINTAINERS>, <file:REPORTING-BUGS>,
--	  <file:Documentation/BUG-HUNTING>, and
--	  <file:Documentation/oops-tracing.txt> in the kernel source).
-+	  This option enables you to choose kernel configuration
-+	  options labeled as EXPERIMENTAL.
-+
-+	  Some of the various things that Linux supports (such as
-+	  network drivers, file systems, network protocols, etc.) can
-+	  be in a state of development where the functionality,
-+	  stability, or the level of testing is not yet high enough
-+	  for general use. This is usually known as the "alpha-test"
-+	  phase among developers.
-+
-+	  If a feature is currently in alpha-test, then the
-+	  developers usually discourage uninformed widespread use of
-+	  this feature by the general public to avoid "Why doesn't
-+	  this work?" type email messages. However, active testing
-+	  and use of these systems is welcomed. Just be aware that
-+	  it may not meet the normal level of reliability or it
-+	  may fail to work in some special cases.
-+
-+	  Detailed bug reports from people familiar with
-+	  the kernel internals are usually welcomed by the
-+	  developers. Before submitting bug reports, please
-+	  read the documents <file:README>, <file:MAINTAINERS>,
-+	  <file:REPORTING-BUGS>, <file:Documentation/BUG-HUNTING>,
-+	  and <file:Documentation/oops-tracing.txt> in the kernel
-+	  source.
- 
- 	  This option will also make obsoleted drivers available. These are
- 	  drivers that have been replaced by something else, and/or are
- 	  scheduled to be removed in a future kernel release.
- 
--	  Unless you intend to help test and develop a feature or driver that
--	  falls into this category, or you have a situation that requires
--	  using these features, you should probably say N here, which will
--	  cause the configurator to present you with fewer choices. If
--	  you say Y here, you will be offered the choice of using features or
--	  drivers that are currently considered to be in the alpha-test phase.
-+	  Unless you intend to help test and develop a feature or driver
-+	  that falls into this category, or you have a situation that
-+	  requires using these features, you should probably say N here,
-+	  which will cause the configurator to present you with fewer
-+	  choices. If you say Y here, you will be offered the choice of
-+	  using features or drivers that are currently considered to be
-+	  in the alpha-test phase.
-+
-+	  If unsure, say N.
- 
- config BROKEN
- 	bool
-@@ -66,11 +78,18 @@ config LOCALVERSION
- 	string "Local version - append to kernel release"
- 	help
- 	  Append an extra string to the end of your kernel version.
--	  This will show up when you type uname, for example.
--	  The string you set here will be appended after the contents of
--	  any files with a filename matching localversion* in your
--	  object and source tree, in that order.  Your total string can
--	  be a maximum of 64 characters.
-+	  This will show up when you type "uname -r", for example.
-+
-+	  If you have any files with names matching "localversion*"
-+	  in your object or source trees, then the contents of these
-+	  files will be appended to your kernel version name.
-+
-+	  The strings are appended from the object tree files and
-+	  then the source tree files, then any string specified
-+	  by CONFIG_LOCALVERSION_AUTO below, and finally the value
-+	  specified here.
-+
-+	  The maximum length of a kernel version name is 64 characters.
- 
- config LOCALVERSION_AUTO
- 	bool "Automatically append version information to the version string"
-@@ -85,38 +104,47 @@ config LOCALVERSION_AUTO
- 	  appended after any matching localversion* files, and after the value
- 	  set in CONFIG_LOCALVERSION.
- 
--	  (The actual string used here is the first eight characters produced
-+	  The actual string used here is the first eight characters produced
- 	  by running the command:
- 
- 	    $ git rev-parse --verify HEAD
- 
--	  which is done within the script "scripts/setlocalversion".)
-+	  which is done within the script "scripts/setlocalversion".
- 
- config SWAP
- 	bool "Support for paging of anonymous memory (swap)"
- 	depends on MMU && BLOCK
- 	default y
- 	help
--	  This option allows you to choose whether you want to have support
--	  for so called swap devices or swap files in your kernel that are
--	  used to provide more virtual memory than the actual RAM present
--	  in your computer.  If unsure say Y.
-+	  This option allows you to choose whether you want to have
-+	  support for swap devices or swap files in your kernel.
-+
-+	  Swap is used to provide more virtual memory than the
-+	  actual RAM present in your computer. This can improve
-+	  performance by moving less frequently used blocks of
-+	  memory onto disk, which frees it up for improved disk
-+	  caching or active processes.
-+
-+	  If unsure, say Y.
- 
- config SYSVIPC
- 	bool "System V IPC"
- 	---help---
--	  Inter Process Communication is a suite of library functions and
-+	  Inter-Process Communication is a suite of library functions and
- 	  system calls which let processes (running programs) synchronize and
- 	  exchange information. It is generally considered to be a good thing,
--	  and some programs won't run unless you say Y here. In particular, if
--	  you want to run the DOS emulator dosemu under Linux (read the
--	  DOSEMU-HOWTO, available from <http://www.tldp.org/docs.html#howto>),
--	  you'll need to say Y here.
-+	  and some programs won't run without it.
-+
-+	  In particular, if you want to run the DOS emulator dosemu
-+	  under Linux, you'll need to say Y here. You can find out
-+	  more about dosemu at <http://dosemu.sourceforge.net/>
- 
- 	  You can find documentation about IPC with "info ipc" and also in
- 	  section 6.4 of the Linux Programmer's Guide, available from
- 	  <http://www.tldp.org/guides.html>.
- 
-+	  If unsure, say Y.
-+
- config SYSVIPC_SYSCTL
- 	bool
- 	depends on SYSVIPC
-@@ -127,42 +155,69 @@ config POSIX_MQUEUE
- 	bool "POSIX Message Queues"
- 	depends on NET && EXPERIMENTAL
- 	---help---
--	  POSIX variant of message queues is a part of IPC. In POSIX message
--	  queues every message has a priority which decides about succession
--	  of receiving it by a process. If you want to compile and run
--	  programs written e.g. for Solaris with use of its POSIX message
--	  queues (functions mq_*) say Y here.
--
--	  POSIX message queues are visible as a filesystem called 'mqueue'
--	  and can be mounted somewhere if you want to do filesystem
--	  operations on message queues.
-+	  POSIX Message Queues is a type of Inter-Process Communication
-+	  (IPC). It provides similar functionality to System V message
-+	  queues, with a different Application Programming Interface (API).
-+
-+	  In POSIX Message Queues, every message has a priority which
-+	  determines the order in which each message is delivered to a
-+	  receiving process. See mq_overview(7) for details of the
-+	  API (functions mq_*).
-+
-+	  When POSIX Message Queues are enabled, a directory appears
-+	  called /proc/sys/fs/mqueue which can be used to tune kernel
-+	  parameters. See mq_overview(7) for details.
-+
-+	  POSIX Message Queues can also be mounted as a filesystem
-+	  called 'mqueue', for example: "mount -t mqueue none /mqueue".
- 
- 	  If unsure, say Y.
- 
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
--	  If you say Y here, a user level program will be able to instruct the
--	  kernel (via a special system call) to write process accounting
--	  information to a file: whenever a process exits, information about
--	  that process will be appended to the file by the kernel.  The
--	  information includes things such as creation time, owning user,
--	  command name, memory usage, controlling terminal etc. (the complete
--	  list is in the struct acct in <file:include/linux/acct.h>).  It is
--	  up to the user level program to do useful things with this
--	  information.  This is generally a good idea, so say Y.
-+	  BSD Process Accounting enables the kernel to write process
-+	  accounting information to a file to track system resources
-+	  utilisation and some user actions.
-+
-+	  Whenever a process exits, information about that process
-+	  will be appended to the file. This includes things such as
-+	  creation time, owning user, command name, memory usage,
-+	  controlling terminal, etc.
-+
-+	  See sa(1), accton(8) and acct(2) for more details, also
-+	  <file:include/linux/acct.h> (struct acct) for the complete
-+	  list of stored data.
-+
-+	  You probably only need this if you have multiple users and
-+	  you want to monitor or account for their system usage, and
-+	  fine-tune system performance through analysis of the logfile.
-+
-+	  If unsure, say N.
- 
- config BSD_PROCESS_ACCT_V3
- 	bool "BSD Process Accounting version 3 file format"
- 	depends on BSD_PROCESS_ACCT
- 	default n
- 	help
--	  If you say Y here, the process accounting information is written
--	  in a new file format that also logs the process IDs of each
--	  process and it's parent. Note that this file format is incompatible
--	  with previous v0/v1/v2 file formats, so you will need updated tools
--	  for processing it. A preliminary version of these tools is available
--	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
-+	  BSD Process Accounting enables the kernel to write process
-+	  accounting information to a file to track system resources
-+	  utilisation and some user actions.
-+
-+	  Version 3 is a new file format that also logs the process
-+	  ID and process parent ID.
-+
-+	  Note that this file format is incompatible with previous
-+	  v0/v1/v2 file formats, so you will need updated tools
-+	  for processing it. One such tool is "bootchart", and
-+	  the GNU "acct" package should be able to read the v3
-+	  file format too.
-+
-+	  You probably only need this if you have multiple users and
-+	  you want to monitor or account for their system usage, and
-+	  fine-tune system performance through analysis of the logfile.
-+
-+	  If unsure, say N.
- 
- config TASKSTATS
- 	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
+
+Cheers,
+Mauro
