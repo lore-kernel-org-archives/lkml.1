@@ -1,108 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYBSKQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYBSKXa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbYBSKQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:16:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYBSKP5
+	id S1760455AbYBSKXa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:23:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYBSKXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:15:57 -0500
-Received: from www.tglx.de ([62.245.132.106]:35081 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753658AbYBSKP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:15:56 -0500
-Date: Tue, 19 Feb 2008 11:15:38 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [GIT pull] genirq fixes for .25
-Message-ID: <alpine.LFD.1.00.0802191106420.7583@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 19 Feb 2008 05:23:21 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:60369 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbYBSKXU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 05:23:20 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: vfat32 Free Cluster Count Update
+References: <fp77bc$akv$1@ger.gmane.org>
+Date: Tue, 19 Feb 2008 19:23:12 +0900
+In-Reply-To: <fp77bc$akv$1@ger.gmane.org> (Gunter Ohrner's message of "Sat, 16
+	Feb 2008 18:43:47 +0100")
+Message-ID: <877ih1w8hb.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Gunter Ohrner <G.Ohrner@post.rwth-aachen.de> writes:
 
-please pull genirq fixes for .25 from:
+> Doesn't the Linux vfat driver update the FAT32's free cluster summary count?
+>
+> Zweiblum:~# dosfsck /dev/sda11
+> dosfsck 2.11, 12 Mar 2005, FAT32, LFN
+> /dev/sda11: 2451 files, 28218/1918827 clusters
+>
+> Zweiblum:~# mount /dev/sda11 /mnt/win_daten/
+>
+> Zweiblum:~# cp /etc/motd /mnt/win_daten/
+>
+> Zweiblum:~# umount /mnt/win_daten/
+>
+> Zweiblum:~# dosfsck /dev/sda11
+> dosfsck 2.11, 12 Mar 2005, FAT32, LFN
+> Free cluster summary wrong (1890609 vs. really 1890608)
+> 1) Correct
+> 2) Don't correct
+> ? ^C
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-genirq.git
+This problem was introduced by it ignores a free cluster count (not
+"usefree"). If we was not using "usefree" option, FAT doesn't trust the
+"free cluster count" anymore.
 
-  - fix spurious irq after free_irq() bug
-  - replace open coded jiffies comparison
+So, it doesn't update until re-count.  Um.. yes, it's a bit
+problem. Ah.. it can fix "we can trust now"-flag or something.
 
-Thanks,
+I'll dig it more, later. And for right now, please run "df" command, it
+will fix free cluster count.
 
-	tglx
-
----
-S.Caglar Onur (1):
-      genirq: spurious.c: use time_* macros
-
-Thomas Gleixner (1):
-      genirq: do not leave interupts enabled on free_irq
-
- kernel/irq/chip.c     |   20 +++++++++++++++++++-
- kernel/irq/spurious.c |    3 ++-
- 2 files changed, 21 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index cc54c62..fdb3fbe 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -246,6 +246,17 @@ static unsigned int default_startup(unsigned int irq)
- }
- 
- /*
-+ * default shutdown function
-+ */
-+static void default_shutdown(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+
-+	desc->chip->mask(irq);
-+	desc->status |= IRQ_MASKED;
-+}
-+
-+/*
-  * Fixup enable/disable function pointers
-  */
- void irq_chip_set_defaults(struct irq_chip *chip)
-@@ -256,8 +267,15 @@ void irq_chip_set_defaults(struct irq_chip *chip)
- 		chip->disable = default_disable;
- 	if (!chip->startup)
- 		chip->startup = default_startup;
-+	/*
-+	 * We use chip->disable, when the user provided its own. When
-+	 * we have default_disable set for chip->disable, then we need
-+	 * to use default_shutdown, otherwise the irq line is not
-+	 * disabled on free_irq():
-+	 */
- 	if (!chip->shutdown)
--		chip->shutdown = chip->disable;
-+		chip->shutdown = chip->disable != default_disable ?
-+			chip->disable : default_shutdown;
- 	if (!chip->name)
- 		chip->name = chip->typename;
- 	if (!chip->end)
-diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
-index a6b2bc8..088dabb 100644
---- a/kernel/irq/spurious.c
-+++ b/kernel/irq/spurious.c
-@@ -6,6 +6,7 @@
-  * This file contains spurious interrupt handling.
-  */
- 
-+#include <linux/jiffies.h>
- #include <linux/irq.h>
- #include <linux/module.h>
- #include <linux/kallsyms.h>
-@@ -179,7 +180,7 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
- 		 * otherwise the couter becomes a doomsday timer for otherwise
- 		 * working systems
- 		 */
--		if (jiffies - desc->last_unhandled > HZ/10)
-+		if (time_after(jiffies, desc->last_unhandled + HZ/10))
- 			desc->irqs_unhandled = 1;
- 		else
- 			desc->irqs_unhandled++;
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
