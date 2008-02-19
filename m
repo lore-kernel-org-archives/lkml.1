@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbYBSWFO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763041AbYBSWFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbYBSWFO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:05:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762081AbYBSWEG
+	id S1763041AbYBSWFs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762086AbYBSWEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:04:06 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:1724 "EHLO
+	Tue, 19 Feb 2008 17:04:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:1817 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761884AbYBSWEB (ORCPT
+	with ESMTP id S1761961AbYBSWEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:04:01 -0500
+	Tue, 19 Feb 2008 17:04:04 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=wXuJHCzur3NlJHG3N5CMs084g88raEugv7InQui8qf5dSilkDvRefTf3i8jTo0UZhPRUpVs0OfwTOmETW4pg91ls6izpTv/eGOJkScDthnqq3Dn9t6RpfQwiSaXpckU5HalrVzCyvjuhl37e5mU5xRjMOjohwam5oanaeUhIdk0=
+        b=ZUPm1sWbZew2c+IlsWmzGy6CoYzAGJ5rpLIf/q0zmBBy29vOJbL1cTVrdejuLtHj0dEgZE+8RyjU+PSrPHD2aDAuhiO37ffVGtazXHO2l1wIuDEcgBOnH+uW48KPZTmR7GkhUo4FJ8JR2cIdu8hAuJOQgQtZYgSXUc1k5shbMGs=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Subject: Re: [2.6 patch] remove include/linux/hdsmart.h
-Date: Tue, 19 Feb 2008 22:51:56 +0100
+To: petkovbb@gmail.com
+Subject: Re: Optiarc DVD RW AD-5200A audio playing
+Date: Tue, 19 Feb 2008 23:10:05 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>, linux-kernel@vger.kernel.org
-References: <200802171807.57983.bzolnier@gmail.com> <200802171904.52188.bzolnier@gmail.com> <20080219192905.GE31955@cs181133002.pp.htv.fi>
-In-Reply-To: <20080219192905.GE31955@cs181133002.pp.htv.fi>
+Cc: Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
+References: <47B5EDB7.5050709@canonical.com> <200802190018.48850.bzolnier@gmail.com> <20080219055233.GA4901@gollum.tnic>
+In-Reply-To: <20080219055233.GA4901@gollum.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802192251.56634.bzolnier@gmail.com>
+Message-Id: <200802192310.05759.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008, Adrian Bunk wrote:
-> On Sun, Feb 17, 2008 at 07:04:51PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > On Sunday 17 February 2008, Adrian Bunk wrote:
-> > 
-> > > Why can't we simply remove it?
-> > 
-> > If it is safe w.r.t. userspace then please do it.
-> > 
-> > [ I don't know and I couldn't get an answer on LKML so... ]
+On Tuesday 19 February 2008, Borislav Petkov wrote:
+
+[...]
+
+> Author: Borislav Petkov <petkovbb@gmail.com>
+> Date:   Sat Feb 16 09:56:36 2008 +0100
 > 
-> The purpose of the kernel userapce headers is to contain the interfaces 
-> between the kernel and userspace.
-> 
-> If nothing in the kernel uses it there's not much value in keeping it.
-> 
-> Removal patch below.
-> 
-> > Thanks,
-> > Bart
-> 
-> cu
-> Adrian
-> 
-> 
-> <--  snip  -->
-> 
-> 
-> include/linux/hdsmart.h is not used by the kernel and should therefore 
-> be removed.
-> 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+>     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
+>     
+>     Reported-by: Stefan Bader <stefan.bader@canonical.com>
+>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
 applied
