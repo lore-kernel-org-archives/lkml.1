@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbYBSVbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbYBSViP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbYBSVbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 16:31:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754840AbYBSVbk
+	id S1759474AbYBSViP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 16:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYBSVh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 16:31:40 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:59649 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755050AbYBSVbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 16:31:39 -0500
-Message-ID: <47BB4AB8.9020509@sgi.com>
-Date: Tue, 19 Feb 2008 13:31:36 -0800
+	Tue, 19 Feb 2008 16:37:58 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60036 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754562AbYBSVh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 16:37:57 -0500
+Message-ID: <47BB4C33.3030505@sgi.com>
+Date: Tue, 19 Feb 2008 13:37:55 -0800
 From: Mike Travis <travis@sgi.com>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Alan.Brunelle@hp.com,
-       linux-kernel@vger.kernel.org, npiggin@suse.de, dgc@sgi.com,
-       arjan@linux.intel.com
-Subject: Re: IO queueing and complete affinity w/ threads: Some results
-References: <47B0B69B.1050807@hp.com>	<47B46008.9020804@hp.com>	<20080218123717.GW23197@kernel.dk> <20080219151418.97557f0f.pj@sgi.com>
-In-Reply-To: <20080219151418.97557f0f.pj@sgi.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lameter@sgi.com
+Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
+References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com> <20080219180855.GB12010@one.firstfloor.org> <47BB20C6.7050205@sgi.com> <20080219205938.GC13958@one.firstfloor.org>
+In-Reply-To: <20080219205938.GC13958@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Jens wrote:
->> My main worry with the current code is the ->lock in the per-cpu
->> completion structure.
-> 
-> Drive-by-comment here:  Does the patch posted later this same day by Mike Travis:
-> 
->   [PATCH 0/2] percpu: Optimize percpu accesses v3
-> 
-> help with this lock issue any?  (I have no real clue here -- just connecting
-> up the pretty colored dots ;).
-> 
+Andi Kleen wrote:
 
-I'm not sure of the context here but a big motivation for doing the
-zero-based per_cpu variables was to optimize access to the local
-per cpu variables to one instruction, reducing the need for locks.
+>> (And of course the problem with cpus on nodes with no local memory
+>> needs to be resolved as well.)
+> 
+> All CPUs get assigned to some node at boot.
+> 
+> And there should be always per cpu variables or pda to use.
 
--Mike
+Sorry, I was being vague.  Mel Gorman found a problem that appears
+linked to the change to 16-bit apicids on an AMD box that has 4
+nodes, but nodes 1-3 have no memory, and the system panics during
+cpu_up() on the 2nd cpu which is on node 1.
+
+I've not yet been able to replicate the problem.
+
+Thanks,
+Mike
