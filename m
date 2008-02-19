@@ -1,70 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763245AbYBSKOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbYBSKQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763245AbYBSKOQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:14:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbYBSKN6
+	id S1762021AbYBSKQL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbYBSKP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:13:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58800 "EHLO mx2.mail.elte.hu"
+	Tue, 19 Feb 2008 05:15:57 -0500
+Received: from www.tglx.de ([62.245.132.106]:35081 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759917AbYBSKN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:13:57 -0500
-Date: Tue, 19 Feb 2008 11:13:35 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/5] x86_64: check msr to get mmconfig for amd family
-	10h opteron v3
-Message-ID: <20080219101335.GB14092@elte.hu>
-References: <200802150127.21247.yinghai.lu@sun.com> <200802150128.41638.yinghai.lu@sun.com> <200802150130.14915.yinghai.lu@sun.com> <200802150131.16816.yinghai.lu@sun.com> <86802c440802181959t762bc242n79d2f0d93b224f31@mail.gmail.com>
+	id S1753658AbYBSKP4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 05:15:56 -0500
+Date: Tue, 19 Feb 2008 11:15:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [GIT pull] genirq fixes for .25
+Message-ID: <alpine.LFD.1.00.0802191106420.7583@apollo.tec.linutronix.de>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440802181959t762bc242n79d2f0d93b224f31@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus,
 
-* Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+please pull genirq fixes for .25 from:
 
-> > Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
-> > ===================================================================
-> > --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-> > +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-> 
-> Ingo/Thomas,
-> 
-> It seems you missed this one in the 5.
-> 
-> this one should be safe. it only reads msr.
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-genirq.git
 
-we picked up all of your patches - have you checked the x86.git#testing 
-branch, or only the x86.git#mm branch? We started x86.git#testing 
-recently, it includes more bleeding-edge stuff and wider, cross-tree 
-features as well.
+  - fix spurious irq after free_irq() bug
+  - replace open coded jiffies comparison
 
-> Andi had concern with other one that was touching msr. I will keep 
-> that one in my local tree.
+Thanks,
 
-We've got that one queued up in x86.git#testing as well. Someone on lkml 
-having concerns is not a basis to not deal with a patch. What matters 
-is: are those concerns well-founded? If you do not agree with the 
-concerns then just indicate it to us when re-submitting but do not drop 
-patches. Your patches have a good track record so please do not let 
-yourself get scared away from contributing. Please do not keep patches 
-in your local tree, we'd like Linux to work fine out of box, on as broad 
-range of hardware as possible.
+	tglx
 
-	Ingo
+---
+S.Caglar Onur (1):
+      genirq: spurious.c: use time_* macros
+
+Thomas Gleixner (1):
+      genirq: do not leave interupts enabled on free_irq
+
+ kernel/irq/chip.c     |   20 +++++++++++++++++++-
+ kernel/irq/spurious.c |    3 ++-
+ 2 files changed, 21 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
+index cc54c62..fdb3fbe 100644
+--- a/kernel/irq/chip.c
++++ b/kernel/irq/chip.c
+@@ -246,6 +246,17 @@ static unsigned int default_startup(unsigned int irq)
+ }
+ 
+ /*
++ * default shutdown function
++ */
++static void default_shutdown(unsigned int irq)
++{
++	struct irq_desc *desc = irq_desc + irq;
++
++	desc->chip->mask(irq);
++	desc->status |= IRQ_MASKED;
++}
++
++/*
+  * Fixup enable/disable function pointers
+  */
+ void irq_chip_set_defaults(struct irq_chip *chip)
+@@ -256,8 +267,15 @@ void irq_chip_set_defaults(struct irq_chip *chip)
+ 		chip->disable = default_disable;
+ 	if (!chip->startup)
+ 		chip->startup = default_startup;
++	/*
++	 * We use chip->disable, when the user provided its own. When
++	 * we have default_disable set for chip->disable, then we need
++	 * to use default_shutdown, otherwise the irq line is not
++	 * disabled on free_irq():
++	 */
+ 	if (!chip->shutdown)
+-		chip->shutdown = chip->disable;
++		chip->shutdown = chip->disable != default_disable ?
++			chip->disable : default_shutdown;
+ 	if (!chip->name)
+ 		chip->name = chip->typename;
+ 	if (!chip->end)
+diff --git a/kernel/irq/spurious.c b/kernel/irq/spurious.c
+index a6b2bc8..088dabb 100644
+--- a/kernel/irq/spurious.c
++++ b/kernel/irq/spurious.c
+@@ -6,6 +6,7 @@
+  * This file contains spurious interrupt handling.
+  */
+ 
++#include <linux/jiffies.h>
+ #include <linux/irq.h>
+ #include <linux/module.h>
+ #include <linux/kallsyms.h>
+@@ -179,7 +180,7 @@ void note_interrupt(unsigned int irq, struct irq_desc *desc,
+ 		 * otherwise the couter becomes a doomsday timer for otherwise
+ 		 * working systems
+ 		 */
+-		if (jiffies - desc->last_unhandled > HZ/10)
++		if (time_after(jiffies, desc->last_unhandled + HZ/10))
+ 			desc->irqs_unhandled = 1;
+ 		else
+ 			desc->irqs_unhandled++;
