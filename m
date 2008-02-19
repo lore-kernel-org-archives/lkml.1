@@ -1,104 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbYBSDqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYBSD77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbYBSDqw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 Feb 2008 22:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbYBSDqn
+	id S1758310AbYBSD77 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 Feb 2008 22:59:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbYBSD7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 Feb 2008 22:46:43 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:42708 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751203AbYBSDqm (ORCPT
+	Mon, 18 Feb 2008 22:59:49 -0500
+Received: from rv-out-0910.google.com ([209.85.198.184]:10714 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753642AbYBSD7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 Feb 2008 22:46:42 -0500
-Date: Tue, 19 Feb 2008 14:44:04 +1100
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, lguest@ozlabs.org
-Subject: [PATCH] Fix building lguest as module.
-Message-ID: <20080219034404.GT6887@bakeyournoodle.com>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au>
+	Mon, 18 Feb 2008 22:59:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FvyGJ/Js5tI5cNyOIBt/ykPVumDxA3iSlmW5yAjANH/TIPfcBkIVpRdetPeOpZqCYWVnCXUX1mAXs5KgLrWneEBwPuAI8ZFT19Q6zWdDI1n07GI4kyoWqKDSjqA6jh1mBcmsGXZIdIROC0/tdSWiEy8nQceSMh/Dq2IurLrDSEM=
+Message-ID: <86802c440802181959t762bc242n79d2f0d93b224f31@mail.gmail.com>
+Date: Mon, 18 Feb 2008 19:59:48 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: [PATCH 4/5] x86_64: check msr to get mmconfig for amd family 10h opteron v3
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Greg KH" <greg@kroah.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200802150131.16816.yinghai.lu@sun.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802040711.11280.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+References: <200802150127.21247.yinghai.lu@sun.com>
+	 <200802150128.41638.yinghai.lu@sun.com>
+	 <200802150130.14915.yinghai.lu@sun.com>
+	 <200802150131.16816.yinghai.lu@sun.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 04, 2008 at 07:11:10AM +1100, Rusty Russell wrote:
- 
-> Lguest guest support and host support are separate config options: they used
-> to be tied together.  Sort out which parts of asm-offsets are needed for Guest
-> and Host.
+On Feb 15, 2008 1:31 AM, Yinghai Lu <Yinghai.Lu@sun.com> wrote:
+> From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+>
+> so even booting kernel with acpi=off or even MCFG is not there, we still can
+> use MMCONFIG.
+>
+> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Greg KH <greg@kroah.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>
+>  arch/x86/pci/mmconfig-shared.c |   67 ++++++++++++++++++++++++++++---
+>  1 file changed, 61 insertions(+), 6 deletions(-)
+>
+> Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
+> +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
 
-<snip> With rusty's patch applied the errors still persist in some
-configs.  Please try  the patch below.
+Ingo/Thomas,
 
-Fixes the following errors from modpost when the lguest (host) support is
-modular.
+It seems you missed this one in the 5.
 
-ERROR: "LGUEST_PAGES_guest_gdt_desc" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_host_gdt_desc" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_host_cr3" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_regs" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_host_idt_desc" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_guest_gdt" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_host_sp" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_regs_trapnum" [drivers/lguest/lg.ko] undefined!
-ERROR: "LGUEST_PAGES_guest_idt_desc" [drivers/lguest/lg.ko] undefined!
+this one should be safe. it only reads msr.
 
-Lguest guest support and host support are separate config options: they used
-to be tied together.  Sort out which parts of asm-offsets are needed for Guest
-and Host.
+Andi had concern with other one that was touching msr. I will keep
+that one in my local tree.
 
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
-
-Original patch from rusty (http://lkml.org/lkml/2008/2/3/168) didn't completely
-fix the problem.  I think this matches the original intent.
-
-Not sure of the right way to attribute this patch, clearlyt it's mostly
-Rusty's work.
-
- arch/x86/kernel/asm-offsets_32.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/asm-offsets_32.c b/arch/x86/kernel/asm-offsets_32.c
-index afd8446..ae9d289 100644
---- a/arch/x86/kernel/asm-offsets_32.c
-+++ b/arch/x86/kernel/asm-offsets_32.c
-@@ -20,10 +20,8 @@
- 
- #include <xen/interface/xen.h>
- 
--#ifdef CONFIG_LGUEST_GUEST
- #include <linux/lguest.h>
- #include "../../../drivers/lguest/lg.h"
--#endif
- 
- #define DEFINE(sym, val) \
-         asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-@@ -134,6 +132,10 @@ void foo(void)
- 	BLANK();
- 	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
- 	OFFSET(LGUEST_DATA_pgdir, lguest_data, pgdir);
-+#endif
-+
-+#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_MODULE)
-+	BLANK();
- 	OFFSET(LGUEST_PAGES_host_gdt_desc, lguest_pages, state.host_gdt_desc);
- 	OFFSET(LGUEST_PAGES_host_idt_desc, lguest_pages, state.host_idt_desc);
- 	OFFSET(LGUEST_PAGES_host_cr3, lguest_pages, state.host_cr3);
--- 
-1.5.4.1
-
-
-
-
-Yours Tony
-
-  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
-  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
-
+YH
