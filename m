@@ -1,163 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbYBSFw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757725AbYBSF6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbYBSFw4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 00:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbYBSFwr
+	id S1757725AbYBSF6e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 00:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbYBSF6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 00:52:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:6604 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753252AbYBSFwp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 00:52:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent:from;
-        b=PanR26IkNResymJ8LuBUplulfKLXLhhak/CvznFmOY8mbZv/4HVm0XMhq5RRBSLvmfyi2S5u5vJ+Q0Yj0E4H5EVOQNYYBDGLy2nl431SWCxLOHWYyGxFyrNoTfhQyIYgp+JVaV4NHpTPKWr4uqr9Zq2wHJF5X/xTfs2GQkekLnY=
-Date: Tue, 19 Feb 2008 06:52:33 +0100
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Stefan Bader <stefan.bader@canonical.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Optiarc DVD RW AD-5200A audio playing
-Message-ID: <20080219055233.GA4901@gollum.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Stefan Bader <stefan.bader@canonical.com>,
-	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-	Jens Axboe <jens.axboe@oracle.com>
-References: <47B5EDB7.5050709@canonical.com> <20080216164302.GP13446@gollum.tnic> <47B99384.2080900@canonical.com> <200802190018.48850.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 19 Feb 2008 00:58:23 -0500
+Received: from 1wt.eu ([62.212.114.60]:2029 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbYBSF6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 00:58:23 -0500
+Date: Tue, 19 Feb 2008 06:58:06 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andi Kleen <andi@firstfloor.org>, Arjan van de Ven <arjan@infradead.org>,
+       Roel Kluin <12o3l@tiscali.nl>, geoffrey.levand@am.sony.com,
+       linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080219055806.GA8404@1wt.eu>
+References: <47B70A61.9030306@tiscali.nl> <20080216094226.1e8eede1@laptopd505.fenrus.org> <p731w7axrat.fsf@bingen.suse.de> <200802191333.53607.nickpiggin@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200802190018.48850.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-From: Borislav Petkov <petkovbb@googlemail.com>
+In-Reply-To: <200802191333.53607.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 12:18:48AM +0100, Bartlomiej Zolnierkiewicz wrote:
-> On Monday 18 February 2008, Stefan Bader wrote:
-> > Borislav Petkov wrote:
-> > > On Sat, Feb 16, 2008 at 04:24:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
-> > >> Hi,
-> > >>
-> > >> On Saturday 16 February 2008, Borislav Petkov wrote:
-> > >>> On Fri, Feb 15, 2008 at 02:53:27PM -0500, Stefan Bader wrote:
-> > >>>> Hello Borislav,
-> > >>>>
-> > >>>> I worked on a problem with an DVD driver (model=Optiarc DVD RW AD-5200A)
-> > >>>> which obviously has the same problem as some Matshita drives. The
-> > >>>> following patch was reported to enabled audio playing on this drive.
-> > >>>> Would this approach be suitable for upstream or are there other
-> > >>>> solutions to this problem?
-> > >>>>
-> > >>>> Regards,
-> > >>>> Stefan
-> > >>>>
-> > >>>> --- a/drivers/ide/ide-cd.c
-> > >>>> +++ b/drivers/ide/ide-cd.c
-> > >>>> @@ -2988,7 +2988,8 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
-> > >>>>  	if (strcmp(drive->id->model, "MATSHITADVD-ROM SR-8187") == 0 ||
-> > >>>>  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8186") == 0 ||
-> > >>>>  	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8176") == 0 ||
-> > >>>> -	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0)
-> > >>>> +	    strcmp(drive->id->model, "MATSHITADVD-ROM SR-8174") == 0 ||
-> > >>>> +	    strcmp(drive->id->model, "Optiarc DVD RW AD-5200A") == 0)
-> > >>>>  		CDROM_CONFIG_FLAGS(drive)->audio_play = 1;
-> > >>>>
-> > >>>>  #if ! STANDARD_ATAPI
-> > >>> Hi Stefan,
-> > >>>
-> > >>> just to make sure that the audioplay bit is not set in the capabilities page,
-> > >>> can you please try the following patch applied against 2.6.25-rc2 and send me
-> > >>> the output. Thanks!
-> > >>>
-> > >>> @Bart: by the way, this cdi->mask thingy is kinda unintuitive doing double
-> > >>> negation to check whether a feature is supported or not. Yeah, this comes from
-> > >>> "above," i.e. uniform cdrom layer. But still, shouldn't we use a cdi->caps_flags
-> > >>> or something similar instead, which mirrors the caps page bits setting?
-> > >> It seems so (at least having negative flags is very unintuitive) but they
-> > >> might be some reason for this ugliness, Jens?
-> > >>
-> > >> [ Please also remember that since cdrom layer is _uniform_ it may be not
-> > >>   possible and/or desirable to have 1-1 mapping between caps page bits
-> > >>   and the future cdi->caps_flags. ]
-> > >>
-> > >>> commit 435f0f4496a1b32af2d542f43b2370a890fe2f83
-> > >>> Author: Borislav Petkov <petkovbb@gmail.com>
-> > >>> Date:   Sat Feb 16 09:56:36 2008 +0100
-> > >>>
-> > >>>     ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
-> > >>>     
-> > >>>     Reported-by: Stefan Bader <stefan.bader@canonical.com>
-> > >>>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > >>>
-> > >>> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> > >>> index f77db6b..2c9d06e 100644
-> > >>> --- a/drivers/ide/ide-cd.c
-> > >>> +++ b/drivers/ide/ide-cd.c
-> > >>> @@ -1750,6 +1750,10 @@ int ide_cdrom_probe_capabilities (ide_drive_t *drive)
-> > >>>  		cdi->mask &= ~(CDC_DVD_RAM | CDC_RAM);
-> > >>>  	if (buf[8 + 3] & 0x10)
-> > >>>  		cdi->mask &= ~CDC_DVD_R;
-> > >>> +	if (!(buf[8 + 4] & 0x01)) {
-> > >> Hmm, shouldn't there be '&& (cd->cd_flags & IDE_CD_FLAG_PLAY_AUDIO_OK)'
-> > >> to prevent false positives?
-> > > 
-> > > I wanted to see whether the caps page reports the audioplay bit off...
-> > > 
-> > >>> +		printk(KERN_INFO "ide-cd: audio play not advertised in caps page,"
-> > >> Would be nice to also printk() the device name.
-> > > 
-> > > ... but printing the device model is actually a good idea and this will rule out
-> > > false positives, so Stefan, please drop the previous patch and test the updated
-> > > one below. Thanks.
-> > > 
-> > > 
-> > 
-> > Hi Borislav,
-> > 
-> > the problem is that I don't own this drive myself and the owner is
-> > running a 2.6.22 kernel and is normally not doing any kernel compiles.
-> > But I could provide him a modified patch.
-> > Though, if you just want to know whether the cap bit was really unset, I
-> > think we know this already. When I got the problem report we checked
-> > /proc/sys/dev/cdrom/info and that showed the "Can play audio" bit as 0.
-> > Which is the reason I gave the owner the patch for adding the model to
-> > the excemption list. And from his feedback I take that the drive plays
-> > audio tracks with the patch in use.
+On Tue, Feb 19, 2008 at 01:33:53PM +1100, Nick Piggin wrote:
+> > Note in particular the last predictors; assuming branch ending
+> > with goto, including call, causing early function return or
+> > returning negative constant are not taken. Just these alone
+> > are likely 95+% of the unlikelies in the kernel.
 > 
-> Borislav, I guess that this is good enough proof that audioplay bit is off.
+> Yes, gcc should be able to do pretty good heuristics, considering
+> the quite good numbers that cold CPU predictors can attain. However
+> for really performance critical code (or really "never" executed
+> code), then I think it is OK to have the hints and not have to rely
+> on gcc heuristics.
 
-indeed.
+in my experience, the real problem is that gcc does what *it* wants and not
+what *you* want. I've been annoyed a lot by the way it coded some loops that
+could really be blazingly fast, but which resulted in a ton of branches due
+to its predictors. And using unlikely() there was a real mess, because instead
+of just hinting the compiler with probabilities to write some linear code for
+the *most* common case, it ended up with awful branches everywhere with code
+sent far away and even duplicated for some branches.
 
-> Could you please send me the final version of the patch?
+Sometimes, for performance critical paths, I would like gcc to be dumb and
+follow *my* code and not its hard-coded probabilities. For instance, in a
+tree traversal, you really know how you want to build your loop. And these
+days, it seems like the single method of getting it your way is doing asm,
+which obviously is not portable :-(
 
-commit fa4af2fab0804bead4da6ecbf468118f05111229
-Author: Borislav Petkov <petkovbb@gmail.com>
-Date:   Sat Feb 16 09:56:36 2008 +0100
+Maybe one thing we would need would be the ability to assign probabilities
+to each branch based on what we expect, so that gcc could build a better
+tree keeping most frequently used code tight.
 
-    ide-cd: Enable audio play quirk for Optiarc DVD RW AD-5200A drive
-    
-    Reported-by: Stefan Bader <stefan.bader@canonical.com>
-    Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+Hmm I've just noticed -fno-guess-branch-probability in the man, I never tried
+it.
 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index f77db6b..9e63c34 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1929,6 +1929,7 @@ static const struct cd_list_entry ide_cd_quirks_list[] = {
- 	{ "MATSHITADVD-ROM SR-8186", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
- 	{ "MATSHITADVD-ROM SR-8176", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
- 	{ "MATSHITADVD-ROM SR-8174", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK	    },
-+	{ "Optiarc DVD RW AD-5200A", NULL,   IDE_CD_FLAG_PLAY_AUDIO_OK      },
- 	{ NULL, NULL, 0 }
- };
- 
+regards,
+Willy
 
--- 
-Regards/Gruﬂ,
-    Boris.
