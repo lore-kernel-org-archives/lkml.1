@@ -1,117 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762739AbYBSHkw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbYBSHnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762739AbYBSHkw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:40:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760774AbYBSHki
+	id S1762592AbYBSHnq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758903AbYBSHni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:40:38 -0500
-Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:59677
-	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759875AbYBSHkg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:40:36 -0500
-Message-ID: <47BA87F0.1050709@cosmosbay.com>
-Date: Tue, 19 Feb 2008 08:40:32 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Tue, 19 Feb 2008 02:43:38 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:35753 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758817AbYBSHnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:43:37 -0500
+Date: Tue, 19 Feb 2008 09:43:02 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+       Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
+       cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
+       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
+Message-ID: <20080219074302.GA2640@cs181133002.pp.htv.fi>
+References: <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi> <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be> <20080218141340.GB667@cs181133002.pp.htv.fi> <1203371163.6844.2.camel@concordia>
 MIME-Version: 1.0
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-CC: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: tbench regression in 2.6.25-rc1
-References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20040.1203356033@turing-police.cc.vt.edu> <1203403903.3248.29.camel@ymzhang>
-In-Reply-To: <1203403903.3248.29.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1203371163.6844.2.camel@concordia>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang, Yanmin a écrit :
-> On Mon, 2008-02-18 at 12:33 -0500, Valdis.Kletnieks@vt.edu wrote: 
->> On Mon, 18 Feb 2008 16:12:38 +0800, "Zhang, Yanmin" said:
->>
->>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
->>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
->>> recovered.
->>>
->>> How about below patch? Almost all performance is recovered with the new patch.
->>>
->>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
->> Could you add a comment someplace that says "refcnt wants to be on a different
->> cache line from input/output/ops or performance tanks badly", to warn some
->> future kernel hacker who starts adding new fields to the structure?
-> Ok. Below is the new patch.
+On Tue, Feb 19, 2008 at 08:46:03AM +1100, Michael Ellerman wrote:
+> On Mon, 2008-02-18 at 16:13 +0200, Adrian Bunk wrote:
+> > On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
+> > > On Mon, 18 Feb 2008, Adrian Bunk wrote:
+> > > > 
+> > > > This means it generates faster code with a current gcc for your platform.
+> > > > 
+> > > > But a future gcc might e.g. replace the whole loop with a division
+> > > > (gcc SVN head (that will soon become gcc 4.3) already does 
+> > > > transformations like replacing loops with divisions [1]).
+> > > 
+> > > Hence shouldn't we ask the gcc people what's the purpose of __builtin_expect(),
+> > > if it doesn't live up to its promise?
+> > 
+> > That's a different issue.
+> > 
+> > My point here is that we do not know how the latest gcc available in the 
+> > year 2010 might transform this code, and how a likely/unlikely placed 
+> > there might influence gcc's optimizations then.
 > 
-> 1) Move tclassid under ops in case CONFIG_NET_CLS_ROUTE=y. So sizeof(dst_entry)=200
-> no matter if CONFIG_NET_CLS_ROUTE=y/n. I tested many patches on my 16-core tigerton by
-> moving tclassid to different place. It looks like tclassid could also have impact on
-> performance.
-> If moving tclassid before metrics, or just don't move tclassid, the performance isn't
-> good. So I move it behind metrics.
-> 
-> 2) Add comments before __refcnt.
-> 
-> If CONFIG_NET_CLS_ROUTE=y, the result with below patch is about 18% better than
-> the one without the patch.
-> 
-> If CONFIG_NET_CLS_ROUTE=n, the result with below patch is about 30% better than
-> the one without the patch.
-> 
-> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
-> 
-> ---
-> 
-> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
-> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-22 12:52:19.000000000 +0800
-> @@ -52,15 +52,10 @@ struct dst_entry
->  	unsigned short		header_len;	/* more space at head required */
->  	unsigned short		trailer_len;	/* space to reserve at tail */
->  
-> -	u32			metrics[RTAX_MAX];
-> -	struct dst_entry	*path;
-> -
-> -	unsigned long		rate_last;	/* rate limiting for ICMP */
->  	unsigned int		rate_tokens;
-> +	unsigned long		rate_last;	/* rate limiting for ICMP */
->  
-> -#ifdef CONFIG_NET_CLS_ROUTE
-> -	__u32			tclassid;
-> -#endif
-> +	struct dst_entry	*path;
->  
->  	struct neighbour	*neighbour;
->  	struct hh_cache		*hh;
-> @@ -70,10 +65,20 @@ struct dst_entry
->  	int			(*output)(struct sk_buff*);
->  
->  	struct  dst_ops	        *ops;
-> -		
-> -	unsigned long		lastuse;
-> +
-> +	u32			metrics[RTAX_MAX];
-> +
-> +#ifdef CONFIG_NET_CLS_ROUTE
-> +	__u32			tclassid;
-> +#endif
-> +
-> +	/*
-> +	 * __refcnt wants to be on a different cache line from
-> +	 * input/output/ops or performance tanks badly
-> +	 */
->  	atomic_t		__refcnt;	/* client references	*/
->  	int			__use;
-> +	unsigned long		lastuse;
->  	union {
->  		struct dst_entry *next;
->  		struct rtable    *rt_next;
-> 
-> 
-> 
+> You're right, we don't know. But if giving the compiler _more_
+> information causes it to produce vastly inferior code then we should be
+> filing gcc bugs. After all the unlikely/likely is just a hint, if gcc
+> knows better it can always ignore it.
 
-I prefer this patch, but unfortunatly your perf numbers are for 64 bits kernels.
+It's the other way round, gcc assumes that you know better than gcc when 
+you give it a __builtin_expect().
 
-Could you please test now with 32 bits one ?
+The example you gave had only a 1:3 ratio, which is far outside of the 
+ratios where __builtin_expect() should be used.
 
-Thank you
+What if you gave this annotation for the 1:3 case and gcc generates code 
+that performs better for ratios > 1:1000 but much worse for a 1:3 ratio
+since your hint did override a better estimate of gcc?
+
+And I'm sure that > 90% of all kernel developers (including me) are 
+worse in such respects than the gcc heuristics.
+
+I'm a firm believer in the following:
+- it's the programmer's job to write clean and efficient C code
+- it's the compiler's job to convert C code into efficient assembler
+  code
+
+The stable interface between the programmer and the compiler is C, and 
+when the programmer starts manually messing with internals of the 
+compiler that's a layering violation that requires a _good_ 
+justification.
+
+With a "good justification" not consisting of some microbenchmark but of 
+measurements of the actual annotations in the kernel code.
+
+> cheers
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
