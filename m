@@ -1,72 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752174AbYBSItk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762847AbYBSIuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752174AbYBSItk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 03:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbYBSItb
+	id S1762847AbYBSIuj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 03:50:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbYBSIub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 03:49:31 -0500
-Received: from n22.bullet.mail.mud.yahoo.com ([68.142.200.113]:23554 "HELO
-	n22.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750959AbYBSIta (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 03:49:30 -0500
-X-Yahoo-Newman-Id: 508711.85432.bm@omp411.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=rtYOw+GixagFNvyC+M9houyHzkNUGpKnTSCwTC8b69Vs++sfJW/zxGJYhsSkGJYmsIg0VDR2ssgE5hb0fNut+KeHG6igjHZtRFDqDdB7kSt4YZhxRX+kFH7QYUIRmgKlgYMfphuHya+sjSgB75FzxGwMmslgYdyQjwQbxOWWUWs=  ;
-X-YMail-OSG: t1TUOYgVM1nR.7Wlp3o.r4ejEZDbot9Y5GbF1z1QicP_IVGoqv0GLm_OnsKfML80K.rl8xMMzQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch 3/6] mmu_notifier: invalidate_page callbacks
-Date: Tue, 19 Feb 2008 19:46:10 +1100
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andrea Arcangeli <andrea@qumranet.com>, Robin Holt <holt@sgi.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-References: <20080215064859.384203497@sgi.com> <20080215193736.9d6e7da3.akpm@linux-foundation.org> <Pine.LNX.4.64.0802161121130.25573@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0802161121130.25573@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
+	Tue, 19 Feb 2008 03:50:31 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:48510 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750819AbYBSIua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 03:50:30 -0500
+Date: Tue, 19 Feb 2008 09:50:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Greg KH <greg@kroah.com>, kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Message-ID: <20080219085033.GA1775@uranus.ravnborg.org>
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200802191946.10695.nickpiggin@yahoo.com.au>
+In-Reply-To: <p73zltyxy9q.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 February 2008 06:22, Christoph Lameter wrote:
-> On Fri, 15 Feb 2008, Andrew Morton wrote:
-
-> > >  		flush_cache_page(vma, address, pte_pfn(*pte));
-> > >  		entry = ptep_clear_flush(vma, address, pte);
-> > > +		mmu_notifier(invalidate_page, mm, address);
+On Mon, Feb 18, 2008 at 01:08:33PM +0100, Andi Kleen wrote:
+> Greg KH <greg@kroah.com> writes:
 > >
-> > I just don't see how ths can be done if the callee has another thread in
-> > the middle of establishing IO against this region of memory.
-> > ->invalidate_page() _has_ to be able to block.  Confused.
->
-> The page lock is held and that holds off I/O?
+> > If Jeff does that, I still can't drop those PCI functions from the PCI
+> > core, which I desperatly want to do as they do not play nice with modern
+> > systems (meaning hotplug...).
+> >
+> > So either way, I think his patches should go in.
+> 
+> Merging essentially untested patches does not seem like a good strategy.
+> And there is definitely still a large ISDN user base too.
+Only issue seems that this large ISDN user base is not very active
+in respect to Linux driver development.
+Or at least not judging from the missing responses to their
+mailing list and the limited traffic on said mailing list.
 
-I think the actual answer is that "it doesn't matter".
+Reading the isdn4linux it is obvious that the way forward are the
+mISDN code base so maybe that explains why noone steps up and 
+test the patches of Jeff's.
 
-ptes are not exactly the entity via which IO gets established, so
-all we really care about here is that after the callback finishes,
-we will not get any more reads or writes to the page via the
-external mapping.
+If noone in the isdn community step up and take some responsibility
+for the current isdn drivers in Linux then we should just delete them.
+If anyone cares they can always be forwardported or even better we can 
+integrate the much more flexible mISDN solution.
 
-As far as holding off local IO goes, that is the job of the core
-VM. (And no, page lock does not necessarily hold it off FYI -- it
-can be writeback IO or even IO directly via buffers).
+> My personal guess is that there are far more ISDN users than (non cardbus)
+> PCI/PCI-e hotplug users.
 
-Holding off IO via the external references I guess is a job for
-the notifier driver.
+My guess is that very very few uses ISDN in combination with a recent kernel.
+Hmm, wonder if it is more fun hacking isdn drivers than kbuild
+stuff and section mismatches ;-)
 
+	Sam
