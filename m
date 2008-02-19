@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbYBSKZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762761AbYBSK1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761768AbYBSKZc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYBSKZZ
+	id S1762761AbYBSK1c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYBSK1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:25:25 -0500
-Received: from nwd2mail11.analog.com ([137.71.25.57]:41743 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbYBSKZY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:25:24 -0500
-X-IronPort-AV: E=Sophos;i="4.25,375,1199682000"; 
-   d="scan'208";a="48712892"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 19 Feb 2008 05:27:24 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60246 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753808AbYBSK1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 05:27:24 -0500
+Date: Tue, 19 Feb 2008 11:27:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: Linux 2.6.25-rc2
+Message-ID: <20080219102700.GC14092@elte.hu>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Subject: [BUG][RFC][GENERIC IRQ] linux-2.6.24 (delayed) disable IRQ feature not functional for handle_simple_irq
-Date: Tue, 19 Feb 2008 10:25:13 -0000
-Message-ID: <600D5CB4DFD93545BF61FF01473D11AC125CCE48@limkexm2.ad.analog.com>
-In-Reply-To: <alpine.LFD.1.00.0802182146020.7583@apollo.tec.linutronix.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [BUG][RFC][GENERIC IRQ] linux-2.6.24 (delayed) disable IRQ feature not functional for handle_simple_irq
-Thread-Index: Achyb3TQz2NvObX/T5SJEJDgOk1szgAZQDhg
-From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
-To: "Thomas Gleixner" <tglx@linutronix.de>,
-       "Hennerich, Michael" <Michael.Hennerich@analog.com>
-Cc: <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Feb 2008 10:25:22.0936 (UTC) FILETIME=[BC1E2780:01C872E1]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
 
-I have reasonable doubt that the delayed disable feature on linux-2.6.24 for handle_simple_irq is broken.
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-In 2.6.22 there was something like this:
+> Mathieu, Christoph is on vacation and I'm not at all that familiar 
+> with this cmpxchg_local() optimization, so if you could take a peek at 
+> this bug report to see if you can spot something obviously wrong with 
+> it, I would much appreciate that.
 
-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
-		if (desc->chip->mask)
-			desc->chip->mask(irq);
-...
+hm, it's bad for at least one other reason as well (which is probably 
+unrelated to this crash):
 
-However in 2.6.24 the "DISABLED" IRQ in case it happens is never going to be masked.  
+ /*
+  * Currently fastpath is not supported if preemption is enabled.
+  */
+ #if defined(CONFIG_FAST_CMPXCHG_LOCAL) && !defined(CONFIG_PREEMPT)
+ #define SLUB_FASTPATH
+ #endif
 
-	if (unlikely(!action || (desc->status & IRQ_DISABLED)))
-		goto out_unlock;
+such !PREEMPT exceptions tend to show "i didnt want to think too hard 
+about the preemptible case so just turn it off" thinking.
 
+Also, why isnt this "SLUB_FASTPATH" flag done in the Kconfig space?
 
-I see a disabled IRQ being invoked in an endless loop.
-
--Michael
-
-------------------------------------------------------------------
-********* Analog Devices GmbH         michael.hennerich@analog.com
-**  *****                                      Systems Engineering
-**     ** Wilhelm-Wagenfeld-Strasse 6       
-**  ***** D-80807 Munich                      
-********* Germany                          
-Registergericht München HRB 40368,  Geschäftsführer:  Thomas Wessel,  Vincent Roche,  Joseph E. McDonough 
+	Ingo
