@@ -1,92 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755714AbYBSQVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbYBSQX3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755714AbYBSQVT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbYBSQVM
+	id S1754656AbYBSQX3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:23:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbYBSQXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:21:12 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55742 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752930AbYBSQVK (ORCPT
+	Tue, 19 Feb 2008 11:23:21 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46219 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751603AbYBSQXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:21:10 -0500
-Date: Tue, 19 Feb 2008 08:20:38 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: Linux 2.6.25-rc2
-In-Reply-To: <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
-Message-ID: <alpine.LFD.1.00.0802190806330.7833@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>  <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>  <20080219061107.GA23229@elte.hu>  <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> 
- <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>  <20080219140230.GA32236@Krystal>  <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com> <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 19 Feb 2008 11:23:20 -0500
+Date: Tue, 19 Feb 2008 08:16:10 -0800
+From: Greg KH <greg@kroah.com>
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, adobriyan@gmail.com
+Subject: Re: [PATCH] exporting capability code/name pairs (try #5.1)
+Message-ID: <20080219161610.GA3344@kroah.com>
+References: <20080212180859.GA12876@sergelap.austin.ibm.com> <47B2A3F3.8060701@ak.jp.nec.com> <47B4ED1B.6070206@ak.jp.nec.com> <47B4F1C5.9010408@cn.fujitsu.com> <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47B945BA.2060107@ak.jp.nec.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 19 Feb 2008, Pekka Enberg wrote:
+On Mon, Feb 18, 2008 at 05:45:46PM +0900, Kohei KaiGai wrote:
+> Greg KH wrote:
+> >>> Also, this code can be cleaned up a lot by just using the basic kobject
+> >>> attributes, and not rolling your own types here.
+> >> I replaced my own defined capability_attribute by kobj_attribute.
+> >>
+> >> It made the patch cleaned up, however, it also impossible to share a single
+> >> _show() method instance, because kobj_attribute does not have any private member.
+> >> Is there any reason why kobj_attribute does not have "void *private;"?
+> > 
+> > Because no one has asked for it?  :)
+> > 
+> > Or you can just do as the example in samples/kobject/ does it, no need
+> > for the void pointer as that code shows.
 > 
-> Hmm. The barrier() in slab_free() looks fishy. The comment says it's
-> there to make sure we've retrieved c->freelist before c->page but then
-> it uses a _compiler barrier_ which doesn't affect the CPU and the
-> reads may still be re-ordered... Not sure if that matters here though.
+> It shows us a good example in samples/kobject.
+> 
+> However, it is unsuitable to export the list of capabilities.
+> The shared _show() method (b_show) calls strcmp() once with the name of kobject
+> attribute to switch its returning string.
+> If we have 34 of candidates to be returned, like the capability case, we have
+> to call strcmp() 33 times in maximum.
+> 
+> If we can have a private member in kobj_attribute, we can found the content
+> to be returned in a single step.
 
-No, no. The comment says that it's purely there to serialize an 
-*interrupt*, and as such, a compiler-only barrier is sufficient (or the 
-comment is wrong).
+Ok, again, just send me a patch that adds this functionality and we will
+be very glad to consider it.
 
-Interrupts are "totally ordered" within a cpu (of course, in theory a CPU 
-might have speculative work etc reordering, but the CPU also guarantees 
-that interrupt acts _as_if_ it was exact), so a compiler barrier is 
-sufficient.
+thnaks,
 
-Of course, if we're talking about interrupts on another CPU, that's a 
-different issue, but the fact is, in that case it's not about interrupts 
-any more (might as well be other code just running normally on another 
-CPU), and a barrier doesn't help, it needs real locking.
-
-So that barrier is fine per se. Of course, the whole code (and/or just the 
-comment!) may be buggered, but any CPU SMP-aware barriers shouldn't be 
-relevant.
-
-What's much more likely to be an issue is simply the fact that since the 
-fastpath now accesses the per-cpu freelist without any locking, if there 
-is *any* sequence what-so-ever that does it from another CPU and assumes 
-the old locking behaviour, the list will be corrupted. And from a quick 
-look-through, I certainly cannot guarantee that isn't the case.
-
-There's still a lot of cases that do direct assignments to "c->freelist" 
-without using a guaranteed atomic sequence. They *should* be safe if it's 
-guaranteed that 
- (a) they always run with interrupts disabled
-AND
- (b) 'c' is _always_ the "current CPU" list
-
-but I can't quickly see that guarantee for either.
-
-I'd happily just revert this thing, but it would be really good to have 
-confirmation that it seems to matter. But Torsten's partial bisection 
-seems to say that the quicklist thing went into -mm before the crash even 
-started.
-
-So:
- - it might be something else entirely
- - it might still be the local cmpxchg, just Torsten didn't happen to 
-   notice it until later.
- - it might still be the local cmpxchg, but something else changed its 
-   patterns to actually make it start triggering.
-
-and in general I don't think we should revert it unless we have stronger 
-indications that it really is the problem (eg somebody finds the actual 
-bug, or a reporter can confirm that it goes away when the local cmpxchg 
-optimization is disabled).
-
-		Linus
+greg k-h
