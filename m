@@ -1,142 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760501AbYBSLwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754420AbYBSLzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760501AbYBSLwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:52:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbYBSLwb
+	id S1754420AbYBSLzj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:55:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbYBSLzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:52:31 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:53961 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758745AbYBSLwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:52:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=KZtscaLSymKuNhN+d/aI3c7kitEW60rO4T1NyTcmFzSRXj8iUBbY7pKfXZSGYv/UB57U31iJ5Blbb+yN5mKrDZOMtwhxxiC5DJZOkSqNTR3sSGp2Lmr0ZIhsrJz2YsNAAm19PnFePun1YZJgIgYl7NWmb0swFz/nUS/Qdk/sMM4=
-Message-ID: <47BAC2B8.5010604@gmail.com>
-Date: Tue, 19 Feb 2008 12:51:20 +0100
-From: Franck Bui-Huu <vagabon.xyz@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: paulmck@linux.vnet.ibm.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] rculist.h: use the rcu API
-References: <47BAC1E6.2050901@gmail.com>
-In-Reply-To: <47BAC1E6.2050901@gmail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 06:55:31 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52809 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750727AbYBSLza (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:55:30 -0500
+Date: Tue, 19 Feb 2008 12:55:37 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Greg KH <greg@kroah.com>, kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, Jeff Garzik <jeff@garzik.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Message-ID: <20080219115537.GB5604@uranus.ravnborg.org>
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219095834.GB6940@one.firstfloor.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Franck Bui-Huu <fbuihuu@gmail.com>
+> 
+> I'm not sure either it's a good idea to try to merge mISDN if the
+> maintainers don't think it is ready yet.
 
-This patch makes almost all list mutation primitives use
-rcu_assign_pointer().
+In the spirit of relase early - relase often we should at
+least see what is going on.
 
-The main point of this being readability improvement.
+And Gregory wrote:
+> ive been hackin away at mISDN for a while and use it with recent kernels
+>  2.6.2X and have a patch for 2.6.24 (move from semaphore to complition)
+> the distro we built is heavily reliant on mISDN (voip) i dont use the
+> isdn kernel drivers at all any longer.
+So not useless and having it in the kernel may cause more people
+to contribute.
+I for one do prefer to hack on something in the kernel and
+not hidden in some repository far away.
 
-Signed-off-by: Franck Bui-Huu <fbuihuu@gmail.com>
----
- include/linux/rculist.h |   23 +++++++++--------------
- 1 files changed, 9 insertions(+), 14 deletions(-)
+But until we see patches lets wait and see.
 
-diff --git a/include/linux/rculist.h b/include/linux/rculist.h
-index aa9b3eb..8d2c81f 100644
---- a/include/linux/rculist.h
-+++ b/include/linux/rculist.h
-@@ -7,6 +7,7 @@
-  * RCU-protected list version
-  */
- #include <linux/list.h>
-+#include <linux/rcupdate.h>
- 
- /*
-  * Insert a new entry between two known consecutive entries.
-@@ -19,9 +20,8 @@ static inline void __list_add_rcu(struct list_head *new,
- {
- 	new->next = next;
- 	new->prev = prev;
--	smp_wmb();
-+	rcu_assign_pointer(prev->next, new);
- 	next->prev = new;
--	prev->next = new;
- }
- 
- /**
-@@ -110,9 +110,8 @@ static inline void list_replace_rcu(struct list_head *old,
- {
- 	new->next = old->next;
- 	new->prev = old->prev;
--	smp_wmb();
-+	rcu_assign_pointer(new->prev->next, new);
- 	new->next->prev = new;
--	new->prev->next = new;
- 	old->prev = LIST_POISON2;
- }
- 
-@@ -166,8 +165,7 @@ static inline void list_splice_init_rcu(struct list_head *list,
- 	 */
- 
- 	last->next = at;
--	smp_wmb();
--	head->next = first;
-+	rcu_assign_pointer(head->next, first);
- 	first->prev = head;
- 	at->prev = last;
- }
-@@ -280,10 +278,9 @@ static inline void hlist_replace_rcu(struct hlist_node *old,
- 
- 	new->next = next;
- 	new->pprev = old->pprev;
--	smp_wmb();
-+	rcu_assign_pointer(*new->pprev, new);
- 	if (next)
- 		new->next->pprev = &new->next;
--	*new->pprev = new;
- 	old->pprev = LIST_POISON2;
- }
- 
-@@ -310,12 +307,12 @@ static inline void hlist_add_head_rcu(struct hlist_node *n,
- 					struct hlist_head *h)
- {
- 	struct hlist_node *first = h->first;
-+
- 	n->next = first;
- 	n->pprev = &h->first;
--	smp_wmb();
-+	rcu_assign_pointer(h->first, n);
- 	if (first)
- 		first->pprev = &n->next;
--	h->first = n;
- }
- 
- /**
-@@ -341,9 +338,8 @@ static inline void hlist_add_before_rcu(struct hlist_node *n,
- {
- 	n->pprev = next->pprev;
- 	n->next = next;
--	smp_wmb();
-+	rcu_assign_pointer(*(n->pprev), n);
- 	next->pprev = &n->next;
--	*(n->pprev) = n;
- }
- 
- /**
-@@ -369,8 +365,7 @@ static inline void hlist_add_after_rcu(struct hlist_node *prev,
- {
- 	n->next = prev->next;
- 	n->pprev = &prev->next;
--	smp_wmb();
--	prev->next = n;
-+	rcu_assign_pointer(prev->next, n);
- 	if (n->next)
- 		n->next->pprev = &n->next;
- }
--- 
-1.5.4
-
-
+	Sam
