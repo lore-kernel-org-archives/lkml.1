@@ -1,37 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbYBSMH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbYBSMMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbYBSMH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 07:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbYBSMHP
+	id S1753487AbYBSMMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 07:12:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750787AbYBSMMM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 07:07:15 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:39551 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750831AbYBSMHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 07:07:13 -0500
-Date: Tue, 19 Feb 2008 04:05:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Clemens Koller <clemens.koller@anagramm.de>
-Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net,
-       adaplas@gmail.com, Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
- endianness
-Message-Id: <20080219040530.7b1d115d.akpm@linux-foundation.org>
-In-Reply-To: <47BABD3A.7010102@anagramm.de>
-References: <20080205154432.GA8749@localhost.localdomain>
-	<20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-	<47BA162C.5000807@anagramm.de>
-	<1203381353.6740.59.camel@pasglop>
-	<47BABD3A.7010102@anagramm.de>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Tue, 19 Feb 2008 07:12:12 -0500
+Received: from www.tglx.de ([62.245.132.106]:59071 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750715AbYBSMML (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 07:12:11 -0500
+Date: Tue, 19 Feb 2008 13:12:01 +0100
+From: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
+To: Brandon Philips <brandon@ifup.org>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UIO: introduce sysfs_ops for map_attr_ktype
+Message-ID: <20080219131201.6cb32052@dilbert.local>
+In-Reply-To: <20080219095505.GA875@plankton.ifup.org>
+References: <20080213180304.4ffa81e9@dilbert.local>
+	<20080213173322.GD10733@kroah.com>
+	<20080219095505.GA875@plankton.ifup.org>
+Organization: Linutronix
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.2; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -39,50 +28,117 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008 12:27:54 +0100 Clemens Koller <clemens.koller@anagramm.de> wrote:
+Am Tue, 19 Feb 2008 01:55:05 -0800
+schrieb Brandon Philips <brandon@ifup.org>:
 
-> Benjamin Herrenschmidt schrieb:
-> > On Tue, 2008-02-19 at 00:35 +0100, Clemens Koller wrote:
-> >> Valdis.Kletnieks@vt.edu schrieb:
-> >>> On Mon, 18 Feb 2008 08:18:47 +0100, Krzysztof Helt said:
-> >>>> I know two fb drivers which use endianess information (pm2fb and s3c2410fb).
-> >>>> Both resolve endianess at driver level. Actually, both handle it by setting special
-> >>>> bits so the graphics chip itself reorder bytes to transform foreign endianess. 
-> >>>> I understand that this patch is for chips which cannot reorder bytes by themselves.
-> >>> Does anybody know of such a chip that's actually available in the wild?  Or are
-> >>> we writing drivers for speculative possible chips?
-> >>>
-> >> I had troubles with the Silicon Motion SM501/SM502 endianess on PowerPC PCI vs. LocalBus.
-> >> The chip also has a register to swap endianess, but that seems to only affect some
-> >> LocalBus modes.
-> >> The current fb and X drivers are working, but when it comes to font
-> >> aliasing and hw-acceleration, the problems start to rise again...
-> > 
-> > Most "sane" gfx chips nowadays provide configurable surfaces that allow
-> > to perform the swap when writing/reading from regions of the
-> > framebuffer, with the ability to set a different swapper setting (based
-> > on bit depth) per region.
+> This fixes two bugs with UIO that cropped up recently in -rc1
 > 
-> Most! But not the SM50x. I still hope I would be wrong here. :-(
+> 1) WARNING: at fs/sysfs/file.c:334 sysfs_open_file when trying to open
+>    a map addr/size file - complaining about missing sysfs_ops for
+> ktype 
+> 2) Permission denied when reading uio/uio0/maps/map0/{addr,size} when
+>    files are mode S_IRUGO
 > 
-> > Then there is also the risk that your PCI<->Localbus has been wired
-> > improperly :-)
-> 
-> That's not an issue in my case. The SM50x can be connected to
-> either an PCI or some Local/CPU-whateverbus IF.
-> I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
-> If the sm501 is attached to the MPC85xx' PCI like any other video card,
-> the PCI config-space is can be accessed as usual, whereas the framebuffer
-> memory area is byte-swapped compared to other common video cards.
-> 
-> So, to get back on topic:
-> I would welcome endianess swapping in SW. Some architectures (PowerPC)
-> should also be able to do swapped-endian mmapping. I just haven't
-> had time for a closer look but it looks also interesting way to do it
-> that way.
+> Also fix a typo: attr_attribute -> addr_attribute
 
-Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
-Could whoever did that please thwap himself?
+Hi Brandon,
+thanks a lot for that one! I've tested with 2.6.25-rc2 with a Hilscher
+NetX PCI card, works without problems. All attributes are accessible.
+Makes 2.6.25-rc usable again :-)
 
-Anyway, my head is now officially spinning.  Did anyone actually have a
-reason why we shouldn't proceed with Anton's patch?
+Thanks,
+Hans
+
+> 
+> Signed-off-by: Brandon Philips <bphilips@suse.de>
+
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+
+
+> 
+> ---
+>  drivers/uio/uio.c          |   54
+> ++++++++++++++++++++++++++++++--------------- 1 file changed, 37
+> insertions(+), 17 deletions(-)
+> 
+> Index: linux-2.6/drivers/uio/uio.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/uio/uio.c
+> +++ linux-2.6/drivers/uio/uio.c
+> @@ -57,29 +57,29 @@ struct uio_map {
+>  };
+>  #define to_map(map) container_of(map, struct uio_map, kobj)
+>  
+> -
+> -static ssize_t map_attr_show(struct kobject *kobj, struct
+> kobj_attribute *attr,
+> -			     char *buf)
+> +static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+>  {
+> -	struct uio_map *map = to_map(kobj);
+> -	struct uio_mem *mem = map->mem;
+> -
+> -	if (strncmp(attr->attr.name, "addr", 4) == 0)
+> -		return sprintf(buf, "0x%lx\n", mem->addr);
+> -
+> -	if (strncmp(attr->attr.name, "size", 4) == 0)
+> -		return sprintf(buf, "0x%lx\n", mem->size);
+> +	return sprintf(buf, "0x%lx\n", mem->addr);
+> +}
+>  
+> -	return -ENODEV;
+> +static ssize_t map_size_show(struct uio_mem *mem, char *buf)
+> +{
+> +	return sprintf(buf, "0x%lx\n", mem->size);
+>  }
+>  
+> -static struct kobj_attribute attr_attribute =
+> -	__ATTR(addr, S_IRUGO, map_attr_show, NULL);
+> -static struct kobj_attribute size_attribute =
+> -	__ATTR(size, S_IRUGO, map_attr_show, NULL);
+> +struct uio_sysfs_entry {
+> +	struct attribute attr;
+> +	ssize_t (*show)(struct uio_mem *, char *);
+> +	ssize_t (*store)(struct uio_mem *, const char *, size_t);
+> +};
+> +
+> +static struct uio_sysfs_entry addr_attribute =
+> +	__ATTR(addr, S_IRUGO, map_addr_show, NULL);
+> +static struct uio_sysfs_entry size_attribute =
+> +	__ATTR(size, S_IRUGO, map_size_show, NULL);
+>  
+>  static struct attribute *attrs[] = {
+> -	&attr_attribute.attr,
+> +	&addr_attribute.attr,
+>  	&size_attribute.attr,
+>  	NULL,	/* need to NULL terminate the list of
+> attributes */ };
+> @@ -90,8 +90,28 @@ static void map_release(struct kobject *
+>  	kfree(map);
+>  }
+>  
+> +static ssize_t map_type_show(struct kobject *kobj, struct attribute
+> *attr,
+> +			     char *buf)
+> +{
+> +	struct uio_map *map = to_map(kobj);
+> +	struct uio_mem *mem = map->mem;
+> +	struct uio_sysfs_entry *entry;
+> +
+> +	entry = container_of(attr, struct uio_sysfs_entry, attr);
+> +
+> +	if (!entry->show)
+> +		return -EIO;
+> +
+> +	return entry->show(mem, buf);
+> +}
+> +
+> +static struct sysfs_ops uio_sysfs_ops = {
+> +	.show = map_type_show,
+> +};
+> +
+>  static struct kobj_type map_attr_type = {
+>  	.release	= map_release,
+> +	.sysfs_ops	= &uio_sysfs_ops,
+>  	.default_attrs	= attrs,
+>  };
