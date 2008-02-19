@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762594AbYBSWEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbYBSWEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762594AbYBSWEf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761914AbYBSWEB
+	id S1754730AbYBSWEt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:04:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762000AbYBSWEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:04:01 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:2285 "EHLO
+	Tue, 19 Feb 2008 17:04:04 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:1634 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760393AbYBSWD6 (ORCPT
+	with ESMTP id S1761815AbYBSWD7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:03:58 -0500
+	Tue, 19 Feb 2008 17:03:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=Zy0F5YrEMaReyw6ruCHzzf323+UXII7+XxwybG++PlXsfHghJxUV2mVrJqiUfuVk/Xq/cdiVlMA2N/l7Ud0IL2RI9LJ/AFXbdFsVPzDt/GFScej+PheMHa4em/d5msJ3u0rtrbuIzMEKO1WvO8CCw8JTtLLPjZb1DZ4pCFCwwNU=
+        b=PwO/QZcoelvzu0F+2sqfly+Ms7QMcb3CunjZmeupevZ2VNWmRPRlXqHNxC3C7NDcV47HITjW8O86cAzRgfRXbsBdwv3KqG2h78aFeb+/UwfuFtY63T2KilMbE6cfKFf33eFaV7wu67ShlaY8GR4uFKAWS3fQygFXD6qCyeNkd0c=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH 03/12] ide: add ide-4drives host driver
-Date: Tue, 19 Feb 2008 22:24:35 +0100
+To: petkovbb@gmail.com
+Subject: Re: [PATCH] ide-cd: remove the internal 64k buffer
+Date: Tue, 19 Feb 2008 22:51:36 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20080216163856.10174.72546.sendpatchset@localhost.localdomain> <20080216163911.10174.58246.sendpatchset@localhost.localdomain> <47BAD3AE.7060906@ru.mvista.com>
-In-Reply-To: <47BAD3AE.7060906@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <20080219143247.GA3980@gollum.tnic>
+In-Reply-To: <20080219143247.GA3980@gollum.tnic>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802192224.36088.bzolnier@gmail.com>
+Message-Id: <200802192251.37183.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008, Sergei Shtylyov wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> 
-> > CONFIG_BLK_DEV_4DRIVES deserves its own host driver:
-> 
-> > * Add drivers/ide/legacy/ide-4drives.c and move "4drives" support there.
-> 
-> > * Add ide-4drives.o in the link order after all other legacy host
-> >   drivers enabled by "ide0=" options (they all are mutually exclusive).
-> 
-> > * Make ide-4drives host driver probe itself for IDE devices instead of
-> >   indirectly depending on ide_generic host driver.
-> 
-> > * Add "probe" module parameter to ide-4drives and update documentation.
-> 
-> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> 
-> > Index: b/drivers/ide/Kconfig
-> > ===================================================================
-> > --- a/drivers/ide/Kconfig
-> > +++ b/drivers/ide/Kconfig
-> > @@ -1042,8 +1042,8 @@ config BLK_DEV_4DRIVES
-> >  	  Certain older chipsets, including the Tekram 690CD, use a single set
-> >  	  of I/O ports at 0x1f0 to control up to four drives, instead of the
-> >  	  customary two drives per port. Support for this can be enabled at
-> > -	  runtime using the "ide0=four" kernel boot parameter if you say Y
-> > -	  here.
-> > +	  runtime using the "ide_4drives.probe" kernel boot parameter if you
-> 
->     Not "ide-4drives.probe?
->     Looks correct otherwise.
 
-I believe that both versions are correct but I fixed this in 'take 3' to
-be on the safe side.
+Hi,
 
-Thanks,
-Bart
+On Tuesday 19 February 2008, Borislav Petkov wrote:
+> Hi Bart,
+> 
+> here's one more item from my TODO list. The removal is straight forward, after
+> testing it with all my cdrom drives they all seem even to rotate quieter due to
+> the automatic speed adjustment of the drive to the continuous data stream
+> bandwidth in contrast to the buffer-mode in which recurring buffer-fill speedups
+> caused the drive's read speeed to spike in order to keep the buffer filled up
+> constantly.
+> 
+> Still, i'd keep this a bit longer in -mm to see whether there are some
+> other issues with it and with all the different workloads.
+> 
+> 
+> commit a855bd5d94ddac678cf90b4b8f20dbd3ac8ea29a
+> Author: Borislav Petkov <petkovbb@gmail.com>
+> Date:   Tue Feb 19 14:25:09 2008 +0100
+> 
+>     ide-cd: remove the internal 64k buffer
+>     
+>     This removes the internal ide-cd buffer and falls back to read-ahead block layer
+>     capabilities. Thorough testing (cd burning, dvd read, raw read) gives with the
+>     bufferless mode marginally better performance in addition to simplified code.
+>     
+>     bufferless:
+>     
+>     dd: reading `/dev/hdc': Input/output error
+>     6238+0 records in
+>     6238+0 records out
+>     204406784 bytes (204 MB) copied, 259.891 s, 787 kB/s
+>     
+>     real    4m21.598s
+>     user    0m0.014s
+>     sys     0m0.744s
+>     
+>     with the old buffer (2.6.25-rc1):
+>     
+>     dd: reading `/dev/hdc': Input/output error
+>     6238+0 records in
+>     6238+0 records out
+>     204406784 bytes (204 MB) copied, 262.893 s, 778 kB/s
+>     
+>     real    4m22.938s
+>     user    0m0.009s
+>     sys     0m0.771s
+>     
+>     Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+
+applied, thanks
