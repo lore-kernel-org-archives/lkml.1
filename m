@@ -1,217 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbYBSFrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbYBSFsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756960AbYBSFrj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 00:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbYBSFrb
+	id S1759269AbYBSFsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 00:48:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbYBSFsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 00:47:31 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46590 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbYBSFr3 (ORCPT
+	Tue, 19 Feb 2008 00:48:23 -0500
+Received: from wx-out-0506.google.com ([66.249.82.231]:58684 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbYBSFsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 00:47:29 -0500
-Date: Tue, 19 Feb 2008 14:44:48 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
+	Tue, 19 Feb 2008 00:48:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=R7TPzXit8DK5Gw7zbtiI4ZiER31crYXFRkLiOH/JCuSXpDOhIeDzhOej0+B3KoP4mcabPfHVYFmmXlndZ5lvuny17Vhfcm5ItjZxXBuiYZgwAIgbWpUw4kpxt5b+oj/cVTfGTz136Yo+NtlJ7XWpquZV+KWXbgqdVDAivvns9QU=
+Message-ID: <9c9fda240802182148m6fd632pa7988530c5387245@mail.gmail.com>
+Date: Tue, 19 Feb 2008 14:48:18 +0900
+From: "Kyungmin Park" <kmpark@infradead.org>
+To: "Linux Filesystem Mailing List" <linux-fsdevel@vger.kernel.org>,
        linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] the proposal of improve page reclaim by throttle
-Cc: kosaki.motohiro@jp.fujitsu.com
-Message-Id: <20080219134715.7E90.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Subject: Question about synchronous write on SSD
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+X-Google-Sender-Auth: 03ac9e67dce37dca
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-background
-========================================
-current VM implementation doesn't has limit of # of parallel reclaim.
-when heavy workload, it bring to 2 bad things
-  - heavy lock contention
-  - unnecessary swap out
+Don't you remember the topic "solid state drive access and context
+switching" [1].
+I want to measure it is really better performance on SSD?
 
-abount 2 month ago, KAMEZA Hiroyuki proposed the patch of page 
-reclaim throttle and explain it improve reclaim time.
-	http://marc.info/?l=linux-mm&m=119667465917215&w=2
+To write it on ssd synchronously, I hacked the
+'generic_make_request()' [2] and got following results.
 
-but unfortunately it works only memcgroup reclaim.
-Today, I implement it again for support global reclaim and mesure it.
+# echo 3 > /proc/sys/vm/drop_caches
+# tiotest -f 100 -R -d /dev/sdd1
+Tiotest results for 4 concurrent io threads:
+| Write         400 MBs |    4.7 s |  84.306 MB/s |   8.4 %  |  77.5 % |
+| Read          400 MBs |    4.3 s |  92.945 MB/s |   7.2 %  |  53.5 % |
+Tiotest latency results:
+| Write        |        0.126 ms |      706.379 ms |  0.00000 |   0.00000 |
+| Read         |        0.161 ms |      311.738 ms |  0.00000 |   0.00000 |
 
+# echo 3 > /proc/sys/vm/drop_caches
+# tiotest -f 1000 -R -d /dev/sdd1
+Tiotest results for 4 concurrent io threads:
+| Write        4000 MBs |   47.5 s |  84.124 MB/s |   7.0 %  |  83.6 % |
+| Read         4000 MBs |   41.9 s |  95.530 MB/s |   7.8 %  |  55.6 % |
+Tiotest latency results:
+| Write        |        0.176 ms |      714.677 ms |  0.00000 |   0.00000 |
+| Read         |        0.161 ms |      311.815 ms |  0.00000 |   0.00000 |
 
-test machine, method and result
-==================================================
-<test machine>
-	CPU:  IA64 x8
-	MEM:  8GB
-	SWAP: 2GB
+However it's same performance as before. It means the patch is meaningless.
 
-<test method>
-	got hackbench from
-		http://people.redhat.com/mingo/cfs-scheduler/tools/hackbench.c
+Could you tell me is it the proper place to hack or others?
 
-	$ /usr/bin/time hackbench 120 process 1000
+Thank you,
+Kyungmin Park
 
-	this parameter mean consume all physical memory and 
-	1GB swap space on my test environment.
+p.s. Of cource I got the following message
+WARNING: at block/blk-core.c:1351 generic_make_request+0x126/0x3d8()
 
-<test result (average of 3 times measurement)>
+1. http://lkml.org/lkml/2007/12/3/247
+2. simple hack
+diff --git a/block/blk-core.c b/block/blk-core.c
+index e9754dc..7262720 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1345,6 +1345,14 @@ static inline void
+__generic_make_request(struct bio *bio)
+        if (bio_check_eod(bio, nr_sectors))
+                goto end_io;
 
-before:
-	hackbench result:		282.30
-	/usr/bin/time result
-		user:			14.16
-		sys:			1248.47
-		elapse:			432.93
-		major fault:		29026
-	max parallel reclaim tasks:	1298
-	max consumption time of
-	 try_to_free_pages():		70394 
-
-after:
-	hackbench result:		30.36
-	/usr/bin/time result
-		user:			14.26
-		sys:			294.44
-		elapse:			118.01
-		major fault:		3064
-	max parallel reclaim tasks:	4
-	max consumption time of
-	 try_to_free_pages():		12234 
-
-
-conclusion
-=========================================
-this patch improve 3 things.
-1. reduce unnecessary swap
-   (see above major fault. about 90% reduced)
-2. improve throughput performance
-   (see above hackbench result. about 90% reduced)
-3. improve interactive performance.
-   (see above max consumption of try_to_free_pages.
-    about 80% reduced)
-4. reduce lock contention.
-   (see above sys time. about 80% reduced)
-
-
-Now, we got about 1000% performance improvement of hackbench :)
-
-
-
-foture works
-==========================================================
- - more discussion with memory controller guys.
-
-
-
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Balbir Singh <balbir@linux.vnet.ibm.com>
-CC: Rik van Riel <riel@redhat.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-
----
- include/linux/nodemask.h |    1 
- mm/vmscan.c              |   49 +++++++++++++++++++++++++++++++++++++++++++++--
- 2 files changed, 48 insertions(+), 2 deletions(-)
-
-Index: b/include/linux/nodemask.h
-===================================================================
---- a/include/linux/nodemask.h	2008-02-19 13:58:05.000000000 +0900
-+++ b/include/linux/nodemask.h	2008-02-19 13:58:23.000000000 +0900
-@@ -431,6 +431,7 @@ static inline int num_node_state(enum no
- 
- #define num_online_nodes()	num_node_state(N_ONLINE)
- #define num_possible_nodes()	num_node_state(N_POSSIBLE)
-+#define num_highmem_nodes()	num_node_state(N_HIGH_MEMORY)
- #define node_online(node)	node_state((node), N_ONLINE)
- #define node_possible(node)	node_state((node), N_POSSIBLE)
- 
-Index: b/mm/vmscan.c
-===================================================================
---- a/mm/vmscan.c	2008-02-19 13:58:05.000000000 +0900
-+++ b/mm/vmscan.c	2008-02-19 14:04:06.000000000 +0900
-@@ -127,6 +127,11 @@ long vm_total_pages;	/* The total number
- static LIST_HEAD(shrinker_list);
- static DECLARE_RWSEM(shrinker_rwsem);
- 
-+static atomic_t nr_reclaimers = ATOMIC_INIT(0);
-+static DECLARE_WAIT_QUEUE_HEAD(reclaim_throttle_waitq);
-+#define RECLAIM_LIMIT (2 * num_highmem_nodes())
++       /* FIXME simple hack by kmpark */
++       if (MINOR(bio->bi_bdev->bd_dev) == 49 &&
++           MAJOR(bio->bi_bdev->bd_dev) == 8 && bio_data_dir(bio) == WRITE) {
++               WARN_ON_ONCE(1);
++               /* Write synchronous */
++               bio->bi_rw |= (1 << BIO_RW_SYNC);
++       }
 +
-+
- #ifdef CONFIG_CGROUP_MEM_CONT
- #define scan_global_lru(sc)	(!(sc)->mem_cgroup)
- #else
-@@ -1421,6 +1426,46 @@ out:
- 	return ret;
- }
- 
-+static unsigned long try_to_free_pages_throttled(struct zone **zones,
-+						 int order,
-+						 gfp_t gfp_mask,
-+						 struct scan_control *sc)
-+{
-+	unsigned long nr_reclaimed = 0;
-+	unsigned long start_time;
-+	int i;
-+
-+	start_time = jiffies;
-+
-+	wait_event(reclaim_throttle_waitq,
-+		   atomic_add_unless(&nr_reclaimers, 1, RECLAIM_LIMIT));
-+
-+	/* more reclaim until needed? */
-+	if (unlikely(time_after(jiffies, start_time + HZ))) {
-+		for (i = 0; zones[i] != NULL; i++) {
-+			struct zone *zone = zones[i];
-+			int classzone_idx = zone_idx(zones[0]);
-+
-+			if (!populated_zone(zone))
-+				continue;
-+
-+			if (zone_watermark_ok(zone, order, 4*zone->pages_high,
-+					      classzone_idx, 0)) {
-+				nr_reclaimed = 1;
-+				goto out;
-+			}
-+		}
-+	}
-+
-+	nr_reclaimed = do_try_to_free_pages(zones, gfp_mask, sc);
-+
-+out:
-+	atomic_dec(&nr_reclaimers);
-+	wake_up_all(&reclaim_throttle_waitq);
-+
-+	return nr_reclaimed;
-+}
-+
- unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
- {
- 	struct scan_control sc = {
-@@ -1434,7 +1479,7 @@ unsigned long try_to_free_pages(struct z
- 		.isolate_pages = isolate_pages_global,
- 	};
- 
--	return do_try_to_free_pages(zones, gfp_mask, &sc);
-+	return try_to_free_pages_throttled(zones, order, gfp_mask, &sc);
- }
- 
- #ifdef CONFIG_CGROUP_MEM_CONT
-@@ -1456,7 +1501,7 @@ unsigned long try_to_free_mem_cgroup_pag
- 	int target_zone = gfp_zone(GFP_HIGHUSER_MOVABLE);
- 
- 	zones = NODE_DATA(numa_node_id())->node_zonelists[target_zone].zones;
--	if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
-+	if (try_to_free_pages_throttled(zones, 0, sc.gfp_mask, &sc))
- 		return 1;
- 	return 0;
- }
-
-
+        /*
+         * Resolve the mapping until finished. (drivers are
+         * still free to implement/resolve their own stacking
