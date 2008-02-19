@@ -1,74 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbYBSHc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762109AbYBSHfi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761567AbYBSHc5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYBSHcr
+	id S1762109AbYBSHfi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:35:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbYBSHfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:32:47 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54558 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755431AbYBSHcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:32:46 -0500
-Date: Tue, 19 Feb 2008 08:32:05 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tony Breeds <tony@bakeyournoodle.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, lguest@ozlabs.org
-Subject: Re: [PATCH] Fix building lguest as module.
-Message-ID: <20080219073205.GA12375@elte.hu>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <20080219034404.GT6887@bakeyournoodle.com>
+	Tue, 19 Feb 2008 02:35:30 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:64651 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754468AbYBSHfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:35:30 -0500
+Message-ID: <47BA8665.3080302@cn.fujitsu.com>
+Date: Tue, 19 Feb 2008 15:33:57 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219034404.GT6887@bakeyournoodle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Herbert Poetzl <herbert@13thfloor.at>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik Van Riel <riel@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [mm] [PATCH 2/4] Add the soft limit interface v2
+References: <20080219070232.25349.21196.sendpatchset@localhost.localdomain> <20080219070258.25349.25994.sendpatchset@localhost.localdomain>
+In-Reply-To: <20080219070258.25349.25994.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Balbir Singh wrote:
+> A new configuration file called soft_limit_in_bytes is added. The parsing
+> and configuration rules remain the same as for the limit_in_bytes user
+> interface.
+> 
+> A global list of all memory cgroups over their soft limit is maintained.
+> This list is then used to reclaim memory on global pressure. A cgroup is
+> removed from the list when the cgroup is deleted.
+> 
+> The global list is protected with a read-write spinlock.
+> 
 
-* Tony Breeds <tony@bakeyournoodle.com> wrote:
+You are not using read-write spinlock..
 
-> +#endif
+> 
+> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+> ---
+> 
+>  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
+>  1 file changed, 32 insertions(+), 1 deletion(-)
+> 
+> diff -puN mm/memcontrol.c~memory-controller-add-soft-limit-interface mm/memcontrol.c
+> --- linux-2.6.25-rc2/mm/memcontrol.c~memory-controller-add-soft-limit-interface	2008-02-19 12:31:49.000000000 +0530
+> +++ linux-2.6.25-rc2-balbir/mm/memcontrol.c	2008-02-19 12:31:49.000000000 +0530
+> @@ -35,6 +35,10 @@
+>  
+>  struct cgroup_subsys mem_cgroup_subsys;
+>  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
+> +static spinlock_t mem_cgroup_sl_list_lock;	/* spin lock that protects */
+> +						/* the list of cgroups over*/
+> +						/* their soft limit */
+> +static struct list_head mem_cgroup_sl_exceeded_list;
+>  
+>  /*
+>   * Statistics for memory cgroup.
+> @@ -136,6 +140,10 @@ struct mem_cgroup {
+>  	 * statistics.
+>  	 */
+>  	struct mem_cgroup_stat stat;
+> +	/*
+> +	 * List of all mem_cgroup's that exceed their soft limit
+> +	 */
+> +	struct list_head sl_exceeded_list;
+>  };
+>  
+>  /*
+> @@ -679,6 +687,18 @@ retry:
+>  		goto retry;
+>  	}
+>  
+> +	/*
+> +	 * If we exceed our soft limit, we get added to the list of
+> +	 * cgroups over their soft limit
+> +	 */
+> +	if (!res_counter_check_under_limit(&mem->res, RES_SOFT_LIMIT)) {
+> +		spin_lock_irqsave(&mem_cgroup_sl_list_lock, flags);
+> +		if (list_empty(&mem->sl_exceeded_list))
+> +			list_add_tail(&mem->sl_exceeded_list,
+> +						&mem_cgroup_sl_exceeded_list);
+> +		spin_unlock_irqrestore(&mem_cgroup_sl_list_lock, flags);
+> +	}
 > +
-> +#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_MODULE)
-> +	BLANK();
+>  	mz = page_cgroup_zoneinfo(pc);
+>  	spin_lock_irqsave(&mz->lru_lock, flags);
+>  	/* Update statistics vector */
+> @@ -736,13 +756,14 @@ void mem_cgroup_uncharge(struct page_cgr
+>  	if (atomic_dec_and_test(&pc->ref_cnt)) {
+>  		page = pc->page;
+>  		mz = page_cgroup_zoneinfo(pc);
+> +		mem = pc->mem_cgroup;
+>  		/*
+>  		 * get page->cgroup and clear it under lock.
+>  		 * force_empty can drop page->cgroup without checking refcnt.
+>  		 */
+>  		unlock_page_cgroup(page);
+> +
+>  		if (clear_page_cgroup(page, pc) == pc) {
+> -			mem = pc->mem_cgroup;
+>  			css_put(&mem->css);
+>  			res_counter_uncharge(&mem->res, PAGE_SIZE);
+>  			spin_lock_irqsave(&mz->lru_lock, flags);
+> @@ -1046,6 +1067,12 @@ static struct cftype mem_cgroup_files[] 
+>  		.name = "stat",
+>  		.open = mem_control_stat_open,
+>  	},
+> +	{
+> +		.name = "soft_limit_in_bytes",
+> +		.private = RES_SOFT_LIMIT,
+> +		.write = mem_cgroup_write,
+> +		.read = mem_cgroup_read,
+> +	},
+>  };
+>  
+>  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+> @@ -1097,6 +1124,9 @@ mem_cgroup_create(struct cgroup_subsys *
+>  	if (unlikely((cont->parent) == NULL)) {
+>  		mem = &init_mem_cgroup;
+>  		init_mm.mem_cgroup = mem;
+> +		INIT_LIST_HEAD(&mem->sl_exceeded_list);
+> +		spin_lock_init(&mem_cgroup_sl_list_lock);
+> +		INIT_LIST_HEAD(&mem_cgroup_sl_exceeded_list);
+>  	} else
+>  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+>  
+> @@ -1104,6 +1134,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>  		return NULL;
+>  
+>  	res_counter_init(&mem->res);
+> +	INIT_LIST_HEAD(&mem->sl_exceeded_list);
+>  
 
-hm. Rusty's original fix is now upstream. I've done a delta to your 
-patch, find the fix is below.
+mem->sl_exceeded_list initialized twice ?
 
-	Ingo
-
------------------>
-Subject: lguest: fix build breakage
-From: Tony Breeds <tony@bakeyournoodle.com>
-Date: Tue Feb 19 08:16:03 CET 2008
-
-[ mingo@elte.hu: merged to Rusty's patch ]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/kernel/asm-offsets_32.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-x86.q/arch/x86/kernel/asm-offsets_32.c
-===================================================================
---- linux-x86.q.orig/arch/x86/kernel/asm-offsets_32.c
-+++ linux-x86.q/arch/x86/kernel/asm-offsets_32.c
-@@ -128,7 +128,7 @@ void foo(void)
- 	OFFSET(XEN_vcpu_info_pending, vcpu_info, evtchn_upcall_pending);
- #endif
- 
--#ifdef CONFIG_LGUEST_GUEST
-+#if defined(CONFIG_LGUEST) || defined(CONFIG_LGUEST_MODULE)
- 	BLANK();
- 	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
- 	OFFSET(LGUEST_DATA_pgdir, lguest_data, pgdir);
+>  	memset(&mem->info, 0, sizeof(mem->info));
+>  
+> _
+> 
