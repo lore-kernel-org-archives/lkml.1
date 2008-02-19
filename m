@@ -1,104 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbYBSJYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752891AbYBSJZO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758689AbYBSJYs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 04:24:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbYBSJYc
+	id S1752891AbYBSJZO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 04:25:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbYBSJYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 04:24:32 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:9097 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752093AbYBSJYb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 04:24:31 -0500
-Date: Tue, 19 Feb 2008 10:24:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Clements <paul.clements@steeleye.com>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] NBD: make nbd default to deadline I/O scheduler
-Message-ID: <20080219092428.GT23197@kernel.dk>
-References: <47ACA250.1010404@steeleye.com> <20080208204510.GD23197@kernel.dk> <20080208204713.GF23197@kernel.dk> <47ACC835.4070102@steeleye.com> <20080208140244.c850a5d3.akpm@linux-foundation.org> <47ADAB00.90306@steeleye.com> <20080212151602.f1803ef0.akpm@linux-foundation.org> <20080218181630.GI23197@kernel.dk> <20080218155001.97bf5976.akpm@linux-foundation.org> <20080219091943.GS23197@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219091943.GS23197@kernel.dk>
+	Tue, 19 Feb 2008 04:24:44 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:36919 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754816AbYBSJYl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 04:24:41 -0500
+Subject: Re: [PATCH, RFC] kthread: (possibly) a missing memory barrier in
+	kthread_stop()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russel <rusty@rustcorp.com.au>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <200802191744.45281.nickpiggin@yahoo.com.au>
+References: <1203375817.7619.73.camel@earth>
+	 <200802191744.45281.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 10:24:20 +0100
+Message-Id: <1203413060.10858.82.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19 2008, Jens Axboe wrote:
-> On Mon, Feb 18 2008, Andrew Morton wrote:
-> > On Mon, 18 Feb 2008 19:16:30 +0100 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Tue, Feb 12 2008, Andrew Morton wrote:
-> > > > On Sat, 09 Feb 2008 08:30:40 -0500
-> > > > Paul Clements <paul.clements@steeleye.com> wrote:
-> > > > 
-> > > > > +		old_e = disk->queue->elevator;
-> > > > > +		if (elevator_init(disk->queue, "deadline") == 0 ||
-> > > > > +			elevator_init(disk->queue, "noop") == 0) {
-> > > > > +				elevator_exit(old_e);
-> > > > > +		}
-> > > > >  	}
-> > > > 
-> > > > afacit elevator_init() will not trigger a request_module().  And you really
-> > > > do want to trigger the request_module() here.  Perhaps the block layer
-> > > > should provide a means of doing so?
-> > > 
-> > > Good point, I think elevator_get() should do that automatically. Does
-> > > this look sane?
-> > > 
-> > > diff --git a/block/elevator.c b/block/elevator.c
-> > > index bafbae0..88318c3 100644
-> > > --- a/block/elevator.c
-> > > +++ b/block/elevator.c
-> > > @@ -134,6 +134,21 @@ static struct elevator_type *elevator_get(const char *name)
-> > >  	spin_lock(&elv_list_lock);
-> > >  
-> > >  	e = elevator_find(name);
-> > > +	if (!e) {
-> > > +		char elv[ELV_NAME_MAX + strlen("-iosched")];
-> > > +
-> > > +		spin_unlock(&elv_list_lock);
-> > > +
-> > > +		if (!strcmp(name, "anticipatory"))
-> > > +			sprintf(elv, "as-iosched");
-> > > +		else
-> > > +			sprintf(elv, "%s-iosched", name);
-> > > +
-> > > +		request_module(elv);
-> > > +		spin_lock(&elv_list_lock);
-> > > +		e = elevator_find(name);
-> > > +	}
-> > > +
-> > >  	if (e && !try_module_get(e->elevator_owner))
-> > >  		e = NULL;
-> > 
-> > Looks nice and simple.  There might be some of the usual ordering problems
-> > when this is called during boot, maybe is-initramfs-available-yet problems,
-> > etc.  But it's unlikely to make things regress from where they are now.
+
+On Tue, 2008-02-19 at 17:44 +1100, Nick Piggin wrote:
+> On Tuesday 19 February 2008 10:03, Dmitry Adamushko wrote:
+> > Hi,
+> >
+> >
+> > [ description ]
+> >
+> > Subject: kthread: add a memory barrier to kthread_stop()
+> >
+> > 'kthread' threads do a check in the following order:
+> > - set_current_state(TASK_INTERRUPTIBLE);
+> > - kthread_should_stop();
+> >
+> > and set_current_state() implies an smp_mb().
+> >
+> > on another side (kthread_stop), wake_up_process() does not seem to
+> > guarantee a full mb.
+> >
+> > And 'kthread_stop_info.k' must be visible before wake_up_process()
+> > checks for/modifies a state of the 'kthread' task.
+> >
+> > (the patch is at the end of the message)
+> >
+> >
+> > [ more detailed description ]
+> >
+> > the current code might well be safe in case a to-be-stopped 'kthread'
+> > task is _not_ running on another CPU at the moment when kthread_stop()
+> > is called (in this case, 'rq->lock' will act as a kind of synch.
+> > point/barrier).
+> >
+> > Another case is as follows:
+> >
+> > CPU#0:
+> >
+> > ...
+> > while (kthread_should_stop()) {
+> >
+> >        if (condition)
+> >              schedule();
+> >
+> >        /* ... do something useful ... */   <--- EIP
+> >
+> >        set_current_state(TASK_INTERRUPTIBLE);
+> > }
+> >
+> > so a 'kthread' task is about to call
+> > set_current_state(TASK_INTERRUPTIBLE) ...
+> >
+> >
+> > (in the mean time)
+> >
+> > CPU#1:
+> >
+> > kthread_stop()
+> >
+> > -> kthread_stop_info.k = k                 (*)
+> > -> wake_up_process()
+> >
+> > wake_up_process() looks like:
+> >
+> > (try_to_wake_up)
+> >
+> > IRQ_OFF
+> > LOCK
+> >
+> > old_state = p->state;
+> > if (!(old_state & state))                  (**)
+> >          goto out;
+> >
+> > ...
+> >
+> > UNLOCK
+> > IRQ_ON
+> >
+> >
+> > let's suppose (*) and (**) are reordered
+> > (according to Documentation/memory-barriers.txt, neither IRQ_OFF nor
+> > LOCK may prevent it from happening).
+> >
+> > - the state is TASK_RUNNING, so we are about to return.
+> >
+> > - CPU#1 is about to execute (*) (it's guaranteed to be done before
+> > spin_unlock(&rq->lock) at the end of try_to_wake_up())
+> >
+> >
+> > (in the mean time)
+> >
+> > CPU#0:
+> >
+> > - set_current_state(TASK_INTERRUPTIBLE);
+> > - kthread_should_stop();
+> >
+> > here, kthread_stop_info.k is not yet visible
+> >
+> > - schedule()
+> >
+> > ...
+> >
+> > we missed a 'kthread_stop' event.
+> >
+> > hum?
 > 
-> Isn't request_module() and below robust enough to handle that?
+> Looks like you are correct to me.
+> 
+> 
+> > TIA,
+> >
+> > ---
+> >
+> > From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> > Subject: kthread: add a memory barrier to kthread_stop()
+> >
+> > 'kthread' threads do a check in the following order:
+> > - set_current_state(TASK_INTERRUPTIBLE);
+> > - kthread_should_stop();
+> >
+> > and set_current_state() implies an smp_mb().
+> >
+> > on another side (kthread_stop), wake_up_process() is not guaranteed to
+> > act as a full mb.
+> >
+> > 'kthread_stop_info.k' must be visible before wake_up_process() checks
+> > for/modifies a state of the 'kthread' task.
+> >
+> >
+> > Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+> >
+> >
+> > diff --git a/kernel/kthread.c b/kernel/kthread.c
+> > index 0ac8878..5167110 100644
+> > --- a/kernel/kthread.c
+> > +++ b/kernel/kthread.c
+> > @@ -211,6 +211,10 @@ int kthread_stop(struct task_struct *k)
+> >
+> >  	/* Now set kthread_should_stop() to true, and wake it up. */
+> >  	kthread_stop_info.k = k;
+> > +
+> > +	/* The previous store operation must not get ahead of the wakeup. */
+> > +	smp_mb();
 
-BTW, I've verified that it works as expected (at least after boot):
+Does this not also imply you need a matching barrier in
+kthread_should_stop() ?
 
-carl:/sys/block/sda/queue # cat scheduler 
-noop [cfq] 
-carl:/sys/block/sda/queue # echo anticipatory > scheduler 
-carl:/sys/block/sda/queue # dmesg
-[...]
-io scheduler anticipatory registered
-carl:/sys/block/sda/queue # cat scheduler 
-noop cfq [anticipatory] 
-
-So it properly loads as-iosched instead of failing, like it would have
-done before and required the user to do a modprobe as-iosched first.
-
-carl:/sys/block/sda/queue # echo foobar > scheduler 
--bash: echo: write error: Invalid argument
-carl:/sys/block/sda/queue # dmesg
-[...]
-elevator: type foobar not found
-
--- 
-Jens Axboe
+> >  	wake_up_process(k);
+> >  	put_task_struct(k);
+> >
+> >
+> >
+> > --
+> 
 
