@@ -1,41 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762526AbYBSWmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762682AbYBSWnh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762526AbYBSWmd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:42:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755624AbYBSWmY
+	id S1762682AbYBSWnh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:43:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755644AbYBSWn2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:42:24 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:53228 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1755553AbYBSWmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:42:23 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Wed, 20 Feb 2008 09:41:50 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: Improve init/Kconfig help descriptions [PATCH 3/9]
-Message-ID: <20080219224150.GC28294@tull.net>
-References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com>
+	Tue, 19 Feb 2008 17:43:28 -0500
+Received: from server1.nasreddine.com ([82.225.70.234]:55286 "EHLO
+	server1.nasreddine.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755562AbYBSWn1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 17:43:27 -0500
+X-Greylist: delayed 583 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 17:43:27 EST
+Date: Tue, 19 Feb 2008 23:33:32 +0100
+From: Wael Nasreddine <wael@nasreddine.com>
+To: "Chatre, Reinette" <reinette.chatre@intel.com>
+Cc: Wael Nasreddine <mla@nasreddine.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Zhu, Yi" <yi.zhu@intel.com>
+Subject: Re: iwl3945 not working properly.
+Message-ID: <20080219223332.GB6623@phoenix.nasreddine.info>
+References: <20080218045425.GA7381@phoenix.nasreddine.info> <20080218154713.GC3098@tuxdriver.com> <D936D925018D154694D8A362EEB0892003AF2CA1@orsmsx416.amr.corp.intel.com> <20080219211959.GA6623@phoenix.nasreddine.info> <D936D925018D154694D8A362EEB0892003AF30D4@orsmsx416.amr.corp.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="UFHRwCdBEJvubb2X"
 Content-Disposition: inline
-In-Reply-To: <20080219084420.f3104e3f.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+In-Reply-To: <D936D925018D154694D8A362EEB0892003AF30D4@orsmsx416.amr.corp.intel.com>
+X-OS: Linux 2.6.24-tuxonice-r2 i686
+X-Editor: VIM - Vi IMproved 7.1 (2007 May 12, compiled Feb  4 2008 15:13:47)
+X-PGP-Key: http://wael.nasreddine.com/files/Wael_Nasreddine.asc
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 08:44:20AM -0800, Randy Dunlap wrote:
-> Yes, these patches should be made against the latest development
-> tree, not the stable tree.
 
-Thanks for the comments and advice, I'll make a new set of patches
-against Linus' tree and post them in when they are ready.
+--UFHRwCdBEJvubb2X
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Nick.
--- 
-PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+This One Time, at Band Camp, "Chatre, Reinette" <reinette.chatre@intel.com>=
+ said, On Tue, Feb 19, 2008 at 01:51:58PM -0800:
+> On Tuesday, February 19, 2008 1:20 PM, Wael Nasreddine  wrote:
+
+> > Since the problem I am having is slightly different than the bugs
+> > above, I'm not sure I should post the debug there but feel free to
+> > post it if you think it is the same...
+
+> In this case, please create a new bug report for the problem you are
+> encountering.
+
+> Thanks!
+
+> Reinette
+
+Okay, a new bug has been filled
+
+http://bughost.org/bugzilla/show_bug.cgi?id=3D1606
+
+
+--=20
+Wael Nasreddine
+http://wael.nasreddine.com
+PGP: 1024D/C8DD18A2 06F6 1622 4BC8 4CEB D724  DE12 5565 3945 C8DD 18A2
+
+=2E: An infinite number of monkeys typing into GNU emacs,
+   would never make a good program. (L. Torvalds 1995) :.
+
+--UFHRwCdBEJvubb2X
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.7 (GNU/Linux)
+
+iD8DBQFHu1k8VWU5RcjdGKIRAnqlAJ9aw0rUCDTxQNh18z3iVeG8or2eNQCfdJRo
+lzsKAV1XtKbAlGPuA2GR4Gg=
+=xr/m
+-----END PGP SIGNATURE-----
+
+--UFHRwCdBEJvubb2X--
