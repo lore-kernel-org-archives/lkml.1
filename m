@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758518AbYBSTj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbYBSTkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758518AbYBSTj5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:39:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbYBSTjt
+	id S1760665AbYBSTkS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:40:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbYBSTjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:39:49 -0500
-Received: from qmta02.emeryville.ca.mail.comcast.net ([76.96.30.24]:41646 "EHLO
-	QMTA02.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751093AbYBSTjs (ORCPT
+	Tue, 19 Feb 2008 14:39:51 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48473 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752113AbYBSTju (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:39:48 -0500
-X-Authority-Analysis: v=1.0 c=1 a=rITDv7nW5hcA:10 a=RTvpSqOKSDzHYzQ0LfkA:9
- a=aLNKA45qXKF-cariz6d3mYnzk7YA:4 a=MxZ3bB5I4kYA:10
-To: linux-kernel@vger.kernel.org
-From: Karl Dahlke <eklhad@comcast.net>
-Reply-to: Karl Dahlke <eklhad@comcast.net>
-Subject: Where to put adapters, /proc is cool
-Date: Tue, 19 Feb 2008 14:39:45 -0500
-Message-ID: <20080119143945.eklhad@comcast.net>
-Mime-Version: 1.0
-Content-type: text/plain
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 14:39:50 -0500
+Date: Tue, 19 Feb 2008 11:32:50 -0800
+From: Greg KH <greg@kroah.com>
+To: Scott Murray <scottm@somanetworks.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: Re: [Pcihpd-discuss] [PATCH 06/12] PCI Hotplug: make cpcihp driver
+	use modern apis
+Message-ID: <20080219193250.GB5088@kroah.com>
+References: <20080215003909.GA27981@kroah.com> <1203036010-27988-6-git-send-email-gregkh@suse.de> <alpine.LFD.0.9999.0802151744330.3386@rancor.yyz.somanetworks.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.9999.0802151744330.3386@rancor.yyz.somanetworks.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So without knowing what an adapter is in this context /proc
-> seems to be a bad choice.
+On Fri, Feb 15, 2008 at 05:45:47PM -0500, Scott Murray wrote:
+> On Thu, 14 Feb 2008, Greg Kroah-Hartman wrote:
+> 
+> > This removes the depandancy of the cpcihp driver from the PCI_LEGACY
+> > config option by removing its usage of the pci_find_bus() function.
+> >
+> >
+> > Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> > Cc: Scott Murray <scottm@somanetworks.com>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> Sorry for the slow reply, this looks fine to me.
+> 
+> Signed-off-by: Scott Murray <scottm@somanetworks.com>
 
-The best explanation might be an example.
-I use my Jupiter speecha dapter all day, every day.
-It basically sends text to a speech synthesizer.
-It also has some virtual files.
-/proc/adapters/jupiter/synth can be used by a process
-to send text directly to the synthesizer.
+Great, thanks for reviewing it.
 
-echo hello world >/proc/adapters/jupiter/synth
-
-And I hear hello world.
-I don't use this virtual file often, but sometimes it's nice.
-A background process on another vt can wake me up when it's done.
-And this is just one example.
-Other virtual files load firmware and dictionaries into the dectalk synth, and so on.
-Other people use virtual files in their adapters as well.
-Really, /proc is the only place for these virtual files that interact
-directly with the kernel and/or its modules;
-I just wanted a fixed place under /proc for adapters to live,
-like sys ttys scsi net, and so on.
-
->/proc is for processes (and was in the past used for all sort of crap).
-
-I gather from this that you don't like the way people
-are using /proc for user/kernel communication.
-I suppose it's a matter of taste,
-but I think it is one of the very coolest things about linux, period.
-I don't have to create 27 new ioctl calls, and have them approved by everyone,
-and make sure they don't collide with 363 other ioctl calls, every time I want
-some new communication with the kernel or its drivers.
-I can read and write files under /proc.
-I'm sorry, but I think it's cool.
-
-Cool or not, it seems to be here to stay,
-and I humbly suggest a standard location for adapters and their virtual files.
-/proc/adapters
-
-Karl Dahlke
+greg k-h
