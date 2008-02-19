@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbYBSJnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763231AbYBSJn4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbYBSJnd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 04:43:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbYBSJnT
+	id S1763231AbYBSJn4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 04:43:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbYBSJnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 04:43:19 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53227 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757842AbYBSJnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 04:43:17 -0500
-Date: Tue, 19 Feb 2008 10:42:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "David P. Reed" <dpreed@reed.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Rene Herman <rene.herman@keyaccess.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: define outb_pic and inb_pic to stop using outb_p
-	and inb_p
-Message-ID: <20080219094256.GC7628@elte.hu>
-References: <6gr00g$g7qpsd@smtp01.lnh.mail.rcn.net>
-MIME-Version: 1.0
+	Tue, 19 Feb 2008 04:43:47 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:44471 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759204AbYBSJnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 04:43:46 -0500
+Date: Tue, 19 Feb 2008 10:43:48 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: David Chinner <dgc@sgi.com>, Michael Tokarev <mjt@tls.msk.ru>,
+       Ric Wheeler <ric@emc.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [dm-devel] Re: [PATCH] Implement barrier support for single device DM devices
+Message-ID: <20080219094348.GE6485@one.firstfloor.org>
+References: <20080215120821.GA8267@basil.nowhere.org> <20080215122002.GM29914@agk.fab.redhat.com> <47B58EAA.8040405@msgid.tls.msk.ru> <20080215142010.GA29552@one.firstfloor.org> <20080215141229.GB1788@agk.fab.redhat.com> <47B97E87.6040209@emc.com> <47B9870B.8060005@msgid.tls.msk.ru> <20080218221644.GN155407@sgi.com> <20080219025643.GD4066@agk.fab.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6gr00g$g7qpsd@smtp01.lnh.mail.rcn.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20080219025643.GD4066@agk.fab.redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> My complaint about having to support them within dm when more than one
+> device is involved is because any efficiencies disappear: you can't send
+> further I/O to any one device until all the other devices have completed
+> their barrier (or else later I/O to that device could overtake the
+> barrier on another device).  And then I argue that it would be better
 
-* David P. Reed <dpreed@reed.com> wrote:
+I was wondering: would it help DM to have the concept of a "barrier window"
+As in "this barrier is only affective for this group of requests"
+With such a concept DM would need to stall only inside the groups
+and possible even issue such barrier groups in parallel, couldn't it?
 
-> x86: define outb_pic and inb_pic to stop using outb_p and inb_p
->  
-> The delay between io port accesses to the PIC is now defined using 
-> outb_pic and inb_pic.  This fix provides the next step, using 
-> udelay(2) to define the *PIC specific* timing requirements, rather 
-> than on bus-oriented timing, which is not well calibrated.
+I'm sure you guys all have thought far more about barriers than
+I ever did; if that idea came up before why was it dismissed?
 
-thanks David, applied.
+-Andi
 
-minor nit:
-
-> +	/* delay for some accesses to PIC on motherboard or in chipset must be
-> +	   at least one microsecond, but be safe here. */
-
-i changed this to the standard multi-line comment style of:
-
-> +	/*
-> +      * Delay for some accesses to PIC on motherboard or in chipset 
-> +      * must be at least one microsecond, but be safe here:
-> +      */
-
-	Ingo
