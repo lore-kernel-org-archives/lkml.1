@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbYBSLPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYBSLQM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbYBSLPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:15:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759462AbYBSLNj
+	id S1758133AbYBSLQM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:16:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbYBSLNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:13:39 -0500
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55053 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757827AbYBSLNc (ORCPT
+	Tue, 19 Feb 2008 06:13:41 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:37007 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758280AbYBSLNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Feb 2008 06:13:32 -0500
-Date: Tue, 19 Feb 2008 03:20:58 -0800
+Date: Tue, 19 Feb 2008 03:21:06 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 6/8] net: use numa_node in net_devcice->dev instead of parent
+Subject: [PATCH 7/8] x86_64: get boot_cpu_id as early for k8_scan_nodes
 In-reply-to: <200802190311.44404.yinghai.lu@sun.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
        Jeff Garzik <jeff@garzik.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802190320.58561.yinghai.lu@sun.com>
+Message-id: <200802190321.07014.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
@@ -31,18 +31,471 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+When acpi=off or there is no SRAT defined, apicid_to_node is got from K8
+Northbridge PCI configuration space in k8_scan_nodes() in
+arch/x86_64/mm/k8toplogy.c.
+The problem is that it assumes bsp apic id is 0 at that point.
+For four socket system with Quad core cpus installed, all cpus apic id
+is offset by 4, and bsp apic id is 4.
+For eight socket system with dual core cpus installed, all cpus apic id
+is offset by 2, and bsp apic id is 2.
 
-Index: linux-2.6/net/core/skbuff.c
+We need get boot_cpu_id --- bsp apic id, before k8_scan_nodes by called.
+
+So create early_acpi_boot_init and early_get_smp_config for get boot_cpu_id.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+ arch/x86_64/mm/k8topology.c    |    8 +++
+ b/arch/i386/kernel/acpi/boot.c |   70 ++++++++++++++++++++++++++++++++
+ b/arch/x86_64/kernel/apic.c    |   29 +++++++++++--
+ b/arch/x86_64/kernel/mpparse.c |   89 ++++++++++++++++++++++++++++++-----------
+ b/arch/x86_64/kernel/setup.c   |   21 +++++++++
+ b/include/asm-x86_64/apic.h    |    2
+ b/include/asm-x86_64/mpspec.h  |    2
+ b/include/linux/acpi.h         |    5 ++
+ 8 files changed, 198 insertions(+), 28 deletions(-)
+
+Index: linux-2.6/arch/x86/mm/k8topology_64.c
 ===================================================================
---- linux-2.6.orig/net/core/skbuff.c
-+++ linux-2.6/net/core/skbuff.c
-@@ -252,7 +252,7 @@ nodata:
- struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
- 		unsigned int length, gfp_t gfp_mask)
- {
--	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-+	int node = dev_to_node(&dev->dev);
- 	struct sk_buff *skb;
+--- linux-2.6.orig/arch/x86/mm/k8topology_64.c
++++ linux-2.6/arch/x86/mm/k8topology_64.c
+@@ -13,12 +13,15 @@
+ #include <linux/nodemask.h>
+ #include <asm/io.h>
+ #include <linux/pci_ids.h>
++#include <linux/acpi.h>
+ #include <asm/types.h>
+ #include <asm/mmzone.h>
+ #include <asm/proto.h>
+ #include <asm/e820.h>
+ #include <asm/pci-direct.h>
+ #include <asm/numa.h>
++#include <asm/mpspec.h>
++#include <asm/apic.h>
  
- 	skb = __alloc_skb(length + NET_SKB_PAD, gfp_mask | __GFP_NOTRACK,
+ static __init int find_northbridge(void)
+ {
+@@ -44,6 +47,30 @@ static __init int find_northbridge(void)
+ 	return -1;
+ }
+ 
++static __init void early_get_boot_cpu_id(void)
++{
++	/*
++	 * need to get boot_cpu_id so can use that to create apicid_to_node
++	 * in k8_scan_nodes()
++	 */
++	/*
++	 * Find possible boot-time SMP configuration:
++	 */
++	early_find_smp_config();
++#ifdef CONFIG_ACPI
++	/*
++	 * Read APIC information from ACPI tables.
++	 */
++	early_acpi_boot_init();
++#endif
++	/*
++	 * get boot-time SMP configuration:
++	 */
++	if (smp_found_config)
++		early_get_smp_config();
++	early_init_lapic_mapping();
++}
++
+ int __init k8_scan_nodes(unsigned long start, unsigned long end)
+ {
+ 	unsigned long prevbase;
+@@ -56,6 +83,7 @@ int __init k8_scan_nodes(unsigned long s
+ 	unsigned cores;
+ 	unsigned bits;
+ 	int j;
++	unsigned apicid_base;
+ 
+ 	if (!early_pci_allowed())
+ 		return -1;
+@@ -174,11 +202,18 @@ int __init k8_scan_nodes(unsigned long s
+ 	/* use the coreid bits from early_identify_cpu */
+ 	bits = boot_cpu_data.x86_coreid_bits;
+ 	cores = (1<<bits);
++	apicid_base = 0;
++	/* need to get boot_cpu_id early for system with apicid lifting */
++	early_get_boot_cpu_id();
++	if (boot_cpu_id > 0) {
++		printk(KERN_INFO "BSP APIC ID: %02x\n", boot_cpu_id);
++		apicid_base = boot_cpu_id;
++	}
+ 
+ 	for (i = 0; i < 8; i++) {
+ 		if (nodes[i].start != nodes[i].end) {
+ 			nodeid = nodeids[i];
+-			for (j = 0; j < cores; j++)
++			for (j = apicid_base; j < cores + apicid_base; j++)
+ 				apicid_to_node[(nodeid << bits) + j] = i;
+ 			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
+ 		}
+Index: linux-2.6/arch/x86/kernel/acpi/boot.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
++++ linux-2.6/arch/x86/kernel/acpi/boot.c
+@@ -731,6 +731,32 @@ static int __init acpi_parse_fadt(struct
+  * Parse LAPIC entries in MADT
+  * returns 0 on success, < 0 on error
+  */
++static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
++{
++	int count;
++
++	if (!cpu_has_apic)
++		return -ENODEV;
++
++	/*
++	 * Note that the LAPIC address is obtained from the MADT (32-bit value)
++	 * and (optionally) overriden by a LAPIC_ADDR_OVR entry (64-bit value).
++	 */
++
++	count =
++	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
++				  acpi_parse_lapic_addr_ovr, 0);
++	if (count < 0) {
++		printk(KERN_ERR PREFIX
++		       "Error parsing LAPIC address override entry\n");
++		return count;
++	}
++
++	mp_register_lapic_address(acpi_lapic_addr);
++
++	return count;
++}
++
+ static int __init acpi_parse_madt_lapic_entries(void)
+ {
+ 	int count;
+@@ -857,6 +883,33 @@ static inline int acpi_parse_madt_ioapic
+ }
+ #endif	/* !CONFIG_X86_IO_APIC */
+ 
++static void __init early_acpi_process_madt(void)
++{
++#ifdef CONFIG_X86_LOCAL_APIC
++	int error;
++
++	if (!acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
++
++		/*
++		 * Parse MADT LAPIC entries
++		 */
++		error = early_acpi_parse_madt_lapic_addr_ovr();
++		if (!error) {
++			acpi_lapic = 1;
++			smp_found_config = 1;
++		}
++		if (error == -EINVAL) {
++			/*
++			 * Dell Precision Workstation 410, 610 come here.
++			 */
++			printk(KERN_ERR PREFIX
++			       "Invalid BIOS MADT, disabling ACPI\n");
++			disable_acpi();
++		}
++	}
++#endif
++}
++
+ static void __init acpi_process_madt(void)
+ {
+ #ifdef CONFIG_X86_LOCAL_APIC
+@@ -1189,6 +1242,23 @@ int __init acpi_boot_table_init(void)
+ 	return 0;
+ }
+ 
++int __init early_acpi_boot_init(void)
++{
++	/*
++	 * If acpi_disabled, bail out
++	 * One exception: acpi=ht continues far enough to enumerate LAPICs
++	 */
++	if (acpi_disabled && !acpi_ht)
++		return 1;
++
++	/*
++	 * Process the Multiple APIC Description Table (MADT), if present
++	 */
++	early_acpi_process_madt();
++
++	return 0;
++}
++
+ int __init acpi_boot_init(void)
+ {
+ 	/*
+Index: linux-2.6/arch/x86/kernel/mpparse_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/mpparse_64.c
++++ linux-2.6/arch/x86/kernel/mpparse_64.c
+@@ -217,8 +217,7 @@ static void __init MP_lintsrc_info (stru
+ /*
+  * Read/parse the MPC
+  */
+-
+-static int __init smp_read_mpc(struct mp_config_table *mpc)
++static int __init smp_read_mpc(struct mp_config_table *mpc, unsigned early)
+ {
+ 	char str[16];
+ 	int count=sizeof(*mpc);
+@@ -259,6 +258,9 @@ static int __init smp_read_mpc(struct mp
+ 	if (!acpi_lapic)
+ 		mp_lapic_addr = mpc->mpc_lapic;
+ 
++	if (early)
++		return 1;
++
+ 	/*
+ 	 *	Now process the configuration blocks.
+ 	 */
+@@ -470,27 +472,38 @@ static struct intel_mp_floating *mpf_fou
+ /*
+  * Scan the memory blocks for an SMP configuration block.
+  */
+-void __init get_smp_config (void)
++static void __init __get_smp_config(unsigned early)
+ {
+ 	struct intel_mp_floating *mpf = mpf_found;
+ 
++	if (acpi_lapic && early)
++		return;
+ 	/*
+- 	 * ACPI supports both logical (e.g. Hyper-Threading) and physical 
+- 	 * processors, where MPS only supports physical.
+- 	 */
+- 	if (acpi_lapic && acpi_ioapic) {
+- 		printk(KERN_INFO "Using ACPI (MADT) for SMP configuration information\n");
+- 		return;
+-	}
+- 	else if (acpi_lapic)
+- 		printk(KERN_INFO "Using ACPI for processor (LAPIC) configuration information\n");
++	 * ACPI supports both logical (e.g. Hyper-Threading) and physical
++	 * processors, where MPS only supports physical.
++	 */
++	if (acpi_lapic && acpi_ioapic) {
++		printk(KERN_INFO "Using ACPI (MADT) for SMP configuration "
++			"information\n");
++		return;
++	} else if (acpi_lapic)
++		printk(KERN_INFO "Using ACPI for processor (LAPIC) "
++			"configuration information\n");
+ 
+-	printk("Intel MultiProcessor Specification v1.%d\n", mpf->mpf_specification);
++	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
++		mpf->mpf_specification);
+ 
+ 	/*
+ 	 * Now see if we need to read further.
+ 	 */
+ 	if (mpf->mpf_feature1 != 0) {
++		if (early) {
++			/*
++			 * local APIC has default address
++			 */
++			mp_lapic_addr = APIC_DEFAULT_PHYS_BASE;
++			return;
++		}
+ 
+ 		printk(KERN_INFO "Default MP configuration #%d\n", mpf->mpf_feature1);
+ 		construct_default_ISA_mptable(mpf->mpf_feature1);
+@@ -501,12 +514,15 @@ void __init get_smp_config (void)
+ 		 * Read the physical hardware table.  Anything here will
+ 		 * override the defaults.
+ 		 */
+-		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr))) {
++		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr), early)) {
+ 			smp_found_config = 0;
+ 			printk(KERN_ERR "BIOS bug, MP table errors detected!...\n");
+ 			printk(KERN_ERR "... disabling SMP support. (tell your hw vendor)\n");
+ 			return;
+ 		}
++
++		if (early)
++			return;
+ 		/*
+ 		 * If there are no explicit MP IRQ entries, then we are
+ 		 * broken.  We set up most of the low 16 IO-APIC pins to
+@@ -528,13 +544,25 @@ void __init get_smp_config (void)
+ 	} else
+ 		BUG();
+ 
+-	printk(KERN_INFO "Processors: %d\n", num_processors);
++	if (!early)
++		printk(KERN_INFO "Processors: %d\n", num_processors);
+ 	/*
+ 	 * Only use the first configuration found.
+ 	 */
+ }
+ 
+-static int __init smp_scan_config (unsigned long base, unsigned long length)
++void __init early_get_smp_config(void)
++{
++	__get_smp_config(1);
++}
++
++void __init get_smp_config(void)
++{
++	__get_smp_config(0);
++}
++
++static int __init smp_scan_config(unsigned long base, unsigned long length,
++				  unsigned reserve)
+ {
+ 	extern void __bad_mpf_size(void); 
+ 	unsigned int *bp = phys_to_virt(base);
+@@ -553,10 +581,15 @@ static int __init smp_scan_config (unsig
+ 				|| (mpf->mpf_specification == 4)) ) {
+ 
+ 			smp_found_config = 1;
++			mpf_found = mpf;
++
++			if (!reserve)
++				return 1;
++
+ 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
+ 			if (mpf->mpf_physptr)
+-				reserve_bootmem_generic(mpf->mpf_physptr, PAGE_SIZE);
+-			mpf_found = mpf;
++				reserve_bootmem_generic(mpf->mpf_physptr,
++							PAGE_SIZE);
+ 			return 1;
+ 		}
+ 		bp += 4;
+@@ -565,7 +598,7 @@ static int __init smp_scan_config (unsig
+ 	return 0;
+ }
+ 
+-void __init find_smp_config(void)
++static void __init __find_smp_config(unsigned reserve)
+ {
+ 	unsigned int address;
+ 
+@@ -577,9 +610,9 @@ void __init find_smp_config(void)
+ 	 * 2) Scan the top 1K of base RAM
+ 	 * 3) Scan the 64K of bios
+ 	 */
+-	if (smp_scan_config(0x0,0x400) ||
+-		smp_scan_config(639*0x400,0x400) ||
+-			smp_scan_config(0xF0000,0x10000))
++	if (smp_scan_config(0x0, 0x400, reserve) ||
++		smp_scan_config(639*0x400, 0x400, reserve) ||
++			smp_scan_config(0xF0000, 0x10000, reserve))
+ 		return;
+ 	/*
+ 	 * If it is an SMP machine we should know now.
+@@ -596,13 +629,23 @@ void __init find_smp_config(void)
+ 
+ 	address = *(unsigned short *)phys_to_virt(0x40E);
+ 	address <<= 4;
+-	if (smp_scan_config(address, 0x1000))
++	if (smp_scan_config(address, 0x1000, reserve))
+ 		return;
+ 
+ 	/* If we have come this far, we did not find an MP table  */
+ 	 printk(KERN_INFO "No mptable found.\n");
+ }
+ 
++void __init early_find_smp_config(void)
++{
++	__find_smp_config(0);
++}
++
++void __init find_smp_config(void)
++{
++	__find_smp_config(1);
++}
++
+ /* --------------------------------------------------------------------------
+                             ACPI-based MP Configuration
+    -------------------------------------------------------------------------- */
+Index: linux-2.6/include/linux/acpi.h
+===================================================================
+--- linux-2.6.orig/include/linux/acpi.h
++++ linux-2.6/include/linux/acpi.h
+@@ -79,6 +79,7 @@ typedef int (*acpi_table_handler) (struc
+ typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
+ 
+ char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
++int early_acpi_boot_init(void);
+ int acpi_boot_init (void);
+ int acpi_boot_table_init (void);
+ int acpi_numa_init (void);
+@@ -235,6 +236,10 @@ int acpi_check_mem_region(resource_size_
+ 
+ #else	/* CONFIG_ACPI */
+ 
++static inline int early_acpi_boot_init(void)
++{
++	return 0;
++}
+ static inline int acpi_boot_init(void)
+ {
+ 	return 0;
+Index: linux-2.6/include/asm-x86/mpspec.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/mpspec.h
++++ linux-2.6/include/asm-x86/mpspec.h
+@@ -26,6 +26,9 @@ extern int pic_mode;
+ 
+ extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
+ 
++extern void early_find_smp_config(void);
++extern void early_get_smp_config(void);
++
+ #endif
+ 
+ extern int mp_bus_id_to_pci_bus[MAX_MP_BUSSES];
+Index: linux-2.6/include/asm-x86/apic.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/apic.h
++++ linux-2.6/include/asm-x86/apic.h
+@@ -124,6 +124,7 @@ extern void enable_NMI_through_LVT0(void
+  */
+ #ifdef CONFIG_X86_64
+ extern void setup_apic_routing(void);
++extern void early_init_lapic_mapping(void);
+ #endif
+ 
+ extern u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask);
+Index: linux-2.6/arch/x86/kernel/apic_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic_64.c
++++ linux-2.6/arch/x86/kernel/apic_64.c
+@@ -861,6 +861,30 @@ static int __init detect_init_APIC(void)
+ 	return 0;
+ }
+ 
++void __init early_init_lapic_mapping(void)
++{
++	unsigned long apic_phys;
++
++	/*
++	 * If no local APIC can be found then go out
++	 * : it means there is no mpatable and MADT
++	 */
++	if (!smp_found_config)
++		return;
++
++	apic_phys = mp_lapic_addr;
++
++	set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
++	apic_printk(APIC_VERBOSE, "mapped APIC to %16lx (%16lx)\n",
++				 APIC_BASE, apic_phys);
++
++	/*
++	 * Fetch the APIC ID of the BSP in case we have a
++	 * default configuration (or the MP table is broken).
++	 */
++	boot_cpu_id = GET_APIC_ID(apic_read(APIC_ID));
++}
++
+ /**
+  * init_apic_mappings - initialize APIC mappings
+  */
+
