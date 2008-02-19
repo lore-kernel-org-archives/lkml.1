@@ -1,78 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbYBSSzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757790AbYBSS5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbYBSSzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 13:55:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbYBSSzK
+	id S1757790AbYBSS5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 13:57:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbYBSS51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 13:55:10 -0500
-Received: from mga03.intel.com ([143.182.124.21]:34665 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754138AbYBSSzI convert rfc822-to-8bit (ORCPT
+	Tue, 19 Feb 2008 13:57:27 -0500
+Received: from qmta01.westchester.pa.mail.comcast.net ([76.96.62.16]:35822
+	"EHLO QMTA01.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752124AbYBSS50 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 13:55:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,377,1199692800"; 
-   d="scan'208";a="380993663"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [RFC v3 4/7] dmaengine: Add slave DMA interface
-Date: Tue, 19 Feb 2008 10:46:54 -0800
-Message-ID: <BAE9DCEF64577A439B3A37F36F9B691C040CB607@orsmsx418.amr.corp.intel.com>
-In-Reply-To: <20080218142949.2c5b2810@dhcp-252-066.norway.atmel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [RFC v3 4/7] dmaengine: Add slave DMA interface
-Thread-Index: AchyMocGe8DwhdQQTTCA6Lj6bM/kdwA9NV4g
-References: <1202834638-9009-1-git-send-email-hskinnemoen@atmel.com><1202834638-9009-2-git-send-email-hskinnemoen@atmel.com><1202834638-9009-3-git-send-email-hskinnemoen@atmel.com><1202834638-9009-4-git-send-email-hskinnemoen@atmel.com><e9c3a7c20802131107x4c9e6859p3bc6527b19c416cb@mail.gmail.com><20080213202402.22818482@siona><20080215105302.1e4251a3@dhcp-252-066.norway.atmel.com><BAE9DCEF64577A439B3A37F36F9B691C0407A37A@orsmsx418.amr.corp.intel.com> <20080218142949.2c5b2810@dhcp-252-066.norway.atmel.com>
-From: "Nelson, Shannon" <shannon.nelson@intel.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Cc: "Williams, Dan J" <dan.j.williams@intel.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 19 Feb 2008 18:46:54.0469 (UTC) FILETIME=[CC11B350:01C87327]
+	Tue, 19 Feb 2008 13:57:26 -0500
+X-Authority-Analysis: v=1.0 c=1 a=rITDv7nW5hcA:10 a=1va1F5CG1Do3Buh_Sb0A:9
+ a=YFCePVKBRvYU6RNdsVAA:7 a=dysd0lu6AEwbcg-OFlMGpi_87s4A:4 a=i92e0Ub4el8A:10
+ a=d_-3mwAUsuEA:10 a=gi0PWCVxevcA:10
+To: linux-kernel@vger.kernel.org
+From: Karl Dahlke <eklhad@comcast.net>
+Reply-to: Karl Dahlke <eklhad@comcast.net>
+Subject: [PATCH] export getledstate()
+Date: Tue, 19 Feb 2008 13:57:23 -0500
+Message-ID: <20080119135723.eklhad@comcast.net>
+Mime-Version: 1.0
+Content-type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From: Haavard Skinnemoen [mailto:hskinnemoen@atmel.com] 
->Sent: Monday, February 18, 2008 5:30 AM
->To: Nelson, Shannon
->Cc: Haavard Skinnemoen; Williams, Dan J; 
->linux-kernel@vger.kernel.org; David Brownell; 
->kernel@avr32linux.org; Francis Moreau; Paul Mundt; Vladimir A. 
->Barinov; Pierre Ossman
->Subject: Re: [RFC v3 4/7] dmaengine: Add slave DMA interface
->
->On Fri, 15 Feb 2008 09:12:35 -0800
->"Nelson, Shannon" <shannon.nelson@intel.com> wrote:
->
->> I'll jump in here briefly - I'm okay with the direction this 
->is going,
->> but I want to be protective of ioatdma performance.  As used 
->in struct
->> ioat_desc_sw, the cookie and ack elements end up very close 
->to the end
->> of a cache line and I'd like them to not get pushed out across the
->> boundry.  I don't think this proposal changes the layout, I'm just
->> bringing up my concern.
->
->Sure, performance is very important, and it's good to see that you're
->critical about the changes I'm proposing. That said, the memory layout
->doesn't change at all with this patch -- the fields that didn't go into
->the generic dma descriptor were at the end of the struct to begin with.
->
->I can add a comment saying that cookie and ack must always come first.
->Any other fields that we need to be careful about?
->
->Haavard
->
+I write adapters for disabled people, and we often have to do
+specialized functions based on keystrokes and key chords.
+I would like to do certain things when keys are hit and num lock is on,
+but there is no easy way to get the led state.
+There is a nice function getledstate()
+in keyboard.c, it just isn't exported.
+Here is the patch that would do that.
+Can you apply this patch, or, is there another easy way to get this information,
+or, would it be better to fold this information into keyboard_notifier_param,
+along with shift state etc.
+I use notifiers, so this would be natural, and almost as easy.
+I'd be happy to write that patch, if you think that would be a superior design.
 
-Those are the only two that I'm worried about at the moment.  I'm just
-hoping that a quirk in some compiler's struct packing doesn't push them
-over that edge.
+--- drivers/char/keyboard.c	2008-02-18 21:05:23.000000000 -0500
++++ drivers/char/keyboard.c.new	2008-02-18 21:06:34.000000000 -0500
+@@ -963,6 +963,7 @@ unsigned char getledstate(void)
+ {
+ 	return ledstate;
+ }
++EXPORT_SYMBOL_GPL(getledstate);
+ 
+ void setledstate(struct kbd_struct *kbd, unsigned int led)
+ {
 
-Thanks,
-sln
+Thanks.
+
+Karl Dahlke
