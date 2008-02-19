@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762120AbYBSUsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760340AbYBSUwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762120AbYBSUsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:48:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755604AbYBSUr6
+	id S1760340AbYBSUwT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:52:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbYBSUwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:47:58 -0500
-Received: from server54.tchmachines.com ([72.9.244.106]:51800 "EHLO
-	server54.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755521AbYBSUr5 (ORCPT
+	Tue, 19 Feb 2008 15:52:12 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58530 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753046AbYBSUwK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:47:57 -0500
-X-Greylist: delayed 2804 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 15:47:56 EST
-Date: Tue, 19 Feb 2008 11:59:52 -0800
-From: Ravikiran Thirumalai <kiran@scalemp.com>
-To: Glauber Costa <glommer@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Glauber Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       tglx@linutronix.de, ehabkost@redhat.com, jeremy@goop.org,
-       avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, ak@suse.de,
-       chrisw@sous-sol.org, shai@scalemp.com
-Subject: Re: [PATCH 4/5] [PATCH] introduce paravirt helpers
-Message-ID: <20080219195951.GU6209@localdomain>
-References: <1202757365-18634-1-git-send-email-gcosta@redhat.com> <1202757365-18634-2-git-send-email-gcosta@redhat.com> <1202757365-18634-3-git-send-email-gcosta@redhat.com> <1202757365-18634-4-git-send-email-gcosta@redhat.com> <20080217180509.GW6006@elte.hu> <5d6222a80802171256l6e178eb8h1080bfd5a6b95ef3@mail.gmail.com>
+	Tue, 19 Feb 2008 15:52:10 -0500
+From: Jonathan Lim <jlim@sgi.com>
+Message-Id: <200802192052.m1JKqk9K002857@sabah.engr.sgi.com>
+Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
+To: linux-kernel@vger.kernel.org
+Date: Tue, 19 Feb 2008 12:52:46 -0800 (PST)
+Cc: akpm@linux-foundation.org, randy.dunlap@oracle.com
+In-Reply-To: <no.id> from "jlim" at Feb 14, 2008 06:27:52 PM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5d6222a80802171256l6e178eb8h1080bfd5a6b95ef3@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - server54.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalemp.com
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 17, 2008 at 06:56:56PM -0200, Glauber Costa wrote:
->On Feb 17, 2008 4:05 PM, Ingo Molnar <mingo@elte.hu> wrote:
->>
->> * Glauber Costa <gcosta@redhat.com> wrote:
->>
->> >  config X86_VSMP
->> >       bool "Support for ScaleMP vSMP"
->> >       depends on X86_64 && PCI
->> > -      help
->> > +     select PARAVIRT
->> > +     help
->>
->> hm, what's the idea here?
->
->guys from scalemp can probably give a better picture if needed,
->but in a nutshell, there are two aspects involved with the vsmp
->support. The first one
->is special L1 alignments, and the second, specialized irq handling routines.
->
->Only the second one is paravirt in itself, and are the ones addressed
->in this patch.
->The specialized routines now goes through paravirt ops. So when using
->a vsmp machine,
->paravirt has to be selected, in order to enable such functions.
+It's possible that the values used in and returned from jiffies_to_usecs() are
+incorrect because of truncation when variables of type u64 are involved.  So a
+function specific to that type is used instead.
 
-Thanks Glauber.  Well put.
+Diff'd against: linux/kernel/git/torvalds/linux-2.6.git
 
-That said, future revs of vSMP will have the ability to work optimally even
-without the paravirtualized irq ops.  This is an upcoming feature, and did not
-exist when we tested the paravirt ops 2-3 months ago.  So, it will be
-better, now, not to select PARAVIRT while selecting X86_VSMP.  Then,
-CONFIG_VSMP will just select the cacheline padding to be used and PARAVIRT
-will be needed if irq operations need to be paravirtualized.
+Signed-off-by: Jonathan Lim <jlim@sgi.com>
 
-I shall submit a patch to that effect.
-
-Thanks,
-Kiran
+--- a/include/linux/jiffies.h	Thu Feb 14 18:04:14 PST 2008
++++ b/include/linux/jiffies.h	Thu Feb 14 18:07:17 PST 2008
+@@ -42,7 +42,7 @@
+ /* LATCH is used in the interval timer and ftape setup. */
+ #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
+ 
+-/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
++/* Suppose we want to divide two numbers NOM and DEN: NOM/DEN, then we can
+  * improve accuracy by shifting LSH bits, hence calculating:
+  *     (NOM << LSH) / DEN
+  * This however means trouble for large NOM, because (NOM << LSH) may no
+@@ -204,7 +204,7 @@ extern unsigned long preset_lpj;
+  * operator if the result is a long long AND at least one of the
+  * operands is cast to long long (usually just prior to the "*" so as
+  * not to confuse it into thinking it really has a 64-bit operand,
+- * which, buy the way, it can do, but it takes more code and at least 2
++ * which, by the way, it can do, but it takes more code and at least 2
+  * mpys).
+ 
+  * We also need to be aware that one second in nanoseconds is only a
+@@ -269,6 +269,7 @@ extern unsigned long preset_lpj;
+  */
+ extern unsigned int jiffies_to_msecs(const unsigned long j);
+ extern unsigned int jiffies_to_usecs(const unsigned long j);
++extern u64 jiffies_64_to_usecs(const u64 j);
+ extern unsigned long msecs_to_jiffies(const unsigned int m);
+ extern unsigned long usecs_to_jiffies(const unsigned int u);
+ extern unsigned long timespec_to_jiffies(const struct timespec *value);
+--- a/kernel/time.c	Thu Feb 14 18:05:12 PST 2008
++++ b/kernel/time.c	Tue Feb 19 12:44:03 PST 2008
+@@ -268,6 +268,14 @@ unsigned int inline jiffies_to_usecs(con
+ }
+ EXPORT_SYMBOL(jiffies_to_usecs);
+ 
++u64 inline jiffies_64_to_usecs(const u64 j)
++{
++	u64 tmp = j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1;
++	do_div(tmp, HZ_TO_USEC_DEN);
++	return tmp;
++}
++EXPORT_SYMBOL(jiffies_64_to_usecs);
++
+ /**
+  * timespec_trunc - Truncate timespec to a granularity
+  * @t: Timespec
+--- a/kernel/tsacct.c	Thu Feb 14 18:06:17 PST 2008
++++ b/kernel/tsacct.c	Thu Feb 14 18:08:47 PST 2008
+@@ -85,8 +85,8 @@ void xacct_add_tsk(struct taskstats *sta
+ 	struct mm_struct *mm;
+ 
+ 	/* convert pages-jiffies to Mbyte-usec */
+-	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+-	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
++	stats->coremem = jiffies_64_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
++	stats->virtmem = jiffies_64_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+ 	mm = get_task_mm(p);
+ 	if (mm) {
+ 		/* adjust to KB unit */
