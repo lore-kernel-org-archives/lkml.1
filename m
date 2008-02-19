@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbYBSLQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbYBSLQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbYBSLQM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:16:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbYBSLNl
+	id S1760645AbYBSLQe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759868AbYBSLNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:13:41 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:37007 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758280AbYBSLNc (ORCPT
+	Tue, 19 Feb 2008 06:13:42 -0500
+Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:55059 "EHLO
+	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757767AbYBSLNd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:13:32 -0500
-Date: Tue, 19 Feb 2008 03:21:06 -0800
+	Tue, 19 Feb 2008 06:13:33 -0500
+Date: Tue, 19 Feb 2008 03:21:20 -0800
 From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 7/8] x86_64: get boot_cpu_id as early for k8_scan_nodes
+Subject: [PATCH 8/8] x86_64: multi pci root bus with different io resource range
 In-reply-to: <200802190311.44404.yinghai.lu@sun.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
        Jeff Garzik <jeff@garzik.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802190321.07014.yinghai.lu@sun.com>
+Message-id: <200802190321.21124.yinghai.lu@sun.com>
 Organization: Sun
 MIME-version: 1.0
 Content-type: text/plain; charset=iso-8859-1
@@ -31,471 +31,551 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-When acpi=off or there is no SRAT defined, apicid_to_node is got from K8
-Northbridge PCI configuration space in k8_scan_nodes() in
-arch/x86_64/mm/k8toplogy.c.
-The problem is that it assumes bsp apic id is 0 at that point.
-For four socket system with Quad core cpus installed, all cpus apic id
-is offset by 4, and bsp apic id is 4.
-For eight socket system with dual core cpus installed, all cpus apic id
-is offset by 2, and bsp apic id is 2.
+scan AMD opteron io/mmio routing to make sure every pci root bus get correct
+resource range. So later pci scan could assign correct resource to device
+with unassigned resource.
 
-We need get boot_cpu_id --- bsp apic id, before k8_scan_nodes by called.
+this some kind make up for system without _CRS for multi pci root bus.
 
-So create early_acpi_boot_init and early_get_smp_config for get boot_cpu_id.
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
-
- arch/x86_64/mm/k8topology.c    |    8 +++
- b/arch/i386/kernel/acpi/boot.c |   70 ++++++++++++++++++++++++++++++++
- b/arch/x86_64/kernel/apic.c    |   29 +++++++++++--
- b/arch/x86_64/kernel/mpparse.c |   89 ++++++++++++++++++++++++++++++-----------
- b/arch/x86_64/kernel/setup.c   |   21 +++++++++
- b/include/asm-x86_64/apic.h    |    2
- b/include/asm-x86_64/mpspec.h  |    2
- b/include/linux/acpi.h         |    5 ++
- 8 files changed, 198 insertions(+), 28 deletions(-)
-
-Index: linux-2.6/arch/x86/mm/k8topology_64.c
+Index: linux-2.6/arch/x86/pci/k8-bus_64.c
 ===================================================================
---- linux-2.6.orig/arch/x86/mm/k8topology_64.c
-+++ linux-2.6/arch/x86/mm/k8topology_64.c
-@@ -13,12 +13,15 @@
- #include <linux/nodemask.h>
- #include <asm/io.h>
- #include <linux/pci_ids.h>
-+#include <linux/acpi.h>
- #include <asm/types.h>
- #include <asm/mmzone.h>
- #include <asm/proto.h>
- #include <asm/e820.h>
- #include <asm/pci-direct.h>
- #include <asm/numa.h>
-+#include <asm/mpspec.h>
-+#include <asm/apic.h>
+--- linux-2.6.orig/arch/x86/pci/k8-bus_64.c
++++ linux-2.6/arch/x86/pci/k8-bus_64.c
+@@ -7,23 +7,31 @@
  
- static __init int find_northbridge(void)
- {
-@@ -44,6 +47,30 @@ static __init int find_northbridge(void)
- 	return -1;
+ /*
+  * This discovers the pcibus <-> node mapping on AMD K8.
+- *
+- * RED-PEN need to call this again on PCI hotplug
+- * RED-PEN empty cpus get reported wrong
++ * also get peer root bus resource for io,mmio
+  */
+ 
+-#define NODE_ID(dword) ((dword>>4) & 0x07)
+-#define LDT_BUS_NUMBER_REGISTER_0 0xE0
+-#define LDT_BUS_NUMBER_REGISTER_1 0xE4
+-#define LDT_BUS_NUMBER_REGISTER_2 0xE8
+-#define LDT_BUS_NUMBER_REGISTER_3 0xEC
+-#define NR_LDT_BUS_NUMBER_REGISTERS 4
+-#define SECONDARY_LDT_BUS_NUMBER(dword) ((dword >> 16) & 0xFF)
+-#define SUBORDINATE_LDT_BUS_NUMBER(dword) ((dword >> 24) & 0xFF)
+-
+-#define PCI_DEVICE_ID_K8HTCONFIG 0x1100
+-#define PCI_DEVICE_ID_K8_10H_HTCONFIG 0x1200
+-#define PCI_DEVICE_ID_K8_11H_HTCONFIG 0x1300
++
++/*
++ * sub bus (transparent) will use entres from 3 to store extra from root,
++ * so need to make sure have enought slot there, increase PCI_BUS_NUM_RESOURCES?
++ */
++#define RES_NUM 16
++struct pci_root_info {
++	char name[12];
++	unsigned int res_num;
++	struct resource res[RES_NUM];
++	int bus_min;
++	int bus_max;
++	int node;
++	int link;
++};
++
++/* 4 at this time, it may become to 32 */
++#define PCI_ROOT_NR 4
++static int pci_root_num;
++static struct pci_root_info pci_root_info[PCI_ROOT_NR];
++
++#ifdef CONFIG_NUMA
+ 
+ #define BUS_NR 256
+ 
+@@ -53,6 +61,135 @@ int get_mp_bus_to_node(int busnum)
+ 
+ 	return node;
  }
- 
-+static __init void early_get_boot_cpu_id(void)
-+{
-+	/*
-+	 * need to get boot_cpu_id so can use that to create apicid_to_node
-+	 * in k8_scan_nodes()
-+	 */
-+	/*
-+	 * Find possible boot-time SMP configuration:
-+	 */
-+	early_find_smp_config();
-+#ifdef CONFIG_ACPI
-+	/*
-+	 * Read APIC information from ACPI tables.
-+	 */
-+	early_acpi_boot_init();
 +#endif
-+	/*
-+	 * get boot-time SMP configuration:
-+	 */
-+	if (smp_found_config)
-+		early_get_smp_config();
-+	early_init_lapic_mapping();
++
++void set_pci_bus_resources_arch_default(struct pci_bus *b)
++{
++	int i;
++	int j;
++	struct pci_root_info *info;
++
++	if (!pci_root_num)
++		return;
++
++	for (i = 0; i < pci_root_num; i++) {
++		if (pci_root_info[i].bus_min == b->number)
++			break;
++	}
++
++	if (i == pci_root_num)
++		return;
++
++	info = &pci_root_info[i];
++	for (j = 0; j < info->res_num; j++) {
++		struct resource *res;
++		struct resource *root;
++
++		res = &info->res[j];
++		b->resource[j] = res;
++		if (res->flags & IORESOURCE_IO)
++			root = &ioport_resource;
++		else
++			root = &iomem_resource;
++		insert_resource(root, res);
++	}
 +}
 +
- int __init k8_scan_nodes(unsigned long start, unsigned long end)
- {
- 	unsigned long prevbase;
-@@ -56,6 +83,7 @@ int __init k8_scan_nodes(unsigned long s
- 	unsigned cores;
- 	unsigned bits;
- 	int j;
-+	unsigned apicid_base;
++#define RANGE_NUM 16
++
++struct res_range {
++	size_t start;
++	size_t end;
++};
++
++static void __init update_range(struct res_range *range, size_t start,
++				size_t end)
++{
++	int i;
++	int j;
++
++	for (j = 0; j < RANGE_NUM; j++) {
++		if (!range[j].end)
++			continue;
++		if (start == range[j].start && end < range[j].end) {
++			range[j].start = end + 1;
++			break;
++		} else if (start == range[j].start && end == range[j].end) {
++			range[j].start = 0;
++			range[j].end = 0;
++			break;
++		} else if (start > range[j].start && end == range[j].end) {
++			range[j].end = start - 1;
++			break;
++		} else if (start > range[j].start && end < range[j].end) {
++			/* find the new spare */
++			for (i = 0; i < RANGE_NUM; i++) {
++				if (range[i].end == 0)
++					break;
++			}
++			if (i < RANGE_NUM) {
++				range[i].end = range[j].end;
++				range[i].start = end + 1;
++			} else {
++				printk(KERN_ERR "run of slot in ranges\n");
++			}
++			range[j].end = start - 1;
++			break;
++		}
++	}
++}
++
++static void __init update_res(struct pci_root_info *info, size_t start,
++			      size_t end, unsigned long flags, int merge)
++{
++	int i;
++	struct resource *res;
++
++	if (!merge)
++		goto addit;
++
++	/* try to merge it with old one */
++	for (i = 0; i < info->res_num; i++) {
++		res = &info->res[i];
++		if (res->flags != flags)
++			continue;
++		if (res->end + 1 == start) {
++			res->end = end;
++			return;
++		} else if (end + 1 == res->start) {
++			res->start = start;
++			return;
++		}
++	}
++
++addit:
++
++	/* need to add that */
++	if (info->res_num >= RES_NUM)
++		return;
++
++	res = &info->res[info->res_num];
++	res->name = info->name;
++	res->flags = flags;
++	res->start = start;
++	res->end = end;
++	res->child = NULL;
++	info->res_num++;
++}
++
++struct pci_hostbridge_probe {
++	u32 bus;
++	u32 slot;
++	u32 vendor;
++	u32 device;
++};
++
++static struct pci_hostbridge_probe pci_probes[] __initdata = {
++	{ 0, 0x18, PCI_VENDOR_ID_AMD, 0x1100 },
++	{ 0, 0x18, PCI_VENDOR_ID_AMD, 0x1200 },
++	{ 0xff, 0, PCI_VENDOR_ID_AMD, 0x1200 },
++	{ 0, 0x18, PCI_VENDOR_ID_AMD, 0x1300 },
++};
  
+ /**
+  * early_fill_mp_bus_to_node()
+@@ -60,25 +197,25 @@ int get_mp_bus_to_node(int busnum)
+  * fills the mp_bus_to_cpumask array based according to the LDT Bus Number
+  * Registers found in the K8 northbridge
+  */
+-__init static int
+-early_fill_mp_bus_to_node(void)
++static int __init early_fill_mp_bus_info(void)
+ {
+-	int i, j;
++	int i;
++	int j;
++	unsigned bus;
+ 	unsigned slot;
+-	u32 ldtbus;
+-	u32 id;
++	int found;
+ 	int node;
+-	u16 deviceid;
+-	u16 vendorid;
+-	int min_bus;
+-	int max_bus;
+-
+-	static int lbnr[NR_LDT_BUS_NUMBER_REGISTERS] = {
+-		LDT_BUS_NUMBER_REGISTER_0,
+-		LDT_BUS_NUMBER_REGISTER_1,
+-		LDT_BUS_NUMBER_REGISTER_2,
+-		LDT_BUS_NUMBER_REGISTER_3
+-	};
++	int link;
++	int def_node;
++	int def_link;
++	struct pci_root_info *info;
++	u32 reg;
++	struct resource *res;
++	size_t start;
++	size_t end;
++	struct res_range range[RANGE_NUM];
++	u64 val;
++	u32 address;
+ 
+ 	for (i = 0; i < BUS_NR; i++)
+ 		mp_bus_to_node[i] = -1;
+@@ -86,40 +223,221 @@ early_fill_mp_bus_to_node(void)
  	if (!early_pci_allowed())
  		return -1;
-@@ -174,11 +202,18 @@ int __init k8_scan_nodes(unsigned long s
- 	/* use the coreid bits from early_identify_cpu */
- 	bits = boot_cpu_data.x86_coreid_bits;
- 	cores = (1<<bits);
-+	apicid_base = 0;
-+	/* need to get boot_cpu_id early for system with apicid lifting */
-+	early_get_boot_cpu_id();
-+	if (boot_cpu_id > 0) {
-+		printk(KERN_INFO "BSP APIC ID: %02x\n", boot_cpu_id);
-+		apicid_base = boot_cpu_id;
-+	}
  
- 	for (i = 0; i < 8; i++) {
- 		if (nodes[i].start != nodes[i].end) {
- 			nodeid = nodeids[i];
--			for (j = 0; j < cores; j++)
-+			for (j = apicid_base; j < cores + apicid_base; j++)
- 				apicid_to_node[(nodeid << bits) + j] = i;
- 			setup_node_bootmem(i, nodes[i].start, nodes[i].end);
- 		}
-Index: linux-2.6/arch/x86/kernel/acpi/boot.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/acpi/boot.c
-+++ linux-2.6/arch/x86/kernel/acpi/boot.c
-@@ -731,6 +731,32 @@ static int __init acpi_parse_fadt(struct
-  * Parse LAPIC entries in MADT
-  * returns 0 on success, < 0 on error
-  */
-+static int __init early_acpi_parse_madt_lapic_addr_ovr(void)
-+{
-+	int count;
+-	slot = 0x18;
+-	id = read_pci_config(0, slot, 0, PCI_VENDOR_ID);
++	found = 0;
++	for (i = 0; i < ARRAY_SIZE(pci_probes); i++) {
++		u32 id;
++		u16 device;
++		u16 vendor;
 +
-+	if (!cpu_has_apic)
-+		return -ENODEV;
++		bus = pci_probes[i].bus;
++		slot = pci_probes[i].slot;
++		id = read_pci_config(bus, slot, 0, PCI_VENDOR_ID);
 +
-+	/*
-+	 * Note that the LAPIC address is obtained from the MADT (32-bit value)
-+	 * and (optionally) overriden by a LAPIC_ADDR_OVR entry (64-bit value).
-+	 */
-+
-+	count =
-+	    acpi_table_parse_madt(ACPI_MADT_TYPE_LOCAL_APIC_OVERRIDE,
-+				  acpi_parse_lapic_addr_ovr, 0);
-+	if (count < 0) {
-+		printk(KERN_ERR PREFIX
-+		       "Error parsing LAPIC address override entry\n");
-+		return count;
-+	}
-+
-+	mp_register_lapic_address(acpi_lapic_addr);
-+
-+	return count;
-+}
-+
- static int __init acpi_parse_madt_lapic_entries(void)
- {
- 	int count;
-@@ -857,6 +883,33 @@ static inline int acpi_parse_madt_ioapic
- }
- #endif	/* !CONFIG_X86_IO_APIC */
- 
-+static void __init early_acpi_process_madt(void)
-+{
-+#ifdef CONFIG_X86_LOCAL_APIC
-+	int error;
-+
-+	if (!acpi_table_parse(ACPI_SIG_MADT, acpi_parse_madt)) {
-+
-+		/*
-+		 * Parse MADT LAPIC entries
-+		 */
-+		error = early_acpi_parse_madt_lapic_addr_ovr();
-+		if (!error) {
-+			acpi_lapic = 1;
-+			smp_found_config = 1;
-+		}
-+		if (error == -EINVAL) {
-+			/*
-+			 * Dell Precision Workstation 410, 610 come here.
-+			 */
-+			printk(KERN_ERR PREFIX
-+			       "Invalid BIOS MADT, disabling ACPI\n");
-+			disable_acpi();
++		vendor = id & 0xffff;
++		device = (id>>16) & 0xffff;
++		if (pci_probes[i].vendor == vendor &&
++		    pci_probes[i].device == device) {
++			found = 1;
++			break;
 +		}
 +	}
-+#endif
-+}
-+
- static void __init acpi_process_madt(void)
- {
- #ifdef CONFIG_X86_LOCAL_APIC
-@@ -1189,6 +1242,23 @@ int __init acpi_boot_table_init(void)
- 	return 0;
- }
  
-+int __init early_acpi_boot_init(void)
-+{
-+	/*
-+	 * If acpi_disabled, bail out
-+	 * One exception: acpi=ht continues far enough to enumerate LAPICs
-+	 */
-+	if (acpi_disabled && !acpi_ht)
-+		return 1;
-+
-+	/*
-+	 * Process the Multiple APIC Description Table (MADT), if present
-+	 */
-+	early_acpi_process_madt();
-+
-+	return 0;
-+}
-+
- int __init acpi_boot_init(void)
- {
- 	/*
-Index: linux-2.6/arch/x86/kernel/mpparse_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/mpparse_64.c
-+++ linux-2.6/arch/x86/kernel/mpparse_64.c
-@@ -217,8 +217,7 @@ static void __init MP_lintsrc_info (stru
- /*
-  * Read/parse the MPC
-  */
+-	vendorid = id & 0xffff;
+-	if (vendorid != PCI_VENDOR_ID_AMD)
+-		goto out;
 -
--static int __init smp_read_mpc(struct mp_config_table *mpc)
-+static int __init smp_read_mpc(struct mp_config_table *mpc, unsigned early)
- {
- 	char str[16];
- 	int count=sizeof(*mpc);
-@@ -259,6 +258,9 @@ static int __init smp_read_mpc(struct mp
- 	if (!acpi_lapic)
- 		mp_lapic_addr = mpc->mpc_lapic;
+-	deviceid = (id>>16) & 0xffff;
+-	if ((deviceid != PCI_DEVICE_ID_K8HTCONFIG) &&
+-	    (deviceid != PCI_DEVICE_ID_K8_10H_HTCONFIG) &&
+-	    (deviceid != PCI_DEVICE_ID_K8_11H_HTCONFIG))
+-		goto out;
++	if (!found)
++		return 0;
  
-+	if (early)
-+		return 1;
+-	for (i = 0; i < NR_LDT_BUS_NUMBER_REGISTERS; i++) {
+-		ldtbus = read_pci_config(0, slot, 1, lbnr[i]);
++	pci_root_num = 0;
++	for (i = 0; i < 4; i++) {
++		int min_bus;
++		int max_bus;
++		reg = read_pci_config(bus, slot, 1, 0xe0 + (i << 2));
+ 
+ 		/* Check if that register is enabled for bus range */
+-		if ((ldtbus & 7) != 3)
++		if ((reg & 7) != 3)
+ 			continue;
+ 
+-		min_bus = SECONDARY_LDT_BUS_NUMBER(ldtbus);
+-		max_bus = SUBORDINATE_LDT_BUS_NUMBER(ldtbus);
+-		node = NODE_ID(ldtbus);
++		min_bus = (reg >> 16) & 0xff;
++		max_bus = (reg >> 24) & 0xff;
++		node = (reg >> 4) & 0x07;
++#ifdef CONFIG_NUMA
+ 		for (j = min_bus; j <= max_bus; j++)
+ 			mp_bus_to_node[j] = (unsigned char) node;
++#endif
++		link = (reg >> 8) & 0x03;
 +
- 	/*
- 	 *	Now process the configuration blocks.
- 	 */
-@@ -470,27 +472,38 @@ static struct intel_mp_floating *mpf_fou
- /*
-  * Scan the memory blocks for an SMP configuration block.
-  */
--void __init get_smp_config (void)
-+static void __init __get_smp_config(unsigned early)
- {
- 	struct intel_mp_floating *mpf = mpf_found;
- 
-+	if (acpi_lapic && early)
-+		return;
- 	/*
-- 	 * ACPI supports both logical (e.g. Hyper-Threading) and physical 
-- 	 * processors, where MPS only supports physical.
-- 	 */
-- 	if (acpi_lapic && acpi_ioapic) {
-- 		printk(KERN_INFO "Using ACPI (MADT) for SMP configuration information\n");
-- 		return;
--	}
-- 	else if (acpi_lapic)
-- 		printk(KERN_INFO "Using ACPI for processor (LAPIC) configuration information\n");
-+	 * ACPI supports both logical (e.g. Hyper-Threading) and physical
-+	 * processors, where MPS only supports physical.
-+	 */
-+	if (acpi_lapic && acpi_ioapic) {
-+		printk(KERN_INFO "Using ACPI (MADT) for SMP configuration "
-+			"information\n");
-+		return;
-+	} else if (acpi_lapic)
-+		printk(KERN_INFO "Using ACPI for processor (LAPIC) "
-+			"configuration information\n");
- 
--	printk("Intel MultiProcessor Specification v1.%d\n", mpf->mpf_specification);
-+	printk(KERN_INFO "Intel MultiProcessor Specification v1.%d\n",
-+		mpf->mpf_specification);
- 
- 	/*
- 	 * Now see if we need to read further.
- 	 */
- 	if (mpf->mpf_feature1 != 0) {
-+		if (early) {
-+			/*
-+			 * local APIC has default address
-+			 */
-+			mp_lapic_addr = APIC_DEFAULT_PHYS_BASE;
-+			return;
++		info = &pci_root_info[pci_root_num];
++		info->bus_min = min_bus;
++		info->bus_max = max_bus;
++		info->node = node;
++		info->link = link;
++		sprintf(info->name, "PCI Bus #%02x", min_bus);
++		pci_root_num++;
++	}
++
++	/* get the default node and link for left over res */
++	reg = read_pci_config(bus, slot, 0, 0x60);
++	def_node = (reg >> 8) & 0x07;
++	reg = read_pci_config(bus, slot, 0, 0x64);
++	def_link = (reg >> 8) & 0x03;
++
++	memset(range, 0, sizeof(range));
++	range[0].end = 0xffff;
++	/* io port resource */
++	for (i = 0; i < 4; i++) {
++		reg = read_pci_config(bus, slot, 1, 0xc0 + (i << 3));
++		if (!(reg & 3))
++			continue;
++
++		start = reg & 0xfff000;
++		reg = read_pci_config(bus, slot, 1, 0xc4 + (i << 3));
++		node = reg & 0x07;
++		link = (reg >> 4) & 0x03;
++		end = (reg & 0xfff000) | 0xfff;
++
++		/* find the position */
++		for (j = 0; j < pci_root_num; j++) {
++			info = &pci_root_info[j];
++			if (info->node == node && info->link == link)
++				break;
 +		}
- 
- 		printk(KERN_INFO "Default MP configuration #%d\n", mpf->mpf_feature1);
- 		construct_default_ISA_mptable(mpf->mpf_feature1);
-@@ -501,12 +514,15 @@ void __init get_smp_config (void)
- 		 * Read the physical hardware table.  Anything here will
- 		 * override the defaults.
- 		 */
--		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr))) {
-+		if (!smp_read_mpc(phys_to_virt(mpf->mpf_physptr), early)) {
- 			smp_found_config = 0;
- 			printk(KERN_ERR "BIOS bug, MP table errors detected!...\n");
- 			printk(KERN_ERR "... disabling SMP support. (tell your hw vendor)\n");
- 			return;
- 		}
++		if (j == pci_root_num)
++			continue; /* not found */
 +
-+		if (early)
-+			return;
- 		/*
- 		 * If there are no explicit MP IRQ entries, then we are
- 		 * broken.  We set up most of the low 16 IO-APIC pins to
-@@ -528,13 +544,25 @@ void __init get_smp_config (void)
- 	} else
- 		BUG();
- 
--	printk(KERN_INFO "Processors: %d\n", num_processors);
-+	if (!early)
-+		printk(KERN_INFO "Processors: %d\n", num_processors);
- 	/*
- 	 * Only use the first configuration found.
- 	 */
- }
- 
--static int __init smp_scan_config (unsigned long base, unsigned long length)
-+void __init early_get_smp_config(void)
-+{
-+	__get_smp_config(1);
-+}
++		info = &pci_root_info[j];
++		update_res(info, start, end, IORESOURCE_IO, 0);
++		update_range(range, start, end);
++	}
++	/* add left over io port range to def node/link, [0, 0xffff] */
++	/* find the position */
++	for (j = 0; j < pci_root_num; j++) {
++		info = &pci_root_info[j];
++		if (info->node == def_node && info->link == def_link)
++			break;
+ 	}
++	if (j < pci_root_num) {
++		info = &pci_root_info[j];
++		for (i = 0; i < RANGE_NUM; i++) {
++			if (!range[i].end)
++				continue;
 +
-+void __init get_smp_config(void)
-+{
-+	__get_smp_config(0);
-+}
++			update_res(info, range[i].start, range[i].end,
++				   IORESOURCE_IO, 1);
++		}
++	}
 +
-+static int __init smp_scan_config(unsigned long base, unsigned long length,
-+				  unsigned reserve)
- {
- 	extern void __bad_mpf_size(void); 
- 	unsigned int *bp = phys_to_virt(base);
-@@ -553,10 +581,15 @@ static int __init smp_scan_config (unsig
- 				|| (mpf->mpf_specification == 4)) ) {
- 
- 			smp_found_config = 1;
-+			mpf_found = mpf;
++	memset(range, 0, sizeof(range));
++	/* 0xfd00000000-0xffffffffff for HT */
++	/* 0xfc00000000-0xfcffffffff for Family 10h mmconfig*/
++	range[0].end = 0xfbffffffffULL;
 +
-+			if (!reserve)
-+				return 1;
++	/* need to take out [0, TOM) for RAM*/
++	address = MSR_K8_TOP_MEM1;
++	rdmsrl(address, val);
++	end = (val & 0xffffff8000000ULL);
++	printk(KERN_INFO "TOM: %016lx aka %ldM\n", end, end>>20);
++	if (end < (1ULL<<32))
++		update_range(range, 0, end - 1);
 +
- 			reserve_bootmem_generic(virt_to_phys(mpf), PAGE_SIZE);
- 			if (mpf->mpf_physptr)
--				reserve_bootmem_generic(mpf->mpf_physptr, PAGE_SIZE);
--			mpf_found = mpf;
-+				reserve_bootmem_generic(mpf->mpf_physptr,
-+							PAGE_SIZE);
- 			return 1;
- 		}
- 		bp += 4;
-@@ -565,7 +598,7 @@ static int __init smp_scan_config (unsig
- 	return 0;
- }
++	/* mmio resource */
++	for (i = 0; i < 8; i++) {
++		reg = read_pci_config(bus, slot, 1, 0x80 + (i << 3));
++		if (!(reg & 3))
++			continue;
  
--void __init find_smp_config(void)
-+static void __init __find_smp_config(unsigned reserve)
- {
- 	unsigned int address;
- 
-@@ -577,9 +610,9 @@ void __init find_smp_config(void)
- 	 * 2) Scan the top 1K of base RAM
- 	 * 3) Scan the 64K of bios
- 	 */
--	if (smp_scan_config(0x0,0x400) ||
--		smp_scan_config(639*0x400,0x400) ||
--			smp_scan_config(0xF0000,0x10000))
-+	if (smp_scan_config(0x0, 0x400, reserve) ||
-+		smp_scan_config(639*0x400, 0x400, reserve) ||
-+			smp_scan_config(0xF0000, 0x10000, reserve))
- 		return;
- 	/*
- 	 * If it is an SMP machine we should know now.
-@@ -596,13 +629,23 @@ void __init find_smp_config(void)
- 
- 	address = *(unsigned short *)phys_to_virt(0x40E);
- 	address <<= 4;
--	if (smp_scan_config(address, 0x1000))
-+	if (smp_scan_config(address, 0x1000, reserve))
- 		return;
- 
- 	/* If we have come this far, we did not find an MP table  */
- 	 printk(KERN_INFO "No mptable found.\n");
- }
- 
-+void __init early_find_smp_config(void)
-+{
-+	__find_smp_config(0);
-+}
+-out:
++		start = reg & 0xffffff00; /* 39:16 on 31:8*/
++		start <<= 8;
++		reg = read_pci_config(bus, slot, 1, 0x84 + (i << 3));
++		node = reg & 0x07;
++		link = (reg >> 4) & 0x03;
++		end = (reg & 0xffffff00);
++		end <<= 8;
++		end |= 0xffff;
 +
-+void __init find_smp_config(void)
-+{
-+	__find_smp_config(1);
-+}
++		/* find the position */
++		for (j = 0; j < pci_root_num; j++) {
++			info = &pci_root_info[j];
++			if (info->node == node && info->link == link)
++				break;
++		}
++		if (j == pci_root_num)
++			continue; /* not found */
 +
- /* --------------------------------------------------------------------------
-                             ACPI-based MP Configuration
-    -------------------------------------------------------------------------- */
-Index: linux-2.6/include/linux/acpi.h
-===================================================================
---- linux-2.6.orig/include/linux/acpi.h
-+++ linux-2.6/include/linux/acpi.h
-@@ -79,6 +79,7 @@ typedef int (*acpi_table_handler) (struc
- typedef int (*acpi_table_entry_handler) (struct acpi_subtable_header *header, const unsigned long end);
- 
- char * __acpi_map_table (unsigned long phys_addr, unsigned long size);
-+int early_acpi_boot_init(void);
- int acpi_boot_init (void);
- int acpi_boot_table_init (void);
- int acpi_numa_init (void);
-@@ -235,6 +236,10 @@ int acpi_check_mem_region(resource_size_
- 
- #else	/* CONFIG_ACPI */
- 
-+static inline int early_acpi_boot_init(void)
-+{
-+	return 0;
-+}
- static inline int acpi_boot_init(void)
- {
- 	return 0;
-Index: linux-2.6/include/asm-x86/mpspec.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/mpspec.h
-+++ linux-2.6/include/asm-x86/mpspec.h
-@@ -26,6 +26,9 @@ extern int pic_mode;
- 
- extern DECLARE_BITMAP(mp_bus_not_pci, MAX_MP_BUSSES);
- 
-+extern void early_find_smp_config(void);
-+extern void early_get_smp_config(void);
++		info = &pci_root_info[j];
++		update_res(info, start, end, IORESOURCE_MEM, 0);
++		update_range(range, start, end);
++	}
 +
- #endif
- 
- extern int mp_bus_id_to_pci_bus[MAX_MP_BUSSES];
-Index: linux-2.6/include/asm-x86/apic.h
-===================================================================
---- linux-2.6.orig/include/asm-x86/apic.h
-+++ linux-2.6/include/asm-x86/apic.h
-@@ -124,6 +124,7 @@ extern void enable_NMI_through_LVT0(void
-  */
- #ifdef CONFIG_X86_64
- extern void setup_apic_routing(void);
-+extern void early_init_lapic_mapping(void);
- #endif
- 
- extern u8 setup_APIC_eilvt_mce(u8 vector, u8 msg_type, u8 mask);
-Index: linux-2.6/arch/x86/kernel/apic_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic_64.c
-+++ linux-2.6/arch/x86/kernel/apic_64.c
-@@ -861,6 +861,30 @@ static int __init detect_init_APIC(void)
- 	return 0;
- }
- 
-+void __init early_init_lapic_mapping(void)
-+{
-+	unsigned long apic_phys;
++	/* need to take out [4G, TOM2) for RAM*/
++	/* SYS_CFG */
++	address = MSR_K8_SYSCFG;
++	rdmsrl(address, val);
++	/* TOP_MEM2 is enabled? */
++	if (val & (1<<21)) {
++		/* TOP_MEM2 */
++		address = MSR_K8_TOP_MEM2;
++		rdmsrl(address, val);
++		end = (val & 0xffffff8000000ULL);
++		printk(KERN_INFO "TOM2: %016lx aka %ldM\n", end, end>>20);
++		update_range(range, 1ULL<<32, end - 1);
++	}
 +
 +	/*
-+	 * If no local APIC can be found then go out
-+	 * : it means there is no mpatable and MADT
++	 * add left over mmio range to def node/link ?
++	 * that is tricky, just record range in from start_min to 4G
 +	 */
-+	if (!smp_found_config)
-+		return;
++	for (j = 0; j < pci_root_num; j++) {
++		info = &pci_root_info[j];
++		if (info->node == def_node && info->link == def_link)
++			break;
++	}
++	if (j < pci_root_num) {
++		info = &pci_root_info[j];
 +
-+	apic_phys = mp_lapic_addr;
++		for (i = 0; i < RANGE_NUM; i++) {
++			if (!range[i].end)
++				continue;
++#if 0
++			/* don't use the one start less than 1M */
++			if (range[i].start < 0x100000)
++				continue;
++#endif
++#if 0
++			/* don't use last one near 4G */
++			if (range[i].end == 0xffffffffULL)
++				continue;
++#endif
 +
-+	set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-+	apic_printk(APIC_VERBOSE, "mapped APIC to %16lx (%16lx)\n",
-+				 APIC_BASE, apic_phys);
++			update_res(info, range[i].start, range[i].end,
++				   IORESOURCE_MEM, 1);
++		}
++	}
 +
-+	/*
-+	 * Fetch the APIC ID of the BSP in case we have a
-+	 * default configuration (or the MP table is broken).
-+	 */
-+	boot_cpu_id = GET_APIC_ID(apic_read(APIC_ID));
++#ifdef CONFIG_NUMA
+ 	for (i = 0; i < BUS_NR; i++) {
+ 		node = mp_bus_to_node[i];
+ 		if (node >= 0)
+ 			printk(KERN_DEBUG "bus: %02x to node: %02x\n", i, node);
+ 	}
++#endif
++
++	for (i = 0; i < pci_root_num; i++) {
++		int res_num;
++		int busnum;
++
++		info = &pci_root_info[i];
++		res_num = info->res_num;
++		busnum = info->bus_min;
++		printk(KERN_DEBUG "bus: [%02x,%02x] on node %x link %x\n",
++		       info->bus_min, info->bus_max, info->node, info->link);
++		for (j = 0; j < res_num; j++) {
++			res = &info->res[j];
++			printk(KERN_DEBUG "bus: %02x index %x %s: [%llx, %llx]\n",
++			       busnum, j,
++			       (res->flags & IORESOURCE_IO)?"io port":"mmio",
++			       res->start, res->end);
++		}
++	}
++
+ 	return 0;
+ }
+ 
+-postcore_initcall(early_fill_mp_bus_to_node);
++postcore_initcall(early_fill_mp_bus_info);
+Index: linux-2.6/include/asm-x86/topology.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86/topology.h
++++ linux-2.6/include/asm-x86/topology.h
+@@ -25,6 +25,7 @@
+ #ifndef _ASM_X86_TOPOLOGY_H
+ #define _ASM_X86_TOPOLOGY_H
+ 
++struct pci_bus;
+ #ifdef CONFIG_NUMA
+ #include <linux/cpumask.h>
+ #include <asm/mpspec.h>
+@@ -191,6 +192,8 @@ extern cpumask_t cpu_coregroup_map(int c
+ #define topology_thread_siblings(cpu)		(per_cpu(cpu_sibling_map, cpu))
+ #endif
+ 
++void set_pci_bus_resources_arch_default(struct pci_bus *b);
++
+ #ifdef CONFIG_SMP
+ #define mc_capable()			(boot_cpu_data.x86_max_cores > 1)
+ #define smt_capable()			(smp_num_siblings > 1)
+Index: linux-2.6/drivers/pci/probe.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/probe.c
++++ linux-2.6/drivers/pci/probe.c
+@@ -1076,6 +1076,10 @@ unsigned int pci_scan_child_bus(struct p
+ 	return max;
+ }
+ 
++void __attribute__((weak)) set_pci_bus_resources_arch_default(struct pci_bus *b)
++{
 +}
 +
- /**
-  * init_apic_mappings - initialize APIC mappings
-  */
+ struct pci_bus * pci_create_bus(struct device *parent,
+ 		int bus, struct pci_ops *ops, void *sysdata)
+ {
+@@ -1135,6 +1139,8 @@ struct pci_bus * pci_create_bus(struct d
+ 	b->resource[0] = &ioport_resource;
+ 	b->resource[1] = &iomem_resource;
+ 
++	set_pci_bus_resources_arch_default(b);
++
+ 	return b;
+ 
+ dev_create_file_err:
+Index: linux-2.6/arch/x86/pci/Makefile_64
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/Makefile_64
++++ linux-2.6/arch/x86/pci/Makefile_64
+@@ -13,5 +13,5 @@ obj-y			+= legacy.o irq.o common.o early
+ # mmconfig has a 64bit special
+ obj-$(CONFIG_PCI_MMCONFIG) += mmconfig_64.o direct.o mmconfig-shared.o
+ 
+-obj-$(CONFIG_NUMA)	+= k8-bus_64.o
++obj-y		+= k8-bus_64.o
+ 
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -247,7 +247,7 @@ static inline void pci_add_saved_cap(str
+ #define PCI_NUM_RESOURCES	11
+ 
+ #ifndef PCI_BUS_NUM_RESOURCES
+-#define PCI_BUS_NUM_RESOURCES	8
++#define PCI_BUS_NUM_RESOURCES	16
+ #endif
+ 
+ #define PCI_REGION_FLAG_MASK	0x0fU	/* These bits of resource flags tell us the PCI region flags */
 
