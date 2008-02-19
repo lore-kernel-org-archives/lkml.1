@@ -1,59 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757296AbYBSTV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759753AbYBSTWW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757296AbYBSTV7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 14:21:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbYBSTVv
+	id S1759753AbYBSTWW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 14:22:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758467AbYBSTWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 14:21:51 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:52578 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbYBSTVu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 14:21:50 -0500
-Date: Tue, 19 Feb 2008 11:42:48 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH 6/8] net: use numa_node in net_devcice->dev instead of
- parent
-In-reply-to: <20080219.034110.191579889.davem@davemloft.net>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, greg@kroah.com, akpm@linux-foundation.org, jeff@garzik.org,
-       linux-kernel@vger.kernel.org
-Message-id: <200802191142.48891.yinghai.lu@sun.com>
-Organization: SUN
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802190311.44404.yinghai.lu@sun.com>
- <20080219112146.GC7204@elte.hu> <20080219.034110.191579889.davem@davemloft.net>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Tue, 19 Feb 2008 14:22:06 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:59256 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758343AbYBSTWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 14:22:04 -0500
+Date: Tue, 19 Feb 2008 20:21:53 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: ananth@in.ibm.com
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, ak@suse.de, arjan@linux.intel.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel tests
+Message-ID: <20080219192153.GA11948@uranus.ravnborg.org>
+References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212223918.GA3927@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 03:41:10 am David Miller wrote:
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 19 Feb 2008 12:21:46 +0100
-> 
-> > 
-> > * Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
-> > 
-> > >  struct sk_buff *__netdev_alloc_skb(struct net_device *dev,
-> > >  		unsigned int length, gfp_t gfp_mask)
-> > >  {
-> > > -	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-> > > +	int node = dev_to_node(&dev->dev);
-> > 
-> > i think this is a fix for the networking folks. (Dave Cc:-ed)
-> 
-> It keeps getting NAK's because it's wrong.
-> 
-> The author of the patch hasn't convinced folks why this is really
-> necessary, and using the net_device embedded device struct is
-> definitely wrong here.  It doesn't contain the NUMA node information,
-> the physical device does, and that is what the parent it.
+Hi Anath.
 
-can you check the 5/8?
-that will make sure every struct device get numa_node get assigned.
+Linus did not pull this in the -rc1 to -rc2 timeframe
+so please resubmit the patch serie one week into the
+next merge window (when most of the trees has hit linus' tree
+and Andrew has made his first merge).
 
-YH
+IF you need an extra eye balling then you can submit
+a few weeks before the merge window opens.
+Thats typical after an -rc with only a few patches.
+
+Thanks,
+	Sam
+
+On Tue, Feb 12, 2008 at 11:39:18PM +0100, Sam Ravnborg wrote:
+> Hi Linus.
+> 
+> Will you consider such a primary code-movement for -rc1
+> or shall we wait until next merge window?
+> 
+> Had we hit -rc2 I would not have sent this pull req and
+> feel free to flame me anyway.
+> 
+> The rationale to get it merged is obviously to avoid
+> merge conflicts and the only reason I ask is that I consider
+> it a low risk patch.
+> 
+> I have not included 8/8 since it was questioned and it
+> will wait until next merge window. But the first 7 was
+> straightforward.
+> 
+> You can pull from:
+> ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+> 
+> diffstat and shortlog below.
+> I also included mail last with a few of the merge related comments.
+> 
+> 	Sam
+> 
+>  Makefile                                        |    1 +
+>  drivers/misc/Makefile                           |    1 -
+>  kernel/Makefile                                 |    4 -
+>  lib/Kconfig.debug                               |   71 +--------------------
+>  lib/Makefile                                    |    1 -
+>  tests/Kconfig                                   |   79 +++++++++++++++++++++++
+>  tests/Makefile                                  |   10 +++
+>  {kernel => tests}/backtracetest.c               |    0 
+>  {drivers/misc => tests}/lkdtm.c                 |   12 ++--
+>  {lib => tests}/locking-selftest-hardirq.h       |    0 
+>  {lib => tests}/locking-selftest-mutex.h         |    0 
+>  {lib => tests}/locking-selftest-rlock-hardirq.h |    0 
+>  {lib => tests}/locking-selftest-rlock-softirq.h |    0 
+>  {lib => tests}/locking-selftest-rlock.h         |    0 
+>  {lib => tests}/locking-selftest-rsem.h          |    0 
+>  {lib => tests}/locking-selftest-softirq.h       |    0 
+>  {lib => tests}/locking-selftest-spin-hardirq.h  |    0 
+>  {lib => tests}/locking-selftest-spin-softirq.h  |    0 
+>  {lib => tests}/locking-selftest-spin.h          |    0 
+>  {lib => tests}/locking-selftest-wlock-hardirq.h |    0 
+>  {lib => tests}/locking-selftest-wlock-softirq.h |    0 
+>  {lib => tests}/locking-selftest-wlock.h         |    0 
+>  {lib => tests}/locking-selftest-wsem.h          |    0 
+>  {lib => tests}/locking-selftest.c               |    0 
+>  {kernel => tests}/rcutorture.c                  |    0 
+>  {kernel => tests}/rtmutex-tester.c              |    2 +-
+>  {kernel => tests}/test_kprobes.c                |    0 
+>  27 files changed, 99 insertions(+), 82 deletions(-)
+> 
+> Ananth N Mavinakayanahalli (7):
+>       Create tests/ directory
+>       Move locking selftests to tests/
+>       Move rcutorture to tests/
+>       Move rtmutex-tests to tests/
+>       Move lkdtm to tests/
+>       Move kprobes smoke tests to tests/
+>       Move backtrace tests to tests/
+> 
+> 
+> 
+> On Tue, Feb 12, 2008 at 01:22:46PM -0800, Andrew Morton wrote:
+> > On Tue, 12 Feb 2008 11:44:52 -0500
+> > Christoph Hellwig <hch@infradead.org> wrote:
+> > 
+> > > On Mon, Feb 11, 2008 at 04:14:52PM +0530, Ananth N Mavinakayanahalli wrote:
+> > > > The following series of patches create and populate the toplevel tests/
+> > > > directory. This will henceforth be the place where all in-kernel tests
+> > > > live.
+> > > > 
+> > > > All patches against 2.6.25-rc1 and are just code movement without any
+> > > > change in functionality.
+> > > 
+> > > ACK to patches 1-7, and I agree with Ingo that the x86-specific test
+> > > should stay under arch/x86.
+> > 
+> > OK.  But now is basically the worst time for me (or anyone else) to merge
+> > large code-motion changes like this, because they need to be carried for
+> > two months or more.
+> > 
+> > And even though git can track renames, putting them into a git tree (say,
+> > git-kbuild) won't help, because if some other git tree tries to modify a
+> > file in its original place, I get to fix up the fallout.
+> > 
+> > Which I _could_ do, and would do if the patches were particularly risky or
+> > added/changed functionality or whatever.  But they don't do that, and there
+> > is little advantage in maintaining them for the >2 months.
+> > 
+> > So.  Please redo and resend the patches when we hit 2.6.25-rc6 or so?
+> > 
+> > Thanks.
+> > 
+> > (linux-next will largely fix all this: git will take care of the renames
+> > and I'll just base the -mm queue on the consolidated linux-next.  But we
+> > aren't there yet).
+> > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
