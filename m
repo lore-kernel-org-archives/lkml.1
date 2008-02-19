@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbYBSWuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763446AbYBSWur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbYBSWuY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:50:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761829AbYBSWty
+	id S1763446AbYBSWur (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762212AbYBSWuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:49:54 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:38180 "EHLO smtp5.pp.htv.fi"
+	Tue, 19 Feb 2008 17:50:00 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:60773 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761702AbYBSWtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:49:52 -0500
-Date: Wed, 20 Feb 2008 00:49:15 +0200
+	id S1762165AbYBSWt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 17:49:59 -0500
+Date: Wed, 20 Feb 2008 00:49:22 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: usb/serial/io_ti.c: inconsequent NULL checking
-Message-ID: <20080219224915.GN31955@cs181133002.pp.htv.fi>
+To: Christoph Lameter <clameter@sgi.com>, penberg@cs.helsinki.fi,
+       mpm@selenic.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: mm/slub.c: inconsequent NULL checking
+Message-ID: <20080219224922.GO31955@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,50 +25,39 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 The Coverity checker spotted the following inconsequent NULL checking 
-introduced by commit d5f5bcd425b771c0b7ff5a650b2ce061ac8bbb87:
+introduced by commit 8ff12cfc009a2a38d87fa7058226fe197bb2696f:
 
 <--  snip  -->
 
-static int edge_open (struct usb_serial_port *port, struct file * filp)
+...
+static inline int is_end(void *addr)
+{
+        return (unsigned long)addr & PAGE_MAPPING_ANON;
+}
+...
+static void deactivate_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
 {
 ...
-        if (port->tty)   <---------------------------------------------
-                port->tty->low_latency = low_latency;
+        if (c->freelist)    <----------------------------------------
+                stat(c, DEACTIVATE_REMOTE_FREES);
+        /*
+         * Merge cpu freelist into freelist. Typically we get here
+         * because both freelists are empty. So this is unlikely
+         * to occur.
+         *
+         * We need to use _is_end here because deactivate slab may
+         * be called for a debug slab. Then c->freelist may contain
+         * a dummy pointer.
+         */
+        while (unlikely(!is_end(c->freelist))) {
+                void **object;
 
-        port_number = port->number - port->serial->minor;
-        switch (port_number) {
-                case 0:
-                        edge_port->uart_base = UMPMEM_BASE_UART1;
-                        edge_port->dma_address = UMPD_OEDB1_ADDRESS;
-                        break;
-                case 1:
-                        edge_port->uart_base = UMPMEM_BASE_UART2;
-                        edge_port->dma_address = UMPD_OEDB2_ADDRESS;
-                        break;
-                default:
-                        dev_err (&port->dev, "Unknown port number!!!\n");
-                        return -ENODEV;
-        }
+                tail = 0;       /* Hot objects. Put the slab first */
 
-        dbg ("%s - port_number = %d, uart_base = %04x, dma_address = %04x",
-             __FUNCTION__, port_number, edge_port->uart_base, edge_port->dma_address);
-
-        dev = port->serial->dev;
-
-        memset (&(edge_port->icount), 0x00, sizeof(edge_port->icount));
-        init_waitqueue_head (&edge_port->delta_msr_wait);
-
-        /* turn off loopback */
-        status = TIClearLoopBack (edge_port);
-        if (status) {
-                dev_err(&port->dev,"%s - cannot send clear loopback command, %d\n",
-                        __FUNCTION__, status);
-                return status;
-        }
-        
-        /* set up the port settings */
-        edge_set_termios (port, port->tty->termios);
-...                             ^^^^^^^^^^^^^^^^^^
+                /* Retrieve object from cpu_freelist */
+                object = c->freelist;
+                c->freelist = c->freelist[c->offset];
+...                           ^^^^^^^^^^^^^^^^^^^^^^
 
 <--  snip  -->
 
