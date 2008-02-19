@@ -1,53 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbYBSUci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760523AbYBSUc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbYBSUci (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:32:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbYBSUc2
+	id S1760523AbYBSUc4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:32:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbYBSUc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:32:28 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:50788 "EHLO relay.sgi.com"
+	Tue, 19 Feb 2008 15:32:29 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:44952 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752395AbYBSUc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752344AbYBSUc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Feb 2008 15:32:27 -0500
-Message-Id: <20080219203226.746641000@polaris-admin.engr.sgi.com>
+Message-Id: <20080219203226.928527000@polaris-admin.engr.sgi.com>
+References: <20080219203226.746641000@polaris-admin.engr.sgi.com>
 User-Agent: quilt/0.46-1
-Date: Tue, 19 Feb 2008 12:32:26 -0800
+Date: Tue, 19 Feb 2008 12:32:27 -0800
 From: Mike Travis <travis@sgi.com>
 To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
 Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 0/2] percpu: Optimize percpu accesses v3
+Subject: [PATCH 1/2] init: move setup of nr_cpu_ids to as early as possible v3
+Content-Disposition: inline; filename=mv-set-nr_cpu_ids
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-This is the generic (non-x86) changes for zero-based per cpu variables.
-
-This patchset provides the following:
-
-  * Init: Move setup of nr_cpu_ids to as early as possible for usage
-    by early boot functions.
-
-  * Generic: Percpu infrastructure to rebase the per cpu area to zero
-
-    This provides for the capability of accessing the percpu variables
-    using a local register instead of having to go through a table
-    on node 0 to find this cpu specific offsets.  It also would allow
-    atomic operations on percpu variables to reduce required locking.
-
-  * Introduces a new DEFINE_PER_CPU_FIRST to locate a percpu variable
-    (cpu_pda in this case) at the beginning of the percpu .data section.
+Move the setting of nr_cpu_ids from sched_init() to init/main.c,
+so that it's available as early as possible.
 
 Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
 Signed-off-by: Mike Travis <travis@sgi.com>
 ---
 v3: * split generic/x86-specific into two patches
-
 v2: * rebased and retested using linux-2.6.git
     * fixed errors reported by checkpatch.pl
+---
+ init/main.c    |   20 ++++++++++++++++++++
+ kernel/sched.c |    7 -------
+ 2 files changed, 20 insertions(+), 7 deletions(-)
+
+--- a/init/main.c
++++ b/init/main.c
+@@ -365,10 +365,29 @@ static void __init smp_init(void)
+ #endif
+ 
+ static inline void setup_per_cpu_areas(void) { }
++static inline void setup_nr_cpu_ids(void) { }
+ static inline void smp_prepare_cpus(unsigned int maxcpus) { }
+ 
+ #else
+ 
++/*
++ * Setup number of possible processor ids.
++ * This is different than setup_max_cpus as it accounts for zero
++ * bits embedded between one bits in the cpu possible map.
++ */
++int nr_cpu_ids __read_mostly = NR_CPUS;
++EXPORT_SYMBOL(nr_cpu_ids);
++
++static void __init setup_nr_cpu_ids(void)
++{
++	int cpu, highest_cpu = 0;
++
++	for_each_possible_cpu(cpu)
++		highest_cpu = cpu;
++
++	nr_cpu_ids = highest_cpu + 1;
++}
++
+ #ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
+ unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
+ 
+@@ -542,6 +561,7 @@ asmlinkage void __init start_kernel(void
+ 	setup_arch(&command_line);
+ 	setup_command_line(command_line);
+ 	unwind_setup();
++	setup_nr_cpu_ids();
+ 	setup_per_cpu_areas();
+ 	smp_prepare_boot_cpu();	/* arch-specific boot-cpu hooks */
+ 
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -5954,10 +5954,6 @@ void __init migration_init(void)
+ 
+ #ifdef CONFIG_SMP
+ 
+-/* Number of possible processor ids */
+-int nr_cpu_ids __read_mostly = NR_CPUS;
+-EXPORT_SYMBOL(nr_cpu_ids);
+-
+ #ifdef CONFIG_SCHED_DEBUG
+ 
+ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level)
+@@ -7193,7 +7189,6 @@ static void init_tg_rt_entry(struct rq *
+ 
+ void __init sched_init(void)
+ {
+-	int highest_cpu = 0;
+ 	int i, j;
+ 
+ #ifdef CONFIG_SMP
+@@ -7248,7 +7243,6 @@ void __init sched_init(void)
+ #endif
+ 		init_rq_hrtick(rq);
+ 		atomic_set(&rq->nr_iowait, 0);
+-		highest_cpu = i;
+ 	}
+ 
+ 	set_load_weight(&init_task);
+@@ -7258,7 +7252,6 @@ void __init sched_init(void)
+ #endif
+ 
+ #ifdef CONFIG_SMP
+-	nr_cpu_ids = highest_cpu + 1;
+ 	open_softirq(SCHED_SOFTIRQ, run_rebalance_domains, NULL);
+ #endif
+ 
 
 -- 
