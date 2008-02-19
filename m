@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756874AbYBSGdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758696AbYBSGpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756874AbYBSGdZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 01:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYBSGdQ
+	id S1758696AbYBSGpR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 01:45:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYBSGpF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 01:33:16 -0500
-Received: from qb-out-0506.google.com ([72.14.204.224]:50453 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753702AbYBSGdP (ORCPT
+	Tue, 19 Feb 2008 01:45:05 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:51341 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753768AbYBSGpC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 01:33:15 -0500
+	Tue, 19 Feb 2008 01:45:02 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=JnXvYEdh1QH+jk5UY56dDBOWnz7M89EmYnCivASJnkHUWB3C7rsGD4TM2p8yk/ZI/d1bccL1I/4/srLAedSvw9NPp26fRibdZTd3gAhsS+26QkD6FDnN4gluZYtUiAIf5EPfT3MEbl3n0EGJHvGn49LuMOp90ut+xwowLc7xP7M=
-Subject: [PATCH] serial: remove double initializer
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Krauth.Julien" <Krauth.Julien@addi-data.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 18 Feb 2008 22:33:22 -0800
-Message-Id: <1203402802.7766.3.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IjC+AGH0IfR7kWlAPGCdGea/hYKRWlJchozJgvSl0Aqlw25NZczH8lenGkywSU2/V50rMYPLanDzTRPrhZTcPeQGSLk2WsiqQcmEvgsaowYnSlyb7zTmMeW+IMB2JiYewc7qC0JdDFQOtUa7vdYSCL+33I6K/Qz8/njoLHEH4JQ=
+Message-ID: <64bb37e0802182244i69f161d0y34ac4cace386147c@mail.gmail.com>
+Date: Tue, 19 Feb 2008 07:44:59 +0100
+From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.25-rc2
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.1.00.0802181553180.7833@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
+	 <alpine.LFD.1.00.0802181553180.7833@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit:
-02c9b5cf9acd8a85313b892dc5196ccf133d4884 serial: add ADDI-DATA GmbH Communication cardsin8250_pci.c and pci_ids.h
+On Feb 19, 2008 12:54 AM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Sat, 16 Feb 2008, Torsten Kaiser wrote:
+> >
+> > [ 5282.056415] ------------[ cut here ]------------
+> > [ 5282.059757] kernel BUG at lib/list_debug.c:33!
+>
+> Is there any chance that you could try to bisect this, if it's repeatable
+> enough for you? Even if you can't bisect it *all* the way, it would be
+> really good to do a handful of bisection runs which should already
+> hopefully narrow it down a bit more.
+>
+>                 Linus
+>
 
-Added a second initializer, perhaps sopmething else was intended?
+It's repeatable, but not in a really reliable way.
+So to mark a kernel good I need to compile around 100 KDE packages,
+and even then I'm not 100% sure, if it's good or if I was just lucky.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/serial/8250_pci.c |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+But I did a partly bisect against 2.6.24-rc6-mm1:
+2.6.24-rc6 + mm-patches up to (including) git.nfsd -> worked
+2.6.24-rc6 + mm-patches up to (including) git.xfs -> crashed
 
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index a8bec49..f97224c 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -1214,13 +1214,6 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.base_baud	= 115200,
- 		.uart_offset	= 8,
- 	},
--	[pbn_b0_8_115200] = {
--		.flags		= FL_BASE0,
--		.num_ports	= 8,
--		.base_baud	= 115200,
--		.uart_offset	= 8,
--	},
--
- 	[pbn_b0_1_921600] = {
- 		.flags		= FL_BASE0,
- 		.num_ports	= 1,
--- 
-1.5.4.2.200.g99e75
+I think the only added patch between rc2-mm1 and rc3-mm2 in that range
+where the iommu changes that I later ruled out.
+That leaves some git trees as suspects:
+git-ocfs2.patch
+git-selinux.patch
+git-s390.patch
+git-sched.patch
+git-sh.patch
+git-scsi-misc.patch
+git-unionfs.patch
+git-v9fs.patch
+git-watchdog.patch
+git-wireless.patch
+git-ipwireless_cs.patch
+git-x86.patch
+git-xfs.patch
 
+(see http://marc.info/?l=linux-kernel&m=120276641105256 )
 
-
+Torsten
