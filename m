@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764016AbYBTASx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764198AbYBTATW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764016AbYBTASx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYBTASo
+	id S1764198AbYBTATW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761912AbYBTATG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:18:44 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39074 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbYBTASn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:18:43 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: tsc breaks atkbd suspend
-Date: Tue, 19 Feb 2008 19:17:36 -0500
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
-       Len Brown <len.brown@intel.com>,
-       Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz,
-       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
-References: <20080218133852.GA1573@elf.ucw.cz> <20080219140552.GC9965@elte.hu> <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
+	Tue, 19 Feb 2008 19:19:06 -0500
+Received: from mfbichi11.ns.itscom.net ([219.110.2.189]:46154 "EHLO
+	mfbichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756057AbYBTATF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:19:05 -0500
+X-Greylist: delayed 3050 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 19:19:05 EST
+Date: Wed, 20 Feb 2008 08:27:56 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] sony-laptop.c: fix off-by-one
+Message-ID: <20080219232756.GA19495@inferi.kami.home>
+References: <20080219225903.GS31955@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802191917.36641.lenb@kernel.org>
+In-Reply-To: <20080219225903.GS31955@cs181133002.pp.htv.fi>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.24-rc6-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 11:51, Thomas Gleixner wrote:
-> On Tue, 19 Feb 2008, Ingo Molnar wrote:
-> > * Pavel Machek <pavel@ucw.cz> wrote:
-> > 
-> > > TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC 
-> > > means _require_ TSC), but it is not properly disabled when it is 
-> > > unusable, because acpi code understood the config switch as "may use 
-> > > TSC".
-> > > 
-> > > This actually fixes suspend problems on my x60.
-> > 
-> > ah! This makes tons of sense. I've applied your patch
+On Wed, Feb 20, 2008 at 12:59:03AM +0200, Adrian Bunk wrote:
+> This patch fixes an off-by-one spotted by the Coverity checker.
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-please do not.
+Acked-by: Mattia Dongili <malattia@linux.it>
 
-> > - but i guess it  should go via the ACPI tree.
-
-yes.
-
-> Right. The breakage was introduced there when IA64 switched to
-> GENERIC_TIME and the X86_TSC dependency was added.
-
-so do we need a patch for 2.6.23.stable and 2.6.24.stable?
-
-thanks,
--Len
+> ---
+> --- linux-2.6/drivers/misc/sony-laptop.c.old	2008-02-20 00:26:21.000000000 +0200
+> +++ linux-2.6/drivers/misc/sony-laptop.c	2008-02-20 00:26:38.000000000 +0200
+> @@ -314,9 +314,9 @@ static void sony_laptop_report_input_eve
+>  		kp.dev = jog_dev;
+>  		break;
+>  
+>  	default:
+> -		if (event > ARRAY_SIZE(sony_laptop_input_index)) {
+> +		if (event >= ARRAY_SIZE(sony_laptop_input_index)) {
+>  			dprintk("sony_laptop_report_input_event, event not known: %d\n", event);
+>  			break;
+>  		}
+>  		if (sony_laptop_input_index[event] != -1) {
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+-- 
+mattia
+:wq!
