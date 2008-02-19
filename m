@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbYBSO4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752276AbYBSO5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbYBSO4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 09:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbYBSO4U
+	id S1752276AbYBSO5x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 09:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbYBSO5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 09:56:20 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32869 "EHLO mx2.mail.elte.hu"
+	Tue, 19 Feb 2008 09:57:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33219 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752209AbYBSO4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 09:56:19 -0500
-Date: Tue, 19 Feb 2008 15:55:54 +0100
+	id S1753816AbYBSO5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 09:57:43 -0500
+Date: Tue, 19 Feb 2008 15:57:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
@@ -18,12 +18,12 @@ Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Christoph Lameter <clameter@sgi.com>
 Subject: Re: Linux 2.6.25-rc2
-Message-ID: <20080219145554.GE21176@elte.hu>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com> <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
+Message-ID: <20080219145719.GA22898@elte.hu>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com> <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com> <20080219145554.GE21176@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
+In-Reply-To: <20080219145554.GE21176@elte.hu>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,49 +38,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> > Yes, this can happen. Are you saying it is not safe to be in the 
-> > lockless path when an IRQ triggers?
+> If this (or my other patch) indeed solves the problem i'd still favor 
+> a full revert of the SLUB_FASTPATH (commit 1f84260c8ce3b1ce26d4), it 
+> looks quite un-cooked and quite un-tested for multiple independent 
+> reasons.
 > 
-> Hmm. The barrier() in slab_free() looks fishy. The comment says it's 
-> there to make sure we've retrieved c->freelist before c->page but then 
-> it uses a _compiler barrier_ which doesn't affect the CPU and the 
-> reads may still be re-ordered... Not sure if that matters here though.
+> Sigh, why do i again have to be the messenger who brings the bad news 
+> to SLUB land, and again when poor Christoph went on vacation? :-/
 
-find a fix patch for that below - most systems affected seem to be SMP 
-ones.
-
-If this (or my other patch) indeed solves the problem i'd still favor a 
-full revert of the SLUB_FASTPATH (commit 1f84260c8ce3b1ce26d4), it looks 
-quite un-cooked and quite un-tested for multiple independent reasons.
-
-Sigh, why do i again have to be the messenger who brings the bad news to 
-SLUB land, and again when poor Christoph went on vacation? :-/
+the revert patch is below. (manually done due to other changes since 
+1f84260c8ce3b1ce26d4 was commited, but trivial)
 
 	Ingo
-
--------------------------->
-Subject: SLUB: barrier fix
-From: Ingo Molnar <mingo@elte.hu>
-
----
- mm/slub.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux/mm/slub.c
-===================================================================
---- linux.orig/mm/slub.c
-+++ linux/mm/slub.c
-@@ -1862,7 +1862,7 @@ static __always_inline void slab_free(st
- 	debug_check_no_locks_freed(object, s->objsize);
- 	do {
- 		freelist = c->freelist;
--		barrier();
-+		smp_mb();
- 		/*
- 		 * If the compiler would reorder the retrieval of c->page to
- 		 * come before c->freelist then an interrupt could
 
 ----------------->
 Subject: slub: fastpath optimization revert
