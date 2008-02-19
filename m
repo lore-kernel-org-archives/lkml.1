@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbYBSP7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbYBSQHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756937AbYBSP7w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:59:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbYBSP7p
+	id S1754339AbYBSQHw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbYBSQHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:59:45 -0500
-Received: from smtp1-g19.free.fr ([212.27.42.27]:51250 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751600AbYBSP7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:59:44 -0500
-Date: Tue, 19 Feb 2008 16:59:40 +0100
-From: Thomas Petazzoni <thomas.petazzoni@enix.org>
-To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com
-Cc: linux-kernel@vger.kernel.org
-Subject: arch/x86/kernel/acpi/sleep_32.c not compiled ?
-Message-ID: <20080219165940.6e9348f6@crazy>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/antvKi8R/BcPtjhMLm5Vgem";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Tue, 19 Feb 2008 11:07:41 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:40474 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbYBSQHk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:07:40 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: Tomasz Chmielewski <mangoo@wpkg.org>
+Subject: Re: very poor ext3 write performance on big filesystems?
+Date: Tue, 19 Feb 2008 11:04:49 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       LKML <linux-fsdevel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <47B980AC.2080806@wpkg.org> <200802191006.50693.chris.mason@oracle.com> <47BAF3FF.3070300@wpkg.org>
+In-Reply-To: <47BAF3FF.3070300@wpkg.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802191104.49482.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/antvKi8R/BcPtjhMLm5Vgem
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 19 February 2008, Tomasz Chmielewski wrote:
+> Chris Mason schrieb:
+> > On Tuesday 19 February 2008, Tomasz Chmielewski wrote:
+> >> Theodore Tso schrieb:
+> >>
+> >> (...)
+> >>
+> >>> The following ld_preload can help in some cases.  Mutt has this hack
+> >>> encoded in for maildir directories, which helps.
+> >>
+> >> It doesn't work very reliable for me.
+> >>
+> >> For some reason, it hangs for me sometimes (doesn't remove any files, rm
+> >> -rf just stalls), or segfaults.
+> >
+> > You can go the low-tech route (assuming your file names don't have spaces
+> > in them)
+> >
+> > find . -printf "%i %p\n" | sort -n | awk '{print $2}' | xargs rm
+>
+> Why should it make a difference?
 
-Hi,
+It does something similar to Ted's ld preload, sorting the results from 
+readdir by inode number before using them.  You will still seek quite a lot 
+between the directory entries, but operations on the files themselves will go 
+in a much more optimal order.  It might help.
 
-Maybe I'm missing something completely obvious, but I don't see where
-the arch/x86/kernel/acpi/sleep_32.c file gets compiled. The Makefile in
-that directory compiles sleep.o, but doesn't compile sleep_$(BITS).o:
+>
+> Does "find" find filenames/paths faster than "rm -r"?
+>
+> Or is "find once/remove once" faster than "find files/rm files/find
+> files/rm files/...", which I suppose "rm -r" does?
 
-obj-$(CONFIG_ACPI)              +=3D boot.o
-obj-$(CONFIG_ACPI_SLEEP)        +=3D sleep.o wakeup_$(BITS).o
+rm -r does removes things in the order that readdir returns.  In your hard 
+linked tree (on almost any FS), this will be very random.  The sorting is 
+probably the best you can do from userland to optimize the ordering.
 
-ifneq ($(CONFIG_ACPI_PROCESSOR),)
-obj-y                           +=3D cstate.o processor.o
-endif
+-chris
 
-Sincerly,
-
-Thomas
---=20
-Thomas Petazzoni, thomas.petazzoni@enix.org, http://thomas.enix.org
-Jabber, thomas.petazzoni@jabber.dk
-Toulibre, http://www.toulibre.org - APRIL, http://www.april.org
-Fingerprint : 0BE1 4CF3 CEA4 AC9D CC6E  1624 F653 CB30 98D3 F7A7
-
---Sig_/antvKi8R/BcPtjhMLm5Vgem
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHuvzs9lPLMJjT96cRAlxqAKC63NSwA5MrJQNwsrKLDS3+IzlbDQCgj0iT
-a4U5q1qpo0gtT/u3iKp5Rx4=
-=3AiV
------END PGP SIGNATURE-----
-
---Sig_/antvKi8R/BcPtjhMLm5Vgem--
