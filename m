@@ -1,124 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761293AbYBSUdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbYBSUeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761293AbYBSUdp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 15:33:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYBSUdb
+	id S1760535AbYBSUeA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 15:34:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761123AbYBSUdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 15:33:31 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:40710 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755303AbYBSUd3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 15:33:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAMrLukdMQWRV/2dsb2JhbACBWa1z
-Date: Tue, 19 Feb 2008 15:33:26 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jan Kiszka <jan.kiszka@siemens.com>
-Cc: paulmck@linux.vnet.ibm.com, prasad@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, mingo@elte.hu,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-rt-users@vger.kernel.org,
-       dipankar@in.ibm.com
-Subject: Re: Markers: multi-probe locking fun (was: Re: [PATCH 0/2] Markers
-	Implementation for RCU Tracing - Ver II)
-Message-ID: <20080219203326.GA16701@Krystal>
-References: <20071231060911.GB6461@in.ibm.com> <20080103163055.GB27651@Krystal> <20080104105858.GA13865@in.ibm.com> <20080105124632.GA16576@Krystal> <20080107195038.GA5119@in.ibm.com> <47B97E63.3070205@siemens.com> <20080218194825.GF10471@linux.vnet.ibm.com> <47BB037C.6060306@siemens.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <47BB037C.6060306@siemens.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:31:02 up 8 days, 16:31,  4 users,  load average: 0.57, 0.43,
-	0.52
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Tue, 19 Feb 2008 15:33:38 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:45086 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756128AbYBSUdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 15:33:36 -0500
+Message-Id: <20080219203335.866324000@polaris-admin.engr.sgi.com>
+User-Agent: quilt/0.46-1
+Date: Tue, 19 Feb 2008 12:33:35 -0800
+From: Mike Travis <travis@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 0/2] x86: Optimize percpu accesses v3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jan Kiszka (jan.kiszka@siemens.com) wrote:
-> Paul E. McKenney wrote:
-> > On Mon, Feb 18, 2008 at 01:47:31PM +0100, Jan Kiszka wrote:
-> >> K. Prasad wrote:
-> >>> Hi Ingo,
-> >>> 	Please accept these patches into the rt tree which convert the
-> >>> existing RCU tracing mechanism for Preempt RCU and RCU Boost into
-> >>> markers.
-> >>>  
-> >>> These patches are based upon the 2.6.24-rc5-rt1 kernel tree.
-> >>>  
-> >>> Along with marker transition, the RCU Tracing infrastructure has also
-> >>> been modularised to be built as a kernel module, thereby enabling
-> >>> runtime changes to the RCU Tracing infrastructure.
-> >>>  
-> >>> Patch [1/2] - Patch that converts the Preempt RCU tracing in
-> >>> rcupreempt.c into markers.
-> >>>  
-> >>> Patch [1/2] - Patch that converts the Preempt RCU Boost tracing in
-> >>> rcupreempt-boost.c into markers.
-> >>>  
-> >> I have a technical problem with marker-based RCU tracing: It causes
-> >> nasty recursions with latest multi-probe marker patches (sorry, no link
-> >> at hand, can be found in latest LTTng, maybe also already in -mm). Those
-> >> patches introduce a marker probe trampoline like this:
-> >>
-> >> void marker_probe_cb(const struct marker *mdata, void *call_private,
-> >> 	const char *fmt, ...)
-> >> {
-> >> 	va_list args;
-> >> 	char ptype;
-> >>
-> >> 	/*
-> >> 	 * rcu_read_lock does two things : disabling preemption to make sure the
-> >> 	 * teardown of the callbacks can be done correctly when they are in
-> >> 	 * modules and they insure RCU read coherency.
-> >> 	 */
-> >> 	rcu_read_lock();
-> >> 	preempt_disable();
-> >> 	...
-> >>
-> >> Can we do multi-probe with pure preempt_disable/enable protection? I
-> >> guess it's fine with classic RCU, but what about preemptible RCU? Any
-> >> suggestion appreciated!
-> > 
-> > If you substitute synchronize_sched() for synchronize_rcu(), this should
-> > work fine.  Of course, this approach would cause RCU tracing to degrade
-> > latencies somewhat in -rt.
-> > 
-> > If tracing is using call_rcu(), we will need to add a call_sched()
-> > or some such.
-> 
-> You mean something like "#define call_sched call_rcu_classic"?
-> 
-> I just learned that there is another reason for killing
-> rcu_read_lock&friends from the marker probes: It can deadlock on -rt
-> with PREEMPT_RCU_BOOST (hit probe inside rq-lock protected region =>
-> rcu_read_unlock triggers unboost => stuck on rq_lock :( ).
-> 
 
-Yep, ok, let's do this :
+This patchset is the x86-specific part split from the generic part
+of the zero-based patchset.
 
-in include/linux/rcupdate.h
+This patchset provides the following:
 
-#ifndef PREEMPT_RT
-#define call_sched call_rcu
-#else
-#define call_sched call_rcu_classic
-#endif
+  * x86_64: Fold pda into per cpu area
 
-And I'll adapt the markers accordingly.
+    Declare the pda as a per cpu variable. This will move the pda
+    area to an address accessible by the x86_64 per cpu macros.
+    Subtraction of __per_cpu_start will make the offset based from
+    the beginning of the per cpu area.  Since %gs is pointing to the
+    pda, it will then also point to the per cpu variables and can be
+    accessed thusly:
 
-Mathieu
+	%gs:[&per_cpu_xxxx - __per_cpu_start]
 
-> Jan
-> 
-> -- 
-> Siemens AG, Corporate Technology, CT SE 2
-> Corporate Competence Center Embedded Linux
+  * x86_64: Rebase per cpu variables to zero
+
+    Take advantage of the zero-based per cpu area provided above.
+    Then we can directly use the x86_32 percpu operations. x86_32
+    offsets %fs by __per_cpu_start. x86_64 has %gs pointing directly
+    to the pda and the per cpu area thereby allowing access to the
+    pda with the x86_64 pda operations and access to the per cpu
+    variables using x86_32 percpu operations.  After rebasing
+    the access now becomes:
+
+	%gs:[&per_cpu_xxxx]
+
+    Introduces a new DEFINE_PER_CPU_FIRST to locate the percpu
+    variable (pda in this case) at the beginning of the percpu
+    .data section.
+
+  * x86_64: Cleanup non-smp usage of cpu maps
+
+    Cleanup references to the early cpu maps for the non-SMP configuration
+    and remove some functions called for SMP configurations only.
+
+Based on git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+v3: * split generic/x86-specific into two patches
+v2: * rebased and retested using linux-2.6.git
+    * fixed errors reported by checkpatch.pl
+
+Configs built and booted:
+
+    x86_64-default
+    x86_64-defconfig
+    x86_64-nonuma
+    x86_64-nosmp
+    x86_64-stress
+
+Configs built with no errors:
+
+    arm-default
+    i386-allmodconfig
+    i386-allyesconfig
+    i386-defconfig
+    i386-nosmp
+    ia64-default
+    ia64-nosmp
+    ia64-sn2
+    ppc-pmac32
+    ppc-smp
+    s390-default
+    sparc-default
+    sparc64-default
+    sparc64-smp
+    x86_64-allmodconfig
+    x86_64-allyesconfig
+    x86_64-maxsmp (NR_CPUS=4096, MAXNODES=512)
+
+Memory Effects (using x86_64-maxsmp config):
+
+    Note that 1/2MB has been moved from permanent data to
+    the init data section, while the per cpu section is only
+    increased by 128 bytes per cpu.  Also text size is reduced.
+
+4k-before                         4k-after
+   5540352 .data.cacheline_alig      -524288 -9%
+     46848 .data.percpu                 +128 +0%
+   4804560 .data.read_mostly          -32656 +0%
+      5455 .exit.text                     -2 +0%
+    857648 .init.data                +557056 +64%
+    162411 .init.text                    +40 +0%
+   1291576 .rodata                        +2 +0%
+   3939813 .text                       -1792 +0%
+
+   3939813 Text                        -1792 +0%
+   1887731 Data                        +1792 +0%
+   1089536 InitData                  +557056 +51%
+  10404904 OtherData                 -557056 -5%
+     46848 PerCpu                       +128 +0%
+  19291548 Total                       -1512 +0%
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
