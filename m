@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759474AbYBSViP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761374AbYBSVic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759474AbYBSViP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 16:38:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYBSVh6
+	id S1761374AbYBSVic (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 16:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760094AbYBSViQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 16:37:58 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60036 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754562AbYBSVh5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 16:37:57 -0500
-Message-ID: <47BB4C33.3030505@sgi.com>
-Date: Tue, 19 Feb 2008 13:37:55 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Tue, 19 Feb 2008 16:38:16 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34037 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758982AbYBSViO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 16:38:14 -0500
+Message-ID: <47BB4BB5.20709@redhat.com>
+Date: Tue, 19 Feb 2008 16:35:49 -0500
+From: Larry Woodman <lwoodman@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.4.2) Gecko/20040301
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Yinghai Lu <Yinghai.Lu@Sun.COM>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       lameter@sgi.com
-Subject: Re: [PATCH] x86_64: remove never used nodenumer in pda
-References: <200802162302.04131.yinghai.lu@sun.com> <p73ve4mxxlc.fsf@bingen.suse.de> <47BAFA66.2040603@sgi.com> <20080219180855.GB12010@one.firstfloor.org> <47BB20C6.7050205@sgi.com> <20080219205938.GC13958@one.firstfloor.org>
-In-Reply-To: <20080219205938.GC13958@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Problem with /proc/sys/vm/lowmem_reserve_ratio
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+balance_pgdat() calls zone_watermark_ok() three times, the first call
+passes a zero(0) in as the 4th argument.  This 4th argument is the
+classzone_idx which is used as the index into the zone->lowmem_reserve[] 
+array. 
+Since setup_per_zone_lowmem_reserve()
+always sets the zone->lowmem_reserve[0] = 0(because there is nothing
+below the DMA zone), zone_watermark_ok() will not consider the
+lowmem_reserve pages when zero is passed as the 4th arg.   The
+4th argument must be "i" or balance_pgdat wont even get into the main loop
+when lowmem_reserve_ratio is lowered.
 
->> (And of course the problem with cpus on nodes with no local memory
->> needs to be resolved as well.)
-> 
-> All CPUs get assigned to some node at boot.
-> 
-> And there should be always per cpu variables or pda to use.
+-------------------------------------------------------------------------
+--- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
+11:14:55.000000000 -0500
++++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:15:02.000000000
+-0500
+@@ -1375,7 +1375,7 @@ loop_again:
+                               continue;
 
-Sorry, I was being vague.  Mel Gorman found a problem that appears
-linked to the change to 16-bit apicids on an AMD box that has 4
-nodes, but nodes 1-3 have no memory, and the system panics during
-cpu_up() on the 2nd cpu which is on node 1.
+                       if (!zone_watermark_ok(zone, order, 
+zone->pages_high,
 
-I've not yet been able to replicate the problem.
+-                                              0, 0)) {
++                                              i, 0)) {
+                               end_zone = i;
+                               break;
 
-Thanks,
-Mike
