@@ -1,213 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762730AbYBSHiz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbYBSHjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762730AbYBSHiz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:38:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762263AbYBSHik
+	id S1759563AbYBSHjQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762396AbYBSHin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:38:40 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52194 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761270AbYBSHih (ORCPT
+	Tue, 19 Feb 2008 02:38:43 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:49637 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759059AbYBSHik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:38:37 -0500
-Date: Tue, 19 Feb 2008 16:36:23 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
-       riel@redhat.com, akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-fsdevel@vger.kernel.org, pavel@ucw.cz, a1426z@gawab.com,
-       jonathan@jonmasters.org, zlynx@acm.org
-In-Reply-To: <20080217084906.e1990b11.pj@sgi.com>
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com> <20080217084906.e1990b11.pj@sgi.com>
-Message-Id: <20080219145108.7E96.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 19 Feb 2008 02:38:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=AIzQtkVscgJ8luE6qBAEGalqkTWvzIn/h5Xea+0glyrdEEjOjHGRWVCpb5JEEQF1Hrj1UzgBBq5nAYmZaftJfzgmrrqvjxdbCcNX2JbHvnAK1ISKL6mjIc7MNdzPXSsVx48Yf277WGxcm95rX6LFJlW3FoM9WC/LAP0InIVf/7A=
+Message-ID: <84144f020802182338p68d412f6sa9e0f8975344a9c0@mail.gmail.com>
+Date: Tue, 19 Feb 2008 09:38:40 +0200
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: NULL pointer in kmem_cache_alloc with 2.6.25-rc1
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Torsten Kaiser" <just.for.lkml@googlemail.com>
+In-Reply-To: <1203404594.3248.32.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+References: <1203058021.3027.143.camel@ymzhang>
+	 <Pine.LNX.4.64.0802150839180.12023@schroedinger.engr.sgi.com>
+	 <1203404594.3248.32.camel@ymzhang>
+X-Google-Sender-Auth: f968e3dbb7a1ac6b
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Paul,
+Hi Yanmin,
 
-Thank you for wonderful interestings comment.
-your comment is really nice.
+> On Fri, 2008-02-15 at 08:42 -0800, Christoph Lameter wrote:
+> > > Kernel panic at line 1637 in file mm/slub.c because object=c->freelist=NULL.
+> >
+> > Hmmmm. freelist should never be NULL. Could you rerun the test and boot with
+> > slub_debug to make sure that there is no memory corruption?
 
-I was HPC guy with large NUMA box at past. 
-I promise i don't ignroe hpc user.
-but unfortunately I didn't have experience of use CPUSET
-because at that point, it was under development yet.
+On Feb 19, 2008 9:03 AM, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> 1) Without slub_debug option, sometime I could trigger it, sometimes not.
+> 2) With slub_debug option, or just enable debug for slab skbuff_fclone_cache
+> and skbuff_head_cache, I couldn't trigger it.
+>
+> I will do more testing and investigation, as the bug also exists in 2.6.25-rc2.
 
-I hope discuss you that CPUSET usage case and mem_notify requirement.
-to be honest, I thought hpc user doesn't use mem_notify, sorry.
+Could you please try Ingo's patch: http://lkml.org/lkml/2008/2/19/13
 
+Looks like there are some problems with SLUB_FASTPATH.
 
-> I have what seems, intuitively, a similar problem at the opposite
-> end of the world, on big-honkin NUMA boxes (hundreds or thousands of
-> CPUs, terabytes of main memory.)  The problem there is often best
-> resolved if we can kill the offending task, rather than shrink its
-> memory footprint.  The situation is that several compute intensive
-> multi-threaded jobs are running, each in their own dedicated cpuset.
-
-agreed.
-
-> So we like to identify such jobs as soon as they begin to swap,
-> and kill them very very quickly (before the direct reclaim code
-> in mm/vmscan.c can push more than a few pages to the swap device.)
-
-you think kill the process just after swap, right?
-but unfortunately, almost user hope receive notification before swap ;-)
-because avoid swap.
-
-I think we need discuss this point more.
-
-
-> For a much earlier, unsuccessful, attempt to accomplish this, see:
-> 
-> 	[Patch] cpusets policy kill no swap
-> 	http://lkml.org/lkml/2005/3/19/148
-> 
-> Now, it may well be that we are too far apart to share any part of
-> a solution; one seldom uses the same technology to build a Tour de
-> France bicycle as one uses to build a Lockheed C-5A Galaxy heavy
-> cargo transport.
-> 
-> One clear difference is the policy of what action we desire to take
-> when under memory pressure: do we invite user space to free memory so
-> as to avoid the wrath of the oom killer, or do we go to the opposite
-> extreme, seeking a nearly instantant killing, faster than the oom
-> killer can even begin its search for a victim.
-
-Hmm, sorry
-I understand your patch yet, because I don't know CPUSET so much.
-
-I learn CPUSET more, about this week and I'll reply again about next week ;-)
-
-
-> Another clear difference is the use of cpusets, which are a major and
-> vital part of administering the big NUMA boxes, and I presume are not
-> even compiled into embedded kernels (correct?).  This difference maybe
-> unbridgeable ... these big NUMA systems require per-cpuset mechanisms,
-> whereas embedded may require builds without cpusets.
-
-Yes, some embedded distribution(i.e. monta vista) distribute as source.
-but embedded people strongly dislike bloat code size.
-I think they never turn on CPUSET.
-
-I hope mem_notify works fine without CPUSET.
-
-
-> 1) You have a little bit of code in the kernel to throttle the
->    thundering herd problem.  Perhaps this could be moved to user space
->    ... one user daemon that is always notified of such memory pressure
->    alarms, and in turn notifies interested applications.  This might
->    avoid the need to add poll_wait_exclusive() to the kernel.  And it
->    moves any fussy details of how to tame the thundering herd out of
->    the kernel.
-
-I think you talk about user space oom manager.
-it and many user process are obviously different.
-
-I doubt memory manager daemon model doesn't works on desktop and
-typical server.
-thus, current implementaion optimize to no manager environment.
-
-of course, it doesn't mean i refuse add to code for oom manager.
-it is very interesting idea.
-
-i hope discussion it more.
-
-
-> 2) Another possible mechanism for communicating events from
->    the kernel to user space is inotify.  For example, I added
->    the line:
-> 
->    	fsnotify_modify(dentry);   # dentry is current tasks cpuset
-
-Excellent!
-that is really good idea.
-
-thaks.
-
-
-> 3) Perhaps, instead of sending simple events, one could update
->    a meter of the rate of recent such events, such as the per-cpuset
->    'memory_pressure' mechanism does.  This might lead to addressing
->    Andrew Morton's comment:
-> 
-> 	If this feature is useful then I'd expect that some
-> 	applications would want notification at different times, or at
-> 	different levels of VM distress.  So this semi-randomly-chosen
-> 	notification point just won't be strong enough in real-world
-> 	use.
-
-Hmmm, I don't think so.
-I think timing of memmory_pressure_notify(1) is already best.
-
-the page move active list to inactive list indicate swap I/O happen
-a bit after.
-
-but memmory_pressure_notify(0) is a bit messy.
-I'll try to improve more simplify.
-
-
-> 4) A place that I found well suited for my purposes (watching for
->    swapping from direct reclaim) was just before the lines in the
->    pageout() routine in mm/vmscan.c:
-> 
->    	if (clear_page_dirty_for_io(page)) {
-> 		...
-> 		res = mapping->a_ops->writepage(page, &wbc);
-> 
->    It seemed that testing "PageAnon(page)" here allowed me to easily
->    distinguish between dirty pages going back to the file system, and
->    pages going to swap (this detail is from work on a 2.6.16 kernel;
->    things might have changed.)
-> 
->    One possible advantage of the above hook in the direct reclaim
->    code path in vmscan.c is that pressure in one cpuset did not cause
->    any false alarms in other cpusets.  However even this hook does
->    not take into account the constraints of mm/mempolicy (the NUMA
->    memory policy that Andi mentioned) nor of cgroup memory controllers.
-
-Disagreed.
-that is too late.
-
-after writepage notifify mean can't avoid swap I/O.
-
-
-> 5) I'd be keen to find an agreeable way that you could have the
->    system-wide, no cpuset, mechanism you need, while at the same
->    time, I have a cpuset interface that is similar and depends on the
->    same set of hooks.  This might involve a single set of hooks in
->    the key places in the memory and swapping code, that (1) updated
->    the system wide state you need, and (2) if cpusets were present,
->    updated similar state for the tasks current cpuset.  The user
->    visible API would present both the system-wide connector you need
->    (the special file or whatever) and if cpusets are present, similar
->    per-cpuset connectors.
-
-that makes sense.
-I will learn cpuset and think integrate mem_notify and cpuset.
-
-
-and,
-
-Please don't think I reject your idea.
-your proposal is large different of past our discussion and
-i don't know cpuset.
-
-I think we can't drop all current design and accept your idea all, may be.
-but we may be able to accept partial until hpc guys content enough.
-
-I will learn to CPUSET more in a few days.
-after it, we can discussion more.
-
-please wait for a while.
-
-Thanks!
-
-
-
+                                    Pekka
