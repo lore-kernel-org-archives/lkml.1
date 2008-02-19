@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbYBSGL3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761231AbYBSGMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761036AbYBSGL3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 01:11:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752528AbYBSGLW
+	id S1761231AbYBSGMo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 01:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753125AbYBSGMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 01:11:22 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44458 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbYBSGLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 01:11:20 -0500
-Date: Tue, 19 Feb 2008 07:11:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Torsten Kaiser <just.for.lkml@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.25-rc2
-Message-ID: <20080219061107.GA23229@elte.hu>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 19 Feb 2008 01:12:36 -0500
+Received: from qb-out-0506.google.com ([72.14.204.235]:16960 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752962AbYBSGMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 01:12:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=hLfsnU4VPry8PCDbKlCDLfmbLuphW7BQsw5bvbus+DVYtaRphUUj6aI7k3TeiUEjb3ssZfxoXD6QYspePR+ZUsMrAVKS5mhlbYUwv0bqEfwSDdunthU/s6BNhPMyCRyXgEG4Sm1xABVVvVyRm/MrDpch0SQhQirXBo++sLDLjFY=
+Subject: [PATCH] bttv: struct member initialized twice
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 18 Feb 2008 22:12:41 -0800
+Message-Id: <1203401561.7766.1.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+fixes sparse warning:
+drivers/media/video/bt8xx/bttv-driver.c:3391:3: warning: Initializer entry defined twice
+drivers/media/video/bt8xx/bttv-driver.c:3392:3:   also defined here
 
-* Torsten Kaiser <just.for.lkml@googlemail.com> wrote:
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ drivers/media/video/bt8xx/bttv-driver.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-> On Feb 15, 2008 10:23 PM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> >
-> > Ok,
-> >  this kernel is a winner.
-> 
-> Sadly not for me:
-> [ 5282.056415] ------------[ cut here ]------------
-> [ 5282.059757] kernel BUG at lib/list_debug.c:33!
-> [ 5282.062055] invalid opcode: 0000 [1] SMP
-> [ 5282.062055] CPU 3
+diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
+index 5404fcc..a080c14 100644
+--- a/drivers/media/video/bt8xx/bttv-driver.c
++++ b/drivers/media/video/bt8xx/bttv-driver.c
+@@ -3389,7 +3389,6 @@ static struct video_device bttv_video_template =
+ 	.vidiocgmbuf                    = vidiocgmbuf,
+ #endif
+ 	.vidioc_g_crop                  = bttv_g_crop,
+-	.vidioc_g_crop                  = bttv_g_crop,
+ 	.vidioc_s_crop                  = bttv_s_crop,
+ 	.vidioc_g_fbuf                  = bttv_g_fbuf,
+ 	.vidioc_s_fbuf                  = bttv_s_fbuf,
+-- 
+1.5.4.2.200.g99e75
 
-hm. Your crashes do seem to span multiple subsystems, but it always 
-seems to be around the SLUB code. Could you try the patch below? The 
-SLUB code has a new optimization and i'm not 100% sure about it. [the 
-hack below switches the SLUB optimization off by disabling the CPU 
-feature it relies on.]
 
-	Ingo
-
-------------->
- arch/x86/Kconfig |    4 ----
- 1 file changed, 4 deletions(-)
-
-Index: linux/arch/x86/Kconfig
-===================================================================
---- linux.orig/arch/x86/Kconfig
-+++ linux/arch/x86/Kconfig
-@@ -59,10 +59,6 @@ config HAVE_LATENCYTOP_SUPPORT
- config SEMAPHORE_SLEEPERS
- 	def_bool y
- 
--config FAST_CMPXCHG_LOCAL
--	bool
--	default y
--
- config MMU
- 	def_bool y
- 
 
