@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbYBSL2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760990AbYBSL3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762813AbYBSL2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 06:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761999AbYBSL2W
+	id S1760990AbYBSL3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 06:29:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbYBSL3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 06:28:22 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61226 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761762AbYBSL2U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 06:28:20 -0500
-To: Eric Sandeen <sandeen@redhat.com>, Christoph Hellwig <hch@infradead.org>
-Cc: Andreas Dilger <adilger@sun.com>, Theodore Tso <tytso@MIT.EDU>,
-       linux-ext4@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] ext3 freeze feature
-In-reply-to: <47B5A088.6050801@redhat.com>
-Message-Id: <20080219202706t-sato@mail.jp.nec.com>
-References: <47B5A088.6050801@redhat.com>
-Mime-Version: 1.0
-X-Mailer: WeMail32[2.51] ID:1K0086
-From: t-sato@yk.jp.nec.com
-Date: Tue, 19 Feb 2008 20:27:06 +0900
+	Tue, 19 Feb 2008 06:29:32 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:60279 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753305AbYBSL3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 06:29:31 -0500
+Date: Tue, 19 Feb 2008 12:29:52 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, jbohac@suse.cz,
+       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+Subject: Re: notsc is ignored on common configurations
+Message-ID: <20080219112952.GA2885@elf.ucw.cz>
+References: <20080218133852.GA1573@elf.ucw.cz> <alpine.LFD.1.00.0802181515070.7583@apollo.tec.linutronix.de> <20080218143757.GB1960@elf.ucw.cz> <alpine.LFD.1.00.0802181545090.7583@apollo.tec.linutronix.de> <20080219100230.GA1688@elf.ucw.cz> <20080219112632.GA10798@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080219112632.GA10798@elte.hu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 2008-02-19 12:26:32, Ingo Molnar wrote:
+> 
+> * Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > notsc is ignored in 32-bit kernels if CONFIG_X86_TSC is on.. which is 
+> > bad, fix it.
+> 
+> thanks, applied.
+> 
+> > -static unsigned int ref_freq = 0;
+> > -static unsigned long loops_per_jiffy_ref = 0;
+> > -static unsigned long cpu_khz_ref = 0;
+> > +static unsigned int ref_freq;
+> > +static unsigned long loops_per_jiffy_ref;
+> > +static unsigned long cpu_khz_ref;
+> 
+> i have split these changes into the separate patch below.
 
-Hi,
+Yep, thanks.
+								Pavel
 
->#define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
->#define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
->
->as generic vfs ioctls.  These ioctls started out as
->EXT2_IOC_SETFLAGS/EXT2_IOC_GETFLAGS but they were generically useful,
->other filesystems picked them up, and they were "elevated" to the vfs.
-
-Thank you for good information.
-I will elevate XFS_IOC_FREEZE and XFS_IOC_THAW to the VFS.
-
->> And xfs_freeze calls XFS_IOC_FREEZE with a magic number 1, but what is 1?
->
->Looks like it's called "level" but it's probably a holdover, it doesn't
->look like it's used.
-
-I see.
-
->> Instead, I'd like the sec to timeout on freeze API in order to thaw
->> the filesystem automatically.  It can prevent a filesystem from staying
->> frozen forever.
->> (Because a freezer may cause a deadlock by accessing the frozen filesystem.)
->
->I'm still not very comfortable with the timeout; if you un-freeze on a
->timer, how do you know that the work for which you needed the fileystem
->frozen is complete?  How would you know if your snapshot was good if
->there's a possibility that the fs unfroze while it was being taken?
-
-My following freeze ioctl never perform the timeout when 0 is specified
-as timeval.  So, existent applications which don't expect the timeout
-can stay frozen with 0.
- int ioctl(int fd, int FIFREEZE, long *timeval);
-    fd:file descriptor of mountpoint
-    FIFREEZE:request cord for freeze
-    timeval:timeout period (second)
-
-And how about adding the new ioctl to reset the timeval like below?
-(Dmitri proposed this idea before.)
- int ioctl(int fd, int FIFREEZE_RESET_TIMEOUT, long *timeval);
-    fd:file descriptor of mountpoint
-    FIFREEZE_RESET_TIMEOUT:request cord for reset of timeout period 
-    timeval:new timeout period
-This is useful for the application to set the timeval more accurately.
-For example, the freezer resets the timeval to 10 seconds every 5
-seconds.  In this approach, even if the freezer causes a deadlock
-by accessing the frozen filesystem, it will be solved by the timeout
-in 10 seconds and the freezer can recognize that at the next reset
-of timeval.
-
-Any comments are very welcome.
-
-Cheers, Takashi
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
