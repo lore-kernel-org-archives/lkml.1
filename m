@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbYBSQlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbYBSQoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbYBSQlS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbYBSQlI
+	id S1755732AbYBSQoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:44:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753010AbYBSQoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:41:08 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:40984 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752867AbYBSQlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:41:07 -0500
-Date: Tue, 19 Feb 2008 08:38:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: Linux 2.6.25-rc2
-In-Reply-To: <20080219172739.55c341b5.dada1@cosmosbay.com>
-Message-ID: <alpine.LFD.1.00.0802190835390.7833@woody.linux-foundation.org>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
- <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com> <20080219140230.GA32236@Krystal> <20080219172739.55c341b5.dada1@cosmosbay.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 19 Feb 2008 11:44:15 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:35898 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752899AbYBSQoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 11:44:14 -0500
+Date: Tue, 19 Feb 2008 08:38:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       Christoph Hellwig <hch@lst.de>, David Howells <dhowells@redhat.com>
+Subject: Re: [RFC 00/11] possible debugfs/libfs consolidation
+Message-ID: <20080219163810.GC3718@suse.de>
+References: <20080219040435.825494460@arndb.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219040435.825494460@arndb.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 19 Feb 2008, Eric Dumazet wrote:
+On Tue, Feb 19, 2008 at 05:04:35AM +0100, Arnd Bergmann wrote:
+> I noticed that there is a lot of duplication in pseudo
+> file systems, so I started looking into how to consolidate
+> them. I ended up with a largish rework of the structure
+> of libfs and moving almost all of debugfs in there as well.
 > 
-> cmpxchg_local(&c->freelist, object, object[c->offset]) can succeed,
-> while an interrupt came (on this cpu), and several allocations were done,
-> and one free was performed at the end of this interruption, so 'object'
-> was recycled.
+> As an example, I also have patches that reduce debugfs,
+> securityfs and usbfs to the point where they are mostly
+> thin wrappers around libfs, with large comment blocks.
+> Other file systems could be changed in the same way, but
+> I first like to see if people agree that I'm on the right
+> track.
 
-I think you may well be right. This looks like a good clue.
+I like the idea, and have no objection to these patches at all.  Please
+feel free to test them and send them again :)
 
-I'll do the revert. I wanted either a confirmation that reveting it 
-actually fixes something, _or_ an actual bug description, and this seems 
-to be a quite possible case of the latter.
+thanks,
 
-			Linus
-	
+greg k-h
