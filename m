@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbYBSV7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761717AbYBSV7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761375AbYBSV7P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 16:59:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754730AbYBSV66
+	id S1761717AbYBSV7a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 16:59:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760710AbYBSV7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 16:58:58 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60711 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754541AbYBSV65 (ORCPT
+	Tue, 19 Feb 2008 16:59:12 -0500
+Received: from mga03.intel.com ([143.182.124.21]:29826 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759801AbYBSV7K convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 16:58:57 -0500
-From: Jonathan Lim <jlim@sgi.com>
-Message-Id: <200802192159.m1JLxRva003071@sabah.engr.sgi.com>
-Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in
-To: randy.dunlap@oracle.com (Randy Dunlap)
-Date: Tue, 19 Feb 2008 13:59:27 -0800 (PST)
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20080219132525.a81e8264.randy.dunlap@oracle.com> from "Randy Dunlap" at Feb 19, 2008 01:25:25 PM
-X-Mailer: ELM [version 2.5 PL6]
+	Tue, 19 Feb 2008 16:59:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,378,1199692800"; 
+   d="scan'208";a="381075480"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: iwl3945 not working properly.
+Date: Tue, 19 Feb 2008 13:51:58 -0800
+Message-ID: <D936D925018D154694D8A362EEB0892003AF30D4@orsmsx416.amr.corp.intel.com>
+In-Reply-To: <20080219211959.GA6623@phoenix.nasreddine.info>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: iwl3945 not working properly.
+Thread-Index: AchzPUAaDprtuWJITSy3qA0DDfFCuAABEZRA
+References: <20080218045425.GA7381@phoenix.nasreddine.info> <20080218154713.GC3098@tuxdriver.com> <D936D925018D154694D8A362EEB0892003AF2CA1@orsmsx416.amr.corp.intel.com> <20080219211959.GA6623@phoenix.nasreddine.info>
+From: "Chatre, Reinette" <reinette.chatre@intel.com>
+To: "Wael Nasreddine" <mla@nasreddine.com>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       "LKML" <linux-kernel@vger.kernel.org>, "Zhu, Yi" <yi.zhu@intel.com>
+X-OriginalArrivalTime: 19 Feb 2008 21:51:59.0435 (UTC) FILETIME=[A72509B0:01C87341]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue Feb 19 13:25:25 2008, randy.dunlap@oracle.com wrote:
-> 
-> > +u64 inline jiffies_64_to_usecs(const u64 j)
-> > +{
-> > +	u64 tmp = j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1;
-> > +	do_div(tmp, HZ_TO_USEC_DEN);
-> 
-> do_div() is:
->  * The semantics of do_div() are:
->  *
->  * uint32_t do_div(uint64_t *n, uint32_t base)
-> 
-> Maybe you want div64_64().
-> 
-> > +	return tmp;
-> > +}
-> > +EXPORT_SYMBOL(jiffies_64_to_usecs);
-> > +
+On Tuesday, February 19, 2008 1:20 PM, Wael Nasreddine  wrote:
 
-In include/asm-generic/div64.h, div64_64(uint64_t dividend, uint64_t divisor)
-just returns (dividend / divisor).  Isn't this the same as what I had before
-in jiffies_64_to_usecs(), except that the arguments are of type u64?
+> Since the problem I am having is slightly different than the bugs
+> above, I'm not sure I should post the debug there but feel free to
+> post it if you think it is the same...
 
-Jonathan
+In this case, please create a new bug report for the problem you are
+encountering.
+
+Thanks!
+
+Reinette
