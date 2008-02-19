@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762761AbYBSK1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760678AbYBSKaR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762761AbYBSK1c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbYBSK1Y
+	id S1760678AbYBSKaR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:30:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbYBSKaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:27:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60246 "EHLO mx3.mail.elte.hu"
+	Tue, 19 Feb 2008 05:30:00 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36936 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753808AbYBSK1Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:27:24 -0500
-Date: Tue, 19 Feb 2008 11:27:00 +0100
+	id S1754268AbYBSK37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 05:29:59 -0500
+Date: Tue, 19 Feb 2008 11:29:44 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: Linux 2.6.25-rc2
-Message-ID: <20080219102700.GC14092@elte.hu>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org> <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com> <20080219061107.GA23229@elte.hu> <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com> <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86_64: fix dma_alloc_pages
+Message-ID: <20080219102944.GA25663@elte.hu>
+References: <200802190221.46552.yinghai.lu@sun.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+In-Reply-To: <200802190221.46552.yinghai.lu@sun.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,26 +35,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+* Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> Mathieu, Christoph is on vacation and I'm not at all that familiar 
-> with this cmpxchg_local() optimization, so if you could take a peek at 
-> this bug report to see if you can spot something obviously wrong with 
-> it, I would much appreciate that.
+> one system with two nodes and two ht links on every node. the bios 
+> already have _pxm for two links.
+> 
+> when no ram installed for node1 will have panic.
+> 
+> reason: the device on second chain will get node = 1 from 
+> dev_to_node...via pci_acpi_scan_root. but node1 doesn't have ram 
+> installed. in dma_alloc_pages it will pass check with 
+> first_node(node_online_map)... and will have problem with 
+> __alloc_pages in alloc_pages_node.
+> 
+> this patch will check the if the node is online..., if not will get 
+> numa_node_id to get one node with ram.
 
-hm, it's bad for at least one other reason as well (which is probably 
-unrelated to this crash):
-
- /*
-  * Currently fastpath is not supported if preemption is enabled.
-  */
- #if defined(CONFIG_FAST_CMPXCHG_LOCAL) && !defined(CONFIG_PREEMPT)
- #define SLUB_FASTPATH
- #endif
-
-such !PREEMPT exceptions tend to show "i didnt want to think too hard 
-about the preemptible case so just turn it off" thinking.
-
-Also, why isnt this "SLUB_FASTPATH" flag done in the Kconfig space?
+thanks, applied.
 
 	Ingo
