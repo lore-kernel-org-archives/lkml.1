@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762417AbYBSWP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759621AbYBSWQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762417AbYBSWP6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 17:15:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762303AbYBSWOS
+	id S1759621AbYBSWQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 17:16:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762613AbYBSWO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 17:14:18 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:14811 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762289AbYBSWOR (ORCPT
+	Tue, 19 Feb 2008 17:14:27 -0500
+Received: from host64.cybernetics.com ([70.169.137.4]:4093 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755070AbYBSWOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 17:14:17 -0500
-Date: Tue, 19 Feb 2008 14:13:30 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jonathan Lim <jlim@sgi.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in
-Message-Id: <20080219141330.9c5dfb76.randy.dunlap@oracle.com>
-In-Reply-To: <200802192159.m1JLxRva003071@sabah.engr.sgi.com>
-References: <20080219132525.a81e8264.randy.dunlap@oracle.com>
-	<200802192159.m1JLxRva003071@sabah.engr.sgi.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 Feb 2008 17:14:25 -0500
+Message-ID: <47BB54C2.6090501@cybernetics.com>
+Date: Tue, 19 Feb 2008 17:14:26 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Michael Chan <mchan@broadcom.com>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell>
+In-Reply-To: <1203448265.13495.95.camel@dell>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008 13:59:27 -0800 (PST) Jonathan Lim wrote:
+Michael Chan wrote:
+> On Tue, 2008-02-19 at 11:16 -0500, Tony Battersby wrote:
+>   
+>> iSCSI
+>> performance drops to 6 - 15 MB/s when the 3Com NIC is doing heavy rx
+>> with light tx,
+>>     
+>
+> That's strange.  The patch should only affect TX performance slightly
+> since we are just turning off SG for TX.  Please take an ethereal trace
+> to see what's happening and compare with a good trace.
+>
+>   
 
-> On Tue Feb 19 13:25:25 2008, randy.dunlap@oracle.com wrote:
-> > 
-> > > +u64 inline jiffies_64_to_usecs(const u64 j)
-> > > +{
-> > > +	u64 tmp = j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1;
-> > > +	do_div(tmp, HZ_TO_USEC_DEN);
-> > 
-> > do_div() is:
-> >  * The semantics of do_div() are:
-> >  *
-> >  * uint32_t do_div(uint64_t *n, uint32_t base)
-> > 
-> > Maybe you want div64_64().
-> > 
-> > > +	return tmp;
-> > > +}
-> > > +EXPORT_SYMBOL(jiffies_64_to_usecs);
-> > > +
-> 
-> In include/asm-generic/div64.h, div64_64(uint64_t dividend, uint64_t divisor)
-> just returns (dividend / divisor).  Isn't this the same as what I had before
-> in jiffies_64_to_usecs(), except that the arguments are of type u64?
+Update: when I revert Herbert's patch in addition to applying your
+patch, the iSCSI performance goes back up to 115 MB/s again in both
+directions.  So it looks like turning off SG for TX didn't itself cause
+the performance drop, but rather that the performance drop is just
+another manifestation of whatever bug is causing the data corruption.
 
-but the (linker) problem is with X86_32, so don't look at
-asm-generic/div64.h.  Look at lib/div64.c.
+I do not regularly use wireshark or look at network packet dumps, so I
+am not really sure what to look for.  Given the above information, do
+you still believe that there is value in examining the packet dump?
 
-Or use div64() with the correct parameter types.
+Tony
 
----
-~Randy
