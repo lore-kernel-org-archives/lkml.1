@@ -1,59 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757252AbYBSPVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbYBSPWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757252AbYBSPVw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:21:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbYBSPVn
+	id S1759543AbYBSPWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 10:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758274AbYBSPV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:21:43 -0500
-Received: from mail.syneticon.net ([213.239.212.131]:53732 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbYBSPVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:21:42 -0500
-Message-ID: <47BAF3FF.3070300@wpkg.org>
-Date: Tue, 19 Feb 2008 16:21:35 +0100
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Tue, 19 Feb 2008 10:21:59 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:33108 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1753041AbYBSPV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 10:21:57 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Wed, 20 Feb 2008 02:21:17 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Improve init/Kconfig help descriptions [PATCH 8/9]
+Message-ID: <20080219152117.GF27352@tull.net>
+References: <20080219140609.GA26619@tull.net>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: very poor ext3 write performance on big filesystems?
-References: <47B980AC.2080806@wpkg.org> <20080218141640.GC12568@mit.edu> <47BAED94.3040103@wpkg.org> <200802191006.50693.chris.mason@oracle.com>
-In-Reply-To: <200802191006.50693.chris.mason@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219140609.GA26619@tull.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason schrieb:
-> On Tuesday 19 February 2008, Tomasz Chmielewski wrote:
->> Theodore Tso schrieb:
->>
->> (...)
->>
->>> The following ld_preload can help in some cases.  Mutt has this hack
->>> encoded in for maildir directories, which helps.
->> It doesn't work very reliable for me.
->>
->> For some reason, it hangs for me sometimes (doesn't remove any files, rm
->> -rf just stalls), or segfaults.
-> 
-> You can go the low-tech route (assuming your file names don't have spaces in 
-> them)
-> 
-> find . -printf "%i %p\n" | sort -n | awk '{print $2}' | xargs rm
+On Wed, Feb 20, 2008 at 01:06:09AM +1100, Nick Andrew wrote:
+> Here is a series of 9 patches to init/Kconfig intended to improve the
+> usefulness and consistency of the help descriptions. The patches are
+> against linux-2.6.24.2.
+> [...]
+> Patch 8
+> 	SLUB_DEBUG
+> 	SLAB
+> 	SLUB
+> 	SLOB
 
-Why should it make a difference?
+Changelog:
 
-Does "find" find filenames/paths faster than "rm -r"?
+Improve usefulness and consistency of kernel configuration help messages.
 
-Or is "find once/remove once" faster than "find files/rm files/find 
-files/rm files/...", which I suppose "rm -r" does?
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 
 
--- 
-Tomasz Chmielewski
-http://wpkg.org
+--- a/init/Kconfig	2008-02-20 00:45:07.000000000 +1100
++++ b/init/Kconfig	2008-02-20 00:52:07.000000000 +1100
+@@ -616,31 +616,48 @@ config SLUB_DEBUG
+ 	bool "Enable SLUB debugging support" if EMBEDDED
+ 	depends on SLUB
+ 	help
++	  Enable debugging on the "SLUB" slab allocator.
++
+ 	  SLUB has extensive debug support features. Disabling these can
+ 	  result in significant savings in code size. This also disables
+ 	  SLUB sysfs support. /sys/slab will not exist and there will be
+ 	  no support for cache validation etc.
+ 
++	  If unsure, say N.
++
+ choice
+ 	prompt "Choose SLAB allocator"
+ 	default SLUB
+ 	help
+-	   This option allows to select a slab allocator.
++	   This option selects a slab allocator.
++
++	   A slab is a contiguous area of kernel memory. Slabs are of
++	   fixed size (1 or more times the page size) and are used as
++	   the container for allocation of kernel data structures. This
++	   reduces memory fragmentation and makes allocation very fast,
++	   improving kernel performance.
++
++	   "SLUB" is the default slab allocator.
++
++	   See wikipedia:Slab_allocation for more details.
+ 
+ config SLAB
+ 	bool "SLAB"
+ 	help
+-	  The regular slab allocator that is established and known to work
+-	  well in all environments. It organizes cache hot objects in
+-	  per cpu and per node queues. SLAB is the default choice for
+-	  a slab allocator.
++	  SLAB is the original slab allocator that is established and
++	  known to work well in all environments. It organizes cache
++	  hot objects in per-CPU and per-node queues.
++
++	  SLAB has been superseded by SLUB.
+ 
+ config SLUB
+ 	bool "SLUB (Unqueued Allocator)"
+ 	help
+ 	   SLUB is a slab allocator that minimizes cache line usage
+-	   instead of managing queues of cached objects (SLAB approach).
+-	   Per cpu caching is realized using slabs of objects instead
++	   instead of managing queues of cached objects (the SLAB
++	   approach).
++
++	   Per-CPU caching is realized using slabs of objects instead
+ 	   of queues of objects. SLUB can use memory efficiently
+ 	   and has enhanced diagnostics.
+ 
+@@ -648,11 +665,14 @@ config SLOB
+ 	depends on EMBEDDED
+ 	bool "SLOB (Simple Allocator)"
+ 	help
+-	   SLOB replaces the SLAB allocator with a drastically simpler
+-	   allocator.  SLOB is more space efficient than SLAB but does not
+-	   scale well (single lock for all operations) and is also highly
+-	   susceptible to fragmentation. SLUB can accomplish a higher object
+-	   density. It is usually better to use SLUB instead of SLOB.
++	   SLOB is a drastically simpler allocator for use in embedded
++	   systems.
++
++	   SLOB is more space efficient than SLAB but does not scale well
++	   (it uses a single lock for all operations) and is also highly
++	   susceptible to fragmentation. SLUB can accomplish a higher
++	   object density. It is usually better to use SLUB instead
++	   of SLOB.
+ 
+ endchoice
+ 
