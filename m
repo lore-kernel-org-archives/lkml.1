@@ -1,204 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761962AbYBSHHG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755581AbYBSHHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761962AbYBSHHG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:07:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYBSHGw
+	id S1755581AbYBSHHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761067AbYBSHGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:06:52 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55226 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760836AbYBSHGu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:06:50 -0500
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: linux-mm@kvack.org
-Cc: Hugh Dickins <hugh@veritas.com>, Paul Menage <menage@google.com>,
-       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Rik Van Riel <riel@redhat.com>, Herbert Poetzl <herbert@13thfloor.at>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Date: Tue, 19 Feb 2008 12:32:45 +0530
-Message-Id: <20080219070245.25349.35082.sendpatchset@localhost.localdomain>
-In-Reply-To: <20080219070232.25349.21196.sendpatchset@localhost.localdomain>
-References: <20080219070232.25349.21196.sendpatchset@localhost.localdomain>
-Subject: [mm] [PATCH 1/4] Modify resource counters to add soft limit support v2
+	Tue, 19 Feb 2008 02:06:54 -0500
+Received: from mga10.intel.com ([192.55.52.92]:29894 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760914AbYBSHGx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:06:53 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,375,1199692800"; 
+   d="scan'208";a="299772692"
+Subject: Re: NULL pointer in kmem_cache_alloc with 2.6.25-rc1
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802150839180.12023@schroedinger.engr.sgi.com>
+References: <1203058021.3027.143.camel@ymzhang>
+	 <Pine.LNX.4.64.0802150839180.12023@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 19 Feb 2008 15:03:14 +0800
+Message-Id: <1203404594.3248.32.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2008-02-15 at 08:42 -0800, Christoph Lameter wrote:
+> On Fri, 15 Feb 2008, Zhang, Yanmin wrote:
+> 
+> > On my 16-core tigerton, kernel panic when I ran hackbench process testing. See
+> > below log.
+> > 
+> 
+> > Kernel panic at line 1637 in file mm/slub.c because object=c->freelist=NULL.
+> 
+> Hmmmm. freelist should never be NULL. Could you rerun the test and boot with 
+> slub_debug to make sure that there is no memory corruption?
+1) Without slub_debug option, sometime I could trigger it, sometimes not.
+2) With slub_debug option, or just enable debug for slab skbuff_fclone_cache
+and skbuff_head_cache, I couldn't trigger it.
+
+I will do more testing and investigation, as the bug also exists in 2.6.25-rc2.
+
+-yanmin
 
 
-Changelog v2
-1. Remove memory controller specific comments from resource counters
-
-The resource counter member limit is split into soft and hard limits.
-The same locking rule apply for both limits.
-
-
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
-
- include/linux/res_counter.h |   32 ++++++++++++++++++++++++--------
- kernel/res_counter.c        |   11 +++++++----
- mm/memcontrol.c             |   10 +++++-----
- 3 files changed, 36 insertions(+), 17 deletions(-)
-
-diff -puN include/linux/res_counter.h~memory-controller-res_counters-soft-limit-setup include/linux/res_counter.h
---- linux-2.6.25-rc2/include/linux/res_counter.h~memory-controller-res_counters-soft-limit-setup	2008-02-19 12:31:47.000000000 +0530
-+++ linux-2.6.25-rc2-balbir/include/linux/res_counter.h	2008-02-19 12:31:47.000000000 +0530
-@@ -27,7 +27,11 @@ struct res_counter {
- 	/*
- 	 * the limit that usage cannot exceed
- 	 */
--	unsigned long long limit;
-+	unsigned long long hard_limit;
-+	/*
-+	 * the limit that usage can exceed
-+	 */
-+	unsigned long long soft_limit;
- 	/*
- 	 * the number of unsuccessful attempts to consume the resource
- 	 */
-@@ -64,7 +68,8 @@ ssize_t res_counter_write(struct res_cou
- 
- enum {
- 	RES_USAGE,
--	RES_LIMIT,
-+	RES_SOFT_LIMIT,
-+	RES_HARD_LIMIT,
- 	RES_FAILCNT,
- };
- 
-@@ -101,11 +106,21 @@ int res_counter_charge(struct res_counte
- void res_counter_uncharge_locked(struct res_counter *counter, unsigned long val);
- void res_counter_uncharge(struct res_counter *counter, unsigned long val);
- 
--static inline bool res_counter_limit_check_locked(struct res_counter *cnt)
-+static inline bool res_counter_limit_check_locked(struct res_counter *cnt,
-+							int member)
- {
--	if (cnt->usage < cnt->limit)
--		return true;
--
-+	switch (member) {
-+	case RES_HARD_LIMIT:
-+		if (cnt->usage < cnt->hard_limit)
-+			return true;
-+		break;
-+	case RES_SOFT_LIMIT:
-+		if (cnt->usage < cnt->soft_limit)
-+			return true;
-+		break;
-+	default:
-+		BUG_ON(1);
-+	}
- 	return false;
- }
- 
-@@ -113,13 +128,14 @@ static inline bool res_counter_limit_che
-  * Helper function to detect if the cgroup is within it's limit or
-  * not. It's currently called from cgroup_rss_prepare()
-  */
--static inline bool res_counter_check_under_limit(struct res_counter *cnt)
-+static inline bool res_counter_check_under_limit(struct res_counter *cnt,
-+							int member)
- {
- 	bool ret;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&cnt->lock, flags);
--	ret = res_counter_limit_check_locked(cnt);
-+	ret = res_counter_limit_check_locked(cnt, member);
- 	spin_unlock_irqrestore(&cnt->lock, flags);
- 	return ret;
- }
-diff -puN kernel/res_counter.c~memory-controller-res_counters-soft-limit-setup kernel/res_counter.c
---- linux-2.6.25-rc2/kernel/res_counter.c~memory-controller-res_counters-soft-limit-setup	2008-02-19 12:31:47.000000000 +0530
-+++ linux-2.6.25-rc2-balbir/kernel/res_counter.c	2008-02-19 12:31:47.000000000 +0530
-@@ -16,12 +16,13 @@
- void res_counter_init(struct res_counter *counter)
- {
- 	spin_lock_init(&counter->lock);
--	counter->limit = (unsigned long long)LLONG_MAX;
-+	counter->soft_limit = (unsigned long long)LLONG_MAX;
-+	counter->hard_limit = (unsigned long long)LLONG_MAX;
- }
- 
- int res_counter_charge_locked(struct res_counter *counter, unsigned long val)
- {
--	if (counter->usage + val > counter->limit) {
-+	if (counter->usage + val > counter->hard_limit) {
- 		counter->failcnt++;
- 		return -ENOMEM;
- 	}
-@@ -65,8 +66,10 @@ res_counter_member(struct res_counter *c
- 	switch (member) {
- 	case RES_USAGE:
- 		return &counter->usage;
--	case RES_LIMIT:
--		return &counter->limit;
-+	case RES_SOFT_LIMIT:
-+		return &counter->soft_limit;
-+	case RES_HARD_LIMIT:
-+		return &counter->hard_limit;
- 	case RES_FAILCNT:
- 		return &counter->failcnt;
- 	};
-diff -puN mm/memcontrol.c~memory-controller-res_counters-soft-limit-setup mm/memcontrol.c
---- linux-2.6.25-rc2/mm/memcontrol.c~memory-controller-res_counters-soft-limit-setup	2008-02-19 12:31:47.000000000 +0530
-+++ linux-2.6.25-rc2-balbir/mm/memcontrol.c	2008-02-19 12:31:47.000000000 +0530
-@@ -568,7 +568,7 @@ unsigned long mem_cgroup_isolate_pages(u
-  * Charge the memory controller for page usage.
-  * Return
-  * 0 if the charge was successful
-- * < 0 if the cgroup is over its limit
-+ * < 0 if the cgroup is over its hard limit
-  */
- static int mem_cgroup_charge_common(struct page *page, struct mm_struct *mm,
- 				gfp_t gfp_mask, enum charge_type ctype)
-@@ -632,7 +632,7 @@ retry:
- 
- 	/*
- 	 * If we created the page_cgroup, we should free it on exceeding
--	 * the cgroup limit.
-+	 * the cgroup hard limit.
- 	 */
- 	while (res_counter_charge(&mem->res, PAGE_SIZE)) {
- 		if (!(gfp_mask & __GFP_WAIT))
-@@ -645,10 +645,10 @@ retry:
-  		 * try_to_free_mem_cgroup_pages() might not give us a full
-  		 * picture of reclaim. Some pages are reclaimed and might be
-  		 * moved to swap cache or just unmapped from the cgroup.
-- 		 * Check the limit again to see if the reclaim reduced the
-+ 		 * Check the hard limit again to see if the reclaim reduced the
-  		 * current usage of the cgroup before giving up
-  		 */
--		if (res_counter_check_under_limit(&mem->res))
-+		if (res_counter_check_under_limit(&mem->res, RES_HARD_LIMIT))
- 			continue;
- 
- 		if (!nr_retries--) {
-@@ -1028,7 +1028,7 @@ static struct cftype mem_cgroup_files[] 
- 	},
- 	{
- 		.name = "limit_in_bytes",
--		.private = RES_LIMIT,
-+		.private = RES_HARD_LIMIT,
- 		.write = mem_cgroup_write,
- 		.read = mem_cgroup_read,
- 	},
-_
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
