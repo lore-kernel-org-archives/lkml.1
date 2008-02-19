@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755981AbYBSRiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbYBSRm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755981AbYBSRiQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 12:38:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753495AbYBSRiA
+	id S1756730AbYBSRm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 12:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753571AbYBSRmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 12:38:00 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:54633 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752820AbYBSRh7 (ORCPT
+	Tue, 19 Feb 2008 12:42:18 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:44845 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753154AbYBSRmR convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 12:37:59 -0500
-Message-ID: <47BB13ED.90705@zytor.com>
-Date: Tue, 19 Feb 2008 09:37:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: James Crosby <jc4.james@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Ideal Architecture for Linux
-References: <146444620802190601t63ac667cpd41d834cc98d10df@mail.gmail.com>
-In-Reply-To: <146444620802190601t63ac667cpd41d834cc98d10df@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 12:42:17 -0500
+Date: Tue, 19 Feb 2008 09:41:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       len.brown@intel.com, linux-acpi@vger.kernel.org,
+       michael@free-electrons.com
+Subject: Re: 2.6.25-rc2-mm1 (x64 thermal build failure)
+Message-Id: <20080219094147.b9e0e99b.randy.dunlap@oracle.com>
+In-Reply-To: <20080219165502.2c202759@crazy>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+	<20080216211603.bb4f3582.randy.dunlap@oracle.com>
+	<20080216214410.b9699910.akpm@linux-foundation.org>
+	<20080218111536.511c4fbc@crazy>
+	<20080218041340.f1e46ec9.akpm@linux-foundation.org>
+	<20080219165502.2c202759@crazy>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Crosby wrote:
-> A stack based architecture is best, it makes nested interrupts, and general
-> interruptibility very easy.
+On Tue, 19 Feb 2008 16:55:02 +0100 Thomas Petazzoni wrote:
 
-If you mean stack-based register file, then that's *not* desirable; 
-Linux depends on gcc which prefers a flat register file.  16 registers 
-minimum.
-
-> Two hardware stack pointers, one for kernel stack and one for user mode
-> stack of each task, but maybe a third, interrupt stack.
-
-Don't necessarily have to be hardware registers, although it speed 
-things up.  Interrupt stacks are good.
-
-> At least two corresponding processor modes, a user mode with access only
-> to 'safe' instructions, and a privileged one that can do anything. But would
-> additional modes for interrupt handlers and system call handlers be
-> beneficial?
-
-Not in Linux.
-
-> I would also consider it a significant security problem if when a task enters
-> the kernel, kernel data is stored on the task's user-mode stack, since the
-> task could fish around beyond the end of its stack and sniff private data. (This
-> is, if I understand correctly, the reason ARM system mode is unused.)
+> Le Mon, 18 Feb 2008 04:13:40 -0800,
+> Andrew Morton <akpm@linux-foundation.org> a écrit :
 > 
-> But on the other hand, if each task didn't need a separate kernel stack, then
-> there could be 4k or 8k less memory use per thread.
+> > Option 3 wold be to add more #ifdef CONFIG_DMI lines around the
+> > place.  How ugly would that get?
+> 
+> Like the attached patch. #ifdef CONFIG_DMI everywhere :-(
 
-No, it would just be in a different place.  Linux will *NOT* accommodate 
-this model.
 
-> Is it necessarily the case that the more similar to x86, the better Linux 'fits'
-> the architecture?
+Does this patch apply to -mm?  Seem like No.
 
-No, the x86 is lacking quite a few key features.
+After converting it from mime(?) to ASCII and fixing one #if
+(change "and" to "&&") & fixing patch rejects, it does build cleanly.
 
-Linux would prefer to have address space numbers, instructions for 
-user-space memory access in kernel mode, and a larger page size (4K is 
-really too small for modern multi-gigabyte machines.)
 
-The design of the I/O infrastructure is another matter, too.
-
-	-hpa
+---
+~Randy
