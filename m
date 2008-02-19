@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755767AbYBSQOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756367AbYBSQQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755767AbYBSQOt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 11:14:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752820AbYBSQOl
+	id S1756367AbYBSQQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 11:16:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbYBSQQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 11:14:41 -0500
-Received: from senator.holtmann.net ([87.106.208.187]:36394 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbYBSQOl (ORCPT
+	Tue, 19 Feb 2008 11:16:44 -0500
+Received: from host64.cybernetics.com ([70.169.137.4]:2556 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751541AbYBSQQn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 11:14:41 -0500
-Cc: Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Message-Id: <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20080219095834.GB6940@one.firstfloor.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 19 Feb 2008 11:16:43 -0500
+Message-ID: <47BB00EC.3010607@cybernetics.com>
+Date: Tue, 19 Feb 2008 11:16:44 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Michael Chan <mchan@broadcom.com>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell>
+In-Reply-To: <1203383046.13495.87.camel@dell>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v915)
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-Date: Tue, 19 Feb 2008 17:14:36 +0100
-References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org>
-X-Mailer: Apple Mail (2.915)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
-
->>>> If noone in the isdn community step up and take some responsibility
->>>> for the current isdn drivers in Linux then we should just delete  
->>>> them.
->>>
->>> So you're saying anything that has no active maintainer should
->>> be immediately deleted?
+Michael Chan wrote:
+> On Mon, 2008-02-18 at 16:35 -0800, David Miller wrote:
+>
+>   
+>> One consequence of Herbert's change is that the chip will see a
+>> different datastream.  The initial skb->data linear area will be
+>> smaller, and the transition to the fragmented area of pages will be
+>> quicker.
 >>
->> You do not recognize a provocation when you see it?
->> I wanted a reaction from the isdn community - and I got so.
->> So lets look forward.
+>>     
 >
-> Well it was more a lie because you couldn't possibly make up to your
-> threat anyways.
+> I see.  Perhaps when we get to the end of the data-stream, there is a
+> tiny frag that the chip cannot handle.  That's the only thing I can
+> think of.
 >
-> I'm not sure either it's a good idea to try to merge mISDN if the
-> maintainers don't think it is ready yet.
+> Please try this patch to see if the problem goes away.  This will
+> disable SG on 5701 so we always get linear SKBs.
+>
+> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+> index db606b6..bb37e76 100644
+> --- a/drivers/net/tg3.c
+> +++ b/drivers/net/tg3.c
+> @@ -12717,6 +12717,9 @@ static int __devinit tg3_init_one(struct pci_dev *pdev,
+>  	} else
+>  		tp->tg3_flags &= ~TG3_FLAG_RX_CHECKSUMS;
+>  
+> +	if (GET_ASIC_REV(tp->pci_chip_rev_id) == ASIC_REV_5701)
+> +		dev->features &= ~(NETIF_F_IP_CSUM | NETIF_F_SG);
+> +
+>  	/* flow control autonegotiation is default behavior */
+>  	tp->tg3_flags |= TG3_FLAG_PAUSE_AUTONEG;
+>  	tp->link_config.flowctrl = TG3_FLOW_CTRL_TX | TG3_FLOW_CTRL_RX;
+>
+>
+>
+>   
+This patch does appear to fix the data corruption (tested with
+2.6.24.2).  However, it results in performance problems with the iSCSI
+application that I am trying to run on this machine.
 
-you can't wait until it is perfect. Then it never gets merged. The out- 
-of-tree ISDN stuff has always been painful. And that was already in  
-the ISDN4Linux days which were Linux 2.2 days or even earlier.
+The test program that I described in the previous message still gets
+good performance in both directions.  "iperf -r" gets good performance
+in both directions (940 Mbits/s or 117 MB/s).  However, my target-mode
+iSCSI application (which obviously generates rx/tx traffic patterns more
+complicated than the synthetic tests) gets very poor performance in one
+direction but good performance in the other direction.  iSCSI
+performance drops to 6 - 15 MB/s when the 3Com NIC is doing heavy rx
+with light tx, but remains at a decent 115 MB/s when the 3Com NIC is
+doing heavy tx with light rx.  When I revert Herbert's patch instead of
+applying the patch above, I get 115 MB/s in both cases.  (With a stock
+unpatched kernel, the test fails almost immediately because the iSCSI
+control PDUs are corrupted, causing the TCP connection to be dropped.)
 
-My proposal is to merge mISDN and then see what falls out. My guess it  
-won't be that bad as everybody thinks and then we go from there. Next  
-step is to remove ISDN4Linux since that should not be used at all  
-anymore.
+The SysKonnect NIC that does not exhibit this problem has a chip that
+says "BCM5411KQM" "TT0128 P2Q" and "56975E".
 
-Regards
-
-Marcel
+Tony
 
