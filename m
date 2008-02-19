@@ -1,49 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbYBSPmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbYBSPqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbYBSPmA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 10:42:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbYBSPlx
+	id S1754320AbYBSPqo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 10:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbYBSPqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 10:41:53 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:11306 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbYBSPlw (ORCPT
+	Tue, 19 Feb 2008 10:46:35 -0500
+Received: from linode.ducksong.com ([64.22.125.164]:57700 "EHLO
+	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbYBSPqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 10:41:52 -0500
-Date: Tue, 19 Feb 2008 16:41:50 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Bastian Blank <bastian@waldi.eu.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: Re: [patch 07/13] Initialize per cpu lowcores on cpu hotplug.
-Message-ID: <20080219154149.GB11599@osiris.boeblingen.de.ibm.com>
-References: <20080219144047.587547541@de.ibm.com> <20080219144504.392301782@de.ibm.com> <20080219151355.GA24547@wavehammer.waldi.eu.org> <20080219153855.GA11599@osiris.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219153855.GA11599@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 19 Feb 2008 10:46:35 -0500
+X-Greylist: delayed 308 seconds by postgrey-1.27 at vger.kernel.org; Tue, 19 Feb 2008 10:46:35 EST
+Subject: tee(2) and SPLICE_F_NONBLOCK and can't find eof
+From: Patrick McManus <mcmanus@ducksong.com>
+To: linux kernel ml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 19 Feb 2008 10:41:32 -0500
+Message-Id: <1203435692.5949.84.camel@tng>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 04:38:56PM +0100, Heiko Carstens wrote:
-> On Tue, Feb 19, 2008 at 04:13:55PM +0100, Bastian Blank wrote:
-> > On Tue, Feb 19, 2008 at 03:40:54PM +0100, Martin Schwidefsky wrote:
-> > > +	/*
-> > > +	 * Only need to copy the first 512 bytes from address 0. But since
-> > > +	 * the compiler emits a warning if src == NULL for memcpy use copy_page
-> > > +	 * instead. Copies more than needed but this code is not performance
-> > > +	 * critical.
-> > > +	 */
-> > > +	copy_page(lowcore, &S390_lowcore);
-> > 
-> > Boah, workaround alert. Why do you not fix the compiler?
-> 
-> We need to copy from address 0 (that's where the lowcore resides). But gcc
-> insists to complain if memcpy is used with src == NULL.. Now what?
+[I initially sent this query inappropriately to an individual instead of
+the list. My apologies.]
 
-Erm sorry, misread your question. Usually it's a bug to use memcpy with
-src == NULL. In this case it's ok. So I think it's perfectly ok if gcc
-emits a warning.
-If you know of a better way to get around this please let me know.
+re: tee().. I was just playing around with the simple sample on the
+manpage (included below) - it uses SPLICE_F_NONBLOCK as a flag. 
+
+on 2.6.22 X86_64 (ubuntu 7.10) when I run the sample. the tee() system
+call returns the right number of bytes from the input - sometimes as the
+sum of multiple calls. When the input is exhauted tee() starts returning
+(-1,EAGAIN) forever.. it never returns 0 and the program never
+completes.
+
+without a 0, how is EOF indicated?
+
+do_tee() contains:
+       if (!ret && (flags & SPLICE_F_NONBLOCK))
+               ret = -EAGAIN;
+
+so it's pretty clear where it comes from.. but finding EOF eludes me ;)
+remove the NONBLOCK flag and 0 happens just fine.
+
+NONBLOCK seems gratuitous in the sample, but it would make sense in some
+code I am contemplating.. 
+
+Any suggestions?
+
+-Patrick
+
+
+(This is the sample from the manpage which never completes.. I invoke it
+as "cat txt | ./teesample out1 | wc ")
+
+int
+main(int argc, char *argv[])
+{
+    int fd;
+    int len, slen;
+
+    assert(argc == 2);
+
+    fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd == -1) {
+        perror("open");
+        exit(EXIT_FAILURE);
+    }
+
+    do {
+        /*
+         * tee stdin to stdout.
+         */
+        len = tee(STDIN_FILENO, STDOUT_FILENO,
+                  INT_MAX, SPLICE_F_NONBLOCK);
+
+        if (len < 0) {
+            if (errno == EAGAIN)
+                continue;
+            perror("tee");
+            exit(EXIT_FAILURE);
+        } else
+            if (len == 0)
+                break;
+
+        /*
+         * Consume stdin by splicing it to a file.
+         */
+        while (len > 0) {
+            slen = splice(STDIN_FILENO, NULL, fd, NULL,
+                          len, SPLICE_F_MOVE);
+            if (slen < 0) {
+                perror("splice");
+                break;
+            }
+            len -= slen;
+        }
+    } while (1);
+
+    close(fd);
+    exit(EXIT_SUCCESS);
+}
+
+
