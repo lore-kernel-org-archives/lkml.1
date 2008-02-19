@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbYBSKfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbYBSKjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760549AbYBSKfj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 05:35:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754676AbYBSKfb
+	id S1758223AbYBSKjp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 05:39:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752857AbYBSKjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 05:35:31 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:54599 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753303AbYBSKfa (ORCPT
+	Tue, 19 Feb 2008 05:39:37 -0500
+Received: from rv-out-0910.google.com ([209.85.198.185]:36382 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbYBSKjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 05:35:30 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Date: Tue, 19 Feb 2008 11:34:58 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Gordon Farquharson <gordonfarquharson@gmail.com>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802190004.47594.mb@bu3sch.de> <Pine.LNX.4.64.0802190935450.25052@anakin>
-In-Reply-To: <Pine.LNX.4.64.0802190935450.25052@anakin>
+	Tue, 19 Feb 2008 05:39:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=UdndVHmP/dWpREJ7NnBqhAmAN8ykNmJjGmWpVQWTpFTzgQYJdi/txIiJR94qwHt+zjbMwT3+QxTa8woUaAQgkc+Luc7W/cK7V4JeMPd7BCX+mJ5NIq14ASZ/ujRr08BeVN/X4t1/27JSeljsXAnguz8LYp/QeX/aHasS9y06gk0=
+Message-ID: <86802c440802190239p3e105842lb8c069c111f1f9a4@mail.gmail.com>
+Date: Tue, 19 Feb 2008 02:39:33 -0800
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [PATCH 4/5] x86_64: check msr to get mmconfig for amd family 10h opteron v3
+Cc: "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>, "Greg KH" <greg@kroah.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080219101335.GB14092@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802191134.59378.mb@bu3sch.de>
+References: <200802150127.21247.yinghai.lu@sun.com>
+	 <200802150128.41638.yinghai.lu@sun.com>
+	 <200802150130.14915.yinghai.lu@sun.com>
+	 <200802150131.16816.yinghai.lu@sun.com>
+	 <86802c440802181959t762bc242n79d2f0d93b224f31@mail.gmail.com>
+	 <20080219101335.GB14092@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 09:37:05 Geert Uytterhoeven wrote:
-> On Tue, 19 Feb 2008, Michael Buesch wrote:
-> > Still I can't see why this structure will cause alignment issues, as the
-> > compiler will pad it up to the right boundary automagically, as you said
-> > above. Why doesn't the ARM compiler do this?
-> 
-> The ARM compiler handles it correctly.
-> 
-> But the ugly hacks to get useful information about the module device
-> table using the _host_ compiler fail.
+On Feb 19, 2008 2:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>
+> > > Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
+> > > +++ linux-2.6/arch/x86/pci/mmconfig-shared.c
+> >
+> > Ingo/Thomas,
+> >
+> > It seems you missed this one in the 5.
+> >
+> > this one should be safe. it only reads msr.
+>
+> we picked up all of your patches - have you checked the x86.git#testing
+> branch, or only the x86.git#mm branch? We started x86.git#testing
+> recently, it includes more bleeding-edge stuff and wider, cross-tree
+> features as well.
+>
+> > Andi had concern with other one that was touching msr. I will keep
+> > that one in my local tree.
+>
+> We've got that one queued up in x86.git#testing as well. Someone on lkml
+> having concerns is not a basis to not deal with a patch. What matters
+> is: are those concerns well-founded? If you do not agree with the
+> concerns then just indicate it to us when re-submitting but do not drop
+> patches. Your patches have a good track record so please do not let
+> yourself get scared away from contributing. Please do not keep patches
+> in your local tree, we'd like Linux to work fine out of box, on as broad
+> range of hardware as possible.
 
-Ok, fine. So I'm not going to apply this patch. We need
-to fix the sanity check instead.
+good, I will send out the left over according to testing.
 
--- 
-Greetings Michael.
+YH
