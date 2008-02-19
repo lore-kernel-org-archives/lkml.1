@@ -1,93 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbYBSHnq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762940AbYBSHoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762592AbYBSHnq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 02:43:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758903AbYBSHni
+	id S1762940AbYBSHoQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 02:44:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbYBSHn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 02:43:38 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:35753 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758817AbYBSHnh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 02:43:37 -0500
-Date: Tue, 19 Feb 2008 09:43:02 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       Roel Kluin <12o3l@tiscali.nl>, lkml <linux-kernel@vger.kernel.org>,
-       cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-       Willy Tarreau <w@1wt.eu>, Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/3] Fix Unlikely(x) == y
-Message-ID: <20080219074302.GA2640@cs181133002.pp.htv.fi>
-References: <20080216092552.325e5726@laptopd505.fenrus.org> <20080216173315.GU8953@1wt.eu> <20080216094226.1e8eede1@laptopd505.fenrus.org> <47B72BFE.9060302@am.sony.com> <20080216103927.2a02352b@laptopd505.fenrus.org> <1203249003.6718.24.camel@concordia> <20080218135609.GD21080@cs181133002.pp.htv.fi> <Pine.LNX.4.64.0802181500410.13406@vixen.sonytel.be> <20080218141340.GB667@cs181133002.pp.htv.fi> <1203371163.6844.2.camel@concordia>
+	Tue, 19 Feb 2008 02:43:59 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:55568 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754915AbYBSHn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 02:43:58 -0500
+Message-ID: <47BA8864.7080803@cn.fujitsu.com>
+Date: Tue, 19 Feb 2008 15:42:28 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <1203371163.6844.2.camel@concordia>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+CC: linux-mm@kvack.org, Hugh Dickins <hugh@veritas.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Sudhir Kumar <skumar@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Herbert Poetzl <herbert@13thfloor.at>, Paul Menage <menage@google.com>,
+       linux-kernel@vger.kernel.org,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Rik Van Riel <riel@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [mm] [PATCH 2/4] Add the soft limit interface v2
+References: <20080219070232.25349.21196.sendpatchset@localhost.localdomain> <20080219070258.25349.25994.sendpatchset@localhost.localdomain> <47BA8665.3080302@cn.fujitsu.com>
+In-Reply-To: <47BA8665.3080302@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 08:46:03AM +1100, Michael Ellerman wrote:
-> On Mon, 2008-02-18 at 16:13 +0200, Adrian Bunk wrote:
-> > On Mon, Feb 18, 2008 at 03:01:35PM +0100, Geert Uytterhoeven wrote:
-> > > On Mon, 18 Feb 2008, Adrian Bunk wrote:
-> > > > 
-> > > > This means it generates faster code with a current gcc for your platform.
-> > > > 
-> > > > But a future gcc might e.g. replace the whole loop with a division
-> > > > (gcc SVN head (that will soon become gcc 4.3) already does 
-> > > > transformations like replacing loops with divisions [1]).
-> > > 
-> > > Hence shouldn't we ask the gcc people what's the purpose of __builtin_expect(),
-> > > if it doesn't live up to its promise?
-> > 
-> > That's a different issue.
-> > 
-> > My point here is that we do not know how the latest gcc available in the 
-> > year 2010 might transform this code, and how a likely/unlikely placed 
-> > there might influence gcc's optimizations then.
+Li Zefan 写道:
+> Balbir Singh wrote:
+>> A new configuration file called soft_limit_in_bytes is added. The parsing
+>> and configuration rules remain the same as for the limit_in_bytes user
+>> interface.
+>>
+>> A global list of all memory cgroups over their soft limit is maintained.
+>> This list is then used to reclaim memory on global pressure. A cgroup is
+>> removed from the list when the cgroup is deleted.
+>>
+>> The global list is protected with a read-write spinlock.
+>>
 > 
-> You're right, we don't know. But if giving the compiler _more_
-> information causes it to produce vastly inferior code then we should be
-> filing gcc bugs. After all the unlikely/likely is just a hint, if gcc
-> knows better it can always ignore it.
+> You are not using read-write spinlock..
+> 
 
-It's the other way round, gcc assumes that you know better than gcc when 
-you give it a __builtin_expect().
+Ah, the spinlock is changed to r/w spinlock in [PATCH 3/4].
 
-The example you gave had only a 1:3 ratio, which is far outside of the 
-ratios where __builtin_expect() should be used.
-
-What if you gave this annotation for the 1:3 case and gcc generates code 
-that performs better for ratios > 1:1000 but much worse for a 1:3 ratio
-since your hint did override a better estimate of gcc?
-
-And I'm sure that > 90% of all kernel developers (including me) are 
-worse in such respects than the gcc heuristics.
-
-I'm a firm believer in the following:
-- it's the programmer's job to write clean and efficient C code
-- it's the compiler's job to convert C code into efficient assembler
-  code
-
-The stable interface between the programmer and the compiler is C, and 
-when the programmer starts manually messing with internals of the 
-compiler that's a layering violation that requires a _good_ 
-justification.
-
-With a "good justification" not consisting of some microbenchmark but of 
-measurements of the actual annotations in the kernel code.
-
-> cheers
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+>> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+>> ---
+>>
+>>  mm/memcontrol.c |   33 ++++++++++++++++++++++++++++++++-
+>>  1 file changed, 32 insertions(+), 1 deletion(-)
+>>
+>> diff -puN mm/memcontrol.c~memory-controller-add-soft-limit-interface mm/memcontrol.c
+>> --- linux-2.6.25-rc2/mm/memcontrol.c~memory-controller-add-soft-limit-interface	2008-02-19 12:31:49.000000000 +0530
+>> +++ linux-2.6.25-rc2-balbir/mm/memcontrol.c	2008-02-19 12:31:49.000000000 +0530
+>> @@ -35,6 +35,10 @@
+>>  
+>>  struct cgroup_subsys mem_cgroup_subsys;
+>>  static const int MEM_CGROUP_RECLAIM_RETRIES = 5;
+>> +static spinlock_t mem_cgroup_sl_list_lock;	/* spin lock that protects */
+>> +						/* the list of cgroups over*/
+>> +						/* their soft limit */
+>> +static struct list_head mem_cgroup_sl_exceeded_list;
+>>  
+>>  /*
+>>   * Statistics for memory cgroup.
+>> @@ -136,6 +140,10 @@ struct mem_cgroup {
+>>  	 * statistics.
+>>  	 */
+>>  	struct mem_cgroup_stat stat;
+>> +	/*
+>> +	 * List of all mem_cgroup's that exceed their soft limit
+>> +	 */
+>> +	struct list_head sl_exceeded_list;
+>>  };
+>>  
+>>  /*
+>> @@ -679,6 +687,18 @@ retry:
+>>  		goto retry;
+>>  	}
+>>  
+>> +	/*
+>> +	 * If we exceed our soft limit, we get added to the list of
+>> +	 * cgroups over their soft limit
+>> +	 */
+>> +	if (!res_counter_check_under_limit(&mem->res, RES_SOFT_LIMIT)) {
+>> +		spin_lock_irqsave(&mem_cgroup_sl_list_lock, flags);
+>> +		if (list_empty(&mem->sl_exceeded_list))
+>> +			list_add_tail(&mem->sl_exceeded_list,
+>> +						&mem_cgroup_sl_exceeded_list);
+>> +		spin_unlock_irqrestore(&mem_cgroup_sl_list_lock, flags);
+>> +	}
+>> +
+>>  	mz = page_cgroup_zoneinfo(pc);
+>>  	spin_lock_irqsave(&mz->lru_lock, flags);
+>>  	/* Update statistics vector */
+>> @@ -736,13 +756,14 @@ void mem_cgroup_uncharge(struct page_cgr
+>>  	if (atomic_dec_and_test(&pc->ref_cnt)) {
+>>  		page = pc->page;
+>>  		mz = page_cgroup_zoneinfo(pc);
+>> +		mem = pc->mem_cgroup;
+>>  		/*
+>>  		 * get page->cgroup and clear it under lock.
+>>  		 * force_empty can drop page->cgroup without checking refcnt.
+>>  		 */
+>>  		unlock_page_cgroup(page);
+>> +
+>>  		if (clear_page_cgroup(page, pc) == pc) {
+>> -			mem = pc->mem_cgroup;
+>>  			css_put(&mem->css);
+>>  			res_counter_uncharge(&mem->res, PAGE_SIZE);
+>>  			spin_lock_irqsave(&mz->lru_lock, flags);
+>> @@ -1046,6 +1067,12 @@ static struct cftype mem_cgroup_files[] 
+>>  		.name = "stat",
+>>  		.open = mem_control_stat_open,
+>>  	},
+>> +	{
+>> +		.name = "soft_limit_in_bytes",
+>> +		.private = RES_SOFT_LIMIT,
+>> +		.write = mem_cgroup_write,
+>> +		.read = mem_cgroup_read,
+>> +	},
+>>  };
+>>  
+>>  static int alloc_mem_cgroup_per_zone_info(struct mem_cgroup *mem, int node)
+>> @@ -1097,6 +1124,9 @@ mem_cgroup_create(struct cgroup_subsys *
+>>  	if (unlikely((cont->parent) == NULL)) {
+>>  		mem = &init_mem_cgroup;
+>>  		init_mm.mem_cgroup = mem;
+>> +		INIT_LIST_HEAD(&mem->sl_exceeded_list);
+>> +		spin_lock_init(&mem_cgroup_sl_list_lock);
+>> +		INIT_LIST_HEAD(&mem_cgroup_sl_exceeded_list);
+>>  	} else
+>>  		mem = kzalloc(sizeof(struct mem_cgroup), GFP_KERNEL);
+>>  
+>> @@ -1104,6 +1134,7 @@ mem_cgroup_create(struct cgroup_subsys *
+>>  		return NULL;
+>>  
+>>  	res_counter_init(&mem->res);
+>> +	INIT_LIST_HEAD(&mem->sl_exceeded_list);
+>>  
+> 
+> mem->sl_exceeded_list initialized twice ?
+> 
+>>  	memset(&mem->info, 0, sizeof(mem->info));
+>>  
+>> _
+>>
+> --
