@@ -1,170 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757680AbYBTNe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbYBTNfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757680AbYBTNe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752158AbYBTNet
+	id S1762212AbYBTNfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:35:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760556AbYBTNfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:34:49 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41750 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751799AbYBTNes (ORCPT
+	Wed, 20 Feb 2008 08:35:19 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40116 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752158AbYBTNfR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:34:48 -0500
-Date: Wed, 20 Feb 2008 05:33:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Larry Woodman <lwoodman@redhat.com>, linux-kernel@vger.kernel.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: Problem with /proc/sys/vm/lowmem_reserve_ratio
-Message-Id: <20080220053306.6a1f5600.akpm@linux-foundation.org>
-In-Reply-To: <1203511994.6243.44.camel@lappy>
-References: <47BB4BB5.20709@redhat.com>
-	<20080219155535.bf317d19.akpm@linux-foundation.org>
-	<1203511994.6243.44.camel@lappy>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 08:35:17 -0500
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [RFC PATCH 0/8]: uninline & uninline
+Date: Wed, 20 Feb 2008 15:35:07 +0200
+Message-Id: <12035145151801-git-send-email-ilpo.jarvinen@helsinki.fi>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 13:53:14 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+Hi all,
 
-> 
-> On Tue, 2008-02-19 at 15:55 -0800, Andrew Morton wrote:
-> > On Tue, 19 Feb 2008 16:35:49 -0500 Larry Woodman <lwoodman@redhat.com> wrote:
-> > 
-> > > balance_pgdat() calls zone_watermark_ok() three times, the first call
-> > > passes a zero(0) in as the 4th argument.  This 4th argument is the
-> > > classzone_idx which is used as the index into the zone->lowmem_reserve[] 
-> > > array. 
-> > > Since setup_per_zone_lowmem_reserve()
-> > > always sets the zone->lowmem_reserve[0] = 0(because there is nothing
-> > > below the DMA zone), zone_watermark_ok() will not consider the
-> > > lowmem_reserve pages when zero is passed as the 4th arg.   The
-> > > 4th argument must be "i" or balance_pgdat wont even get into the main loop
-> > > when lowmem_reserve_ratio is lowered.
-> > > 
-> > > -------------------------------------------------------------------------
-> > > --- linux-2.6.24.noarch/mm/vmscan.c.orig        2008-02-13
-> > > 11:14:55.000000000 -0500
-> > > +++ linux-2.6.24.noarch/mm/vmscan.c     2008-02-13 11:15:02.000000000
-> > > -0500
-> > > @@ -1375,7 +1375,7 @@ loop_again:
-> > >                                continue;
-> > > 
-> > >                        if (!zone_watermark_ok(zone, order, 
-> > > zone->pages_high,
-> > > 
-> > > -                                              0, 0)) {
-> > > +                                              i, 0)) {
-> > >                                end_zone = i;
-> > >                                break;
-> > 
-> > Yes, thanks, this is in my things-to-worry-about-when-i-get-home bucket. 
-> > We should find the changeset which added this and work out if for some
-> > reason it was intentional.
-> 
-> 
-> commit e0e1723229b6f96922d10bb932f94d899132b462
+I run some lengthy tests to measure cost of inlines in headers under
+include/, simple coverage calculations yields to 89% but most of the
+failed compiles are due to preprocessor cutting the tested block away
+anyway. Test setup: v2.6.24-mm1, make allyesconfig, 32-bit x86,
+gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13). Because one inline was
+tested (function uninlined) at a time, the actual benefits of removing
+multiple inlines may well be below what the sum of those individually
+is (especially when something calls __-func with equal name).
 
-Thanks.
+Ok, here's the top of the list (10000+ bytes):
 
-> Author: nickpiggin <nickpiggin>
-> Date:   Tue Jan 4 04:14:42 2005 +0000
-> 
->     [PATCH] mm: teach kswapd about higher order areas
->     
->     Teach kswapd to free memory on behalf of higher order allocators.  This
->     could be important for higher order atomic allocations because they
->     otherwise have no means to free the memory themselves.
->     
->     Signed-off-by: Nick Piggin <nickpiggin@yahoo.com.au>
->     Signed-off-by: Andrew Morton <akpm@osdl.org>
->     Signed-off-by: Linus Torvalds <torvalds@osdl.org>
->     
->     BKrev: 41da1832E5flzqtNXq5m70WxihpcMw
-> 
-> diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-> index 2fd19fa..e048bbc 100644
-> --- a/include/linux/mmzone.h
-> +++ b/include/linux/mmzone.h
-> @@ -264,8 +264,9 @@ typedef struct pglist_data {
->  					     range, including holes */
->  	int node_id;
->  	struct pglist_data *pgdat_next;
-> -	wait_queue_head_t       kswapd_wait;
-> +	wait_queue_head_t kswapd_wait;
->  	struct task_struct *kswapd;
-> +	int kswapd_max_order;
->  } pg_data_t;
->  
->  #define node_present_pages(nid)	(NODE_DATA(nid)->node_present_pages)
-> @@ -279,7 +280,7 @@ void __get_zone_counts(unsigned long *active, unsigned long *inactive,
->  void get_zone_counts(unsigned long *active, unsigned long *inactive,
->  			unsigned long *free);
->  void build_all_zonelists(void);
-> -void wakeup_kswapd(struct zone *zone);
-> +void wakeup_kswapd(struct zone *zone, int order);
->  int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
->  		int alloc_type, int can_try_harder, int gfp_high);
->  
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> index bb11a6d..1f264ba 100644
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -677,7 +677,7 @@ __alloc_pages(unsigned int gfp_mask, unsigned int order,
->  	}
->  
->  	for (i = 0; (z = zones[i]) != NULL; i++)
-> -		wakeup_kswapd(z);
-> +		wakeup_kswapd(z, order);
->  
->  	/*
->  	 * Go through the zonelist again. Let __GFP_HIGH and allocations
-> @@ -1516,6 +1516,7 @@ static void __init free_area_init_core(struct pglist_data *pgdat,
->  
->  	pgdat->nr_zones = 0;
->  	init_waitqueue_head(&pgdat->kswapd_wait);
-> +	pgdat->kswapd_max_order = 0;
->  	
->  	for (j = 0; j < MAX_NR_ZONES; j++) {
->  		struct zone *zone = pgdat->node_zones + j;
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index aa074e5..1062a30 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -968,7 +968,7 @@ out:
->   * the page allocator fallback scheme to ensure that aging of pages is balanced
->   * across the zones.
->   */
-> -static int balance_pgdat(pg_data_t *pgdat, int nr_pages)
-> +static int balance_pgdat(pg_data_t *pgdat, int nr_pages, int order)
->  {
->  	int to_free = nr_pages;
->  	int all_zones_ok;
-> @@ -1014,7 +1014,8 @@ loop_again:
->  						priority != DEF_PRIORITY)
->  					continue;
->  
-> -				if (zone->free_pages <= zone->pages_high) {
-> +				if (!zone_watermark_ok(zone, order,
-> +						zone->pages_high, 0, 0, 0)) {
->  					end_zone = i;
->  					goto scan;
->  				}
+-110805  869 f, 198 +, 111003 -, diff: -110805  skb_put 
+-41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
+-36290  42 f, 197 +, 36487 -, diff: -36290  cfi_build_cmd 
+-35698  1234 f, 2391 +, 38089 -, diff: -35698  atomic_dec_and_test 
+-28162  354 f, 3005 +, 31167 -, diff: -28162  skb_pull 
+-23668  392 f, 104 +, 23772 -, diff: -23668  dev_alloc_skb 
+-22212  415 f, 130 +, 22342 -, diff: -22212  __dev_alloc_skb 
+-21593  356 f, 2418 +, 24011 -, diff: -21593  skb_push 
+-19036  478 f, 259 +, 19295 -, diff: -19036  netif_wake_queue 
+-18409  396 f, 6447 +, 24856 -, diff: -18409  __skb_pull 
+-16420  187 f, 103 +, 16523 -, diff: -16420  dst_release 
+-16025  13 f, 280 +, 16305 -, diff: -16025  cfi_send_gen_cmd 
+-14925  486 f, 978 +, 15903 -, diff: -14925  add_timer 
+-14896  199 f, 558 +, 15454 -, diff: -14896  sg_page 
+-12870  36 f, 121 +, 12991 -, diff: -12870  le_key_k_type 
+-12310  692 f, 7215 +, 19525 -, diff: -12310  signal_pending 
+-11640  251 f, 118 +, 11758 -, diff: -11640  __skb_trim 
+-11059  111 f, 293 +, 11352 -, diff: -11059  __nlmsg_put 
+-10976  209 f, 123 +, 11099 -, diff: -10976  skb_trim 
+-10344  125 f, 462 +, 10806 -, diff: -10344  pskb_may_pull 
+-10061  300 f, 1163 +, 11224 -, diff: -10061  try_module_get 
+-10008  75 f, 341 +, 10349 -, diff: -10008  nlmsg_put 
 
-No, it doesn't look like there was a deeper purpose here.  Just a thinko?
+~250 are in 1000+ bytes category and ~440 in 500+. Full list
+has some entries without number because given config doesn't
+build them, and therefore nothing got uninlined, and the missing
+entries consists solely of compile failures, available here:
 
-> @@ -1049,7 +1050,8 @@ scan:
->  				continue;
->  
->  			if (nr_pages == 0) {	/* Not software suspend */
-> -				if (zone->free_pages <= zone->pages_high)
-> +				if (!zone_watermark_ok(zone, order,
-> +						zone->pages_high, end_zone, 0, 0))
->  					all_zones_ok = 0;
->  			}
->  			zone->temp_priority = priority;
+  http://www.cs.helsinki.fi/u/ijjarvin/inlines/sorted
+
+I made some patches to uninline couple of them (picked mostly
+net related) to stir up some discussion, however, some of them
+are not ready for inclusion as is (see patch descriptions).
+The cases don't represent all top 8 cases because some of the
+cases require a bit more analysis (e.g., config dependant,
+comments about gcc optimizations).
+
+The tools I used are available here except the site-specific
+distribute machinery (in addition one needs pretty late
+codiff from Arnaldo's toolset because there were some inline
+related bugs fixed lately):
+
+  http://www.cs.helsinki.fi/u/ijjarvin/inline-tools.git/
+
+I'm planning to run similar tests also on inlines in headers that
+are not under include/ but it requires minor modifications to
+those tools.
+
+--
+ i.
+
+
 
