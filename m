@@ -1,33 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbYBTNtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764727AbYBTNuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764632AbYBTNtz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:49:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762618AbYBTNrr
+	id S1764727AbYBTNuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762663AbYBTNrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:47:47 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54344 "EHLO
+	Wed, 20 Feb 2008 08:47:49 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47679 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754674AbYBTNrV (ORCPT
+	with ESMTP id S1754486AbYBTNrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:47:21 -0500
+	Wed, 20 Feb 2008 08:47:22 -0500
 From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
 To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: David Miller <davem@davemloft.net>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        "=?utf-8?q?Ilpo=20J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-Subject: [RFC PATCH 8/8] Jhash in too big for inlining, move under lib/
-Date: Wed, 20 Feb 2008 15:47:18 +0200
-Message-Id: <1203515238-22848-9-git-send-email-ilpo.jarvinen@helsinki.fi>
+Subject: [RFC PATCH 5/8] [NET]: uninline dst_release
+Date: Wed, 20 Feb 2008 15:47:15 +0200
+Message-Id: <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
 X-Mailer: git-send-email 1.5.4.2.156.ge3c5
-In-Reply-To: <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
+In-Reply-To: <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
 References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
  <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
  <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
  <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
  <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8bit
@@ -35,403 +32,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-vmlinux.o:
- 62 functions changed, 66 bytes added, 10935 bytes removed, diff: -10869
-
-...+ these to lib/jhash.o:
- jhash_3words: 112
- jhash2: 276
- jhash: 475
-
-select for networking code might need a more fine-grained approach.
+Codiff stats:
+-16420  187 funcs, 103 +, 16523 -, diff: -16420 --- dst_release
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 ---
- drivers/infiniband/Kconfig |    1 +
- drivers/net/Kconfig        |    1 +
- fs/Kconfig                 |    1 +
- fs/dlm/Kconfig             |    1 +
- fs/gfs2/Kconfig            |    1 +
- include/linux/jhash.h      |   99 +------------------------------------
- init/Kconfig               |    2 +
- lib/Kconfig                |    6 ++
- lib/Makefile               |    1 +
- lib/jhash.c                |  116 ++++++++++++++++++++++++++++++++++++++++++++
- net/Kconfig                |    1 +
- 11 files changed, 134 insertions(+), 96 deletions(-)
- create mode 100644 lib/jhash.c
+ include/net/dst.h |   10 +---------
+ net/core/dst.c    |   10 ++++++++++
+ 2 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/infiniband/Kconfig b/drivers/infiniband/Kconfig
-index a5dc78a..421ab71 100644
---- a/drivers/infiniband/Kconfig
-+++ b/drivers/infiniband/Kconfig
-@@ -2,6 +2,7 @@ menuconfig INFINIBAND
- 	tristate "InfiniBand support"
- 	depends on PCI || BROKEN
- 	depends on HAS_IOMEM
-+	select JHASH
- 	---help---
- 	  Core support for InfiniBand (IB).  Make sure to also select
- 	  any protocols you wish to use as well as drivers for your
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index f337800..8257648 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2496,6 +2496,7 @@ config CHELSIO_T3
- 	tristate "Chelsio Communications T3 10Gb Ethernet support"
- 	depends on PCI
- 	select FW_LOADER
-+	select JHASH
- 	help
- 	  This driver supports Chelsio T3-based gigabit and 10Gb Ethernet
- 	  adapters.
-diff --git a/fs/Kconfig b/fs/Kconfig
-index d731282..693fe71 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1667,6 +1667,7 @@ config NFSD
- 	select LOCKD
- 	select SUNRPC
- 	select EXPORTFS
-+	select JHASH
- 	select NFSD_V2_ACL if NFSD_V3_ACL
- 	select NFS_ACL_SUPPORT if NFSD_V2_ACL
- 	select NFSD_TCP if NFSD_V4
-diff --git a/fs/dlm/Kconfig b/fs/dlm/Kconfig
-index 2dbb422..f27a99a 100644
---- a/fs/dlm/Kconfig
-+++ b/fs/dlm/Kconfig
-@@ -4,6 +4,7 @@ menuconfig DLM
- 	depends on SYSFS && (IPV6 || IPV6=n)
- 	select CONFIGFS_FS
- 	select IP_SCTP
-+	select JHASH
- 	help
- 	A general purpose distributed lock manager for kernel or userspace
- 	applications.
-diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
-index de8e64c..b9dcabf 100644
---- a/fs/gfs2/Kconfig
-+++ b/fs/gfs2/Kconfig
-@@ -3,6 +3,7 @@ config GFS2_FS
- 	depends on EXPERIMENTAL
- 	select FS_POSIX_ACL
- 	select CRC32
-+	select JHASH
- 	help
- 	  A cluster filesystem.
+diff --git a/include/net/dst.h b/include/net/dst.h
+index e3ac7d0..bf33471 100644
+--- a/include/net/dst.h
++++ b/include/net/dst.h
+@@ -158,15 +158,7 @@ struct dst_entry * dst_clone(struct dst_entry * dst)
+ 	return dst;
+ }
  
-diff --git a/include/linux/jhash.h b/include/linux/jhash.h
-index 2a2f99f..14200c6 100644
---- a/include/linux/jhash.h
-+++ b/include/linux/jhash.h
-@@ -1,25 +1,6 @@
- #ifndef _LINUX_JHASH_H
- #define _LINUX_JHASH_H
- 
--/* jhash.h: Jenkins hash support.
-- *
-- * Copyright (C) 1996 Bob Jenkins (bob_jenkins@burtleburtle.net)
-- *
-- * http://burtleburtle.net/bob/hash/
-- *
-- * These are the credits from Bob's sources:
-- *
-- * lookup2.c, by Bob Jenkins, December 1996, Public Domain.
-- * hash(), hash2(), hash3, and mix() are externally useful functions.
-- * Routines to test the hash are included if SELF_TEST is defined.
-- * You can use this free for any purpose.  It has no warranty.
-- *
-- * Copyright (C) 2003 David S. Miller (davem@redhat.com)
-- *
-- * I've modified Bob's hash to be useful in the Linux kernel, and
-- * any bugs present are surely my fault.  -DaveM
-- */
--
- /* NOTE: Arguments are modified. */
- #define __jhash_mix(a, b, c) \
- { \
-@@ -41,77 +22,12 @@
-  * of bytes.  No alignment or length assumptions are made about
-  * the input key.
-  */
--static inline u32 jhash(const void *key, u32 length, u32 initval)
+-static inline
+-void dst_release(struct dst_entry * dst)
 -{
--	u32 a, b, c, len;
--	const u8 *k = key;
--
--	len = length;
--	a = b = JHASH_GOLDEN_RATIO;
--	c = initval;
--
--	while (len >= 12) {
--		a += (k[0] +((u32)k[1]<<8) +((u32)k[2]<<16) +((u32)k[3]<<24));
--		b += (k[4] +((u32)k[5]<<8) +((u32)k[6]<<16) +((u32)k[7]<<24));
--		c += (k[8] +((u32)k[9]<<8) +((u32)k[10]<<16)+((u32)k[11]<<24));
--
--		__jhash_mix(a,b,c);
--
--		k += 12;
--		len -= 12;
+-	if (dst) {
+-		WARN_ON(atomic_read(&dst->__refcnt) < 1);
+-		smp_mb__before_atomic_dec();
+-		atomic_dec(&dst->__refcnt);
 -	}
--
--	c += length;
--	switch (len) {
--	case 11: c += ((u32)k[10]<<24);
--	case 10: c += ((u32)k[9]<<16);
--	case 9 : c += ((u32)k[8]<<8);
--	case 8 : b += ((u32)k[7]<<24);
--	case 7 : b += ((u32)k[6]<<16);
--	case 6 : b += ((u32)k[5]<<8);
--	case 5 : b += k[4];
--	case 4 : a += ((u32)k[3]<<24);
--	case 3 : a += ((u32)k[2]<<16);
--	case 2 : a += ((u32)k[1]<<8);
--	case 1 : a += k[0];
--	};
--
--	__jhash_mix(a,b,c);
--
--	return c;
 -}
-+extern u32 jhash(const void *key, u32 length, u32 initval);
++extern void dst_release(struct dst_entry *dst);
  
- /* A special optimized version that handles 1 or more of u32s.
-  * The length parameter here is the number of u32s in the key.
-  */
--static inline u32 jhash2(const u32 *k, u32 length, u32 initval)
--{
--	u32 a, b, c, len;
--
--	a = b = JHASH_GOLDEN_RATIO;
--	c = initval;
--	len = length;
--
--	while (len >= 3) {
--		a += k[0];
--		b += k[1];
--		c += k[2];
--		__jhash_mix(a, b, c);
--		k += 3; len -= 3;
--	}
--
--	c += length * 4;
--
--	switch (len) {
--	case 2 : b += k[1];
--	case 1 : a += k[0];
--	};
--
--	__jhash_mix(a,b,c);
--
--	return c;
--}
--
-+extern u32 jhash2(const u32 *k, u32 length, u32 initval);
+ /* Children define the path of the packet through the
+  * Linux networking.  Thus, destinations are stackable.
+diff --git a/net/core/dst.c b/net/core/dst.c
+index 7deef48..cc2e724 100644
+--- a/net/core/dst.c
++++ b/net/core/dst.c
+@@ -259,6 +259,16 @@ again:
+ 	return NULL;
+ }
  
- /* A special ultra-optimized versions that knows they are hashing exactly
-  * 3, 2 or 1 word(s).
-@@ -119,16 +35,7 @@ static inline u32 jhash2(const u32 *k, u32 length, u32 initval)
-  * NOTE: In partilar the "c += length; __jhash_mix(a,b,c);" normally
-  *       done at the end is not done here.
-  */
--static inline u32 jhash_3words(u32 a, u32 b, u32 c, u32 initval)
--{
--	a += JHASH_GOLDEN_RATIO;
--	b += JHASH_GOLDEN_RATIO;
--	c += initval;
--
--	__jhash_mix(a, b, c);
--
--	return c;
--}
-+extern u32 jhash_3words(u32 a, u32 b, u32 c, u32 initval);
- 
- static inline u32 jhash_2words(u32 a, u32 b, u32 initval)
- {
-diff --git a/init/Kconfig b/init/Kconfig
-index 824d48c..3210626 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -601,6 +601,7 @@ config FUTEX
- 	bool "Enable futex support" if EMBEDDED
- 	default y
- 	select RT_MUTEXES
-+	select JHASH
- 	help
- 	  Disabling this option will cause the kernel to be built without
- 	  support for "fast userspace mutexes".  The resulting kernel may not
-@@ -718,6 +719,7 @@ config PROFILING
- 
- config MARKERS
- 	bool "Activate markers"
-+	select JHASH
- 	help
- 	  Place an empty function call at each marker site. Can be
- 	  dynamically changed for a probe function.
-diff --git a/lib/Kconfig b/lib/Kconfig
-index ba3d104..23d5507 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -85,6 +85,12 @@ config GENERIC_ALLOCATOR
- 	boolean
- 
- #
-+# Jenkins has support is selected if needed
-+#
-+config JHASH
-+	boolean
-+
-+#
- # reed solomon support is select'ed if needed
- #
- config REED_SOLOMON
-diff --git a/lib/Makefile b/lib/Makefile
-index 23de261..a100a49 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -49,6 +49,7 @@ obj-$(CONFIG_CRC32)	+= crc32.o
- obj-$(CONFIG_CRC7)	+= crc7.o
- obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
- obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
-+obj-$(CONFIG_JHASH)	+= jhash.o
- 
- obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
- obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
-diff --git a/lib/jhash.c b/lib/jhash.c
-new file mode 100644
-index 0000000..ee4083f
---- /dev/null
-+++ b/lib/jhash.c
-@@ -0,0 +1,116 @@
-+/* jhash.c: Jenkins hash support.
-+ *
-+ * Copyright (C) 1996 Bob Jenkins (bob_jenkins@burtleburtle.net)
-+ *
-+ * http://burtleburtle.net/bob/hash/
-+ *
-+ * These are the credits from Bob's sources:
-+ *
-+ * lookup2.c, by Bob Jenkins, December 1996, Public Domain.
-+ * hash(), hash2(), hash3, and mix() are externally useful functions.
-+ * Routines to test the hash are included if SELF_TEST is defined.
-+ * You can use this free for any purpose.  It has no warranty.
-+ *
-+ * Copyright (C) 2003 David S. Miller (davem@redhat.com)
-+ *
-+ * I've modified Bob's hash to be useful in the Linux kernel, and
-+ * any bugs present are surely my fault.  -DaveM
-+ */
-+#include <linux/kernel.h>
-+#include <linux/jhash.h>
-+#include <linux/module.h>
-+
-+/* The most generic version, hashes an arbitrary sequence
-+ * of bytes.  No alignment or length assumptions are made about
-+ * the input key.
-+ */
-+u32 jhash(const void *key, u32 length, u32 initval)
++void dst_release(struct dst_entry *dst)
 +{
-+	u32 a, b, c, len;
-+	const u8 *k = key;
-+
-+	len = length;
-+	a = b = JHASH_GOLDEN_RATIO;
-+	c = initval;
-+
-+	while (len >= 12) {
-+		a += (k[0] +((u32)k[1]<<8) +((u32)k[2]<<16) +((u32)k[3]<<24));
-+		b += (k[4] +((u32)k[5]<<8) +((u32)k[6]<<16) +((u32)k[7]<<24));
-+		c += (k[8] +((u32)k[9]<<8) +((u32)k[10]<<16)+((u32)k[11]<<24));
-+
-+		__jhash_mix(a,b,c);
-+
-+		k += 12;
-+		len -= 12;
++	if (dst) {
++		WARN_ON(atomic_read(&dst->__refcnt) < 1);
++		smp_mb__before_atomic_dec();
++		atomic_dec(&dst->__refcnt);
 +	}
-+
-+	c += length;
-+	switch (len) {
-+	case 11: c += ((u32)k[10]<<24);
-+	case 10: c += ((u32)k[9]<<16);
-+	case 9 : c += ((u32)k[8]<<8);
-+	case 8 : b += ((u32)k[7]<<24);
-+	case 7 : b += ((u32)k[6]<<16);
-+	case 6 : b += ((u32)k[5]<<8);
-+	case 5 : b += k[4];
-+	case 4 : a += ((u32)k[3]<<24);
-+	case 3 : a += ((u32)k[2]<<16);
-+	case 2 : a += ((u32)k[1]<<8);
-+	case 1 : a += k[0];
-+	};
-+
-+	__jhash_mix(a,b,c);
-+
-+	return c;
 +}
-+EXPORT_SYMBOL(jhash);
++EXPORT_SYMBOL(dst_release);
 +
-+/* A special optimized version that handles 1 or more of u32s.
-+ * The length parameter here is the number of u32s in the key.
-+ */
-+u32 jhash2(const u32 *k, u32 length, u32 initval)
-+{
-+	u32 a, b, c, len;
-+
-+	a = b = JHASH_GOLDEN_RATIO;
-+	c = initval;
-+	len = length;
-+
-+	while (len >= 3) {
-+		a += k[0];
-+		b += k[1];
-+		c += k[2];
-+		__jhash_mix(a, b, c);
-+		k += 3; len -= 3;
-+	}
-+
-+	c += length * 4;
-+
-+	switch (len) {
-+	case 2 : b += k[1];
-+	case 1 : a += k[0];
-+	};
-+
-+	__jhash_mix(a,b,c);
-+
-+	return c;
-+}
-+EXPORT_SYMBOL(jhash2);
-+
-+/* A special ultra-optimized versions that knows they are hashing exactly
-+ * 3, 2 or 1 word(s).
-+ *
-+ * NOTE: In partilar the "c += length; __jhash_mix(a,b,c);" normally
-+ *       done at the end is not done here.
-+ */
-+u32 jhash_3words(u32 a, u32 b, u32 c, u32 initval)
-+{
-+	a += JHASH_GOLDEN_RATIO;
-+	b += JHASH_GOLDEN_RATIO;
-+	c += initval;
-+
-+	__jhash_mix(a, b, c);
-+
-+	return c;
-+}
-+EXPORT_SYMBOL(jhash_3words);
-diff --git a/net/Kconfig b/net/Kconfig
-index 6627c6a..0749381 100644
---- a/net/Kconfig
-+++ b/net/Kconfig
-@@ -6,6 +6,7 @@ menu "Networking"
- 
- config NET
- 	bool "Networking support"
-+	select JHASH
- 	---help---
- 	  Unless you really know what you are doing, you should say Y here.
- 	  The reason is that some programs need kernel networking support even
+ /* Dirty hack. We did it in 2.2 (in __dst_free),
+  * we have _very_ good reasons not to repeat
+  * this mistake in 2.3, but we have no choice
 -- 
 1.5.2.2
 
