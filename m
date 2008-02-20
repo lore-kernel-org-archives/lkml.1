@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbYBTMzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758258AbYBTMz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757686AbYBTMzm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbYBTMyH
+	id S1758258AbYBTMz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758217AbYBTMyK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:54:07 -0500
-Received: from mail.southpole.se ([193.12.106.18]:42368 "EHLO
+	Wed, 20 Feb 2008 07:54:10 -0500
+Received: from mail.southpole.se ([193.12.106.18]:42410 "EHLO
 	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756789AbYBTMxx (ORCPT
+	with ESMTP id S1756906AbYBTMxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:53:53 -0500
+	Wed, 20 Feb 2008 07:53:55 -0500
 From: Jonas Bonn <jonas@southpole.se>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Cc: greg@kroah.com, Jonas Bonn <jonas@southpole.se>
-Subject: [PATCH] Add PCI_DEVICE_TABLE macro
-Date: Wed, 20 Feb 2008 13:53:37 +0100
-Message-Id: <1203512031-14318-2-git-send-email-jonas@southpole.se>
+Subject: [PATCH] [net] use PCI_DEVICE_TABLE: makes struct pci_device_id array const and adds section attribute __devinitconst
+Date: Wed, 20 Feb 2008 13:53:48 +0100
+Message-Id: <1203512031-14318-13-git-send-email-jonas@southpole.se>
 X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1203512031-14318-1-git-send-email-jonas@southpole.se>
+In-Reply-To: <1203512031-14318-12-git-send-email-jonas@southpole.se>
 References: <1203512031-14318-1-git-send-email-jonas@southpole.se>
+ <1203512031-14318-2-git-send-email-jonas@southpole.se>
+ <1203512031-14318-3-git-send-email-jonas@southpole.se>
+ <1203512031-14318-4-git-send-email-jonas@southpole.se>
+ <1203512031-14318-5-git-send-email-jonas@southpole.se>
+ <1203512031-14318-6-git-send-email-jonas@southpole.se>
+ <1203512031-14318-7-git-send-email-jonas@southpole.se>
+ <1203512031-14318-8-git-send-email-jonas@southpole.se>
+ <1203512031-14318-9-git-send-email-jonas@southpole.se>
+ <1203512031-14318-10-git-send-email-jonas@southpole.se>
+ <1203512031-14318-11-git-send-email-jonas@southpole.se>
+ <1203512031-14318-12-git-send-email-jonas@southpole.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The definitions of struct pci_device_id arrays should generally follow
-the same pattern across the entire kernel.  This macro defines this
-array as const and puts it into the __devinitconst section.
-
 Signed-off-by: Jonas Bonn <jonas@southpole.se>
 ---
- include/linux/pci.h |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
+ drivers/net/wan/lmc/lmc_main.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 87195b6..c7a91b1 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -389,6 +389,15 @@ struct pci_driver {
- #define	to_pci_driver(drv) container_of(drv, struct pci_driver, driver)
+diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
+index 6635ece..e85cfe7 100644
+--- a/drivers/net/wan/lmc/lmc_main.c
++++ b/drivers/net/wan/lmc/lmc_main.c
+@@ -82,7 +82,7 @@ static int lmc_first_load = 0;
  
- /**
-+ * PCI_DEVICE_TABLE - macro used to describe a pci device table
-+ * @_table: device table name
-+ *
-+ * This macro is used to create a struct pci_device_id array (a device table) 
-+ * in a generic manner.
-+ */
-+#define PCI_DEVICE_TABLE(_table) const struct pci_device_id _table[] __devinitconst
-+
-+/**
-  * PCI_DEVICE - macro used to describe a specific pci device
-  * @vend: the 16 bit PCI Vendor ID
-  * @dev: the 16 bit PCI Device ID
+ static int LMC_PKT_BUF_SZ = 1542;
+ 
+-static struct pci_device_id lmc_pci_tbl[] = {
++static PCI_DEVICE_TABLE(lmc_pci_tbl) = {
+ 	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_FAST,
+ 	  PCI_VENDOR_ID_LMC, PCI_ANY_ID },
+ 	{ PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_TULIP_FAST,
 -- 
 1.5.3.8
 
