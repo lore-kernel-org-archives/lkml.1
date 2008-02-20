@@ -1,252 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764629AbYBTPU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764777AbYBTPUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764629AbYBTPU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763744AbYBTPTA
+	id S1764777AbYBTPUt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764003AbYBTPTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:19:00 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:55343 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751825AbYBTPSe (ORCPT
+	Wed, 20 Feb 2008 10:19:08 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:6282 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752578AbYBTPSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:18:34 -0500
-Message-Id: <20080220150305.774294000@chello.nl>
+	Wed, 20 Feb 2008 10:18:36 -0500
+Message-Id: <20080220150306.165236000@chello.nl>
 References: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:14 +0100
+Date: Wed, 20 Feb 2008 15:46:17 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 04/28] mm: kmem_estimate_pages()
-Content-Disposition: inline; filename=mm-kmem_estimate_pages.patch
+Subject: [PATCH 07/28] mm: emergency pool
+Content-Disposition: inline; filename=mm-page_alloc-emerg.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a method to get the upper bound on the pages needed to allocate
-a given number of objects from a given kmem_cache.
+Provide means to reserve a specific amount of pages.
 
-This lays the foundation for a generic reserve framework as presented in
-a later patch in this series. This framework needs to convert object demand
-(kmalloc() bytes, kmem_cache_alloc() objects) to pages.
+The emergency pool is separated from the min watermark because ALLOC_HARDER
+and ALLOC_HIGH modify the watermark in a relative way and thus do not ensure
+a strict minimum.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/slab.h |    4 ++
- mm/slab.c            |   75 ++++++++++++++++++++++++++++++++++++++++++++++
- mm/slub.c            |   82 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 161 insertions(+)
+ include/linux/mmzone.h |    3 +
+ mm/page_alloc.c        |   84 +++++++++++++++++++++++++++++++++++++++++++------
+ mm/vmstat.c            |    6 +--
+ 3 files changed, 79 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/include/linux/slab.h
+Index: linux-2.6/include/linux/mmzone.h
 ===================================================================
---- linux-2.6.orig/include/linux/slab.h
-+++ linux-2.6/include/linux/slab.h
-@@ -60,6 +60,8 @@ void kmem_cache_free(struct kmem_cache *
- unsigned int kmem_cache_size(struct kmem_cache *);
- const char *kmem_cache_name(struct kmem_cache *);
- int kmem_ptr_validate(struct kmem_cache *cachep, const void *ptr);
-+unsigned kmem_estimate_pages(struct kmem_cache *cachep,
-+			gfp_t flags, int objects);
+--- linux-2.6.orig/include/linux/mmzone.h
++++ linux-2.6/include/linux/mmzone.h
+@@ -213,7 +213,7 @@ enum zone_type {
  
- /*
-  * Please use this macro to create slab caches. Simply specify the
-@@ -94,6 +96,8 @@ int kmem_ptr_validate(struct kmem_cache 
- void * __must_check krealloc(const void *, size_t, gfp_t);
- void kfree(const void *);
- size_t ksize(const void *);
-+unsigned kestimate_single(size_t, gfp_t, int);
-+unsigned kestimate(gfp_t, size_t);
+ struct zone {
+ 	/* Fields commonly accessed by the page allocator */
+-	unsigned long		pages_min, pages_low, pages_high;
++	unsigned long		pages_emerg, pages_min, pages_low, pages_high;
+ 	/*
+ 	 * We don't know if the memory that we're going to allocate will be freeable
+ 	 * or/and it will be released eventually, so to avoid totally wasting several
+@@ -683,6 +683,7 @@ int sysctl_min_unmapped_ratio_sysctl_han
+ 			struct file *, void __user *, size_t *, loff_t *);
+ int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
++int adjust_memalloc_reserve(int pages);
  
- /*
-  * Allocator specific definitions. These are mainly used to establish optimized
-Index: linux-2.6/mm/slub.c
+ extern int numa_zonelist_order_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -2465,6 +2465,37 @@ const char *kmem_cache_name(struct kmem_
- EXPORT_SYMBOL(kmem_cache_name);
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -118,6 +118,8 @@ static char * const zone_names[MAX_NR_ZO
  
- /*
-+ * return the max number of pages required to allocated count
-+ * objects from the given cache
-+ */
-+unsigned kmem_estimate_pages(struct kmem_cache *s, gfp_t flags, int objects)
-+{
-+	unsigned long slabs;
-+
-+	if (WARN_ON(!s) || WARN_ON(!s->objects))
-+		return 0;
-+
-+	slabs = DIV_ROUND_UP(objects, s->objects);
-+
-+	/*
-+	 * Account the possible additional overhead if the slab holds more that
-+	 * one object.
-+	 */
-+	if (s->objects > 1) {
-+		/*
-+		 * Account the possible additional overhead if per cpu slabs
-+		 * are currently empty and have to be allocated. This is very
-+		 * unlikely but a possible scenario immediately after
-+		 * kmem_cache_shrink.
-+		 */
-+		slabs += num_online_cpus();
-+	}
-+
-+	return slabs << s->order;
-+}
-+EXPORT_SYMBOL_GPL(kmem_estimate_pages);
-+
-+/*
-  * Attempt to free all slabs on a node. Return the number of slabs we
-  * were unable to free.
+ static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
++static DEFINE_MUTEX(var_free_mutex);
++int var_free_kbytes;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+ unsigned long __meminitdata nr_all_pages;
+@@ -1240,7 +1242,7 @@ int zone_watermark_ok(struct zone *z, in
+ 	if (alloc_flags & ALLOC_HARDER)
+ 		min -= min / 4;
+ 
+-	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
++	if (free_pages <= min+z->lowmem_reserve[classzone_idx]+z->pages_emerg)
+ 		return 0;
+ 	for (o = 0; o < order; o++) {
+ 		/* At the next order, this order's pages become unavailable */
+@@ -1569,7 +1571,7 @@ __alloc_pages(gfp_t gfp_mask, unsigned i
+ 	struct reclaim_state reclaim_state;
+ 	struct task_struct *p = current;
+ 	int do_retry;
+-	int alloc_flags;
++	int alloc_flags = 0;
+ 	int did_some_progress;
+ 
+ 	might_sleep_if(wait);
+@@ -1721,8 +1723,8 @@ nofail_alloc:
+ nopage:
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
+ 		printk(KERN_WARNING "%s: page allocation failure."
+-			" order:%d, mode:0x%x\n",
+-			p->comm, order, gfp_mask);
++			" order:%d, mode:0x%x, alloc_flags:0x%x, pflags:0x%x\n",
++			p->comm, order, gfp_mask, alloc_flags, p->flags);
+ 		dump_stack();
+ 		show_mem();
+ 	}
+@@ -1937,9 +1939,9 @@ void show_free_areas(void)
+ 			"\n",
+ 			zone->name,
+ 			K(zone_page_state(zone, NR_FREE_PAGES)),
+-			K(zone->pages_min),
+-			K(zone->pages_low),
+-			K(zone->pages_high),
++			K(zone->pages_emerg + zone->pages_min),
++			K(zone->pages_emerg + zone->pages_low),
++			K(zone->pages_emerg + zone->pages_high),
+ 			K(zone_page_state(zone, NR_ACTIVE)),
+ 			K(zone_page_state(zone, NR_INACTIVE)),
+ 			K(zone->present_pages),
+@@ -4125,7 +4127,7 @@ static void calculate_totalreserve_pages
+ 			}
+ 
+ 			/* we treat pages_high as reserved pages. */
+-			max += zone->pages_high;
++			max += zone->pages_high + zone->pages_emerg;
+ 
+ 			if (max > zone->present_pages)
+ 				max = zone->present_pages;
+@@ -4182,7 +4184,8 @@ static void setup_per_zone_lowmem_reserv
   */
-@@ -2818,6 +2849,57 @@ static unsigned long count_partial(struc
+ static void __setup_per_zone_pages_min(void)
+ {
+-	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_emerg = var_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+ 	struct zone *zone;
+ 	unsigned long flags;
+@@ -4194,11 +4197,13 @@ static void __setup_per_zone_pages_min(v
+ 	}
+ 
+ 	for_each_zone(zone) {
+-		u64 tmp;
++		u64 tmp, tmp_emerg;
+ 
+ 		spin_lock_irqsave(&zone->lru_lock, flags);
+ 		tmp = (u64)pages_min * zone->present_pages;
+ 		do_div(tmp, lowmem_pages);
++		tmp_emerg = (u64)pages_emerg * zone->present_pages;
++		do_div(tmp_emerg, lowmem_pages);
+ 		if (is_highmem(zone)) {
+ 			/*
+ 			 * __GFP_HIGH and PF_MEMALLOC allocations usually don't
+@@ -4217,12 +4222,14 @@ static void __setup_per_zone_pages_min(v
+ 			if (min_pages > 128)
+ 				min_pages = 128;
+ 			zone->pages_min = min_pages;
++			zone->pages_emerg = 0;
+ 		} else {
+ 			/*
+ 			 * If it's a lowmem zone, reserve a number of pages
+ 			 * proportionate to the zone's size.
+ 			 */
+ 			zone->pages_min = tmp;
++			zone->pages_emerg = tmp_emerg;
+ 		}
+ 
+ 		zone->pages_low   = zone->pages_min + (tmp >> 2);
+@@ -4244,6 +4251,63 @@ void setup_per_zone_pages_min(void)
+ 	spin_unlock_irqrestore(&min_free_lock, flags);
  }
  
- /*
-+ * return the max number of pages required to allocate @count objects
-+ * of @size bytes from kmalloc given @flags.
-+ */
-+unsigned kestimate_single(size_t size, gfp_t flags, int count)
++static void __adjust_memalloc_reserve(int pages)
 +{
-+	struct kmem_cache *s = get_slab(size, flags);
-+	if (!s)
-+		return 0;
-+
-+	return kmem_estimate_pages(s, flags, count);
-+
++	var_free_kbytes += pages << (PAGE_SHIFT - 10);
++	BUG_ON(var_free_kbytes < 0);
++	setup_per_zone_pages_min();
 +}
-+EXPORT_SYMBOL_GPL(kestimate_single);
 +
-+/*
-+ * return the max number of pages required to allocate @bytes from kmalloc
-+ * in an unspecified number of allocation of heterogeneous size.
-+ */
-+unsigned kestimate(gfp_t flags, size_t bytes)
++static int test_reserve_limits(void)
 +{
-+	int i;
-+	unsigned long pages;
++	struct zone *zone;
++	int node;
 +
-+	/*
-+	 * multiply by two, in order to account the worst case slack space
-+	 * due to the power-of-two allocation sizes.
-+	 */
-+	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
++	for_each_zone(zone)
++		wakeup_kswapd(zone, 0);
 +
-+	/*
-+	 * add the kmem_cache overhead of each possible kmalloc cache
-+	 */
-+	for (i = 1; i < PAGE_SHIFT; i++) {
-+		struct kmem_cache *s;
++	for_each_online_node(node) {
++		struct page *page = alloc_pages_node(node, GFP_KERNEL, 0);
++		if (!page)
++			return -ENOMEM;
 +
-+#ifdef CONFIG_ZONE_DMA
-+		if (unlikely(flags & SLUB_DMA))
-+			s = dma_kmalloc_cache(i, flags);
-+		else
-+#endif
-+			s = &kmalloc_caches[i];
-+
-+		if (s)
-+			pages += kmem_estimate_pages(s, flags, 0);
++		__free_page(page);
 +	}
 +
-+	return pages;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(kestimate);
 +
-+/*
-  * kmem_cache_shrink removes empty slabs from the partial lists and sorts
-  * the remaining slabs by the number of items in use. The slabs with the
-  * most items in use come first. New allocations will then fill those up
-Index: linux-2.6/mm/slab.c
++/**
++ *	adjust_memalloc_reserve - adjust the memalloc reserve
++ *	@pages: number of pages to add
++ *
++ *	It adds a number of pages to the memalloc reserve; if
++ *	the number was positive it kicks reclaim into action to
++ *	satisfy the higher watermarks.
++ *
++ *	returns -ENOMEM when it failed to satisfy the watermarks.
++ */
++int adjust_memalloc_reserve(int pages)
++{
++	int err = 0;
++
++	mutex_lock(&var_free_mutex);
++	__adjust_memalloc_reserve(pages);
++	if (pages > 0) {
++		err = test_reserve_limits();
++		if (err) {
++			__adjust_memalloc_reserve(-pages);
++			goto unlock;
++		}
++	}
++	printk(KERN_DEBUG "Emergency reserve: %d\n", var_free_kbytes);
++
++unlock:
++	mutex_unlock(&var_free_mutex);
++	return err;
++}
++EXPORT_SYMBOL_GPL(adjust_memalloc_reserve);
++
+ /*
+  * Initialise min_free_kbytes.
+  *
+Index: linux-2.6/mm/vmstat.c
 ===================================================================
---- linux-2.6.orig/mm/slab.c
-+++ linux-2.6/mm/slab.c
-@@ -3851,6 +3851,81 @@ const char *kmem_cache_name(struct kmem_
- EXPORT_SYMBOL_GPL(kmem_cache_name);
- 
- /*
-+ * return the max number of pages required to allocated count
-+ * objects from the given cache
-+ */
-+unsigned kmem_estimate_pages(struct kmem_cache *cachep,
-+		gfp_t flags, int objects)
-+{
-+	/*
-+	 * (1) memory for objects,
-+	 */
-+	unsigned nr_slabs = DIV_ROUND_UP(objects, cachep->num);
-+	unsigned nr_pages = nr_slabs << cachep->gfporder;
-+
-+	/*
-+	 * (2) memory for each per-cpu queue (nr_cpu_ids),
-+	 * (3) memory for each per-node alien queues (nr_cpu_ids), and
-+	 * (4) some amount of memory for the slab management structures
-+	 *
-+	 * XXX: truely account these
-+	 */
-+	nr_pages += 1 + ilog2(nr_pages);
-+
-+	return nr_pages;
-+}
-+
-+/*
-+ * return the max number of pages required to allocate @count objects
-+ * of @size bytes from kmalloc given @flags.
-+ */
-+unsigned kestimate_single(size_t size, gfp_t flags, int count)
-+{
-+	struct kmem_cache *s = kmem_find_general_cachep(size, flags);
-+	if (!s)
-+		return 0;
-+
-+	return kmem_estimate_pages(s, flags, count);
-+}
-+EXPORT_SYMBOL_GPL(kestimate_single);
-+
-+/*
-+ * return the max number of pages required to allocate @bytes from kmalloc
-+ * in an unspecified number of allocation of heterogeneous size.
-+ */
-+unsigned kestimate(gfp_t flags, size_t bytes)
-+{
-+	unsigned long pages;
-+	struct cache_sizes *csizep = malloc_sizes;
-+
-+	/*
-+	 * multiply by two, in order to account the worst case slack space
-+	 * due to the power-of-two allocation sizes.
-+	 */
-+	pages = DIV_ROUND_UP(2 * bytes, PAGE_SIZE);
-+
-+	/*
-+	 * add the kmem_cache overhead of each possible kmalloc cache
-+	 */
-+	for (csizep = malloc_sizes; csizep->cs_cachep; csizep++) {
-+		struct kmem_cache *s;
-+
-+#ifdef CONFIG_ZONE_DMA
-+		if (unlikely(flags & __GFP_DMA))
-+			s = csizep->cs_dmacachep;
-+		else
-+#endif
-+			s = csizep->cs_cachep;
-+
-+		if (s)
-+			pages += kmem_estimate_pages(s, flags, 0);
-+	}
-+
-+	return pages;
-+}
-+EXPORT_SYMBOL_GPL(kestimate);
-+
-+/*
-  * This initializes kmem_list3 or resizes various caches for all nodes.
-  */
- static int alloc_kmemlist(struct kmem_cache *cachep)
+--- linux-2.6.orig/mm/vmstat.c
++++ linux-2.6/mm/vmstat.c
+@@ -754,9 +754,9 @@ static void zoneinfo_show_print(struct s
+ 		   "\n        spanned  %lu"
+ 		   "\n        present  %lu",
+ 		   zone_page_state(zone, NR_FREE_PAGES),
+-		   zone->pages_min,
+-		   zone->pages_low,
+-		   zone->pages_high,
++		   zone->pages_emerg + zone->pages_min,
++		   zone->pages_emerg + zone->pages_low,
++		   zone->pages_emerg + zone->pages_high,
+ 		   zone->pages_scanned,
+ 		   zone->nr_scan_active, zone->nr_scan_inactive,
+ 		   zone->spanned_pages,
 
 --
 
