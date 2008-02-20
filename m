@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765390AbYBTP2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbYBTP3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765390AbYBTP2s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:28:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764370AbYBTPUK
+	id S932444AbYBTP3T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764863AbYBTPVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:20:10 -0500
-Received: from host64.cybernetics.com ([70.169.137.4]:2419 "EHLO
-	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbYBTPS7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:18:59 -0500
-Message-ID: <47BC44E2.9060301@cybernetics.com>
-Date: Wed, 20 Feb 2008 10:18:58 -0500
-From: Tony Battersby <tonyb@cybernetics.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220034515.GC22703@gondor.apana.org.au>
-In-Reply-To: <20080220034515.GC22703@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 10:21:07 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:44906 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764858AbYBTPVF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 10:21:05 -0500
+Date: Thu, 21 Feb 2008 02:20:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: linux-next: Tree for Feb 20
+Message-Id: <20080221022057.c0da8d05.sfr@canb.auug.org.au>
+In-Reply-To: <1203519560.3109.6.camel@localhost.localdomain>
+References: <20080220163457.79b9189f.sfr@canb.auug.org.au>
+	<1203519560.3109.6.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_Feb_2008_02_20_57_+1100_9+.ue.v8qeRHo8CO"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> On Tue, Feb 19, 2008 at 05:14:26PM -0500, Tony Battersby wrote:
->   
->> Update: when I revert Herbert's patch in addition to applying your
->> patch, the iSCSI performance goes back up to 115 MB/s again in both
->> directions.  So it looks like turning off SG for TX didn't itself cause
->> the performance drop, but rather that the performance drop is just
->> another manifestation of whatever bug is causing the data corruption.
->>     
->
-> Interesting.  So the workload that regressed is mostly RX with a
-> little TX traffic? Can you try to reproduce this with something
-> like netperf to eliminate other variables?
->
-> This is all very puzzling since the patch in question shouldn't
-> change an RX load at all.
->
-> Thanks,
->   
-We have established that the slowdown was caused by TCP checksum errors
-and retransmits.  I assume that the slowdown in my test was due to the
-light TX rather than the heavy RX.  I am no TCP protocol expert, but
-perhaps heavy TX (such as iperf) might not be affected as much because
-the wire stays busy while waiting for the retransmit, whereas with my
-light TX iSCSI load, the wire goes idle while waiting for the retransmit
-because the iSCSI state machine is stalled.
+--Signature=_Thu__21_Feb_2008_02_20_57_+1100_9+.ue.v8qeRHo8CO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Tony
+Hi James,
 
+On Wed, 20 Feb 2008 08:59:20 -0600 James Bottomley <James.Bottomley@HansenP=
+artnership.com> wrote:
+>
+> Is the merge log available anywhere yet?
+
+Are you looking for more that what is in Next/merge.log in the tree?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__21_Feb_2008_02_20_57_+1100_9+.ue.v8qeRHo8CO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHvEVfTgG2atn1QN8RAo3IAJ97h3+lZoV4xhCyZozXhNvahcIr3ACeNVKs
+LITWDuexdDethomSN9xU3Ls=
+=bt7O
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__21_Feb_2008_02_20_57_+1100_9+.ue.v8qeRHo8CO--
