@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932992AbYBTUUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933175AbYBTUV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932992AbYBTUUk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:20:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752005AbYBTUUc
+	id S933175AbYBTUV4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:21:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbYBTUVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:20:32 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59347 "EHLO
+	Wed, 20 Feb 2008 15:21:48 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59350 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751953AbYBTUUb (ORCPT
+	with ESMTP id S1752005AbYBTUVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:20:31 -0500
-Date: Wed, 20 Feb 2008 20:11:01 +0000
+	Wed, 20 Feb 2008 15:21:47 -0500
+Date: Wed, 20 Feb 2008 20:12:16 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] amiserial: Prepare for locking relaxation in caller.
-Message-ID: <20080220201101.6fff0c59@core>
+Subject: [PATCH] cyclades: Prepare for relaxed locking in callers
+Message-ID: <20080220201216.40d70747@core>
 X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -26,67 +26,101 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Just wrap this one in a lock_kernel. As I understand it there is no M68K
-SMP anyway.
+Basically wrap it in lock_kernel where it is hard to prove the locking is
+ok. 
 
 Signed-off-by: Alan Cox <alan@redhat.com>
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc2-mm1/drivers/char/amiserial.c linux-2.6.25-rc2-mm1/drivers/char/amiserial.c
---- linux.vanilla-2.6.25-rc2-mm1/drivers/char/amiserial.c	2008-02-19 11:01:44.000000000 +0000
-+++ linux-2.6.25-rc2-mm1/drivers/char/amiserial.c	2008-02-20 11:45:28.000000000 +0000
-@@ -1074,6 +1074,7 @@
- 	if (!retinfo)
- 		return -EFAULT;
- 	memset(&tmp, 0, sizeof(tmp));
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc2-mm1/drivers/char/cyclades.c linux-2.6.25-rc2-mm1/drivers/char/cyclades.c
+--- linux.vanilla-2.6.25-rc2-mm1/drivers/char/cyclades.c	2008-02-19 11:01:43.000000000 +0000
++++ linux-2.6.25-rc2-mm1/drivers/char/cyclades.c	2008-02-20 11:45:28.000000000 +0000
+@@ -3464,6 +3464,8 @@
+ 	if (serial_paranoia_check(info, tty->name, __FUNCTION__))
+ 		return -ENODEV;
+ 
 +	lock_kernel();
- 	tmp.type = state->type;
- 	tmp.line = state->line;
- 	tmp.port = state->port;
-@@ -1084,6 +1085,7 @@
- 	tmp.close_delay = state->close_delay;
- 	tmp.closing_wait = state->closing_wait;
- 	tmp.custom_divisor = state->custom_divisor;
-+	unlock_kernel();
- 	if (copy_to_user(retinfo,&tmp,sizeof(*retinfo)))
- 		return -EFAULT;
- 	return 0;
-@@ -1099,13 +1101,17 @@
- 
- 	if (copy_from_user(&new_serial,new_info,sizeof(new_serial)))
- 		return -EFAULT;
-+		
-+	lock_kernel();
- 	state = info->state;
- 	old_state = *state;
-   
- 	change_irq = new_serial.irq != state->irq;
- 	change_port = (new_serial.port != state->port);
--	if(change_irq || change_port || (new_serial.xmit_fifo_size != state->xmit_fifo_size))
-+	if(change_irq || change_port || (new_serial.xmit_fifo_size != state->xmit_fifo_size)) {
-+	  unlock_kernel();
- 	  return -EINVAL;
-+	}
-   
- 	if (!serial_isroot()) {
- 		if ((new_serial.baud_base != state->baud_base) ||
-@@ -1122,8 +1128,10 @@
- 		goto check_and_exit;
- 	}
- 
--	if (new_serial.baud_base < 9600)
-+	if (new_serial.baud_base < 9600) {
-+		unlock_kernel();
- 		return -EINVAL;
-+	}
- 
- 	/*
- 	 * OK, past this point, all the error checking has been done.
-@@ -1157,6 +1165,7 @@
++	
+ 	card = info->card;
+ 	channel = info->line - card->first_line;
+ 	if (!IS_CYC_Z(*card)) {
+@@ -3506,10 +3508,12 @@
+ 				((lstatus & C_RS_CTS) ? TIOCM_CTS : 0);
+ 		} else {
+ 			result = 0;
++			unlock_kernel();
+ 			return -ENODEV;
  		}
- 	} else
- 		retval = startup(info);
+ 
+ 	}
 +	unlock_kernel();
- 	return retval;
- }
+ 	return result;
+ }				/* cy_tiomget */
+ 
+@@ -3880,6 +3884,7 @@
+ 	printk(KERN_DEBUG "cyc:cy_ioctl ttyC%d, cmd = %x arg = %lx\n",
+ 		info->line, cmd, arg);
+ #endif
++	lock_kernel();
+ 
+ 	switch (cmd) {
+ 	case CYGETMON:
+@@ -3988,47 +3993,47 @@
+ 		p_cuser = argp;
+ 		ret_val = put_user(cnow.cts, &p_cuser->cts);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.dsr, &p_cuser->dsr);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.rng, &p_cuser->rng);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.dcd, &p_cuser->dcd);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.rx, &p_cuser->rx);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.tx, &p_cuser->tx);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.frame, &p_cuser->frame);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.overrun, &p_cuser->overrun);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.parity, &p_cuser->parity);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.brk, &p_cuser->brk);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = put_user(cnow.buf_overrun, &p_cuser->buf_overrun);
+ 		if (ret_val)
+-			return ret_val;
++			break;
+ 		ret_val = 0;
+ 		break;
+ 	default:
+ 		ret_val = -ENOIOCTLCMD;
+ 	}
++	unlock_kernel();
+ 
+ #ifdef CY_DEBUG_OTHER
+ 	printk(KERN_DEBUG "cyc:cy_ioctl done\n");
+ #endif
+-
+ 	return ret_val;
+ }				/* cy_ioctl */
  
