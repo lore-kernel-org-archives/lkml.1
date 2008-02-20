@@ -1,47 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762396AbYBTOmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763429AbYBTOnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762396AbYBTOmO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:42:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYBTOl7
+	id S1763429AbYBTOnu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:43:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbYBTOnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:41:59 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52824 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751244AbYBTOl7 (ORCPT
+	Wed, 20 Feb 2008 09:43:43 -0500
+Received: from exprod7og105.obsmtp.com ([64.18.2.163]:52678 "EHLO
+	exprod7og105.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751244AbYBTOnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:41:59 -0500
-Date: Wed, 20 Feb 2008 08:41:55 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v6
-Message-ID: <20080220144155.GI11391@sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random>
+	Wed, 20 Feb 2008 09:43:42 -0500
+Date: Wed, 20 Feb 2008 14:43:39 +0000
+From: Stephane Chazelas <stephane.chazelas@emerson.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
+Message-ID: <chaz20080220144339.GK4539@artesyncp.com>
+References: <chaz20080212134751.GI30304@artesyncp.com> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <200802192333.39707.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20080220103942.GU7128@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802192333.39707.arnd@arndb.de>
+Organization: Embedded Computing Emerson Network Power
+X-URL: http://www.emersonembeddedcomputing.com
+User-Agent: Mutt/1.5.16 (2007-09-19)
+X-OriginalArrivalTime: 20 Feb 2008 14:43:40.0310 (UTC) FILETIME=[FBAF8360:01C873CE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 11:39:42AM +0100, Andrea Arcangeli wrote:
-> XPMEM simply can't use RCU for the registration locking if it wants to
-> schedule inside the mmu notifier calls. So I guess it's better to add
+2008-02-19 23:33:38 +0100, Arnd Bergmann:
+> On Tuesday 19 February 2008, you wrote:
+> > > What about having a /dev/block2mtd (with owner/permissions that
+> > > could allow non-root users to use it), with 2 ioctls:
+> > > 
+> > > - one to "link" a block dev to a mtd that would take as
+> > >   parameter a fd to an open block dev (again allowing for
+> > >   flexible permissions) and would return the number of the
+> > >   allocated mtd and success/failure in errno. Upon sucess it
+> > >   would increase the refcnt of block2mtd.
+> > > 
+> > > - and one to "release" the link. That would fail if the mtd is
+> > >   in use and decrease block2mtd's refcnt upon success.
+> > > 
+> > > A bit like the loop devices (or /dev/ptmx) actually. What do you
+> > > think?
+> > 
+> > Could work.  Passing the fd raises several alarm bells.  Arnd, any
+> > comments from you?
+> 
+> Given that loop works in this way, I certainly see that as doable,
+> but then I'd vote for using the existing ioctl semantics of
+> LOOP_SET_FD and LOOP_DEL_FD on the mtdchar device, which already
+> comes with an ioctl interface for mtd devices.
+> I'd probably also allow the LOOP_{GET,SET}_STATUS{,64} commands,
+> so you can actually use the existing losetup tool.
+> That way, we wouldn't have to introduce a new API, just extend
+> an existing one to work on more things.
+[...]
 
-Whoa there.  In Christoph's patch, we did not use rcu for the list.  It
-was a simple hlist_head.  The list manipulations were done under
-down_write(&current->mm->mmap_sem) and would therefore not be racy.  All
-the callout locations are already acquiring the mmap_sem at least
-readably, so we should be safe.  Maybe I missed a race somewhere.
+Hi Arnd,
 
-Thanks,
-Robin
+note that for "loop", you have /dev/loop0, /dev/loop1... which
+makes it a pain to handle
+
+For block2mtd, you don't need several device files in /dev, you
+only need one to pass ioctls down to create mtd devices.
+
+That may end up creating new /dev devices via mtdblock or
+mtdblock_ro for instance.
+
+So I'm not sure reusing the "loop" ioctls is a good idea.
+
+Cheers,
+Stephane
