@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933641AbYBTXlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764184AbYBTXq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933641AbYBTXlo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:41:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbYBTXlf
+	id S1764184AbYBTXq5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:46:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbYBTXqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:41:35 -0500
-Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:51286 "HELO
-	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754899AbYBTXle (ORCPT
+	Wed, 20 Feb 2008 18:46:50 -0500
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:30256 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753143AbYBTXqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:41:34 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 18:41:34 EST
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 15:34:35 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201432.13393.jesse.barnes@intel.com> <200802201503.44656.jbarnes@virtuousgeek.org>
-In-Reply-To: <200802201503.44656.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201534.36174.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Wed, 20 Feb 2008 18:46:49 -0500
+Date: Wed, 20 Feb 2008 17:46:18 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: BT8x8 TV Card
+In-reply-to: <fa.8THcxUS0tA6NGzMwMdJ0gEixmMw@ifi.uio.no>
+To: Chris Brennan <xaero@xaerolimit.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Message-id: <47BCBBCA.1080307@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.8THcxUS0tA6NGzMwMdJ0gEixmMw@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 3:03 pm Jesse Barnes wrote:
-> On Wednesday, February 20, 2008 2:32 pm Jesse Barnes wrote:
-> > On Wednesday, February 20, 2008 11:10 am Jeff Chua wrote:
-> > > On Feb 21, 2008 2:53 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > > > > So, next I'll try "shutdown" to see if it work. I was using
-> > > > > "platform".
-> > > >
-> > > > Ok, that would be good to try.
-> > >
-> > > "shutdown" does power down properly. But still green on resume.
-> > >
-> > > > Looks like the AR registers are hosed, which is what I thought I
-> > > > fixed... Can you attach your i915_drv.c file just so I can sanity
-> > > > check it?
-> > >
-> > > Attached.
-> >
-> > Jeff, for the hang on suspend problem, I know suspect something else in
-> > 2.6.25-rc2 caused that.
->
-> Looks like 2.6.25-rc1 also had broken suspend (my test was broken).  IIRC,
-> Dave and I had it working at LCA using the out of tree DRM modules on
-> 2.6.23.14 or 15...  Maybe you could give that a try?
+Chris Brennan wrote:
+> I'm having a kernel related issue (I think) with the BT878 card I have
+> in my gentoo box.
+> 
+> Here are pastebin results of varius infomation, I hope I give all the
+> necessary info. If I am missing something or you need more, please let
+> me know.
+> 
+> dmesg -> http://rafb.net/p/MVIiSg62.html
+> xorg.conf -> http://rafb.net/p/dXz4Ry49.html
+> Xorg.0.log -> http://rafb.net/p/LbPBZT56.html
+> config -> http://rafb.net/p/Dm5LDM88.html
 
-And just to confirm that, I just tested the current DRM modules against a 
-2.6.23.15 kernel.  It suspends to disk correctly (w/o a hang) and doesn't 
-give me a green screen, so something in 2.6.25 must be causing that (even 
-2.6.25-rc1 seems to have the problem).
+These links don't work.
 
-Also, this patch against 2.6.25-rc1 seemed to prevent the 'green screen' 
-problem.  2.6.25-rc2 already has part of it...
+> 
+> xawtv gives me a window and when I right click, I can choose what
+> format and region and all that jazz, but I get no picture. I do get a
+> green overlay w/ some static when it doesn't cause my X Session to
+> freeze. Below is the console output of two apps I am trying to use to
+> access the TV Card.
+> 
+> tvtime produces the following error:
+> 
+>     xaero@Leviathan ~ $ tvtime
+>     Running tvtime 1.0.2.
+>     Reading configuration from /etc/tvtime/tvtime.xml
+>     Reading configuration from /home/xaero/.tvtime/tvtime.xml
+>     xvoutput: No XVIDEO port found which supports YUY2 images.
+> 
+>     *** tvtime requires hardware YUY2 overlay support from your video card
+>     *** driver.  If you are using an older NVIDIA card (TNT2), then
+>     *** this capability is only available with their binary drivers.
+>     *** For some ATI cards, this feature may be found in the experimental
+>     *** GATOS drivers: http://gatos.souceforge.net/
+>     *** If unsure, please check with your distribution to see if your
+>     *** X driver supports hardware overlay surfaces.
+> 
+>     xaero@Leviathan ~ $
+> 
+> tvtime-scanner now that made my heart jump ... cause it scanned and
+> stored all my basic cable channels. But I still can't get a video
+> signal. So I am obviously missing something.
+> 
+> 
+> So hopefully someone can help me
 
-Anyway, let me know how your testing goes.
-
-Thanks,
-Jesse
+I assume you did read the message tvtime spit out and looked into it?
