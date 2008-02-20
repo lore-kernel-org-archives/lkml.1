@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764270AbYBTFdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763299AbYBTFf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764270AbYBTFdt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbYBTFdN
+	id S1763299AbYBTFf0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbYBTFfO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:33:13 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:16140 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754736AbYBTFdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 00:33:11 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:user-agent:date:from:to:cc:subject;
-	b=k6z+tNVGza2QZGGVkPXVwkPKBwI9bUIThmP7WsP62qWbHmTUtw9hvhi/HDUwMyVd2
-	phtZrmVge/QDWtmL4+BpA==
-Message-Id: <20080220051544.018684000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Tue, 19 Feb 2008 21:15:44 -0800
-From: menage@google.com
-To: kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, balbir@in.ibm.com,
-       xemul@openvz.org, yamamoto@valinux.co.jp
-Subject: [PATCH 0/2] cgroup map files: Add a key/value map file type to cgroups
+	Wed, 20 Feb 2008 00:35:14 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:58623 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752476AbYBTFfM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 00:35:12 -0500
+Date: Wed, 20 Feb 2008 16:34:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+Subject: linux-next: Tree for Feb 20
+Message-Id: <20080220163457.79b9189f.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__20_Feb_2008_16_34_57_+1100_VEoZJ0+b=I_O/pXe"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These patches add a new cgroup control file output type - a map from
-strings to u64 values - and make use of it for the memory controller
-"stat" file.
+--Signature=_Wed__20_Feb_2008_16_34_57_+1100_VEoZJ0+b=I_O/pXe
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-It is intended for use when the subsystem wants to return a collection
-of values that are related in some way, for which a separate control
-file for each value would make the reporting unwieldy.
+Hi all,
 
-The advantages of this are:
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
-- more standardized output from control files that report
-similarly-structured data
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
 
-- less boilerplate required in cgroup subsystems
+There were no merge conflicts and only one build failure!
 
-- simplifies transition to a future efficient cgroups binary API
+We are up to 27 trees, more are welcome (even if they are currently
+empty).  I would encourage architecture maintainers, in particular, to
+set up a git branch or quilt tree now to avoid the rush after RC2 :-)
 
-Signed-off-by: Paul Menage <menage@google.com>
+I will stop making these announcements now unless there is some change to
+the tree or things people should know.  There should be a new tree every
+(Australian Capital Territory) working day.
 
---
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__20_Feb_2008_16_34_57_+1100_VEoZJ0+b=I_O/pXe
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHu7wOTgG2atn1QN8RAhjOAKCT+XgFeWki51GMgv5+lWRWsDSjogCggztX
+yr7ieVg/fE16VBus4j7x5BM=
+=kAW1
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Feb_2008_16_34_57_+1100_VEoZJ0+b=I_O/pXe--
