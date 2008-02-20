@@ -1,101 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932847AbYBTTef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933163AbYBTTez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932847AbYBTTef (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 14:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756941AbYBTTd5
+	id S933163AbYBTTez (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 14:34:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762193AbYBTTeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 14:33:57 -0500
-Received: from mail.windriver.com ([147.11.1.11]:53038 "EHLO mail.wrs.com"
+	Wed, 20 Feb 2008 14:34:01 -0500
+Received: from mail.windriver.com ([147.11.1.11]:53049 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755697AbYBTTdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 14:33:55 -0500
+	id S1761260AbYBTTeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 14:34:00 -0500
 From: Jason Wessel <jason.wessel@windriver.com>
 To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 1/3] kgdb: fix optional arch functions and probe_kernel_*
-Date: Wed, 20 Feb 2008 13:33:38 -0600
-Message-Id: <1203536020-20102-2-git-send-email-jason.wessel@windriver.com>
+Cc: linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 2/3] kgdb: kgdboc pl011 I/O module
+Date: Wed, 20 Feb 2008 13:33:39 -0600
+Message-Id: <1203536020-20102-3-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.5.4
-In-Reply-To: <1203536020-20102-1-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1203536020-20102-2-git-send-email-jason.wessel@windriver.com>
 References: <1203536020-20102-1-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 20 Feb 2008 19:33:41.0328 (UTC) FILETIME=[7F802500:01C873F7]
+ <1203536020-20102-2-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 20 Feb 2008 19:33:41.0828 (UTC) FILETIME=[7FCC7040:01C873F7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix two regressions dealing with the kgdb core.
+Implement the serial polling hooks for the pl011 uart for use with
+kgdboc.
 
-1) kgdb_skipexception and kgdb_post_primary_code are optional
-functions that are only required on archs that need special exception
-fixups.
-
-2) The kernel address space scope must be set on any probe_kernel_*
-function or archs such as ARCH=arm will not allow access to the kernel
-memory space.  As an example, it is required to allow the full kernel
-address space is when you the kernel debugger to inspect a system
-call.
+This patch was specifically tested on the ARM Versatile AB reference
+platform.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 ---
- kernel/kgdb.c |   11 +++++++++++
- mm/maccess.c  |    6 ++++++
- 2 files changed, 17 insertions(+), 0 deletions(-)
+ drivers/serial/amba-pl011.c |   30 ++++++++++++++++++++++++++++++
+ 1 files changed, 30 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 68aea78..31425e0 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -200,6 +200,17 @@ int __weak kgdb_arch_init(void)
- 	return 0;
+diff --git a/drivers/serial/amba-pl011.c b/drivers/serial/amba-pl011.c
+index 40604a0..ecd3dad 100644
+--- a/drivers/serial/amba-pl011.c
++++ b/drivers/serial/amba-pl011.c
+@@ -314,6 +314,32 @@ static void pl011_break_ctl(struct uart_port *port, int break_state)
+ 	spin_unlock_irqrestore(&uap->port.lock, flags);
  }
  
-+int __weak kgdb_skipexception(int exception, struct pt_regs *regs)
++#ifdef CONFIG_CONSOLE_POLL
++static int pl010_get_poll_char(struct uart_port *port)
 +{
-+	return 0;
++	struct uart_amba_port *uap = (struct uart_amba_port *)port;
++	unsigned int status;
++	int ch;
++	do {
++		status = readw(uap->port.membase + UART01x_FR);
++	} while (status & UART01x_FR_RXFE);
++	ch = readw(uap->port.membase + UART01x_DR);
++
++	return ch;
 +}
 +
-+void __weak
-+kgdb_post_primary_code(struct pt_regs *regs, int e_vector, int err_code)
++static void pl010_put_poll_char(struct uart_port *port,
++			 unsigned char ch)
 +{
-+	return;
++	struct uart_amba_port *uap = (struct uart_amba_port *)port;
++
++	while (readw(uap->port.membase + UART01x_FR) & UART01x_FR_TXFF)
++		barrier();
++	writew(ch, uap->port.membase + UART01x_DR);
 +}
 +
- /**
-  *	kgdb_disable_hw_debug - Disable hardware debugging while we in kgdb.
-  *	@regs: Current &struct pt_regs.
-diff --git a/mm/maccess.c b/mm/maccess.c
-index 24f81b9..ac40796 100644
---- a/mm/maccess.c
-+++ b/mm/maccess.c
-@@ -17,11 +17,14 @@
- long probe_kernel_read(void *dst, void *src, size_t size)
++#endif /* CONFIG_CONSOLE_POLL */
++
+ static int pl011_startup(struct uart_port *port)
  {
- 	long ret;
-+	mm_segment_t old_fs = get_fs();
+ 	struct uart_amba_port *uap = (struct uart_amba_port *)port;
+@@ -572,6 +598,10 @@ static struct uart_ops amba_pl011_pops = {
+ 	.request_port	= pl010_request_port,
+ 	.config_port	= pl010_config_port,
+ 	.verify_port	= pl010_verify_port,
++#ifdef CONFIG_CONSOLE_POLL
++	.poll_get_char = pl010_get_poll_char,
++	.poll_put_char = pl010_put_poll_char,
++#endif
+ };
  
-+	set_fs(KERNEL_DS);
- 	pagefault_disable();
- 	ret = __copy_from_user_inatomic(dst,
- 			(__force const void __user *)src, size);
- 	pagefault_enable();
-+	set_fs(old_fs);
- 
- 	return ret ? -EFAULT : 0;
- }
-@@ -39,10 +42,13 @@ EXPORT_SYMBOL_GPL(probe_kernel_read);
- long probe_kernel_write(void *dst, void *src, size_t size)
- {
- 	long ret;
-+	mm_segment_t old_fs = get_fs();
- 
-+	set_fs(KERNEL_DS);
- 	pagefault_disable();
- 	ret = __copy_to_user_inatomic((__force void __user *)dst, src, size);
- 	pagefault_enable();
-+	set_fs(old_fs);
- 
- 	return ret ? -EFAULT : 0;
- }
+ static struct uart_amba_port *amba_ports[UART_NR];
 -- 
 1.5.4
 
