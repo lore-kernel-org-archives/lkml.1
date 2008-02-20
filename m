@@ -1,48 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764214AbYBTVXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932346AbYBTVXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764214AbYBTVXV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:23:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYBTVXH
+	id S932346AbYBTVXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:23:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758707AbYBTVXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:23:07 -0500
-Received: from mail.fieldses.org ([66.93.2.214]:44589 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756232AbYBTVXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:23:06 -0500
-Date: Wed, 20 Feb 2008 16:23:02 -0500
-To: David Miller <davem@davemloft.net>
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-Message-ID: <20080220212302.GJ30160@fieldses.org>
-References: <20080220165557.GA18816@havoc.gtf.org> <20080220.131530.18314167.davem@davemloft.net>
+	Wed, 20 Feb 2008 16:23:14 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:51981 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757606AbYBTVXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:23:09 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220.131530.18314167.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+Content-Transfer-Encoding: 7bit
+Message-ID: <18364.39445.347911.402466@stoffel.org>
+Date: Wed, 20 Feb 2008 16:22:29 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cyclades: Prepare for relaxed locking in callers
+In-Reply-To: <20080220201216.40d70747@core>
+References: <20080220201216.40d70747@core>
+X-Mailer: VM 8.0.x-xemacs-542 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:15:30PM -0800, David Miller wrote:
-> From: Jeff Garzik <jeff@garzik.org>
-> Date: Wed, 20 Feb 2008 11:55:57 -0500
-> 
-> > 
-> > Note:  this is based off of Linus's latest commit
-> > (5d9c4a7de64d398604a978d267a6987f1f4025b7), since all my previous
-> > submissions are now upstream (thanks!).
-> 
-> The whole point of my not rebasing net-2.6 is so that you can always
-> use it as a base.
-> 
-> With what you've giving me now I either have to:
-> 
-> 1) Pull in Linus's tree to net-2.6, then pull from you.
-> 
-> 2) Pull in directly from you to get it all.
 
-Why are either of those a problem?
+Alan> Basically wrap it in lock_kernel where it is hard to prove the
+Alan> locking is ok.
 
---b.
+I've got cyclades cards, both ISA and Serial.  Do you want/need any
+specific tests?  Or should I just send you (or your deputy) the ISA
+card for your collection?
+
+John
+
+Alan> Signed-off-by: Alan Cox <alan@redhat.com>
+
+Alan> diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.25-rc2-mm1/drivers/char/cyclades.c linux-2.6.25-rc2-mm1/drivers/char/cyclades.c
+Alan> --- linux.vanilla-2.6.25-rc2-mm1/drivers/char/cyclades.c	2008-02-19 11:01:43.000000000 +0000
+Alan> +++ linux-2.6.25-rc2-mm1/drivers/char/cyclades.c	2008-02-20 11:45:28.000000000 +0000
+Alan> @@ -3464,6 +3464,8 @@
+Alan>  	if (serial_paranoia_check(info, tty->name, __FUNCTION__))
+Alan>  		return -ENODEV;
+ 
+Alan> +	lock_kernel();
+Alan> +	
+Alan>  	card = info->card;
+Alan>  	channel = info->line - card->first_line;
+Alan>  	if (!IS_CYC_Z(*card)) {
+Alan> @@ -3506,10 +3508,12 @@
+Alan>  				((lstatus & C_RS_CTS) ? TIOCM_CTS : 0);
+Alan>  		} else {
+Alan>  			result = 0;
+Alan> +			unlock_kernel();
+Alan>  			return -ENODEV;
+Alan>  		}
+ 
+Alan>  	}
+Alan> +	unlock_kernel();
+Alan>  	return result;
+Alan>  }				/* cy_tiomget */
+ 
+Alan> @@ -3880,6 +3884,7 @@
+Alan>  	printk(KERN_DEBUG "cyc:cy_ioctl ttyC%d, cmd = %x arg = %lx\n",
+info-> line, cmd, arg);
+Alan>  #endif
+Alan> +	lock_kernel();
+ 
+Alan>  	switch (cmd) {
+Alan>  	case CYGETMON:
+Alan> @@ -3988,47 +3993,47 @@
+Alan>  		p_cuser = argp;
+Alan>  		ret_val = put_user(cnow.cts, &p_cuser->cts);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.dsr, &p_cuser->dsr);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.rng, &p_cuser->rng);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.dcd, &p_cuser->dcd);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.rx, &p_cuser->rx);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.tx, &p_cuser->tx);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.frame, &p_cuser->frame);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.overrun, &p_cuser->overrun);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.parity, &p_cuser->parity);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.brk, &p_cuser->brk);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = put_user(cnow.buf_overrun, &p_cuser->buf_overrun);
+Alan>  		if (ret_val)
+Alan> -			return ret_val;
+Alan> +			break;
+Alan>  		ret_val = 0;
+Alan>  		break;
+Alan>  	default:
+Alan>  		ret_val = -ENOIOCTLCMD;
+Alan>  	}
+Alan> +	unlock_kernel();
+ 
+Alan>  #ifdef CY_DEBUG_OTHER
+Alan>  	printk(KERN_DEBUG "cyc:cy_ioctl done\n");
+Alan>  #endif
+Alan> -
+Alan>  	return ret_val;
+Alan>  }				/* cy_ioctl */
+ 
+Alan> --
+Alan> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+Alan> the body of a message to majordomo@vger.kernel.org
+Alan> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Alan> Please read the FAQ at  http://www.tux.org/lkml/
+
+
+Alan> !DSPAM:47bc8c2521682037060298!
