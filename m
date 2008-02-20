@@ -1,89 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764362AbYBTWn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763468AbYBTWp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764362AbYBTWn1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:43:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbYBTWnT
+	id S1763468AbYBTWp0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:45:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbYBTWpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:43:19 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:60605 "EHLO ogre.sisk.pl"
+	Wed, 20 Feb 2008 17:45:11 -0500
+Received: from crca.org.au ([67.207.131.56]:57715 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752908AbYBTWnS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:43:18 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Date: Wed, 20 Feb 2008 23:41:57 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0802201721080.24031-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802201721080.24031-100000@iolanthe.rowland.org>
+	id S1753182AbYBTWpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:45:09 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <47BCAD6E.9080704@nigel.suspend2.net>
+Date: Thu, 21 Feb 2008 09:45:02 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jesse Barnes <jesse.barnes@intel.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
+ Screen becomes green.
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com>
+In-Reply-To: <200802201344.11643.jesse.barnes@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802202341.57748.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of February 2008, Alan Stern wrote:
-> On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
-> 
-> > Well, below is an uncompiled and untested but illustrating the idea that
-> > might allow people not to bother with device_pm_schedule_removal()
-> > explicitly and can fix the issue at hand.
-> > 
-> > [There are some cases that need handling and are not covered here.]
-> > 
-> > Please have a look.
-> > 
-> > Thanks,
-> > Rafael
-> 
-> > +static struct task_struct *suspending_task;
-> > +static DEFINE_MUTEX(suspending_task_mtx);
-> 
-> I suspect you don't really need this mutex.
-> 
-> > +bool in_suspend_context(void)
-> > +{
-> > +	bool result;
-> > +
-> > +	mutex_lock(&suspending_task_mtx);
-> > +	result = (suspending_task == current);
-> > +	mutex_unlock(&suspending_task_mtx);
-> > +	return result;
-> > +}
-> 
-> If suspending_task == current then you are guaranteed to be serialized, 
-> because everything a single task does is serial.
+Hi.
 
-But in principle there could be a concurrent thread removind the device and
-that should block on dev->sem held by us.
+Jesse Barnes wrote:
+> Well, it seems like we'll have to fix drivers in either case, and isn't a 
+> kexec approach fundamentally more sound and simple, design-wise?  Rafael 
+> pointed out some problems with properly setting wakeup states, but I think 
+> that could be overcome...
 
-Right now that's not very likely to happen thanks to the freezer, but we're
-doing all this stuff, because we want to get rid of the freezer eventually. :-)
+No. AFAICS, kexec is going to be more complex and ugly in many ways.
 
-> > @@ -1162,7 +1162,10 @@ void device_destroy(struct class *class,
-> >  	dev = class_find_device(class, &devt, __match_devt);
-> >  	if (dev) {
-> >  		put_device(dev);
-> > -		device_unregister(dev);
-> > +		if (in_suspend_context())
-> > +			device_pm_schedule_removal(dev);
-> > +		else
-> > +			device_unregister(dev);
-> >  	}
-> >  }
-> 
-> But what about device_del()?  Can a similar change be made there?
+To summarise, a kexec based hibernation is going to need the following 
+additional requirements to just replace what we already have:
 
-I believe so.
+- get the original kernel to allocate storage while racing against the 
+rest of the system (currently allocation is done post-atomic copy & 
+post-freezing - no racing). This makes it potentially slower, too;
+- get the original kernel to transfer the information about what swap 
+was allocated to the kexec'd kernel, probably together with a lot of 
+other information (which pages are nosave etc).
+- get the original kernel to keep memory free for the kexec'd kernel 
+which would otherwise be usable. Not a biggy on desktops or laptops, but 
+think about embedded.
+- people keep talking about hibernating to an ext3 fs mounted on fuse as 
+a limitation of the freezer. To do that with kexec, you're still going 
+to have to bmap the ext3 fs and pass the block list (in which case we 
+can also do it without kexec) or umount all the ext3/fuse part and 
+remount in the kexec'd kernel. Sort of defeats the purpose, doesn't it?
 
-I'm working on a more complete patch right now.
+I also wonder about how much of a pain it's going to be setting up 
+userspace for this kexec'd kernel. Will you need a separate partition 
+just for it? If not, will the userspace be loaded into memory all the 
+time (more memory wasted for normal use), or loaded from ordinary 
+partitions at kexec time (how to do safely? - more info to transfer 
+between kernels?).
 
-Thanks,
-Rafael
+I'd love it if kexec really was the panacea to the freezer issues, but 
+problems like these make me think it isn't a viable solution.
+
+Nigel
