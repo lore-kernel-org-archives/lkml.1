@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbYBTAdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbYBTAgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbYBTAdZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:33:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYBTAdQ
+	id S1763566AbYBTAgn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:36:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbYBTAg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:33:16 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:34530 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754680AbYBTAdP (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:33:15 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Gunter Ohrner <G.Ohrner@post.rwth-aachen.de>, linux-kernel@vger.kernel.org
-Subject: Re: vfat32 Free Cluster Count Update
-In-Reply-To: Your message of "Tue, 19 Feb 2008 19:23:12 +0900."
-             <877ih1w8hb.fsf@duaron.myhome.or.jp>
-From: Valdis.Kletnieks@vt.edu
-References: <fp77bc$akv$1@ger.gmane.org>
-            <877ih1w8hb.fsf@duaron.myhome.or.jp>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1203467589_762P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 19 Feb 2008 19:36:28 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:37109 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbYBTAg1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:36:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=b8mSH49PMAkOyOyiCDC88MamDiE+dug6LOgwtTrnDMeuD893hMu8sFd3+W9rsszyyzj6qZ7nPS81wX8xuXcoXmr2vvCzv0iZpmyoqzwMeqhHCyPFiXF5ZrU9td25b6EwVla5eghIu+l1JIjg603F/BHD4ZPdrg2bQ1j6ipFF19Y=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide_platform: fix resources handling
+Date: Wed, 20 Feb 2008 01:45:36 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Vitaly Bordug <vitb@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200802200145.36275.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Tue, 19 Feb 2008 19:33:09 -0500
-Message-ID: <27400.1203467589@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1203467589_762P
-Content-Type: text/plain; charset=us-ascii
+Tell IDE layer to not manage resources by always setting hwif->mmio flag
+(resources are handled by a platform device).
 
-On Tue, 19 Feb 2008 19:23:12 +0900, OGAWA Hirofumi said:
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/legacy/ide_platform.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-> I'll dig it more, later. And for right now, please run "df" command, it
-> will fix free cluster count.
-
-Wow, that's a real kick in the head for all of us who have a mental concept
-of 'df' being basically a read-only program, and "fixing counts" to be more
-the job of 'fsck'.... :)
-
-(Or is 'df' simply a known way to force execution of a code path that ends up
-fixing the counts as a side-effect?)
-
-
---==_Exmh_1203467589_762P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHu3VFcC3lWbTT17ARAsf5AKDl6nO/sDDOoJ2OEQ6v7SSsfvHtwACgnRbH
-C3NHcnLKhtRUv05CWx/Q7d4=
-=Sgyx
------END PGP SIGNATURE-----
-
---==_Exmh_1203467589_762P--
+Index: b/drivers/ide/legacy/ide_platform.c
+===================================================================
+--- a/drivers/ide/legacy/ide_platform.c
++++ b/drivers/ide/legacy/ide_platform.c
+@@ -100,11 +100,10 @@ static int __devinit plat_ide_probe(stru
+ 	hw.dev = &pdev->dev;
+ 
+ 	ide_init_port_hw(hwif, &hw);
++	hwif->mmio = 1;
+ 
+-	if (mmio) {
+-		hwif->mmio = 1;
++	if (mmio)
+ 		default_hwif_mmiops(hwif);
+-	}
+ 
+ 	idx[0] = hwif->index;
+ 
