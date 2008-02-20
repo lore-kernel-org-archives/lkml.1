@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764545AbYBTTVs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbYBTTZu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764545AbYBTTVs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 14:21:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbYBTTVi
+	id S1765466AbYBTTZu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 14:25:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYBTTZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 14:21:38 -0500
-Received: from fk-out-0910.google.com ([209.85.128.190]:46301 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbYBTTVh (ORCPT
+	Wed, 20 Feb 2008 14:25:40 -0500
+Received: from cavan.codon.org.uk ([78.32.9.130]:56711 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbYBTTZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 14:21:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=sTSsdNp4FF6HjIFnBxRBR7aLKOcXSws3Zt3zzOpo4Qpap/Qx1qO3/hikauolxHERwWQX4fC4VitG8Mj8RHe7xP9YVEd7fjrwTy9uXEte+oa9yfmXqgAycxnq2wUmv6AqLEmcyfYH4GrFyc4N6bxVQbsJGOvqzehCylPN0v1CAio=
-Date: Wed, 20 Feb 2008 22:21:10 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: David Howells <dhowells@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [QUESTION] FRV: linking error?
-Message-ID: <20080220192110.GD6733@cvg>
-References: <20080220175145.GA6733@cvg> <20080218200302.GA6741@cvg> <19148.1203512465@redhat.com> <20080220131442.GA18790@uranus.ravnborg.org> <11226.1203531195@redhat.com> <20080220181500.GC6733@cvg> <20080220191937.GB21139@uranus.ravnborg.org>
+	Wed, 20 Feb 2008 14:25:39 -0500
+Date: Wed, 20 Feb 2008 19:25:16 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+Message-ID: <20080220192516.GA24771@srcf.ucam.org>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org> <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com> <alpine.LFD.1.00.0802201007300.7833@woody.linux-foundation.org> <b6a2187b0802201049r25959293r1e6b83ca67f65f04@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220191937.GB21139@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <b6a2187b0802201049r25959293r1e6b83ca67f65f04@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Wed, Feb 20, 2008 at 08:19:38PM +0100]
-| On Wed, Feb 20, 2008 at 09:15:00PM +0300, Cyrill Gorcunov wrote:
-| > [David Howells - Wed, Feb 20, 2008 at 06:13:15PM +0000]
-| > | Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | 
-| > | > Sam, maybe we should just eliminate this section at least for FRV?
-| > | 
-| > | You should have a patch in your inbox to do just that.
-| > | 
-| > | David
-| > | 
-| > 
-| > Thanks David! I've got them all.
-| > I think Sam will take care of them to be included in mainline.
-| 
-| arch stuff like this is preferably going via the arch maintainer.
-| Sometimes I do all-arch patches but when they are independent
-| like this one they should go via the arch maintainer.
-| 
-| Cyrill - I would like you to do the same cleanup for
-| m32r + mn10300 + s390
-| and send the patch to the respective maintainers with a cc to me.
-| 
-| Thanks,
-| 	Sam
-| 
+On Thu, Feb 21, 2008 at 02:49:39AM +0800, Jeff Chua wrote:
 
-ok, I will do it
+> Here's an interesting discovery. After I found that "echo reboot >
+> /sys/power/disk" does reboot, I tried "echo shutdown >
+> /sys/power/disk", it does shutdown properly.
+> 
+> With "platform" it refuses to shutdown. Both reboot and shutdown still
+> end up with Mr. Green at resume.
 
-		- Cyrill -
+That kind of suggests that the ACPI platform code is hitting the 
+hardware directly - we've seen similar issues with PATA controllers. The 
+right thing to do here is almost certainly just to avoid explicitly 
+powering down hardware on hibernation.
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
