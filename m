@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753618AbYBTDm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbYBTDpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753618AbYBTDm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:42:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbYBTDms
+	id S1758461AbYBTDpk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:45:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbYBTDp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:42:48 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:41626 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbYBTDmr (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:42:47 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Nick Andrew <nick@nick-andrew.net>
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Improve init/Kconfig help descriptions [PATCH 4/9]
-In-Reply-To: Your message of "Wed, 20 Feb 2008 01:38:55 +1100."
-             <20080219143855.GB27352@tull.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20080219140609.GA26619@tull.net>
-            <20080219143855.GB27352@tull.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1203478930_762P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 19 Feb 2008 22:42:10 -0500
-Message-ID: <4760.1203478930@turing-police.cc.vt.edu>
+	Tue, 19 Feb 2008 22:45:29 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:39694 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751281AbYBTDp2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 22:45:28 -0500
+Date: Wed, 20 Feb 2008 11:45:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Tony Battersby <tonyb@cybernetics.com>
+Cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
+       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+Message-ID: <20080220034515.GC22703@gondor.apana.org.au>
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BB54C2.6090501@cybernetics.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1203478930_762P
-Content-Type: text/plain; charset=us-ascii
+On Tue, Feb 19, 2008 at 05:14:26PM -0500, Tony Battersby wrote:
+>
+> Update: when I revert Herbert's patch in addition to applying your
+> patch, the iSCSI performance goes back up to 115 MB/s again in both
+> directions.  So it looks like turning off SG for TX didn't itself cause
+> the performance drop, but rather that the performance drop is just
+> another manifestation of whatever bug is causing the data corruption.
 
-On Wed, 20 Feb 2008 01:38:55 +1100, Nick Andrew said:
+Interesting.  So the workload that regressed is mostly RX with a
+little TX traffic? Can you try to reproduce this with something
+like netperf to eliminate other variables?
 
-> +	  Enable an auditing infrastructure that can be used with another
-> +	  kernel subsystem, such as Security-Enhanced Linux (SELinux),
-> +	  which requires this option for logging of AVC messages output.
-> +
-> +	  AVC refers to Access Vector Cache, a subsystem used by SELinux
-> +	  to improve performance of the security checking by caching
-> +	  previous access decisions.
+This is all very puzzling since the patch in question shouldn't
+change an RX load at all.
 
-This paragraph can be dropped, as the reasons that SELinux denial messages
-are tagged with 'avc' are mostly historical.   If you want to expand on anything
-in here, explain that 'AVC' messages are interesting because they indicate
-some sort of security rule denial.  So - if you don't enable auditing,
-your security messages end up in the kernel syslog.  If you enable auditing,
-they end up in the audit logs.  Explaining *that* clearly would be a lot
-more useful than explaining what avc originally stood for.. ;)
-
---==_Exmh_1203478930_762P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.8 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFHu6GScC3lWbTT17ARAhnsAKDkTzhS3qkTxI/PWVb1t+ANR75B8wCg/j5Y
-QGki88VzjHwatY6fEIRgClo=
-=kDUY
------END PGP SIGNATURE-----
-
---==_Exmh_1203478930_762P--
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
