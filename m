@@ -1,74 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbYBTC6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYBTDAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763990AbYBTC6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbYBTC57
+	id S1764145AbYBTDAo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYBTDAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:57:59 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:28395 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757473AbYBTC56 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:57:58 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=orKfov/pHFvLD7cnm7DR1sVQorl/Cimpb5MQLD1Z3PFpjS2GhqanP4SBXHC8geSke
-	GtMe7mMO+Wy1w1BALTLfA==
-Message-ID: <6599ad830802191857w13387324ja5d8327d1ff2343d@mail.gmail.com>
-Date: Tue, 19 Feb 2008 18:57:54 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Li Zefan" <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 5/7] cgroup: fix subsys bitops
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       containers@lists.linux-foundation.org
-In-Reply-To: <47B91C82.7010407@cn.fujitsu.com>
+	Tue, 19 Feb 2008 22:00:35 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:44605 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751350AbYBTDAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 22:00:34 -0500
+Date: Tue, 19 Feb 2008 21:00:31 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
+	ranges
+Message-ID: <20080220030031.GC11364@sgi.com>
+References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <20080220010038.GQ7128@v2.random>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47B91C82.7010407@cn.fujitsu.com>
+In-Reply-To: <20080220010038.GQ7128@v2.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 17, 2008 9:49 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
-> Cgroup uses unsigned long for subsys bitops, not unsigned long long.
->
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+On Wed, Feb 20, 2008 at 02:00:38AM +0100, Andrea Arcangeli wrote:
+> On Wed, Feb 20, 2008 at 10:08:49AM +1100, Nick Piggin wrote:
+> > You can't sleep inside rcu_read_lock()!
+> > 
+> > I must say that for a patch that is up to v8 or whatever and is
+> > posted twice a week to such a big cc list, it is kind of slack to
+> > not even test it and expect other people to review it.
+> 
+> Well, xpmem requirements are complex. As as side effect of the
+> simplicity of my approach, my patch is 100% safe since #v1. Now it
+> also works for GRU and it cluster invalidates.
+> 
+> > Also, what we are going to need here are not skeleton drivers
+> > that just do all the *easy* bits (of registering their callbacks),
+> > but actual fully working examples that do everything that any
+> > real driver will need to do. If not for the sanity of the driver
+> 
+> I've a fully working scenario for my patch, infact I didn't post the
+> mmu notifier patch until I got KVM to swap 100% reliably to be sure I
+> would post something that works well. mmu notifiers are already used
+> in KVM for:
+> 
+> 1) 100% reliable and efficient swapping of guest physical memory
+> 2) copy-on-writes of writeprotect faults after ksm page sharing of guest
+>    physical memory
+> 3) ballooning using madvise to give the guest memory back to the host
+> 
+> My implementation is the most handy because it requires zero changes
+> to the ksm code too (no explicit mmu notifier calls after
+> ptep_clear_flush) and it's also 100% safe (no mess with schedules over
+> rcu_read_lock), no "atomic" parameters, and it doesn't open a window
+> where sptes have a view on older pages and linux pte has view on newer
+> pages (this can happen with remap_file_pages with my KVM swapping
+> patch to use V8 Christoph's patch).
+> 
+> > Also, how to you resolve the case where you are not allowed to sleep?
+> > I would have thought either you have to handle it, in which case nobody
+> > needs to sleep; or you can't handle it, in which case the code is
+> > broken.
+> 
+> I also asked exactly this, glad you reasked this too.
 
-Acked-by: Paul Menage <menage@google.com>
+Currently, we BUG_ON having a PFN in our tables and not being able
+to sleep.  These are mappings which MPT has never supported in the past
+and XPMEM was already not allowing page faults for VMAs which are not
+anonymous so it should never happen.  If the file-backed operations can
+ever get changed to allow for sleeping and a customer has a need for it,
+we would need to change XPMEM to allow those types of faults to succeed.
 
-> ---
->  kernel/cgroup.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index aa76bbd..e8c8e58 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -320,7 +320,7 @@ static struct css_set *find_existing_css_set(
->         /* Built the set of subsystem state objects that we want to
->          * see in the new css_set */
->         for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> -               if (root->subsys_bits & (1ull << i)) {
-> +               if (root->subsys_bits & (1UL << i)) {
->                         /* Subsystem is in this hierarchy. So we want
->                          * the subsystem state from the new
->                          * cgroup */
-> @@ -696,7 +696,7 @@ static int rebind_subsystems(struct cgroupfs_root *root,
->         added_bits = final_bits & ~root->actual_subsys_bits;
->         /* Check that any added subsystems are currently free */
->         for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-> -               unsigned long long bit = 1ull << i;
-> +               unsigned long bit = 1UL << i;
->                 struct cgroup_subsys *ss = subsys[i];
->                 if (!(bit & added_bits))
->                         continue;
-> --
-> 1.5.4.rc3
->
->
+Thanks,
+Robin
