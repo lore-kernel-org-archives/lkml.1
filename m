@@ -1,96 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755505AbYBTRF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762991AbYBTRGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755505AbYBTRF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbYBTRFo
+	id S1762991AbYBTRGu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbYBTRGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:05:44 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:6077 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbYBTRFm (ORCPT
+	Wed, 20 Feb 2008 12:06:36 -0500
+Received: from wx-out-0506.google.com ([66.249.82.227]:1429 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753941AbYBTRGe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:05:42 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Rene Herman <rene.herman@keyaccess.nl>
-Subject: Re: pnp_bus_resume(): inconsequent NULL checking
-Date: Wed, 20 Feb 2008 09:59:21 -0700
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Adrian Bunk <bunk@kernel.org>, ambx1@neo.rr.com,
-       linux-kernel@vger.kernel.org
-References: <20080219224908.GM31955@cs181133002.pp.htv.fi> <47BB6DAB.5050506@keyaccess.nl>
-In-Reply-To: <47BB6DAB.5050506@keyaccess.nl>
+	Wed, 20 Feb 2008 12:06:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=pod+UaO8ZjR7Eu79uxZ/dplzuGEeIafw7Jr4xwdbBtiQqY496qryCXuEtrr0KbwWGkxFdKiS9v0JiH08s1LDxybsQNkHYZIyky56gGESabkn8sHXNFUJZZtexVMQYPuiSlDpKaX1JhJMq99rOg4Kzmu6NUs4RcYlI30Fz+CqILU=
+Message-ID: <47BC5E01.1050902@gmail.com>
+Date: Wed, 20 Feb 2008 12:06:09 -0500
+From: Andrew Buehler <abuehler.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Oliver Pinter <oliver.pntr@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       SCSI development list <linux-scsi@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: USB regression (and other failures) in 2.6.2[45]* - mostly resolved
+References: <Pine.LNX.4.44L0.0802201048410.4828-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802201048410.4828-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802200959.21814.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 19 February 2008 05:00:43 pm Rene Herman wrote:
-> On 19-02-08 23:49, Adrian Bunk wrote:
+(I suspect that some of the existing CC:s can now be dropped, and others
+might need to be added if indeed this is worth discussing on kernel
+lists at all, but I don't know what the protocol on that is so I have
+left all of them in for the moment.)
+
+On 2/20/2008 10:50 AM, Alan Stern wrote:
+
+> On Tue, 19 Feb 2008, Andrew Buehler wrote:
 > 
-> > The Coverity checker spotted the following inconsequent NULL checking 
-> > introduced by commit 5d38998ed15b31f524bde9a193d60150af30d916:
-> > 
-> > <--  snip  -->
-> > 
-> > ...
-> > static int pnp_bus_resume(struct device *dev)
-> > {
-> > ...
-> >         if (pnp_dev->protocol && pnp_dev->protocol->resume)
-> >                 pnp_dev->protocol->resume(pnp_dev);
-> > 
-> >         if (pnp_can_write(pnp_dev)) {
-> > ...
-> > 
-> > <--  snip  -->
-> > 
-> > pnp_can_write(pnp_dev) dereferences pnp_dev->protocol.
+>> With those two problems out of the way, what is left is the
+>> hard-drive issue, and that is also halfway fixed by enabling ACPI.
+>> Specifically, it is "fixed" in that the kernel sees the hard drive
+>> and I can mount it, but it is not fixed in that the program we need
+>> to use in this environment does not see the drive.
 > 
-> I see, thanks. pnp_bus_suspend() has the same problem (I added this test to 
-> complete the mirror in fact) and/but is not a real problem since the tests 
-> are also the first things done inside the blocks they protect -- if 
-> pnp_dev->protocol isn't set here, we're dead anyway therefore.
+> What do you mean by "does not see the drive"?
+
+Its detect-hardware-and-report mode shows a HD size of 0 (which is what
+it has showed in cases where the kernel has not detected the drive), its
+detect-partitions-and-report mode shows no partitions and no devices
+which can have partitions, and attempting to actually use it to pull
+down a drive image (it's a disk-imaging program) causes it to hang at
+the point where it would begin to write.
+
+Hmm. One thing which just sprang to mind, in the stab-in-the-dark
+category: in 2.6.24.2, launching the program on some machines gave
+warnings along the lines of "this program is using a deprecated ioctl,
+please convert it to SG_IO" (which I naturally cannot do since it's
+closed and I don't have the source), but IIRC in the 2.5.25-rc2-based
+disc with ACPI enabled no such message appears. If the reason that there
+are no longer such messages is that the ioctl in question has now been
+removed, that might explain why the program does not see the drive.
+
+I have suspected that I might eventually need to port the old interface
+forwards to be able to continue to use this program, but I did not
+expect it to happen this soon...
+
+>> I have a config from a boot disc running 2.6.5 (that's not a typo)
+>> under which the program in question *does* see the drive, but there
+>> are massive differences between that config and the one I am using
+>> now, and narrowing the critical difference down is likely to be
+>> somewhat difficult - particularly since some of the "differences"
+>> are merely renamed config symbols (i.e. the
+>> CONFIG_SCSI_SATA_*->CONFIG_SATA_* switchover), and I have limited
+>> ability to tell which without intensive investigation. Are there
+>> any established techniques for simplifying this kind of comparison?
 > 
-> That probably means we can just delete the pnp_dev->protocol tests but this 
->   would need an ack from for example Bjorn Helgaas who might have an idea 
-> about how generically useful this is designed to be. The no brain thing to 
-> do would be just as per attached.
+> The only established technique is to run various kernels intermediate
+> between the one that works and the one that fails.
 
-I agree with you that we can just delete the dev->protocol tests
-completely. So I'd rather see something like this (built but untested):
+I'm not sure I expressed myself clearly. I do not think the problem is
+with the different kernels. I think the problem is with the different
+configurations. I am asking if there are any established techniques for
+comparing differences between config files from widely different
+kernels.
 
+Or, if you're suggesting running various kernels with configs which are
+hybrids of the config which works and the current one which does not: in
+order to do that I have to be able to tell what the actual differences
+are, and at minimum the renamed symbols (not all of which I expect to be
+able to identify at a glance) would make that quite difficult to do, so
+I remain with the same problem and the same question.
 
-PNP: remove dev->protocol NULL checks
-
-Every PNP device should have a valid protocol pointer.  If it doesn't,
-something's wrong and we should oops so we can find and fix the problem.
-
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-Index: work6/drivers/pnp/driver.c
-===================================================================
---- work6.orig/drivers/pnp/driver.c	2008-02-20 09:46:01.000000000 -0700
-+++ work6/drivers/pnp/driver.c	2008-02-20 09:46:28.000000000 -0700
-@@ -167,7 +167,7 @@
- 			return error;
- 	}
- 
--	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
-+	if (pnp_dev->protocol->suspend)
- 		pnp_dev->protocol->suspend(pnp_dev, state);
- 	return 0;
- }
-@@ -181,7 +181,7 @@
- 	if (!pnp_drv)
- 		return 0;
- 
--	if (pnp_dev->protocol && pnp_dev->protocol->resume)
-+	if (pnp_dev->protocol->resume)
- 		pnp_dev->protocol->resume(pnp_dev);
- 
- 	if (pnp_can_write(pnp_dev)) {
+-- 
+    Andrew Buehler
