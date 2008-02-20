@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936041AbYBTQlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933690AbYBTQnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936041AbYBTQlk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:41:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933793AbYBTQcK
+	id S933690AbYBTQnQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:43:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbYBTQm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:32:10 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:60201 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934880AbYBTQcI (ORCPT
+	Wed, 20 Feb 2008 11:42:56 -0500
+Received: from lazybastard.de ([212.112.238.170]:52263 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759068AbYBTQmz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:32:08 -0500
-Date: Wed, 20 Feb 2008 08:30:46 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 22/28] mm: add support for non block device backed swap
- files
-Message-Id: <20080220083046.a3ab16d3.randy.dunlap@oracle.com>
-In-Reply-To: <20080220150308.142619000@chello.nl>
-References: <20080220144610.548202000@chello.nl>
-	<20080220150308.142619000@chello.nl>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 20 Feb 2008 11:42:55 -0500
+Date: Wed, 20 Feb 2008 17:42:27 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stephane Chazelas <stephane.chazelas@emerson.com>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
+Message-ID: <20080220164226.GF5539@lazybastard.org>
+References: <chaz20080212134751.GI30304@artesyncp.com> <20080212152124.GA21878@lazybastard.org> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <chaz20080220143646.GJ4539@artesyncp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <chaz20080220143646.GJ4539@artesyncp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 15:46:32 +0100 Peter Zijlstra wrote:
+On Wed, 20 February 2008 14:36:46 +0000, Stephane Chazelas wrote:
+> 
+> At the moment, when we bind a mtd device to a block device, we
+> don't increase the refcount. When a mtdblock on a block2mtd, the
+> refcount is not increased either (the mtdblock's one is I
+> guess).
 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  Documentation/filesystems/Locking |   19 +++++++++++++
->  Documentation/filesystems/vfs.txt |   17 ++++++++++++
->  include/linux/buffer_head.h       |    2 -
->  include/linux/fs.h                |    8 +++++
->  include/linux/swap.h              |    4 ++
->  mm/page_io.c                      |   52 ++++++++++++++++++++++++++++++++++++++
->  mm/swap_state.c                   |    4 +-
->  mm/swapfile.c                     |   26 ++++++++++++++++++-
->  8 files changed, 128 insertions(+), 4 deletions(-)
+That is a bug then.
 
-> Index: linux-2.6/Documentation/filesystems/Locking
-> ===================================================================
-> --- linux-2.6.orig/Documentation/filesystems/Locking
-> +++ linux-2.6/Documentation/filesystems/Locking
+Jörn
 
-> @@ -291,6 +297,19 @@ cleaned, or an error value if not. Note 
->  getting mapped back in and redirtied, it needs to be kept locked
->  across the entire operation.
->  
-> +	->swapfile() will be called with a non zero argument on address spaces
-
-                                           non-zero
-
-> +backing non block device backed swapfiles. A return value of zero indicates
-> +success. In which case this address space can be used for backing swapspace.
-
-   success, in which case
-
-> +The swapspace operations will be proxied to the address space operations.
-> +Swapoff will call this method with a zero argument to release the address
-> +space.
-> +
-> +	->swap_out() when swapfile() returned success, this method is used to
-> +write the swap page.
-> +
-> +	->swap_in() when swapfile() returned success, this method is used to
-> +read the swap page.
-> +
->  	Note: currently almost all instances of address_space methods are
->  using BKL for internal serialization and that's one of the worst sources
->  of contention. Normally they are calling library functions (in fs/buffer.c)
-
-> Index: linux-2.6/Documentation/filesystems/vfs.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/filesystems/vfs.txt
-> +++ linux-2.6/Documentation/filesystems/vfs.txt
-> @@ -728,6 +732,19 @@ struct address_space_operations {
->    	prevent redirtying the page, it is kept locked during the whole
->  	operation.
->  
-> +  swapfile: Called with a non-zero argument when swapon is used on a file. A
-> +	return value of zero indicates success. In which case this
-
-                                       success, in which case this
-
-> +	address_space can be used to back swapspace. The swapspace operations
-> +	will be proxied to this address space's ->swap_{out,in} methods.
-> +	Swapoff will call this method with a zero argument to release the
-> +	address space.
-> +
-> +  swap_out: Called to write a swapcache page to a backing store, similar to
-> +	writepage.
-> +
-> +  swap_in: Called to read a swapcache page from a backing store, similar to
-> +	readpage.
-> +
->  The File Object
->  ===============
-
----
-~Randy
+-- 
+The story so far:
+In the beginning the Universe was created.  This has made a lot
+of people very angry and been widely regarded as a bad move.
+-- Douglas Adams
