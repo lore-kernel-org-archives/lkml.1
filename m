@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759320AbYBTEa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761196AbYBTEdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759320AbYBTEa7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 23:30:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbYBTEau
+	id S1761196AbYBTEdA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 23:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbYBTEcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 23:30:50 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45615 "EHLO gate.crashing.org"
+	Tue, 19 Feb 2008 23:32:51 -0500
+Received: from mga02.intel.com ([134.134.136.20]:23205 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbYBTEat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 23:30:49 -0500
-Date: Tue, 19 Feb 2008 22:27:48 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@blarg.am.freescale.net
-To: davem@davemloft.net
-cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] [LMB]: Fix lmb_add_region if region should be added at the
- head
-Message-ID: <Pine.LNX.4.64.0802192227170.2215@blarg.am.freescale.net>
+	id S1751713AbYBTEcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 23:32:50 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,379,1199692800"; 
+   d="scan'208";a="342633280"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Tue, 19 Feb 2008 20:32:44 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+References: <b6a2187b0802191653q4dfaa32cl96b9278e97606ef0@mail.gmail.com> <200802191700.12050.jesse.barnes@intel.com> <alpine.LFD.1.00.0802191827190.7833@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802191827190.7833@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802192032.44715.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We introduced a bug in fixing lmb_add_region to handle an initial
-region being non-zero.  Before that fix it was impossible to insert
-a region at the head of the list since the first region always started
-at zero.
+On Tuesday, February 19, 2008 6:28 pm Linus Torvalds wrote:
+> On Tue, 19 Feb 2008, Jesse Barnes wrote:
+> > I found the same poweroff issue on my T61.  It turned out to be related
+> > to the C state code disabling interrupts when it shouldn't iirc.  Booting
+> > with 'idle=poll' seems to work around the problem.
+> >
+> > The "green screen" problem should be fixed (see the DRM git tree for
+> > details).
+>
+> ..and the latter is hopefully now merged in my tree too (at least some of
+> the drm updates are).
 
-Now that its possible for the first region to be non-zero we need to
-check to see if the new region should be added at the head and if so
-actually add it.
+Cool, thanks.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- lib/lmb.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+Jeff, can you retest with Linus' tree?  If you're still seeing problems, it 
+might help to add some printks to the i915 driver's suspend routine.  Just 
+reading the regs really shouldn't cause a hang, but maybe the VGA bits are 
+subtly wrong again...
 
-diff --git a/lib/lmb.c b/lib/lmb.c
-index e3c8dcb..3c43b95 100644
---- a/lib/lmb.c
-+++ b/lib/lmb.c
-@@ -184,6 +184,11 @@ static long __init lmb_add_region(struct lmb_region *rgn, u64 base, u64 size)
- 			break;
- 		}
- 	}
-+
-+	if (base < rgn->region[0].base) {
-+		rgn->region[0].base = base;
-+		rgn->region[0].size = size;
-+	}
- 	rgn->cnt++;
-
- 	return 0;
--- 
-1.5.3.8
-
+Thanks,
+Jesse
