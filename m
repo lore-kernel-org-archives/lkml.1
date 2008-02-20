@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933063AbYBTThV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765959AbYBTTl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933063AbYBTThV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 14:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbYBTThB
+	id S1765959AbYBTTl5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 14:41:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759325AbYBTTlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 14:37:01 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:43732 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755569AbYBTThA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 14:37:00 -0500
-Date: Wed, 20 Feb 2008 20:37:09 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Gordon Farquharson <gordonfarquharson@gmail.com>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       linville@tuxdriver.com, stefano.brivio@polimi.it,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       viro@ftp.linux.org.uk
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Message-ID: <20080220193709.GD21139@uranus.ravnborg.org>
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802191141.26952.mb@bu3sch.de> <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com> <200802201544.05192.mb@bu3sch.de>
-Mime-Version: 1.0
+	Wed, 20 Feb 2008 14:41:46 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:2737 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758376AbYBTTlo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 14:41:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=wKH780WTnitzIZ7HQ46VcDgwos7PbNXInLixQdxo1gH5dfGJNwmRARdVyfmX9gu6jGTSB5UYiLah5kJH3vUU/BJ0JLPEczavPEKlRBEMz9tGpCteSBJ+wRqLIxNwaz+3y3a/D+LPJapE1VICGoh5kC3ough+GNVu5RzR2L4tS5E=
+Date: Wed, 20 Feb 2008 21:39:09 +0200
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Tasklets: Avoid duplicating __tasklet_{,hi_}schedule()
+	code
+Message-ID: <20080220193909.GA6344@ubuntu>
+References: <20080219153720.GA2967@ubuntu> <20080219155252.GA27280@elte.hu> <20080219162718.GA3372@ubuntu> <20080220104113.GI3881@elte.hu> <20080220133718.GA8205@ubuntu> <b647ffbd0802200620h4015ca78o2482429b4502510a@mail.gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200802201544.05192.mb@bu3sch.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <b647ffbd0802200620h4015ca78o2482429b4502510a@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 03:44:04PM +0100, Michael Buesch wrote:
-> On Wednesday 20 February 2008 01:44:38 Gordon Farquharson wrote:
-> > Hi Michael
-> > 
-> > On Feb 19, 2008 3:41 AM, Michael Buesch <mb@bu3sch.de> wrote:
-> > 
-> > > > [2] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7492d4a416d68ab4bd254b36ffcc4e0138daa8ff
-> > > >
+On Wed, Feb 20, 2008 at 03:20:52PM +0100, Dmitry Adamushko wrote:
+> On 20/02/2008, Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> > On Wed, Feb 20, 2008 at 11:41:13AM +0100, Ingo Molnar wrote:
 > > >
-> > > That doesn't cause me to magically sign off this sort of patches, too.
-> > > The sanity check is clearly broken in file2alias.c, as it checks something
-> > > from the target kernel against the host environment it is compiled on.
-> > > That doesn't make any sense at all.
-> > 
-> > I think that you make some good points, but I'm at a loss as to how to
-> > fix the problem. Do you have any suggestions?
+> > > * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
+> > >
+> > > > > > -               local_irq_disable();
+> > > > > > -               t->next = __get_cpu_var(tasklet_vec).list;
+> > > > > > -               __get_cpu_var(tasklet_vec).list = t;
+> > > > > > -               __raise_softirq_irqoff(TASKLET_SOFTIRQ);
+> > > > > > -               local_irq_enable();
+> > > > > > +               /* We were not lucky enough to run, reschedule. */
+> > > > > > +               __tasklet_schedule(t);
+> > > > >
+> > > > > i think there's a subtle difference that you missed: this one does
+> > > > > __raise_softirq_irqoff(), while __tasklet_schedule() does a
+> > > > > raise_softirq_irqoff(). (note the lack of undescores)
+> > > > >
+> > > > > the reason is to avoid infinitely self-activating tasklets.
+> > > >
+> > > > Indeed, thanks a lot for the explanation. (maybe it's time to check
+> > > > for new eyeglasses ;)).
+> > >
+> > > nah, it's rather subtle and the code looked good to me at first but i
+> > > remembered that there was some small detail here to watch out for.
+> > >
+> > > i really dont like tasklets due to their many, arbitrary scheduling
+> > > limitations, we should really use the "turn tasklets into kthreads"
+> > > patch i posted last year.
+> > >
+> >
+> > While we are at it, there's a small question that is bothering me
+> > for a while (and I'm really thankful for help).
+> >
+> > I keep reading that softirqs (and naturally, tasklets) got executed
+> > in interrupt context at the return from hardirq code path.
+> >
+> > Checking entry_32.S, I find no mentioning of softirqs on the return
+> > path (beginning from ret_from_intr: to restore_all: )
+> >
+> > The only invocation I'm able to find is from local_bh_enable() and
+> > from ksoftirqd/n threads (by calling do_softirq()). AFAIK, both
+> > invocations occur in a _nont-interrupt_ context (exception context).
+> >
+> > So, where does the interrupt-context tasklets invocation really
+> > occur ?
 > 
-> Remove the broken sanity check, if it's not possible the check there.
-The check is valid for > 99% of the kernel builds as
-cross compile builds are not that typical.
-And the check is there for the sake of modutils.
+> Look at irq_exit() in softirq.c.
+> 
+> The common sequence is ... -> do_IRQ() --> irq_exit() --> invoke_softirq()
+> 
+> 
 
-The details I do not remember.
-So we have a few possiblities:
+Great, this was the last missing block in my understanding of softirqs :).
+Thank you.
 
-1) Remove the consistency check and try to deal with the
-rare cases where it fails and spend many hours investigating
-before we realise it is difference in layout of data.
+[btw, your MUA broke the CC list]
 
-2) Pad a few structures with a few bytes so this consitency
-check works even in cross build environments.
+-- 
+Ahmed S. Darwish
+Homepage: http://darwish.07.googlepages.com
+Blog: http://darwish-07.blogspot.com
 
-3) Detect that we are doing cross builds and skip the check
-in this case.
-
-Option 1) is the worst of the three as that can cost
-of many hours bug-hunting.
-Option 3) may seem optimal but I do not like to add more
-complexity to this part of the build. And really I do not
-know a reliable way to detech when we do cross builds anyway.
-
-Leaving us with option 2) that is simple, strighforward and harmless.
-
-	Sam
