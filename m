@@ -1,80 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbYBTVaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933010AbYBTVcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765505AbYBTVaT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:30:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYBTV37
+	id S933010AbYBTVcd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:32:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbYBTVcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:29:59 -0500
-Received: from host64.cybernetics.com ([70.169.137.4]:2767 "EHLO
-	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754611AbYBTV35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:29:57 -0500
-Message-ID: <47BC9BD5.8040900@cybernetics.com>
-Date: Wed, 20 Feb 2008 16:29:57 -0500
-From: Tony Battersby <tonyb@cybernetics.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 20 Feb 2008 16:32:24 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:49352 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1752185AbYBTVcX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:32:23 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Thu, 21 Feb 2008 08:31:50 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: serge@hallyn.com
+Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: Improve init/Kconfig help descriptions [PATCH 6/9]
+Message-ID: <20080220213150.GD2169@tull.net>
+References: <20080219140609.GA26619@tull.net> <20080219151214.GD27352@tull.net> <6599ad830802191804y171282c1m646bdb47b83e2bc2@mail.gmail.com> <20080220025431.GA10766@tull.net> <20080220165507.GB14550@vino.hallyn.com>
 MIME-Version: 1.0
-To: Matt Carlson <mcarlson@broadcom.com>
-Cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, netdev <netdev@vger.kernel.org>,
-       gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220013824.GA5416@localdomain>
-In-Reply-To: <20080220013824.GA5416@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220165507.GB14550@vino.hallyn.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update:
+On Wed, Feb 20, 2008 at 10:55:07AM -0600, serge@hallyn.com wrote:
+> Quoting Nick Andrew (nick@nick-andrew.net):
+> > On Tue, Feb 19, 2008 at 06:04:57PM -0800, Paul Menage wrote:
+> 
+> Maybe 
+> 	  Control Groups enable processes to be grouped into "cgroups"
+> 	  to facilitate tracking and resource management.  For example
+> 	  a cgroup can tie a set of processes to a set of cpus using
+> 	  "cpusets".
 
-Herbert's patch alters the arguments to alloc_skb_fclone() and
-skb_reserve() from within sk_stream_alloc_pskb().  This changes the
-skb_headroom() and skb_tailroom() of the returned skb.  I decided to see
-if I could detect the precise point at which data corruption started to
-happen.  The result is this table:
+That is much nicer, thanks.
 
-(sk_stream_alloc_pskb() called with size == 1448;
-sk->sk_prot->max_header == 160)
+> > 	  When enabled, a new filesystem type "cgroup" is available
+> > 	  and can be mounted to control cpusets and other
+> > 	  resource/behaviour controllers.
 
-skb_headroom  skb_tailroom  test result  note
-216           1448          fail         [1]
-344           1448          fail
-340           1452          pass
-336           1456          pass
-332           1460          pass
-328           1464          fail
-324           1468          pass
-320           1472          pass
-316           1476          pass
-312           1480          fail
-308           1484          pass
-304           1488          pass
-300           1492          pass
-296           1496          fail
-292           1500          pass
-288           1504          pass
-284           1508          pass
-280           1512          fail
-276           1516          pass
-272           1520          pass
-268           1524          pass
-264           1528          fail
-260           1532          pass
-256           1536          pass         [2]
+I thought of something better to say than this.  Enabling a new
+pseudo filesystem is interesting, but it's not the main point.
 
-Notes:
-[1] Kernels 2.6.23.4 - 2.6.23.16 and 2.6.24 - current with Herbert's patch
-[2] Kernels 2.6.23.3 and before without Herbert's patch
+Now:
 
-Note that the first row has skb_headroom + skb_tailroom == 1664; the
-remaining rows have skb_headroom + skb_tailroom == 1792.
 
->From these results, it looks like a data alignment issue.  Herbert's
-patch unfortunately just happened to change the alignment in a way that
-made it break.
+ config CGROUPS
+        bool "Control Group support"
+        help
+-         This option will let you use process cgroup subsystems
+-         such as Cpusets
++         Control Groups enable processes to be grouped into "cgroups"
++         to facilitate tracking and resource management. For example
++         a cgroup can tie a set of processes to a set of CPUs using
++         "cpusets".
 
-Tony
+-         Say N if unsure.
++         See <file:Documentation/cgroups.txt> for more information.
++
++         If you say Y here, you probably want to enable one or
++         more of the cgroup subsystem options below.
++
++         If unsure, say N.
 
+
+Regarding GROUP_SCHED and CGROUP_SCHED I am confused, what is the
+difference between these two options?
+
+config GROUP_SCHED
+        bool "Group CPU scheduler"
+        default y
+        help
+          This feature enables the CPU scheduler to recognize task groups
+          and control CPU bandwidth allocation to such task groups.
+
+          See <file:Documentation/sched-design-CFS.txt> for more information.
+
+
+[...]
+
+config CGROUP_SCHED
+        bool "Control groups"
+        depends on CGROUPS
+        help
+          This option allows you to create arbitrary task groups
+          using the "cgroup" pseudo filesystem and control
+          the CPU bandwidth allocated to each such task group.
+
+          See <file:Documentation/cgroups.txt> for more information
+          on the "cgroup" pseudo filesystem.
+
+Also with the titles, IMHO "Control Group support" is semantically
+equivalent to "Control groups" so I am doubly confused.
+
+Nick.
