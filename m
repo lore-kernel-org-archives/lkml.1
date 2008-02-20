@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYBTOYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763955AbYBTO0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763289AbYBTOYd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:24:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYBTOYY
+	id S1763955AbYBTO0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYBTO0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:24:24 -0500
-Received: from mail.phnxsoft.com ([195.227.45.4]:3880 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbYBTOYX (ORCPT
+	Wed, 20 Feb 2008 09:26:24 -0500
+Received: from poesci.dolphinics.no ([81.175.23.36]:33465 "EHLO
+	poesci.dolphinics.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755510AbYBTO0X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:24:23 -0500
-Message-ID: <47BC3802.1070107@imap.cc>
-Date: Wed, 20 Feb 2008 15:24:02 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+	Wed, 20 Feb 2008 09:26:23 -0500
+X-Greylist: delayed 1772 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 09:26:23 EST
+From: Arne Georg Gleditsch <arne.gleditsch@dolphinics.no>
+To: linux-kernel@vger.kernel.org
+Cc: John Stultz <johnstul@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andi Kleen <ak@muc.de>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Subject: arch/x86/kernel/vsyscall_64.c: overeager NOP of syscalls
+Date: Wed, 20 Feb 2008 14:57:34 +0100
+Message-ID: <kjm4pc3d92p.fsf@pelargir.dolphinics.no>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.50 (gnu/linux)
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Greg KH <greg@kroah.com>, kkeil@suse.de,
-       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org> <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
-In-Reply-To: <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig91D4A7C9422F8C7665839397"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig91D4A7C9422F8C7665839397
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Hi,
 
-Marcel Holtmann schrieb:
-> My proposal is to merge mISDN and then see what falls out. My guess it =
-=20
-> won't be that bad as everybody thinks and then we go from there. Next  =
+I'm looking at 2.6.25-rc2.  vsyscall_sysctl_change contains code to NOP
+out the actual system call instructions of the vsyscall page when
+vsyscall64 is enabled.  This seems to interact badly with the fallback
+code in do_vgettimeofday which tries to call gettimeofday if the
+configured clock source does not support vread.  (In effect,
+gettimeofday() becomes a nop and time() always returns 0.  Not very
+useful.)
 
-> step is to remove ISDN4Linux since that should not be used at all =20
-> anymore.
+Is there a good reason to keep this?  Aren't the instructions in
+question avoided (or invoked) according to the vsyscall64 flag by the
+surrounding logic anyway?
 
-No. Next step is to create the missing documentation.
-The step after that is to convert the remaining isdn4linux
-drivers to mISDN. Then you can remove isdn4linux.
-
-HTH
-T.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig91D4A7C9422F8C7665839397
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHvDgDQ3+did9BuFsRAgDJAKCKeM13pqelTK5Xy/VrFKMmGlV5LgCfRcR5
-oiGVLSl24Wi8dBBENC+ycV8=
-=Mx1p
------END PGP SIGNATURE-----
-
---------------enig91D4A7C9422F8C7665839397--
+-- 
+								Arne.
