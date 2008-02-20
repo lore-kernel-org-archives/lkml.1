@@ -1,110 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761185AbYBTFdS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbYBTFdd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761185AbYBTFdS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:33:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752615AbYBTFdG
+	id S1763953AbYBTFdd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:33:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753400AbYBTFdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:33:06 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:34497 "EHLO
+	Wed, 20 Feb 2008 00:33:07 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:16134 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbYBTFdF (ORCPT
+	with ESMTP id S1752214AbYBTFdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Feb 2008 00:33:05 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:message-id:references:user-agent:date:from:to:cc:
 	subject:content-disposition;
-	b=KHmKv2WYSj4+vq5jXz0fYQzQw9RKMFUfLj7+P7G4YlCOzOyyIoQSrsW+gaMcGkwUJ
-	1K+Zu76d/mVnoxDoMC7iA==
-Message-Id: <20080220053239.836363000@menage.corp.google.com>
+	b=g6BYP/xosVatXaatk9VpS7r1zSr3wArigJ+vVS/uXtjQiI/Nf1p4khQ0XGmL283PO
+	9x6Z5lBa+g4U2MfDqbdjg==
+Message-Id: <20080220053239.660383000@menage.corp.google.com>
 References: <20080220051544.018684000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Tue, 19 Feb 2008 21:15:46 -0800
+Date: Tue, 19 Feb 2008 21:15:45 -0800
 From: menage@google.com
 To: kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, balbir@in.ibm.com,
        xemul@openvz.org, yamamoto@valinux.co.jp
-Subject: [PATCH 2/2] cgroup map files: Use cgroup map for memcontrol stats file
-Content-Disposition: inline; filename=memcontrol_use_cgroup_map.patch
+Subject: [PATCH 1/2] cgroup map files: Add cgroup map data type
+Content-Disposition: inline; filename=cgroup_read_map.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the seq_file boilerplate used to construct the memcontrol stats
-map, and instead use the new map representation for cgroup control
-files
+Adds a new type of supported control file representation, a map from
+strings to u64 values.
 
 Signed-off-by: Paul Menage <menage@google.com>
 
 ---
- mm/memcontrol.c |   30 ++++++------------------------
- 1 file changed, 6 insertions(+), 24 deletions(-)
+ include/linux/cgroup.h |   19 +++++++++++++++
+ kernel/cgroup.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 77 insertions(+), 1 deletion(-)
 
-Index: cgroupmap-2.6.25-rc2-mm1/mm/memcontrol.c
+Index: cgroupmap-2.6.25-rc2-mm1/include/linux/cgroup.h
 ===================================================================
---- cgroupmap-2.6.25-rc2-mm1.orig/mm/memcontrol.c
-+++ cgroupmap-2.6.25-rc2-mm1/mm/memcontrol.c
-@@ -974,9 +974,9 @@ static const struct mem_cgroup_stat_desc
- 	[MEM_CGROUP_STAT_RSS] = { "rss", PAGE_SIZE, },
+--- cgroupmap-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
++++ cgroupmap-2.6.25-rc2-mm1/include/linux/cgroup.h
+@@ -166,6 +166,16 @@ struct css_set {
+ 
  };
  
--static int mem_control_stat_show(struct seq_file *m, void *arg)
-+static int mem_control_stat_show(struct cgroup *cont, struct cftype *cft,
-+				 struct cgroup_map_cb *cb)
- {
--	struct cgroup *cont = m->private;
- 	struct mem_cgroup *mem_cont = mem_cgroup_from_cont(cont);
- 	struct mem_cgroup_stat *stat = &mem_cont->stat;
- 	int i;
-@@ -986,8 +986,7 @@ static int mem_control_stat_show(struct 
- 
- 		val = mem_cgroup_read_stat(stat, i);
- 		val *= mem_cgroup_stat_desc[i].unit;
--		seq_printf(m, "%s %lld\n", mem_cgroup_stat_desc[i].msg,
--				(long long)val);
-+		cb->fill(cb, mem_cgroup_stat_desc[i].msg, val);
- 	}
- 	/* showing # of active pages */
- 	{
-@@ -997,29 +996,12 @@ static int mem_control_stat_show(struct 
- 						MEM_CGROUP_ZSTAT_INACTIVE);
- 		active = mem_cgroup_get_all_zonestat(mem_cont,
- 						MEM_CGROUP_ZSTAT_ACTIVE);
--		seq_printf(m, "active %ld\n", (active) * PAGE_SIZE);
--		seq_printf(m, "inactive %ld\n", (inactive) * PAGE_SIZE);
-+		cb->fill(cb, "active", (active) * PAGE_SIZE);
-+		cb->fill(cb, "inactive", (inactive) * PAGE_SIZE);
- 	}
- 	return 0;
++/*
++ * cgroup_map_cb is an abstract callback API for reporting map-valued
++ * control files
++ */
++
++struct cgroup_map_cb {
++	int (*fill)(struct cgroup_map_cb *cb, const char *key, u64 value);
++	void *state;
++};
++
+ /* struct cftype:
+  *
+  * The files in the cgroup filesystem mostly have a very simple read/write
+@@ -194,6 +204,15 @@ struct cftype {
+ 	 * single integer. Use it in place of read()
+ 	 */
+ 	u64 (*read_uint) (struct cgroup *cont, struct cftype *cft);
++	/*
++	 * read_map() is used for defining a map of key/value
++	 * pairs. It should call cb->fill(cb, key, value) for each
++	 * entry. The key/value pairs (and their ordering) should not
++	 * change between reboots.
++	 */
++	int (*read_map) (struct cgroup *cont, struct cftype *cft,
++			 struct cgroup_map_cb *cb);
++
+ 	ssize_t (*write) (struct cgroup *cont, struct cftype *cft,
+ 			  struct file *file,
+ 			  const char __user *buf, size_t nbytes, loff_t *ppos);
+Index: cgroupmap-2.6.25-rc2-mm1/kernel/cgroup.c
+===================================================================
+--- cgroupmap-2.6.25-rc2-mm1.orig/kernel/cgroup.c
++++ cgroupmap-2.6.25-rc2-mm1/kernel/cgroup.c
+@@ -1487,6 +1487,46 @@ static ssize_t cgroup_file_read(struct f
+ 	return -EINVAL;
  }
  
--static const struct file_operations mem_control_stat_file_operations = {
--	.read = seq_read,
--	.llseek = seq_lseek,
--	.release = single_release,
--};
--
--static int mem_control_stat_open(struct inode *unused, struct file *file)
--{
--	/* XXX __d_cont */
--	struct cgroup *cont = file->f_dentry->d_parent->d_fsdata;
--
--	file->f_op = &mem_control_stat_file_operations;
--	return single_open(file, mem_control_stat_show, cont);
--}
--
--
--
- static struct cftype mem_cgroup_files[] = {
- 	{
- 		.name = "usage_in_bytes",
-@@ -1044,7 +1026,7 @@ static struct cftype mem_cgroup_files[] 
- 	},
- 	{
- 		.name = "stat",
--		.open = mem_control_stat_open,
-+		.read_map = mem_control_stat_show,
- 	},
++/*
++ * seqfile ops/methods for returning structured data. Currently just
++ * supports string->u64 maps, but can be extended in future.
++ */
++
++struct cgroup_seqfile_state {
++	struct cftype *cft;
++	struct cgroup *cgroup;
++};
++
++static int cgroup_map_add(struct cgroup_map_cb *cb, const char *key, u64 value)
++{
++	struct seq_file *sf = cb->state;
++	return seq_printf(sf, "%s: %llu\n", key, value);
++}
++
++static int cgroup_seqfile_show(struct seq_file *m, void *arg)
++{
++	struct cgroup_seqfile_state *state = m->private;
++	struct cftype *cft = state->cft;
++	struct cgroup_map_cb cb = {
++		.fill = cgroup_map_add,
++		.state = m,
++	};
++	if (cft->read_map) {
++		return cft->read_map(state->cgroup, cft, &cb);
++	} else {
++		BUG();
++	}
++}
++
++int cgroup_seqfile_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq = file->private_data;
++	kfree(seq->private);
++	return single_release(inode, file);
++}
++
++static struct file_operations cgroup_seqfile_operations;
++
+ static int cgroup_file_open(struct inode *inode, struct file *file)
+ {
+ 	int err;
+@@ -1499,7 +1539,18 @@ static int cgroup_file_open(struct inode
+ 	cft = __d_cft(file->f_dentry);
+ 	if (!cft)
+ 		return -ENODEV;
+-	if (cft->open)
++	if (cft->read_map) {
++		struct cgroup_seqfile_state *state =
++			kzalloc(sizeof(*state), GFP_USER);
++		if (!state)
++			return -ENOMEM;
++		state->cft = cft;
++		state->cgroup = __d_cgrp(file->f_dentry->d_parent);
++		file->f_op = &cgroup_seqfile_operations;
++		err = single_open(file, cgroup_seqfile_show, state);
++		if (err < 0)
++			kfree(state);
++	} else if (cft->open)
+ 		err = cft->open(inode, file);
+ 	else
+ 		err = 0;
+@@ -1538,6 +1589,12 @@ static struct file_operations cgroup_fil
+ 	.release = cgroup_file_release,
  };
  
++static struct file_operations cgroup_seqfile_operations = {
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = cgroup_seqfile_release,
++};
++
+ static struct inode_operations cgroup_dir_inode_operations = {
+ 	.lookup = simple_lookup,
+ 	.mkdir = cgroup_mkdir,
 
 --
