@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763764AbYBTWY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbYBTWZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763764AbYBTWY0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:24:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYBTWYR
+	id S1758175AbYBTWZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:25:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYBTWZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:24:17 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43730 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751030AbYBTWYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:24:16 -0500
-Date: Wed, 20 Feb 2008 17:24:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-In-Reply-To: <200802202315.49032.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0802201721080.24031-100000@iolanthe.rowland.org>
+	Wed, 20 Feb 2008 17:25:35 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:45071 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751129AbYBTWZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:25:33 -0500
+Date: Wed, 20 Feb 2008 17:25:30 -0500
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080220222530.GK30160@fieldses.org>
+References: <20080220165557.GA18816@havoc.gtf.org> <20080220.131530.18314167.davem@davemloft.net> <20080220212302.GJ30160@fieldses.org> <20080220.134257.41491836.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220.134257.41491836.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
-
-> Well, below is an uncompiled and untested but illustrating the idea that
-> might allow people not to bother with device_pm_schedule_removal()
-> explicitly and can fix the issue at hand.
+On Wed, Feb 20, 2008 at 01:42:57PM -0800, David Miller wrote:
+> From: "J. Bruce Fields" <bfields@fieldses.org>
+> Date: Wed, 20 Feb 2008 16:23:02 -0500
 > 
-> [There are some cases that need handling and are not covered here.]
+> > On Wed, Feb 20, 2008 at 01:15:30PM -0800, David Miller wrote:
+> > > From: Jeff Garzik <jeff@garzik.org>
+> > > Date: Wed, 20 Feb 2008 11:55:57 -0500
+> > > 
+> > > > 
+> > > > Note:  this is based off of Linus's latest commit
+> > > > (5d9c4a7de64d398604a978d267a6987f1f4025b7), since all my previous
+> > > > submissions are now upstream (thanks!).
+> > > 
+> > > The whole point of my not rebasing net-2.6 is so that you can always
+> > > use it as a base.
+> > > 
+> > > With what you've giving me now I either have to:
+> > > 
+> > > 1) Pull in Linus's tree to net-2.6, then pull from you.
+> > > 
+> > > 2) Pull in directly from you to get it all.
+> > 
+> > Why are either of those a problem?
 > 
-> Please have a look.
-> 
-> Thanks,
-> Rafael
+> Because it forces me to pull Linus's upstream into net-2.6,
+> I don't have any choice in the matter.
 
-> +static struct task_struct *suspending_task;
-> +static DEFINE_MUTEX(suspending_task_mtx);
+Right.  I'm wondering what the problems are that you see with that.
 
-I suspect you don't really need this mutex.
+The advantages include earlier warning of merge problems, and avoidance
+of duplicate commits--if Jeff's done work that depends on patches that
+already upstream, then he either does that work against upstream, or
+includes backported patches in the branch he asks you to pull, and you
+end up with both the original and the backported patch.  Which isn't the
+end of the world, but the resulting history seems messier than
+necessary.
 
-> +bool in_suspend_context(void)
-> +{
-> +	bool result;
-> +
-> +	mutex_lock(&suspending_task_mtx);
-> +	result = (suspending_task == current);
-> +	mutex_unlock(&suspending_task_mtx);
-> +	return result;
-> +}
+Or I guess you could both wait to do this merge until you're ready to
+pull in Linus's latest?
 
-If suspending_task == current then you are guaranteed to be serialized, 
-because everything a single task does is serial.
+For non-git-using testers there may be an advantage to always keeping a
+tree based on the latest tagged release, as it may simplify providing
+them with patches in some cases.  But if the goal is to provide a basis
+for other maintainer's work, I'd've thought the best policy would be
+just to track the tip of every relevant branch (which includes Linus's
+in this case).
 
-> @@ -1162,7 +1162,10 @@ void device_destroy(struct class *class,
->  	dev = class_find_device(class, &devt, __match_devt);
->  	if (dev) {
->  		put_device(dev);
-> -		device_unregister(dev);
-> +		if (in_suspend_context())
-> +			device_pm_schedule_removal(dev);
-> +		else
-> +			device_unregister(dev);
->  	}
->  }
-
-But what about device_del()?  Can a similar change be made there?
-
-Alan Stern
-
+--b.
