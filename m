@@ -1,145 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760020AbYBTWQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbYBTWRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760020AbYBTWQe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbYBTWQP
+	id S1761918AbYBTWRp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbYBTWRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:16:15 -0500
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:13362 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbYBTWQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:16:13 -0500
-Message-ID: <47BCA6B8.5000904@hp.com>
-Date: Wed, 20 Feb 2008 17:16:24 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Wed, 20 Feb 2008 17:17:35 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:58140 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1750985AbYBTWRe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:17:34 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Thu, 21 Feb 2008 09:17:02 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Improve init/Kconfig help descriptions [PATCH 4/9]
+Message-ID: <20080220221702.GE2169@tull.net>
+References: <20080219140609.GA26619@tull.net> <20080219143855.GB27352@tull.net> <4760.1203478930@turing-police.cc.vt.edu>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 7/8] [SCTP]: uninline sctp_add_cmd_sf
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
-In-Reply-To: <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------030809010504030708020408"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4760.1203478930@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030809010504030708020408
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-
-Ilpo Järvinen wrote:
-> I added inline to sctp_add_cmd and appropriate comment there to
-> avoid adding another call into the call chain. This works at least
-> with "gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)". Alternatively,
-> __sctp_add_cmd could be introduced to .h.
+On Tue, Feb 19, 2008 at 10:42:10PM -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 20 Feb 2008 01:38:55 +1100, Nick Andrew said:
+> > +	  AVC refers to Access Vector Cache, a subsystem used by SELinux
+> > +	  to improve performance of the security checking by caching
+> > +	  previous access decisions.
 > 
+> This paragraph can be dropped, as the reasons that SELinux denial messages
+> are tagged with 'avc' are mostly historical.   If you want to expand on anything
+> in here, explain that 'AVC' messages are interesting because they indicate
+> some sort of security rule denial.
 
-My only concern was performance regressions, but it looks like it
-doesn't effect anything from the few quick runs I've made.
+Ok, if AVC is incidental then I don't need to mention it, and so don't
+need to define the acronym.
 
-Since we are putting sctp_add_cmd_sf() on the call stack, we might
-as well get rid of sctp_add_cmd() and reduce it a bit more.
+> So - if you don't enable auditing,
+> your security messages end up in the kernel syslog.  If you enable auditing,
+> they end up in the audit logs.  Explaining *that* clearly would be a lot
+> more useful than explaining what avc originally stood for.. ;)
 
--vlad
+How about this. I tried to explain what happens to audit messages.
 
---------------030809010504030708020408
-Content-Type: text/plain;
- name="p"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="p"
+        bool "Auditing support"
+        depends on NET
+        help
+-         Enable auditing infrastructure that can be used with another
+-         kernel subsystem, such as SELinux (which requires this for
+-         logging of avc messages output).  Does not do system-call
+-         auditing without CONFIG_AUDITSYSCALL.
++         Enable an auditing infrastructure that can be used with another
++         kernel subsystem, such as Security-Enhanced Linux (SELinux),
++         which requires this option for logging of security related
++         messages.
++
++         With this option, the kernel can use netlink to pass audit
++         messages to an audit daemon process. Otherwise, audit messages
++         are logged to syslog.
++
++         See <http://www.nsa.gov/selinux/> for more information
++         on Security-Enhanced Linux.
++
++         CONFIG_AUDITSYSCALL (see below) is also required for
++         system-call auditing.
++
++         If unsure, say N.
 
-diff --git a/include/net/sctp/command.h b/include/net/sctp/command.h
-index 10ae2da..4263af8 100644
---- a/include/net/sctp/command.h
-+++ b/include/net/sctp/command.h
-@@ -205,12 +205,11 @@ typedef struct {
- int sctp_init_cmd_seq(sctp_cmd_seq_t *seq);
- 
- /* Add a command to an sctp_cmd_seq_t.
-- * Return 0 if the command sequence is full.
-  *
-  * Use the SCTP_* constructors defined by SCTP_ARG_CONSTRUCTOR() above
-  * to wrap data which goes in the obj argument.
-  */
--int sctp_add_cmd(sctp_cmd_seq_t *seq, sctp_verb_t verb, sctp_arg_t obj);
-+void sctp_add_cmd_sf(sctp_cmd_seq_t *seq, sctp_verb_t verb, sctp_arg_t obj);
- 
- /* Return the next command structure in an sctp_cmd_seq.
-  * Return NULL at the end of the sequence.
-diff --git a/include/net/sctp/sm.h b/include/net/sctp/sm.h
-index ef9e7ed..2481173 100644
---- a/include/net/sctp/sm.h
-+++ b/include/net/sctp/sm.h
-@@ -385,14 +385,6 @@ static inline int ADDIP_SERIAL_gte(__u16 s, __u16 t)
- 	return (((s) == (t)) || (((t) - (s)) & ADDIP_SERIAL_SIGN_BIT));
- }
- 
--
--/* Run sctp_add_cmd() generating a BUG() if there is a failure.  */
--static inline void sctp_add_cmd_sf(sctp_cmd_seq_t *seq, sctp_verb_t verb, sctp_arg_t obj)
--{
--	if (unlikely(!sctp_add_cmd(seq, verb, obj)))
--		BUG();
--}
--
- /* Check VTAG of the packet matches the sender's own tag. */
- static inline int
- sctp_vtag_verify(const struct sctp_chunk *chunk,
-diff --git a/net/sctp/command.c b/net/sctp/command.c
-index bb97733..3a06513 100644
---- a/net/sctp/command.c
-+++ b/net/sctp/command.c
-@@ -51,19 +51,16 @@ int sctp_init_cmd_seq(sctp_cmd_seq_t *seq)
- 
- /* Add a command to a sctp_cmd_seq_t.
-  * Return 0 if the command sequence is full.
-+ *
-+ * Inline here is not a mistake, this way sctp_add_cmd_sf doesn't need extra
-+ * calls, size penalty is of insignificant magnitude here
-  */
--int sctp_add_cmd(sctp_cmd_seq_t *seq, sctp_verb_t verb, sctp_arg_t obj)
-+void sctp_add_cmd_sf(sctp_cmd_seq_t *seq, sctp_verb_t verb, sctp_arg_t obj)
- {
--	if (seq->next_free_slot >= SCTP_MAX_NUM_COMMANDS)
--		goto fail;
-+	BUG_ON(seq->next_free_slot >= SCTP_MAX_NUM_COMMANDS);
- 
- 	seq->cmds[seq->next_free_slot].verb = verb;
- 	seq->cmds[seq->next_free_slot++].obj = obj;
--
--	return 1;
--
--fail:
--	return 0;
- }
- 
- /* Return the next command structure in a sctp_cmd_seq.
-diff --git a/net/sctp/sm_statefuns.c b/net/sctp/sm_statefuns.c
-index f2ed647..1475a29 100644
---- a/net/sctp/sm_statefuns.c
-+++ b/net/sctp/sm_statefuns.c
-@@ -3135,12 +3135,8 @@ sctp_disposition_t sctp_sf_operr_notify(const struct sctp_endpoint *ep,
- 		if (!ev)
- 			goto nomem;
- 
--		if (!sctp_add_cmd(commands, SCTP_CMD_EVENT_ULP,
--				  SCTP_ULPEVENT(ev))) {
--			sctp_ulpevent_free(ev);
--			goto nomem;
--		}
--
-+		sctp_add_cmd_sf(commands, SCTP_CMD_EVENT_ULP,
-+				SCTP_ULPEVENT(ev));
- 		sctp_add_cmd_sf(commands, SCTP_CMD_PROCESS_OPERR,
- 				SCTP_CHUNK(chunk));
- 	}
+I'm puzzled about "end up in the kernel syslog". Looking at include/linux/audit.h
+it seems that they go nowhere:
 
---------------030809010504030708020408--
+#ifdef CONFIG_AUDIT
+  [...]
+#else
+#define audit_log(c,g,t,f,...) do { ; } while (0)
+#define audit_log_start(c,g,t) ({ NULL; })
+#define audit_log_vformat(b,f,a) do { ; } while (0)
+#define audit_log_format(b,f,...) do { ; } while (0)
+#define audit_log_end(b) do { ; } while (0)
+#define audit_log_hex(a,b,l) do { ; } while (0)
+#define audit_log_untrustedstring(a,s) do { ; } while (0)
+#define audit_log_n_untrustedstring(a,n,s) do { ; } while (0)
+#define audit_log_d_path(b, p, d) do { ; } while (0)
+#define audit_enabled 0
+#endif
+
+So it looks like if CONFIG_AUDIT is not defined then audit messages are
+ignored. Syslog is used by kernel/audit.c when there is an audit
+failure, which seems to be mainly if the userspace audit daemon is not
+running.
+
+Nick.
