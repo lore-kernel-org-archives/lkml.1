@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934689AbYBTXLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbYBTXM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934689AbYBTXLk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:11:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932832AbYBTXLT
+	id S933454AbYBTXM5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbYBTXMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:11:19 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:60068 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S932311AbYBTXLS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:11:18 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Thu, 21 Feb 2008 10:10:44 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: serge@hallyn.com
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Pavel Emelyanov <xemul@openvz.org>,
-       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 2.6.25-rc2 3/9] config: Improve init/Kconfig help	descriptions - namespaces
-Message-ID: <20080220231044.GG2169@tull.net>
-References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com> <20080220121915.GA2169@tull.net> <20080220165034.GA14550@vino.hallyn.com>
+	Wed, 20 Feb 2008 18:12:49 -0500
+Received: from nf-out-0910.google.com ([64.233.182.189]:64662 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756237AbYBTXMs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 18:12:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GZfpNhR/Jcmlv8LGgyPJ5KjvXcUgeL76S7tKBtjyVMOxlJYUQ/LogyZW/3oAzjN8864AIhNy2E21F3M5PivHoUmJES5mYv4MQuGJJlWGG4cDWfwx3yG0A3J8RhwO8IM/Xlt1riKPliqbCYWtOD3NOC2AeHf1g9ctzC2JV4FDvjo=
+Message-ID: <47BCB3EB.1070308@gmail.com>
+Date: Thu, 21 Feb 2008 00:12:43 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220165034.GA14550@vino.hallyn.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] moxa: make functions static
+References: <1203545644.25307.40.camel@brick>
+In-Reply-To: <1203545644.25307.40.camel@brick>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 10:50:34AM -0600, serge@hallyn.com wrote:
-> thanks for all this work.
+On 02/20/2008 11:14 PM, Harvey Harrison wrote:
+> All were forward declared static already.
 > 
-> Perhaps it would be better to have a Documentation/Namespaces/PID file
-> describing these semantics, and have the description read something
-> briefer like
-> 
-> 	  Pid namespaces provide filtered views of processes and their
-> 	  process ids.  This features is used to implement containers.
-> 	  Please see Documentation/Namespaces/PID for details.
-> 
-> But in any case with Pavel's comments this looks very good.
+> Fixes sparse warnings:
+> drivers/char/moxa.c:1421:6: warning: symbol 'MoxaDriverInit' was not declared. Should it be static?
+> drivers/char/moxa.c:1464:6: warning: symbol 'MoxaPortFlushData' was not declared. Should it be static?
+> drivers/char/moxa.c:1477:5: warning: symbol 'MoxaDriverIoctl' was not declared. Should it be static?
+> drivers/char/moxa.c:1604:5: warning: symbol 'MoxaDriverPoll' was not declared. Should it be static?
+> drivers/char/moxa.c:1667:5: warning: symbol 'MoxaPortsOfCard' was not declared. Should it be static?
+> drivers/char/moxa.c:1954:5: warning: symbol 'MoxaPortIsValid' was not declared. Should it be static?
+> drivers/char/moxa.c:1964:6: warning: symbol 'MoxaPortEnable' was not declared. Should it be static?
+> drivers/char/moxa.c:1987:6: warning: symbol 'MoxaPortDisable' was not declared. Should it be static?
+> drivers/char/moxa.c:1997:6: warning: symbol 'MoxaPortGetMaxBaud' was not declared. Should it be static?
+> drivers/char/moxa.c:2007:6: warning: symbol 'MoxaPortSetBaud' was not declared. Should it be static?
+> drivers/char/moxa.c:2031:5: warning: symbol 'MoxaPortSetTermio' was not declared. Should it be static?
+> drivers/char/moxa.c:2087:5: warning: symbol 'MoxaPortGetLineOut' was not declared. Should it be static?
+> drivers/char/moxa.c:2107:6: warning: symbol 'MoxaPortLineCtrl' was not declared. Should it be static?
+> drivers/char/moxa.c:2122:6: warning: symbol 'MoxaPortFlowCtrl' was not declared. Should it be static?
+> drivers/char/moxa.c:2142:5: warning: symbol 'MoxaPortLineStatus' was not declared. Should it be static?
+> drivers/char/moxa.c:2168:5: warning: symbol 'MoxaPortDCDChange' was not declared. Should it be static?
+> drivers/char/moxa.c:2180:5: warning: symbol 'MoxaPortDCDON' was not declared. Should it be static?
+> drivers/char/moxa.c:2193:5: warning: symbol 'MoxaPortWriteData' was not declared. Should it be static?
+> drivers/char/moxa.c:2257:5: warning: symbol 'MoxaPortReadData' was not declared. Should it be static?
+> drivers/char/moxa.c:2327:5: warning: symbol 'MoxaPortTxQueue' was not declared. Should it be static?
+> drivers/char/moxa.c:2341:5: warning: symbol 'MoxaPortTxFree' was not declared. Should it be static?
+> drivers/char/moxa.c:2355:5: warning: symbol 'MoxaPortRxQueue' was not declared. Should it be static?
+> drivers/char/moxa.c:2370:6: warning: symbol 'MoxaPortTxDisable' was not declared. Should it be static?
+> drivers/char/moxa.c:2378:6: warning: symbol 'MoxaPortTxEnable' was not declared. Should it be static?
+> drivers/char/moxa.c:2387:5: warning: symbol 'MoxaPortResetBrkCnt' was not declared. Should it be static?
+> drivers/char/moxa.c:2396:6: warning: symbol 'MoxaPortSendBreak' was not declared. Should it be static?
 
-I'm sure you're right, but my goal is to improve all the Kconfig help
-messages (clarity, accuracy, consistency) and so at this time I want
-to limit myself to changes to the help descriptions.
-
-If somebody will add documentation for this or any other subsystem
-I will gladly refer to it but in the meantime I'm sure we can come up
-with a wording which everybody can agree with.
-
-The point of view I'm coming from is that of a non-kernel-developer
-who has to make a choice about some feature of the kernel which they
-don't understand. When I'm configuring a kernel I appreciate a bit more
-detail in the help text.  I want to provide enough information to help
-the user make a rational choice, or give them some idea about what they
-are agreeing to put into their kernel. If they still don't understand,
-there will be a suggested safe answer.
-
-I'll see if I can make it briefer, if there's any fat which can be
-trimmed away.
-
-Current wording:
-
-@@ -446,12 +486,20 @@ config PID_NS
-        default n
-        depends on NAMESPACES && EXPERIMENTAL
-        help
--         Suport process id namespaces.  This allows having multiple
--         process with the same pid as long as they are in different
--         pid namespaces.  This is a building block of containers.
-+         Enable experimental support for hierarchical process id namespaces.
-
--         Unless you want to work with an experimental feature
--         say N here.
-+         Process IDs will be unique only within each PID namespace.
-+         This allows multiple processes to have the same PID
-+         so long as they are in different PID namespaces. Furthermore,
-+         each process will have a distinct PID in each namespace
-+         the process is in.
-+
-+         This is used by container systems (i.e. vservers).
-+         Tasks in the container are placed in the PID namespace
-+         corresponding to the container, and cannot see or
-+         affect processes in any parent PID namespaces.
-+
-+         If unsure, say N.
-
- config BLK_DEV_INITRD
-        bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
-
-
-Nick.
+Thanks, but I have similar fixes for both issues you address in my tree. I'll 
+post it in few days.
