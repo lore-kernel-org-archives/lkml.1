@@ -1,65 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754023AbYBTLfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbYBTMDn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754023AbYBTLfb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 06:35:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYBTLfV
+	id S1752707AbYBTMDn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:03:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbYBTMDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 06:35:21 -0500
-Received: from neuf-infra-smtp-out-sp604007av.neufgp.fr ([84.96.92.120]:49284
-	"EHLO neuf-infra-smtp-out-sp604007av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751159AbYBTLfU convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 06:35:20 -0500
-In-Reply-To: <47840EB2.2010300@shaw.ca>
-References: <fa.NcJePXcdrF+7E7oXv5ULIxogTYI@ifi.uio.no> <4782C3DB.1090201@shaw.ca> <2A722A49-F024-44E9-9FC8-7B714FB25626@neuf.fr> <47840EB2.2010300@shaw.ca>
-Mime-Version: 1.0 (Apple Message framework v753)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <DE29CFB4-18E5-4CA3-A44D-6AD46D1A122D@neuf.fr>
-Cc: linux-kernel@vger.kernel.org, ide <linux-ide@vger.kernel.org>
-Content-Transfer-Encoding: 8BIT
-From: =?ISO-8859-1?Q?Guillaume_Laur=E8s?= <guillaume-laures@neuf.fr>
-Subject: Re: PROBLEM: I/O scheduler problem with an 8 SATA disks raid 5 under heavy load  ?
-Date: Wed, 20 Feb 2008 12:35:14 +0100
-To: Robert Hancock <hancockr@shaw.ca>
-X-Mailer: Apple Mail (2.753)
+	Wed, 20 Feb 2008 07:03:34 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:58941
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751171AbYBTMDd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 07:03:33 -0500
+Date: Wed, 20 Feb 2008 13:03:24 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v6
+Message-ID: <20080220120324.GW7128@v2.random>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220113313.GD11364@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220113313.GD11364@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello all,
+On Wed, Feb 20, 2008 at 05:33:13AM -0600, Robin Holt wrote:
+> But won't that other "subsystem" cause us to have two seperate callouts
+> that do equivalent things and therefore force a removal of this and go
+> back to what Christoph has currently proposed?
 
-A bit of update to this issue.
+The point is that a new kind of notifier that only supports sleeping
+users will allow to keep optimizing the mmu notifier patch for the
+non-sleeping users. If we keep going Christoph's way of having a
+single notifier that fits all he will have to:
 
-Switching the cabling of the most problematic drive with a new one  
-didn't fix the issue.
-I couldn't yet switch the power supply with a more powerful one.  
-However I temporarily added a pci-e SATA host and another drive, the  
-situation was just as bad, not worse ;-) This HBA just had 2 ports,  
-so I couldn't swap it completely with the nvidia ports.
+1) drop the entire RCU locking from its patches (making all previous
+   rcu discussions and fixes void) those discussions only made sense
+   if applied to _my_ patch, not Christoph's patches as long as you
+   pretend to sleep in any of his mmu notifier methods like invalidate_range_*.
 
-Just as a guess I added sata_nv.adma=0 and the problem completly  
-disappeared for 4 weeks now. Removing it from cmdline just make it  
-come back.
+2) probably modify the linux VM to replace the i_mmap_lock and perhaps
+   PT lock with a mutex (see Nick's comments for details)
 
-Unfortunately I'm running xen on this host so I don't think adma  
-patches if any may be suitable to me, at least as long as something >  
-2.6.20 doesn't come in gentoo for xen...
+I'm unconvinced both the main linux VM and the mmu notifier should be
+changed like this just to support xpmem. All non-sleeping users don't
+need that. Nevertheless I'm fully welcome to support xpmem (and it's
+not my call nor my interest to comment if allocating skbs in
+try_to_unmap in order to unpin pages is workable, let's assume it's
+workable for the sake of this discussion) with a new config option
+that will also alter how the core VM works, in order to fully support
+the sleeping users for filebacked mappings.
 
-Regards,
+This will also create less confusion in the registration. With
+Christoph's one-config-option-fits-all you had to half register into
+the mmu notifier (the sleeping calls, so not invalidate_page) and full
+register in the external rmap notifier, and I had to only half
+register into the mmu notifier (not range_begin) and not register in
+the rmap external notifier.
 
-GoM
+With two separate config options for sleeping and non sleeping users,
+I'll 100% register in the mmu notifier methods, and the non-sleeping
+users will 100% register the xpmem methods. You won't have to have
+designed the mmu notifier patches to understand how to use it.
 
-Le 9 janv. 08 à 01:00, Robert Hancock a écrit :
+In theory both KVM and GRU are free to use the xpmem methods too (the
+invalidate_page will be page_t based instead of [mm,addr] based, but
+that's possible to handle with KVM changes if one wants to), but if a
+distro only wants to support the sleeping users in their binary kernel
+images, they won't be forced to alter how the VM works to do
+that.
 
->> So it seems to be either a cabling problem or a bug with sata_nv ?  
->> I'm running gentoo's 2.6.20-xen, and maybe my problem looks like  
->> the sata_nv/adma/samsung problems reports I can see on the net ?
->
-> I don't think it's the same problem. In that case the controller  
-> appears to indicate that it didn't even start processing the  
-> command. In this case it's indicating that the command was sent to  
-> the drive and is still waiting for it to indicate completion.
->
-> It could be a cabling problem, yes. Also, are you sure your power  
-> supply is able to handle the power draw of that many drives?
-
+If there's agreement that the VM should alter its locking from
+spinlock to mutex for its own good, then Christoph's
+one-config-option-fits-all becomes a lot more appealing (replacing RCU
+with a mutex in the mmu notifier list registration locking isn't my
+main worry and the non-sleeping-users may be ok to live with it).
