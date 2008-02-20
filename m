@@ -1,60 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764040AbYBTAka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbYBTAkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764040AbYBTAka (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbYBTAkV
+	id S1764377AbYBTAkq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:40:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764162AbYBTAkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:40:21 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:37272 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751388AbYBTAkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:40:20 -0500
-Date: Wed, 20 Feb 2008 02:39:43 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Sathya Prakash <sathya.prakash@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] message/fusion/mptbase.c: fix use-after-free's
-Message-ID: <20080220003943.GZ31955@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
+	Tue, 19 Feb 2008 19:40:36 -0500
+Received: from mga10.intel.com ([192.55.52.92]:60471 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754057AbYBTAkd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:40:33 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,378,1199692800"; 
+   d="scan'208";a="521302657"
+Subject: Re: Linux 2.6.25-rc2
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Torsten Kaiser <just.for.lkml@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <clameter@sgi.com>
+In-Reply-To: <47BAFB42.9000806@cs.helsinki.fi>
+References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
+	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
+	 <20080219061107.GA23229@elte.hu>
+	 <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
+	 <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
+	 <20080219140230.GA32236@Krystal>
+	 <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
+	 <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
+	 <20080219145554.GE21176@elte.hu>  <47BAFB42.9000806@cs.helsinki.fi>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Date: Wed, 20 Feb 2008 08:36:25 +0800
+Message-Id: <1203467785.3248.42.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes two use-after-free's introduced by
-commit e78d5b8f1e73ab82f3fd041d05824cfee7d83a2c and spotted by the 
-Coverity checker.
+On Tue, 2008-02-19 at 17:52 +0200, Pekka Enberg wrote:
+> Ingo Molnar wrote:
+> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > 
+> >>> Yes, this can happen. Are you saying it is not safe to be in the 
+> >>> lockless path when an IRQ triggers?
+> >> Hmm. The barrier() in slab_free() looks fishy. The comment says it's 
+> >> there to make sure we've retrieved c->freelist before c->page but then 
+> >> it uses a _compiler barrier_ which doesn't affect the CPU and the 
+> >> reads may still be re-ordered... Not sure if that matters here though.
+> > 
+> > find a fix patch for that below - most systems affected seem to be SMP 
+> > ones.
+> > 
+> > If this (or my other patch) indeed solves the problem i'd still favor a 
+> > full revert of the SLUB_FASTPATH (commit 1f84260c8ce3b1ce26d4), it looks 
+> > quite un-cooked and quite un-tested for multiple independent reasons.
+> > 
+> > Sigh, why do i again have to be the messenger who brings the bad news to 
+> > SLUB land, and again when poor Christoph went on vacation? :-/
+> > 
+> > 	Ingo
+> > 
+> > -------------------------->
+> > Subject: SLUB: barrier fix
+> > From: Ingo Molnar <mingo@elte.hu>
+> > 
+> > ---
+> >  mm/slub.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Index: linux/mm/slub.c
+> > ===================================================================
+> > --- linux.orig/mm/slub.c
+> > +++ linux/mm/slub.c
+> > @@ -1862,7 +1862,7 @@ static __always_inline void slab_free(st
+> >  	debug_check_no_locks_freed(object, s->objsize);
+> >  	do {
+> >  		freelist = c->freelist;
+> > -		barrier();
+> > +		smp_mb();
+> >  		/*
+> >  		 * If the compiler would reorder the retrieval of c->page to
+> >  		 * come before c->freelist then an interrupt could
+> 
+> Torsten/Yamin, does this fix things for you? What about reverting commit 
+> 1f84260c8ce3b1ce26d4c1d6dedc2f33a3a29c0c ("SLUB: Alternate fast paths 
+> using cmpxchg_local")?
+I'm busy in another issue and will test it ASAP. Sorry.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+-yanmin
 
----
-
- drivers/message/fusion/mptbase.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-901baeee449285d231921d0812b64b0f14d794b8 diff --git a/drivers/message/fusion/mptbase.c b/drivers/message/fusion/mptbase.c
-index bfda731..0c303c8 100644
---- a/drivers/message/fusion/mptbase.c
-+++ b/drivers/message/fusion/mptbase.c
-@@ -1481,15 +1481,15 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
- 
- 	ioc->bars = pci_select_bars(pdev, IORESOURCE_MEM);
- 	if (pci_enable_device_mem(pdev)) {
--		kfree(ioc);
- 		printk(MYIOC_s_ERR_FMT "pci_enable_device_mem() "
- 		       "failed\n", ioc->name);
-+		kfree(ioc);
- 		return r;
- 	}
- 	if (pci_request_selected_regions(pdev, ioc->bars, "mpt")) {
--		kfree(ioc);
- 		printk(MYIOC_s_ERR_FMT "pci_request_selected_regions() with "
- 		       "MEM failed\n", ioc->name);
-+		kfree(ioc);
- 		return r;
- 	}
- 
 
