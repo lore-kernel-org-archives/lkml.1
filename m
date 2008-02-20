@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763892AbYBTARp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764016AbYBTASx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763892AbYBTARp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYBTARe
+	id S1764016AbYBTASx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:18:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756057AbYBTASo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:17:34 -0500
-Received: from mu-out-0910.google.com ([209.85.134.185]:22300 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755642AbYBTARc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:17:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=YGjbDg35/YGBqnenvbTt+tqHHSGrb4Xv7eWjiuOqGU361AKaPW5mJg2vhkbnutQ0ZpBZlq+vfdNmsBV/EeS6qaA6O6w/5Dq7N6w2GTtfUXxquz32x2F9YsNs0DgeqVSltP6vM7HlGioo4IXy/PoDssAwhA3h0JVNI2HZh01Vm8w=
-Message-ID: <a8e1da0802191617p7b5630a3mf017c9f0fdb52bc8@mail.gmail.com>
-Date: Wed, 20 Feb 2008 08:17:31 +0800
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "David Miller" <davem@davemloft.net>
-Subject: Re: [PATCH 1/2] bluetooth : put hci dev after del conn
-Cc: marcel@holtmann.org, linux-kernel@vger.kernel.org,
-       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
-In-Reply-To: <20080218.204457.167455192.davem@davemloft.net>
+	Tue, 19 Feb 2008 19:18:44 -0500
+Received: from hera.kernel.org ([140.211.167.34]:39074 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753286AbYBTASn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:18:43 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: tsc breaks atkbd suspend
+Date: Tue, 19 Feb 2008 19:17:36 -0500
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, Pavel Machek <pavel@ucw.cz>,
+       Len Brown <len.brown@intel.com>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>, jbohac@suse.cz,
+       kernel list <linux-kernel@vger.kernel.org>, jikos@suse.cz,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andrew Morton <akpm@osdl.org>
+References: <20080218133852.GA1573@elf.ucw.cz> <20080219140552.GC9965@elte.hu> <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802191748110.7583@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080218075555.GA5940@darkstar.te-china.tietoenator.com>
-	 <20080218.204457.167455192.davem@davemloft.net>
+Message-Id: <200802191917.36641.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 19, 2008 12:44 PM, David Miller <davem@davemloft.net> wrote:
-> From: Dave Young <hidave.darkstar@gmail.com>
-> Date: Mon, 18 Feb 2008 15:55:55 +0800
->
-> > Move hci_dev_put to del_conn to avoid hci dev going away before hci conn.
->
-> This looks correct so I have applied it.
->
-> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
->
-> Please remove the extraneous space at the end of your
-> signoff line next time :-)
+On Tuesday 19 February 2008 11:51, Thomas Gleixner wrote:
+> On Tue, 19 Feb 2008, Ingo Molnar wrote:
+> > * Pavel Machek <pavel@ucw.cz> wrote:
+> > 
+> > > TSC is used even on machines when CONFIG_X86_TSC is not set (X86_TSC 
+> > > means _require_ TSC), but it is not properly disabled when it is 
+> > > unusable, because acpi code understood the config switch as "may use 
+> > > TSC".
+> > > 
+> > > This actually fixes suspend problems on my x60.
+> > 
+> > ah! This makes tons of sense. I've applied your patch
 
-Will do :)
+please do not.
 
->
-> Also, I reworked the loop in del_conn() so that it no longer
-> generates a compile warning, so I had to apply your patch
-> by hand.
->
+> > - but i guess it  should go via the ACPI tree.
 
-Thanks a lot.
+yes.
 
-Regards
-dave
+> Right. The breakage was introduced there when IA64 switched to
+> GENERIC_TIME and the X86_TSC dependency was added.
+
+so do we need a patch for 2.6.23.stable and 2.6.24.stable?
+
+thanks,
+-Len
