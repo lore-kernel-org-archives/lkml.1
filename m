@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764056AbYBTBJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763745AbYBTBJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764056AbYBTBJE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 20:09:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761437AbYBTBIy
+	id S1763745AbYBTBJy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 20:09:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756747AbYBTBJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 20:08:54 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:43006 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756495AbYBTBIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 20:08:54 -0500
-Date: Wed, 20 Feb 2008 03:08:17 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: flatif@neteffect.com, gstreiff@neteffect.com
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix use-after-free
-Message-ID: <20080220010817.GB31955@cs181133002.pp.htv.fi>
+	Tue, 19 Feb 2008 20:09:46 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45899
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756552AbYBTBJp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 20:09:45 -0500
+Date: Wed, 20 Feb 2008 02:09:41 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080220010941.GR7128@v2.random>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080219231157.GC18912@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a use-after-free spotted by the Coverity checker.
+On Wed, Feb 20, 2008 at 12:11:57AM +0100, Nick Piggin wrote:
+> Sorry, I realise I still didn't get this through my head yet (and also
+> have not seen your patch recently). So I don't know exactly what you
+> are doing...
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+The last version was posted here:
 
----
+http://marc.info/?l=kvm-devel&m=120321732521533&w=2
 
- drivers/infiniband/hw/nes/nes_verbs.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+> But why does _anybody_ (why does Christoph's patches) need to invalidate
+> when they are going to be more permissive? This should be done lazily by
+> the driver, I would have thought.
 
---- linux-2.6/drivers/infiniband/hw/nes/nes_verbs.c.old	2008-02-20 03:02:13.000000000 +0200
-+++ linux-2.6/drivers/infiniband/hw/nes/nes_verbs.c	2008-02-20 03:03:20.000000000 +0200
-@@ -1820,22 +1820,22 @@ static struct ib_cq *nes_create_cq(struc
- 	ret = wait_event_timeout(cqp_request->waitq, (0 != cqp_request->request_done),
- 			NES_EVENT_TIMEOUT * 2);
- 	nes_debug(NES_DBG_CQ, "Create iWARP CQ%u completed, wait_event_timeout ret = %d.\n",
- 			nescq->hw_cq.cq_number, ret);
- 	if ((!ret) || (cqp_request->major_code)) {
-+		nes_debug(NES_DBG_CQ, "iWARP CQ%u create timeout expired, major code = 0x%04X,"
-+				" minor code = 0x%04X\n",
-+				nescq->hw_cq.cq_number, cqp_request->major_code, cqp_request->minor_code);
- 		if (atomic_dec_and_test(&cqp_request->refcount)) {
- 			if (cqp_request->dynamic) {
- 				kfree(cqp_request);
- 			} else {
- 				spin_lock_irqsave(&nesdev->cqp.lock, flags);
- 				list_add_tail(&cqp_request->list, &nesdev->cqp_avail_reqs);
- 				spin_unlock_irqrestore(&nesdev->cqp.lock, flags);
- 			}
- 		}
--		nes_debug(NES_DBG_CQ, "iWARP CQ%u create timeout expired, major code = 0x%04X,"
--				" minor code = 0x%04X\n",
--				nescq->hw_cq.cq_number, cqp_request->major_code, cqp_request->minor_code);
- 		if (!context)
- 			pci_free_consistent(nesdev->pcidev, nescq->cq_mem_size, mem,
- 					nescq->hw_cq.cq_pbase);
- 		nes_free_resource(nesadapter, nesadapter->allocated_cqs, cq_num);
- 		kfree(nescq);
-
+This can be done lazily by the driver yes. The place where I've an
+invalidate_pages in mprotect however can also become less permissive.
+It's simpler to invalidate always and it's not guaranteed the
+secondary mmu page fault is capable of refreshing the spte across a
+writeprotect fault. In the future this can be changed to
+mprotect_pages though, so no page fault will happen in the secondary
+mmu.
