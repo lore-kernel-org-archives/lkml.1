@@ -1,46 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbYBTC3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYBTCgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760509AbYBTC3c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:29:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbYBTC3X
+	id S1760901AbYBTCgU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:36:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYBTCgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:29:23 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53290 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753590AbYBTC3W (ORCPT
+	Tue, 19 Feb 2008 21:36:08 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:54006 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756317AbYBTCgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:29:22 -0500
-Date: Tue, 19 Feb 2008 18:28:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
- Screen becomes green.
-In-Reply-To: <200802191700.12050.jesse.barnes@intel.com>
-Message-ID: <alpine.LFD.1.00.0802191827190.7833@woody.linux-foundation.org>
-References: <b6a2187b0802191653q4dfaa32cl96b9278e97606ef0@mail.gmail.com> <200802191700.12050.jesse.barnes@intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Tue, 19 Feb 2008 21:36:07 -0500
+Date: Tue, 19 Feb 2008 18:35:59 -0800
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       David Somayajulu <david.somayajulu@qlogic.com>
+Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
+Message-ID: <20080220023559.GF23759@plap3.qlogic.org>
+References: <20080219192922.GH31955@cs181133002.pp.htv.fi> <1203473618.3103.37.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203473618.3103.37.camel@localhost.localdomain>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-OriginalArrivalTime: 20 Feb 2008 02:36:06.0716 (UTC) FILETIME=[581DAFC0:01C87369]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 19 Feb 2008, James Bottomley wrote:
 
-
-On Tue, 19 Feb 2008, Jesse Barnes wrote:
->
-> I found the same poweroff issue on my T61.  It turned out to be related to the 
-> C state code disabling interrupts when it shouldn't iirc.  Booting 
-> with 'idle=poll' seems to work around the problem.
+> On Tue, 2008-02-19 at 21:29 +0200, Adrian Bunk wrote:
+> > This patch removes dead code spotted by the Coverity checker.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > ---
+> > 
+> >  drivers/scsi/qla4xxx/ql4_isr.c |   18 +-----------------
+> >  1 file changed, 1 insertion(+), 17 deletions(-)
+> > 
+> > --- linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c.old	2008-02-19 20:29:16.000000000 +0200
+> > +++ linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c	2008-02-19 20:30:37.000000000 +0200
+> > @@ -91,38 +91,22 @@ static void qla4xxx_status_entry(struct 
+> >  		if (scsi_status == 0) {
+> >  			cmd->result = DID_OK << 16;
+> >  			break;
+> >  		}
+> >  
+> >  		if (sts_entry->iscsiFlags & ISCSI_FLAG_RESIDUAL_OVER) {
+> >  			cmd->result = DID_ERROR << 16;
+> >  			break;
+> >  		}
+> >  
+> > -		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
+> > +		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
+> >  			scsi_set_resid(cmd, residual);
+> > -			if (!scsi_status && ((scsi_bufflen(cmd) - residual) <
+> > -				cmd->underflow)) {
+> > -
+> > -				cmd->result = DID_ERROR << 16;
+> > -
+> > -				DEBUG2(printk("scsi%ld:%d:%d:%d: %s: "
+> > -					"Mid-layer Data underrun0, "
+> > -					"xferlen = 0x%x, "
+> > -					"residual = 0x%x\n", ha->host_no,
+> > -					cmd->device->channel,
+> > -					cmd->device->id,
+> > -					cmd->device->lun, __func__,
+> > -					scsi_bufflen(cmd), residual));
+> > -				break;
+> > -			}
+> > -		}
 > 
-> The "green screen" problem should be fixed (see the DRM git tree for details).
+> This code doesn't look dead to me, it looks to be enforcing
+> cmd->underrun if set ... what makes the coverity checker think it can
+> never be executed?
 
-..and the latter is hopefully now merged in my tree too (at least some of 
-the drm updates are).
-
-		Linus
+Hmm, guess it's the earlier 'if (scsi_status == 0)' check a few lines
+up...  Dave S., can you take a look at this...  Thanks, av
