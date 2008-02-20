@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758729AbYBTRor@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbYBTRs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758729AbYBTRor (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbYBTRod
+	id S1757518AbYBTRs6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbYBTRst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:44:33 -0500
-Received: from an-out-0708.google.com ([209.85.132.240]:41195 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753855AbYBTRob (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:44:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=C7K8+9upPbJjecSA0ytSCuS8UUPbY6NtRXb6f0CHehykEso/SLURhZEzkkc2iY7nAvGubj0P7rk2s3DT8aKvVvAWZr8q5gLRmUg/ZUlKzC+Rk76vxbJAGNq6iJ3823D5zH1xGPx1j4Yh4249+QLITHJME6JKiSV6j5vQL+sn3Ns=
-Message-ID: <72dbd3150802200944s16e84e62tf13c19935915bc55@mail.gmail.com>
-Date: Wed, 20 Feb 2008 09:44:28 -0800
-From: "David Rees" <drees76@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: very poor ext3 write performance on big filesystems?
-Cc: "Theodore Tso" <tytso@mit.edu>, "Andi Kleen" <andi@firstfloor.org>,
-       "Tomasz Chmielewski" <mangoo@wpkg.org>,
-       LKML <linux-fsdevel@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802201156520.26109@fbirervta.pbzchgretzou.qr>
+	Wed, 20 Feb 2008 12:48:49 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36912 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753460AbYBTRss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:48:48 -0500
+Message-ID: <47BC67CE.9070407@redhat.com>
+Date: Wed, 20 Feb 2008 18:47:58 +0100
+From: Milan Broz <mbroz@redhat.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com> <47BC0DA9.1030607@redhat.com> <20080220172449.GD27726@gondor.apana.org.au>
+In-Reply-To: <20080220172449.GD27726@gondor.apana.org.au>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47B980AC.2080806@wpkg.org> <p7363wmxsxr.fsf@bingen.suse.de>
-	 <20080218141640.GC12568@mit.edu> <47B99E0C.8020706@wpkg.org>
-	 <20080218151632.GD25098@mit.edu>
-	 <20080218155725.GB26622@one.firstfloor.org>
-	 <20080218153501.GE25098@mit.edu>
-	 <Pine.LNX.4.64.0802201156520.26109@fbirervta.pbzchgretzou.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 2:57 AM, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->  But GNU tar does not handle acls and xattrs. So back to rsync/cp/mv.
+Herbert Xu wrote:
+> On Wed, Feb 20, 2008 at 12:23:21PM +0100, Milan Broz wrote:
+>> It seems that some module dependency was lost, 
+>> dm-crypt with async crypto depends now on crypto_blkcipher module
+>> for this configuration.
+>>
+>> Herbert, any following change required for dm-crypt or it is only
+>> crypto subsystem issue?
+>> (With old kernel/dm-crypt it loads "blkcipher" not "crypto_blkcipher",
+>> maybe some initramdisk change required too...)
+> 
+> Right blkcipher was renamed to crypto_blkcipher due to the merge
+> of blkcipher/ablkcipher.  If this is causing a problem with the
+> initramfs then we need to fix the initramfs tools to look at the
+> actual dependencies rather than hard-coding it.
 
-Huh? The version of tar on my Fedora 8 desktop (tar-1.17-7) does. Just
-add the --xattrs option (which turns on --acls and --selinux).
+I just tested one affected configuration and problem was in missing
+"chainiv.ko" module on ramdisk.
 
--Dave
+Milan
+--
+mbroz@redhat.com
+
