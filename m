@@ -1,110 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbYBTCzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763990AbYBTC6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbYBTCzs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758160AbYBTCzf
+	id S1763990AbYBTC6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757656AbYBTC57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:55:35 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:55704 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757685AbYBTCze (ORCPT
+	Tue, 19 Feb 2008 21:57:59 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:28395 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757473AbYBTC56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:55:34 -0500
-Date: Tue, 19 Feb 2008 18:55:25 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: David Somayajulu <david.somayajulu@qlogic.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Message-ID: <20080220025525.GG23759@plap3.qlogic.org>
-References: <20080219192922.GH31955@cs181133002.pp.htv.fi> <1203473618.3103.37.camel@localhost.localdomain> <20080220023559.GF23759@plap3.qlogic.org> <1203475425.3103.42.camel@localhost.localdomain>
+	Tue, 19 Feb 2008 21:57:58 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=orKfov/pHFvLD7cnm7DR1sVQorl/Cimpb5MQLD1Z3PFpjS2GhqanP4SBXHC8geSke
+	GtMe7mMO+Wy1w1BALTLfA==
+Message-ID: <6599ad830802191857w13387324ja5d8327d1ff2343d@mail.gmail.com>
+Date: Tue, 19 Feb 2008 18:57:54 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 5/7] cgroup: fix subsys bitops
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org
+In-Reply-To: <47B91C82.7010407@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1203475425.3103.42.camel@localhost.localdomain>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 20 Feb 2008 02:55:31.0786 (UTC) FILETIME=[0E8D42A0:01C8736C]
+References: <47B91C82.7010407@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008, James Bottomley wrote:
+On Feb 17, 2008 9:49 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> Cgroup uses unsigned long for subsys bitops, not unsigned long long.
+>
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-> On Tue, 2008-02-19 at 18:35 -0800, Andrew Vasquez wrote:
-> > On Tue, 19 Feb 2008, James Bottomley wrote:
-> > 
-> > > On Tue, 2008-02-19 at 21:29 +0200, Adrian Bunk wrote:
-> > > > This patch removes dead code spotted by the Coverity checker.
-> > > > 
-> > > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > > 
-> > > > ---
-> > > > 
-> > > >  drivers/scsi/qla4xxx/ql4_isr.c |   18 +-----------------
-> > > >  1 file changed, 1 insertion(+), 17 deletions(-)
-> > > > 
-> > > > --- linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c.old	2008-02-19 20:29:16.000000000 +0200
-> > > > +++ linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c	2008-02-19 20:30:37.000000000 +0200
-> > > > @@ -91,38 +91,22 @@ static void qla4xxx_status_entry(struct 
-> > > >  		if (scsi_status == 0) {
-> > > >  			cmd->result = DID_OK << 16;
-> > > >  			break;
-> > > >  		}
-> > > >  
-> > > >  		if (sts_entry->iscsiFlags & ISCSI_FLAG_RESIDUAL_OVER) {
-> > > >  			cmd->result = DID_ERROR << 16;
-> > > >  			break;
-> > > >  		}
-> > > >  
-> > > > -		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
-> > > > +		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
-> > > >  			scsi_set_resid(cmd, residual);
-> > > > -			if (!scsi_status && ((scsi_bufflen(cmd) - residual) <
-> > > > -				cmd->underflow)) {
-> > > > -
-> > > > -				cmd->result = DID_ERROR << 16;
-> > > > -
-> > > > -				DEBUG2(printk("scsi%ld:%d:%d:%d: %s: "
-> > > > -					"Mid-layer Data underrun0, "
-> > > > -					"xferlen = 0x%x, "
-> > > > -					"residual = 0x%x\n", ha->host_no,
-> > > > -					cmd->device->channel,
-> > > > -					cmd->device->id,
-> > > > -					cmd->device->lun, __func__,
-> > > > -					scsi_bufflen(cmd), residual));
-> > > > -				break;
-> > > > -			}
-> > > > -		}
-> > > 
-> > > This code doesn't look dead to me, it looks to be enforcing
-> > > cmd->underrun if set ... what makes the coverity checker think it can
-> > > never be executed?
-> > 
-> > Hmm, guess it's the earlier 'if (scsi_status == 0)' check a few lines
-> > up...  Dave S., can you take a look at this...  Thanks, av
-> 
-> Ah, so the !scsi_status is wrong it was supposed to be scsi_status !=
-> 0 ... and even then it can just be dropped.
+Acked-by: Paul Menage <menage@google.com>
 
-My guess is that the check should have been written as:
-
-	...
-	if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
-		scsi_set_resid(cmd, residual);
-		if ((scsi_bufflen(cmd) - residual) < cmd->underflow) {
-			...
-
-It looks to be a logic-error while porting from qla2xxx, where
-scsi_status during CS_COMPLETE is the full 16-bit status (high-byte is
-transport, low-byte SCSI status) from from the FCP_RSP frame (not so
-in iSCSI, where it's just the SCSI-status) and the residual check
-in qla_isr.c::qla2x00_status_entry() looks like:
-
-	if (!lscsi_status &&
-	    ((unsigned)(scsi_bufflen(cp) - resid) <
-	     cp->underflow)) {
-		...
-
-I'll defer to Dave S. for verification.
+> ---
+>  kernel/cgroup.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index aa76bbd..e8c8e58 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -320,7 +320,7 @@ static struct css_set *find_existing_css_set(
+>         /* Built the set of subsystem state objects that we want to
+>          * see in the new css_set */
+>         for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> -               if (root->subsys_bits & (1ull << i)) {
+> +               if (root->subsys_bits & (1UL << i)) {
+>                         /* Subsystem is in this hierarchy. So we want
+>                          * the subsystem state from the new
+>                          * cgroup */
+> @@ -696,7 +696,7 @@ static int rebind_subsystems(struct cgroupfs_root *root,
+>         added_bits = final_bits & ~root->actual_subsys_bits;
+>         /* Check that any added subsystems are currently free */
+>         for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
+> -               unsigned long long bit = 1ull << i;
+> +               unsigned long bit = 1UL << i;
+>                 struct cgroup_subsys *ss = subsys[i];
+>                 if (!(bit & added_bits))
+>                         continue;
+> --
+> 1.5.4.rc3
+>
+>
