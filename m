@@ -1,159 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYBTHi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbYBTHrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756143AbYBTHi2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 02:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYBTHiR
+	id S1754963AbYBTHrF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 02:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbYBTHqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 02:38:17 -0500
-Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:39775
-	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750814AbYBTHiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 02:38:15 -0500
-Message-ID: <47BBD8E9.2090700@cosmosbay.com>
-Date: Wed, 20 Feb 2008 08:38:17 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 20 Feb 2008 02:46:52 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:49356 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbYBTHqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 02:46:51 -0500
+Message-ID: <47BBDAE5.4090000@garzik.org>
+Date: Wed, 20 Feb 2008 02:46:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-CC: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
-       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: tbench regression in 2.6.25-rc1
-References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20040.1203356033@turing-police.cc.vt.edu>	 <1203403903.3248.29.camel@ymzhang>  <47BA87F0.1050709@cosmosbay.com> <1203491081.3248.60.camel@ymzhang>
-In-Reply-To: <1203491081.3248.60.camel@ymzhang>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: Greg KH <greg@kroah.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org
+Subject: Re: linux-next: Tree for Feb 20
+References: <20080220163457.79b9189f.sfr@canb.auug.org.au> <20080220055055.GC31832@kroah.com>
+In-Reply-To: <20080220055055.GC31832@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhang, Yanmin a écrit :
-> On Tue, 2008-02-19 at 08:40 +0100, Eric Dumazet wrote:
->> Zhang, Yanmin a �crit :
->>> On Mon, 2008-02-18 at 12:33 -0500, Valdis.Kletnieks@vt.edu wrote: 
->>>> On Mon, 18 Feb 2008 16:12:38 +0800, "Zhang, Yanmin" said:
->>>>
->>>>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
->>>>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
->>>>> recovered.
->>>>>
->>>>> How about below patch? Almost all performance is recovered with the new patch.
->>>>>
->>>>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
->>>> Could you add a comment someplace that says "refcnt wants to be on a different
->>>> cache line from input/output/ops or performance tanks badly", to warn some
->>>> future kernel hacker who starts adding new fields to the structure?
->>> Ok. Below is the new patch.
->>>
->>> 1) Move tclassid under ops in case CONFIG_NET_CLS_ROUTE=y. So sizeof(dst_entry)=200
->>> no matter if CONFIG_NET_CLS_ROUTE=y/n. I tested many patches on my 16-core tigerton by
->>> moving tclassid to different place. It looks like tclassid could also have impact on
->>> performance.
->>> If moving tclassid before metrics, or just don't move tclassid, the performance isn't
->>> good. So I move it behind metrics.
->>>
->>> 2) Add comments before __refcnt.
->>>
->>> If CONFIG_NET_CLS_ROUTE=y, the result with below patch is about 18% better than
->>> the one without the patch.
->>>
->>> If CONFIG_NET_CLS_ROUTE=n, the result with below patch is about 30% better than
->>> the one without the patch.
->>>
->>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
->>>
->>> ---
->>>
->>> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
->>> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-22 12:52:19.000000000 +0800
->>> @@ -52,15 +52,10 @@ struct dst_entry
->>>  	unsigned short		header_len;	/* more space at head required */
->>>  	unsigned short		trailer_len;	/* space to reserve at tail */
->>>  
->>> -	u32			metrics[RTAX_MAX];
->>> -	struct dst_entry	*path;
->>> -
->>> -	unsigned long		rate_last;	/* rate limiting for ICMP */
->>>  	unsigned int		rate_tokens;
->>> +	unsigned long		rate_last;	/* rate limiting for ICMP */
->>>  
->>> -#ifdef CONFIG_NET_CLS_ROUTE
->>> -	__u32			tclassid;
->>> -#endif
->>> +	struct dst_entry	*path;
->>>  
->>>  	struct neighbour	*neighbour;
->>>  	struct hh_cache		*hh;
->>> @@ -70,10 +65,20 @@ struct dst_entry
->>>  	int			(*output)(struct sk_buff*);
->>>  
->>>  	struct  dst_ops	        *ops;
->>> -		
->>> -	unsigned long		lastuse;
->>> +
->>> +	u32			metrics[RTAX_MAX];
->>> +
->>> +#ifdef CONFIG_NET_CLS_ROUTE
->>> +	__u32			tclassid;
->>> +#endif
->>> +
->>> +	/*
->>> +	 * __refcnt wants to be on a different cache line from
->>> +	 * input/output/ops or performance tanks badly
->>> +	 */
->>>  	atomic_t		__refcnt;	/* client references	*/
->>>  	int			__use;
->>> +	unsigned long		lastuse;
->>>  	union {
->>>  		struct dst_entry *next;
->>>  		struct rtable    *rt_next;
->>>
->>>
->>>
->> I prefer this patch, but unfortunatly your perf numbers are for 64 bits kernels.
+Greg KH wrote:
+> On Wed, Feb 20, 2008 at 04:34:57PM +1100, Stephen Rothwell wrote:
+>> Hi all,
 >>
->> Could you please test now with 32 bits one ?
-> I tested it with 32bit 2.6.25-rc1 on 8-core stoakley. The result almost has no difference
-> between pure kernel and patched kernel.
+>> I have created today's linux-next tree at
+>> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+>>
+>> You can see which trees have been included by looking in the Next/Trees
+>> file in the source.  There are also quilt-import.log and merge.log files
+>> in the Next directory.  Between each merge, the tree was built with
+>> allmodconfig for both powerpc and x86_64.
 > 
-> New update: On 8-core stoakley, the regression becomes 2~3% with kernel 2.6.25-rc2. On
-> tigerton, the regression is still 30% with 2.6.25-rc2. On Tulsa( 8 cores+hyperthreading),
-> the regression is still 4% with 2.6.25-rc2.
+> What's the best way to constantly follow this tree?  I had cloned it a
+> while ago, but now if I 'git pull' it wants to merge things, which isn't
+> right.
 > 
-> With my patch, on tigerton, almost all regression disappears. On tulsa, only about 2%
-> regression disappears.
+> I'm guessing that this is constantly being rebased?  Against what,
+> Linus's tree?  So we should be able to clone Linus's tree, and then pull
+> in -next?
 > 
-> So this issue is triggerred with multiple-cpu. Perhaps process scheduler is another
-> factor causing the issue to happen, but it's very hard to change scheduler.
-> 
+> Or am I totally missing something here?
 
-Thanks very much Yanmin, I think we can apply your patch as is, if no 
-regression was found for 32bits.
+You can use 'git fetch -f' to override your local tree with the remote 
+contents.
 
-> 
-> Eric,
-> 
-> I tested your new patch in function loopback_xmit. It has no improvement, while it doesn't
-> introduce new issues. As you tested it on dual-core machine and got improvement, how about
-> merging your patch with mine?
+I'm pretty sure there's a better way to do it, but I don't know it...
 
-No, thank you, that was an experiment and is not related to your findings on 
-dst_entry.
+	Jeff
 
-I am currently working on a 'distributed refcount' infrastructure, to be able 
-to spread on several nodes (for NUMA machines) or several cache lines (normal 
-SMP machines)  the high pressure we currently have on some refcnt (struct 
-dst_entry, struct net_device, and many more refcnts ...)
 
-Instead of NR_CPUS allocations, goal is to be able to restrict to a small 
-value like 4, 8 or 16 the number of 32bits entities used to store one refcnt, 
-even if NR_CPUS=4096 or so.
-
-atomic_inc(&p->refcnt) ->  distref_inc(&p->refcnt)
-
-distref_inc(struct distref *p)
-{
-	atomic_inc(myptr[p->offset]);
-}
 
