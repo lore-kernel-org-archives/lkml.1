@@ -1,46 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758031AbYBTFXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762389AbYBTFX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758031AbYBTFXn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbYBTFXd
+	id S1762389AbYBTFX6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:23:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbYBTFXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:23:33 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44038 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751412AbYBTFXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 00:23:31 -0500
-Date: Wed, 20 Feb 2008 14:21:37 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, riel@redhat.com, pavel@ucw.cz,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, marcelo@kvack.org,
-       daniel.spang@gmail.com, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org,
-       a1426z@gawab.com, jonathan@jonmasters.org, zlynx@acm.org
-In-Reply-To: <20080219225733.37c56eb2.pj@sgi.com>
-References: <20080220114317.642F.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20080219225733.37c56eb2.pj@sgi.com>
-Message-Id: <20080220141329.6435.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Wed, 20 Feb 2008 00:23:37 -0500
+Received: from mga02.intel.com ([134.134.136.20]:56339 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753407AbYBTFXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 00:23:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,379,1199692800"; 
+   d="scan'208";a="258676674"
+Subject: Re: [bootup crash, -git] Re: patch
+	pci-pcie-aspm-support.patchadded to gregkh-2.6 tree
+From: Shaohua Li <shaohua.li@intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       matthew@wil.cx, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080220050403.GA31314@suse.de>
+References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com>
+	 <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu>
+	 <20080202185145.GA13005@kroah.com>
+	 <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
+	 <20080219234529.GA12967@kroah.com>
+	 <1203471367.21958.3.camel@sli10-desk.sh.intel.com>
+	 <20080220041400.GA18771@suse.de>
+	 <1203482901.23071.5.camel@sli10-desk.sh.intel.com>
+	 <20080220050403.GA31314@suse.de>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 13:24:48 +0800
+Message-Id: <1203485088.23071.10.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Did those jobs share nodes -- sometimes two or more jobs using the same
-> nodes?  I am sure SGI has such users too, though such job mixes make
-> the runtimes of specific jobs less obvious, so customers are more
-> tolerant of variations and some inefficiencies, as they get hidden in
-> the mix.
 
-Hm
-our dedicated ndoe user set memory limit to machine physical memory
-size (minus a bit).
+On Tue, 2008-02-19 at 21:04 -0800, Greg KH wrote:
+> On Wed, Feb 20, 2008 at 12:48:21PM +0800, Shaohua Li wrote:
+> > 
+> > On Tue, 2008-02-19 at 20:14 -0800, Greg KH wrote:
+> > > On Wed, Feb 20, 2008 at 09:36:07AM +0800, Shaohua Li wrote:
+> > > > --- linux.orig/include/linux/pci-acpi.h	2008-02-19 11:03:51.000000000 +0800
+> > > > +++ linux/include/linux/pci-acpi.h	2008-02-20 09:19:15.000000000 +0800
+> > > > @@ -47,6 +47,7 @@
+> > > >  				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
+> > > >  
+> > > >  #ifdef CONFIG_ACPI
+> > > > +#include <acpi/acpi_bus.h>
+> > > >  extern acpi_status pci_osc_control_set(acpi_handle handle, u32 flags);
+> > > >  extern acpi_status __pci_osc_support_set(u32 flags, const char *hid);
+> > > >  static inline acpi_status pci_osc_support_set(u32 flags)
+> > > > @@ -59,13 +60,11 @@ static inline acpi_status pcie_osc_suppo
+> > > >  }
+> > > >  #else
+> > > >  #if !defined(AE_ERROR)
+> > > > -typedef u32 		acpi_status;
+> > > > -#define AE_ERROR      	(acpi_status) (0x0001)
+> > > > -#endif    
+> > > > -static inline acpi_status pci_osc_control_set(acpi_handle handle, u32 flags)
+> > > > -{return AE_ERROR;}
+> > > > -static inline acpi_status pci_osc_support_set(u32 flags) {return AE_ERROR;} 
+> > > > -static inline acpi_status pcie_osc_support_set(u32 flags) {return AE_ERROR;}
+> > > > +#define AE_ERROR      	(0x0001)
+> > > > +#endif
+> > > > +#define pci_osc_control_set(handle, flags) (AE_ERROR)
+> > > > +#define pci_osc_support_set(flags) (AE_ERROR)
+> > > > +#define pcie_osc_support_set(flags) (AE_ERROR)
+> > > 
+> > > No, please use inline functions, don't change these functions that
+> > > should be just fine.  Why are you needing to change them?
+> > some types aren't defined in non-ACPI, like acpi_handle, acpi_status.
+> 
+> Then why include a non-ACPI header file in non-ACPI .c files?
+aspm is generic, but in ACPI platform, it needs special handling. I can
+add 'ifdef CONFIG_ACPI' in aspm.c to avoid changing pci-acpi.h, but
+thought it's better pci-acpi.h is self-contained.
 
-I think don't have so much share/dedicate and watch user-defined/swap.
-am i misundestand?
-
+Thanks,
+Shaohua
 
