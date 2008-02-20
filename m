@@ -1,87 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933277AbYBTPg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755677AbYBTPhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933277AbYBTPg4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765765AbYBTPcy
+	id S1755677AbYBTPhn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbYBTPeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:32:54 -0500
-Received: from hs-out-0708.google.com ([64.233.178.248]:21089 "EHLO
-	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760826AbYBTPcw (ORCPT
+	Wed, 20 Feb 2008 10:34:21 -0500
+Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:54653
+	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765974AbYBTPeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:32:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RZJ5Pc3KxUDIIAluw9jiwbXGGS4BCr2FvKbffZTLB7x2eXownhaD/pO76OJLaXaEs3Zg8uyc8Fnk+7sCohp8R9QvVO8B/pP+QcxV2Uyupb8A5tInVshf+MPGC6qn6Refk9xY2DfCi2bFkh/N2wj1hn5Tjk1Ru0gPKkLWWYZncbQ=
-Message-ID: <87f94c370802200732g594a4f01jeba7d05579625ee2@mail.gmail.com>
-Date: Wed, 20 Feb 2008 10:32:50 -0500
-From: "Greg Freemyer" <greg.freemyer@gmail.com>
-To: "Mark Lord" <mlord@pobox.com>
-Subject: Re: hdparm-8.2 now available
-Cc: "IDE/ATA development list" <linux-ide@vger.kernel.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       ballen@gravity.phys.uwm.edu, "Ric Wheeler" <ric@emc.com>
-In-Reply-To: <47BA21F0.90405@pobox.com>
+	Wed, 20 Feb 2008 10:34:19 -0500
+Date: Wed, 20 Feb 2008 16:34:09 +0100
+From: Andrea Arcangeli <andrea@qumranet.com>
+To: Robin Holt <holt@sgi.com>
+Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v6
+Message-ID: <20080220153409.GA7128@v2.random>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220144155.GI11391@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <47BA21F0.90405@pobox.com>
+In-Reply-To: <20080220144155.GI11391@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark,
+On Wed, Feb 20, 2008 at 08:41:55AM -0600, Robin Holt wrote:
+> On Wed, Feb 20, 2008 at 11:39:42AM +0100, Andrea Arcangeli wrote:
+> > XPMEM simply can't use RCU for the registration locking if it wants to
+> > schedule inside the mmu notifier calls. So I guess it's better to add
+> 
+> Whoa there.  In Christoph's patch, we did not use rcu for the list.  It
+> was a simple hlist_head.  The list manipulations were done under
+> down_write(&current->mm->mmap_sem) and would therefore not be racy.  All
+> the callout locations are already acquiring the mmap_sem at least
+> readably, so we should be safe.  Maybe I missed a race somewhere.
 
-What kernel level is needed to support the new -N arg?
-
-Tried it on a Suse 2.6.22 kernel (possibly not patched with all the
-current security updates).
-
-Failed with:
-
-The Running Kernel Lack CONFIG_IDE_TASK_IOCTL Support.
-
-Thanks
-Greg
-
-On Mon, Feb 18, 2008 at 7:25 PM, Mark Lord <mlord@pobox.com> wrote:
-> hdparm for SATA/PATA has now been updated to version 8.2.
->
->  Upgrading is strongly recommended for all users.
->  This version fixes several bugs in earlier 7.x/8.x releases
->  that could cause issues when advanced features are attempted
->  on devices being driven by the old drivers/ide subsystem.
->
->  libata devices were unaffected, but drivers/ide devices could
->  misbehave or even be corrupted by some operations.
->
->  hdparm-8.2 is available at http://sourceforge.net/projects/hdparm/
->
->  Upgrading from any earlier 7.x or 8.x version
->  is strongly recommended for all users.
->
->  Cheers
->  --
->  Mark Lord
->  Real-Time Remedies Inc.
->  mlord@pobox.com
->  -
->  To unsubscribe from this list: send the line "unsubscribe linux-ide" in
->  the body of a message to majordomo@vger.kernel.org
->  More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
-
--- 
-Greg Freemyer
-Litigation Triage Solutions Specialist
-http://www.linkedin.com/in/gregfreemyer
-First 99 Days Litigation White Paper -
-http://www.norcrossgroup.com/forms/whitepapers/99%20Days%20whitepaper.pdf
-
-The Norcross Group
-The Intersection of Evidence & Technology
-http://www.norcrossgroup.com
+You missed quite a few, see when atomic=1 and when mmu_rmap_notifier
+is invoked for example.
