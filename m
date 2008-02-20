@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbYBTXRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765369AbYBTXSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbYBTXRU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYBTXRI
+	id S1765369AbYBTXSu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:18:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbYBTXSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:17:08 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:57646 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751784AbYBTXRG (ORCPT
+	Wed, 20 Feb 2008 18:18:41 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:47346 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753301AbYBTXSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:17:06 -0500
+	Wed, 20 Feb 2008 18:18:40 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=B60KUX2im7PxZHfyb2+DASZ0hBw34MGV/rrSubjupAT8fJ3Jn/YDwIHa49LoUHS2JGAfzXcIOleWbwkmpJVgn+oJC3J022mfMB1RGCA1BP//1R/NolJB533hZJC1RQwFz4pvWO0qze5frGH1vN5j28fLMXHsHCgtyZrzAacQfmA=
-Subject: Re: [PATCH 1/2] moxa: make functions static
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <47BCB3EB.1070308@gmail.com>
-References: <1203545644.25307.40.camel@brick>  <47BCB3EB.1070308@gmail.com>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 15:17:19 -0800
-Message-Id: <1203549439.25307.54.camel@brick>
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=bnrud2s/RFoZyo9dAuhmmxtd4I5HzT+U0dtebnj3EFIZs4yZZ9FDrFh9+1kpih47uW26VFOkqryP9tQEMg2ppwcC+FYwUxYsPYFKEHO5IxoYn/0ZJBli1/DVXhaJ+z1ijLCRfpMHdV2pB60i+MHRiKEIVmICjiE9jRjZ5CQBsRM=
+Date: Thu, 21 Feb 2008 00:18:34 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx <tglx@linutronix.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] x86: Coding style fixes to arch/x86/kernel/cpu/umc.c
+Message-ID: <20080221001834.02229a2a@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 00:12 +0100, Jiri Slaby wrote:
-> On 02/20/2008 11:14 PM, Harvey Harrison wrote:
-> > All were forward declared static already.
-> > 
-> Thanks, but I have similar fixes for both issues you address in my tree. I'll 
-> post it in few days.
+After the patch:
+total: 0 errors, 0 warnings, 25 lines checked
+arch/x86/kernel/cpu/umc.c has no obvious style problems and is ready for submission.
 
-Great.
+Compile tested.
 
-Harvey
+
+Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+---
+ arch/x86/kernel/cpu/umc.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/umc.c b/arch/x86/kernel/cpu/umc.c
+index b1acf08..b1fc909 100644
+--- a/arch/x86/kernel/cpu/umc.c
++++ b/arch/x86/kernel/cpu/umc.c
+@@ -3,17 +3,19 @@
+ #include <asm/processor.h>
+ #include "cpu.h"
+ 
+-/* UMC chips appear to be only either 386 or 486, so no special init takes place.
++/*
++ * UMC chips appear to be only either 386 or 486,
++ * so no special init takes place.
+  */
+ 
+ static struct cpu_dev umc_cpu_dev __cpuinitdata = {
+ 	.c_vendor	= "UMC",
+-	.c_ident 	= { "UMC UMC UMC" },
++	.c_ident	= { "UMC UMC UMC" },
+ 	.c_models = {
+ 		{ .vendor = X86_VENDOR_UMC, .family = 4, .model_names =
+-		  { 
+-			  [1] = "U5D", 
+-			  [2] = "U5S", 
++		  {
++			  [1] = "U5D",
++			  [2] = "U5S",
+ 		  }
+ 		},
+ 	},
+-- 
+1.5.4.1.183.gf873
 
