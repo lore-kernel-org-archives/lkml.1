@@ -1,71 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764292AbYBTAwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764515AbYBTAwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764292AbYBTAwX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758064AbYBTAwO
+	id S1764515AbYBTAwm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbYBTAwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:52:14 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:59975
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750924AbYBTAwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:52:15 -0500
+Received: from gate.crashing.org ([63.228.1.57]:59593 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753039AbYBTAwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 19 Feb 2008 19:52:13 -0500
-Date: Wed, 20 Feb 2008 01:52:06 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Jack Steiner <steiner@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [patch] my mmu notifiers
-Message-ID: <20080220005206.GP7128@v2.random>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219142725.GA23200@sgi.com> <20080219230427.GB18912@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219230427.GB18912@wotan.suse.de>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
+	endianness
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Clemens Koller <clemens.koller@anagramm.de>,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+In-Reply-To: <28238.1203468428@turing-police.cc.vt.edu>
+References: <20080205154432.GA8749@localhost.localdomain>
+	 <20080214224942.a0cb6218.akpm@linux-foundation.org>
+	 <20080215164542.GB16810@localhost.localdomain>
+	 <Pine.LNX.4.64.0802171030330.6848@anakin>
+	 <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
+	 <19805.1203355811@turing-police.cc.vt.edu> <47BA162C.5000807@anagramm.de>
+	 <1203381353.6740.59.camel@pasglop> <47BABD3A.7010102@anagramm.de>
+	 <20080219040530.7b1d115d.akpm@linux-foundation.org>
+	 <28238.1203468428@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 11:50:04 +1100
+Message-Id: <1203468604.7273.7.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 12:04:27AM +0100, Nick Piggin wrote:
-> On Tue, Feb 19, 2008 at 08:27:25AM -0600, Jack Steiner wrote:
-> > > On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
-> > > > understand the need for invalidate_begin/invalidate_end pairs at all.
-> > > 
-> > > The need of the pairs is crystal clear to me: range_begin is needed
-> > > for GRU _but_only_if_ range_end is called after releasing the
-> > > reference that the VM holds on the page. _begin will flush the GRU tlb
-> > > and at the same time it will take a mutex that will block further GRU
-> > > tlb-miss-interrupts (no idea how they manange those nightmare locking,
-> > > I didn't even try to add more locking to KVM and I get away with the
-> > > fact KVM takes the pin on the page itself).
-> > 
-> > As it turns out, no actual mutex is required. _begin_ simply increments a
-> > count of active range invalidates, _end_ decrements the count. New TLB
-> > dropins are deferred while range callouts are active.
-> > 
-> > This would appear to be racy but the GRU has special hardware that
-> > simplifies locking. When the GRU sees a TLB invalidate, all outstanding
-> > misses & potentially inflight TLB dropins are marked by the GRU with a
-> > "kill" bit. When the dropin finally occurs, the dropin is ignored & the
-> > instruction is simply restarted. The instruction will fault again & the TLB
-> > dropin will be repeated.  This is optimized for the case where invalidates
-> > are rare - true for users of the GRU.
-> 
-> OK (thanks to Robin as well). Now I understand why you are using it,
-> but I don't understand why you don't defer new TLBs after the point
-> where the linux pte changes. If you can do that, then you look and
-> act much more like a TLB from the point of view of the Linux vm.
 
-Christoph was forced to put the invalidate_range callback _after_
-dropping the PT lock because xpmem has to wait I/O there. But
-invalidate_range is called after freeing the VM reference on the pages
-so then GRU needed a _range_begin too because GRU has to flush the tlb
-before the VM reference on the page is released (xpmem and KVM pin the
-pages mapped by the secondary mmu, GRU doesn't). So then
-invalidate_range was renamed to invalidate_range_end.
+On Tue, 2008-02-19 at 19:47 -0500, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 19 Feb 2008 04:05:30 PST, Andrew Morton said:
+> > On Tue, 19 Feb 2008 12:27:54 +0100 Clemens Koller <clemens.koller@anagramm.de
+> > wrote:
+> > > That's not an issue in my case. The SM50x can be connected to
+> > > either an PCI or some Local/CPU-whateverbus IF.
+> > > I.e. on the MPC85xx PowerPC, PCI and LocalBus are separate bussses.
+> > > If the sm501 is attached to the MPC85xx' PCI like any other video card,
+> > > the PCI config-space is can be accessed as usual, whereas the framebuffer
+> > > memory area is byte-swapped compared to other common video cards.
+> 
+> > Anyway, my head is now officially spinning.  Did anyone actually have a
+> > reason why we shouldn't proceed with Anton's patch?
+> 
+> Clemens answered my question regarding the real-life existence of hardware
+> that would benefit.  I'd say if Anton's patch works on Clemens' hardware and
+> otherwise passes review, we should proceed...
+
+No objection here neither.
+
+Ben.
+
+
