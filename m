@@ -1,68 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764970AbYBTWSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764293AbYBTWTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764970AbYBTWSn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:18:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbYBTWSV
+	id S1764293AbYBTWTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbYBTWSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:18:21 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:40392 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764715AbYBTWST (ORCPT
+	Wed, 20 Feb 2008 17:18:54 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33257 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754951AbYBTWSw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:18:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ErbageNirjUNdFD18GwjMYn+D5BsHnGgjWQGMJuhRcXgh+YRcDWR62yP7qDXSnBGGkzjSRk8c0TNjMbBnpo6kfq8NdGsSsFDqkjCd0vcTDbPoStvRwdRAZyKkE2IUK4o2vntlDIyPaHoMemOdUpFQHDy2eQ2wmkRgzJY5nSuX68=
-Subject: Re: sparse - make __CHECK_ENDIAN__ default enabled?
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080220220326.GA22328@uranus.ravnborg.org>
-References: <20080220220326.GA22328@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 14:18:33 -0800
-Message-Id: <1203545913.25307.47.camel@brick>
+	Wed, 20 Feb 2008 17:18:52 -0500
+Date: Thu, 21 Feb 2008 00:18:49 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Patrick McHardy <kaber@trash.net>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 3/8] [NET]: uninline dev_alloc_skb, de-bloats a lot
+In-Reply-To: <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
+Message-ID: <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <Pine.LNX.4.64.0802201651580.26109@fbirervta.pbzchgretzou.qr>
+ <47BC54FB.2050508@trash.net> <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 23:03 +0100, Sam Ravnborg wrote:
-> Hi Harvey.
+On Wed, 20 Feb 2008, Jan Engelhardt wrote:
+
 > 
-> Can I ask you to look into the worst offenders so we
-> can make -D__CHECK_ENDIAN__ enabled per default
-> in the kernel.
-> Or maybe we should do it anyway?
+> On Feb 20 2008 17:27, Patrick McHardy wrote:
+> >> Striking. How can this even happen? A callsite which calls
+> >> 
+> >>  dev_alloc_skb(n)
+> >> 
+> >> is just equivalent to
+> >> 
+> >>  __dev_alloc_skb(n, GFP_ATOMIC);
+> >> 
+> >> which means there's like 4 (or 8 if it's long) bytes more on the
+> >> stack. For a worst case, count in another 8 bytes for push and pop or mov on
+> >> the stack. But that still does not add up to 23 kb.
 
-Well, I've got the worst of fs and drivers/ata done so far, still
-weeping over the 5500 warnings in drivers. (X86_32 allyesconfig).
-People ignore the existing warnings anyway, why not toss a few more
-on the pile?
+I think you misunderstood the results, if I uninlined dev_alloc_skb(), it 
+_alone_ was uninlined which basically means that __dev_alloc_skb() that is 
+inline as well is included inside that uninlined function.
 
-I'll look them over tonight and see how bad it would be.
+When both were inlined, they add up to everywhere, and uninlining 
+dev_alloc_skb alone mitigates that for both(!) of them in every place 
+where dev_alloc_skb is being called. Because __dev_alloc_skb call sites 
+are few, most benefits show up already with dev_alloc_skb uninlining 
+alone. On the other hand, if __dev_alloc_skb is uninlined, the size 
+reasoning you used above applies to dev_alloc_skb callsites, and that
+is definately less than 23kB.
+
+> > __dev_alloc_skb() is also an inline function which performs
+> > some extra work. Which raises the question - if dev_alloc_skb()
+> > is uninlined, shouldn't __dev_alloc_skb() be uninline as well?
+
+Of course that could be done as well, however, I wouldn't be too keen to 
+deepen callchain by both of them, ie., uninlined dev_alloc_skb would just 
+contain few bytes which perform the call to __dev_alloc_skb which has the 
+bit larger content due to that "extra work". IMHO the best solution would 
+duplicate the "extra work" to both of them on binary level (obviously 
+not on the source level), e.g., by adding static inline ___dev_alloc_skb() 
+to .h which is inlined to both of the variants. I'm not too sure if inline 
+to __dev_alloc_skb() alone is enough in .c file to result in inlining of 
+__dev_alloc_skb to dev_alloc_skb (with all gcc versions and relevant 
+optimization settings).
+
+> I'd like to see the results when {__dev_alloc_skb is externed
+> and dev_alloc_skb remains inlined}.
+
+The results are right under your nose already... ;-)
+See from the list of the series introduction:
+
+  http://marc.info/?l=linux-netdev&m=120351526210711&w=2
+
+IMHO more interesting number (which I currently don't have) is the 
+_remaining_ benefits of uninlining __dev_alloc_skb after
+dev_alloc_skb was first uninlined.
 
 
-> I made a quick test-run with a x86 64 bit defconfig.
-> My first thought was that this was just really bad
-> because the amount of warnings roughly doubled.
-> 
-> But then inspecting it a little closer I could see
-> that 8 files had an increase of > 100 additional
-> warnings when we enabled __CHECK_ENDIAN__ and
-> that smells like easy targets to bring down the noise.
-> 
-> I did not dare do it for an allyesconfig run - I 
-> am not that brave.
-
-Well, I'm just going through the _trivial_ ones first to try and cut
-the noise down a bit.  I think with all the patches I have out there
-I've cut a little over 1000 lines off an allyesconfig build on X86_32
-so far.
-
-
-Harvey
-
+-- 
+ i.
