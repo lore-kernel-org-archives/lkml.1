@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763350AbYBTOaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbYBTOcy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763350AbYBTOaF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:30:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754324AbYBTO3x
+	id S1762603AbYBTOcy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:32:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756300AbYBTOcr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:29:53 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34083 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753070AbYBTO3w (ORCPT
+	Wed, 20 Feb 2008 09:32:47 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54639 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753663AbYBTOcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:29:52 -0500
-Date: Wed, 20 Feb 2008 14:29:37 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, akpm@linux-foundation.org,
-       hch@infradead.org, serue@us.ibm.com, haveblue@us.ibm.com,
-       linuxram@us.ibm.com, linux-fsdevel@vger.kernel.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: git tree with VFS stuff
-Message-ID: <20080220142937.GX27894@ZenIV.linux.org.uk>
-References: <E1JRSaC-0005T2-Ew@pomaz-ex.szeredi.hu> <20080221011348.ef5da6c5.sfr@canb.auug.org.au>
+	Wed, 20 Feb 2008 09:32:46 -0500
+Date: Wed, 20 Feb 2008 14:23:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: Gregory Nietsky <gregory@networksentry.co.za>,
+       Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg KH <greg@kroah.com>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Message-ID: <20080220142312.2b5fa44f@core>
+In-Reply-To: <47BC370F.3000705@imap.cc>
+References: <098123kjff90231nv098233rnvd908u234@garzik.org>
+	<20080217195235.GN14588@uranus.ravnborg.org>
+	<20080218045209.GA15141@kroah.com>
+	<p73zltyxy9q.fsf@bingen.suse.de>
+	<20080219085033.GA1775@uranus.ravnborg.org>
+	<47BAA072.9050601@networksentry.co.za>
+	<47BC370F.3000705@imap.cc>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221011348.ef5da6c5.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.3i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 01:13:48AM +1100, Stephen Rothwell wrote:
-> Hi Miklos,
+> mISDN has two problems, which are of course interrelated:
 > 
-> On Tue, 19 Feb 2008 14:32:28 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
-> >
-> > I've created a git tree with the following mounts related stuff:
-> > 
-> >   - read-only bind mounts
-> >   - /proc/<pid>/mountinfo
-> >   - unprivileged mounts
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfsstuff.git master
-> > 
-> > I guess, giving these a spin in linux-next wouldn't hurt?
+> a) complete lack of documentation for the in-kernel driver interface
+>     (equivalent of Documentation/isdn/INTERFACE)
 > 
-> I don't think this is what we want to use linux-next for.  Linux-next is
-> really a place for stuff that will pretty clearly go into the next kernel
-> release i.e. 2.6.26 right now.  If you want to experiment on things for
-> beyond that timeframe, then a snapshot of linux-next may be a good base.
-> I will take them when they reach the appropriate subsystem tree and are
-> ready for integration.
+> b) still doesn't support all the hardware isdn4linux supports.
+> 
+> As long as those problems aren't solved, the old stuff cannot be removed.
+> Perhaps merging the current state of mISDN into the -mm tree would help
+> with this. Perhaps not.
 
-FWIW, I must apologize for delay with getting the damn tree open on
-kernel.org ;-/   The last couple of weeks had been Not Fun(tm) in a
-lot of respects.
-
-Hopefully I'll finish putting the damn thing into publishable shape by
-tomorrow.  As for the stuff mentioned above...  ro-bind series - definitely
-yes, mountinfo - IMO needs a sane discussion of what and how should be shown
-wrt propagation state, unprivileged mounts - in the "need to finish reviewing"
-pile.
+It should get put into the -mm tree so it can be worked on, and if they
+won't do that it should probably get binned and people them know what is
+going on and can fix the existing isdn code.
