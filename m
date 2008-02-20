@@ -1,82 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbYBTTA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761747AbYBTTFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765071AbYBTTA7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 14:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbYBTTAv
+	id S1761747AbYBTTFX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 14:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbYBTTFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 14:00:51 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:37878 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752841AbYBTTAt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 14:00:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=gCjj6gUPNHkfZJGCgPVwfAFSMi7DbtN9N4WlK5FYznO2HJhy+gsiJlDn79zCYlABXiQUX3jkp1AbDqcTVhgUi5yKOimHcgfnLSeQ55wgyG53iuiO9uFKNgmdKBUdQdcgnYRZO31bx+JuOWnDRBm1vklYcyJv5wZBFbAE+mSb88M=
-Message-ID: <47BC78DC.7060507@gmail.com>
-Date: Wed, 20 Feb 2008 20:00:44 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 20 Feb 2008 14:05:07 -0500
+Received: from mga03.intel.com ([143.182.124.21]:10044 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750785AbYBTTFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 14:05:05 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
+   d="scan'208";a="381494431"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 10:53:15 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802200950.53591.jesse.barnes@intel.com> <b6a2187b0802201029h4786ab87qbc14d1466e12058b@mail.gmail.com>
+In-Reply-To: <b6a2187b0802201029h4786ab87qbc14d1466e12058b@mail.gmail.com>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@tv-sign.ru>
-CC: Valdis.Kletnieks@vt.edu, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: tty && pid problems
-References: <20080215180204.GA4359@tv-sign.ru> <20080215193756.9e5b8205.akpm@linux-foundation.org> <20080216140212.GA1421@tv-sign.ru> <20080217231019.GA83@tv-sign.ru> <m1skzq9a59.fsf@ebiederm.dsl.xmission.com> <23492.1203464394@turing-police.cc.vt.edu> <20080220161823.GB146@tv-sign.ru> <20080220162858.GC146@tv-sign.ru>
-In-Reply-To: <20080220162858.GC146@tv-sign.ru>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201053.16218.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/20/2008 05:28 PM, Oleg Nesterov wrote:
-> I think you can revert the tty-bkl-pushdown.patch. Or, as Eric suggested, just
-> revert this
-> 
-> 	@@ -1222,7 +1221,7 @@ static const struct file_operations tty_
-> 		.read           = tty_read,
-> 		.write          = tty_write,
-> 		.poll           = tty_poll,
-> 	-       .ioctl          = tty_ioctl,
-> 	+       .unlocked_ioctl = tty_ioctl,
-> 		.compat_ioctl   = tty_compat_ioctl,
-> 		.open           = tty_open,
-> 		.release        = tty_release,
-> 	@@ -1235,7 +1234,7 @@ static const struct file_operations ptmx
-> 		.read           = tty_read,
-> 		.write          = tty_write,
-> 		.poll           = tty_poll,
-> 	-       .ioctl          = tty_ioctl,
-> 	+       .unlocked_ioctl = tty_ioctl,
-> 		.compat_ioctl   = tty_compat_ioctl,
-> 		.open           = ptmx_open,
-> 		.release        = tty_release,
-> 	@@ -1248,7 +1247,7 @@ static const struct file_operations cons
-> 		.read           = tty_read,
-> 		.write          = redirected_tty_write,
-> 		.poll           = tty_poll,
-> 	-       .ioctl          = tty_ioctl,
-> 	+       .unlocked_ioctl = tty_ioctl,
-> 		.compat_ioctl   = tty_compat_ioctl,
-> 		.open           = tty_open,
-> 		.release        = tty_release,
-> 	@@ -1260,7 +1259,7 @@ static const struct file_operations hung
-> 		.read           = hung_up_tty_read,
-> 		.write          = hung_up_tty_write,
-> 		.poll           = hung_up_tty_poll,
-> 	-       .ioctl          = hung_up_tty_ioctl,
-> 	+       .unlocked_ioctl = hung_up_tty_ioctl,
-> 		.compat_ioctl   = hung_up_tty_compat_ioctl,
-> 		.release        = tty_release,
-> 	 };
-> 
-> chunk.
+On Wednesday, February 20, 2008 10:29 am Jeff Chua wrote:
+> > I know I fixed that problem in at least one configuration...  Can you
+> > try: # echo test > /sys/power/disk
+> >   # echo disk > /sys/power/state
+> > and see if that also turns your screen green?
+>
+> Yes, still green. But I got it to actual reboot with ...
+>
+> echo reboot > /sys/power/disk
+>
+> So, next I'll try "shutdown" to see if it work. I was using "platform".
 
-This would result in unpredictable behaviour. If I left locking apart, ioctl 
-prototype != unlocked_ioctl prototype.
+Ok, that would be good to try.
+
+> > Also, getting a GPU register dump would be helpful.  The intel_reg_dumper
+> > tool
+>
+> Attached are the two dumps from console. One prior to suspend, and one
+> after resume.
+
+Looks like the AR registers are hosed, which is what I thought I fixed...  Can 
+you attach your i915_drv.c file just so I can sanity check it?
+
+Thanks,
+Jesse
