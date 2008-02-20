@@ -1,101 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765626AbYBTVgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbYBTVie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765626AbYBTVgo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYBTVgg
+	id S932890AbYBTVie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:38:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYBTViY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:36:36 -0500
-Received: from wx-out-0506.google.com ([66.249.82.230]:11735 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbYBTVgf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:36:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Bw8K+/i65hd0hHkp7wZIm2JeB3WSiqrdv+Wdbvr2KCXRLL3W99s81z6k6PmBmSn/zWrMJME1Cod9nBomP5eb7E+CShG6jWmkxRaOK65Mh05CB//0WMMRHJMsdPBcw2VYdPb0cMkljqvz8+gTHsbdCWzlDkHpAvoltC5ohHobssY=
-Subject: [PATCH 1/2] kthread: add a missing memory barrier to kthread_stop()
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       Rusty Russel <rusty@rustcorp.com.au>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andy Whitcroft <apw@shadowen.org>, dmitry.adamushko@gmail.com
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 22:36:30 +0100
-Message-Id: <1203543390.6307.24.camel@earth>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 20 Feb 2008 16:38:24 -0500
+Received: from mga01.intel.com ([192.55.52.88]:12454 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752815AbYBTViW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:38:22 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
+   d="scan'208";a="521873855"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 13:37:51 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201053.16218.jesse.barnes@intel.com> <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com>
+In-Reply-To: <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201337.52247.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Subject: kthread: add a missing memory barrier to kthread_stop()
-    
-We must ensure that kthread_stop_info.k has been updated before
-kthread's wakeup. This is required to properly support
-the use of kthread_should_stop() in the main loop of kthread.
-    
-wake_up_process() doesn't imply a full memory barrier,
-so we add an explicit one.
-    
-There is a requirement on how a main loop of kthread has to be orginized.
-    
-Namely, the sequence of events that lead to kthread being blocked (schedule())
-has to be ordered as follows:
-    
-- set_current_state(TASK_INTERRUPTIBLE);
-- if (kthread_should_stop()) break;
-- schedule() or similar.
-    
-set_current_state() implies a full memory barrier, so this is
-a matching barrier on the side of kthread_should_stop().
-    
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+On Wednesday, February 20, 2008 11:10 am Jeff Chua wrote:
+> On Feb 21, 2008 2:53 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
+> > > So, next I'll try "shutdown" to see if it work. I was using "platform".
+> >
+> > Ok, that would be good to try.
+>
+> "shutdown" does power down properly. But still green on resume.
+>
+> > Looks like the AR registers are hosed, which is what I thought I fixed...
+> >  Can you attach your i915_drv.c file just so I can sanity check it?
+>
+> Attached.
 
+Ok, can you give this patch a try with the 'platform' method?  It should at 
+least tell us what ACPI would like the device to do at suspend time, but it 
+probably won't fix the hang.
 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 45f8b83..86b69a0 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -53,6 +53,19 @@ static struct kthread_stop_info kthread_stop_info;
-  * When someone calls kthread_stop() on your kthread, it will be woken
-  * and this will return true.  You should then return, and your return
-  * value will be passed through to kthread_stop().
-+ *
-+ * In order to safely use kthread_stop() for kthread, there is a requirement
-+ * on how its main loop has to be orginized. Namely, the sequence of
-+ * events that lead to kthread being blocked (schedule()) has to be
-+ * ordered as follows:
-+ *
-+ * - set_current_state(TASK_INTERRUPTIBLE);
-+ * - if (kthread_should_stop()) break;
-+ * - schedule() or similar.
-+ *
-+ * set_current_state() implies a full memory barrier. kthread_stop()
-+ * has a matching barrier right after an update of kthread_stop_info.k
-+ * and before kthread's wakeup.
-  */
- int kthread_should_stop(void)
- {
-@@ -211,6 +224,15 @@ int kthread_stop(struct task_struct *k)
+Thanks,
+Jesse
+
+diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
+index 4048f39..d8aa2c9 100644
+--- a/drivers/char/drm/i915_drv.c
++++ b/drivers/char/drm/i915_drv.c
+@@ -366,11 +366,11 @@ static int i915_suspend(struct drm_device *dev, 
+pm_message_t state)
  
- 	/* Now set kthread_should_stop() to true, and wake it up. */
- 	kthread_stop_info.k = k;
-+
-+	/* 
-+	 * We must ensure that kthread_stop_info.k has been updated before
-+	 * the following wakeup. This is required to properly support the use
-+	 * of kthread_should_stop() in the main loop of kthread
-+	 * (see description of kthread_should_stop() for more details).
-+	 */
-+	smp_mb();
-+
- 	wake_up_process(k);
- 	put_task_struct(k);
+ 	i915_save_vga(dev);
  
-
-
+-	if (state.event == PM_EVENT_SUSPEND) {
+-		/* Shut down the device */
+-		pci_disable_device(dev->pdev);
+-		pci_set_power_state(dev->pdev, PCI_D3hot);
+-	}
++	/* Ask ACPI which state the device should be put in */
++	pci_disable_device(dev->pdev);
++	printk("calling pci_set_power_state with %d\n",
++	       acpi_pci_choose_state(dev, state));
++	pci_set_power_state(dev->pdev, acpi_pci_choose_state(dev, state));
+ 
+ 	return 0;
+ }
+@@ -380,7 +380,7 @@ static int i915_resume(struct drm_device *dev)
+ 	struct drm_i915_private *dev_priv = dev->dev_private;
+ 	int i;
+ 
+-	pci_set_power_state(dev->pdev, PCI_D0);
++	pci_set_power_state(dev->pdev, acpi_pci_choose_state(dev, state));
+ 	pci_restore_state(dev->pdev);
+ 	if (pci_enable_device(dev->pdev))
+ 		return -1;
