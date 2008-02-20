@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbYBTRPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932152AbYBTRQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbYBTRPl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbYBTRPP
+	id S932152AbYBTRQv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:16:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYBTRQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:15:15 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:43168 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752155AbYBTRPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:15:13 -0500
-Date: Wed, 20 Feb 2008 12:15:12 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-cc: Oliver Pinter <oliver.pntr@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]* - mostly
- resolved
-In-Reply-To: <47BC5E01.1050902@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0802201213260.5630-100000@iolanthe.rowland.org>
+	Wed, 20 Feb 2008 12:16:41 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56007 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbYBTRQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:16:40 -0500
+Message-ID: <47BC6073.8080705@garzik.org>
+Date: Wed, 20 Feb 2008 12:16:35 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ata: replace macro with static inline in libata.h
+References: <1203350873.5757.23.camel@brick>
+In-Reply-To: <1203350873.5757.23.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, Andrew Buehler wrote:
-
-> > What do you mean by "does not see the drive"?
+Harvey Harrison wrote:
+> Avoid ~70 sparse warnings like:
+> drivers/ata/pata_ali.c:176:14: warning: symbol '__x' shadows an earlier one
+> drivers/ata/pata_ali.c:176:14: originally declared here
 > 
-> Its detect-hardware-and-report mode shows a HD size of 0 (which is what
-> it has showed in cases where the kernel has not detected the drive), its
-> detect-partitions-and-report mode shows no partitions and no devices
-> which can have partitions, and attempting to actually use it to pull
-> down a drive image (it's a disk-imaging program) causes it to hang at
-> the point where it would begin to write.
+> Due to nesting min_t macro inside max_t macro which both use a __x
+> identifier internally.
 > 
-> Hmm. One thing which just sprang to mind, in the stab-in-the-dark
-> category: in 2.6.24.2, launching the program on some machines gave
-> warnings along the lines of "this program is using a deprecated ioctl,
-> please convert it to SG_IO" (which I naturally cannot do since it's
-> closed and I don't have the source),
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Andrew, here is a patch that drastically reduces the number of sparse
+> warnings in libata.  Alan Cox has suggested a clamp_t macro be added
+> to kernel.h instead to avoid this issue.  I don't believe Jeff Garzik
+> has given an opinion yet (other than not applying it when originally
+> sent this was 5/11 of the libata sparse warnings)
+> 
+>  include/linux/libata.h |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/libata.h b/include/linux/libata.h
+> index bc5a8d0..b5590fb 100644
+> --- a/include/linux/libata.h
+> +++ b/include/linux/libata.h
+> @@ -764,7 +764,14 @@ struct ata_timing {
+>  	unsigned short udma;		/* t2CYCTYP/2 */
+>  };
+>  
+> -#define FIT(v, vmin, vmax)	max_t(short, min_t(short, v, vmax), vmin)
+> +static inline short FIT(short v, short vmin, short vmax)
+> +{
+> +	if (v >= vmax)
+> +		return vmax;
+> +	if (v <= vmin)
+> +		return vmin;
+> +	return v;
+> +}
 
-You can ask the program's author to update it.
+I agree with Alan...
 
-> but IIRC in the 2.5.25-rc2-based
-> disc with ACPI enabled no such message appears. If the reason that there
-> are no longer such messages is that the ioctl in question has now been
-> removed, that might explain why the program does not see the drive.
-
-Could be.  You can use strace to find out what system calls the program 
-is making.
-
-
-> I'm not sure I expressed myself clearly. I do not think the problem is
-> with the different kernels. I think the problem is with the different
-> configurations. I am asking if there are any established techniques for
-> comparing differences between config files from widely different
-> kernels.
-
-Not as far as I know.
-
-Alan Stern
 
