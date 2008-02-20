@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762371AbYBTUKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765548AbYBTULI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762371AbYBTUKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:10:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYBTUK2
+	id S1765548AbYBTULI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:11:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763999AbYBTUKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:10:28 -0500
-Received: from mga09.intel.com ([134.134.136.24]:45142 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751829AbYBTUK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:10:26 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
-   d="scan'208";a="300307694"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 12:09:03 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com> <200802201118.08468.jesse.barnes@intel.com>
-In-Reply-To: <200802201118.08468.jesse.barnes@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 20 Feb 2008 15:10:46 -0500
+Received: from wr-out-0506.google.com ([64.233.184.225]:18294 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763926AbYBTUKn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:10:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=UbQZJGj7GhxNenHBpo2kRzgh+/Ryj6Rc7HVo/TUwGsctniorbRzPpdaLQZXlFoV6abJEpMfTtTld24mjW1hE6sbH6uA9sFQll8vr9urDR4c+VoSIAYvkrJJJErBja8G8VojgBGPXLk495S0gmdHZ9M/SRYqPXEO+pmyZ+Wu8iU0=
+Subject: [PATCH 1/4] nfs: fix sparse warning in nfs4state.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 12:10:46 -0800
+Message-Id: <1203538246.25307.14.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201209.03807.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 11:18 am Jesse Barnes wrote:
-> On Wednesday, February 20, 2008 11:10 am Jeff Chua wrote:
-> > On Feb 21, 2008 2:53 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > > > So, next I'll try "shutdown" to see if it work. I was using
-> > > > "platform".
-> > >
-> > > Ok, that would be good to try.
-> >
-> > "shutdown" does power down properly. But still green on resume.
->
-> Ok, so Linus' theory about something later in the resume path trying to
-> touch video is looking good.
->
-> Rafael, is there anyway to prevent the device shutdown in the hibernate
-> path?
+fs/nfs/nfs4state.c:788:34: warning: Using plain integer as NULL pointer
 
-Given the way the PM core works, do we need to set a flag like this?  I really 
-hope there's a better way of doing this...
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+ fs/nfs/nfs4state.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks,
-Jesse
+diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+index 6233eb5..b962397 100644
+--- a/fs/nfs/nfs4state.c
++++ b/fs/nfs/nfs4state.c
+@@ -785,7 +785,7 @@ static int nfs4_reclaim_locks(struct nfs4_state_recovery_ops *ops, struct nfs4_s
+ 	struct file_lock *fl;
+ 	int status = 0;
+ 
+-	for (fl = inode->i_flock; fl != 0; fl = fl->fl_next) {
++	for (fl = inode->i_flock; fl != NULL; fl = fl->fl_next) {
+ 		if (!(fl->fl_flags & (FL_POSIX|FL_FLOCK)))
+ 			continue;
+ 		if (nfs_file_open_context(fl->fl_file)->state != state)
+-- 
+1.5.4.2.200.g99e75
 
-diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
-index 4048f39..a2d6242 100644
---- a/drivers/char/drm/i915_drv.c
-+++ b/drivers/char/drm/i915_drv.c
-@@ -238,6 +238,13 @@ static void i915_restore_vga(struct drm_device *dev)
- 
- }
- 
-+/*
-+ * If we're doing a suspend to disk, we don't want to power off the device.
-+ * Unfortunately, the PM core doesn't tell us if we're headed for a regular
-+ * S3 state or that it's about to shut down the machine, so we use this flag.
-+ */
-+static int i915_hibernate;
-+
- static int i915_suspend(struct drm_device *dev, pm_message_t state)
- {
- 	struct drm_i915_private *dev_priv = dev->dev_private;
-@@ -252,6 +259,9 @@ static int i915_suspend(struct drm_device *dev, 
-pm_message_t state)
- 	if (state.event == PM_EVENT_PRETHAW)
- 		return 0;
- 
-+	if (state.event == PM_EVENT_FREEZE)
-+		i915_hibernate = 1;
-+
- 	pci_save_state(dev->pdev);
- 	pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
- 
-@@ -366,7 +376,7 @@ static int i915_suspend(struct drm_device *dev, 
-pm_message_t state)
- 
- 	i915_save_vga(dev);
- 
--	if (state.event == PM_EVENT_SUSPEND) {
-+	if (!i915_hibernate) {
- 		/* Shut down the device */
- 		pci_disable_device(dev->pdev);
- 		pci_set_power_state(dev->pdev, PCI_D3hot);
-@@ -385,6 +395,8 @@ static int i915_resume(struct drm_device *dev)
- 	if (pci_enable_device(dev->pdev))
- 		return -1;
- 
-+	i915_hibernate = 0;
-+
- 	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
- 
- 	/* Pipe & plane A info */
+
