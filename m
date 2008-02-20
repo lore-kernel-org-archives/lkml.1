@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764451AbYBTW5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbYBTW7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764451AbYBTW5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:57:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754956AbYBTW5U
+	id S933532AbYBTW7R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbYBTW7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:57:20 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42326
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752546AbYBTW5T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:57:19 -0500
-Date: Wed, 20 Feb 2008 14:57:56 -0800 (PST)
-Message-Id: <20080220.145756.63719432.davem@davemloft.net>
-To: bfields@fieldses.org
-Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080220222530.GK30160@fieldses.org>
-References: <20080220212302.GJ30160@fieldses.org>
-	<20080220.134257.41491836.davem@davemloft.net>
-	<20080220222530.GK30160@fieldses.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 20 Feb 2008 17:59:06 -0500
+Received: from verein.lst.de ([213.95.11.210]:48587 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754693AbYBTW7F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:59:05 -0500
+Date: Wed, 20 Feb 2008 23:58:05 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Theodore Tso <tytso@MIT.EDU>, linux-kernel@vger.kernel.org,
+       miklos@szeredi.hu
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+Message-ID: <20080220225804.GA5484@lst.de>
+References: <20080215223721.9E0A088A@kernel> <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu> <1203122979.13230.3.camel@nimitz.home.sr71.net> <20080216010030.GC26734@mit.edu> <20080215171119.578bd302.akpm@linux-foundation.org> <20080216063129.GA8592@lst.de> <1203546352.29823.57.camel@nimitz.home.sr71.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203546352.29823.57.camel@nimitz.home.sr71.net>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "J. Bruce Fields" <bfields@fieldses.org>
-Date: Wed, 20 Feb 2008 17:25:30 -0500
-
-> The advantages include earlier warning of merge problems, and avoidance
-> of duplicate commits--if Jeff's done work that depends on patches that
-> already upstream, then he either does that work against upstream, or
-> includes backported patches in the branch he asks you to pull, and you
-> end up with both the original and the backported patch.  Which isn't the
-> end of the world, but the resulting history seems messier than
-> necessary.
+On Wed, Feb 20, 2008 at 02:25:52PM -0800, Dave Hansen wrote:
+> On Sat, 2008-02-16 at 07:31 +0100, Christoph Hellwig wrote:
+> > once we put pieces in the first three patches would be useful aswell,
+> > to easily catch additions in the next cycle that might be adding
+> > NULL-vfsmount calls to dentry_open.
 > 
-> Or I guess you could both wait to do this merge until you're ready to
-> pull in Linus's latest?
+> So, we want
+> 
+> 	"[PATCH 07/30] r/o bind mounts: stub functions"
+> and 
+> 	"[PATCH 03/30] check for null vfsmount in dentry_open()"
 
-I do a test pull and build of net-2.6 into Linus's current tree
-before I send Linus a pull request.
-
-If any non-trivial merges are necessary, which hasn't happened yet at
-all, I would then do a merge into my net-2.6 tree and resolve the
-conflicts.
-
-There is no reason for someone downstream of net-2.6 to do this.
-
+For that latter patch we'd need the reiserfs and hpps fixes.  But
+I think it's too late now, let's just keep them in -mm for the
+time beeing.
