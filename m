@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934608AbYBTUnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934685AbYBTUns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934608AbYBTUnN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:43:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbYBTUm1
+	id S934685AbYBTUns (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761297AbYBTUnc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:42:27 -0500
-Received: from mga11.intel.com ([192.55.52.93]:11031 "EHLO mga11.intel.com"
+	Wed, 20 Feb 2008 15:43:32 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:28163 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934027AbYBTUmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:42:25 -0500
-X-ExtLoop1: 1
+	id S1758296AbYBTUna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:43:30 -0500
 X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
-   d="scan'208";a="300314343"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 12:41:30 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802202114.43007.rjw@sisk.pl> <alpine.LFD.1.00.0802201224380.7833@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802201224380.7833@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+   d="scan'208";a="154495731"
+Subject: Re: [PATCH 1/4] nfs: fix sparse warning in nfs4state.c
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1203538246.25307.14.camel@brick>
+References: <1203538246.25307.14.camel@brick>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201241.30952.jesse.barnes@intel.com>
+Organization: Network Appliance Inc
+Date: Wed, 20 Feb 2008 15:43:26 -0500
+Message-Id: <1203540206.17505.3.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+X-OriginalArrivalTime: 20 Feb 2008 20:43:28.0200 (UTC) FILETIME=[3F121C80:01C87401]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 12:29 pm Linus Torvalds wrote:
-> On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
-> > I think we should export the target sleep state somehow.
->
-> Yeah. By *not* using "->suspend()" for freezing or hibernate.
->
-> Please, Rafael - just make the f*cking suspend-to-disk use other routines
-> already. 99% of all hardware needs to do exactly *nothing* on
-> suspend-to-disk, and the ones that really do need things tend to need to
-> not do a whole lot.
 
-In talking with Rafael on IRC about this, I think we're agreed that we need 
-separate entry points.  Even with a kexec based hibernate, we'll probably 
-want ->hibernate callbacks so we don't end up shutting down the device.
+On Wed, 2008-02-20 at 12:10 -0800, Harvey Harrison wrote:
+> fs/nfs/nfs4state.c:788:34: warning: Using plain integer as NULL pointer
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+>  fs/nfs/nfs4state.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/fs/nfs/nfs4state.c b/fs/nfs/nfs4state.c
+> index 6233eb5..b962397 100644
+> --- a/fs/nfs/nfs4state.c
+> +++ b/fs/nfs/nfs4state.c
+> @@ -785,7 +785,7 @@ static int nfs4_reclaim_locks(struct nfs4_state_recovery_ops *ops, struct nfs4_s
+>  	struct file_lock *fl;
+>  	int status = 0;
+>  
+> -	for (fl = inode->i_flock; fl != 0; fl = fl->fl_next) {
+> +	for (fl = inode->i_flock; fl != NULL; fl = fl->fl_next) {
+>  		if (!(fl->fl_flags & (FL_POSIX|FL_FLOCK)))
+>  			continue;
+>  		if (nfs_file_open_context(fl->fl_file)->state != state)
 
-The current callback system looks like this (according to Rafael and the last 
-time I looked):
-  ->suspend(PMSG_FREEZE)
-  ->resume()
-  ->suspend(PMSG_SUSPEND)
-  *enter S3 or power off*
-  ->resume()
-The fact that we get suspend/resume called once before suspend again in the 
-hibernate case is somewhat obnoxious, but it's even worse that we don't know 
-what we're about to enter after ->suspend(PMSG_SUSPEND).  So in the short 
-term it would be nice to at least get the target state exported.
+Could you please just wrap these 4 up into a single patch? They are all
+fixing up the same issue, and they are trivial to review, so there is
+very little benefit in separating them.
 
-And in the long term we could have:
-  ->suspend()
-  *enter S3*
-  ->resume()
-or:
-  ->hibernate()
-  *kexec to another kernel to save image*
-  *power off*
-  ->return_from_hibernate() (or somesuch)
-
-Jesse
+Thanks
+  Trond
