@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933859AbYBTRMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933986AbYBTRM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933859AbYBTRMe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:12:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbYBTRJa
+	id S933986AbYBTRM6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:12:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932442AbYBTRJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:09:30 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:35656 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752864AbYBTRJ3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:09:29 -0500
-Subject: [PATCH 6/6] regulator: add maintainers.
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 17:09:26 +0000
-Message-Id: <1203527366.4071.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 20 Feb 2008 12:09:43 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56914 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932422AbYBTRJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:09:40 -0500
+Message-ID: <47BC5ED1.30809@garzik.org>
+Date: Wed, 20 Feb 2008 12:09:37 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Harvey Harrison <harvey.harrison@gmail.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Tejun Heo <htejun@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH 11/11v2] ata: fix sparse warnings in pata_legacy.c
+References: <3ad7c41048d88a3f8aad098570b9fac9ff719aff.1202965399.git.harvey.harrison@gmail.com>	 <1202966072.2748.27.camel@brick>  <20080214120206.1a52f77d@core> <1203010593.2748.43.camel@brick>
+In-Reply-To: <1203010593.2748.43.camel@brick>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Liam Girdwood and Mark Brown as maintainers.
+Harvey Harrison wrote:
+> Use ld_qdi and ld_winbond to avoid shadowing static int
+> variables qdi and winbond.  The ld_ prefix refers to
+> legacy_data.
+> 
+> drivers/ata/pata_legacy.c:777:21: warning: symbol 'qdi' shadows an earlier one
+> drivers/ata/pata_legacy.c:128:12: originally declared here
+> drivers/ata/pata_legacy.c:811:21: warning: symbol 'qdi' shadows an earlier one
+> drivers/ata/pata_legacy.c:128:12: originally declared here
+> drivers/ata/pata_legacy.c:848:21: warning: symbol 'qdi' shadows an earlier one
+> drivers/ata/pata_legacy.c:128:12: originally declared here
+> drivers/ata/pata_legacy.c:882:21: warning: symbol 'qdi' shadows an earlier one
+> drivers/ata/pata_legacy.c:128:12: originally declared here
+> drivers/ata/pata_legacy.c:1040:21: warning: symbol 'winbond' shadows an earlier one
+> drivers/ata/pata_legacy.c:129:12: originally declared here
+> 
+> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+> ---
+> Alan Cox's suggestion of using a ld_ prefix incorporated.
 
-Signed-off-by: Liam Girdwood <lg@opensource.wolfsonmicro.com>
----
- MAINTAINERS |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 082d1ee..1f7d3ce 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4254,6 +4254,15 @@ M:	kaber@trash.net
- L:	netdev@vger.kernel.org
- S:	Maintained
- 
-+VOLTAGE AND CURRENT REGULATOR FRAMEWORK
-+P:	Liam Girdwood
-+M:	lg@opensource.wolfsonmicro.com
-+P:	Mark Brown
-+M:	broonie@opensource.wolfsonmicro.com
-+W:	http://opensource.wolfsonmicro.com/node/15
-+T:	git opensource.wolfsonmicro.com:/linux-2.6-audioplus.git
-+S:	Supported
-+
- VT1211 HARDWARE MONITOR DRIVER
- P:	Juerg Haefliger
- M:	juergh@gmail.com
--- 
-1.5.4.2
-
-
+applied
 
