@@ -1,263 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbYBTPyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932309AbYBTP4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932187AbYBTPyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764902AbYBTPyV
+	id S932309AbYBTP4B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:56:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbYBTPzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:54:21 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59774 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764765AbYBTPyT (ORCPT
+	Wed, 20 Feb 2008 10:55:51 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:35761 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754452AbYBTPzu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:54:19 -0500
-Message-ID: <47BC4D26.2080102@sgi.com>
-Date: Wed, 20 Feb 2008 07:54:14 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 20 Feb 2008 10:55:50 -0500
+Date: Wed, 20 Feb 2008 21:26:09 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, ak@suse.de, arjan@linux.intel.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel
+	tests
+Message-ID: <20080220155609.GC7421@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org> <20080219192153.GA11948@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH 1/2] x86_64: Fold pda into per cpu area v3
-References: <20080219203335.866324000@polaris-admin.engr.sgi.com>	<20080219203336.046039000@polaris-admin.engr.sgi.com>	<20080220120747.GA13695@elte.hu> <20080220141659.45ec31fa.dada1@cosmosbay.com>
-In-Reply-To: <20080220141659.45ec31fa.dada1@cosmosbay.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219192153.GA11948@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet wrote:
-> On Wed, 20 Feb 2008 13:07:47 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
->> * Mike Travis <travis@sgi.com> wrote:
->>
->>>   * Declare the pda as a per cpu variable. This will move the pda area
->>>     to an address accessible by the x86_64 per cpu macros.  
->>>     Subtraction of __per_cpu_start will make the offset based from the 
->>>     beginning of the per cpu area.  Since %gs is pointing to the pda, 
->>>     it will then also point to the per cpu variables and can be 
->>>     accessed thusly:
->>>
->>> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
->> randconfig QA on x86.git found a crash on x86.git#testing with 
->> nmi_watchdog=2 (config attached) - and i bisected it down to this patch.
->>
->> config and crashlog attached. You can pick up x86.git#testing via:
->>
->>   http://people.redhat.com/mingo/x86.git/README
->>
->> (since i had to hand-merge the patch when integrating it, i've attached 
->> the merged version below.)
->>
->> 	Ingo
->>
->> -------------->
->> Subject: x86_64: Fold pda into per cpu area v3
->> From: Mike Travis <travis@sgi.com>
->> Date: Tue, 19 Feb 2008 12:33:36 -0800
->>
->>   * Declare the pda as a per cpu variable. This will move the pda area
->>     to an address accessible by the x86_64 per cpu macros.  Subtraction
->>     of __per_cpu_start will make the offset based from the beginning
->>     of the per cpu area.  Since %gs is pointing to the pda, it will
->>     then also point to the per cpu variables and can be accessed thusly:
->>
->> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
->>
->>   * The boot_pdas are only needed in head64.c so move the declaration
->>     over there.  And since the boot_cpu_pda is only used during
->>     bootup and then copied to the per_cpu areas during init, it is
->>     then removable.  In addition, the initial cpu_pda pointer table
->>     is reallocated to be the correct size for the number of cpus.
->>
->>   * Remove the code that allocates special pda data structures.
->>     Since the percpu area is currently maintained for all possible
->>     cpus then the pda regions will stay intact in case cpus are
->>     hotplugged off and then back on.
->>
->>   * Relocate the x86_64 percpu variables to begin at zero. Then
->>     we can directly use the x86_32 percpu operations. x86_32
->>     offsets %fs by __per_cpu_start. x86_64 has %gs pointing
->>     directly to the pda and the per cpu area thereby allowing
->>     access to the pda with the x86_64 pda operations and access
->>     to the per cpu variables using x86_32 percpu operations.
->>
->>   * This also supports further integration of x86_32/64.
->>
->> Cc:	Andy Whitcroft <apw@shadowen.org>
->> Cc:	Randy Dunlap <rdunlap@xenotime.net>
->> Cc:	Joel Schopp <jschopp@austin.ibm.com>
->> Signed-off-by: Christoph Lameter <clameter@sgi.com>
->> Signed-off-by: Mike Travis <travis@sgi.com>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->> ---
->>  arch/x86/Kconfig                 |    3 +
->>  arch/x86/kernel/head64.c         |   41 ++++++++++++++++++++++++
->>  arch/x86/kernel/setup64.c        |   66 ++++++++++++++++++++++++---------------
->>  arch/x86/kernel/smpboot_64.c     |   16 ---------
->>  arch/x86/kernel/vmlinux_64.lds.S |    1 
->>  include/asm-x86/pda.h            |   13 +++++--
->>  include/asm-x86/percpu.h         |   33 +++++++++++--------
->>  7 files changed, 115 insertions(+), 58 deletions(-)
->>
->> Index: linux-x86.q/arch/x86/Kconfig
->> ===================================================================
->> --- linux-x86.q.orig/arch/x86/Kconfig
->> +++ linux-x86.q/arch/x86/Kconfig
->> @@ -122,6 +122,9 @@ config ARCH_HAS_CPU_RELAX
->>  config HAVE_SETUP_PER_CPU_AREA
->>  	def_bool X86_64
->>  
->> +config HAVE_ZERO_BASED_PER_CPU
->> +	def_bool X86_64
->> +
->>  config ARCH_HIBERNATION_POSSIBLE
->>  	def_bool y
->>  	depends on !SMP || !X86_VOYAGER
->> Index: linux-x86.q/arch/x86/kernel/head64.c
->> ===================================================================
->> --- linux-x86.q.orig/arch/x86/kernel/head64.c
->> +++ linux-x86.q/arch/x86/kernel/head64.c
->> @@ -11,6 +11,7 @@
->>  #include <linux/string.h>
->>  #include <linux/percpu.h>
->>  #include <linux/start_kernel.h>
->> +#include <linux/bootmem.h>
->>  
->>  #include <asm/processor.h>
->>  #include <asm/proto.h>
->> @@ -23,6 +24,12 @@
->>  #include <asm/kdebug.h>
->>  #include <asm/e820.h>
->>  
->> +#ifdef CONFIG_SMP
->> +/* Only used before the per cpu areas are setup. */
->> +static struct x8664_pda boot_cpu_pda[NR_CPUS] __initdata;
->> +static struct x8664_pda *_cpu_pda_init[NR_CPUS] __initdata;
->> +#endif
->> +
->>  static void __init zap_identity_mappings(void)
->>  {
->>  	pgd_t *pgd = pgd_offset_k(0UL);
->> @@ -102,8 +109,14 @@ void __init x86_64_start_kernel(char * r
->>  
->>  	early_printk("Kernel alive\n");
->>  
->> +#ifdef CONFIG_SMP
->> +	_cpu_pda = (void *)_cpu_pda_init;
->>   	for (i = 0; i < NR_CPUS; i++)
->>   		cpu_pda(i) = &boot_cpu_pda[i];
->> +#endif
->> +
->> +	/* setup percpu segment offset for cpu 0 */
->> +	cpu_pda(0)->data_offset = (unsigned long)__per_cpu_load;
->>  
->>  	pda_init(0);
->>  	copy_bootdata(__va(real_mode_data));
->> @@ -128,3 +141,31 @@ void __init x86_64_start_kernel(char * r
->>  
->>  	start_kernel();
->>  }
->> +
->> +#ifdef	CONFIG_SMP
->> +/*
->> + * Remove initial boot_cpu_pda array and cpu_pda pointer table.
->> + *
->> + * This depends on setup_per_cpu_areas relocating the pda to the beginning
->> + * of the per_cpu area so that (_cpu_pda[i] != &boot_cpu_pda[i]).  If it
->> + * is equal then the new pda has not been setup for this cpu, and the pda
->> + * table will have a NULL address for this cpu.
->> + */
->> +void __init x86_64_cleanup_pda(void)
->> +{
->> +	int i;
->> +
->> +	_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
-> 
-> Here we allocate an array of [nr_cpu_ids] slots
-> 
->> +
->> +	if (!_cpu_pda)
->> +		panic("Cannot allocate cpu pda table\n");
->> +
->> +	/* cpu_pda() now points to allocated cpu_pda_table */
->> +
->> +	for (i = 0; i < NR_CPUS; i++)
-> 
-> But in this loop we want to read/write on [NR_CPUS] slots of this array
-> 
->> +		if (_cpu_pda_init[i] == &boot_cpu_pda[i])
->> +			cpu_pda(i) = NULL;
->> +		else
->> +			cpu_pda(i) = _cpu_pda_init[i];
->> +}
->> +#endif
-> 
-> You might want to apply this patch.
-> 
-> I also wonder if _cpu_pda should be set only at the very end of 
-> x86_64_cleanup_pda(), after array initialization, or maybe other
-> cpus are not yet running ? (Sorry I cannot boot test this patch at this momeent)
-> 
-> [PATCH] x86_64: x86_64_cleanup_pda() should use nr_cpu_ids instead of NR_CPUS
-> 
-> We allocate an array of nr_cpu_ids pointers, so we should respect its bonds.
+On Tue, Feb 19, 2008 at 08:21:53PM +0100, Sam Ravnborg wrote:
+> Hi Anath.
 
+Hi Sam,
+
+> Linus did not pull this in the -rc1 to -rc2 timeframe
+> so please resubmit the patch serie one week into the
+> next merge window (when most of the trees has hit linus' tree
+> and Andrew has made his first merge).
+
+Isn't this set a good candidate for linux-next? If so, we could request
+Stephen to pull in the patchset.
+
+Ananth
+
+> IF you need an extra eye balling then you can submit
+> a few weeks before the merge window opens.
+> Thats typical after an -rc with only a few patches.
 > 
-> Delay change of _cpu_pda after array initialization.
+> Thanks,
+> 	Sam
 > 
-> Also take into account that alloc_bootmem_low() :
-> - calls panic() if not enough memory
-> - already clears allocated memory
-> 
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> 
-> diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
-> index 3942e6a..21532eb 100644
-> --- a/arch/x86/kernel/head64.c
-> +++ b/arch/x86/kernel/head64.c
-> @@ -154,18 +154,16 @@ void __init x86_64_start_kernel(char * real_mode_data)
->  void __init x86_64_cleanup_pda(void)
->  {
->  	int i;
-> +	struct x8664_pda **new_cpu_pda;
->  
-> -	_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
-> +	new_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
->  
-> -	if (!_cpu_pda)
-> -		panic("Cannot allocate cpu pda table\n");
->  
-> +	for (i = 0; i < nr_cpu_ids; i++)
-> +		if (_cpu_pda_init[i] != &boot_cpu_pda[i])
-> +			new_cpu_pda[i] = _cpu_pda_init[i];
-> +	mb();
-> +	_cpu_pda = new_cpu_pda;
->  	/* cpu_pda() now points to allocated cpu_pda_table */
-> -
-> -	for (i = 0; i < NR_CPUS; i++)
-> -		if (_cpu_pda_init[i] == &boot_cpu_pda[i])
-> -			cpu_pda(i) = NULL;
-> -		else
-> -			cpu_pda(i) = _cpu_pda_init[i];
->  }
->  #endif
-
-
-Yes, thank you!  I had changed this in a later version ... I must have grabbed
-an earlier version to do the patch split.  (But I did not have the memory barrier.)
-
-At this point only the boot cpu is running and we're in the time slot between
-allocating per cpu areas and sched_init().
-
-I'm just building an x86.git#testing branch.  I will see if I can't replicate
-the problem.
-
-Thanks again,
-Mike
+> On Tue, Feb 12, 2008 at 11:39:18PM +0100, Sam Ravnborg wrote:
+> > Hi Linus.
+> > 
+> > Will you consider such a primary code-movement for -rc1
+> > or shall we wait until next merge window?
+> > 
+> > Had we hit -rc2 I would not have sent this pull req and
+> > feel free to flame me anyway.
+> > 
+> > The rationale to get it merged is obviously to avoid
+> > merge conflicts and the only reason I ask is that I consider
+> > it a low risk patch.
+> > 
+> > I have not included 8/8 since it was questioned and it
+> > will wait until next merge window. But the first 7 was
+> > straightforward.
+> > 
+> > You can pull from:
+> > ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+> > 
+> > diffstat and shortlog below.
+> > I also included mail last with a few of the merge related comments.
+> > 
+> > 	Sam
+> > 
+> >  Makefile                                        |    1 +
+> >  drivers/misc/Makefile                           |    1 -
+> >  kernel/Makefile                                 |    4 -
+> >  lib/Kconfig.debug                               |   71 +--------------------
+> >  lib/Makefile                                    |    1 -
+> >  tests/Kconfig                                   |   79 +++++++++++++++++++++++
+> >  tests/Makefile                                  |   10 +++
+> >  {kernel => tests}/backtracetest.c               |    0 
+> >  {drivers/misc => tests}/lkdtm.c                 |   12 ++--
+> >  {lib => tests}/locking-selftest-hardirq.h       |    0 
+> >  {lib => tests}/locking-selftest-mutex.h         |    0 
+> >  {lib => tests}/locking-selftest-rlock-hardirq.h |    0 
+> >  {lib => tests}/locking-selftest-rlock-softirq.h |    0 
+> >  {lib => tests}/locking-selftest-rlock.h         |    0 
+> >  {lib => tests}/locking-selftest-rsem.h          |    0 
+> >  {lib => tests}/locking-selftest-softirq.h       |    0 
+> >  {lib => tests}/locking-selftest-spin-hardirq.h  |    0 
+> >  {lib => tests}/locking-selftest-spin-softirq.h  |    0 
+> >  {lib => tests}/locking-selftest-spin.h          |    0 
+> >  {lib => tests}/locking-selftest-wlock-hardirq.h |    0 
+> >  {lib => tests}/locking-selftest-wlock-softirq.h |    0 
+> >  {lib => tests}/locking-selftest-wlock.h         |    0 
+> >  {lib => tests}/locking-selftest-wsem.h          |    0 
+> >  {lib => tests}/locking-selftest.c               |    0 
+> >  {kernel => tests}/rcutorture.c                  |    0 
+> >  {kernel => tests}/rtmutex-tester.c              |    2 +-
+> >  {kernel => tests}/test_kprobes.c                |    0 
+> >  27 files changed, 99 insertions(+), 82 deletions(-)
+> > 
+> > Ananth N Mavinakayanahalli (7):
+> >       Create tests/ directory
+> >       Move locking selftests to tests/
+> >       Move rcutorture to tests/
+> >       Move rtmutex-tests to tests/
+> >       Move lkdtm to tests/
+> >       Move kprobes smoke tests to tests/
+> >       Move backtrace tests to tests/
+> > 
+> > 
+> > 
+> > On Tue, Feb 12, 2008 at 01:22:46PM -0800, Andrew Morton wrote:
+> > > On Tue, 12 Feb 2008 11:44:52 -0500
+> > > Christoph Hellwig <hch@infradead.org> wrote:
+> > > 
+> > > > On Mon, Feb 11, 2008 at 04:14:52PM +0530, Ananth N Mavinakayanahalli wrote:
+> > > > > The following series of patches create and populate the toplevel tests/
+> > > > > directory. This will henceforth be the place where all in-kernel tests
+> > > > > live.
+> > > > > 
+> > > > > All patches against 2.6.25-rc1 and are just code movement without any
+> > > > > change in functionality.
+> > > > 
+> > > > ACK to patches 1-7, and I agree with Ingo that the x86-specific test
+> > > > should stay under arch/x86.
+> > > 
+> > > OK.  But now is basically the worst time for me (or anyone else) to merge
+> > > large code-motion changes like this, because they need to be carried for
+> > > two months or more.
+> > > 
+> > > And even though git can track renames, putting them into a git tree (say,
+> > > git-kbuild) won't help, because if some other git tree tries to modify a
+> > > file in its original place, I get to fix up the fallout.
+> > > 
+> > > Which I _could_ do, and would do if the patches were particularly risky or
+> > > added/changed functionality or whatever.  But they don't do that, and there
+> > > is little advantage in maintaining them for the >2 months.
+> > > 
+> > > So.  Please redo and resend the patches when we hit 2.6.25-rc6 or so?
+> > > 
+> > > Thanks.
+> > > 
+> > > (linux-next will largely fix all this: git will take care of the renames
+> > > and I'll just base the -mm queue on the consolidated linux-next.  But we
+> > > aren't there yet).
+> > > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
