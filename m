@@ -1,52 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761493AbYBTE5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbYBTE6e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761493AbYBTE5u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 23:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbYBTE5k
+	id S1763637AbYBTE6e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 23:58:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYBTE6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 23:57:40 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:53404 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752086AbYBTE5j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 23:57:39 -0500
-Date: Tue, 19 Feb 2008 22:57:33 -0600
-From: Paul Jackson <pj@sgi.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: riel@redhat.com, kosaki.motohiro@jp.fujitsu.com, pavel@ucw.cz,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, marcelo@kvack.org,
-       daniel.spang@gmail.com, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org,
-       a1426z@gawab.com, jonathan@jonmasters.org, zlynx@acm.org
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Message-Id: <20080219225733.37c56eb2.pj@sgi.com>
-In-Reply-To: <20080220114317.642F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-References: <20080219222828.GB28786@elf.ucw.cz>
-	<20080219210739.27325078@bree.surriel.com>
-	<20080220114317.642F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 23:58:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46395 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbYBTE6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 23:58:23 -0500
+Date: Tue, 19 Feb 2008 21:02:36 -0800
+From: Greg KH <greg@kroah.com>
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, adobriyan@gmail.com
+Subject: Re: [PATCH] exporting capability code/name pairs (try #6)
+Message-ID: <20080220050236.GA20181@kroah.com>
+References: <47B4ED1B.6070206@ak.jp.nec.com> <47B4F1C5.9010408@cn.fujitsu.com> <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com> <20080219161610.GA3344@kroah.com> <47BBAEE3.6040301@ak.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BBAEE3.6040301@ak.jp.nec.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kosaki-san wrote:
-> Yes.
-> Fujitsu HPC middleware watching sum of memory consumption of the job
-> and, if over-consumption happened, kill process and remove job schedule.
+On Wed, Feb 20, 2008 at 01:38:59PM +0900, Kohei KaiGai wrote:
+> >> If we can have a private member in kobj_attribute, we can found the 
+> content
+> >> to be returned in a single step.
+> >
+> > Ok, again, just send me a patch that adds this functionality and we will
+> > be very glad to consider it.
+>
+> [1/2] Add a private data field within kobj_attribute structure.
+>
+> This patch add a private data field, declared as void *, within 
+> kobj_attribute
+> structure. Anyone wants to use sysfs can store their private data to refer 
+> at
+> _show() and _store() method.
+> It enables to share a single method function with several similar entries,
+> like ones to export the list of capabilities the running kernel supported.
 
-Did those jobs share nodes -- sometimes two or more jobs using the same
-nodes?  I am sure SGI has such users too, though such job mixes make
-the runtimes of specific jobs less obvious, so customers are more
-tolerant of variations and some inefficiencies, as they get hidden in
-the mix.
+But your patch 2/2 doesn't use this interface, why not?
 
-In other words, Rik, both yes and no ;).  Both sorts of HPC loads
-exist, sharing nodes and a dedicated set of nodes for each job.
+>  include/linux/kobject.h |    1 +
+>  include/linux/sysfs.h   |    7 +++++++
+>  2 files changed, 8 insertions(+), 0 deletions(-)
+>
+> diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+> index caa3f41..57d5bf1 100644
+> --- a/include/linux/kobject.h
+> +++ b/include/linux/kobject.h
+> @@ -130,6 +130,7 @@ struct kobj_attribute {
+>  			char *buf);
+>  	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
+>  			 const char *buf, size_t count);
+> +	void *data;	/* a private field */
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+Hm, can you really use this?
+
+>  extern struct sysfs_ops kobj_sysfs_ops;
+> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+> index 8027104..6f40ff9 100644
+> --- a/include/linux/sysfs.h
+> +++ b/include/linux/sysfs.h
+> @@ -50,6 +50,13 @@ struct attribute_group {
+>  	.store	= _store,					\
+>  }
+>
+> +#define __ATTR_DATA(_name,_mode,_show,_store,_data) {		\
+> +	.attr = {.name = __stringify(_name), .mode = _mode },   \
+> +	.show	= _show,					\
+> +	.store	= _store,					\
+> +	.data	= (void *)(_data),				\
+> +}
+
+I don't see how this would be any different from the original?  You are
+always passed a kobject, which can be embedded in anything else.
+
+Could you also modify the documentation and the sample code to use this
+new field, showing how it is to be used, and testing that it works
+properly at the same time?
+
+thanks,
+
+greg k-h
