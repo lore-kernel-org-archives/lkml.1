@@ -1,46 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933283AbYBTQlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936041AbYBTQlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933283AbYBTQlP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934838AbYBTQbp
+	id S936041AbYBTQlk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:41:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933793AbYBTQcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:31:45 -0500
-Received: from linode.ducksong.com ([64.22.125.164]:48568 "EHLO
-	linode.ducksong.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934834AbYBTQbn (ORCPT
+	Wed, 20 Feb 2008 11:32:10 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:60201 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934880AbYBTQcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:31:43 -0500
-Subject: Re: [PATCH] splice: fix problem with sys_tee and SPLICE_F_NONBLOCK
-From: Patrick McManus <mcmanus@ducksong.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Johann Felix Soden <johfel@gmx.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <20080220093528.GU23197@kernel.dk>
-References: <1203452091.7758.5.camel@localhost>
-	 <20080219202543.GK23197@kernel.dk> <1203455538.7758.17.camel@localhost>
-	 <20080219212530.GN23197@kernel.dk> <1203457661.7758.31.camel@localhost>
-	 <20080220093528.GU23197@kernel.dk>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 11:31:51 -0500
-Message-Id: <1203525111.5949.100.camel@tng>
+	Wed, 20 Feb 2008 11:32:08 -0500
+Date: Wed, 20 Feb 2008 08:30:46 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 22/28] mm: add support for non block device backed swap
+ files
+Message-Id: <20080220083046.a3ab16d3.randy.dunlap@oracle.com>
+In-Reply-To: <20080220150308.142619000@chello.nl>
+References: <20080220144610.548202000@chello.nl>
+	<20080220150308.142619000@chello.nl>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Feb 2008 15:46:32 +0100 Peter Zijlstra wrote:
 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  Documentation/filesystems/Locking |   19 +++++++++++++
+>  Documentation/filesystems/vfs.txt |   17 ++++++++++++
+>  include/linux/buffer_head.h       |    2 -
+>  include/linux/fs.h                |    8 +++++
+>  include/linux/swap.h              |    4 ++
+>  mm/page_io.c                      |   52 ++++++++++++++++++++++++++++++++++++++
+>  mm/swap_state.c                   |    4 +-
+>  mm/swapfile.c                     |   26 ++++++++++++++++++-
+>  8 files changed, 128 insertions(+), 4 deletions(-)
 
-On Wed, 2008-02-20 at 10:35 +0100, Jens Axboe wrote:
+> Index: linux-2.6/Documentation/filesystems/Locking
+> ===================================================================
+> --- linux-2.6.orig/Documentation/filesystems/Locking
+> +++ linux-2.6/Documentation/filesystems/Locking
 
-> When non-blocking is set, ideally we want to return 0 if there's no hope
-> of anymore data and EAGAIN if trying later may yield some data. So how
-> about this instead?
-> 
+> @@ -291,6 +297,19 @@ cleaned, or an error value if not. Note 
+>  getting mapped back in and redirtied, it needs to be kept locked
+>  across the entire operation.
+>  
+> +	->swapfile() will be called with a non zero argument on address spaces
 
+                                           non-zero
 
-Thank you Jens and Johann.
+> +backing non block device backed swapfiles. A return value of zero indicates
+> +success. In which case this address space can be used for backing swapspace.
 
--Patrick
+   success, in which case
 
+> +The swapspace operations will be proxied to the address space operations.
+> +Swapoff will call this method with a zero argument to release the address
+> +space.
+> +
+> +	->swap_out() when swapfile() returned success, this method is used to
+> +write the swap page.
+> +
+> +	->swap_in() when swapfile() returned success, this method is used to
+> +read the swap page.
+> +
+>  	Note: currently almost all instances of address_space methods are
+>  using BKL for internal serialization and that's one of the worst sources
+>  of contention. Normally they are calling library functions (in fs/buffer.c)
 
+> Index: linux-2.6/Documentation/filesystems/vfs.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/filesystems/vfs.txt
+> +++ linux-2.6/Documentation/filesystems/vfs.txt
+> @@ -728,6 +732,19 @@ struct address_space_operations {
+>    	prevent redirtying the page, it is kept locked during the whole
+>  	operation.
+>  
+> +  swapfile: Called with a non-zero argument when swapon is used on a file. A
+> +	return value of zero indicates success. In which case this
+
+                                       success, in which case this
+
+> +	address_space can be used to back swapspace. The swapspace operations
+> +	will be proxied to this address space's ->swap_{out,in} methods.
+> +	Swapoff will call this method with a zero argument to release the
+> +	address space.
+> +
+> +  swap_out: Called to write a swapcache page to a backing store, similar to
+> +	writepage.
+> +
+> +  swap_in: Called to read a swapcache page from a backing store, similar to
+> +	readpage.
+> +
+>  The File Object
+>  ===============
+
+---
+~Randy
