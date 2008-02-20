@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761859AbYBTBB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763636AbYBTBDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761859AbYBTBB2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 20:01:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763679AbYBTBAq
+	id S1763636AbYBTBDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 20:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbYBTBDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 20:00:46 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:45640
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761187AbYBTBAm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 20:00:42 -0500
-Date: Wed, 20 Feb 2008 02:00:38 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080220010038.GQ7128@v2.random>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au>
+	Tue, 19 Feb 2008 20:03:13 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:52408 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755755AbYBTBDL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 20:03:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: [PATCH] PM: Remove unbalanced mutex_unlock() from dpm_resume()
+Date: Wed, 20 Feb 2008 02:01:41 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>,
+       "Linux-pm mailing list" <linux-pm@lists.osdl.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802201008.49933.nickpiggin@yahoo.com.au>
+Message-Id: <200802200201.42543.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 10:08:49AM +1100, Nick Piggin wrote:
-> You can't sleep inside rcu_read_lock()!
-> 
-> I must say that for a patch that is up to v8 or whatever and is
-> posted twice a week to such a big cc list, it is kind of slack to
-> not even test it and expect other people to review it.
+Hi Greg,
 
-Well, xpmem requirements are complex. As as side effect of the
-simplicity of my approach, my patch is 100% safe since #v1. Now it
-also works for GRU and it cluster invalidates.
+Please consider taking the following fix for 2.6.25.
 
-> Also, what we are going to need here are not skeleton drivers
-> that just do all the *easy* bits (of registering their callbacks),
-> but actual fully working examples that do everything that any
-> real driver will need to do. If not for the sanity of the driver
+Thanks,
+Rafael
 
-I've a fully working scenario for my patch, infact I didn't post the
-mmu notifier patch until I got KVM to swap 100% reliably to be sure I
-would post something that works well. mmu notifiers are already used
-in KVM for:
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-1) 100% reliable and efficient swapping of guest physical memory
-2) copy-on-writes of writeprotect faults after ksm page sharing of guest
-   physical memory
-3) ballooning using madvise to give the guest memory back to the host
+Remove an unnecessary unlocking of dpm_list_mtx in the error path
+in drivers/base/power/main.c:dpm_suspend() .
 
-My implementation is the most handy because it requires zero changes
-to the ksm code too (no explicit mmu notifier calls after
-ptep_clear_flush) and it's also 100% safe (no mess with schedules over
-rcu_read_lock), no "atomic" parameters, and it doesn't open a window
-where sptes have a view on older pages and linux pte has view on newer
-pages (this can happen with remap_file_pages with my KVM swapping
-patch to use V8 Christoph's patch).
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/base/power/main.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-> Also, how to you resolve the case where you are not allowed to sleep?
-> I would have thought either you have to handle it, in which case nobody
-> needs to sleep; or you can't handle it, in which case the code is
-> broken.
-
-I also asked exactly this, glad you reasked this too.
+Index: linux-2.6/drivers/base/power/main.c
+===================================================================
+--- linux-2.6.orig/drivers/base/power/main.c
++++ linux-2.6/drivers/base/power/main.c
+@@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
+ 			mutex_lock(&dpm_list_mtx);
+ 			if (list_empty(&dev->power.entry))
+ 				list_add(&dev->power.entry, &dpm_locked);
+-			mutex_unlock(&dpm_list_mtx);
+ 			break;
+ 		}
+ 		mutex_lock(&dpm_list_mtx);
