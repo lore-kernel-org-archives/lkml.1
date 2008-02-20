@@ -1,159 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYBTMT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbYBTMXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755235AbYBTMT6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYBTMTv
+	id S1754871AbYBTMXu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:23:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbYBTMXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:19:51 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:45085 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751252AbYBTMTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:19:49 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Wed, 20 Feb 2008 23:19:15 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Pavel Emelyanov <xemul@openvz.org>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
-Subject: [PATCH 2.6.25-rc2 3/9] config: Improve init/Kconfig help	descriptions - namespaces
-Message-ID: <20080220121915.GA2169@tull.net>
-References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com>
+	Wed, 20 Feb 2008 07:23:42 -0500
+Received: from smtp-out01.alice-dsl.net ([88.44.60.11]:39346 "EHLO
+	smtp-out01.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751276AbYBTMXl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 07:23:41 -0500
+Date: Wed, 20 Feb 2008 13:23:38 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, balbir@linux.vnet.ibm.com
+Subject: [PATCH] Document huge memory/cache overhead of memory controller in Kconfig
+Message-ID: <20080220122338.GA4352@basil.nowhere.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080219143307.GA27352@tull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 20 Feb 2008 12:17:14.0143 (UTC) FILETIME=[86B8D2F0:01C873BA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite the help descriptions for clarity, accuracy and consistency.
+Document huge memory/cache overhead of memory controller in Kconfig
 
-Kernel config options affected:
+I was a little surprised that 2.6.25-rc* increased struct page for the memory
+controller.  At least on many x86-64 machines it will not fit into a single
+cache line now anymore and also costs considerable amounts of RAM. 
+At earlier review I remembered asking for a external data structure for this.
 
-  - NAMESPACES
-  - UTS_NS
-  - IPC_NS
-  - USER_NS
-  - PID_NS
+It's also quite unobvious that a innocent looking Kconfig option with a 
+single line Kconfig description has such a negative effect.
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
-Here's try #2 at the 3rd patch in the series, for namespace
-descriptions. Patching against Linus' git tree now, and trying
-to comply with the standards for submitting patches. Each of
-the UTS/IPC/USER/PID descriptions is subtly different, but I
-hope they all are clear and accurate.
+This patch attempts to document these disadvantages at least so that users
+configuring their kernel can make a informed decision.
 
+Cc: balbir@linux.vnet.ibm.com
 
---- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
-+++ b/init/Kconfig	2008-02-20 22:55:41.000000000 +1100
-@@ -414,31 +414,71 @@
- 	bool "Namespaces support" if EMBEDDED
- 	default !EMBEDDED
- 	help
--	  Provides the way to make tasks work with different objects using
--	  the same id. For example same IPC id may refer to different objects
--	  or same user id or pid may refer to different tasks when used in
--	  different namespaces.
-+	  Select various namespace options.
-+
-+	  Namespaces allow different kernel objects (such as processes
-+	  or sockets) to have the same ID in different namespaces.
-+	  Identifiers like process IDs, which historically were globally
-+	  unique, will now be unique only within each PID namespace.
-+	  Each task can refer only to PIDs within the same namespace
-+	  as the task itself.
-+
-+	  Namespaces are used by container systems (i.e. vservers)
-+	  to provide isolation between the containers.
-+
-+	  This option does not affect any kernel code directly; it merely
-+	  allows you to select namespace options below.
-+
-+	  Answer Y if you will be using a container system, and you
-+	  will probably want to enable all the namespace options
-+	  below.
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/init/Kconfig
+===================================================================
+--- linux.orig/init/Kconfig
++++ linux/init/Kconfig
+@@ -394,6 +394,14 @@ config CGROUP_MEM_CONT
+ 	  Provides a memory controller that manages both page cache and
+ 	  RSS memory.
  
- config UTS_NS
- 	bool "UTS namespace"
- 	depends on NAMESPACES
- 	help
--	  In this namespace tasks see different info provided with the
--	  uname() system call
-+	  Enable support for multiple UTS system attributes.
++	  Note that setting this option increases fixed memory overhead
++	  associated with each page of memory in the system by 4/8 bytes
++	  and also increases cache misses because struct page on many 64bit
++	  systems will not fit into a single cache line anymore.
 +
-+	  Each UTS namespace provides an individual view of the
-+	  information returned by the uname() system call including
-+	  hostname, kernel version and domain name.
++	  Only enable when you're ok with these trade offs and really
++	  sure you need the memory controller.
 +
-+	  This is used by container systems (i.e. vservers) so that
-+	  each container has its own hostname and other attributes.
-+	  Tasks in the container are placed in the UTS namespace
-+	  corresponding to the container.
-+
-+	  Answer Y if you will be using a container system.
- 
- config IPC_NS
- 	bool "IPC namespace"
- 	depends on NAMESPACES && SYSVIPC
- 	help
--	  In this namespace tasks work with IPC ids which correspond to
--	  different IPC objects in different namespaces
-+	  Enable support for namespace-specific IPC IDs.
-+
-+	  IPC IDs will be unique only within each IPC namespace.
-+
-+	  This is used by container systems (i.e. vservers).
-+	  Tasks in the container are placed in the IPC namespace
-+	  corresponding to the container.
-+
-+	  Answer Y if you will be using a container system.
- 
- config USER_NS
- 	bool "User namespace (EXPERIMENTAL)"
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
--	  This allows containers, i.e. vservers, to use user namespaces
--	  to provide different user info for different servers.
-+	  Enable experimental support for user namespaces.
-+
-+	  This is a function used by container-based virtualisation systems
-+	  (e.g. vservers). User namespaces are intended to ensure that
-+	  processes with the same uid which are in different containers are
-+	  isolated from each other.
-+
-+	  Currently user namespaces provide separate accounting, while
-+	  isolation must be provided using SELinux or a custom security
-+	  module.
-+
- 	  If unsure, say N.
- 
- config PID_NS
-@@ -446,12 +486,20 @@
- 	default n
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
--	  Suport process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
--	  pid namespaces.  This is a building block of containers.
-+	  Enable experimental support for hierarchical process id namespaces.
- 
--	  Unless you want to work with an experimental feature
--	  say N here.
-+	  Process IDs will be unique only within each PID namespace.
-+	  This allows multiple processes to have the same PID
-+	  so long as they are in different PID namespaces. Furthermore,
-+	  each process will have a distinct PID in each namespace
-+	  the process is in.
-+
-+	  This is used by container systems (i.e. vservers).
-+	  Tasks in the container are placed in the PID namespace
-+	  corresponding to the container, and can only see or
-+	  affect processes in the same PID namespace.
-+
-+	  If unsure, say N.
- 
- config BLK_DEV_INITRD
- 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+ config PROC_PID_CPUSET
+ 	bool "Include legacy /proc/<pid>/cpuset file"
+ 	depends on CPUSETS
