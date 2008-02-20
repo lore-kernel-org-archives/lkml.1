@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYBTI1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758915AbYBTIcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759180AbYBTI1P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 03:27:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYBTI06
+	id S1758915AbYBTIcp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 03:32:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbYBTIcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 03:26:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40542 "EHLO mx3.mail.elte.hu"
+	Wed, 20 Feb 2008 03:32:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60212 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753085AbYBTI05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 03:26:57 -0500
-Date: Wed, 20 Feb 2008 09:26:45 +0100
+	id S1753298AbYBTIce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 03:32:34 -0500
+Date: Wed, 20 Feb 2008 09:32:18 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] x86: Coding style fixes to
-	arch/x86/mach-generic/bigsmp.c
-Message-ID: <20080220082645.GC27036@elte.hu>
-References: <20080220001852.0c3b1e40@paolo-desktop>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [GIT pull] x86 updates
+Message-ID: <20080220083218.GA11830@elte.hu>
+References: <alpine.LFD.1.00.0802192357550.7583@apollo.tec.linutronix.de> <20080219155653.4e6bc958.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220001852.0c3b1e40@paolo-desktop>
+In-Reply-To: <20080219155653.4e6bc958.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,13 +36,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> File is now error/warning free
+> What happened to the kernel-doc x86/cpu/mtrr patch, which you applied, 
+> according to your email reply...
 
-thanks Paolo, i've picked up all your patches.
+you can see the latest & greatest arch/x86 patches in the 
+x86.git#testing branch. Here is how you can track it:
 
-the mmx cleanup i already did in the x86.git#testing branch. (that's a 
-new branch that has even fresher patches than x86.git#mm)
+   http://people.redhat.com/mingo/x86.git/README
+
+your patch was added yesterday so it wasnt in the to-Linus branch of the 
+tree yet.
 
 	Ingo
