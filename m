@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYBTKXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbYBTKZH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbYBTKXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBTKX2
+	id S1762079AbYBTKZH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:25:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752961AbYBTKYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:23:28 -0500
-Received: from cantor.suse.de ([195.135.220.2]:39011 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbYBTKX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:23:27 -0500
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] [2/5] Use 2000 offset for 32bit kernels
-Date: Wed, 20 Feb 2008 11:23:23 +0100
-User-Agent: KMail/1.9.6
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-References: <20080209416.271135970@suse.de> <alpine.LFD.1.00.0802162024220.7583@apollo.tec.linutronix.de> <alpine.LFD.1.00.0802201049310.7583@apollo.tec.linutronix.de>
-In-Reply-To: <alpine.LFD.1.00.0802201049310.7583@apollo.tec.linutronix.de>
+	Wed, 20 Feb 2008 05:24:53 -0500
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:41017 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbYBTKYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 05:24:52 -0500
+Date: Wed, 20 Feb 2008 11:24:30 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Bastian Blank <bastian@waldi.eu.org>,
+       Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 07/13] Initialize per cpu lowcores on cpu hotplug.
+Message-ID: <20080220102430.GB12635@osiris.boeblingen.de.ibm.com>
+References: <20080219144047.587547541@de.ibm.com> <20080219144504.392301782@de.ibm.com> <20080219151355.GA24547@wavehammer.waldi.eu.org> <20080219153855.GA11599@osiris.boeblingen.de.ibm.com> <20080219154149.GB11599@osiris.boeblingen.de.ibm.com> <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org> <20080220094552.GA12635@osiris.boeblingen.de.ibm.com> <20080220100933.GA20162@wavehammer.waldi.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802201123.23830.ak@suse.de>
+In-Reply-To: <20080220100933.GA20162@wavehammer.waldi.eu.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 February 2008 11:07:02 Thomas Gleixner wrote:
-> On Sat, 16 Feb 2008, Thomas Gleixner wrote:
-> > On Sat, 9 Feb 2008, Andi Kleen wrote:
-> > > 
-> > > We know it is already after 2000.
-> > > 
-> > > This extends the effective lifetime of 32bit systems by 8 years:
-> > > from 2030 to 2038.
+On Wed, Feb 20, 2008 at 11:09:33AM +0100, Bastian Blank wrote:
+> On Wed, Feb 20, 2008 at 10:45:52AM +0100, Heiko Carstens wrote:
+> > -	copy_page(lowcore, &S390_lowcore);
+> > +	memcpy(lowcore, &S390_lowcore, 512);
 > 
-> Could you please explain what magic math does the 2030 -> 2038
-> extension ?
+> Okay
+> 
+> >  	memset((void *)lowcore + 512, 0, sizeof(*lowcore) - 512);
+> 
+> Not completely okay. void pointer are not allowed in arithmetic. gcc
+> handles void * as char * in this case, but I think it should usualy be
+> avoided.
 
-Hmm, yes on rechecking I also don't know how I got the original
-conclusion.
+There are many places all over the kernel that assume sizeof(void) == 1.
+That's yet another gcc extension we use... but I'm going to change that
+to a char * cast anyway.
 
--Andi
-
+Thanks for commenting!
