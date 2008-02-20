@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764242AbYBTM6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764402AbYBTM6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764242AbYBTM6j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:58:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760172AbYBTMye
+	id S1764402AbYBTM6y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:58:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757319AbYBTMyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:54:34 -0500
-Received: from mail.southpole.se ([193.12.106.18]:42398 "EHLO
+	Wed, 20 Feb 2008 07:54:36 -0500
+Received: from mail.southpole.se ([193.12.106.18]:42393 "EHLO
 	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757001AbYBTMx4 (ORCPT
+	with ESMTP id S1756996AbYBTMx4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Feb 2008 07:53:56 -0500
 From: Jonas Bonn <jonas@southpole.se>
 To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Cc: greg@kroah.com, Jonas Bonn <jonas@southpole.se>
 Subject: [PATCH] [net] use PCI_DEVICE_TABLE: makes struct pci_device_id array const and adds section attribute __devinitconst
-Date: Wed, 20 Feb 2008 13:53:45 +0100
-Message-Id: <1203512031-14318-10-git-send-email-jonas@southpole.se>
+Date: Wed, 20 Feb 2008 13:53:44 +0100
+Message-Id: <1203512031-14318-9-git-send-email-jonas@southpole.se>
 X-Mailer: git-send-email 1.5.3.8
-In-Reply-To: <1203512031-14318-9-git-send-email-jonas@southpole.se>
+In-Reply-To: <1203512031-14318-8-git-send-email-jonas@southpole.se>
 References: <1203512031-14318-1-git-send-email-jonas@southpole.se>
  <1203512031-14318-2-git-send-email-jonas@southpole.se>
  <1203512031-14318-3-git-send-email-jonas@southpole.se>
@@ -26,29 +26,28 @@ References: <1203512031-14318-1-git-send-email-jonas@southpole.se>
  <1203512031-14318-6-git-send-email-jonas@southpole.se>
  <1203512031-14318-7-git-send-email-jonas@southpole.se>
  <1203512031-14318-8-git-send-email-jonas@southpole.se>
- <1203512031-14318-9-git-send-email-jonas@southpole.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jonas Bonn <jonas@southpole.se>
 ---
- drivers/net/arcnet/com20020-pci.c |    2 +-
+ drivers/net/defxx.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/arcnet/com20020-pci.c b/drivers/net/arcnet/com20020-pci.c
-index b8c0fa6..87ee0db 100644
---- a/drivers/net/arcnet/com20020-pci.c
-+++ b/drivers/net/arcnet/com20020-pci.c
-@@ -141,7 +141,7 @@ static void __devexit com20020pci_remove(struct pci_dev *pdev)
- 	free_netdev(dev);
- }
+diff --git a/drivers/net/defxx.c b/drivers/net/defxx.c
+index ddc30c4..84a3ce5 100644
+--- a/drivers/net/defxx.c
++++ b/drivers/net/defxx.c
+@@ -3630,7 +3630,7 @@ static int __devinit dfx_pci_register(struct pci_dev *,
+ 				      const struct pci_device_id *);
+ static void __devexit dfx_pci_unregister(struct pci_dev *);
  
--static struct pci_device_id com20020pci_id_table[] = {
-+static PCI_DEVICE_TABLE(com20020pci_id_table) = {
- 	{ 0x1571, 0xa001, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ 0x1571, 0xa002, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
- 	{ 0x1571, 0xa003, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+-static struct pci_device_id dfx_pci_table[] = {
++static PCI_DEVICE_TABLE(dfx_pci_table) = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_DEC, PCI_DEVICE_ID_DEC_FDDI) },
+ 	{ }
+ };
 -- 
 1.5.3.8
 
