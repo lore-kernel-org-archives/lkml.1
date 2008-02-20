@@ -1,140 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbYBTSee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757844AbYBTSiM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758797AbYBTSee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:34:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbYBTSeW
+	id S1757844AbYBTSiM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:38:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbYBTShy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:34:22 -0500
-Received: from mga01.intel.com ([192.55.52.88]:29783 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752950AbYBTSeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:34:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
-   d="scan'208";a="521761940"
-Message-ID: <47BC725C.3060400@intel.com>
-Date: Wed, 20 Feb 2008 10:33:00 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071125)
+	Wed, 20 Feb 2008 13:37:54 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53222 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752869AbYBTShw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:37:52 -0500
+Date: Wed, 20 Feb 2008 10:37:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+cc: Jesse Barnes <jesse.barnes@intel.com>, lkml <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
+ Screen becomes green.
+In-Reply-To: <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com>
+Message-ID: <alpine.LFD.1.00.0802201007300.7833@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>  <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org> <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, e1000-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25-rc2] e100: Trying to free already-free IRQ 11 during
- suspend ...
-References: <200802171536.51695.arvidjaar@mail.ru> <20080218050113.1b4b0897.akpm@linux-foundation.org> <47BB0F76.1040808@intel.com>
-In-Reply-To: <47BB0F76.1040808@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Feb 2008 18:33:51.0957 (UTC) FILETIME=[24119850:01C873EF]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Andrew Morton wrote:
->> On Sun, 17 Feb 2008 15:36:50 +0300 Andrey Borzenkov <arvidjaar@mail.ru> wrote:
->>
->>> ... and possibly reboot/poweroff (it flows by too fast to be legible).
->>>
->>> [ 8803.850634] ACPI: Preparing to enter system sleep state S3
->>> [ 8803.853141] Suspending console(s)
->>> [ 8805.287505] serial 00:09: disabled
->>> [ 8805.291564] Trying to free already-free IRQ 11
->>> [ 8805.291579] Pid: 6920, comm: pm-suspend Not tainted 2.6.25-rc2-1avb #2
->>> [ 8805.291628]  [<c0152127>] free_irq+0xb7/0x130
->>> [ 8805.291675]  [<c024bd80>] e100_suspend+0xc0/0x100
->>> [ 8805.291724]  [<c01eaa36>] pci_device_suspend+0x26/0x70
->>> [ 8805.291747]  [<c0243674>] suspend_device+0x94/0xd0
->>> [ 8805.291763]  [<c02439a3>] device_suspend+0x153/0x240
->>> [ 8805.291784]  [<c014314f>] suspend_devices_and_enter+0x4f/0xf0
->>> [ 8805.291808]  [<c0143a5f>] ? freeze_processes+0x3f/0x80
->>> [ 8805.291825]  [<c01432fa>] enter_state+0xaa/0x140
->>> [ 8805.291840]  [<c014341f>] state_store+0x8f/0xd0
->>> [ 8805.291852]  [<c0143390>] ? state_store+0x0/0xd0
->>> [ 8805.291866]  [<c01d3404>] kobj_attr_store+0x24/0x30
->>> [ 8805.291901]  [<c01b547b>] sysfs_write_file+0xbb/0x110
->>> [ 8805.291936]  [<c0177d79>] vfs_write+0x99/0x130
->>> [ 8805.291963]  [<c01b53c0>] ? sysfs_write_file+0x0/0x110
->>> [ 8805.291979]  [<c01782fd>] sys_write+0x3d/0x70
->>> [ 8805.291998]  [<c010409a>] sysenter_past_esp+0x5f/0xa5
->>> [ 8805.292038]  =======================
->>> [ 8805.347640] ACPI: PCI interrupt for device 0000:00:06.0 disabled
->>> [ 8805.361128] ACPI: PCI interrupt for device 0000:00:02.0 disabled
->>> [ 8805.376670]  hwsleep-0322 [00] enter_sleep_state     : Entering sleep state [S3]
->>> [ 8805.376670] Back to C!
->>>
->>> Interface is unused normally (only for netconsole sometimes). dmesg and config
->>> attached.
->> Does reverting this:
->>
->> commit 8543da6672b0994921f014f2250e27ae81645580
->> Author: Auke Kok <auke-jan.h.kok@intel.com>
->> Date:   Wed Dec 12 16:30:42 2007 -0800
->>
->>     e100: free IRQ to remove warningwhenrebooting
->>     
->> with this patch:
->>
->> --- a/drivers/net/e100.c~revert-1
->> +++ a/drivers/net/e100.c
->> @@ -2804,9 +2804,8 @@ static int e100_suspend(struct pci_dev *
->>  		pci_enable_wake(pdev, PCI_D3cold, 0);
->>  	}
->>  
->> -	free_irq(pdev->irq, netdev);
->> -
->>  	pci_disable_device(pdev);
->> +	free_irq(pdev->irq, netdev);
->>  	pci_set_power_state(pdev, PCI_D3hot);
->>  
->>  	return 0;
->> @@ -2848,8 +2847,6 @@ static void e100_shutdown(struct pci_dev
->>  		pci_enable_wake(pdev, PCI_D3cold, 0);
->>  	}
->>  
->> -	free_irq(pdev->irq, netdev);
->> -
->>  	pci_disable_device(pdev);
->>  	pci_set_power_state(pdev, PCI_D3hot);
->>  }
->> _
->>
->> fix it?
->>
->>> Hmm ... after resume device has disappeared at all ...
->>>
->>> {pts/1}% cat /proc/interrupts
->>>            CPU0
->>>   0:    1290492    XT-PIC-XT        timer
->>>   1:       6675    XT-PIC-XT        i8042
->>>   2:          0    XT-PIC-XT        cascade
->>>   3:          2    XT-PIC-XT
->>>   4:          2    XT-PIC-XT
->>>   5:          3    XT-PIC-XT
->>>   7:          4    XT-PIC-XT        irda0
->>>   8:          0    XT-PIC-XT        rtc0
->>>   9:        583    XT-PIC-XT        acpi
->>>  10:          2    XT-PIC-XT
->>>  11:      31483    XT-PIC-XT        yenta, yenta, yenta, ohci_hcd:usb1, ALI 5451, pcmcia0.0
->>>  12:      28070    XT-PIC-XT        i8042
->>>  14:      21705    XT-PIC-XT        ide0
->>>  15:      82123    XT-PIC-XT        ide1
->>> NMI:          0   Non-maskable interrupts
->>> TRM:          0   Thermal event interrupts
->>> SPU:          0   Spurious interrupts
->>> ERR:          0
->> I hope that's not a separate bug...
+
+
+On Thu, 21 Feb 2008, Jeff Chua wrote:
 > 
-> I'll take a look at this as well. thanks for reporting.
+> > That said, before you do anything else, try if suspend-to-RAM works.
+> 
+> Linus, guess I missed this part ... so before touch anything, I did
+> tried suspend-to-ram, and it works on console and in X.
 
-ok, I just had a repro - on a regular shutdown even.
+Ok, so this is with clean current -git, and nothing disabled?
 
-this always worked before - I'm not blaming anything yet but something in the pci
-shutdown code must now be freeing our irq for us (I'm not using anything fancy to
-autoconfigure my network here).
+> And suspend-to-disk hangs, but I can still press and hold the power
+> button to power it off.
 
-I definately do not see this with 2.6.24 either.
+The "press and hold for five seconds" is actually a hardware feature of 
+the southbridge (well, I guess there is "software" in there too, but it's 
+the embedded kind). So the fact that it powers off at that point means 
+nothing, it just means that ok, your kernel is hung, but the hardware
+still works ;)
 
-Auke
+This *sounds* like some part of the suspend-to-disk sequence is doing 
+something stupid like trying to access the screen after it has been turned 
+off, which doesn't surprise me at all. My oft-stated opinion has been that 
+suspend-to-disk isn't a suspend at all, and should never have been 
+confused with "suspending" anything.
+
+It's "snapshot-and-restore", and my opinion is that:
+
+ - it should *never* call "suspend()"/"resume()" at all (that should be
+   reserved purely for suspend-to-RAM and has real power management 
+   issues!)
+
+ - it should have a totally separate "halt/unhalt/restore" thing 
+   that has nothing what-so-ever to do with power management, and is 
+   purely about stopping the hardware for things like USB and network 
+   cards (which otherwise do things like scan their command lists 
+   asynchronously) and making sure that the driver state is consistent 
+   with that stopped hw state.
+
+ - the people who confuse snapshot/restore with suspend/resume are 
+   horrible people that cause problems exactly because driver people then 
+   get those things mixed up, and something like the video suspend/resume 
+   should probably never have impacted suspend-to-disk in the first place!
+
+HOWEVER, that's a separate fight I've had, and in the meantime:
+
+> Then upon powering on and resume, I get the ugly green "console" screen. 
+> I can still type and move around. Starting X runs fine. Ctrl-Alt-Del or 
+> switching back to console will get back to the green screen.
+
+.. so this implies that while the laptop apparently hung at the end of the 
+snapshotting, the snapshotting did actually work, and it must have hung at 
+the very end, presumably when it tried to actually turn the power off.
+
+So there seems to be two (probably largely independent) problems:
+
+ - the hang at shutdown that requires you to press-and-hold the power 
+   button to actually cut power.
+
+   At a guess: putting the VGA device into D3hot makes the ACPI code that 
+   actually does the shutoff unhappy. Probably because it wants to access 
+   the device, and ends up not ever getting the replies it wants, since 
+   the hardware has been turned off.
+
+ - the fact that we restore something wrong for you and the screen is 
+   green.
+
+   At a guess: the restore_vga ends up restoring some state that wasn't 
+   correctly and fully saved.
+
+IOW, I think your patch that disables the two lines actually ends up 
+pretty much matching the two *different* problems. Can you confirm that 
+doing those two parts of that patch individually actually does 
+individually fix the two issues? (Ie disabling D3hot makes it shut down 
+nicely but resume with green text, while disabling just restore_vga() ends 
+up with shutdown problems, but once you press-and-hold the power button, 
+the thing will then restore nicely)+
+
+		Linus
