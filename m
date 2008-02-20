@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755044AbYBTMcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbYBTMmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755044AbYBTMcz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbYBTMcp
+	id S1754754AbYBTMmh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbYBTMm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:32:45 -0500
-Received: from host36-195-149-62.serverdedicati.aruba.it ([62.149.195.36]:37801
-	"EHLO mx.cpushare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbYBTMco (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:32:44 -0500
-Date: Wed, 20 Feb 2008 13:32:36 +0100
-From: Andrea Arcangeli <andrea@qumranet.com>
-To: Robin Holt <holt@sgi.com>
-Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v6
-Message-ID: <20080220123235.GX7128@v2.random>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220113313.GD11364@sgi.com> <20080220120324.GW7128@v2.random> <20080220122424.GE11364@sgi.com>
+	Wed, 20 Feb 2008 07:42:27 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:36577 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1751464AbYBTMm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 07:42:26 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Wed, 20 Feb 2008 23:41:55 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Paul Jackson <pj@sgi.com>
+Cc: Paul Menage <menage@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: Improve init/Kconfig help descriptions [PATCH 6/9]
+Message-ID: <20080220124155.GB2169@tull.net>
+References: <20080219140609.GA26619@tull.net> <20080219151214.GD27352@tull.net> <20080219093958.57144ce3.pj@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220122424.GE11364@sgi.com>
+In-Reply-To: <20080219093958.57144ce3.pj@sgi.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 06:24:24AM -0600, Robin Holt wrote:
-> We do not need to do any allocation in the messaging layer, all
-> structures used for messaging are allocated at module load time.
-> The allocation discussions we had early on were about trying to
-> rearrange you notifiers to allow a seperate worker thread to do the
-> invalidate and then the main thread would spin waiting for the worker to
-> complete.  That was canned by the moving your notifier to before the
-> lock was grabbed which led us to the point of needing a _begin and _end.
+On Tue, Feb 19, 2008 at 09:39:58AM -0600, Paul Jackson wrote:
+> I don't think /proc/<pid>/cpuset (PROC_PID_CPUSET) is, or should be,
+> deprecated.
 
-I thought you called some net/* function inside the mmu notifier
-methods. Those always require several ram allocations internally.
+Ok, I had just picked up on the "legacy" word in the option title
+and assumed that it meant deprecated.
 
-> So, fundamentally, how would they be different?  Would we be required to
-> add another notifier list to the mm and have two seperate callout
-> points?  Reduction would end up with the same half-registered
-> half-not-registered situation you point out above.  Then further
-> reduction would lead to the elimination of the callouts you have just
-> proposed and using the _begin/_end callouts and we are back to
-> Christoph's current patch.
+This is what I've got now:
 
-Did you miss Nick's argument that we'd need to change some VM lock to
-mutex and solve lock issues first? Are you implying mutex are more
-efficient for the VM? (you may seek support from preempt-rt folks at
-least) or are you implying the VM would better run slower with mutex
-in order to have a single config option?
+ config PROC_PID_CPUSET
+        bool "Include legacy /proc/<pid>/cpuset file"
+        depends on CPUSETS
+        default y
++       help
++         This option provides the /proc/<pid>/cpuset file.
++
++         This file contains the name of the cpuset in which
++         the process is executing. For more information, see
++         <file:Documentation/cpusets.txt>
++
++         If unsure, say Y.
+
+In general, are option titles fragile? For example, if I were to submit
+a patch which changes an option's title string, is this likely to break
+something or somebody?
+
+Nick.
