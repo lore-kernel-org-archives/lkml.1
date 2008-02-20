@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933670AbYBTPlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbYBTPol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933670AbYBTPlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757714AbYBTPlG
+	id S1764703AbYBTPol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:44:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYBTPob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:41:06 -0500
-Received: from vms046pub.verizon.net ([206.46.252.46]:46168 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757602AbYBTPlE (ORCPT
+	Wed, 20 Feb 2008 10:44:31 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:62507 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752874AbYBTPoa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:41:04 -0500
-Date: Wed, 20 Feb 2008 09:20:35 -0600
-From: Corey Minyard <minyard@acm.org>
-Subject: Re: [Openipmi-developer] [PATCH 3/4] IPMI: convert locked counters to
- atomics
-In-reply-to: <20080216164434.GC13922@auslistsprd01.us.dell.com>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Konstantin Baydarov <kbaidarov@ru.mvista.com>,
-       OpenIPMI Developers <openipmi-developer@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-id: <47BC4543.2050503@acm.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <20080214183051.GC20148@minyard.local>
- <20080216164434.GC13922@auslistsprd01.us.dell.com>
-User-Agent: Icedove 1.5.0.14pre (X11/20080208)
+	Wed, 20 Feb 2008 10:44:30 -0500
+Message-ID: <47BC4AAE.8020908@anagramm.de>
+Date: Wed, 20 Feb 2008 16:43:42 +0100
+From: Clemens Koller <clemens.koller@anagramm.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: linux-fbdev-devel@lists.sourceforge.net
+CC: Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
+       benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
+References: <20080205154432.GA8749@localhost.localdomain>	<20080214224942.a0cb6218.akpm@linux-foundation.org>	<20080215164542.GB16810@localhost.localdomain>	<Pine.LNX.4.64.0802171030330.6848@anakin>	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	<19805.1203355811@turing-police.cc.vt.edu>	<47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>	<47BABD3A.7010102@anagramm.de>	<20080219040530.7b1d115d.akpm@linux-foundation.org> <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
+In-Reply-To: <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+X3/4EnLclbiQkYcdOPa9+gl2Uf0vgAhUY9T8
+ 6G5J3SGyXSrfwJfx9k9Y+HF0FE4Zvib6Di44Tn0tZkNMzp9IFr
+ c0jrSmnkNXqmWQRNPUz2w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Domsch wrote:
-> On Thu, Feb 14, 2008 at 12:30:51PM -0600, Corey Minyard wrote:
->   
->> From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+Paul Mackerras schrieb:
+> Andrew Morton writes:
+> 
+>> Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
+>> Could whoever did that please thwap himself?
 >>
->> Atomics are a lot more efficient and neat than using a lock.
->>     
->
-> per_cpu variables are a lot more efficient and neat than using locks
-> for simple statistics.  no cache line bouncing to increment the
-> counter.  Are these read so often that atomics are really better?
->   
-I agree, I'll put this in the plan for the future.  I don't have time to 
-do it at this point, but the changes made in these patches should make 
-it easy to change in the future.
+>> Anyway, my head is now officially spinning.  Did anyone actually have a
+>> reason why we shouldn't proceed with Anton's patch?
+> 
+> I was wondering if it would be sufficient to provide alternative
+> versions of fb_readl, fb_writel etc. that do byte-swapping.  That
+> would mean that all framebuffers would have to have the same
+> endianness, but that would suffice for embedded systems such as
+> Anton's and would end up a lot simpler IMHO.
 
-Thanks,
+Yes. At least the affected PowerPC platforms can do byte-swapping on
+the fly, so this should be sufficient and without performance
+penalty, AFAICS.
 
--corey
+Regards,
+
+Clemens
