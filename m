@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758711AbYBTKJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbYBTKPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758711AbYBTKJo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbYBTKJg
+	id S1757716AbYBTKPV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbYBTKPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:09:36 -0500
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:56071 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752081AbYBTKJf (ORCPT
+	Wed, 20 Feb 2008 05:15:08 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:33219 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbYBTKPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:09:35 -0500
-Date: Wed, 20 Feb 2008 11:09:33 +0100
-From: Bastian Blank <bastian@waldi.eu.org>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 07/13] Initialize per cpu lowcores on cpu hotplug.
-Message-ID: <20080220100933.GA20162@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <bastian@waldi.eu.org>,
-	Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <20080219144047.587547541@de.ibm.com> <20080219144504.392301782@de.ibm.com> <20080219151355.GA24547@wavehammer.waldi.eu.org> <20080219153855.GA11599@osiris.boeblingen.de.ibm.com> <20080219154149.GB11599@osiris.boeblingen.de.ibm.com> <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org> <20080220094552.GA12635@osiris.boeblingen.de.ibm.com>
+	Wed, 20 Feb 2008 05:15:06 -0500
+From: Srinivasa Ds <srinivasa@in.ibm.com>
+Organization: IBM
+To: Andrew Morton <akpm@linux-foundation.org>, ananth@in.ibm.com,
+       Jim Keniston <jkenisto@us.ibm.com>, linux-kernel@vger.kernel.org,
+       srikar@linux.vnet.ibm.com
+Subject: [RFC] [PATCH] Refuse kprobe insertion on add/sub_preempt_counter()
+Date: Wed, 20 Feb 2008 15:45:17 +0530
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080220094552.GA12635@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200802201545.17986.srinivasa@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 10:45:52AM +0100, Heiko Carstens wrote:
-> -	copy_page(lowcore, &S390_lowcore);
-> +	memcpy(lowcore, &S390_lowcore, 512);
+Kprobes makes use of preempt_disable(),preempt_enable_noresched() and these
+functions inturn call add/sub_preempt_count(). So we need to refuse user from 
+inserting probe in to these functions. 
 
-Okay
+This patch disallows user from probing add/sub_preempt_count(). 
 
->  	memset((void *)lowcore + 512, 0, sizeof(*lowcore) - 512);
+Signed-off-by: Srinivasa DS <srinivasa@in.ibm.com>
 
-Not completely okay. void pointer are not allowed in arithmetic. gcc
-handles void * as char * in this case, but I think it should usualy be
-avoided.
 
-Bastian
+---
+ kernel/sched.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
--- 
-Peace was the way.
-		-- Kirk, "The City on the Edge of Forever", stardate unknown
+Index: linux-2.6.25-rc2/kernel/sched.c
+===================================================================
+--- linux-2.6.25-rc2.orig/kernel/sched.c
++++ linux-2.6.25-rc2/kernel/sched.c
+@@ -3766,7 +3766,7 @@ void scheduler_tick(void)
+ 
+ #if defined(CONFIG_PREEMPT) && defined(CONFIG_DEBUG_PREEMPT)
+ 
+-void add_preempt_count(int val)
++void __kprobes add_preempt_count(int val)
+ {
+ 	/*
+ 	 * Underflow?
+@@ -3782,7 +3782,7 @@ void add_preempt_count(int val)
+ }
+ EXPORT_SYMBOL(add_preempt_count);
+ 
+-void sub_preempt_count(int val)
++void __kprobes sub_preempt_count(int val)
+ {
+ 	/*
+ 	 * Underflow?
+
+
