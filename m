@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932499AbYBTVQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932911AbYBTVRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932499AbYBTVQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:16:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761035AbYBTVO7
+	id S932911AbYBTVRb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765360AbYBTVQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:14:59 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45989
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758903AbYBTVO4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:14:56 -0500
-Date: Wed, 20 Feb 2008 13:15:30 -0800 (PST)
-Message-Id: <20080220.131530.18314167.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080220165557.GA18816@havoc.gtf.org>
-References: <20080220165557.GA18816@havoc.gtf.org>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 20 Feb 2008 16:16:11 -0500
+Received: from relay2.sgi.com ([192.48.171.30]:44266 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765266AbYBTVQI (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:16:08 -0500
+Date: Thu, 21 Feb 2008 08:15:52 +1100
+From: David Chinner <dgc@sgi.com>
+To: Ferenc Wagner <wferi@niif.hu>
+Cc: David Chinner <dgc@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: inode leak in 2.6.24?
+Message-ID: <20080220211552.GS155407@sgi.com>
+References: <87hcg9hkpp.fsf@szonett.ki.iif.hu> <20080218215344.GM155407@sgi.com> <87skzoanq3.fsf@szonett.ki.iif.hu> <20080220010405.GF155407@sgi.com> <87fxvny9ru.fsf@szonett.ki.iif.hu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87fxvny9ru.fsf@szonett.ki.iif.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Wed, 20 Feb 2008 11:55:57 -0500
-
+On Wed, Feb 20, 2008 at 03:36:53PM +0100, Ferenc Wagner wrote:
+> David Chinner <dgc@sgi.com> writes:
+> > The xfs inodes are clearly pinned by the dentry cache, so the issue
+> > is dentries, not inodes. What's causing dentries not to be
+> > reclaimed?  I can't see anything that cold pin them (e.g. no filp's
+> > that would indicate open files being responsible), so my initial
+> > thoughts are that memory reclaim may have changed behaviour.
+> >
+> > I guess the first thing to find out is whether memory pressure
+> > results in freeing the dentries. To simulate memory pressure causing
+> > slab cache reclaim, can you run:
+> >
+> > # echo 2 > /proc/sys/vm/drop_caches
+> >
+> > and see if the number of dentries and inodes drops. If the number
+> > goes down significantly, then we aren't leaking dentries and there's
+> > been a change in memoy reclaim behaviour. If it stays the same, then
+> > we probably are leaking dentries....
 > 
-> Note:  this is based off of Linus's latest commit
-> (5d9c4a7de64d398604a978d267a6987f1f4025b7), since all my previous
-> submissions are now upstream (thanks!).
+> Hi Dave,
+> 
+> Thanks for looking into this.  There's no real conclusion yet: the
+> simulated memory pressure sent the numbers down allright, but
+> meanwhile it turned out that this is a different case: on this machine
+> the increase wasn't a constant growth, but related to the daily
+> updatedb job.  I'll reload the original kernel on the original
+> machine, and collect the same info if the problem reappers.
 
-The whole point of my not rebasing net-2.6 is so that you can always
-use it as a base.
+Ok, let me know how it goes when you get a chance.
 
-With what you've giving me now I either have to:
+Cheers,
 
-1) Pull in Linus's tree to net-2.6, then pull from you.
-
-2) Pull in directly from you to get it all.
-
-The whole point of my not touching or rebasing net-2.6 is so that
-everyonce can simply use it as a base and just keep working relative
-to it.
-
-If you have some need for upstream stuff outside networking (f.e.
-some ACPI bug prevents interrupts from working or there is some build
-failure), you can clone Linus's tree and pull net-2.6 and your driver
-bits into there for building and testing.
-
-Thanks for your consideration, I'm trying to show you mine by
-giving everyone a relatively stable tree in which all networking
-development can occur.
-
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
