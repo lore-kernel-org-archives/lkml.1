@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbYBTIRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbYBTI1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbYBTIRo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 03:17:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYBTIRf
+	id S1759180AbYBTI1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 03:27:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbYBTI06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 03:17:35 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:47961 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751631AbYBTIRe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 03:17:34 -0500
-X-Sasl-enc: sowv6S+hKFXPerF/DBn2vukeEAjLjWpU81Aov+WHENyJ 1203495453
-Message-ID: <47BBE288.7010501@ladisch.de>
-Date: Wed, 20 Feb 2008 09:19:20 +0100
-From: Clemens Ladisch <clemens@ladisch.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 20 Feb 2008 03:26:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40542 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753085AbYBTI05 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 03:26:57 -0500
+Date: Wed, 20 Feb 2008 09:26:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: "hpa@zytor.com" <hpa@zytor.com>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: Coding style fixes to
+	arch/x86/mach-generic/bigsmp.c
+Message-ID: <20080220082645.GC27036@elte.hu>
+References: <20080220001852.0c3b1e40@paolo-desktop>
 MIME-Version: 1.0
-To: Andreas Matthus <matthus@nexgo.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: snd_bt87x crash with kernel 2.6.24.2 on amd64
-References: <1203449798.9669.19.camel@mahome1.localdomain>
-In-Reply-To: <1203449798.9669.19.camel@mahome1.localdomain>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20080220001852.0c3b1e40@paolo-desktop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Matthus wrote:
-> Feb 19 19:17:01 mahome1 kernel: RIP: 0010:[<ffffffff88486a52>]  [<ffffffff88486a52>] :snd_bt87x:snd_bt87x_interrupt+0x13/0x1b8
-> ...
-> Feb 19 19:17:01 mahome1 kernel:  [<ffffffff80262739>] free_irq+0xf6/0x141
-> Feb 19 19:17:01 mahome1 kernel:  [<ffffffff884861f2>] :snd_bt87x:snd_bt87x_free+0x34/0x52
 
-This is caused a bug in the driver (it calls iounmap() before
-free_irq()).
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
 
-The patch below fixes this (I just applied it to the ALSA tree);
-or you could disable CONFIG_DEBUG_SHIRQ.
+> File is now error/warning free
 
+thanks Paolo, i've picked up all your patches.
 
-Regards,
-Clemens
+the mmx cleanup i already did in the x86.git#testing branch. (that's a 
+new branch that has even fresher patches than x86.git#mm)
 
--- 
-bt87X: fix freeing of shared interrupt
-
-Call free_irq() after iounmap() because other devices could trigger our
-shared interrupt handler.
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-
---- linux.orig/sound/pci/bt87x.c	Tue Feb 19 15:03:57 2008 +0100
-+++ linux/sound/pci/bt87x.c	Wed Feb 20 08:55:18 2008 +0100
-@@ -681,15 +681,12 @@ static struct snd_kcontrol_new snd_bt87x
-
- static int snd_bt87x_free(struct snd_bt87x *chip)
- {
--	if (chip->mmio) {
-+	if (chip->mmio)
- 		snd_bt87x_stop(chip);
--		if (chip->irq >= 0)
--			synchronize_irq(chip->irq);
--
--		iounmap(chip->mmio);
--	}
- 	if (chip->irq >= 0)
- 		free_irq(chip->irq, chip);
-+	if (chip->mmio)
-+		iounmap(chip->mmio);
- 	pci_release_regions(chip->pci);
- 	pci_disable_device(chip->pci);
- 	kfree(chip);
+	Ingo
