@@ -1,154 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbYBTJo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbYBTJqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760357AbYBTJo6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 04:44:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbYBTJou
+	id S1761946AbYBTJqJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 04:46:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbYBTJp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 04:44:50 -0500
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:48565 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbYBTJos (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 04:44:48 -0500
-Subject: Re: [LTP] [PATCH 1/8] Scaling msgmni to the amount of lowmem
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: Nadia Derbey <Nadia.Derbey@bull.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, ltp-list@lists.sourceforge.net,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, cmm@us.ibm.com, matthltc@us.ibm.com,
-       y-goto@jp.fujitsu.com
-In-Reply-To: <47BB0EDC.5000002@bull.net>
-References: <20080211141646.948191000@bull.net>
-	 <20080211141813.354484000@bull.net>
-	 <20080215215916.8566d337.akpm@linux-foundation.org>
-	 <47B94D8C.8040605@bull.net>  <47B9835A.3060507@bull.net>
-	 <1203411055.4612.5.camel@subratamodak.linux.ibm.com>
-	 <47BB0EDC.5000002@bull.net>
-Content-Type: text/plain
-Organization: IBM
-Date: Wed, 20 Feb 2008 15:14:55 +0530
-Message-Id: <1203500695.4630.0.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 04:45:56 -0500
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:62441 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755279AbYBTJpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 04:45:54 -0500
+Date: Wed, 20 Feb 2008 10:45:52 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Bastian Blank <bastian@waldi.eu.org>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [patch 07/13] Initialize per cpu lowcores on cpu hotplug.
+Message-ID: <20080220094552.GA12635@osiris.boeblingen.de.ibm.com>
+References: <20080219144047.587547541@de.ibm.com> <20080219144504.392301782@de.ibm.com> <20080219151355.GA24547@wavehammer.waldi.eu.org> <20080219153855.GA11599@osiris.boeblingen.de.ibm.com> <20080219154149.GB11599@osiris.boeblingen.de.ibm.com> <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Subrata Modak wrote:
-> >>Nadia Derbey wrote:
-> >>
-> >>>Andrew Morton wrote:
-> >>>
-> >>>
-> >>>>On Mon, 11 Feb 2008 15:16:47 +0100 Nadia.Derbey@bull.net wrote:
-> >>>>
-> >>>>
-> >>>>
-> >>>>>[PATCH 01/08]
-> >>>>>
-> >>>>>This patch computes msg_ctlmni to make it scale with the amount of 
-> >>>>>lowmem.
-> >>>>>msg_ctlmni is now set to make the message queues occupy 1/32 of the 
-> >>>>>available
-> >>>>>lowmem.
-> >>>>>
-> >>>>>Some cleaning has also been done for the MSGPOOL constant: the msgctl 
-> >>>>>man page
-> >>>>>says it's not used, but it also defines it as a size in bytes (the code
-> >>>>>expresses it in Kbytes).
-> >>>>>
-> >>>>
-> >>>>
-> >>>>Something's wrong here.  Running LTP's msgctl08 (specifically:
-> >>>>ltp-full-20070228) cripples the machine.  It's a 4-way 4GB x86_64.
-> >>>>
-> >>>>http://userweb.kernel.org/~akpm/config-x.txt
-> >>>>http://userweb.kernel.org/~akpm/dmesg-x.txt
-> >>>>
-> >>>>Normally msgctl08 will complete in a second or two.  With this patch I
-> >>>>don't know how long it will take to complete, and the machine is horridly
-> >>>>bogged down.  It does recover if you manage to kill msgctl08.  Feels like
-> >>>>a terrible memory shortage, but there's plenty of memory free and it 
-> >>>>isn't
-> >>>>swapping.
-> >>>>
-> >>>>
-> >>>>
-> >>>
-> >>>Before the patchset, msgctl08 used to be run with the old msgmni value: 
-> >>>16. Now it is run with a much higher msgmni value (1746 in my case), 
-> >>>since it scales to the memory size.
-> >>>When I call "msgctl08 100000 16" it completes fast.
-> >>>
-> >>>Doing the follwing on the ref kernel:
-> >>>echo 1746 > /proc/sys/kernel/msgmni
-> >>>msgctl08 100000 1746
-> >>>
-> >>>makes th test block too :-(
-> >>>
-> >>>Will check to see where the problem comes from.
-> >>>
-> >>
-> >>Well, actually, the test does not block, it only takes much much more 
-> >>time to be executed:
-> >>
-> >>doing this:
-> >>date; ./msgctl08 100000 XXX; date
-> >>
-> >>
-> >>gives us the following results:
-> >>XXX           16   32   64   128   256   512   1024   1746
-> >>time(secs)     2    4    8    16    32    64    132    241
-> >>
-> >>XXX is the # of msg queues to be created = # of processes to be forked 
-> >>as readers = # of processes to be created as writers
-> >>time is approximative since it is obtained by a "date" before and after.
-> >>
-> >>XXX used to be 16 before the patchset  ---> 1st column
-> >>     --> 16 processes forked as reader
-> >>     --> + 16 processes forked as writers
-> >>     --> + 16 msg queues
-> >>XXX = 1746 (on my victim) after the patchset ---> last column
-> >>     --> 1746 reader processes forked
-> >>     --> + 1746 writers forked
-> >>     --> + 1746 msg queues created
-> >>
-> >>The same tests on the ref kernel give approximatly the same results.
-> >>
-> >>So if we don't want this longer time to appear as a regression, the LTP 
-> >>should be changed:
-> >>1) either by setting the result of get_max_msgqueues() as the MSGMNI 
-> >>constant (16) (that would be the best solution in my mind)
-> >>2) or by warning the tester that it may take a long time to finish.
-> >>
-> >>There would be 3 tests impacted:
-> >>
-> >>kernel/syscalls/ipc/msgctl/msgctl08.c
-> >>kernel/syscalls/ipc/msgctl/msgctl09.c
-> >>kernel/syscalls/ipc/msgget/msgget03.c
-> > 
-> > 
-> > We will change the test case if need that be. Nadia, kindly send us the
-> > patch set which will do the necessary changes.
-> > 
-> > Regards--
-> > Subrata
-> > 
-> 
-> Subrata,
-> 
-> You'll find the patch in attachment.
-> FYI I didn't change msgget03.c since we need to get the actual max value 
-> in order to generate an error.
+>>>> Boah, workaround alert. Why do you not fix the compiler?
+>>>
+>>> We need to copy from address 0 (that's where the lowcore resides). But 
+>>> gcc
+>>> insists to complain if memcpy is used with src == NULL.. Now what?
+>>
+>> Erm sorry, misread your question. Usually it's a bug to use memcpy with
+>> src == NULL. In this case it's ok. So I think it's perfectly ok if gcc
+>> emits a warning.
+>> If you know of a better way to get around this please let me know.
+>
+> -ffreestanding or -Wno-nonnull?
 
-Thanks. The same has been Merged.
+Ok, how about the patch below? Everybody happy with it?
 
-Regards--
-Subrata
+---
+ arch/s390/kernel/Makefile |    5 +++++
+ arch/s390/kernel/smp.c    |    8 +-------
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
-> 
-> Regards,
-> Nadia
-> 
-
+Index: linux-2.5/arch/s390/kernel/Makefile
+===================================================================
+--- linux-2.5.orig/arch/s390/kernel/Makefile
++++ linux-2.5/arch/s390/kernel/Makefile
+@@ -4,6 +4,11 @@
+ 
+ EXTRA_AFLAGS	:= -traditional
+ 
++#
++# Passing null pointers is ok for smp code, since we access the lowcore here.
++#
++CFLAGS_smp.o	:= -Wno-nonnull
++
+ obj-y	:=  bitmap.o traps.o time.o process.o base.o early.o \
+             setup.o sys_s390.o ptrace.o signal.o cpcmd.o ebcdic.o \
+ 	    semaphore.o s390_ext.o debug.o irq.o ipl.o dis.o diag.o
+Index: linux-2.5/arch/s390/kernel/smp.c
+===================================================================
+--- linux-2.5.orig/arch/s390/kernel/smp.c
++++ linux-2.5/arch/s390/kernel/smp.c
+@@ -631,13 +631,7 @@ static int __cpuinit smp_alloc_lowcore(i
+ 	panic_stack = __get_free_page(GFP_KERNEL);
+ 	if (!panic_stack || !async_stack)
+ 		goto out;
+-	/*
+-	 * Only need to copy the first 512 bytes from address 0. But since
+-	 * the compiler emits a warning if src == NULL for memcpy use copy_page
+-	 * instead. Copies more than needed but this code is not performance
+-	 * critical.
+-	 */
+-	copy_page(lowcore, &S390_lowcore);
++	memcpy(lowcore, &S390_lowcore, 512);
+ 	memset((void *)lowcore + 512, 0, sizeof(*lowcore) - 512);
+ 	lowcore->async_stack = async_stack + ASYNC_SIZE;
+ 	lowcore->panic_stack = panic_stack + PAGE_SIZE;
