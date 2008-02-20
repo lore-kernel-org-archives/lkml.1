@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759059AbYBTO7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbYBTPAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759059AbYBTO7d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbYBTO7Z
+	id S1763633AbYBTPAa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:00:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYBTPAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:59:25 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:46516 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750896AbYBTO7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:59:23 -0500
-Subject: Re: linux-next: Tree for Feb 20
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org
-In-Reply-To: <20080220163457.79b9189f.sfr@canb.auug.org.au>
-References: <20080220163457.79b9189f.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 08:59:20 -0600
-Message-Id: <1203519560.3109.6.camel@localhost.localdomain>
+	Wed, 20 Feb 2008 10:00:22 -0500
+Received: from ra.tuxdriver.com ([70.61.120.52]:2794 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750980AbYBTPAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 10:00:21 -0500
+Date: Wed, 20 Feb 2008 09:57:36 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       tglx@linutronix.de
+Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
+Message-ID: <20080220145736.GA3771@localhost.localdomain>
+References: <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com> <20080207121719.GA29279@hmsreliant.think-freely.org> <20080207122404.GA8195@elte.hu> <20080208161422.GA32204@hmsreliant.think-freely.org> <20080208164544.GA23772@redhat.com> <20080212210816.GA1862@hmsreliant.think-freely.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080212210816.GA1862@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 16:34 +1100, Stephen Rothwell wrote:
-> Hi all,
+On Tue, Feb 12, 2008 at 04:08:16PM -0500, Neil Horman wrote:
+> > 
+> > Neil, is it possible to do some serial console debugging to find out
+> > where exactly we are hanging? Beats me, what's that operation which can
+> > not be executed while being in NMI handler and makes system to hang. I am
+> > also curious to know if it is nested NMI case.
+> > 
+> > Thanks
+> > Vivek
+> > 
 > 
-> I have created today's linux-next tree at
-> git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 > 
-> You can see which trees have been included by looking in the Next/Trees
-> file in the source.  There are also quilt-import.log and merge.log files
-> in the Next directory.  Between each merge, the tree was built with
-> allmodconfig for both powerpc and x86_64.
+> Hey-
+> 	Some intermediate results:
 > 
-> There were no merge conflicts and only one build failure!
+> I've instrumented head.S in the kernel with the following code:
+> #define SEROUT(z) \     
+> mov $0x3F8,%dx;\
+> movb z,%al;\
+> outb %dx
+> 
+> 
+> And peppered different ascii characters throughout the startup code from
+> startup_32 to right before the jump to start_kernel.  When I panic the system
+> via an:
+> echo c > /proc/sysrq_trigger
+> I see an appropriate sequence of characters on the serial console
+> 
+> When I panic the box by forcing an NMI watchdog timeout however, I see nothing.
+>  The machine will either hang, or reset into the bios.  I think this is
+> reasonably conclusive in its indication that we're not getting into the second
+> kernel when this problem occurs.  Next I'll instrument the purgatory code in a
+> simmilar way.
+> 
+> Regards
+> Neil
+> 
+Hey, further update.  I instrumented purgatory, and turned on the console
+options that Eric mentioned, which resulted in no output to the console, so I've
+concluded that we don't get to purgatory at all.  Further instrumenting shows
+that the last C level printk I can issue is right before we call
+relocate_kernel.  So it appears that we hang/reset somewhere in there.  I'll
+instrument down that path shortly.
 
-Is the merge log available anywhere yet?
-
-James
-
+Regards
+Neil
 
