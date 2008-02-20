@@ -1,324 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933096AbYBTWeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbYBTWev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933096AbYBTWeY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:34:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYBTWeH
+	id S933932AbYBTWev (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:34:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbYBTWee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:34:07 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:60683 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1751442AbYBTWeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:34:04 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Thu, 21 Feb 2008 09:33:23 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.25-rc2 1/9] init: Improve init/Kconfig help	descriptions part 1
-Message-ID: <20080220223320.GF2169@tull.net>
-References: <20080219140609.GA26619@tull.net>
+	Wed, 20 Feb 2008 17:34:34 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45331 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752536AbYBTWec (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:34:32 -0500
+Date: Thu, 21 Feb 2008 00:34:30 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 7/8] [SCTP]: uninline sctp_add_cmd_sf
+In-Reply-To: <47BCA6B8.5000904@hp.com>
+Message-ID: <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <47BCA6B8.5000904@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080219140609.GA26619@tull.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-1782606873-1203546870=:17063"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite the help descriptions for clarity, accuracy and consistency.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The problems I can see with the supplied help descriptions fall into
-these areas:
+---696243703-1782606873-1203546870=:17063
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-  - Uses arcane terminology which only kernel developers can understand
+On Wed, 20 Feb 2008, Vlad Yasevich wrote:
 
-  - Inconsistently describes safe response (if unsure, ...)
+> Ilpo Järvinen wrote:
+> > I added inline to sctp_add_cmd and appropriate comment there to
+> > avoid adding another call into the call chain. This works at least
+> > with "gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)". Alternatively,
+> > __sctp_add_cmd could be introduced to .h.
+> > 
+> 
+> My only concern was performance regressions, but it looks like it
+> doesn't effect anything from the few quick runs I've made.
 
-  - References out-of-date external resources (404 error)
+There was one call made anyway, it's a bit hard to see how it would hurt 
+to push that BUG() deeper down (in fact, this is one of the easiest case 
+in this respect, many other cases elsewhere that need uninlining don't 
+currently make any calls with inlines).
 
-  - Description has not kept pace with recent kernel changes or standards
+> Since we are putting sctp_add_cmd_sf() on the call stack, we might
+> as well get rid of sctp_add_cmd() and reduce it a bit more.
 
-  - Poor grammar or layout.
+IMHO it is definately better solution for archiving the size reduction,
+I just didn't know before that the only sctp_add_cmd call could be 
+converted.
 
+[...snip...]
+> diff --git a/net/sctp/command.c b/net/sctp/command.c
+> index bb97733..3a06513 100644
+> --- a/net/sctp/command.c
+> +++ b/net/sctp/command.c
+> @@ -51,19 +51,16 @@ int sctp_init_cmd_seq(sctp_cmd_seq_t *seq)
+>  
+>  /* Add a command to a sctp_cmd_seq_t.
+>   * Return 0 if the command sequence is full.
+> + *
+> + * Inline here is not a mistake, this way sctp_add_cmd_sf doesn't need extra
+> + * calls, size penalty is of insignificant magnitude here
 
-My approach to improving the descriptions is to go through each option
-checking the correctness of the description, validating any references
-it makes, finding inconsistency with the rest of the kernel config,
-and trying to improve the usefulness of the explanation. I want to
-end up with:
+This won't be a necessary note anymore. :-)
 
-  1 - Single sentence summary of what the option does
+[...snip...]
 
-  2 - Explain terminology or situation if necessary and possible, linking
-  to validated information sources (Documentation directory, manpages,
-  scripts, URLs, Wikipedia)
-
-  3 - Suggest safe answer for people who just don't know what to do.
-
-
-Kernel config options affected:
-
-  - EXPERIMENTAL
-  - LOCALVERSION
-  - LOCALVERSION_AUTO
-  - SWAP
-  - SYSVIPC
-  - POSIX_MQUEUE
-  - BSD_PROCESS_ACCT
-  - BSD_PROCESS_ACCT_V3
-
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
-Here's try #2 at the 1st patch in the series.
-Any comments?
-
-
---- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
-+++ b/init/Kconfig	2008-02-20 09:35:08.000000000 +1100
-@@ -20,33 +20,45 @@ menu "General setup"
- config EXPERIMENTAL
- 	bool "Prompt for development and/or incomplete code/drivers"
- 	---help---
--	  Some of the various things that Linux supports (such as network
--	  drivers, file systems, network protocols, etc.) can be in a state
--	  of development where the functionality, stability, or the level of
--	  testing is not yet high enough for general use. This is usually
--	  known as the "alpha-test" phase among developers. If a feature is
--	  currently in alpha-test, then the developers usually discourage
--	  uninformed widespread use of this feature by the general public to
--	  avoid "Why doesn't this work?" type mail messages. However, active
--	  testing and use of these systems is welcomed. Just be aware that it
--	  may not meet the normal level of reliability or it may fail to work
--	  in some special cases. Detailed bug reports from people familiar
--	  with the kernel internals are usually welcomed by the developers
--	  (before submitting bug reports, please read the documents
--	  <file:README>, <file:MAINTAINERS>, <file:REPORTING-BUGS>,
--	  <file:Documentation/BUG-HUNTING>, and
--	  <file:Documentation/oops-tracing.txt> in the kernel source).
-+	  This option enables you to choose kernel configuration
-+	  options labeled as EXPERIMENTAL.
-+
-+	  Some of the various things that Linux supports (such as
-+	  network drivers, file systems, network protocols, etc.) can
-+	  be in a state of development where the functionality,
-+	  stability, or the level of testing is not yet high enough
-+	  for general use. This is usually known as the "alpha-test"
-+	  phase among developers.
-+
-+	  If a feature is currently in alpha-test, then the
-+	  developers usually discourage uninformed widespread use of
-+	  this feature by the general public to avoid "Why doesn't
-+	  this work?" type email messages. However, active testing
-+	  and use of these systems is welcomed. Just be aware that
-+	  it may not meet the normal level of reliability or it
-+	  may fail to work in some special cases.
-+
-+	  Detailed bug reports from people familiar with
-+	  the kernel internals are usually welcomed by the
-+	  developers. Before submitting bug reports, please
-+	  read the documents <file:README>, <file:MAINTAINERS>,
-+	  <file:REPORTING-BUGS>, <file:Documentation/BUG-HUNTING>,
-+	  and <file:Documentation/oops-tracing.txt> in the kernel
-+	  source.
- 
- 	  This option will also make obsoleted drivers available. These are
- 	  drivers that have been replaced by something else, and/or are
- 	  scheduled to be removed in a future kernel release.
- 
--	  Unless you intend to help test and develop a feature or driver that
--	  falls into this category, or you have a situation that requires
--	  using these features, you should probably say N here, which will
--	  cause the configurator to present you with fewer choices. If
--	  you say Y here, you will be offered the choice of using features or
--	  drivers that are currently considered to be in the alpha-test phase.
-+	  Unless you intend to help test and develop a feature or driver
-+	  that falls into this category, or you have a situation that
-+	  requires using these features, you should probably say N here,
-+	  which will cause the configurator to present you with fewer
-+	  choices. If you say Y here, you will be offered the choice of
-+	  using features or drivers that are currently considered to be
-+	  in the alpha-test phase.
-+
-+	  If unsure, say N.
- 
- config BROKEN
- 	bool
-@@ -74,11 +86,18 @@ config LOCALVERSION
- 	string "Local version - append to kernel release"
- 	help
- 	  Append an extra string to the end of your kernel version.
--	  This will show up when you type uname, for example.
--	  The string you set here will be appended after the contents of
--	  any files with a filename matching localversion* in your
--	  object and source tree, in that order.  Your total string can
--	  be a maximum of 64 characters.
-+	  This will show up when you type "uname -r", for example.
-+
-+	  If you have any files with names matching "localversion*"
-+	  in your object or source trees, then the contents of these
-+	  files will be appended to your kernel version name.
-+
-+	  The strings are appended from the object tree files and
-+	  then the source tree files, then any string specified
-+	  by CONFIG_LOCALVERSION_AUTO below, and finally the value
-+	  specified here.
-+
-+	  The maximum length of a kernel version name is 64 characters.
- 
- config LOCALVERSION_AUTO
- 	bool "Automatically append version information to the version string"
-@@ -93,38 +112,47 @@ config LOCALVERSION_AUTO
- 	  appended after any matching localversion* files, and after the value
- 	  set in CONFIG_LOCALVERSION.
- 
--	  (The actual string used here is the first eight characters produced
-+	  The actual string used here is the first eight characters produced
- 	  by running the command:
- 
- 	    $ git rev-parse --verify HEAD
- 
--	  which is done within the script "scripts/setlocalversion".)
-+	  which is done within the script "scripts/setlocalversion".
- 
- config SWAP
- 	bool "Support for paging of anonymous memory (swap)"
- 	depends on MMU && BLOCK
- 	default y
- 	help
--	  This option allows you to choose whether you want to have support
--	  for so called swap devices or swap files in your kernel that are
--	  used to provide more virtual memory than the actual RAM present
--	  in your computer.  If unsure say Y.
-+	  This option allows you to choose whether you want to have
-+	  support for swap devices or swap files in your kernel.
-+
-+	  Swap is used to provide more virtual memory than the
-+	  actual RAM present in your computer. This can improve
-+	  performance by moving less frequently used blocks of
-+	  memory onto disk, which frees it up for improved disk
-+	  caching or active processes.
-+
-+	  If unsure, say Y.
- 
- config SYSVIPC
- 	bool "System V IPC"
- 	---help---
--	  Inter Process Communication is a suite of library functions and
-+	  Inter-Process Communication is a suite of library functions and
- 	  system calls which let processes (running programs) synchronize and
- 	  exchange information. It is generally considered to be a good thing,
--	  and some programs won't run unless you say Y here. In particular, if
--	  you want to run the DOS emulator dosemu under Linux (read the
--	  DOSEMU-HOWTO, available from <http://www.tldp.org/docs.html#howto>),
--	  you'll need to say Y here.
-+	  and some programs won't run without it.
-+
-+	  In particular, if you want to run the DOS emulator dosemu
-+	  under Linux, you'll need to say Y here. You can find out
-+	  more about dosemu at <http://dosemu.sourceforge.net/>
- 
- 	  You can find documentation about IPC with "info ipc" and also in
- 	  section 6.4 of the Linux Programmer's Guide, available from
- 	  <http://www.tldp.org/guides.html>.
- 
-+	  If unsure, say Y.
-+
- config SYSVIPC_SYSCTL
- 	bool
- 	depends on SYSVIPC
-@@ -135,42 +163,69 @@ config POSIX_MQUEUE
- 	bool "POSIX Message Queues"
- 	depends on NET && EXPERIMENTAL
- 	---help---
--	  POSIX variant of message queues is a part of IPC. In POSIX message
--	  queues every message has a priority which decides about succession
--	  of receiving it by a process. If you want to compile and run
--	  programs written e.g. for Solaris with use of its POSIX message
--	  queues (functions mq_*) say Y here.
--
--	  POSIX message queues are visible as a filesystem called 'mqueue'
--	  and can be mounted somewhere if you want to do filesystem
--	  operations on message queues.
-+	  POSIX Message Queues is a type of Inter-Process Communication
-+	  (IPC). It provides similar functionality to System V message
-+	  queues, with a different Application Programming Interface (API).
-+
-+	  In POSIX Message Queues, every message has a priority which
-+	  determines the order in which each message is delivered to a
-+	  receiving process. See mq_overview(7) for details of the
-+	  API (functions mq_*).
-+
-+	  When POSIX Message Queues are enabled, a directory appears
-+	  called /proc/sys/fs/mqueue which can be used to tune kernel
-+	  parameters. See mq_overview(7) for details.
-+
-+	  POSIX Message Queues can also be mounted as a filesystem
-+	  called 'mqueue', for example: "mount -t mqueue none /mqueue".
- 
- 	  If unsure, say Y.
- 
- config BSD_PROCESS_ACCT
- 	bool "BSD Process Accounting"
- 	help
--	  If you say Y here, a user level program will be able to instruct the
--	  kernel (via a special system call) to write process accounting
--	  information to a file: whenever a process exits, information about
--	  that process will be appended to the file by the kernel.  The
--	  information includes things such as creation time, owning user,
--	  command name, memory usage, controlling terminal etc. (the complete
--	  list is in the struct acct in <file:include/linux/acct.h>).  It is
--	  up to the user level program to do useful things with this
--	  information.  This is generally a good idea, so say Y.
-+	  BSD Process Accounting enables the kernel to write process
-+	  accounting information to a file to track system resources
-+	  utilisation and some user actions.
-+
-+	  Whenever a process exits, information about that process
-+	  will be appended to the file. This includes things such as
-+	  creation time, owning user, command name, memory usage,
-+	  controlling terminal, etc.
-+
-+	  See sa(1), accton(8) and acct(2) for more details, also
-+	  <file:include/linux/acct.h> (struct acct) for the complete
-+	  list of stored data.
-+
-+	  You probably only need this if you have multiple users and
-+	  you want to monitor or account for their system usage, and
-+	  fine-tune system performance through analysis of the logfile.
-+
-+	  If unsure, say N.
- 
- config BSD_PROCESS_ACCT_V3
- 	bool "BSD Process Accounting version 3 file format"
- 	depends on BSD_PROCESS_ACCT
- 	default n
- 	help
--	  If you say Y here, the process accounting information is written
--	  in a new file format that also logs the process IDs of each
--	  process and it's parent. Note that this file format is incompatible
--	  with previous v0/v1/v2 file formats, so you will need updated tools
--	  for processing it. A preliminary version of these tools is available
--	  at <http://www.physik3.uni-rostock.de/tim/kernel/utils/acct/>.
-+	  BSD Process Accounting enables the kernel to write process
-+	  accounting information to a file to track system resources
-+	  utilisation and some user actions.
-+
-+	  Version 3 is a new file format that also logs the process
-+	  ID and process parent ID.
-+
-+	  Note that this file format is incompatible with previous
-+	  v0/v1/v2 file formats, so you will need updated tools
-+	  for processing it. One such tool is "bootchart", and
-+	  the GNU "acct" package should be able to read the v3
-+	  file format too.
-+
-+	  You probably only need this if you have multiple users and
-+	  you want to monitor or account for their system usage, and
-+	  fine-tune system performance through analysis of the logfile.
-+
-+	  If unsure, say N.
- 
- config TASKSTATS
- 	bool "Export task/process statistics through netlink (EXPERIMENTAL)"
+-- 
+ i.
+---696243703-1782606873-1203546870=:17063--
