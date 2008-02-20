@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759234AbYBTIeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758558AbYBTIiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759234AbYBTIeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 03:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbYBTIeD
+	id S1758558AbYBTIiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 03:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbYBTIiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 03:34:03 -0500
-Received: from wx-out-0506.google.com ([66.249.82.235]:45912 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbYBTIeB (ORCPT
+	Wed, 20 Feb 2008 03:38:06 -0500
+Received: from wa-out-1112.google.com ([209.85.146.177]:60629 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752360AbYBTIiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 03:34:01 -0500
+	Wed, 20 Feb 2008 03:38:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qSddp65t3kVAWY86eTjvGWPRy6U3TS55PzW7NK+viCM85gIzeeUelButjy/n5ddwnDE75LP8CrHIODfgDbW9XlrmcjxMA895S2rqbAFYnk64cslh6rZBPpGy6TJSh40E/qCj8B4MF7H1escQVXY4EK49fX2+C+aAifO1NCEEf7w=
-Message-ID: <86802c440802200033h35bf670y111c75998434f019@mail.gmail.com>
-Date: Wed, 20 Feb 2008 00:33:59 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH 6/8] net: use numa_node in net_devcice->dev instead of parent
-Cc: "David Miller" <davem@davemloft.net>, greg@kroah.com,
-       akpm@linux-foundation.org, jeff@garzik.org,
+        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=rk9Wh4ujXcctzl1dSQAZigBCfzw2uLK692pKhW3JXC8GF4yPDxIHTKZcSbNRYoKf5sYylSfGgWynV1NzhupuPutnHgG1kWasZ8MJgMkBAvMPwJpK1iBdguzkdDYKspgztoMAGgklnNnb+/QhqNEbBLNtbMA4Hes274ZY/oBKXTk=
+Message-ID: <1ba2fa240802200038l79ae3b31na7604c2fb692929@mail.gmail.com>
+Date: Wed, 20 Feb 2008 10:38:04 +0200
+From: "Tomas Winkler" <tomas.winkler@intel.com>
+To: "Jarek Poplawski" <jarkao2@gmail.com>
+Subject: Re: [2.6.25 patch] fix broken error handling in ieee80211_sta_process_addba_request()
+Cc: "Adrian Bunk" <bunk@kernel.org>,
+       "Ron Rindjunsky" <ron.rindjunsky@intel.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20080220062706.GB7493@elte.hu>
+In-Reply-To: <20080220064613.GA3885@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080219112146.GC7204@elte.hu>
-	 <20080219.034110.191579889.davem@davemloft.net>
-	 <200802191142.48891.yinghai.lu@sun.com>
-	 <20080219.145512.142721224.davem@davemloft.net>
-	 <86802c440802191510m7afc200eg979ebd4a1cf4a41f@mail.gmail.com>
-	 <20080220062706.GB7493@elte.hu>
+References: <20080219225852.GQ31955@cs181133002.pp.htv.fi>
+	 <20080220064613.GA3885@ff.dom.local>
+X-Google-Sender-Auth: 49ed6195331ed93d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 19, 2008 10:27 PM, Ingo Molnar <mingo@elte.hu> wrote:
+On Feb 20, 2008 8:46 AM, Jarek Poplawski <jarkao2@gmail.com> wrote:
+> On 19-02-2008 23:58, Adrian Bunk wrote:
+> ...
+> > --- a/net/mac80211/ieee80211_sta.c
+> > +++ b/net/mac80211/ieee80211_sta.c
+> > @@ -1116,9 +1116,10 @@ static void ieee80211_sta_process_addba_request(struct net_device *dev,
+> ...
+> > +                     printk(KERN_ERR "can not allocate reordering buffer "
 >
-> * Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+>   +                     printk(KERN_ERR "cannot allocate reordering buffer "
 >
-> > > > can you check the 5/8? that will make sure every struct device get
-> > > > numa_node get assigned.
-> > >
-> > > Why do we need to bother with that if the parent will have the
-> > > necessary information for us here?
-> >
-> > less code?
-> >
-> > or some kind of usb or other bus interface. may have several level...
+> Probably this can be fixed during the commit.
 >
-> you mean it's a small optimization: otherwise every struct device (net
-> dev, usb...) need to go back to find another pci device (parent or host
-> controller) to use their numa_node.
+> Jarek P
+.
+ACK: both patches.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
-Yes.
-
-YH
