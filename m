@@ -1,86 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764952AbYBTNAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765031AbYBTNBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764952AbYBTNAy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:00:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762930AbYBTM41
+	id S1765031AbYBTNBS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764905AbYBTNAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:56:27 -0500
-Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:53712 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762661AbYBTM40 (ORCPT
+	Wed, 20 Feb 2008 08:00:45 -0500
+Received: from 87-194-173-43.bethere.co.uk ([87.194.173.43]:53680 "EHLO
+	mail.goodmanemail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764876AbYBTNAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:56:26 -0500
-Message-ID: <47BC2275.4060900@linux.vnet.ibm.com>
-Date: Wed, 20 Feb 2008 18:22:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 20 Feb 2008 08:00:42 -0500
+X-Greylist: delayed 1841 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 08:00:42 EST
+Message-ID: <47BC1D44.3010808@goodmanemail.com>
+Date: Wed, 20 Feb 2008 12:29:56 +0000
+From: Alan Goodman <lists@goodmanemail.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
- in Kconfig
-References: <20080220122338.GA4352@basil.nowhere.org>
-In-Reply-To: <20080220122338.GA4352@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Chris Brennan <xaero@xaerolimit.net>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: BT8x8 support
+References: <47BB68ED.4070105@xaerolimit.net>
+In-Reply-To: <47BB68ED.4070105@xaerolimit.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Document huge memory/cache overhead of memory controller in Kconfig
-> 
-> I was a little surprised that 2.6.25-rc* increased struct page for the memory
-> controller.  At least on many x86-64 machines it will not fit into a single
-> cache line now anymore and also costs considerable amounts of RAM. 
+Looks OK to me!
 
-The size of struct page earlier was 56 bytes on x86_64 and with 64 bytes it
-won't fit into the cacheline anymore? Please also look at
-http://lwn.net/Articles/234974/
+Alan
+> I have the following hardware installed in my Linux Box.
+>
+> 01:07.0 Multimedia video controller: Brooktree Corporation Bt878 Video
+> Capture (rev 11)
+> 01:07.1 Multimedia controller: Brooktree Corporation Bt878 Audio
+> Capture (rev 11)
+>
+> and the following devices installed in /dev
+>
+> 0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/radio -> /dev/radio0
+> 0 crw-rw-rw- 1 root video 81,  64 Feb 19 17:45 /dev/radio0
+> 0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vbi -> /dev/vbi0
+> 0 crw-rw-rw- 1 root video 81, 224 Feb 19 17:45 /dev/vbi0
+> 0 lrwxrwxrwx 1 root root       11 Feb 19 17:45 /dev/video -> /dev/video0
+> 0 lrwxrwxrwx 1 root root       10 Feb 19 11:59 /dev/video0 -> v4l/video0
+> 0 lrwxrwxrwx 1 root root        9 Feb 19 17:45 /dev/vtx -> /dev/vtx0
+> 0 crw-rw-rw- 1 root video 81, 192 Feb 19 17:45 /dev/vtx0
+>
+> As far as I can tell, I have bt8x8 support compiled as modules. here
+> is a link to a copy of my .config. If someone can help me w/ making
+> sure I have the right stuff in and what I don't need out as far as
+> this card goes, I would be much appreciative.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-> At earlier review I remembered asking for a external data structure for this.
-> 
-> It's also quite unobvious that a innocent looking Kconfig option with a 
-> single line Kconfig description has such a negative effect.
-> 
-> This patch attempts to document these disadvantages at least so that users
-> configuring their kernel can make a informed decision.
-> 
-> Cc: balbir@linux.vnet.ibm.com
-> 
-> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> Index: linux/init/Kconfig
-> ===================================================================
-> --- linux.orig/init/Kconfig
-> +++ linux/init/Kconfig
-> @@ -394,6 +394,14 @@ config CGROUP_MEM_CONT
->  	  Provides a memory controller that manages both page cache and
->  	  RSS memory.
-> 
-> +	  Note that setting this option increases fixed memory overhead
-> +	  associated with each page of memory in the system by 4/8 bytes
-> +	  and also increases cache misses because struct page on many 64bit
-> +	  systems will not fit into a single cache line anymore.
-> +
-> +	  Only enable when you're ok with these trade offs and really
-> +	  sure you need the memory controller.
-> +
-
-Looks good
-
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
->  config PROC_PID_CPUSET
->  	bool "Include legacy /proc/<pid>/cpuset file"
->  	depends on CPUSETS
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
