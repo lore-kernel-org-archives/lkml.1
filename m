@@ -1,79 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbYBTRWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbYBTRXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759741AbYBTRWU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:22:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbYBTRWI
+	id S1761932AbYBTRXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYBTRXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:22:08 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:38085 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752723AbYBTRWG (ORCPT
+	Wed, 20 Feb 2008 12:23:25 -0500
+Received: from lazybastard.de ([212.112.238.170]:45429 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYBTRXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:22:06 -0500
-Date: Wed, 20 Feb 2008 09:20:08 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Avi Kivity <avi@qumranet.com>, mingo <mingo@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Toralf =?ISO-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] [kvm-devel] build #365 issue for v2.6.25-rc2-342-g5d9c4a7
- in ./arch/x86/kvm/kvm.ko
-Message-Id: <20080220092008.3f3bd994.randy.dunlap@oracle.com>
-In-Reply-To: <47BC3407.20307@qumranet.com>
-References: <200802201411.18026.toralf.foerster@gmx.de>
-	<47BC3121.8070902@qumranet.com>
-	<47BC3407.20307@qumranet.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Wed, 20 Feb 2008 12:23:24 -0500
+Date: Wed, 20 Feb 2008 18:22:50 +0100
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stephane Chazelas <stephane.chazelas@emerson.com>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
+Message-ID: <20080220172250.GA6873@lazybastard.org>
+References: <chaz20080212134751.GI30304@artesyncp.com> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <200802192333.39707.arnd@arndb.de> <chaz20080220144339.GK4539@artesyncp.com> <20080220163042.GC5539@lazybastard.org> <chaz20080220170231.GV4539@artesyncp.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <chaz20080220170231.GV4539@artesyncp.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 16:07:03 +0200 Avi Kivity wrote:
-
-> > Looks like KVM conflicts with CONFIG_VOYAGER...
-> >
+On Wed, 20 February 2008 17:02:31 +0000, Stephane Chazelas wrote:
 > 
-> Attached patch should fix.
+> sorry, I wasn't very clear.
 > 
-> Subject: x86: disable KVM on Voyager
+> With "loop", you're doing an ioctl() to /dev/loop<x> so that
+> /dev/loop<x> become a block device associated with a given file.
 > 
-> Most classic Pentiums don't have hardware virtualization
-> extension, and building kvm with voyager generates
-> spurious failures.
+> Applying that strictly to block2mtd wouldn't make sense.
 > 
-> Signed-off-by: Avi Kivity <avi@qumranet.com>
+> At the moment, when you create a new block2mtd, the only thing
+> you see is an entry in /proc/mtd.
+> 
+> You don't access that mtd device directly (there's no
+> /dev/mtd<x>). Instead, you may access it via a /dev/mtdblock<x>
+> if you have "block2mtd" for instance.
 
-Might as well extend it for VISWS & NUMAQ:
+Actually, there is /dev/mtd<x>.  Enable CONFIG_MTD_CHAR.
 
----
-From: Avi Kivity <avi@qumranet.com>
+> Here, what you need, is an API that gets a block device (with fd
+> or path) and an erase size and that returns a mtd identifier.
 
-Most classic Pentiums don't have hardware virtualization extension,
-and building kvm with Voyager, Visual Workstation, or NUMAQ
-generates spurious failures.
+Erase size is a real difference, agreed.  Otherwise the loop analogy is
+quite good.  Occasionally people are asking for file->mtd translation as
+well.
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/Kconfig |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Jörn
 
---- linux-2.6.25-rc2-git4.orig/arch/x86/Kconfig
-+++ linux-2.6.25-rc2-git4/arch/x86/Kconfig
-@@ -21,7 +21,7 @@ config X86
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
--	select HAVE_KVM
-+	select HAVE_KVM if ((X86_32 && !X86_VOYAGER && !X86_VISWS && !X86_NUMAQ) || X86_64)
- 
- 
- config GENERIC_LOCKBREAK
+-- 
+To announce that there must be no criticism of the President, or that we
+are to stand by the President, right or wrong, is not only unpatriotic
+and servile, but is morally treasonable to the American public.
+-- Theodore Roosevelt, Kansas City Star, 1918
