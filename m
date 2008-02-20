@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760961AbYBTDrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYBTDwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760961AbYBTDrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:47:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbYBTDrj
+	id S1758281AbYBTDwH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:52:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYBTDvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:47:39 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:53665 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751288AbYBTDrh (ORCPT
+	Tue, 19 Feb 2008 22:51:55 -0500
+Received: from n21.bullet.mail.mud.yahoo.com ([68.142.200.112]:21057 "HELO
+	n21.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751438AbYBTDvy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:47:37 -0500
-Message-ID: <47BBA2D6.7020909@linux.vnet.ibm.com>
-Date: Wed, 20 Feb 2008 09:17:34 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 1.5.0.14pre (X11/20071023)
+	Tue, 19 Feb 2008 22:51:54 -0500
+X-Yahoo-Newman-Id: 340437.92160.bm@omp413.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=rgq1fHEVSzSe+njK3uTL3IgnQfMQN1QlXFq0bI+nyPFvZ2cxwa3QlWQ3XITVPVRMFn2TRAPzzeV79FdoL+7K/sikGkdFnyEa/mjJ1dcmDH5Jim68IalHy7T1psvdnqv4+1NH8pO5TWQpGL1hePIQ/JscyxhdlMqxacbzriIYt78=  ;
+X-YMail-OSG: UxhXQGUVM1k5SUPQ5.24NHQLL3BmBRSwg96UbmNvBNQI54Z4q9aSyBbhDpK_meQyG.fHr2ir5A--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Robin Holt <holt@sgi.com>
+Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps (f.e. for XPmem)
+Date: Wed, 20 Feb 2008 14:51:45 +1100
+User-Agent: KMail/1.9.5
+Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
+       Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com
+References: <20080215064859.384203497@sgi.com> <200802201055.21343.nickpiggin@yahoo.com.au> <20080220031221.GE11391@sgi.com>
+In-Reply-To: <20080220031221.GE11391@sgi.com>
 MIME-Version: 1.0
-To: kernel list <linux-kernel@vger.kernel.org>
-CC: linux-ide@vger.kernel.org, bzolnier@gmail.com, sfr@canb.auug.org.au,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: [BUG] next-20080219 -  ide oops while bootup at ide_device_add_all
- ()
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201451.46069.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, 
+On Wednesday 20 February 2008 14:12, Robin Holt wrote:
+> For XPMEM, we do not currently allow file backed
+> mapping pages from being exported so we should never reach this condition.
+> It has been an issue since day 1.  We have operated with that assumption
+> for 6 years and have not had issues with that assumption.  The user of
+> xpmem is MPT and it controls the communication buffers so it is reasonable
+> to expect this type of behavior.
 
-The next-20080219 kernel oops while booting up on x86_64 box. This bug
-was fixed in the 2.6.24-git(s) with the patch posted at
-http://lkml.org/lkml/2008/2/11/350 
+OK, that makes things simpler.
 
-ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-BUG: unable to handle kernel paging request at ffffffff80a37b8d
-IP: [<ffffffff8039470a>] ide_device_add_all+0x1a5/0x517
-PGD 203067 PUD 207063 PMD 0 
-Oops: 0000 [1] SMP 
-last sysfs file: 
-CPU 1 
-Modules linked in:
-Pid: 1, comm: swapper Not tainted 2.6.25-rc2-autotest-next-20080219 #1
-RIP: 0010:[<ffffffff8039470a>]  [<ffffffff8039470a>] ide_device_add_all+0x1a5/0x517
-RSP: 0000:ffff8101e7125db0  EFLAGS: 00010206
-RAX: 00000000000a8000 RBX: 0000000000000009 RCX: 0000000000000009
-RDX: ffff8101e7125e60 RSI: 0000000000000000 RDI: ffff8101e7125e60
-RBP: 0000000000000000 R08: 0000000000000000 R09: ffff8101e68de870
-R10: 0000000000000177 R11: 0000000000000174 R12: ffffffff80990080
-R13: 0000000000000000 R14: 000000000000000a R15: 0000000000000000
-FS:  0000000000000000(0000) GS:ffff8101e710d740(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: ffffffff80a37b8d CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 1, threadinfo ffff8101e7124000, task ffff8101e7123200)
-Stack:  ffff8101e7125e60 0000000000000009 00000000000001f0 ffffffff80990080
- 0000000000000001 000000000000000a 0000000000000000 ffffffff8088d725
- 0000000000000170 0000000000000171 0000000000000172 0000000000000173
-Call Trace:
- [<ffffffff8088d725>] ide_generic_init+0x169/0x1d8
- [<ffffffff808706f7>] kernel_init+0x17d/0x2e9
- [<ffffffff8020cc78>] child_rip+0xa/0x12
- [<ffffffff8087057a>] kernel_init+0x0/0x2e9
- [<ffffffff8020cc6e>] child_rip+0x0/0x12
+So why can't you export a device from your xpmem driver, which
+can be mmap()ed to give out "anonymous" memory pages to be used
+for these communication buffers?
 
+I guess you may also want an "munmap/mprotect" callback, which
+we don't have in the kernel right now... but at least you could
+prototype it easily by having an ioctl to be called before
+munmapping or mprotecting (eg. the ioctl could prevent new TLB
+setup for the region, and shoot down existing ones).
 
-Code: 49 ff c5 49 83 fe 0a 0f 85 97 fe ff ff 45 31 ed 48 8b 14 24 41 8a 44 15 00 3c ff 0f 84 4d 01 00 00 0f b6 c0 48 69 c0 00 0c 00 00 <80> b8 8d fb 98 80 0d 48 8d 98 80 f4 98 80 75 15 48 8b 80 88 f4 
-RIP  [<ffffffff8039470a>] ide_device_add_all+0x1a5/0x517
- RSP <ffff8101e7125db0>
-CR2: ffffffff80a37b8d
----[ end trace 31f82065a26d65bf ]---
-Kernel panic - not syncing: Attempted to kill init!
--- 
-Thanks & Regards,
-Kamalesh Babulal,
-Linux Technology Center,
-IBM, ISTL.
+This is actually going to be much faster for you if you use any
+threaded applications, because you will be able to do all the
+shootdown round trips outside mmap_sem, and so you will be able
+to have other threads faulting and even mmap()ing / munmaping
+at the same time as the shootdown is happening.
+
+I guess there is some catch...
+
