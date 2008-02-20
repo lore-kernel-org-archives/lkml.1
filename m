@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbYBTW0f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764843AbYBTW1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933414AbYBTW0f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:26:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765437AbYBTW0D
+	id S1764843AbYBTW1i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752267AbYBTW12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:26:03 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39271 "EHLO e4.ny.us.ibm.com"
+	Wed, 20 Feb 2008 17:27:28 -0500
+Received: from ns.suse.de ([195.135.220.2]:33414 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765094AbYBTW0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:26:01 -0500
-Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@MIT.EDU>,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu
-In-Reply-To: <20080216063129.GA8592@lst.de>
-References: <20080215223721.9E0A088A@kernel>
-	 <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu>
-	 <1203122979.13230.3.camel@nimitz.home.sr71.net>
-	 <20080216010030.GC26734@mit.edu>
-	 <20080215171119.578bd302.akpm@linux-foundation.org>
-	 <20080216063129.GA8592@lst.de>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 14:25:52 -0800
-Message-Id: <1203546352.29823.57.camel@nimitz.home.sr71.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	id S1751442AbYBTW11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:27:27 -0500
+Subject: patch pci-remove-parisc-consumer-of-the-pci-global_list.patch added to gregkh-2.6 tree
+To: James.Bottomley@HansenPartnership.com, greg@kroah.com, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+From: <gregkh@suse.de>
+Date: Wed, 20 Feb 2008 14:25:02 -0800
+In-Reply-To: <1203542065.3109.42.camel@localhost.localdomain>
+Message-ID: <12035463024141@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2008-02-16 at 07:31 +0100, Christoph Hellwig wrote:
-> once we put pieces in the first three patches would be useful aswell,
-> to easily catch additions in the next cycle that might be adding
-> NULL-vfsmount calls to dentry_open.
 
-So, we want
+This is a note to let you know that I've just added the patch titled
 
-	"[PATCH 07/30] r/o bind mounts: stub functions"
-and 
-	"[PATCH 03/30] check for null vfsmount in dentry_open()"
+     Subject: PCI: remove parisc consumer of the pci global_list
 
-But what's the third patch?
+to my gregkh-2.6 tree.  Its filename is
 
--- Dave
+     pci-remove-parisc-consumer-of-the-pci-global_list.patch
 
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From James.Bottomley@HansenPartnership.com  Wed Feb 20 14:22:51 2008
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Wed, 20 Feb 2008 15:14:24 -0600
+Subject: PCI: remove parisc consumer of the pci global_list
+To: Greg KH <greg@kroah.com>
+Cc: Parisc List <linux-parisc@vger.kernel.org>, linux-kernel <linux-kernel@vger.kernel.org>
+Message-ID: <1203542065.3109.42.camel@localhost.localdomain>
+
+Remove the parisc usage of the global_list, as it's not needed anymore.
+
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/parisc/dino.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/drivers/parisc/dino.c
++++ b/drivers/parisc/dino.c
+@@ -496,7 +496,6 @@ dino_card_setup(struct pci_bus *bus, voi
+ 		list_for_each_safe(ln, tmp_ln, &bus->devices) {
+ 			struct pci_dev *dev = pci_dev_b(ln);
+ 
+-			list_del(&dev->global_list);
+ 			list_del(&dev->bus_list);
+ 		}
+ 			
+
+
+Patches currently in gregkh-2.6 which might be from James.Bottomley@HansenPartnership.com are
+
+pci/pci-remove-parisc-consumer-of-the-pci-global_list.patch
