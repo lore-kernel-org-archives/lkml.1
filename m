@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759218AbYBTGzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbYBTG6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759218AbYBTGzE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 01:55:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYBTGyy
+	id S1756355AbYBTG6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 01:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbYBTG6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 01:54:54 -0500
-Received: from mga10.intel.com ([192.55.52.92]:25047 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753847AbYBTGyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 01:54:52 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,380,1199692800"; 
-   d="scan'208";a="521442383"
-Subject: Re: Linux 2.6.25-rc2
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Torsten Kaiser <just.for.lkml@googlemail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-In-Reply-To: <1203473339.3248.45.camel@ymzhang>
-References: <alpine.LFD.1.00.0802151302210.9496@woody.linux-foundation.org>
-	 <64bb37e0802161338j306c1357m25bc224f09e6b7cd@mail.gmail.com>
-	 <20080219061107.GA23229@elte.hu>
-	 <64bb37e0802182254l49b10cbblc23f8a83d189ff8e@mail.gmail.com>
-	 <84144f020802182321x452888bai639c71ea2a5067da@mail.gmail.com>
-	 <20080219140230.GA32236@Krystal>
-	 <84144f020802190621s509dbe7gc8e5609d94aca9b4@mail.gmail.com>
-	 <84144f020802190638i4a364d19o8986a457e76ec187@mail.gmail.com>
-	 <20080219145554.GE21176@elte.hu>  <47BAFB42.9000806@cs.helsinki.fi>
-	 <1203467785.3248.42.camel@ymzhang>  <1203473339.3248.45.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 20 Feb 2008 14:53:10 +0800
-Message-Id: <1203490390.3248.48.camel@ymzhang>
+	Wed, 20 Feb 2008 01:58:12 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:55930 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751938AbYBTG6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 01:58:10 -0500
+Date: Wed, 20 Feb 2008 17:57:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Greg KH <greg@kroah.com>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org
+Subject: Re: linux-next: Tree for Feb 20
+Message-Id: <20080220175756.ab1ada1d.sfr@canb.auug.org.au>
+In-Reply-To: <20080220055055.GC31832@kroah.com>
+References: <20080220163457.79b9189f.sfr@canb.auug.org.au>
+	<20080220055055.GC31832@kroah.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__20_Feb_2008_17_57_56_+1100_Obz/34IqPXl9OJVY"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 10:08 +0800, Zhang, Yanmin wrote:
-> On Wed, 2008-02-20 at 08:36 +0800, Zhang, Yanmin wrote:
-> > On Tue, 2008-02-19 at 17:52 +0200, Pekka Enberg wrote:
-> > > Ingo Molnar wrote:
-> > > > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > > > 
-> > > >>> Yes, this can happen. Are you saying it is not safe to be in the 
-> > > >>> lockless path when an IRQ triggers?
-> > > >> Hmm. The barrier() in slab_free() looks fishy. The comment says it's 
-> > > >> there to make sure we've retrieved c->freelist before c->page but then 
-> > > >> it uses a _compiler barrier_ which doesn't affect the CPU and the 
-> > > >> reads may still be re-ordered... Not sure if that matters here though.
-> > > > 
-> > > > find a fix patch for that below - most systems affected seem to be SMP 
-> > > > ones.
-> > > > 
-> > > > If this (or my other patch) indeed solves the problem i'd still favor a 
-> > > > full revert of the SLUB_FASTPATH (commit 1f84260c8ce3b1ce26d4), it looks 
-> > > > quite un-cooked and quite un-tested for multiple independent reasons.
-> > > > 
-> > > > Sigh, why do i again have to be the messenger who brings the bad news to 
-> > > > SLUB land, and again when poor Christoph went on vacation? :-/
-> > > > 
-> > > > 	Ingo
-> > > > 
-> > > > -------------------------->
-> > > > Subject: SLUB: barrier fix
-> > > > From: Ingo Molnar <mingo@elte.hu>
-> > > > 
-> > > > ---
-> > > >  mm/slub.c |    2 +-
-> > > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > > 
-> > > > Index: linux/mm/slub.c
-> > > > ===================================================================
-> > > > --- linux.orig/mm/slub.c
-> > > > +++ linux/mm/slub.c
-> > > > @@ -1862,7 +1862,7 @@ static __always_inline void slab_free(st
-> > > >  	debug_check_no_locks_freed(object, s->objsize);
-> > > >  	do {
-> > > >  		freelist = c->freelist;
-> > > > -		barrier();
-> > > > +		smp_mb();
-> > > >  		/*
-> > > >  		 * If the compiler would reorder the retrieval of c->page to
-> > > >  		 * come before c->freelist then an interrupt could
-> > > 
-> > > Torsten/Yamin, does this fix things for you? What about reverting commit 
-> > > 1f84260c8ce3b1ce26d4c1d6dedc2f33a3a29c0c ("SLUB: Alternate fast paths 
-> > > using cmpxchg_local")?
-> > I'm busy in another issue and will test it ASAP. Sorry.
-> I tested it on my 3 x86-64 machines. The small fix to use smp_mb to replace
-> barrier in slab_free doesn't work. Kernel still crashed at the same place.
-> 
-> I will test the reverting patch.
-Kernel with the reverting patch is ok.
-I ran reboot/hackbench for more than 10 times on every one of my 3 x86-64 machines,
-and kernel didn't crash.
+--Signature=_Wed__20_Feb_2008_17_57_56_+1100_Obz/34IqPXl9OJVY
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--yanmin
+Hi Greg,
 
+On Tue, 19 Feb 2008 21:50:55 -0800 Greg KH <greg@kroah.com> wrote:
+>
+> What's the best way to constantly follow this tree?  I had cloned it a
+> while ago, but now if I 'git pull' it wants to merge things, which isn't
+> right.
+>=20
+> I'm guessing that this is constantly being rebased?  Against what,
+> Linus's tree?  So we should be able to clone Linus's tree, and then pull
+> in -next?
 
+That would work.  Chris has the right idea, though.  Just set up
+linux-next as a remote on any existing clone of Linus' tree and the
+"fetch" will forcibly update the linux-next/master branch (remember to
+not have that branch checked out when you fetch).
+
+If you keep a continuing git tree for this, you will have the history of
+all the next trees because I tag each one.
+
+> Or am I totally missing something here?
+
+I said in the original announcement that the "master" branch would be
+rebasing every day (well, I actually said that I would recreate the tree
+every day).
+
+Each day, I start with the latest version of Linus' tree (my "stable"
+branch) and then merge all the subsystem trees on that.
+
+> I like seeing these, to know that things are at least still working.  I
+> imagine you could script them, or just send them to the linux-next list
+> if there are no problems, but lkml should probably be notified of any
+> issues, right?
+
+Sounds like a plan.  So new "normal" announcements will happen on the
+linux-next mailing list and "abnormal" ones to LKML as well (at least).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__20_Feb_2008_17_57_56_+1100_Obz/34IqPXl9OJVY
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHu894TgG2atn1QN8RApNqAJwPTyJXgm4ytu25ZenpdICIZglLRQCeKrQJ
+QHai54XgLD2F3faxC3h1xK0=
+=5XUE
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Feb_2008_17_57_56_+1100_Obz/34IqPXl9OJVY--
