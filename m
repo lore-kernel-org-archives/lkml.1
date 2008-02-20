@@ -1,242 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763693AbYBTN5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbYBTN7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763693AbYBTN5s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:57:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbYBTN5k
+	id S1763664AbYBTN7Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbYBTN7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:57:40 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:34567 "EHLO
-	outbound5-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754645AbYBTN5i (ORCPT
+	Wed, 20 Feb 2008 08:59:12 -0500
+Received: from pfx2.jmh.fr ([194.153.89.55]:33303 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753764AbYBTN7L convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:57:38 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-WSS-ID: 0JWJIRP-04-7FO-01
-X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
-Date: Wed, 20 Feb 2008 14:57:43 +0100
-From: "Hans Rosenfeld" <hans.rosenfeld@amd.com>
-To: "Matt Mackall" <mpm@selenic.com>
-cc: linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] make /proc/pid/pagemap work with huge pages and
- return page size
-Message-ID: <20080220135743.GA10127@escobedo.amd.com>
-MIME-Version: 1.0
-User-Agent: Mutt/1.4.2.3i
-X-OriginalArrivalTime: 20 Feb 2008 13:56:51.0513 (UTC)
- FILETIME=[71831A90:01C873C8]
-X-WSS-ID: 6BA2EE4C2IW12507114-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 08:59:11 -0500
+Date: Wed, 20 Feb 2008 14:57:32 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: =?ISO-8859-1?B?IklscG8gSuRydmluZW4i?= <ilpo.jarvinen@helsinki.fi>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 1/8] [NET]: uninline skb_put, de-bloats a lot
+Message-Id: <20080220145732.d716355e.dada1@cosmosbay.com>
+In-Reply-To: <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
+X-Mailer: Sylpheed 2.4.5 (GTK+ 2.12.0; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current code for /proc/pid/pagemap does not work with huge pages (on
-x86). The code will make no difference between a normal pmd and a huge
-page pmd, trying to parse the contents of the huge page as ptes. Another
-problem is that there is no way to get information about the page size a
-specific mapping uses.
+On Wed, 20 Feb 2008 15:47:11 +0200
+"Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 
-Also, the current way the "not present" and "swap" bits are encoded in
-the returned pfn isn't very clean, especially not if this interface is
-going to be extended.
+> ~500 files changed
+> ...
+> kernel/uninlined.c:
+>   skb_put                       | +104
+>  1 function changed, 104 bytes added, diff: +104
+> 
+> vmlinux.o:
+>  869 functions changed, 198 bytes added, 111003 bytes removed, diff: -110805
+> 
+> This change is INCOMPLETE, I think that the call to current_text_addr()
+> should be rethought but I don't have a clue how to do that.
 
-I propose to change /proc/pid/pagemap to return a pseudo-pte instead of
-just a raw pfn. The pseudo-pte will contain:
+You want to use __builtin_return_address(0)
 
-- 58 bits for the physical address of the first byte in the page, even
-  less bits would probably be sufficient for quite a while
-
-- 4 bits for the page size, with 0 meaning native page size (4k on x86,
-  8k on alpha, ...) and values 1-15 being specific to the architecture
-  (I used 1 for 2M, 2 for 4M and 3 for 1G for x86)
-
-- a "swap" bit indicating that a not present page is paged out, with the
-  physical address field containing page file number and block number
-  just like before
-
-- a "present" bit just like in a real pte
-  
-By shortening the field for the physical address, some more interesting
-information could be included, like read/write permissions and the like.
-The page size could also be returned directly, 6 bits could be used to
-express any page shift in a 64 bit system, but I found the encoded page
-size more useful for my specific use case.
-
-
-The attached patch changes the /proc/pid/pagemap code to use such a
-pseudo-pte. The huge page handling is currently limited to 2M/4M pages
-on x86, 1G pages will need some more work. To keep the simple mapping of
-virtual addresses to file index intact, any huge page pseudo-pte is
-replicated in the user buffer to map the equivalent range of small
-pages. 
-
-Note that I had to move the pmd_pfn() macro from asm-x86/pgtable_64.h to
-asm-x86/pgtable.h, it applies to both 32 bit and 64 bit x86.
-
-Other architectures will probably need other changes to support huge
-pages and return the page size.
-
-I think that the definition of the pseudo-pte structure and the page
-size codes should be made available through a header file, but I didn't
-do this for now.
-
-Signed-Off-By: Hans Rosenfeld <hans.rosenfeld@amd.com>
-
----
- fs/proc/task_mmu.c           |   68 +++++++++++++++++++++++++++++------------
- include/asm-x86/pgtable.h    |    2 +
- include/asm-x86/pgtable_64.h |    1 -
- 3 files changed, 50 insertions(+), 21 deletions(-)
-
-diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
-index 49958cf..58af588 100644
---- a/fs/proc/task_mmu.c
-+++ b/fs/proc/task_mmu.c
-@@ -527,16 +527,23 @@ struct pagemapread {
- 	char __user *out, *end;
- };
- 
--#define PM_ENTRY_BYTES sizeof(u64)
--#define PM_RESERVED_BITS    3
--#define PM_RESERVED_OFFSET  (64 - PM_RESERVED_BITS)
--#define PM_RESERVED_MASK    (((1LL<<PM_RESERVED_BITS)-1) << PM_RESERVED_OFFSET)
--#define PM_SPECIAL(nr)      (((nr) << PM_RESERVED_OFFSET) | PM_RESERVED_MASK)
--#define PM_NOT_PRESENT      PM_SPECIAL(1LL)
--#define PM_SWAP             PM_SPECIAL(2LL)
--#define PM_END_OF_BUFFER    1
--
--static int add_to_pagemap(unsigned long addr, u64 pfn,
-+struct ppte {
-+	uint64_t paddr:58;
-+	uint64_t psize:4;
-+	uint64_t swap:1;
-+	uint64_t present:1;
-+};
-+
-+#ifdef CONFIG_X86
-+#define PM_PSIZE_1G      3
-+#define PM_PSIZE_4M      2
-+#define PM_PSIZE_2M      1
-+#endif
-+
-+#define PM_ENTRY_BYTES   sizeof(struct ppte)
-+#define PM_END_OF_BUFFER 1
-+
-+static int add_to_pagemap(unsigned long addr, struct ppte ppte,
- 			  struct pagemapread *pm)
- {
- 	/*
-@@ -545,13 +552,13 @@ static int add_to_pagemap(unsigned long addr, u64 pfn,
- 	 * the pfn.
- 	 */
- 	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
--		if (copy_to_user(pm->out, &pfn, pm->end - pm->out))
-+		if (copy_to_user(pm->out, &ppte, pm->end - pm->out))
- 			return -EFAULT;
- 		pm->out = pm->end;
- 		return PM_END_OF_BUFFER;
- 	}
- 
--	if (put_user(pfn, pm->out))
-+	if (copy_to_user(pm->out, &ppte, sizeof(ppte)))
- 		return -EFAULT;
- 	pm->out += PM_ENTRY_BYTES;
- 	return 0;
-@@ -564,7 +571,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
- 	unsigned long addr;
- 	int err = 0;
- 	for (addr = start; addr < end; addr += PAGE_SIZE) {
--		err = add_to_pagemap(addr, PM_NOT_PRESENT, pm);
-+		err = add_to_pagemap(addr, (struct ppte) {0, 0, 0, 0}, pm);
- 		if (err)
- 			break;
- 	}
-@@ -574,7 +581,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
- u64 swap_pte_to_pagemap_entry(pte_t pte)
- {
- 	swp_entry_t e = pte_to_swp_entry(pte);
--	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
-+	return swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
- }
- 
- static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
-@@ -584,16 +591,37 @@ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
- 	pte_t *pte;
- 	int err = 0;
- 
-+#ifdef CONFIG_X86
-+	if (pmd_huge(*pmd)) {
-+		struct ppte ppte = { 
-+			.paddr = pmd_pfn(*pmd) << PAGE_SHIFT,
-+			.psize = (HPAGE_SHIFT == 22 ?
-+				  PM_PSIZE_4M : PM_PSIZE_2M),
-+			.swap  = 0,
-+			.present = 1,
-+		};
-+
-+		for(; addr != end; addr += PAGE_SIZE) {
-+			err = add_to_pagemap(addr, ppte, pm);
-+			if (err)
-+				return err;
-+		}
-+	} else
-+#endif
- 	for (; addr != end; addr += PAGE_SIZE) {
--		u64 pfn = PM_NOT_PRESENT;
-+		struct ppte ppte = { 0, 0, 0, 0};
-+
- 		pte = pte_offset_map(pmd, addr);
--		if (is_swap_pte(*pte))
--			pfn = swap_pte_to_pagemap_entry(*pte);
--		else if (pte_present(*pte))
--			pfn = pte_pfn(*pte);
-+		if (is_swap_pte(*pte)) {
-+			ppte.swap = 1;
-+			ppte.paddr = swap_pte_to_pagemap_entry(*pte);
-+		} else if (pte_present(*pte)) {
-+			ppte.present = 1;
-+			ppte.paddr = pte_pfn(*pte) << PAGE_SHIFT;
-+		}
- 		/* unmap so we're not in atomic when we copy to userspace */
- 		pte_unmap(pte);
--		err = add_to_pagemap(addr, pfn, pm);
-+		err = add_to_pagemap(addr, ppte, pm);
- 		if (err)
- 			return err;
- 	}
-diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
-index 174b877..76bc8a8 100644
---- a/include/asm-x86/pgtable.h
-+++ b/include/asm-x86/pgtable.h
-@@ -181,6 +181,8 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
- 		      pgprot_val(pgprot)) & __supported_pte_mask);
- }
- 
-+#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
-+
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
- {
- 	pteval_t val = pte_val(pte);
-diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
-index 02bd4aa..094a538 100644
---- a/include/asm-x86/pgtable_64.h
-+++ b/include/asm-x86/pgtable_64.h
-@@ -216,7 +216,6 @@ static inline int pud_large(pud_t pte)
- #define pmd_none(x)	(!pmd_val(x))
- #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
- #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
--#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
- 
- #define pte_to_pgoff(pte) ((pte_val(pte) & PHYSICAL_PAGE_MASK) >> PAGE_SHIFT)
- #define pgoff_to_pte(off) ((pte_t) { .pte = ((off) << PAGE_SHIFT) | _PAGE_FILE })
--- 
-1.5.3.7
-
--- 
-%SYSTEM-F-ANARCHISM, The operating system has been overthrown
-
-
+> 
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+> ---
+>  include/linux/skbuff.h |   20 +-------------------
+>  net/core/skbuff.c      |   21 +++++++++++++++++++++
+>  2 files changed, 22 insertions(+), 19 deletions(-)
+> 
+> diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
+> index 412672a..5925435 100644
+> --- a/include/linux/skbuff.h
+> +++ b/include/linux/skbuff.h
+> @@ -896,25 +896,7 @@ static inline unsigned char *__skb_put(struct sk_buff *skb, unsigned int len)
+>  	return tmp;
+>  }
+>  
+> -/**
+> - *	skb_put - add data to a buffer
+> - *	@skb: buffer to use
+> - *	@len: amount of data to add
+> - *
+> - *	This function extends the used data area of the buffer. If this would
+> - *	exceed the total buffer size the kernel will panic. A pointer to the
+> - *	first byte of the extra data is returned.
+> - */
+> -static inline unsigned char *skb_put(struct sk_buff *skb, unsigned int len)
+> -{
+> -	unsigned char *tmp = skb_tail_pointer(skb);
+> -	SKB_LINEAR_ASSERT(skb);
+> -	skb->tail += len;
+> -	skb->len  += len;
+> -	if (unlikely(skb->tail > skb->end))
+> -		skb_over_panic(skb, len, current_text_addr());
+> -	return tmp;
+> -}
+> +extern unsigned char *skb_put(struct sk_buff *skb, unsigned int len);
+>  
+>  static inline unsigned char *__skb_push(struct sk_buff *skb, unsigned int len)
+>  {
+> diff --git a/net/core/skbuff.c b/net/core/skbuff.c
+> index 4e35422..661d439 100644
+> --- a/net/core/skbuff.c
+> +++ b/net/core/skbuff.c
+> @@ -857,6 +857,27 @@ free_skb:
+>  	return err;
+>  }
+>  
+> +/**
+> + *	skb_put - add data to a buffer
+> + *	@skb: buffer to use
+> + *	@len: amount of data to add
+> + *
+> + *	This function extends the used data area of the buffer. If this would
+> + *	exceed the total buffer size the kernel will panic. A pointer to the
+> + *	first byte of the extra data is returned.
+> + */
+> +unsigned char *skb_put(struct sk_buff *skb, unsigned int len)
+> +{
+> +	unsigned char *tmp = skb_tail_pointer(skb);
+> +	SKB_LINEAR_ASSERT(skb);
+> +	skb->tail += len;
+> +	skb->len  += len;
+> +	if (unlikely(skb->tail > skb->end))
+> +		skb_over_panic(skb, len, current_text_addr());
+> +	return tmp;
+> +}
+> +EXPORT_SYMBOL(skb_put);
+> +
+>  /* Trims skb to length len. It can change skb pointers.
+>   */
+>  
+> -- 
+> 1.5.2.2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
