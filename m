@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763622AbYBTRHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764544AbYBTRHv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763622AbYBTRHX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbYBTRGh
+	id S1764544AbYBTRHv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:07:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbYBTRHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:06:37 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:48496 "HELO mx0.towertech.it"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754918AbYBTRGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:06:35 -0500
-Date: Wed, 20 Feb 2008 18:03:25 +0100
-From: Alessandro Zummo <alessandro.zummo@towertech.it>
-To: rtc-linux@googlegroups.com
-Cc: galak@kernel.crashing.org, LKML Kernel <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, rz@linux-m68k.org
-Subject: Re: [rtc-linux] state of GEN_RTC vs rtc subsystem
-Message-ID: <20080220180325.46446675@i1501.lan.towertech.it>
-In-Reply-To: <47B18612-66A3-476C-B81C-F2FD11CE9A64@kernel.crashing.org>
-References: <47B18612-66A3-476C-B81C-F2FD11CE9A64@kernel.crashing.org>
-Organization: Tower Technologies
-X-Mailer: Sylpheed
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 20 Feb 2008 12:07:01 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:49746 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbYBTRG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:06:59 -0500
+Message-ID: <47BC5DF4.9020300@zytor.com>
+Date: Wed, 20 Feb 2008 09:05:56 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: "David P. Reed" <dpreed@reed.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: use explicit timing delay for pit accesses in kernel
+ and pcspkr driver
+References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com> <47B9F2EC.4070308@keyaccess.nl> <47B9FC3A.2010508@zytor.com> <47B9FFD5.6040801@keyaccess.nl> <47BA002B.7070806@zytor.com> <47BA0188.6000808@keyaccess.nl> <47BA077B.50401@keyaccess.nl> <47BA0A3D.1060708@zytor.com> <47BC17BE.9010800@keyaccess.nl>
+In-Reply-To: <47BC17BE.9010800@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 10:11:23 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
+Rene Herman wrote:
 > 
-> Is the functionality provided by drivers/char/gen_rtc.c completely  
-> handled by the rtc subsystem in drivers/rtc?
+> _Something_ like this would seem to be the only remaining option. It 
+> seems fairly unuseful to #ifdef around that switch statement for kernels 
+> without support for the earlier families, but if you insist...
 > 
-> I ask for two reasons:
-> 1. should we make it mutually exclusive in Kconfig
-> 2. I've enabled both and get (we'll my defconfig did):
 
- They shouldn't be enabled at once. I think a patch 
- for Kconfig has been recently submitted to give a warning
- in such a case.
+"Only remaining option" other than the one we've had all along.  Even on 
+the one idiotic set of systems which break, it only breaks post-ACPI 
+intialization, IIRC.
 
- rtc-cmos should be able to handle the vast majority of x86
- rtcs out there. 
-
- The only real open issue is related to the ntp synchronization
- mode and will be solved only when we can get rid of it :)
-
--- 
-
- Best regards,
-
- Alessandro Zummo,
-  Tower Technologies - Torino, Italy
-
-  http://www.towertech.it
-
+	-hpa
