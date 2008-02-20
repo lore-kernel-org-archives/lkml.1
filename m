@@ -1,36 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764072AbYBTAZg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762810AbYBTA1H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764072AbYBTAZg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:25:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763039AbYBTAZF
+	id S1762810AbYBTA1H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:27:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYBTA0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:25:05 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52045
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1762866AbYBTAZE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:25:04 -0500
-Date: Tue, 19 Feb 2008 16:25:41 -0800 (PST)
-Message-Id: <20080219.162541.54837477.davem@davemloft.net>
-To: bunk@kernel.org
-Cc: ericvh@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] net/9p/trans_virtio.c: kmalloc() enough memory
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080220001410.GX31955@cs181133002.pp.htv.fi>
-References: <20080220001410.GX31955@cs181133002.pp.htv.fi>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 19:26:53 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:41529 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754057AbYBTA0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 19:26:52 -0500
+Date: Wed, 20 Feb 2008 02:26:14 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Zhang Rui <rui.zhang@intel.com>, Thomas Sujith <sujith.thomas@intel.com>,
+       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/thermal/thermal.c: fix a check-after-use
+Message-ID: <20080220002614.GY31955@cs181133002.pp.htv.fi>
+References: <20080220001404.GW31955@cs181133002.pp.htv.fi> <1203467102.23194.2.camel@brick>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1203467102.23194.2.camel@brick>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
-Date: Wed, 20 Feb 2008 02:14:10 +0200
-
-> The Coverity checker spotted that less memory than required was allocated.
+On Tue, Feb 19, 2008 at 04:25:02PM -0800, Harvey Harrison wrote:
+> On Wed, 2008-02-20 at 02:14 +0200, Adrian Bunk wrote:
+> > This patch fixes a check-after-use spotted by the Coverity checker.
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> > 
+> > ---
+> > 570462ca4441d8d63dfd46efe6e5b2b1c251a611 diff --git a/drivers/thermal/thermal.c b/drivers/thermal/thermal.c
+> > index e782b3e..958654b 100644
+> > --- a/drivers/thermal/thermal.c
+> > +++ b/drivers/thermal/thermal.c
+> > @@ -308,10 +308,10 @@ int thermal_zone_bind_cooling_device(struct thermal_zone_device *tz,
+> >  	struct thermal_cooling_device_instance *pos;
+> >  	int result;
+> >  
+> > -	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
+> > +	if (!tz || !cdev)
+> >  		return -EINVAL;
+> >  
+> > -	if (!tz || !cdev)
+> > +	if (trip >= tz->trips || (trip < 0 && trip != THERMAL_TRIPS_NONE))
+> >  		return -EINVAL;
+> >  
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> How about:
+> 	if (!tz || !cdev || trip >= tz->trips ||
+> 	    (trip < 0 && trip != THERMAL_TRIPS_NONE))
+> 		return -EINVAL;
 
-Applied, thanks Adrian.
+I have no strong opinion about it, but I'd consider your suggestion less 
+readable.
+
+> Cheers,
+> 
+> Harvey
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
