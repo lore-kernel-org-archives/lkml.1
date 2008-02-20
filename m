@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbYBTNzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763286AbYBTNzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763890AbYBTNzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbYBTNzO
+	id S1763286AbYBTNzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:55:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763227AbYBTNzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:55:14 -0500
-Received: from viefep20-int.chello.at ([62.179.121.40]:43935 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756608AbYBTNzN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:55:13 -0500
-X-Greylist: delayed 168255 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 08:55:12 EST
-Message-ID: <47BC312F.2060905@trash.net>
-Date: Wed, 20 Feb 2008 14:54:55 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
-MIME-Version: 1.0
-To: =?ISO-8859-15?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 1/8] [NET]: uninline skb_put, de-bloats a lot
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-In-Reply-To: <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 8bit
+	Wed, 20 Feb 2008 08:55:25 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42301 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763230AbYBTNzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 08:55:23 -0500
+Date: Wed, 20 Feb 2008 14:55:33 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jonas Bonn <jonas@southpole.se>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, greg@kroah.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: PowerPC toolchain for x86 [Was: pci_device_id cleanups]
+Message-ID: <20080220135533.GA19024@uranus.ravnborg.org>
+References: <1203512031-14318-1-git-send-email-jonas@southpole.se> <20080220131704.GB18790@uranus.ravnborg.org> <47BC2AB7.4040402@southpole.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BC2AB7.4040402@southpole.se>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> ~500 files changed
-> ...
-> kernel/uninlined.c:
->   skb_put                       | +104
->  1 function changed, 104 bytes added, diff: +104
+On Wed, Feb 20, 2008 at 02:27:19PM +0100, Jonas Bonn wrote:
+> Sam Ravnborg wrote:
+> >On Wed, Feb 20, 2008 at 01:53:36PM +0100, Jonas Bonn wrote:
+> >>The PCI_DEVICE_TABLE patch I sent earlier doesn't necessarily make
+> >>much sense by itself... here is a set of patches that apply
+> >>this macro, in turn moving a lot of this data into __devinitconst
+> >>which is discardable in certain situations.
+> >>Hopefully the benefit of this approach is a bit clearer now.
+> >[shorter lines please..]
 > 
-> vmlinux.o:
->  869 functions changed, 198 bytes added, 111003 bytes removed, diff: -110805
+> Sorry...
 > 
-> This change is INCOMPLETE, I think that the call to current_text_addr()
-> should be rethought but I don't have a clue how to do that.
+> >
+> >Can you please confirm that this does not break powerpc (64 bit)
+> >as they have troubles with the constification..
+> 
+> I do not have access to any PowerPC machine... Olof Johansson built the 
+> tree I posted earlier on PowerPC; there's nothing really new here except 
+> the wrapping of the definition in a macro.
+And you added const and a specific section.
+Exactly what could break on PowerPC.
+
+To do the build break check is easy.
+Google for "crosstool" and build your own powerpc toolchain.
+
+Andrew has something precompiled somewhere but I lost the link.
 
 
-I guess __builtin_return_address(0) would work.
+	Sam
