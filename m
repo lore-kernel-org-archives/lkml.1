@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932259AbYBTXHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933978AbYBTXI0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932259AbYBTXHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755922AbYBTXHS
+	id S933978AbYBTXI0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:08:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbYBTXIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:07:18 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37566
+	Wed, 20 Feb 2008 18:08:14 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37571
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755811AbYBTXHR (ORCPT
+	by vger.kernel.org with ESMTP id S1753798AbYBTXIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:07:17 -0500
-Date: Wed, 20 Feb 2008 15:07:53 -0800 (PST)
-Message-Id: <20080220.150753.17432290.davem@davemloft.net>
-To: romieu@fr.zoreil.com
-Cc: bfields@fieldses.org, jeff@garzik.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [git patches] net driver fixes
+	Wed, 20 Feb 2008 18:08:13 -0500
+Date: Wed, 20 Feb 2008 15:08:50 -0800 (PST)
+Message-Id: <20080220.150850.56732755.davem@davemloft.net>
+To: tonyb@cybernetics.com
+Cc: mcarlson@broadcom.com, mchan@broadcom.com, herbert@gondor.apana.org.au,
+       netdev@vger.kernel.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080220224053.GA8500@electric-eye.fr.zoreil.com>
-References: <20080220212302.GJ30160@fieldses.org>
-	<20080220.134257.41491836.davem@davemloft.net>
-	<20080220224053.GA8500@electric-eye.fr.zoreil.com>
+In-Reply-To: <47BCB1E9.8020102@cybernetics.com>
+References: <47BB54C2.6090501@cybernetics.com>
+	<20080220013824.GA5416@localdomain>
+	<47BCB1E9.8020102@cybernetics.com>
 X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,41 +29,17 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Francois Romieu <romieu@fr.zoreil.com>
-Date: Wed, 20 Feb 2008 23:40:53 +0100
+From: Tony Battersby <tonyb@cybernetics.com>
+Date: Wed, 20 Feb 2008 18:04:09 -0500
 
-> David Miller <davem@davemloft.net> :
-> [...]
-> > Because it forces me to pull Linus's upstream into net-2.6,
-> > I don't have any choice in the matter.
+> The following patch fixes the problem for me.  Do we want to accept this
+> patch and call it a day or continue investigating the source of the problem?
 > 
-> Jeff's choice is a bit surprizing. That being said, it would had been nice
-> to fast-forward net-2.6 from a442585952f137bd4cdb1f2f3166e4157d383b82
-> to Linus's upstream before applying the content of
-> 12aa343add3eced38a44bdb612b35fdf634d918c in order to keep the drift
-> with Linus's branch to a minimum during the bugfix cycle.
+> Patch applies to 2.6.24.2, but doesn't apply to 2.6.25-rc.  If everyone
+> agrees that this is the right solution, I will resubmit with a proper
+> subject line and description.
 
-Keep in mind there are also pending fixes in my net-2.6 tree which
-Linus hasn't pulled in yet as well.
+A chipset bug, if it even exists, should be worked around in the
+driver for that hardware.  We shouldn't make every other piece
+of hardware in the world suffer too.
 
-I watch Linus's tree closely, and I'll see any potential merge issue
-long before it matters, and I always double check before pushing
-stuff out to him.
-
-My job as tree master is to deal with all the merge hassles, should
-they occur.  But up until now everything networking has gone through
-my tree and everything is fine.
-
-The net-2.6 tree isn't even a week old.  I planned to pull Linus's
-tree in right before I leave for a short trip tomorrow afternoon.
-I'm really not being allowed to make that choice by how these
-changes are being merged to me.
-
-Heck, Jeff even thanked me for making my net-2.6 tree stable and not
-rebasing, so his method of merging this stuff is doubly surprising for
-me.
-
-Jeff, I really don't want to pull that tree in.  Please trust me as
-your upstream to handle merging issues, as needed.
-
-Thanks!
