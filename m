@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763637AbYBTE6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764113AbYBTE6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763637AbYBTE6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 23:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbYBTE6Y
+	id S1764113AbYBTE6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 23:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763698AbYBTE6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 23:58:24 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46395 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752462AbYBTE6X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 23:58:23 -0500
-Date: Tue, 19 Feb 2008 21:02:36 -0800
-From: Greg KH <greg@kroah.com>
-To: Kohei KaiGai <kaigai@ak.jp.nec.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: [PATCH] exporting capability code/name pairs (try #6)
-Message-ID: <20080220050236.GA20181@kroah.com>
-References: <47B4ED1B.6070206@ak.jp.nec.com> <47B4F1C5.9010408@cn.fujitsu.com> <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com> <20080219161610.GA3344@kroah.com> <47BBAEE3.6040301@ak.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BBAEE3.6040301@ak.jp.nec.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Tue, 19 Feb 2008 23:58:37 -0500
+Received: from mga03.intel.com ([143.182.124.21]:11811 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763651AbYBTE6f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 23:58:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,379,1199692800"; 
+   d="scan'208";a="381213029"
+Subject: Re: [bootup crash, -git] Re: patch
+	pci-pcie-aspm-support.patchadded to gregkh-2.6 tree
+From: Shaohua Li <shaohua.li@intel.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
+       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
+       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       matthew@wil.cx, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20080220041400.GA18771@suse.de>
+References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com>
+	 <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu>
+	 <20080202185145.GA13005@kroah.com>
+	 <1203399945.12681.8.camel@sli10-desk.sh.intel.com>
+	 <20080219234529.GA12967@kroah.com>
+	 <1203471367.21958.3.camel@sli10-desk.sh.intel.com>
+	 <20080220041400.GA18771@suse.de>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 12:48:21 +0800
+Message-Id: <1203482901.23071.5.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:38:59PM +0900, Kohei KaiGai wrote:
-> >> If we can have a private member in kobj_attribute, we can found the 
-> content
-> >> to be returned in a single step.
-> >
-> > Ok, again, just send me a patch that adds this functionality and we will
-> > be very glad to consider it.
->
-> [1/2] Add a private data field within kobj_attribute structure.
->
-> This patch add a private data field, declared as void *, within 
-> kobj_attribute
-> structure. Anyone wants to use sysfs can store their private data to refer 
-> at
-> _show() and _store() method.
-> It enables to share a single method function with several similar entries,
-> like ones to export the list of capabilities the running kernel supported.
 
-But your patch 2/2 doesn't use this interface, why not?
+On Tue, 2008-02-19 at 20:14 -0800, Greg KH wrote:
+> On Wed, Feb 20, 2008 at 09:36:07AM +0800, Shaohua Li wrote:
+> > --- linux.orig/include/linux/pci-acpi.h	2008-02-19 11:03:51.000000000 +0800
+> > +++ linux/include/linux/pci-acpi.h	2008-02-20 09:19:15.000000000 +0800
+> > @@ -47,6 +47,7 @@
+> >  				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
+> >  
+> >  #ifdef CONFIG_ACPI
+> > +#include <acpi/acpi_bus.h>
+> >  extern acpi_status pci_osc_control_set(acpi_handle handle, u32 flags);
+> >  extern acpi_status __pci_osc_support_set(u32 flags, const char *hid);
+> >  static inline acpi_status pci_osc_support_set(u32 flags)
+> > @@ -59,13 +60,11 @@ static inline acpi_status pcie_osc_suppo
+> >  }
+> >  #else
+> >  #if !defined(AE_ERROR)
+> > -typedef u32 		acpi_status;
+> > -#define AE_ERROR      	(acpi_status) (0x0001)
+> > -#endif    
+> > -static inline acpi_status pci_osc_control_set(acpi_handle handle, u32 flags)
+> > -{return AE_ERROR;}
+> > -static inline acpi_status pci_osc_support_set(u32 flags) {return AE_ERROR;} 
+> > -static inline acpi_status pcie_osc_support_set(u32 flags) {return AE_ERROR;}
+> > +#define AE_ERROR      	(0x0001)
+> > +#endif
+> > +#define pci_osc_control_set(handle, flags) (AE_ERROR)
+> > +#define pci_osc_support_set(flags) (AE_ERROR)
+> > +#define pcie_osc_support_set(flags) (AE_ERROR)
+> 
+> No, please use inline functions, don't change these functions that
+> should be just fine.  Why are you needing to change them?
+some types aren't defined in non-ACPI, like acpi_handle, acpi_status.
 
->  include/linux/kobject.h |    1 +
->  include/linux/sysfs.h   |    7 +++++++
->  2 files changed, 8 insertions(+), 0 deletions(-)
->
-> diff --git a/include/linux/kobject.h b/include/linux/kobject.h
-> index caa3f41..57d5bf1 100644
-> --- a/include/linux/kobject.h
-> +++ b/include/linux/kobject.h
-> @@ -130,6 +130,7 @@ struct kobj_attribute {
->  			char *buf);
->  	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
->  			 const char *buf, size_t count);
-> +	void *data;	/* a private field */
+Thanks,
+Shaohua
 
-Hm, can you really use this?
-
->  extern struct sysfs_ops kobj_sysfs_ops;
-> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-> index 8027104..6f40ff9 100644
-> --- a/include/linux/sysfs.h
-> +++ b/include/linux/sysfs.h
-> @@ -50,6 +50,13 @@ struct attribute_group {
->  	.store	= _store,					\
->  }
->
-> +#define __ATTR_DATA(_name,_mode,_show,_store,_data) {		\
-> +	.attr = {.name = __stringify(_name), .mode = _mode },   \
-> +	.show	= _show,					\
-> +	.store	= _store,					\
-> +	.data	= (void *)(_data),				\
-> +}
-
-I don't see how this would be any different from the original?  You are
-always passed a kobject, which can be embedded in anything else.
-
-Could you also modify the documentation and the sample code to use this
-new field, showing how it is to be used, and testing that it works
-properly at the same time?
-
-thanks,
-
-greg k-h
