@@ -1,65 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbYBTK15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbYBTKaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbYBTK15 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbYBTK1t
+	id S1759539AbYBTKaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:30:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbYBTKaG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:27:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42373 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753034AbYBTK1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:27:48 -0500
-Date: Wed, 20 Feb 2008 11:27:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Shi Weihua <shiwh@cn.fujitsu.com>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/5] signal(x86_32): Improve the signal stack overflow
-	check
-Message-ID: <20080220102721.GE3881@elte.hu>
-References: <47B95C4D.6080000@cn.fujitsu.com> <20080218134720.GA28851@elte.hu> <47BA299A.3040207@cn.fujitsu.com> <20080219185009.122ED2701BA@magilla.localdomain> <47BB7922.1010400@cn.fujitsu.com> <20080220011822.C510B2701BA@magilla.localdomain> <47BB83E2.1030504@cn.fujitsu.com> <20080220014419.B85D02701BA@magilla.localdomain> <47BB8F05.3050001@cn.fujitsu.com> <20080220024928.0EE172701BA@magilla.localdomain>
+	Wed, 20 Feb 2008 05:30:06 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:21000 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752533AbYBTKaD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 05:30:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:content-transfer-encoding:in-reply-to:user-agent;
+        b=ciIvg9wZxYP027ALtImUifD+p+r2sm7ndw1PxDJrcPr49rsj8k25T7W5AVO6IQZJk0ux2/wwpl3K6qt/EiSbpxfUY8ZTi2NMmqz0LU39cSHbjO4lVKy9XcG8zFbGNbQ5xcMj1O03tN+n4Heh0YCRhYsGg8t7xpb4GRMuesknjcU=
+Date: Wed, 20 Feb 2008 18:36:11 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Alon Bar-Lev <alon.barlev@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       marcel@holtmann.org, bluez-devel@lists.sourceforge.net
+Subject: Re: [BUG] rfcomm
+Message-ID: <20080220103611.GA4027@darkstar.te-china.tietoenator.com>
+References: <200710231950.31313.alon.barlev@gmail.com> <a8e1da0802141928yabfd87ajfed0b009e1e79018@mail.gmail.com> <a8e1da0802151513p34ad118i54ddd8f00e6e136@mail.gmail.com> <200802162349.59780.alon.barlev@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220024928.0EE172701BA@magilla.localdomain>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200802162349.59780.alon.barlev@gmail.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Roland McGrath <roland@redhat.com> wrote:
-
-> > I spent some time read you mail carefully and dig into the code again.
+On Sat, Feb 16, 2008 at 11:49:58PM +0200, Alon Bar-Lev wrote:
+> On Saturday 16 February 2008, Dave Young wrote:
+> > Hi, alon
 > > 
-> > And yes, you are right. It's possible that SA_ONSTACK has been cleared
-> > before the second signal on the same stack comes.
+> > Please try the attached patch, hope it fixes your problem.
+> > 
+> > Regards
+> > dave
 > 
-> It's not necessary for SA_ONSTACK to have "been cleared", by which I 
-> assume you mean a sigaction call with SA_ONSTACK not set in sa_flags.  
-> That is indeed possible, but it's not the only case your patch broke.  
-> It can just be a different signal whose sigaction never had 
-> SA_ONSTACK, when you are still on the signal stack from an earlier 
-> signal that did have SA_ONSTACK.
+> Does not work... :(
 > 
-> > So this patch is wrong :( . I will revise the other 4 patches.
+> Alon.
 > 
-> For 2 and 3, I would rather just wait until we unify signal.c anyway.
+> Feb 16 23:41:33 alon1 usb 3-1: configuration #1 chosen from 1 choice
+> Feb 16 23:41:33 alon1 BUG: unable to handle kernel NULL pointer dereference at virtual address 00000008
+> Feb 16 23:41:33 alon1 printing eip: c01b2db6 *pde = 00000000 
+> Feb 16 23:41:33 alon1 Oops: 0000 [#1] PREEMPT 
+> Feb 16 23:41:33 alon1 Modules linked in: ppp_deflate zlib_deflate zlib_inflate bsd_comp ppp_async rfcomm l2cap hci_usb vmnet(P) vmmon(P) tun radeon drm autofs4 ipv6 aes_generic crypto_algapi ieee80211_crypt_ccmp nf_nat_irc nf_nat_ftp nf_conntrack_irc nf_conntrack_ftp ipt_MASQUERADE iptable_nat nf_nat ipt_REJECT xt_tcpudp ipt_LOG xt_limit xt_state nf_conntrack_ipv4 nf_conntrack iptable_filter ip_tables x_tables snd_pcm_oss snd_mixer_oss snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device bluetooth ppp_generic slhc ioatdma dca cfq_iosched cpufreq_powersave cpufreq_ondemand cpufreq_conservative acpi_cpufreq freq_table uinput fan af_packet nls_cp1255 nls_iso8859_1 nls_utf8 nls_base pcmcia snd_intel8x0 snd_ac97_codec ac97_bus snd_pcm nsc_ircc snd_timer ipw2200 thinkpad_acpi irda snd ehci_hcd yenta_socket uhci_hcd psmouse ieee80211 soundcore intel_agp hwmon rsrc_nonstatic pcspkr e1000 crc_ccitt snd_page_alloc i2c_i801 ieee80211_crypt pcmcia_core agpgart thermal battery nvram rtc sr_mod ac sg firmware_class button processor cdrom unix usbcore evdev ext3 jbd ext2 mbcache loop ata_piix libata sd_mod scsi_mod
+> Feb 16 23:41:33 alon1 
+> Feb 16 23:41:33 alon1 Pid: 4, comm: events/0 Tainted: P        (2.6.24-gentoo-r2 #1)
+> Feb 16 23:41:33 alon1 EIP: 0060:[<c01b2db6>] EFLAGS: 00010282 CPU: 0
+> Feb 16 23:41:33 alon1 EIP is at sysfs_get_dentry+0x26/0x80
+> Feb 16 23:41:33 alon1 EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: f48a2210
+> Feb 16 23:41:33 alon1 ESI: f72eb900 EDI: f4803ae0 EBP: f4803ae0 ESP: f7c49efc
+> Feb 16 23:41:33 alon1 hcid[7004]: HCI dev 0 registered
+> Feb 16 23:41:33 alon1 DS: 007b ES: 007b FS: 0000 GS: 0000 SS: 0068
+> Feb 16 23:41:33 alon1 Process events/0 (pid: 4, ti=f7c48000 task=f7c3efc0 task.ti=f7c48000)
+> Feb 16 23:41:33 alon1 Stack: f7cb6140 f4822668 f7e71e10 c01b304d ffffffff ffffffff fffffffe c030ba9c 
+> Feb 16 23:41:33 alon1 f7cb6140 f4822668 f6da6720 f7cb6140 f4822668 f6da6720 c030ba8e c01ce20b 
+> Feb 16 23:41:33 alon1 f6e9dd00 c030ba8e f6da6720 f6e9dd00 f6e9dd00 00000000 f4822600 00000000 
+> Feb 16 23:41:33 alon1 Call Trace:
+> Feb 16 23:41:33 alon1 [<c01b304d>] sysfs_move_dir+0x3d/0x1f0
+> Feb 16 23:41:33 alon1 [<c01ce20b>] kobject_move+0x9b/0x120
+> Feb 16 23:41:33 alon1 [<c0241711>] device_move+0x51/0x110
+> Feb 16 23:41:33 alon1 [<f9aaed80>] del_conn+0x0/0x70 [bluetooth]
+> Feb 16 23:41:33 alon1 [<f9aaed99>] del_conn+0x19/0x70 [bluetooth]
+> Feb 16 23:41:33 alon1 [<c012c1a1>] run_workqueue+0x81/0x140
+> Feb 16 23:41:33 alon1 [<c02c0c88>] schedule+0x168/0x2e0
+> Feb 16 23:41:33 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
+> Feb 16 23:41:33 alon1 [<c012c9cb>] worker_thread+0x9b/0xf0
+> Feb 16 23:41:33 alon1 [<c012fc70>] autoremove_wake_function+0x0/0x50
+> Feb 16 23:41:33 alon1 [<c012c930>] worker_thread+0x0/0xf0
+> Feb 16 23:41:33 alon1 [<c012f962>] kthread+0x42/0x70
+> Feb 16 23:41:33 alon1 [<c012f920>] kthread+0x0/0x70
+> Feb 16 23:41:33 alon1 [<c0104c2f>] kernel_thread_helper+0x7/0x18
+> Feb 16 23:41:33 alon1 =======================
+> Feb 16 23:41:33 alon1 Code: 26 00 00 00 00 57 89 c7 a1 50 1b 3a c0 56 53 8b 70 38 85 f6 74 08 8b 0e 85 c9 74 58 ff 06 8b 56 50 39 fa 74 47 89 fb eb 02 89 c3 <8b> 43 08 39 c2 75 f7 8b 46 08 83 c0 68 e8 98 e7 10 00 8b 43 10 
+> Feb 16 23:41:33 alon1 EIP: [<c01b2db6>] sysfs_get_dentry+0x26/0x80 SS:ESP 0068:f7c49efc
+> Feb 16 23:41:33 alon1 ---[ end trace aae864e9592acc1d ]---
+> Feb 16 23:41:33 alon1 hcid[7004]: HCI dev 0 up
+> Feb 16 23:41:33 alon1 hcid[7004]: Device hci0 has been added
+> Feb 16 23:41:33 alon1 hcid[7004]: Starting security manager 0
 
-ok, i've removed these patches from x86.git#testing for now:
+Could you try patch below?
 
- Subject: x86: improve the signal stack overflow logic, 32-bit
- Subject: x86: add a signal stack overflow check, 64-bit
- Subject: x86: add signal stack overflow check, 32-bit
 
-and will wait for a resubmission and an Ack from Roland.
+Defer hci_unregister_sysfs because hci device could be destructed
+while hci conn devices still there.
 
-	Ingo
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+
+---
+net/bluetooth/hci_core.c |    4 ++--
+1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -upr linux/net/bluetooth/hci_core.c linux.new/net/bluetooth/hci_core.c
+--- linux/net/bluetooth/hci_core.c	2008-02-20 18:27:28.000000000 +0800
++++ linux.new/net/bluetooth/hci_core.c	2008-02-20 18:28:34.000000000 +0800
+@@ -901,8 +901,6 @@ int hci_unregister_dev(struct hci_dev *h
+ 
+ 	BT_DBG("%p name %s type %d", hdev, hdev->name, hdev->type);
+ 
+-	hci_unregister_sysfs(hdev);
+-
+ 	write_lock_bh(&hci_dev_list_lock);
+ 	list_del(&hdev->list);
+ 	write_unlock_bh(&hci_dev_list_lock);
+@@ -914,6 +912,8 @@ int hci_unregister_dev(struct hci_dev *h
+ 
+ 	hci_notify(hdev, HCI_DEV_UNREG);
+ 
++	hci_unregister_sysfs(hdev);
++
+ 	__hci_dev_put(hdev);
+ 
+ 	return 0;
