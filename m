@@ -1,64 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761460AbYBTEgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbYBTEjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761460AbYBTEgl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 23:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbYBTEgc
+	id S1762132AbYBTEjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 23:39:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbYBTEjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 23:36:32 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:41036 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751802AbYBTEgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 23:36:31 -0500
-Date: Tue, 19 Feb 2008 22:36:25 -0600
-From: Paul Jackson <pj@sgi.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: pavel@ucw.cz, kosaki.motohiro@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-fsdevel@vger.kernel.org, a1426z@gawab.com,
-       jonathan@jonmasters.org, zlynx@acm.org
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Message-Id: <20080219223625.a2717138.pj@sgi.com>
-In-Reply-To: <20080219210739.27325078@bree.surriel.com>
-References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
-	<20080217084906.e1990b11.pj@sgi.com>
-	<20080219145108.7E96.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20080219090008.bb6cbe2f.pj@sgi.com>
-	<20080219222828.GB28786@elf.ucw.cz>
-	<20080219210739.27325078@bree.surriel.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 19 Feb 2008 23:39:33 -0500
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:60735 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751919AbYBTEjb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 23:39:31 -0500
+Message-ID: <47BBAEE3.6040301@ak.jp.nec.com>
+Date: Wed, 20 Feb 2008 13:38:59 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
+       jmorris@namei.org, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, adobriyan@gmail.com
+Subject: [PATCH] exporting capability code/name pairs (try #6)
+References: <20080212180859.GA12876@sergelap.austin.ibm.com> <47B2A3F3.8060701@ak.jp.nec.com> <47B4ED1B.6070206@ak.jp.nec.com> <47B4F1C5.9010408@cn.fujitsu.com> <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com> <20080219161610.GA3344@kroah.com>
+In-Reply-To: <20080219161610.GA3344@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik wrote:
-> In that case the user is better off having that job killed and
-> restarted elsewhere, than having all of the jobs on that node
-> crawl to a halt due to swapping.
-> 
-> Paul, is this guess correct? :)
+ >> If we can have a private member in kobj_attribute, we can found the content
+ >> to be returned in a single step.
+ >
+ > Ok, again, just send me a patch that adds this functionality and we will
+ > be very glad to consider it.
 
-Not for the loads I focus on.  Each job gets exclusive use of its own
-dedicated set of nodes, for the duration of the job.  With that comes a
-quite specific upper limit on how much memory, in total, including node
-local kernel data, that job is allowed to use.
+[1/2] Add a private data field within kobj_attribute structure.
 
-One problem with swapping is that nodes aren't entirely isolated.
-They share buses, i/o channels, disk arms, kernel data cache lines and
-kernel locks with other nodes, running other jobs.   A job thrashing
-its swap is a drag on the rest of the system.
+This patch add a private data field, declared as void *, within kobj_attribute
+structure. Anyone wants to use sysfs can store their private data to refer at
+_show() and _store() method.
+It enables to share a single method function with several similar entries,
+like ones to export the list of capabilities the running kernel supported.
 
-Another problem with swapping is that it's a waste of resources.  Once
-a pure compute bound job goes into swapping when it shouldn't, that job
-has near zero hope of continuing with the intended performance, as it
-has just slowed from main memory speeds to disk speeds, which are
-thousands of times slower.  Best to get it out of there, immediately.
+Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
+--
+  include/linux/kobject.h |    1 +
+  include/linux/sysfs.h   |    7 +++++++
+  2 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index caa3f41..57d5bf1 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -130,6 +130,7 @@ struct kobj_attribute {
+  			char *buf);
+  	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
+  			 const char *buf, size_t count);
++	void *data;	/* a private field */
+  };
+
+  extern struct sysfs_ops kobj_sysfs_ops;
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 8027104..6f40ff9 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -50,6 +50,13 @@ struct attribute_group {
+  	.store	= _store,					\
+  }
+
++#define __ATTR_DATA(_name,_mode,_show,_store,_data) {		\
++	.attr = {.name = __stringify(_name), .mode = _mode },   \
++	.show	= _show,					\
++	.store	= _store,					\
++	.data	= (void *)(_data),				\
++}
++	
+  #define __ATTR_RO(_name) { \
+  	.attr	= { .name = __stringify(_name), .mode = 0444 },	\
+  	.show	= _name##_show,					\
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.940.382.4214
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
