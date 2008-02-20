@@ -1,121 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934443AbYBTUiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933556AbYBTUkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934443AbYBTUiy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:38:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764177AbYBTUi1
+	id S933556AbYBTUkA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755177AbYBTUjt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:38:27 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:37518 "EHLO mail.dvmed.net"
+	Wed, 20 Feb 2008 15:39:49 -0500
+Received: from gate.crashing.org ([63.228.1.57]:46693 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759068AbYBTUiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:38:25 -0500
-Message-ID: <47BC8FBD.2070401@garzik.org>
-Date: Wed, 20 Feb 2008 15:38:21 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Divy Le Ray <divy@chelsio.com>
-CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] net driver updates
-References: <20080211170516.GA13872@havoc.gtf.org> <47B0AB0B.806@chelsio.com>
-In-Reply-To: <47B0AB0B.806@chelsio.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1752283AbYBTUjq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:39:46 -0500
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign
+	endianness
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reply-To: benh@kernel.crashing.org
+To: avorontsov@ru.mvista.com
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Clemens Koller <clemens.koller@anagramm.de>,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>
+In-Reply-To: <20080220121818.GA20836@localhost.localdomain>
+References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
+	 <20080215164542.GB16810@localhost.localdomain>
+	 <Pine.LNX.4.64.0802171030330.6848@anakin>
+	 <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
+	 <19805.1203355811@turing-police.cc.vt.edu> <47BA162C.5000807@anagramm.de>
+	 <1203381353.6740.59.camel@pasglop> <47BABD3A.7010102@anagramm.de>
+	 <20080219040530.7b1d115d.akpm@linux-foundation.org>
+	 <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
+	 <20080220121818.GA20836@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 07:38:40 +1100
+Message-Id: <1203539920.10422.13.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Divy Le Ray wrote:
-> Jeff Garzik wrote:
->> Mostly fixes, a few cleanups (generally assisting fixes), and an
->> exception for PS3 wireless because it had been posted, reviewed and
->> acked for a while, just not committed.
->>
->> Please pull from 'upstream-davem' branch of
->> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
->> upstream-davem
->>
->> to receive the following updates:
->>
->>  
->>  drivers/net/cxgb3/sge.c          |   35 +-
->>    
->> diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
->> index 9ca8c66..979f3fc 100644
->> --- a/drivers/net/cxgb3/sge.c
->> +++ b/drivers/net/cxgb3/sge.c
->> @@ -1059,6 +1059,14 @@ static void write_tx_pkt_wr(struct adapter 
->> *adap, struct sk_buff *skb,
->>               htonl(V_WR_TID(q->token)));
->>  }
->>  
->> +static inline void t3_stop_queue(struct net_device *dev, struct 
->> sge_qset *qs,
->> +                 struct sge_txq *q)
->> +{
->> +    netif_stop_queue(dev);
->> +    set_bit(TXQ_ETH, &qs->txq_stopped);
->> +    q->stops++;
->> +}
->> +
->>  /**
->>   *    eth_xmit - add a packet to the Ethernet Tx queue
->>   *    @skb: the packet
->> @@ -1090,31 +1098,18 @@ int t3_eth_xmit(struct sk_buff *skb, struct 
->> net_device *dev)
->>      ndesc = calc_tx_descs(skb);
->>  
->>      if (unlikely(credits < ndesc)) {
->> -        if (!netif_queue_stopped(dev)) {
->> -            netif_stop_queue(dev);
->> -            set_bit(TXQ_ETH, &qs->txq_stopped);
->> -            q->stops++;
->> -            dev_err(&adap->pdev->dev,
->> -                "%s: Tx ring %u full while queue awake!\n",
->> -                dev->name, q->cntxt_id & 7);
->> -        }
->> +        t3_stop_queue(dev, qs, q);
->> +        dev_err(&adap->pdev->dev,
->> +            "%s: Tx ring %u full while queue awake!\n",
->> +            dev->name, q->cntxt_id & 7);
->>          spin_unlock(&q->lock);
->>          return NETDEV_TX_BUSY;
->>      }
->>  
->>      q->in_use += ndesc;
->> -    if (unlikely(credits - ndesc < q->stop_thres)) {
->> -        q->stops++;
->> -        netif_stop_queue(dev);
->> -        set_bit(TXQ_ETH, &qs->txq_stopped);
->> -#if !USE_GTS
->> -        if (should_restart_tx(q) &&
->> -            test_and_clear_bit(TXQ_ETH, &qs->txq_stopped)) {
->> -            q->restarts++;
->> -            netif_wake_queue(dev);
->> -        }
->> -#endif
->> -    }
->> +    if (unlikely(credits - ndesc < q->stop_thres))
->> +        if (USE_GTS || !should_restart_tx(q))
->> +            t3_stop_queue(dev, qs, q);
->>  
->>      gen = q->gen;
->>      q->unacked += ndesc;
->>   
-> Hi Jeff,
+
+On Wed, 2008-02-20 at 15:18 +0300, Anton Vorontsov wrote:
+> On Wed, Feb 20, 2008 at 11:56:35AM +1100, Paul Mackerras wrote:
+> > Andrew Morton writes:
+> > 
+> > > Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
+> > > Could whoever did that please thwap himself?
+> > > 
+> > > Anyway, my head is now officially spinning.  Did anyone actually have a
+> > > reason why we shouldn't proceed with Anton's patch?
+> > 
+> > I was wondering if it would be sufficient to provide alternative
+> > versions of fb_readl, fb_writel etc. that do byte-swapping.
 > 
-> I thought I had NAK'ed the patch modifying sge.c from Krishna Kumar.
-> Looking back at my answer at the time, I was obviously unclear.
-> Can you please revert the drivers/net/cxgb3sge.c change ?
+> This is of course viable alternative. And I was considering this, but
+> later I abandoned the idea: that way we'll end up doing math in the
+> native endianness and then converting it to the foreign. This feels
+> ugly in contrast when we can do the right math in the first place, per
+> framebuffer.
 
-Explain why, so I can include it in the changelog please...
+Also, the type of swap to do in fb_readl/writel would have to depend
+on the bit depth which is kind of ugly.
 
-	Jeff
+> > That
+> > would mean that all framebuffers would have to have the same
+> > endianness,
+> 
+> Yup, another downside of changing the code to fix some narrow
+> problem. Plus, this means things will break if/when we'll attach
+> PCI video card into the MPC8360E-RDK.
 
+Right.
 
-
+Ben.
 
