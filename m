@@ -1,100 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762778AbYBTOIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbYBTOOO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762778AbYBTOIt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:08:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbYBTOIl
+	id S1762457AbYBTOOO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:14:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbYBTON5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:08:41 -0500
-Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:40703
-	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754042AbYBTOIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:08:40 -0500
-Message-ID: <47BC3407.20307@qumranet.com>
-Date: Wed, 20 Feb 2008 16:07:03 +0200
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [kvm-devel] build #365 issue for v2.6.25-rc2-342-g5d9c4a7 in
- ./arch/x86/kvm/kvm.ko
-References: <200802201411.18026.toralf.foerster@gmx.de> <47BC3121.8070902@qumranet.com>
-In-Reply-To: <47BC3121.8070902@qumranet.com>
-Content-Type: multipart/mixed;
- boundary="------------060305080804060306040509"
+	Wed, 20 Feb 2008 09:13:57 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:40028 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754840AbYBTON4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 09:13:56 -0500
+Date: Thu, 21 Feb 2008 01:13:48 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
+       haveblue@us.ibm.com, linuxram@us.ibm.com, viro@ZenIV.linux.org.uk,
+       linux-fsdevel@vger.kernel.org, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: git tree with VFS stuff
+Message-Id: <20080221011348.ef5da6c5.sfr@canb.auug.org.au>
+In-Reply-To: <E1JRSaC-0005T2-Ew@pomaz-ex.szeredi.hu>
+References: <E1JRSaC-0005T2-Ew@pomaz-ex.szeredi.hu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060305080804060306040509
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+--Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> Toralf Förster wrote:
->> Hello,
->>
->> the build with the attached .config failed, make ends with:
->> ...
->>   HOSTCC  arch/x86/boot/tools/build
->>   BUILD   arch/x86/boot/bzImage
->> Root device is (3, 8)
->> Setup is 12280 bytes (padded to 12288 bytes).
->> System is 2192 kB
->> Kernel: arch/x86/boot/bzImage is ready  (#1)
->>   Building modules, stage 2.
->>   MODPOST 211 modules
->> ERROR: "smp_ops" [arch/x86/kvm/kvm.ko] undefined!
->> make[1]: *** [__modpost] Error 1
->> make: *** [modules] Error 2
->>
->>
->> The build was made with :
->> $> make mrproper && make rndconfig && <tweak config file> && make 
->> oldconfig && make
->>
->> Here's the config:
->>   
+Hi Miklos,
+
+On Tue, 19 Feb 2008 14:32:28 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
 >
-> Looks like KVM conflicts with CONFIG_VOYAGER...
->
+> I've created a git tree with the following mounts related stuff:
+>=20
+>   - read-only bind mounts
+>   - /proc/<pid>/mountinfo
+>   - unprivileged mounts
+>=20
+> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfsstuff.git master
+>=20
+> I guess, giving these a spin in linux-next wouldn't hurt?
 
-Attached patch should fix.
+I don't think this is what we want to use linux-next for.  Linux-next is
+really a place for stuff that will pretty clearly go into the next kernel
+release i.e. 2.6.26 right now.  If you want to experiment on things for
+beyond that timeframe, then a snapshot of linux-next may be a good base.
+I will take them when they reach the appropriate subsystem tree and are
+ready for integration.
 
-Subject: x86: disable KVM on Voyager
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Most classic Pentiums don't have hardware virtualization
-extension, and building kvm with voyager generates
-spurious failures.
+--Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX
+Content-Type: application/pgp-signature
 
-Signed-off-by: Avi Kivity <avi@qumranet.com>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-Any sufficiently difficult bug is indistinguishable from a feature.
+iD8DBQFHvDWhTgG2atn1QN8RAiLrAJ46p80TvrjvgxSEqzfh3XjJ8owuIwCdHNik
+gZvWxJyeWxymq9S6aJQF2m0=
+=zCOW
+-----END PGP SIGNATURE-----
 
-
---------------060305080804060306040509
-Content-Type: text/x-patch;
- name="kvm-vs-voyager.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kvm-vs-voyager.patch"
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index cc2bc37..e27962c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -21,7 +21,7 @@ config X86
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
- 	select HAVE_KPROBES
--	select HAVE_KVM
-+	select HAVE_KVM if ((X86_32 && !X86_VOYAGER) || X86_64)
- 
- 
- config GENERIC_LOCKBREAK
-
---------------060305080804060306040509--
+--Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX--
