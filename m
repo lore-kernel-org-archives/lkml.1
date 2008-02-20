@@ -1,56 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765914AbYBTPc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765972AbYBTPdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765914AbYBTPc5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:32:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932351AbYBTP2X
+	id S1765972AbYBTPdg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:33:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932363AbYBTP21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:28:23 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:35879 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932324AbYBTP2O (ORCPT
+	Wed, 20 Feb 2008 10:28:27 -0500
+Received: from viefep20-int.chello.at ([62.179.121.40]:39131 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765294AbYBTP2Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:28:14 -0500
-X-SourceIP: 80.56.237.116
-Message-Id: <20080220150307.640565000@chello.nl>
+	Wed, 20 Feb 2008 10:28:16 -0500
+X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 10:28:15 EST
+Message-Id: <20080220150306.424308000@chello.nl>
 References: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:28 +0100
+Date: Wed, 20 Feb 2008 15:46:19 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 18/28] netvm: filter emergency skbs.
-Content-Disposition: inline; filename=netvm-sk_filter.patch
+Subject: [PATCH 09/28] mm: __GFP_MEMALLOC
+Content-Disposition: inline; filename=mm-page_alloc-GFP_EMERGENCY.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Toss all emergency packets not for a SOCK_MEMALLOC socket. This ensures our
-precious memory reserve doesn't get stuck waiting for user-space.
-
-The correctness of this approach relies on the fact that networks must be
-assumed lossy.
+__GFP_MEMALLOC will allow the allocation to disregard the watermarks, 
+much like PF_MEMALLOC.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h |    3 +++
- 1 file changed, 3 insertions(+)
+ include/linux/gfp.h |    3 ++-
+ mm/page_alloc.c     |    4 +++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/include/net/sock.h
+Index: linux-2.6/include/linux/gfp.h
 ===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -998,6 +998,9 @@ static inline int sk_filter(struct sock 
- {
- 	int err;
- 	struct sk_filter *filter;
-+
-+	if (skb_emergency(skb) && !sk_has_memalloc(sk))
-+		return -ENOMEM;
- 	
- 	err = security_sock_rcv_skb(sk, skb);
- 	if (err)
+--- linux-2.6.orig/include/linux/gfp.h
++++ linux-2.6/include/linux/gfp.h
+@@ -43,6 +43,7 @@ struct vm_area_struct;
+ #define __GFP_REPEAT	((__force gfp_t)0x400u)	/* Retry the allocation.  Might fail */
+ #define __GFP_NOFAIL	((__force gfp_t)0x800u)	/* Retry for ever.  Cannot fail */
+ #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* Do not retry.  Might fail */
++#define __GFP_MEMALLOC  ((__force gfp_t)0x2000u)/* Use emergency reserves */
+ #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
+ #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
+ #define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
+@@ -88,7 +89,7 @@ struct vm_area_struct;
+ /* Control page allocator reclaim behavior */
+ #define GFP_RECLAIM_MASK (__GFP_WAIT|__GFP_HIGH|__GFP_IO|__GFP_FS|\
+ 			__GFP_NOWARN|__GFP_REPEAT|__GFP_NOFAIL|\
+-			__GFP_NORETRY|__GFP_NOMEMALLOC)
++			__GFP_NORETRY|__GFP_MEMALLOC|__GFP_NOMEMALLOC)
+ 
+ /* Control allocation constraints */
+ #define GFP_CONSTRAINT_MASK (__GFP_HARDWALL|__GFP_THISNODE)
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1474,7 +1474,9 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
+ 		alloc_flags |= ALLOC_HARDER;
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_irq() && (p->flags & PF_MEMALLOC))
++		if (gfp_mask & __GFP_MEMALLOC)
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_irq() && (p->flags & PF_MEMALLOC))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 		else if (!in_interrupt() &&
+ 				unlikely(test_thread_flag(TIF_MEMDIE)))
 
 --
 
