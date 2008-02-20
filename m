@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYBTGu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761794AbYBTGuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757641AbYBTGu2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 01:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYBTGuQ
+	id S1761794AbYBTGuu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 01:50:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755710AbYBTGuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 01:50:16 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:38064 "EHLO
+	Wed, 20 Feb 2008 01:50:22 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38069 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751282AbYBTGuP (ORCPT
+	with ESMTP id S1755220AbYBTGuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 01:50:15 -0500
-Date: Tue, 19 Feb 2008 22:46:42 -0800
+	Wed, 20 Feb 2008 01:50:20 -0500
+Date: Tue, 19 Feb 2008 22:54:06 -0800
 From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
-	build
-Message-ID: <20080220064642.GA22884@kroah.com>
-References: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
+To: Brandon Philips <brandon@ifup.org>
+Cc: Hans-J??rgen Koch <hjk@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] UIO: introduce sysfs_ops for map_attr_ktype
+Message-ID: <20080220065406.GB22884@kroah.com>
+References: <20080213180304.4ffa81e9@dilbert.local> <20080213173322.GD10733@kroah.com> <20080219095505.GA875@plankton.ifup.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
+In-Reply-To: <20080219095505.GA875@plankton.ifup.org>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 18, 2008 at 04:22:16PM -0800, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue, Feb 19, 2008 at 01:55:05AM -0800, Brandon Philips wrote:
+> This fixes two bugs with UIO that cropped up recently in -rc1
 > 
-> Fix firmware_sample_firmware_class module to build without error.
-> sysfs.h already has the function prototypes and has them correctly.
+> 1) WARNING: at fs/sysfs/file.c:334 sysfs_open_file when trying to open
+>    a map addr/size file - complaining about missing sysfs_ops for ktype
+>         
+> 2) Permission denied when reading uio/uio0/maps/map0/{addr,size} when
+>    files are mode S_IRUGO
 > 
-> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
-> include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
+> Also fix a typo: attr_attribute -> addr_attribute
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
->  1 file changed, 3 deletions(-)
+> Signed-off-by: Brandon Philips <bphilips@suse.de>
 
-Can we move this file to the samples/ directory, so the build will catch
-stuff like this?
+Hm, I thought I could get away with just using a kobject attribute, not
+a special one.
 
-What's the final version of this patch?
-
-thanks,
+Thanks for fixing this, it was my fault.
 
 greg k-h
