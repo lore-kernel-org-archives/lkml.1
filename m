@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759423AbYBTJGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbYBTJK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759423AbYBTJGM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 04:06:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754785AbYBTJFx
+	id S1759292AbYBTJK4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 04:10:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755162AbYBTJKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 04:05:53 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:35783 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754230AbYBTJFu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 04:05:50 -0500
-Date: Wed, 20 Feb 2008 03:05:48 -0600
-From: Robin Holt <holt@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps
-	(f.e. for XPmem)
-Message-ID: <20080220090548.GH11391@sgi.com>
-References: <20080215064859.384203497@sgi.com> <200802201055.21343.nickpiggin@yahoo.com.au> <20080220031221.GE11391@sgi.com> <200802201451.46069.nickpiggin@yahoo.com.au> <20080220090035.GG11391@sgi.com>
+	Wed, 20 Feb 2008 04:10:39 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40378 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754148AbYBTJKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 04:10:36 -0500
+Date: Wed, 20 Feb 2008 10:10:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, sandmann@redhat.com, tglx@tglx.de,
+       hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-ID: <20080220091022.GB31424@elte.hu>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080220090035.GG11391@sgi.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <20080219123756.6261c13c@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 03:00:36AM -0600, Robin Holt wrote:
-> On Wed, Feb 20, 2008 at 02:51:45PM +1100, Nick Piggin wrote:
-> > On Wednesday 20 February 2008 14:12, Robin Holt wrote:
-> > > For XPMEM, we do not currently allow file backed
-> > > mapping pages from being exported so we should never reach this condition.
-> > > It has been an issue since day 1.  We have operated with that assumption
-> > > for 6 years and have not had issues with that assumption.  The user of
-> > > xpmem is MPT and it controls the communication buffers so it is reasonable
-> > > to expect this type of behavior.
-> > 
-> > OK, that makes things simpler.
-> > 
-> > So why can't you export a device from your xpmem driver, which
-> > can be mmap()ed to give out "anonymous" memory pages to be used
-> > for these communication buffers?
+
+* Arjan van de Ven <arjan@infradead.org> wrote:
+
+> From: Soren Sandmann <sandmann@redhat.com>
+> Subject: [PATCH] x86: add the debugfs interface for the sysprof tool
 > 
-> Because we need to have heap and stack available as well.  MPT does
-> not control all the communication buffer areas.  I haven't checked, but
-> this is the same problem that IB will have.  I believe they are actually
-> allowing any memory region be accessible, but I am not sure of that.
+> The sysprof tool is a very easy to use GUI tool to find out where 
+> userspace is spending CPU time. See 
+> http://www.daimi.au.dk/~sandmann/sysprof/ for more information and 
+> screenshots on this tool.
+> 
+> Sysprof needs a 200 line kernel module to do it's work, this module 
+> puts some simple profiling data into debugfs.
 
-I should have read my work email first.  I had gotten an email from
-one of our MPT developers saying they would love it if they could share
-file backed memory areas as well as it would help them with their MPI-IO
-functions which currently need to do multiple copy steps.  Not sure how
-high of a priority I am going to be able to make that.
+thanks, looks good to me - applied.
 
-
-Thanks,
-Robin
+	Ingo
