@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933932AbYBTWev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763694AbYBTWha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933932AbYBTWev (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:34:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755129AbYBTWee
+	id S1763694AbYBTWha (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:37:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbYBTWhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:34:34 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45331 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbYBTWec (ORCPT
+	Wed, 20 Feb 2008 17:37:17 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56948 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbYBTWhQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:34:32 -0500
-Date: Thu, 21 Feb 2008 00:34:30 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Vlad Yasevich <vladislav.yasevich@hp.com>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 7/8] [SCTP]: uninline sctp_add_cmd_sf
-In-Reply-To: <47BCA6B8.5000904@hp.com>
-Message-ID: <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
- <47BCA6B8.5000904@hp.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-1782606873-1203546870=:17063"
+	Wed, 20 Feb 2008 17:37:16 -0500
+Date: Wed, 20 Feb 2008 14:36:54 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, sandmann@redhat.com,
+       tglx@tglx.de, hpa@zytor.com
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+Message-ID: <20080220143654.20ae7bea@laptopd505.fenrus.org>
+In-Reply-To: <1203543869.6243.106.camel@lappy>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org>
+	<1203531375.6243.52.camel@lappy>
+	<20080220103940.0a0b5ce0@laptopd505.fenrus.org>
+	<1203533622.6243.55.camel@lappy>
+	<20080220112655.18011dab@laptopd505.fenrus.org>
+	<1203541122.6243.103.camel@lappy>
+	<20080220130736.4ccb2687@laptopd505.fenrus.org>
+	<1203543869.6243.106.camel@lappy>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed, 20 Feb 2008 22:44:29 +0100
+Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
----696243703-1782606873-1203546870=:17063
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 20 Feb 2008, Vlad Yasevich wrote:
-
-> Ilpo Järvinen wrote:
-> > I added inline to sctp_add_cmd and appropriate comment there to
-> > avoid adding another call into the call chain. This works at least
-> > with "gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)". Alternatively,
-> > __sctp_add_cmd could be introduced to .h.
-> > 
 > 
-> My only concern was performance regressions, but it looks like it
-> doesn't effect anything from the few quick runs I've made.
+> On Wed, 2008-02-20 at 13:07 -0800, Arjan van de Ven wrote:
+> > On Wed, 20 Feb 2008 21:58:42 +0100
+> > Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > 
+> > > On Wed, 2008-02-20 at 11:26 -0800, Arjan van de Ven wrote:
+> > > 
+> > > > feel free to reinvent a whole GUI just to avoid a 200 line
+> > > > kernel module. sysprof is here. it works. 
+> > > 
+> > > > the gui is REALLY nice.
+> > > 
+> > > I guess we have to agree to disagree here. Its plain useless from
+> > > my POV.
+> > 
+> > that's fine. Different tools for different people. sysprof isn't
+> > aimed at kernel developers.
+> 
+> That was speaking from userland days.
+> 
+> But you forgot the more important points about API and wild-growth of
+> duplicate interfaces.
 
-There was one call made anyway, it's a bit hard to see how it would hurt 
-to push that BUG() deeper down (in fact, this is one of the easiest case 
-in this respect, many other cases elsewhere that need uninlining don't 
-currently make any calls with inlines).
+yes there's multiple interfaces. There are multiple interfaces *today*.
+Oprofile/perfmon2 are very focused on CPU events and have complex interfaces,
+sysprof has a much more simple interface (and yes, very specific to syspref)
+that just focuses on samples.
 
-> Since we are putting sctp_add_cmd_sf() on the call stack, we might
-> as well get rid of sctp_add_cmd() and reduce it a bit more.
+Sadly, I think there's use for both, and forcing both into the same straightjacket is a mistake imo.
 
-IMHO it is definately better solution for archiving the size reduction,
-I just didn't know before that the only sctp_add_cmd call could be 
-converted.
-
-[...snip...]
-> diff --git a/net/sctp/command.c b/net/sctp/command.c
-> index bb97733..3a06513 100644
-> --- a/net/sctp/command.c
-> +++ b/net/sctp/command.c
-> @@ -51,19 +51,16 @@ int sctp_init_cmd_seq(sctp_cmd_seq_t *seq)
->  
->  /* Add a command to a sctp_cmd_seq_t.
->   * Return 0 if the command sequence is full.
-> + *
-> + * Inline here is not a mistake, this way sctp_add_cmd_sf doesn't need extra
-> + * calls, size penalty is of insignificant magnitude here
-
-This won't be a necessary note anymore. :-)
-
-[...snip...]
 
 -- 
- i.
----696243703-1782606873-1203546870=:17063--
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
