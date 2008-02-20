@@ -1,314 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765238AbYBTPWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765347AbYBTPWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765238AbYBTPWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:22:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbYBTPTV
+	id S1765347AbYBTPWw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:22:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764079AbYBTPTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:19:21 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:37868 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753070AbYBTPSh (ORCPT
+	Wed, 20 Feb 2008 10:19:24 -0500
+Received: from viefep31-int.chello.at ([62.179.121.49]:52814 "EHLO
+	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbYBTPSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 20 Feb 2008 10:18:37 -0500
-X-SourceIP: 80.56.237.116
-Message-Id: <20080220150306.945681000@chello.nl>
+Message-Id: <20080220150305.020202000@chello.nl>
 References: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:23 +0100
+Date: Wed, 20 Feb 2008 15:46:11 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 13/28] net: packet split receive api
-Content-Disposition: inline; filename=net-ps_rx.patch
+Subject: [PATCH 01/28] mm: gfp_to_alloc_flags()
+Content-Disposition: inline; filename=mm-gfp-to-alloc_flags.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some packet-split receive hooks.
-
-For one this allows to do NUMA node affine page allocs. Later on these hooks
-will be extended to do emergency reserve allocations for fragments.
+Factor out the gfp to alloc_flags mapping so it can be used in other places.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- drivers/net/bnx2.c             |    8 +++-----
- drivers/net/e1000/e1000_main.c |    8 ++------
- drivers/net/e1000e/netdev.c    |    7 ++-----
- drivers/net/igb/igb_main.c     |    8 ++------
- drivers/net/ixgbe/ixgbe_main.c |   10 +++-------
- drivers/net/sky2.c             |   16 ++++++----------
- include/linux/skbuff.h         |   23 +++++++++++++++++++++++
- net/core/skbuff.c              |   20 ++++++++++++++++++++
- 8 files changed, 61 insertions(+), 39 deletions(-)
+ mm/internal.h   |   11 ++++++
+ mm/page_alloc.c |   98 ++++++++++++++++++++++++++++++++------------------------
+ 2 files changed, 67 insertions(+), 42 deletions(-)
 
-Index: linux-2.6/drivers/net/e1000/e1000_main.c
+Index: linux-2.6/mm/internal.h
 ===================================================================
---- linux-2.6.orig/drivers/net/e1000/e1000_main.c
-+++ linux-2.6/drivers/net/e1000/e1000_main.c
-@@ -4478,12 +4478,8 @@ e1000_clean_rx_irq_ps(struct e1000_adapt
- 			pci_unmap_page(pdev, ps_page_dma->ps_page_dma[j],
- 					PAGE_SIZE, PCI_DMA_FROMDEVICE);
- 			ps_page_dma->ps_page_dma[j] = 0;
--			skb_fill_page_desc(skb, j, ps_page->ps_page[j], 0,
--			                   length);
-+			skb_add_rx_frag(skb, j, ps_page->ps_page[j], 0, length);
- 			ps_page->ps_page[j] = NULL;
--			skb->len += length;
--			skb->data_len += length;
--			skb->truesize += length;
- 		}
- 
- 		/* strip the ethernet crc, problem is we're using pages now so
-@@ -4691,7 +4687,7 @@ e1000_alloc_rx_buffers_ps(struct e1000_a
- 			if (j < adapter->rx_ps_pages) {
- 				if (likely(!ps_page->ps_page[j])) {
- 					ps_page->ps_page[j] =
--						alloc_page(GFP_ATOMIC);
-+						netdev_alloc_page(netdev);
- 					if (unlikely(!ps_page->ps_page[j])) {
- 						adapter->alloc_rx_buff_failed++;
- 						goto no_buffers;
-Index: linux-2.6/include/linux/skbuff.h
+--- linux-2.6.orig/mm/internal.h
++++ linux-2.6/mm/internal.h
+@@ -47,4 +47,15 @@ static inline unsigned long page_order(s
+ 	VM_BUG_ON(!PageBuddy(page));
+ 	return page_private(page);
+ }
++
++#define ALLOC_HARDER		0x01 /* try to alloc harder */
++#define ALLOC_HIGH		0x02 /* __GFP_HIGH set */
++#define ALLOC_WMARK_MIN		0x04 /* use pages_min watermark */
++#define ALLOC_WMARK_LOW		0x08 /* use pages_low watermark */
++#define ALLOC_WMARK_HIGH	0x10 /* use pages_high watermark */
++#define ALLOC_NO_WATERMARKS	0x20 /* don't check watermarks at all */
++#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
++
++int gfp_to_alloc_flags(gfp_t gfp_mask);
++
+ #endif
+Index: linux-2.6/mm/page_alloc.c
 ===================================================================
---- linux-2.6.orig/include/linux/skbuff.h
-+++ linux-2.6/include/linux/skbuff.h
-@@ -846,6 +846,9 @@ static inline void skb_fill_page_desc(st
- 	skb_shinfo(skb)->nr_frags = i + 1;
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1127,14 +1127,6 @@ failed:
+ 	return NULL;
  }
  
-+extern void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
-+			    int off, int size);
-+
- #define SKB_PAGE_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->nr_frags)
- #define SKB_FRAG_ASSERT(skb) 	BUG_ON(skb_shinfo(skb)->frag_list)
- #define SKB_LINEAR_ASSERT(skb)  BUG_ON(skb_is_nonlinear(skb))
-@@ -1339,6 +1342,26 @@ static inline struct sk_buff *netdev_all
- 	return __netdev_alloc_skb(dev, length, GFP_ATOMIC);
- }
+-#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
+-#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
+-#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
+-#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
+-#define ALLOC_HARDER		0x10 /* try to alloc harder */
+-#define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
+-#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
+-
+ #ifdef CONFIG_FAIL_PAGE_ALLOC
  
-+extern struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask);
-+
-+/**
-+ *	netdev_alloc_page - allocate a page for ps-rx on a specific device
-+ *	@dev: network device to receive on
-+ *
-+ * 	Allocate a new page node local to the specified device.
-+ *
-+ * 	%NULL is returned if there is no free memory.
+ static struct fail_page_alloc_attr {
+@@ -1523,6 +1515,44 @@ static void set_page_owner(struct page *
+ #endif /* CONFIG_PAGE_OWNER */
+ 
+ /*
++ * get the deepest reaching allocation flags for the given gfp_mask
 + */
-+static inline struct page *netdev_alloc_page(struct net_device *dev)
++int gfp_to_alloc_flags(gfp_t gfp_mask)
 +{
-+	return __netdev_alloc_page(dev, GFP_ATOMIC);
++	struct task_struct *p = current;
++	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
++	const gfp_t wait = gfp_mask & __GFP_WAIT;
++
++	/*
++	 * The caller may dip into page reserves a bit more if the caller
++	 * cannot run direct reclaim, or if the caller has realtime scheduling
++	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
++	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
++	 */
++	if (gfp_mask & __GFP_HIGH)
++		alloc_flags |= ALLOC_HIGH;
++
++	if (!wait) {
++		alloc_flags |= ALLOC_HARDER;
++		/*
++		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
++		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
++		 */
++		alloc_flags &= ~ALLOC_CPUSET;
++	} else if (unlikely(rt_task(p)) && !in_interrupt())
++		alloc_flags |= ALLOC_HARDER;
++
++	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
++		if (!in_interrupt() &&
++		    ((p->flags & PF_MEMALLOC) ||
++		     unlikely(test_thread_flag(TIF_MEMDIE))))
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++	}
++
++	return alloc_flags;
 +}
 +
-+static inline void netdev_free_page(struct net_device *dev, struct page *page)
-+{
-+	__free_page(page);
-+}
-+
- /**
-  *	skb_clone_writable - is the header of a clone writable
-  *	@skb: buffer to check
-Index: linux-2.6/net/core/skbuff.c
-===================================================================
---- linux-2.6.orig/net/core/skbuff.c
-+++ linux-2.6/net/core/skbuff.c
-@@ -263,6 +263,26 @@ struct sk_buff *__netdev_alloc_skb(struc
- 	return skb;
- }
++/*
+  * This is the 'heart' of the zoned buddy allocator.
+  */
+ struct page *
+@@ -1577,48 +1607,28 @@ restart:
+ 	 * OK, we're below the kswapd watermark and have kicked background
+ 	 * reclaim. Now things get more complex, so set up alloc_flags according
+ 	 * to how we want to proceed.
+-	 *
+-	 * The caller may dip into page reserves a bit more if the caller
+-	 * cannot run direct reclaim, or if the caller has realtime scheduling
+-	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
+-	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
+ 	 */
+-	alloc_flags = ALLOC_WMARK_MIN;
+-	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
+-		alloc_flags |= ALLOC_HARDER;
+-	if (gfp_mask & __GFP_HIGH)
+-		alloc_flags |= ALLOC_HIGH;
+-	if (wait)
+-		alloc_flags |= ALLOC_CPUSET;
++	alloc_flags = gfp_to_alloc_flags(gfp_mask);
  
-+struct page *__netdev_alloc_page(struct net_device *dev, gfp_t gfp_mask)
-+{
-+	int node = dev->dev.parent ? dev_to_node(dev->dev.parent) : -1;
-+	struct page *page;
-+
-+	page = alloc_pages_node(node, gfp_mask, 0);
-+	return page;
-+}
-+EXPORT_SYMBOL(__netdev_alloc_page);
-+
-+void skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page, int off,
-+		int size)
-+{
-+	skb_fill_page_desc(skb, i, page, off, size);
-+	skb->len += size;
-+	skb->data_len += size;
-+	skb->truesize += size;
-+}
-+EXPORT_SYMBOL(skb_add_rx_frag);
-+
- static void skb_drop_list(struct sk_buff **listp)
- {
- 	struct sk_buff *list = *listp;
-Index: linux-2.6/drivers/net/sky2.c
-===================================================================
---- linux-2.6.orig/drivers/net/sky2.c
-+++ linux-2.6/drivers/net/sky2.c
-@@ -1216,7 +1216,7 @@ static struct sk_buff *sky2_rx_alloc(str
- 	}
+-	/*
+-	 * Go through the zonelist again. Let __GFP_HIGH and allocations
+-	 * coming from realtime tasks go deeper into reserves.
+-	 *
+-	 * This is the last chance, in general, before the goto nopage.
+-	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
+-	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
+-	 */
+-	page = get_page_from_freelist(gfp_mask, order, zonelist, alloc_flags);
++	/* This is the last chance, in general, before the goto nopage. */
++	page = get_page_from_freelist(gfp_mask, order, zonelist,
++			alloc_flags & ~ALLOC_NO_WATERMARKS);
+ 	if (page)
+ 		goto got_pg;
  
- 	for (i = 0; i < sky2->rx_nfrags; i++) {
--		struct page *page = alloc_page(GFP_ATOMIC);
-+		struct page *page = netdev_alloc_page(sky2->netdev);
- 
- 		if (!page)
- 			goto free_partial;
-@@ -2088,8 +2088,8 @@ static struct sk_buff *receive_copy(stru
- }
- 
- /* Adjust length of skb with fragments to match received data */
--static void skb_put_frags(struct sk_buff *skb, unsigned int hdr_space,
--			  unsigned int length)
-+static void skb_put_frags(struct sky2_port *sky2, struct sk_buff *skb,
-+			  unsigned int hdr_space, unsigned int length)
- {
- 	int i, num_frags;
- 	unsigned int size;
-@@ -2106,15 +2106,11 @@ static void skb_put_frags(struct sk_buff
- 
- 		if (length == 0) {
- 			/* don't need this page */
--			__free_page(frag->page);
-+			netdev_free_page(sky2->netdev, frag->page);
- 			--skb_shinfo(skb)->nr_frags;
- 		} else {
- 			size = min(length, (unsigned) PAGE_SIZE);
+ 	/* This allocation should allow future memory freeing. */
 -
--			frag->size = size;
--			skb->data_len += size;
--			skb->truesize += size;
--			skb->len += size;
-+			skb_add_rx_frag(skb, i, frag->page, 0, size);
- 			length -= size;
+ rebalance:
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
+-			&& !in_interrupt()) {
+-		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
++	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+ nofail_alloc:
+-			/* go through the zonelist yet again, ignoring mins */
+-			page = get_page_from_freelist(gfp_mask, order,
+-				zonelist, ALLOC_NO_WATERMARKS);
+-			if (page)
+-				goto got_pg;
+-			if (gfp_mask & __GFP_NOFAIL) {
+-				congestion_wait(WRITE, HZ/50);
+-				goto nofail_alloc;
+-			}
++		/* go through the zonelist yet again, ignoring mins */
++		page = get_page_from_freelist(gfp_mask, order, zonelist,
++				ALLOC_NO_WATERMARKS);
++		if (page)
++			goto got_pg;
++
++		if (wait && (gfp_mask & __GFP_NOFAIL)) {
++			congestion_wait(WRITE, HZ/50);
++			goto nofail_alloc;
  		}
+ 		goto nopage;
  	}
-@@ -2141,7 +2137,7 @@ static struct sk_buff *receive_new(struc
- 	sky2_rx_map_skb(sky2->hw->pdev, re, hdr_space);
+@@ -1627,6 +1637,10 @@ nofail_alloc:
+ 	if (!wait)
+ 		goto nopage;
  
- 	if (skb_shinfo(skb)->nr_frags)
--		skb_put_frags(skb, hdr_space, length);
-+		skb_put_frags(sky2, skb, hdr_space, length);
- 	else
- 		skb_put(skb, length);
- 	return skb;
-Index: linux-2.6/drivers/net/bnx2.c
-===================================================================
---- linux-2.6.orig/drivers/net/bnx2.c
-+++ linux-2.6/drivers/net/bnx2.c
-@@ -2356,7 +2356,7 @@ bnx2_alloc_rx_page(struct bnx2 *bp, u16 
- 	struct sw_pg *rx_pg = &bp->rx_pg_ring[index];
- 	struct rx_bd *rxbd =
- 		&bp->rx_pg_desc_ring[RX_RING(index)][RX_IDX(index)];
--	struct page *page = alloc_page(GFP_ATOMIC);
-+	struct page *page = netdev_alloc_page(bp->dev);
++	/* Avoid recursion of direct reclaim */
++	if (p->flags & PF_MEMALLOC)
++		goto nopage;
++
+ 	cond_resched();
  
- 	if (!page)
- 		return -ENOMEM;
-@@ -2381,7 +2381,7 @@ bnx2_free_rx_page(struct bnx2 *bp, u16 i
- 	pci_unmap_page(bp->pdev, pci_unmap_addr(rx_pg, mapping), PAGE_SIZE,
- 		       PCI_DMA_FROMDEVICE);
- 
--	__free_page(page);
-+	netdev_free_page(bp->dev, page);
- 	rx_pg->page = NULL;
- }
- 
-@@ -2705,9 +2705,7 @@ bnx2_rx_skb(struct bnx2 *bp, struct bnx2
- 			}
- 
- 			frag_size -= frag_len;
--			skb->data_len += frag_len;
--			skb->truesize += frag_len;
--			skb->len += frag_len;
-+			skb_add_rx_frag(skb, i, rx_pg->page, 0, frag_len);
- 
- 			pg_prod = NEXT_RX_BD(pg_prod);
- 			pg_cons = RX_PG_RING_IDX(NEXT_RX_BD(pg_cons));
-Index: linux-2.6/drivers/net/e1000e/netdev.c
-===================================================================
---- linux-2.6.orig/drivers/net/e1000e/netdev.c
-+++ linux-2.6/drivers/net/e1000e/netdev.c
-@@ -252,7 +252,7 @@ static void e1000_alloc_rx_buffers_ps(st
- 				continue;
- 			}
- 			if (!ps_page->page) {
--				ps_page->page = alloc_page(GFP_ATOMIC);
-+				ps_page->page = netdev_alloc_page(netdev);
- 				if (!ps_page->page) {
- 					adapter->alloc_rx_buff_failed++;
- 					goto no_buffers;
-@@ -714,11 +714,8 @@ static bool e1000_clean_rx_irq_ps(struct
- 			pci_unmap_page(pdev, ps_page->dma, PAGE_SIZE,
- 				       PCI_DMA_FROMDEVICE);
- 			ps_page->dma = 0;
--			skb_fill_page_desc(skb, j, ps_page->page, 0, length);
-+			skb_add_rx_frag(skb, j, ps_page->page, 0, length);
- 			ps_page->page = NULL;
--			skb->len += length;
--			skb->data_len += length;
--			skb->truesize += length;
- 		}
- 
- copydone:
-Index: linux-2.6/drivers/net/igb/igb_main.c
-===================================================================
---- linux-2.6.orig/drivers/net/igb/igb_main.c
-+++ linux-2.6/drivers/net/igb/igb_main.c
-@@ -3506,13 +3506,9 @@ static bool igb_clean_rx_irq_adv(struct 
- 			pci_unmap_page(pdev, buffer_info->page_dma,
- 				PAGE_SIZE, PCI_DMA_FROMDEVICE);
- 			buffer_info->page_dma = 0;
--			skb_fill_page_desc(skb, j, buffer_info->page,
--						0, length);
-+			skb_add_rx_frag(skb, j, buffer_info->page, 0, length);
- 			buffer_info->page = NULL;
- 
--			skb->len += length;
--			skb->data_len += length;
--			skb->truesize += length;
- 			rx_desc->wb.upper.status_error = 0;
- 			if (staterr & E1000_RXD_STAT_EOP)
- 				break;
-@@ -3614,7 +3610,7 @@ static void igb_alloc_rx_buffers_adv(str
- 		rx_desc = E1000_RX_DESC_ADV(*rx_ring, i);
- 
- 		if (adapter->rx_ps_hdr_size && !buffer_info->page) {
--			buffer_info->page = alloc_page(GFP_ATOMIC);
-+			buffer_info->page = netdev_alloc_page(netdev);
- 			if (!buffer_info->page) {
- 				adapter->alloc_rx_buff_failed++;
- 				goto no_buffers;
-Index: linux-2.6/drivers/net/ixgbe/ixgbe_main.c
-===================================================================
---- linux-2.6.orig/drivers/net/ixgbe/ixgbe_main.c
-+++ linux-2.6/drivers/net/ixgbe/ixgbe_main.c
-@@ -367,7 +367,7 @@ static void ixgbe_alloc_rx_buffers(struc
- 
- 		if (!rx_buffer_info->page &&
- 				(adapter->flags & IXGBE_FLAG_RX_PS_ENABLED)) {
--			rx_buffer_info->page = alloc_page(GFP_ATOMIC);
-+			rx_buffer_info->page = netdev_alloc_page(netdev);
- 			if (!rx_buffer_info->page) {
- 				adapter->alloc_rx_page_failed++;
- 				goto no_buffers;
-@@ -490,13 +490,9 @@ static bool ixgbe_clean_rx_irq(struct ix
- 			pci_unmap_page(pdev, rx_buffer_info->page_dma,
- 				       PAGE_SIZE, PCI_DMA_FROMDEVICE);
- 			rx_buffer_info->page_dma = 0;
--			skb_fill_page_desc(skb, skb_shinfo(skb)->nr_frags,
--					   rx_buffer_info->page, 0, upper_len);
-+			skb_add_rx_frag(skb, skb_shinfo(skb)->nr_frags,
-+					rx_buffer_info->page, 0, upper_len);
- 			rx_buffer_info->page = NULL;
--
--			skb->len += upper_len;
--			skb->data_len += upper_len;
--			skb->truesize += upper_len;
- 		}
- 
- 		i++;
+ 	/* We now go into synchronous reclaim */
 
 --
 
