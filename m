@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbYBTFGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYBTFQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbYBTFGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750876AbYBTFGO
+	id S1756164AbYBTFQh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYBTFQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:06:14 -0500
-Received: from mail.suse.de ([195.135.220.2]:60911 "EHLO mx1.suse.de"
+	Wed, 20 Feb 2008 00:16:28 -0500
+Received: from gate.crashing.org ([63.228.1.57]:53967 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750846AbYBTFGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 00:06:13 -0500
-Date: Tue, 19 Feb 2008 21:04:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: Shaohua Li <shaohua.li@intel.com>
-Cc: Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       matthew@wil.cx, "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [bootup crash, -git] Re: patch
-	pci-pcie-aspm-support.patchadded to gregkh-2.6 tree
-Message-ID: <20080220050403.GA31314@suse.de>
-References: <1201141317.26118.2.camel@sli10-desk.sh.intel.com> <12013009171835@kroah.org> <20080202105506.GA25160@elte.hu> <20080202185145.GA13005@kroah.com> <1203399945.12681.8.camel@sli10-desk.sh.intel.com> <20080219234529.GA12967@kroah.com> <1203471367.21958.3.camel@sli10-desk.sh.intel.com> <20080220041400.GA18771@suse.de> <1203482901.23071.5.camel@sli10-desk.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203482901.23071.5.camel@sli10-desk.sh.intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1750873AbYBTFQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 00:16:27 -0500
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Message-Id: <7A7ECF09-E547-4C04-A388-C3E8755478DD@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20080219.204525.193731674.davem@davemloft.net>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: [PATCH] [LMB]: Fix lmb_add_region if region should be added at the head
+Date: Tue, 19 Feb 2008 23:16:18 -0600
+References: <Pine.LNX.4.64.0802192227170.2215@blarg.am.freescale.net> <20080219.204525.193731674.davem@davemloft.net>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 12:48:21PM +0800, Shaohua Li wrote:
-> 
-> On Tue, 2008-02-19 at 20:14 -0800, Greg KH wrote:
-> > On Wed, Feb 20, 2008 at 09:36:07AM +0800, Shaohua Li wrote:
-> > > --- linux.orig/include/linux/pci-acpi.h	2008-02-19 11:03:51.000000000 +0800
-> > > +++ linux/include/linux/pci-acpi.h	2008-02-20 09:19:15.000000000 +0800
-> > > @@ -47,6 +47,7 @@
-> > >  				OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL)
-> > >  
-> > >  #ifdef CONFIG_ACPI
-> > > +#include <acpi/acpi_bus.h>
-> > >  extern acpi_status pci_osc_control_set(acpi_handle handle, u32 flags);
-> > >  extern acpi_status __pci_osc_support_set(u32 flags, const char *hid);
-> > >  static inline acpi_status pci_osc_support_set(u32 flags)
-> > > @@ -59,13 +60,11 @@ static inline acpi_status pcie_osc_suppo
-> > >  }
-> > >  #else
-> > >  #if !defined(AE_ERROR)
-> > > -typedef u32 		acpi_status;
-> > > -#define AE_ERROR      	(acpi_status) (0x0001)
-> > > -#endif    
-> > > -static inline acpi_status pci_osc_control_set(acpi_handle handle, u32 flags)
-> > > -{return AE_ERROR;}
-> > > -static inline acpi_status pci_osc_support_set(u32 flags) {return AE_ERROR;} 
-> > > -static inline acpi_status pcie_osc_support_set(u32 flags) {return AE_ERROR;}
-> > > +#define AE_ERROR      	(0x0001)
-> > > +#endif
-> > > +#define pci_osc_control_set(handle, flags) (AE_ERROR)
-> > > +#define pci_osc_support_set(flags) (AE_ERROR)
-> > > +#define pcie_osc_support_set(flags) (AE_ERROR)
-> > 
-> > No, please use inline functions, don't change these functions that
-> > should be just fine.  Why are you needing to change them?
-> some types aren't defined in non-ACPI, like acpi_handle, acpi_status.
 
-Then why include a non-ACPI header file in non-ACPI .c files?
+On Feb 19, 2008, at 10:45 PM, David Miller wrote:
 
-thanks,
+> From: Kumar Gala <galak@kernel.crashing.org>
+> Date: Tue, 19 Feb 2008 22:27:48 -0600 (CST)
+>
+>> We introduced a bug in fixing lmb_add_region to handle an initial
+>> region being non-zero.  Before that fix it was impossible to insert
+>> a region at the head of the list since the first region always  
+>> started
+>> at zero.
+>>
+>> Now that its possible for the first region to be non-zero we need to
+>> check to see if the new region should be added at the head and if so
+>> actually add it.
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ...
+>> @@ -184,6 +184,11 @@ static long __init lmb_add_region(struct  
+>> lmb_region *rgn, u64 base, u64 size)
+>> 			break;
+>> 		}
+>> 	}
+>> +
+>> +	if (base < rgn->region[0].base) {
+>> +		rgn->region[0].base = base;
+>> +		rgn->region[0].size = size;
+>> +	}
+>> 	rgn->cnt++;
+>>
+>> 	return 0;
+>
+> Are you sure this is sufficient?
+>
+> It seems to me, to handle this properly, you'll need to handle
+> the case where the lower addressed entry you are inserting is
+> not contiguous with the existing entry 0.
+>
+> Therefore, you need to move all existing entries up a slot,
+> then you can set the 0 entry to 'base' and 'size'.
 
-greg k-h
+The for loop above the code I added will move all the existing slots  
+up one.  Its just the tail cleanup we are missing.
+
+- k
