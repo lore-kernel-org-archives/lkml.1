@@ -1,67 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbYBTMSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755235AbYBTMT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbYBTMSd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYBTMSX
+	id S1755235AbYBTMT6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbYBTMTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:18:23 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:33665 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751195AbYBTMSW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:18:22 -0500
-Date: Wed, 20 Feb 2008 15:18:18 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Clemens Koller <clemens.koller@anagramm.de>, benh@kernel.crashing.org,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-Message-ID: <20080220121818.GA20836@localhost.localdomain>
-Reply-To: avorontsov@ru.mvista.com
-References: <20080214224942.a0cb6218.akpm@linux-foundation.org> <20080215164542.GB16810@localhost.localdomain> <Pine.LNX.4.64.0802171030330.6848@anakin> <20080218081847.e9e65f2f.krzysztof.h1@poczta.fm> <19805.1203355811@turing-police.cc.vt.edu> <47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop> <47BABD3A.7010102@anagramm.de> <20080219040530.7b1d115d.akpm@linux-foundation.org> <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Wed, 20 Feb 2008 07:19:51 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:45085 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1751252AbYBTMTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 07:19:49 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Wed, 20 Feb 2008 23:19:15 +1100
+From: Nick Andrew <nick@nick-andrew.net>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Pavel Emelyanov <xemul@openvz.org>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
+Subject: [PATCH 2.6.25-rc2 3/9] config: Improve init/Kconfig help	descriptions - namespaces
+Message-ID: <20080220121915.GA2169@tull.net>
+References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20080219143307.GA27352@tull.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 11:56:35AM +1100, Paul Mackerras wrote:
-> Andrew Morton writes:
-> 
-> > Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
-> > Could whoever did that please thwap himself?
-> > 
-> > Anyway, my head is now officially spinning.  Did anyone actually have a
-> > reason why we shouldn't proceed with Anton's patch?
-> 
-> I was wondering if it would be sufficient to provide alternative
-> versions of fb_readl, fb_writel etc. that do byte-swapping.
+Rewrite the help descriptions for clarity, accuracy and consistency.
 
-This is of course viable alternative. And I was considering this, but
-later I abandoned the idea: that way we'll end up doing math in the
-native endianness and then converting it to the foreign. This feels
-ugly in contrast when we can do the right math in the first place, per
-framebuffer.
+Kernel config options affected:
 
-> That
-> would mean that all framebuffers would have to have the same
-> endianness,
+  - NAMESPACES
+  - UTS_NS
+  - IPC_NS
+  - USER_NS
+  - PID_NS
 
-Yup, another downside of changing the code to fix some narrow
-problem. Plus, this means things will break if/when we'll attach
-PCI video card into the MPC8360E-RDK.
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+---
+Here's try #2 at the 3rd patch in the series, for namespace
+descriptions. Patching against Linus' git tree now, and trying
+to comply with the standards for submitting patches. Each of
+the UTS/IPC/USER/PID descriptions is subtly different, but I
+hope they all are clear and accurate.
 
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.net/bd2
+--- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
++++ b/init/Kconfig	2008-02-20 22:55:41.000000000 +1100
+@@ -414,31 +414,71 @@
+ 	bool "Namespaces support" if EMBEDDED
+ 	default !EMBEDDED
+ 	help
+-	  Provides the way to make tasks work with different objects using
+-	  the same id. For example same IPC id may refer to different objects
+-	  or same user id or pid may refer to different tasks when used in
+-	  different namespaces.
++	  Select various namespace options.
++
++	  Namespaces allow different kernel objects (such as processes
++	  or sockets) to have the same ID in different namespaces.
++	  Identifiers like process IDs, which historically were globally
++	  unique, will now be unique only within each PID namespace.
++	  Each task can refer only to PIDs within the same namespace
++	  as the task itself.
++
++	  Namespaces are used by container systems (i.e. vservers)
++	  to provide isolation between the containers.
++
++	  This option does not affect any kernel code directly; it merely
++	  allows you to select namespace options below.
++
++	  Answer Y if you will be using a container system, and you
++	  will probably want to enable all the namespace options
++	  below.
+ 
+ config UTS_NS
+ 	bool "UTS namespace"
+ 	depends on NAMESPACES
+ 	help
+-	  In this namespace tasks see different info provided with the
+-	  uname() system call
++	  Enable support for multiple UTS system attributes.
++
++	  Each UTS namespace provides an individual view of the
++	  information returned by the uname() system call including
++	  hostname, kernel version and domain name.
++
++	  This is used by container systems (i.e. vservers) so that
++	  each container has its own hostname and other attributes.
++	  Tasks in the container are placed in the UTS namespace
++	  corresponding to the container.
++
++	  Answer Y if you will be using a container system.
+ 
+ config IPC_NS
+ 	bool "IPC namespace"
+ 	depends on NAMESPACES && SYSVIPC
+ 	help
+-	  In this namespace tasks work with IPC ids which correspond to
+-	  different IPC objects in different namespaces
++	  Enable support for namespace-specific IPC IDs.
++
++	  IPC IDs will be unique only within each IPC namespace.
++
++	  This is used by container systems (i.e. vservers).
++	  Tasks in the container are placed in the IPC namespace
++	  corresponding to the container.
++
++	  Answer Y if you will be using a container system.
+ 
+ config USER_NS
+ 	bool "User namespace (EXPERIMENTAL)"
+ 	depends on NAMESPACES && EXPERIMENTAL
+ 	help
+-	  This allows containers, i.e. vservers, to use user namespaces
+-	  to provide different user info for different servers.
++	  Enable experimental support for user namespaces.
++
++	  This is a function used by container-based virtualisation systems
++	  (e.g. vservers). User namespaces are intended to ensure that
++	  processes with the same uid which are in different containers are
++	  isolated from each other.
++
++	  Currently user namespaces provide separate accounting, while
++	  isolation must be provided using SELinux or a custom security
++	  module.
++
+ 	  If unsure, say N.
+ 
+ config PID_NS
+@@ -446,12 +486,20 @@
+ 	default n
+ 	depends on NAMESPACES && EXPERIMENTAL
+ 	help
+-	  Suport process id namespaces.  This allows having multiple
+-	  process with the same pid as long as they are in different
+-	  pid namespaces.  This is a building block of containers.
++	  Enable experimental support for hierarchical process id namespaces.
+ 
+-	  Unless you want to work with an experimental feature
+-	  say N here.
++	  Process IDs will be unique only within each PID namespace.
++	  This allows multiple processes to have the same PID
++	  so long as they are in different PID namespaces. Furthermore,
++	  each process will have a distinct PID in each namespace
++	  the process is in.
++
++	  This is used by container systems (i.e. vservers).
++	  Tasks in the container are placed in the PID namespace
++	  corresponding to the container, and can only see or
++	  affect processes in the same PID namespace.
++
++	  If unsure, say N.
+ 
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
