@@ -1,253 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761641AbYBTKPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762297AbYBTKQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761641AbYBTKPr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:15:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759083AbYBTKPY
+	id S1762297AbYBTKQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:16:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbYBTKQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:15:24 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35905 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756906AbYBTKPT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:15:19 -0500
-Date: Wed, 20 Feb 2008 19:09:15 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: "minchan Kim" <barrioskmc@gmail.com>
-Subject: Re: [RFC][PATCH] the proposal of improve page reclaim by throttle
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <44c63dc40802200149r6b03d970g2fbde74b85ad5443@mail.gmail.com>
-References: <20080220181447.6444.KOSAKI.MOTOHIRO@jp.fujitsu.com> <44c63dc40802200149r6b03d970g2fbde74b85ad5443@mail.gmail.com>
-Message-Id: <20080220185648.6447.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 20 Feb 2008 05:16:18 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41696 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752435AbYBTKQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 05:16:17 -0500
+Date: Wed, 20 Feb 2008 11:15:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Brownell <david-b@pacbell.net>
+Cc: Pavel Machek <pavel@ucw.cz>, rjw@sisk.pl,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] suspend/resume self-test
+Message-ID: <20080220101542.GC3881@elte.hu>
+References: <20080130131748.GA3796@elf.ucw.cz> <20080219101116.GA2202@elf.ucw.cz> <20080219144328.GD21176@elte.hu> <200802191112.57616.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="------_47BBF95F0000000064C5_MULTIPART_MIXED_"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200802191112.57616.david-b@pacbell.net>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---------_47BBF95F0000000064C5_MULTIPART_MIXED_
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
 
-Hi
+* David Brownell <david-b@pacbell.net> wrote:
 
-> > >  * max parallel reclaim tasks:
-> > >  *  max consumption time of
-> > >         try_to_free_pages():
-> >
-> > sorry, I inserted debug code to my patch at that time.
->=20
-> Could you send me that debug code ?
-> If you will send it to me, I will test it my environment (ARM-920T, Core2=
-Duo).
-> And I will report test result.
+> > nowhere did i suggest that it should be default-enabled ...
+> 
+> The patch you asked to be merged *DID* have it be default-enabled! So 
+> you did more than just "suggest"... if that option is enabled in 
+> Kconfig, this test is always forced on and it will cause failures on 
+> systems where STR has never worked.
 
-attached it.
-but it is very messy ;-)
+i think you dont understand what "default enabled" means in this 
+context. Default enabled means the Kconfig entry has a "default y" line 
+- which it did not have in the patch i sent.
 
-usage:
-=2E/benchloop.sh
+if a tester enables the .config option then it is very much expected to 
+be triggered, just like the other .config debug options. Of course, the 
+tester specifically enabled it, so that's what we want to happen. Not 
+some other "yes_i_really_meant_it" boot option ... There can also be 
+_another_ .config option that turns off the 'run by default' property - 
+but if someone selects the _default off_ feature and enables it, just 
+like i did, then the feature is very much expected to run.
 
-sample output
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D
-max reclaim 2
-Running with 120*40 (=3D=3D 4800) tasks.
-Time: 34.177
-14.17user 284.38system 1:43.85elapsed 287%CPU (0avgtext+0avgdata 0maxreside=
-nt)k
-0inputs+0outputs (3813major+148922minor)pagefaults 0swaps
-max prepare time: 4599 0
-max reclaim time: 2350 5781
-total
-8271
-max reclaimer
-4
-max overkill
-62131
-max saved overkill
-9740
+you really seem to have deep misunderstandings about how testers use 
+Linux, what it takes to build up a proper debug infrastructure and how 
+to utilize all these things to make Linux better. You come from the 
+embedded world where everything is configured together specifically, 
+where people know what they are using and were every feature is well 
+accounted for. But you seem to have little insight into how 
+distributions utilize kernel features and what it takes to accept the 
+help of testers who dont know the field that well but still want to help 
+out - as long as we let them.
 
+These are well-established practices we use in all other debug features 
+that help Linux today, and what you are asking for is weird, unusual and 
+wrong. Please take a look at how all the other debug stuff works. Rule
+#1: testers dont have to beg the kernel for 1 hour and have to write 2
+patches to let the test code be run finally ... ;-) This isnt even about 
+any nuances where reasonable people might disagree, this is really basic 
+testing-101 stuff.
 
-max reclaimer represent to max parallel reclaim tasks.
-total represetnto max consumption time of try_to_free_pages().
-
-Thanks
-
-
---------_47BBF95F0000000064C5_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="reclaim-throttle-3.patch"
-Content-Disposition: attachment;
- filename="reclaim-throttle-3.patch"
-Content-Transfer-Encoding: base64
-
-LS0tCiBpbmNsdWRlL2xpbnV4L21tem9uZS5oICAgfCAgICAxIAogaW5jbHVkZS9saW51eC9ub2Rl
-bWFzay5oIHwgICAgMiAKIGtlcm5lbC9zeXNjdGwuYyAgICAgICAgICB8ICAgNzggKysrKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysKIG1tL3Ztc2Nhbi5jICAgICAgICAgICAgICB8
-ICAgOTUgKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKy0KIDQg
-ZmlsZXMgY2hhbmdlZCwgMTczIGluc2VydGlvbnMoKyksIDMgZGVsZXRpb25zKC0pCgpJbmRleDog
-Yi9rZXJuZWwvc3lzY3RsLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PQotLS0gYS9rZXJuZWwvc3lzY3RsLmMJMjAwOC0w
-Mi0xNSAyMDoxNDo0MC4wMDAwMDAwMDAgKzA5MDAKKysrIGIva2VybmVsL3N5c2N0bC5jCTIwMDgt
-MDItMTYgMTY6NDU6NTguMDAwMDAwMDAwICswOTAwCkBAIC0xODcsNiArMTg3LDE4IEBAIGludCBz
-eXNjdGxfbGVnYWN5X3ZhX2xheW91dDsKIGV4dGVybiBpbnQgcHJvdmVfbG9ja2luZzsKIGV4dGVy
-biBpbnQgbG9ja19zdGF0OwogCitleHRlcm4gaW50IG1heF9yZWNsYWltZXI7CitleHRlcm4gdW5z
-aWduZWQgbG9uZyBtYXhfcmVjbGFpbV90aW1lOworZXh0ZXJuIHVuc2lnbmVkIGxvbmcgbWF4X3Jl
-Y2xhaW1fcHJlcGFyZV90aW1lOworZXh0ZXJuIGludCByZWNsYWltX2xpbWl0OworZXh0ZXJuIHVu
-c2lnbmVkIGxvbmcgbWF4X292ZXJraWxsX3JlY2xhaW07CisKK2V4dGVybiB1bnNpZ25lZCBsb25n
-IG1heF9yZWNsYWltX3RpbWVfYXV4OworZXh0ZXJuIHVuc2lnbmVkIGxvbmcgbWF4X3JlY2xhaW1f
-cHJlcGFyZV90aW1lX2F1eDsKK2V4dGVybiB1bnNpZ25lZCBsb25nIG1heF90b3RhbF90aW1lOwor
-CisKKwogLyogVGhlIGRlZmF1bHQgc3lzY3RsIHRhYmxlczogKi8KIAogc3RhdGljIHN0cnVjdCBj
-dGxfdGFibGUgcm9vdF90YWJsZVtdID0gewpAQCAtMTE1NSw2ICsxMTY3LDcyIEBAIHN0YXRpYyBz
-dHJ1Y3QgY3RsX3RhYmxlIHZtX3RhYmxlW10gPSB7CiAJCS5leHRyYTIJCT0gJm9uZSwKIAl9LAog
-I2VuZGlmCisJeworCQkuY3RsX25hbWUJPSBDVExfVU5OVU1CRVJFRCwKKwkJLnByb2NuYW1lCT0g
-Im1heF9yZWNsYWltZXIiLAorCQkuZGF0YQkJPSAmbWF4X3JlY2xhaW1lciwKKwkJLm1heGxlbgkJ
-PSBzaXplb2YobWF4X3JlY2xhaW1lciksCisJCS5tb2RlCQk9IDA2NDQsCisJCS5wcm9jX2hhbmRs
-ZXIJPSAmcHJvY19kb2ludHZlYywKKwkJLnN0cmF0ZWd5CT0gJnN5c2N0bF9pbnR2ZWMsCisJfSwK
-Kwl7CisJCS5jdGxfbmFtZQk9IENUTF9VTk5VTUJFUkVELAorCQkucHJvY25hbWUJPSAibWF4X3Jl
-Y2xhaW1fdGltZSIsCisJCS5kYXRhCQk9ICZtYXhfcmVjbGFpbV90aW1lLAorCQkubWF4bGVuCQk9
-IHNpemVvZihtYXhfcmVjbGFpbV90aW1lKSwKKwkJLm1vZGUJCT0gMDY0NCwKKwkJLnByb2NfaGFu
-ZGxlcgk9ICZwcm9jX2RvdWxvbmd2ZWNfbWlubWF4LAorCX0sCisJeworCQkuY3RsX25hbWUJPSBD
-VExfVU5OVU1CRVJFRCwKKwkJLnByb2NuYW1lCT0gIm1heF9yZWNsYWltX3ByZXBhcmVfdGltZSIs
-CisJCS5kYXRhCQk9ICZtYXhfcmVjbGFpbV9wcmVwYXJlX3RpbWUsCisJCS5tYXhsZW4JCT0gc2l6
-ZW9mKG1heF9yZWNsYWltX3ByZXBhcmVfdGltZSksCisJCS5tb2RlCQk9IDA2NDQsCisJCS5wcm9j
-X2hhbmRsZXIJPSAmcHJvY19kb3Vsb25ndmVjX21pbm1heCwKKwl9LAorCXsKKwkJLmN0bF9uYW1l
-CT0gQ1RMX1VOTlVNQkVSRUQsCisJCS5wcm9jbmFtZQk9ICJyZWNsYWltX2xpbWl0IiwKKwkJLmRh
-dGEJCT0gJnJlY2xhaW1fbGltaXQsCisJCS5tYXhsZW4JCT0gc2l6ZW9mKHJlY2xhaW1fbGltaXQp
-LAorCQkubW9kZQkJPSAwNjQ0LAorCQkucHJvY19oYW5kbGVyCT0gJnByb2NfZG9pbnR2ZWMsCisJ
-fSwKKwl7CisJCS5jdGxfbmFtZQk9IENUTF9VTk5VTUJFUkVELAorCQkucHJvY25hbWUJPSAibWF4
-X292ZXJraWxsX3JlY2xhaW0iLAorCQkuZGF0YQkJPSAmbWF4X292ZXJraWxsX3JlY2xhaW0sCisJ
-CS5tYXhsZW4JCT0gc2l6ZW9mKG1heF9vdmVya2lsbF9yZWNsYWltKSwKKwkJLm1vZGUJCT0gMDY0
-NCwKKwkJLnByb2NfaGFuZGxlcgk9ICZwcm9jX2RvdWxvbmd2ZWNfbWlubWF4LAorCX0sCisJewor
-CQkuY3RsX25hbWUJPSBDVExfVU5OVU1CRVJFRCwKKwkJLnByb2NuYW1lCT0gIm1heF9yZWNsYWlt
-X3RpbWVfYXV4IiwKKwkJLmRhdGEJCT0gJm1heF9yZWNsYWltX3RpbWVfYXV4LAorCQkubWF4bGVu
-CQk9IHNpemVvZihtYXhfcmVjbGFpbV90aW1lX2F1eCksCisJCS5tb2RlCQk9IDA2NDQsCisJCS5w
-cm9jX2hhbmRsZXIJPSAmcHJvY19kb3Vsb25ndmVjX21pbm1heCwKKwl9LAorCXsKKwkJLmN0bF9u
-YW1lCT0gQ1RMX1VOTlVNQkVSRUQsCisJCS5wcm9jbmFtZQk9ICJtYXhfcmVjbGFpbV9wcmVwYXJl
-X3RpbWVfYXV4IiwKKwkJLmRhdGEJCT0gJm1heF9yZWNsYWltX3ByZXBhcmVfdGltZV9hdXgsCisJ
-CS5tYXhsZW4JCT0gc2l6ZW9mKG1heF9yZWNsYWltX3ByZXBhcmVfdGltZV9hdXgpLAorCQkubW9k
-ZQkJPSAwNjQ0LAorCQkucHJvY19oYW5kbGVyCT0gJnByb2NfZG91bG9uZ3ZlY19taW5tYXgsCisJ
-fSwKKwl7CisJCS5jdGxfbmFtZQk9IENUTF9VTk5VTUJFUkVELAorCQkucHJvY25hbWUJPSAibWF4
-X3RvdGFsX3RpbWUiLAorCQkuZGF0YQkJPSAmbWF4X3RvdGFsX3RpbWUsCisJCS5tYXhsZW4JCT0g
-c2l6ZW9mKG1heF90b3RhbF90aW1lKSwKKwkJLm1vZGUJCT0gMDY0NCwKKwkJLnByb2NfaGFuZGxl
-cgk9ICZwcm9jX2RvdWxvbmd2ZWNfbWlubWF4LAorCX0sCisKIC8qCiAgKiBOT1RFOiBkbyBub3Qg
-YWRkIG5ldyBlbnRyaWVzIHRvIHRoaXMgdGFibGUgdW5sZXNzIHlvdSBoYXZlIHJlYWQKICAqIERv
-Y3VtZW50YXRpb24vc3lzY3RsL2N0bF91bm51bWJlcmVkLnR4dApJbmRleDogYi9tbS92bXNjYW4u
-Ywo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09Ci0tLSBhL21tL3Ztc2Nhbi5jCTIwMDgtMDItMTUgMjA6MTQ6NDAuMDAwMDAw
-MDAwICswOTAwCisrKyBiL21tL3Ztc2Nhbi5jCTIwMDgtMDItMTcgMTE6NTA6NTAuMDAwMDAwMDAw
-ICswOTAwCkBAIC0xNDIxLDYgKzE0MjEsMjMgQEAgb3V0OgogCXJldHVybiByZXQ7CiB9CiAKK3N0
-YXRpYyBERUZJTkVfU1BJTkxPQ0socmVzZWFyY2hfcmVjbGFpbV9tYXhfbG9jayk7CitzdGF0aWMg
-YXRvbWljX3QgbnJfcmVjbGFpbWVycyA9IEFUT01JQ19JTklUKDApOworc3RhdGljIERFQ0xBUkVf
-V0FJVF9RVUVVRV9IRUFEKHJlY2xhaW1fdGhyb3R0bGVfd2FpdHEpOworCisvLyBsaW1pdCAKK2lu
-dCByZWNsYWltX2xpbWl0ID0gMjsKKyNkZWZpbmUgUkVDTEFJTV9MSU1JVCAocmVjbGFpbV9saW1p
-dCAqIG51bV9oaWdobWVtX25vZGVzKCkpCisKKy8vIHJlY29yZAoraW50IG1heF9yZWNsYWltZXIg
-PSAwOwordW5zaWduZWQgbG9uZyBtYXhfcmVjbGFpbV90aW1lID0gMDsKK3Vuc2lnbmVkIGxvbmcg
-bWF4X3JlY2xhaW1fdGltZV9hdXggPSAwOwordW5zaWduZWQgbG9uZyBtYXhfcmVjbGFpbV9wcmVw
-YXJlX3RpbWUgPSAwOwordW5zaWduZWQgbG9uZyBtYXhfcmVjbGFpbV9wcmVwYXJlX3RpbWVfYXV4
-ID0gMDsKK3Vuc2lnbmVkIGxvbmcgbWF4X292ZXJraWxsX3JlY2xhaW0gPSAwOwordW5zaWduZWQg
-bG9uZyBtYXhfdG90YWxfdGltZSA9IDA7CisKIHVuc2lnbmVkIGxvbmcgdHJ5X3RvX2ZyZWVfcGFn
-ZXMoc3RydWN0IHpvbmUgKip6b25lcywgaW50IG9yZGVyLCBnZnBfdCBnZnBfbWFzaykKIHsKIAlz
-dHJ1Y3Qgc2Nhbl9jb250cm9sIHNjID0gewpAQCAtMTQzMyw4ICsxNDUwLDgyIEBAIHVuc2lnbmVk
-IGxvbmcgdHJ5X3RvX2ZyZWVfcGFnZXMoc3RydWN0IHoKIAkJLm1lbV9jZ3JvdXAgPSBOVUxMLAog
-CQkuaXNvbGF0ZV9wYWdlcyA9IGlzb2xhdGVfcGFnZXNfZ2xvYmFsLAogCX07Ci0KLQlyZXR1cm4g
-ZG9fdHJ5X3RvX2ZyZWVfcGFnZXMoem9uZXMsIGdmcF9tYXNrLCAmc2MpOworCXVuc2lnbmVkIGxv
-bmcgbnJfcmVjbGFpbWVkOworCXU2NCBzdGFydF90aW1lOworCXU2NCBwcmVwYXJlZF90aW1lOwor
-CXU2NCBlbmRfdGltZTsKKwl1NjQgcHJlcGFyaW5nX3RpbWU7CisJdTY0IHJlY2xhaW1pbmdfdGlt
-ZTsKKwl1bnNpZ25lZCBsb25nIGZyZWVfbWVtOworCWludCByZWNvcmRfbWF4X3ByZXBhcmVfdGlt
-ZSA9IDA7CisJdW5zaWduZWQgbG9uZyB0b3RhbF90aW1lOworCisJc3RhcnRfdGltZSA9IGppZmZp
-ZXNfNjQ7CisJCisJaWYgKHVubGlrZWx5KCFhdG9taWNfYWRkX3VubGVzcygmbnJfcmVjbGFpbWVy
-cywgMSwgUkVDTEFJTV9MSU1JVCkpKQorCQl3YWl0X2V2ZW50KHJlY2xhaW1fdGhyb3R0bGVfd2Fp
-dHEsCisJCQkgICBhdG9taWNfYWRkX3VubGVzcygmbnJfcmVjbGFpbWVycywgMSwgUkVDTEFJTV9M
-SU1JVCkpOworCQorCXNwaW5fbG9jaygmcmVzZWFyY2hfcmVjbGFpbV9tYXhfbG9jayk7CisJaWYg
-KGF0b21pY19yZWFkKCZucl9yZWNsYWltZXJzKSA+IG1heF9yZWNsYWltZXIpCisJCW1heF9yZWNs
-YWltZXIgPSBhdG9taWNfcmVhZCgmbnJfcmVjbGFpbWVycyk7CisJCisJcHJlcGFyZWRfdGltZSA9
-IGppZmZpZXNfNjQ7CisJcHJlcGFyaW5nX3RpbWUgPSBwcmVwYXJlZF90aW1lIC0gc3RhcnRfdGlt
-ZTsKKwlpZiAocHJlcGFyaW5nX3RpbWUgPiBtYXhfcmVjbGFpbV90aW1lKSB7CisJCXJlY29yZF9t
-YXhfcHJlcGFyZV90aW1lID0gMTsKKwkJbWF4X3JlY2xhaW1fcHJlcGFyZV90aW1lID0gcHJlcGFy
-aW5nX3RpbWU7CisJfQorCXNwaW5fdW5sb2NrKCZyZXNlYXJjaF9yZWNsYWltX21heF9sb2NrKTsK
-KwkKKwkvKiBtb3JlIHJlY2xhaW0gdW50aWwgbmVlZGVkPyAqLworCWlmIChwcmVwYXJpbmdfdGlt
-ZSA+IEhaKSB7CisJCWludCBpOworCQkKKwkJZm9yIChpID0gMDsgem9uZXNbaV0gIT0gTlVMTDsg
-aSsrKSB7CisJCQlzdHJ1Y3Qgem9uZSAqem9uZSA9IHpvbmVzW2ldOworCQkJaW50IGNsYXNzem9u
-ZV9pZHggPSB6b25lX2lkeCh6b25lc1swXSk7CisJCQkKKwkJCWlmICghcG9wdWxhdGVkX3pvbmUo
-em9uZSkpCisJCQkJY29udGludWU7CisJCQkKKwkJCWlmICh6b25lX3dhdGVybWFya19vayh6b25l
-LCBvcmRlciwgNCp6b25lLT5wYWdlc19oaWdoLAorCQkJCQkgICAgICBjbGFzc3pvbmVfaWR4LCAw
-KSkgeworCQkJCW5yX3JlY2xhaW1lZCA9IDE7CisJCQkJZ290byBvdXQ7CisJCQl9CisJCX0KKwl9
-CisJCisJbnJfcmVjbGFpbWVkID0gZG9fdHJ5X3RvX2ZyZWVfcGFnZXMoem9uZXMsIGdmcF9tYXNr
-LCAmc2MpOworCQorCXNwaW5fbG9jaygmcmVzZWFyY2hfcmVjbGFpbV9tYXhfbG9jayk7CisJZW5k
-X3RpbWUgPSBqaWZmaWVzXzY0OworCXJlY2xhaW1pbmdfdGltZSA9IGVuZF90aW1lIC0gcHJlcGFy
-ZWRfdGltZTsKKworCWlmIChyZWNvcmRfbWF4X3ByZXBhcmVfdGltZSkKKwkJbWF4X3JlY2xhaW1f
-cHJlcGFyZV90aW1lX2F1eCA9IHJlY2xhaW1pbmdfdGltZTsKKworCWlmIChyZWNsYWltaW5nX3Rp
-bWUgPiBtYXhfcmVjbGFpbV90aW1lKSB7CisJCW1heF9yZWNsYWltX3RpbWVfYXV4ID0gcHJlcGFy
-aW5nX3RpbWU7CisJCW1heF9yZWNsYWltX3RpbWUgPSByZWNsYWltaW5nX3RpbWU7CisJfQorCisJ
-dG90YWxfdGltZSA9IHByZXBhcmluZ190aW1lICsgcmVjbGFpbWluZ190aW1lOworCWlmKCB0b3Rh
-bF90aW1lID4gbWF4X3RvdGFsX3RpbWUgKXsKKwkJbWF4X3RvdGFsX3RpbWUgPSB0b3RhbF90aW1l
-OworCX0KKworCWZyZWVfbWVtID0gZ2xvYmFsX3BhZ2Vfc3RhdGUoTlJfRlJFRV9QQUdFUyk7CisJ
-aWYgKGZyZWVfbWVtID4gbWF4X292ZXJraWxsX3JlY2xhaW0pCisJCW1heF9vdmVya2lsbF9yZWNs
-YWltID0gZnJlZV9tZW07CisJc3Bpbl91bmxvY2soJnJlc2VhcmNoX3JlY2xhaW1fbWF4X2xvY2sp
-OworCQorb3V0OgorCWF0b21pY19kZWMoJm5yX3JlY2xhaW1lcnMpOworCXdha2VfdXBfYWxsKCZy
-ZWNsYWltX3Rocm90dGxlX3dhaXRxKTsKKwkKKwlyZXR1cm4gbnJfcmVjbGFpbWVkOwogfQogCiAj
-aWZkZWYgQ09ORklHX0NHUk9VUF9NRU1fQ09OVApJbmRleDogYi9pbmNsdWRlL2xpbnV4L21tem9u
-ZS5oCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT0KLS0tIGEvaW5jbHVkZS9saW51eC9tbXpvbmUuaAkyMDA4LTAyLTE1IDIw
-OjE0OjQwLjAwMDAwMDAwMCArMDkwMAorKysgYi9pbmNsdWRlL2xpbnV4L21tem9uZS5oCTIwMDgt
-MDItMTUgMjA6MTQ6NDkuMDAwMDAwMDAwICswOTAwCkBAIC0zMzQsNyArMzM0LDYgQEAgc3RydWN0
-IHpvbmUgewogCSAqLwogCXVuc2lnbmVkIGxvbmcJCXNwYW5uZWRfcGFnZXM7CS8qIHRvdGFsIHNp
-emUsIGluY2x1ZGluZyBob2xlcyAqLwogCXVuc2lnbmVkIGxvbmcJCXByZXNlbnRfcGFnZXM7CS8q
-IGFtb3VudCBvZiBtZW1vcnkgKGV4Y2x1ZGluZyBob2xlcykgKi8KLQogCS8qCiAJICogcmFyZWx5
-IHVzZWQgZmllbGRzOgogCSAqLwpJbmRleDogYi9pbmNsdWRlL2xpbnV4L25vZGVtYXNrLmgKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PQotLS0gYS9pbmNsdWRlL2xpbnV4L25vZGVtYXNrLmgJMjAwOC0wMi0xNSAyMDoxNDo0
-MC4wMDAwMDAwMDAgKzA5MDAKKysrIGIvaW5jbHVkZS9saW51eC9ub2RlbWFzay5oCTIwMDgtMDIt
-MTUgMjA6MTQ6NDkuMDAwMDAwMDAwICswOTAwCkBAIC00MzEsNiArNDMxLDggQEAgc3RhdGljIGlu
-bGluZSBpbnQgbnVtX25vZGVfc3RhdGUoZW51bSBubwogCiAjZGVmaW5lIG51bV9vbmxpbmVfbm9k
-ZXMoKQludW1fbm9kZV9zdGF0ZShOX09OTElORSkKICNkZWZpbmUgbnVtX3Bvc3NpYmxlX25vZGVz
-KCkJbnVtX25vZGVfc3RhdGUoTl9QT1NTSUJMRSkKKyNkZWZpbmUgbnVtX2hpZ2htZW1fbm9kZXMo
-KQludW1fbm9kZV9zdGF0ZShOX0hJR0hfTUVNT1JZKQorCiAjZGVmaW5lIG5vZGVfb25saW5lKG5v
-ZGUpCW5vZGVfc3RhdGUoKG5vZGUpLCBOX09OTElORSkKICNkZWZpbmUgbm9kZV9wb3NzaWJsZShu
-b2RlKQlub2RlX3N0YXRlKChub2RlKSwgTl9QT1NTSUJMRSkKIAo=
---------_47BBF95F0000000064C5_MULTIPART_MIXED_
-Content-Type: application/octet-stream;
- name="benchloop.sh"
-Content-Disposition: attachment;
- filename="benchloop.sh"
-Content-Transfer-Encoding: base64
-
-IyEvYmluL3NoDQoNCmZvciBpIGluIDIgMTAwMDA7IGRvDQoJZm9yIGogaW4gMSAyIDM7IGRvDQoJ
-CXN1ZG8gc2ggLWMgImVjaG8gJGkgPiAvcHJvYy9zeXMvdm0vcmVjbGFpbV9saW1pdCINCgkgICAg
-ICAgIHN1ZG8gc2ggLWMgImVjaG8gMCA+IC9wcm9jL3N5cy92bS9tYXhfcmVjbGFpbV9wcmVwYXJl
-X3RpbWUiDQoJICAgICAgICBzdWRvIHNoIC1jICJlY2hvIDAgPiAvcHJvYy9zeXMvdm0vbWF4X3Jl
-Y2xhaW1fdGltZSINCiAgICAgICAgICAgICAgICBzdWRvIHNoIC1jICJlY2hvIDAgPiAvcHJvYy9z
-eXMvdm0vbWF4X3JlY2xhaW1fcHJlcGFyZV90aW1lX2F1eCINCiAgICAgICAgICAgICAgICBzdWRv
-IHNoIC1jICJlY2hvIDAgPiAvcHJvYy9zeXMvdm0vbWF4X3JlY2xhaW1fdGltZV9hdXgiDQogICAg
-ICAgICAgICAgICAgc3VkbyBzaCAtYyAiZWNobyAwID4gL3Byb2Mvc3lzL3ZtL21heF90b3RhbF90
-aW1lIg0KCQlzdWRvIHNoIC1jICJlY2hvIDAgPiAvcHJvYy9zeXMvdm0vbWF4X3JlY2xhaW1lciIN
-CgkJc3VkbyBzaCAtYyAiZWNobyAwID4gL3Byb2Mvc3lzL3ZtL21heF9vdmVya2lsbF9yZWNsYWlt
-Ig0KICAgICAgICAgICAgICAgIHN1ZG8gc2ggLWMgImVjaG8gMCA+IC9wcm9jL3N5cy92bS9tYXhf
-c2F2ZWRfb3ZlcmtpbGxfcmVjbGFpbSINCgkJc3VkbyBzaCAtYyAiZWNobyAzID4gL3Byb2Mvc3lz
-L3ZtL2Ryb3BfY2FjaGVzIg0KDQoJCWVjaG8gIm1heCByZWNsYWltICRpIg0KCQkvdXNyL2Jpbi90
-aW1lIC4vaGFja2JlbmNoIDEyMCBwcm9jZXNzIDEwMDAgMj4mMSB8IHVuaXENCg0KCQlwcmVwYXJl
-X3RpbWU9YGNhdCAvcHJvYy9zeXMvdm0vbWF4X3JlY2xhaW1fcHJlcGFyZV90aW1lYA0KCQlwcmVw
-YXJlX3RpbWVfYXV4PWBjYXQgL3Byb2Mvc3lzL3ZtL21heF9yZWNsYWltX3ByZXBhcmVfdGltZV9h
-dXhgDQoJCWVjaG8gIm1heCBwcmVwYXJlIHRpbWU6ICRwcmVwYXJlX3RpbWUgJHByZXBhcmVfdGlt
-ZV9hdXgiDQoNCgkJcmVjbGFpbV90aW1lX2F1eD1gY2F0IC9wcm9jL3N5cy92bS9tYXhfcmVjbGFp
-bV90aW1lX2F1eGANCgkJcmVjbGFpbV90aW1lPWBjYXQgL3Byb2Mvc3lzL3ZtL21heF9yZWNsYWlt
-X3RpbWVgDQoJCWVjaG8gIm1heCByZWNsYWltIHRpbWU6ICRyZWNsYWltX3RpbWVfYXV4ICRyZWNs
-YWltX3RpbWUiDQoNCgkJZWNobyAidG90YWwiDQoJCWNhdCAvcHJvYy9zeXMvdm0vbWF4X3RvdGFs
-X3RpbWUNCg0KCQllY2hvICJtYXggcmVjbGFpbWVyIg0KCSAgICAgICAgY2F0IC9wcm9jL3N5cy92
-bS9tYXhfcmVjbGFpbWVyDQoJCQ0KCQllY2hvICJtYXggb3ZlcmtpbGwiDQoJCWNhdCAvcHJvYy9z
-eXMvdm0vbWF4X292ZXJraWxsX3JlY2xhaW0NCg0KCQllY2hvICJtYXggc2F2ZWQgb3ZlcmtpbGwi
-DQogICAgICAgICAgICAgICAgY2F0IC9wcm9jL3N5cy92bS9tYXhfc2F2ZWRfb3ZlcmtpbGxfcmVj
-bGFpbQ0KDQogICAgICAgICAgICAgICAgc3VkbyBzaCAtYyAiZWNobyAxMDAwID4gL3Byb2Mvc3lz
-L3ZtL3JlY2xhaW1fbGltaXQiDQoJZG9uZQ0KZG9uZQ0K
---------_47BBF95F0000000064C5_MULTIPART_MIXED_--
-
-
+	Ingo
