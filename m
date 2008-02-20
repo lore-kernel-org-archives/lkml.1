@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764118AbYBTA3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762797AbYBTAcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764118AbYBTA3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 19:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbYBTA31
+	id S1762797AbYBTAcr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 19:32:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbYBTAcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 19:29:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57918
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758093AbYBTA30 (ORCPT
+	Tue, 19 Feb 2008 19:32:39 -0500
+Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:34435 "HELO
+	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754998AbYBTAci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 19:29:26 -0500
-Date: Tue, 19 Feb 2008 16:30:03 -0800 (PST)
-Message-Id: <20080219.163003.152862383.davem@davemloft.net>
-To: galak@kernel.crashing.org
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero
- base
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
-References: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 19:32:38 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=zONKtQmxXG3LcsSJ+WAOF9SAGUDvDNcdw7pXNBdQJTnUy8fL2nfc0FEw1LLpLnGhJmZUsuR84yajtnF8Z1FaBoAm+R7CzKvwyJ1jNRfn04FROMnQyiXW1xK83fcm0b8PChIVZMNt1k1c7FMVnCLpy1KXcK2X3qZol23UiAAul8w=  ;
+X-YMail-OSG: H1VM8bUVM1kVnQpy02h9equC9wFBP2K2nTPkHW.SGf_1NXdhtKLCnZQkJntBFAgQ9ZPOphzzbQ--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andre Tomt <andre@tomt.net>
+Subject: Re: USB OOPS 2.6.25-rc2-git1
+Date: Tue, 19 Feb 2008 16:32:35 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <47BAF36C.4000509@tomt.net> <200802191049.25869.david-b@pacbell.net> <47BB6083.2050000@tomt.net>
+In-Reply-To: <47BB6083.2050000@tomt.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200802191632.35732.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kumar Gala <galak@kernel.crashing.org>
-Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
-
-> If we add to an empty lmb region with a non-zero base we will not coalesce
-> the number of regions down to one.  This causes problems on ppc32 for the
-> memory region as its assumed to only have one region.
+On Tuesday 19 February 2008, Andre Tomt wrote:
 > 
-> We can fix this easily by causing the initial add to replace the dummy
-> region.
+> > Can you try this diagnostic patch, to see if it reports any messages
+> > about IAA and/or IAAD oddities?  There's surely a quick workaround
+> > for this, but I'd rather understand the root cause before patching.
 > 
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> 
-> Fix a bug the initial patch introduced if we have a region that gets added
-> at the beginning of the list we wouldn't actually add it.
-> 
-> Dave can you replace the patch in you tree with this one.
+> Doesn't seem to have triggered anything. dmesg attached in case I missed 
+> anything.
 
-I think my tree has already or will soon be pulled in so
-I don't want to rebase it.
+You don't seem to have enabled CONFIG_USB_DEBUG, as the patch instructions
+say is needed to get such diagnostics ... I can tell because the startup
+messages from USB are pretty minimal.  (See appended, vs what you sent...)
 
-Why don't you simply send me the relative bug fix instead?
+Please try again with USB debugging enabled.
 
-Thanks!
+- Dave
+
+ehci_hcd 0000:00:02.2: new USB bus registered, assigned bus number 3
+ehci_hcd 0000:00:02.2: reset hcs_params 0x102486 dbg=1 cc=2 pcc=4 !ppc ports=6
+ehci_hcd 0000:00:02.2: reset portroute 0 0 1 1 1 0 
+ehci_hcd 0000:00:02.2: reset hcc_params a086 caching frame 256/512/1024 park
+ehci_hcd 0000:00:02.2: park 0
+ehci_hcd 0000:00:02.2: reset command 080b02 park=3 ithresh=8 period=1024 Reset HALT
+PCI: cache line size of 64 is not supported by device 0000:00:02.2
+ehci_hcd 0000:00:02.2: supports USB remote wakeup
+ehci_hcd 0000:00:02.2: irq 22, io mem 0xe8004000
+ehci_hcd 0000:00:02.2: reset command 080b02 park=3 ithresh=8 period=1024 Reset HALT
+ehci_hcd 0000:00:02.2: init command 010009 (park)=0 ithresh=1 period=256 RUN
+ehci_hcd 0000:00:02.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
+...
+
