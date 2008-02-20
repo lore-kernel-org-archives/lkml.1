@@ -1,74 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935241AbYBTQeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbYBTQex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935241AbYBTQeb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:34:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765149AbYBTQRJ
+	id S1753404AbYBTQex (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933058AbYBTQR1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:17:09 -0500
-Received: from a-fallback-fastnet.pobox.com ([209.2.32.35]:59054 "EHLO
-	a-fallback-fastnet.pobox.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933006AbYBTQRF (ORCPT
+	Wed, 20 Feb 2008 11:17:27 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:46896 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933045AbYBTQRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:17:05 -0500
-X-Greylist: delayed 1861 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 11:17:04 EST
-Message-ID: <47BC4AD3.6020802@pobox.com>
-Date: Wed, 20 Feb 2008 10:44:19 -0500
-From: Mark Lord <mlord@pobox.com>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Wed, 20 Feb 2008 11:17:25 -0500
 MIME-Version: 1.0
-To: Greg Freemyer <greg.freemyer@gmail.com>
-Cc: IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       ballen@gravity.phys.uwm.edu, Ric Wheeler <ric@emc.com>
-Subject: Re: hdparm-8.2 now available
-References: <47BA21F0.90405@pobox.com>
- <87f94c370802200732g594a4f01jeba7d05579625ee2@mail.gmail.com>
-In-Reply-To: <87f94c370802200732g594a4f01jeba7d05579625ee2@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18364.21039.360703.931967@stoffel.org>
+Date: Wed, 20 Feb 2008 11:15:43 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: balbir@linux.vnet.ibm.com
+Cc: John Stoffel <john@stoffel.org>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
+ in Kconfig
+In-Reply-To: <47BC4554.10304@linux.vnet.ibm.com>
+References: <20080220122338.GA4352@basil.nowhere.org>
+	<47BC2275.4060900@linux.vnet.ibm.com>
+	<18364.16552.455371.242369@stoffel.org>
+	<47BC4554.10304@linux.vnet.ibm.com>
+X-Mailer: VM 8.0.x-xemacs-542 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg Freemyer wrote:
-> Mark,
-> 
-> What kernel level is needed to support the new -N arg?
-..
+>>>>> "Balbir" == Balbir Singh <balbir@linux.vnet.ibm.com> writes:
 
-I believe it should work with 2.4.0 or newer.
-But some kernels have a buggy implementation of it.
- 
-> Tried it on a Suse 2.6.22 kernel (possibly not patched with all the
-> current security updates).
-> 
-> Failed with:
-> 
-> The Running Kernel Lack CONFIG_IDE_TASK_IOCTL Support.
-..
+Balbir> John Stoffel wrote:
+>> I know this is a pedantic comment, but why the heck is it called such
+>> a generic term as "Memory Controller" which doesn't give any
+>> indication of what it does.
+>> 
+>> Shouldn't it be something like "Memory Quota Controller", or "Memory
+>> Limits Controller"?
+>> 
 
-That failure indicates that your drive is not using libata drivers.
-USB/SD drives/drivers do not support this flag at all,
-but drives using the ancient IDE drivers should work.
+Balbir> It's called the memory controller since it controls the amount
+Balbir> of memory that a user can allocate (via limits).
 
-For drives using the ancient IDE drivers, you will need
-to use a kernel configured with the CONFIG_IDE_TASK_IOCTL flag.
-If you see the message above, then that means your kernel
-was probably built without that configuration option selected.
+Ding!  See how you mention limits here?  That should be part of the
+generic term in the Kconfig to make it crystal clear what you mean by
+a memory controller.
 
-Look in /proc/config.gz and see if the option shows up there,
-or in "cat /boot/config-`uname -r`".  If you don't see it
-in there, then the kernel would have to get rebuilt with
-that config option to enable the feature.
+Balbir>  The generic term for any resource manager plugged into
+Balbir> cgroups is a controller. 
 
-Or just switch to the modern libata drivers for IDE/SATA drives.
+The general term for managing resources is limits or quotas.  Not
+controllers.  
 
-Note also that hdparm has now been updated to version 8.4,
-with some unrelated bug fixes.
+Balbir> If you look through some of the references in the document,
+Balbir> we've listed our plans to support other categories of memory
+Balbir> as well. Hence it's called a memory controller
 
-Cheers
--- 
-Mark Lord
-Real-Time Remedies Inc.
-mlord@pobox.com
+Still don't buy it, sorry.  :]
+
+>> Also, the Kconfig name "CGROUP_MEM_CONT" is just wrong, it should be
+>> "CGROUP_MEM_CONTROLLER", just spell it out so it's clear what's up.
+>> 
+
+Balbir> This has some history as well. Control groups was called
+Balbir> containers earlier.  That way a name like CGROUP_MEM_CONT
+Balbir> could stand for cgroup memory container or cgroup memory
+Balbir> controller.
+
+>> It took me a bunch of reading of Documentation/controllers/memory.txt
+>> to even start to understand what the purpose of this was.  The
+>> document could also use a re-writing to include a clear introduction
+>> at the top to explain "what" a memory controller is.  
+>> 
+>> Something which talks about limits, resource management, quotas, etc
+>> would be nice.  
+>> 
+
+Balbir> The references, specially reference [1] contains a lot of
+Balbir> details on limits, guarantees, etc.  Since they've been
+Balbir> documented in the past on lkml, I decided to keep them out of
+Balbir> the documentation and mention them as references. If it's
+Balbir> going to help to add that terminology; I can create another
+Balbir> document describing what resource management means and what
+Balbir> the commonly used terms mean.
+
+Well, I think you need to first setup a new directory called
+Documentation/cgroups/ and then you can put in an introduction.txt and
+your controllers.txt files there.  
+
+But controllers is just too generic a term.  For example, if I'm
+talking about a controller on my desktop, does that mean I'm talking
+about:
+
+	SCSI, IDE, memory, USB, Firewire or serial ports?  
+
+I've got all of them on my main system.  Again, I think you're
+overloading a very generic term in a very non-obvious way and it needs
+to be clarified for the regular developers and users.
+
+Thanks,
+John
