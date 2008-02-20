@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933566AbYBTRNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934305AbYBTRO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933566AbYBTRNt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934013AbYBTRN2
+	id S934305AbYBTRO1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:14:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761269AbYBTRN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:13:28 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:56120 "EHLO mail.screens.ru"
+	Wed, 20 Feb 2008 12:13:59 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:49200 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933459AbYBTRNZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:13:25 -0500
-Date: Wed, 20 Feb 2008 20:09:13 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pavel Emelyanov <xemul@sw.ru>, linux-kernel@vger.kernel.org
-Subject: [PATCH] do_task_stat: don't take rcu_read_lock()
-Message-ID: <20080220170913.GA465@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1760622AbYBTRN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:13:56 -0500
+Date: Wed, 20 Feb 2008 19:13:16 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Theodore Tso <tytso@mit.edu>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-ID: <20080220171316.GA4749@cs181133002.pp.htv.fi>
+References: <1202791555.20739.6.camel@heimdal.trondhjem.org> <20080212051136.GA12802@mit.edu> <20080211221535.bc0dc9cf.akpm@linux-foundation.org> <20080212225716.cf695fe4.sfr@canb.auug.org.au> <20080214081405.GA20791@flint.arm.linux.org.uk> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au> <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org> <20080221015511.1b54d4d3.sfr@canb.auug.org.au> <47BC498C.6000400@s5r6.in-berlin.de> <20080220154235.GD30305@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20080220154235.GD30305@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(depends on "[PATCH 1/2] lock_task_sighand: add rcu lock/unlock",
- http://marc.info/?l=linux-kernel&m=120335433821564)
+On Wed, Feb 20, 2008 at 10:42:35AM -0500, Theodore Tso wrote:
+> On Wed, Feb 20, 2008 at 04:38:52PM +0100, Stefan Richter wrote:
+> > Two things may largely eliminate the need for parallel branches.
+> > 
+> > 1. Do infrastructure changes and whole tree wide refactoring etc. in a
+> > compatible manner with a brief but nonzero transition period.
+> > 
+> > 2. Insert a second merge window right after the usual merge window for
+> > changes which cannot be well done with a transition period.
+> 
+> A third option would be if people add new functions (with no users) in
+> -rc2 or -rc3 timeframes as long as it is part of a fully reviewed
+> patch with users that will use those new features in various kernel
+> development trees.
+>...
 
-lock_task_sighand() was changed, and do_task_stat() doesn't need rcu_read_lock
-any longer. sighand->siglock protects all "interesting" fields.
+I don't like suggestions based on unrealistic assumptions like
+"a fully reviewed patch".
 
-Except: it doesn't protect ->tty->pgrp, but neither does rcu_read_lock(), this
-should be fixed.
+E.g. userspace ABI's are much more stable and everyone is aware that 
+they must be gotten right with the first try since they are then cast in 
+stone - but we all remember the recent timerfd fiasco.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> 						- Ted
 
---- MM/fs/proc/array.c~DTS	2008-02-17 23:40:07.000000000 +0300
-+++ MM/fs/proc/array.c	2008-02-20 19:53:37.000000000 +0300
-@@ -425,7 +425,6 @@ static int do_task_stat(struct seq_file 
- 	cutime = cstime = utime = stime = cputime_zero;
- 	cgtime = gtime = cputime_zero;
- 
--	rcu_read_lock();
- 	if (lock_task_sighand(task, &flags)) {
- 		struct signal_struct *sig = task->signal;
- 
-@@ -469,7 +468,6 @@ static int do_task_stat(struct seq_file 
- 
- 		unlock_task_sighand(task, &flags);
- 	}
--	rcu_read_unlock();
- 
- 	if (!whole || num_threads < 2)
- 		wchan = get_wchan(task);
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
