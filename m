@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765832AbYBTVQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932499AbYBTVQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765832AbYBTVQb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761601AbYBTVOr
+	id S932499AbYBTVQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:16:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761035AbYBTVO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:14:47 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:34660 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760256AbYBTVOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:14:37 -0500
-X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
-   d="scan'208";a="154507458"
-Subject: Re: [PATCH] nfs: fix sparse warnings
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1203541385.25307.29.camel@brick>
-References: <1203538246.25307.14.camel@brick>
-	 <1203540206.17505.3.camel@heimdal.trondhjem.org>
-	 <1203541385.25307.29.camel@brick>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Wed, 20 Feb 2008 16:14:33 -0500
-Message-Id: <1203542073.18167.0.camel@heimdal.trondhjem.org>
+	Wed, 20 Feb 2008 16:14:59 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45989
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758903AbYBTVO4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:14:56 -0500
+Date: Wed, 20 Feb 2008 13:15:30 -0800 (PST)
+Message-Id: <20080220.131530.18314167.davem@davemloft.net>
+To: jeff@garzik.org
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20080220165557.GA18816@havoc.gtf.org>
+References: <20080220165557.GA18816@havoc.gtf.org>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-X-OriginalArrivalTime: 20 Feb 2008 21:14:34.0851 (UTC) FILETIME=[97AE7330:01C87405]
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jeff Garzik <jeff@garzik.org>
+Date: Wed, 20 Feb 2008 11:55:57 -0500
 
-On Wed, 2008-02-20 at 13:03 -0800, Harvey Harrison wrote:
-> fs/nfs/nfs4state.c:788:34: warning: Using plain integer as NULL pointer
-> fs/nfs/delegation.c:52:34: warning: Using plain integer as NULL pointer
-> fs/nfs/idmap.c:312:12: warning: Using plain integer as NULL pointer
-> fs/nfs/callback_xdr.c:257:6: warning: Using plain integer as NULL pointer
-> fs/nfs/callback_xdr.c:270:6: warning: Using plain integer as NULL pointer
-> fs/nfs/callback_xdr.c:281:6: warning: Using plain integer as NULL pointer
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> ---
-> Rollup patches 1-4.
->  fs/nfs/callback_xdr.c |    6 +++---
->  fs/nfs/delegation.c   |    2 +-
->  fs/nfs/idmap.c        |    2 +-
->  fs/nfs/nfs4state.c    |    2 +-
->  4 files changed, 6 insertions(+), 6 deletions(-)
+> Note:  this is based off of Linus's latest commit
+> (5d9c4a7de64d398604a978d267a6987f1f4025b7), since all my previous
+> submissions are now upstream (thanks!).
 
-Thanks! I'll apply...
+The whole point of my not rebasing net-2.6 is so that you can always
+use it as a base.
 
-Cheers
-  Trond
+With what you've giving me now I either have to:
+
+1) Pull in Linus's tree to net-2.6, then pull from you.
+
+2) Pull in directly from you to get it all.
+
+The whole point of my not touching or rebasing net-2.6 is so that
+everyonce can simply use it as a base and just keep working relative
+to it.
+
+If you have some need for upstream stuff outside networking (f.e.
+some ACPI bug prevents interrupts from working or there is some build
+failure), you can clone Linus's tree and pull net-2.6 and your driver
+bits into there for building and testing.
+
+Thanks for your consideration, I'm trying to show you mine by
+giving everyone a relatively stable tree in which all networking
+development can occur.
+
