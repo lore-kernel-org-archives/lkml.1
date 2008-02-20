@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbYBTCFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYBTCJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761044AbYBTCFV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbYBTCFH
+	id S1762258AbYBTCJF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757203AbYBTCIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:05:07 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26149 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754518AbYBTCFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:05:05 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=hr22cpJQx6jp6l/VvYoWvHooIl4nSM+QrH+T0ETDtB+5uwJDb/SeJufXM/32aMgKj
-	lmargzJ5yW8QxIBbbLywQ==
-Message-ID: <6599ad830802191804y171282c1m646bdb47b83e2bc2@mail.gmail.com>
-Date: Tue, 19 Feb 2008 18:04:57 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Nick Andrew" <nick@nick-andrew.net>
-Subject: Re: Improve init/Kconfig help descriptions [PATCH 6/9]
-Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20080219151214.GD27352@tull.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 19 Feb 2008 21:08:53 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46008 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752236AbYBTCIw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 21:08:52 -0500
+Date: Tue, 19 Feb 2008 21:07:39 -0500
+From: Rik van Riel <riel@redhat.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Paul Jackson <pj@sgi.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       linux-fsdevel@vger.kernel.org, a1426z@gawab.com,
+       jonathan@jonmasters.org, zlynx@acm.org
+Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
+Message-ID: <20080219210739.27325078@bree.surriel.com>
+In-Reply-To: <20080219222828.GB28786@elf.ucw.cz>
+References: <2f11576a0802090719i3c08a41aj38504e854edbfeac@mail.gmail.com>
+	<20080217084906.e1990b11.pj@sgi.com>
+	<20080219145108.7E96.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<20080219090008.bb6cbe2f.pj@sgi.com>
+	<20080219222828.GB28786@elf.ucw.cz>
+Organization: Red Hat, Inc.
+X-Mailer: Claws Mail 3.0.2 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080219140609.GA26619@tull.net> <20080219151214.GD27352@tull.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 19, 2008 7:12 AM, Nick Andrew <nick@nick-andrew.net> wrote:
->  config CGROUPS
->         bool "Control Group support"
->         help
-> -         This option will let you use process cgroup subsystems
-> -         such as Cpusets
-> +         Control Groups enables processes to be tracked and grouped
-> +         into "cgroups". This enables you, for example, to associate
-> +         cgroups with certain CPU sets using "cpusets".
->
-> -         Say N if unsure.
-> +         When enabled, a new filesystem type "cgroup" is available
-> +         and can be mounted to control cpusets.
+On Tue, 19 Feb 2008 23:28:28 +0100
+Pavel Machek <pavel@ucw.cz> wrote:
 
-How about:
+> Sounds like a job for memory limits (ulimit?), not for OOM
+> notification, right?
 
-... cpusets and other resource/behaviour controllers.
+I suspect one problem could be that an HPC job scheduling program
+does not know exactly how much memory each job can take, so it can
+sometimes end up making a mistake and overcommitting the memory on
+one HPC node.
 
-Paul
+In that case the user is better off having that job killed and
+restarted elsewhere, than having all of the jobs on that node
+crawl to a halt due to swapping.
+
+Paul, is this guess correct? :)
+
+-- 
+All rights reversed.
