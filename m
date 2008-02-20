@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763302AbYBTODn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762778AbYBTOIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763302AbYBTODn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:03:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbYBTODd
+	id S1762778AbYBTOIt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:08:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbYBTOIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:03:33 -0500
-Received: from mail.southpole.se ([193.12.106.18]:39964 "EHLO
-	mail.southpole.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754941AbYBTODc (ORCPT
+	Wed, 20 Feb 2008 09:08:41 -0500
+Received: from bzq-179-150-194.static.bezeqint.net ([212.179.150.194]:40703
+	"EHLO il.qumranet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754042AbYBTOIk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:03:32 -0500
-Message-ID: <47BC3332.7090705@southpole.se>
-Date: Wed, 20 Feb 2008 15:03:30 +0100
-From: Jonas Bonn <jonas@southpole.se>
-User-Agent: Thunderbird 2.0.0.9 (X11/20080214)
+	Wed, 20 Feb 2008 09:08:40 -0500
+Message-ID: <47BC3407.20307@qumranet.com>
+Date: Wed, 20 Feb 2008 16:07:03 +0200
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, greg@kroah.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: PowerPC toolchain for x86 [Was: pci_device_id cleanups]
-References: <1203512031-14318-1-git-send-email-jonas@southpole.se> <20080220131704.GB18790@uranus.ravnborg.org> <47BC2AB7.4040402@southpole.se> <20080220135533.GA19024@uranus.ravnborg.org>
-In-Reply-To: <20080220135533.GA19024@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
+       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [kvm-devel] build #365 issue for v2.6.25-rc2-342-g5d9c4a7 in
+ ./arch/x86/kvm/kvm.ko
+References: <200802201411.18026.toralf.foerster@gmx.de> <47BC3121.8070902@qumranet.com>
+In-Reply-To: <47BC3121.8070902@qumranet.com>
+Content-Type: multipart/mixed;
+ boundary="------------060305080804060306040509"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------060305080804060306040509
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 
-
-Sam Ravnborg wrote:
-> On Wed, Feb 20, 2008 at 02:27:19PM +0100, Jonas Bonn wrote:
->> Sam Ravnborg wrote:
->>> On Wed, Feb 20, 2008 at 01:53:36PM +0100, Jonas Bonn wrote:
->>>> The PCI_DEVICE_TABLE patch I sent earlier doesn't necessarily make
->>>> much sense by itself... here is a set of patches that apply
->>>> this macro, in turn moving a lot of this data into __devinitconst
->>>> which is discardable in certain situations.
->>>> Hopefully the benefit of this approach is a bit clearer now.
->>> [shorter lines please..]
->> Sorry...
+Avi Kivity wrote:
+> Toralf Förster wrote:
+>> Hello,
 >>
->>> Can you please confirm that this does not break powerpc (64 bit)
->>> as they have troubles with the constification..
->> I do not have access to any PowerPC machine... Olof Johansson built the 
->> tree I posted earlier on PowerPC; there's nothing really new here except 
->> the wrapping of the definition in a macro.
-> And you added const and a specific section.
+>> the build with the attached .config failed, make ends with:
+>> ...
+>>   HOSTCC  arch/x86/boot/tools/build
+>>   BUILD   arch/x86/boot/bzImage
+>> Root device is (3, 8)
+>> Setup is 12280 bytes (padded to 12288 bytes).
+>> System is 2192 kB
+>> Kernel: arch/x86/boot/bzImage is ready  (#1)
+>>   Building modules, stage 2.
+>>   MODPOST 211 modules
+>> ERROR: "smp_ops" [arch/x86/kvm/kvm.ko] undefined!
+>> make[1]: *** [__modpost] Error 1
+>> make: *** [modules] Error 2
+>>
+>>
+>> The build was made with :
+>> $> make mrproper && make rndconfig && <tweak config file> && make 
+>> oldconfig && make
+>>
+>> Here's the config:
+>>   
+>
+> Looks like KVM conflicts with CONFIG_VOYAGER...
+>
 
-No... once the macro is expanded the code is exactly the same as that 
-which built cleanly on powerpc previously (which Olof, built, I mean)... 
-nothing new here.
+Attached patch should fix.
 
-> Exactly what could break on PowerPC.
-> 
-> To do the build break check is easy.
-> Google for "crosstool" and build your own powerpc toolchain.
-> 
+Subject: x86: disable KVM on Voyager
 
-Thanks... I'll throw together a cross compiler and see what I can do.
+Most classic Pentiums don't have hardware virtualization
+extension, and building kvm with voyager generates
+spurious failures.
 
-/Jonas
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 
-> Andrew has something precompiled somewhere but I lost the link.
-> 
-> 
-> 	Sam
-> 
+-- 
+Any sufficiently difficult bug is indistinguishable from a feature.
 
+
+--------------060305080804060306040509
+Content-Type: text/x-patch;
+ name="kvm-vs-voyager.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kvm-vs-voyager.patch"
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index cc2bc37..e27962c 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -21,7 +21,7 @@ config X86
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+-	select HAVE_KVM
++	select HAVE_KVM if ((X86_32 && !X86_VOYAGER) || X86_64)
+ 
+ 
+ config GENERIC_LOCKBREAK
+
+--------------060305080804060306040509--
