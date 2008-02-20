@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbYBTUmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934608AbYBTUnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934531AbYBTUmr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933488AbYBTUmT
+	id S934608AbYBTUnN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758296AbYBTUm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:42:19 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:39860 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933162AbYBTUmS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:42:18 -0500
-Date: Wed, 20 Feb 2008 12:40:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
-	build
-Message-ID: <20080220204001.GB15787@kroah.com>
-References: <20080218162216.ee1501fd.randy.dunlap@oracle.com> <20080220064642.GA22884@kroah.com> <47BC893C.6060309@oracle.com>
+	Wed, 20 Feb 2008 15:42:27 -0500
+Received: from mga11.intel.com ([192.55.52.93]:11031 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934027AbYBTUmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:42:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
+   d="scan'208";a="300314343"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 12:41:30 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jeff Chua <jeff.chua.linux@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802202114.43007.rjw@sisk.pl> <alpine.LFD.1.00.0802201224380.7833@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802201224380.7833@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47BC893C.6060309@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802201241.30952.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 12:10:36PM -0800, Randy Dunlap wrote:
-> Greg KH wrote:
->> On Mon, Feb 18, 2008 at 04:22:16PM -0800, Randy Dunlap wrote:
->>> From: Randy Dunlap <randy.dunlap@oracle.com>
->>>
->>> Fix firmware_sample_firmware_class module to build without error.
->>> sysfs.h already has the function prototypes and has them correctly.
->>>
->>> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: 
->>> conflicting types for 'sysfs_remove_bin_file'
->>> include/linux/sysfs.h:100: error: previous declaration of 
->>> 'sysfs_remove_bin_file' was here
->>>
->>> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->>> ---
->>>  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
->>>  1 file changed, 3 deletions(-)
->> Can we move this file to the samples/ directory, so the build will catch
->> stuff like this?
->> What's the final version of this patch?
+On Wednesday, February 20, 2008 12:29 pm Linus Torvalds wrote:
+> On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
+> > I think we should export the target sleep state somehow.
 >
-> I've moved it to samples/, but it (still) has a build problem:
+> Yeah. By *not* using "->suspend()" for freezing or hibernate.
 >
-> ERROR: "firmware_class" 
-> [samples/firmware_class/firmware_sample_firmware_class.ko] undefined!
->
-> Can you give me hint(s) about how to fix that?
+> Please, Rafael - just make the f*cking suspend-to-disk use other routines
+> already. 99% of all hardware needs to do exactly *nothing* on
+> suspend-to-disk, and the ones that really do need things tend to need to
+> not do a whole lot.
 
-Ah, yeah, that class went away a while ago.
+In talking with Rafael on IRC about this, I think we're agreed that we need 
+separate entry points.  Even with a kexec based hibernate, we'll probably 
+want ->hibernate callbacks so we don't end up shutting down the device.
 
-Care to send me the patch you have, and I'll be glad to fix it up and
-get it in?
+The current callback system looks like this (according to Rafael and the last 
+time I looked):
+  ->suspend(PMSG_FREEZE)
+  ->resume()
+  ->suspend(PMSG_SUSPEND)
+  *enter S3 or power off*
+  ->resume()
+The fact that we get suspend/resume called once before suspend again in the 
+hibernate case is somewhat obnoxious, but it's even worse that we don't know 
+what we're about to enter after ->suspend(PMSG_SUSPEND).  So in the short 
+term it would be nice to at least get the target state exported.
 
-thanks,
+And in the long term we could have:
+  ->suspend()
+  *enter S3*
+  ->resume()
+or:
+  ->hibernate()
+  *kexec to another kernel to save image*
+  *power off*
+  ->return_from_hibernate() (or somesuch)
 
-greg k-h
+Jesse
