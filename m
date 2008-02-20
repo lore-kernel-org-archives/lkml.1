@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764962AbYBTSSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765111AbYBTSTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764962AbYBTSSc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:18:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbYBTSSW
+	id S1765111AbYBTSTj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbYBTSTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:18:22 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:46182 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754154AbYBTSSV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:18:21 -0500
-Message-ID: <47BC6EEC.4020000@s5r6.in-berlin.de>
-Date: Wed, 20 Feb 2008 19:18:20 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
-MIME-Version: 1.0
-To: Thomas Meyer <thomas@m3y3r.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: 2.6.25-rc2: ohci1394 problem
-References: <47BBDB07.80409@m3y3r.de> <47BBF771.40203@s5r6.in-berlin.de> <47BC6918.4000203@m3y3r.de> <47BC6E42.10409@s5r6.in-berlin.de>
-In-Reply-To: <47BC6E42.10409@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 13:19:30 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1369 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754154AbYBTST3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:19:29 -0500
+Date: Wed, 20 Feb 2008 18:19:12 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, John Stoffel <john@stoffel.org>,
+       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller in Kconfig
+Message-ID: <20080220181911.GA4760@ucw.cz>
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <18364.16552.455371.242369@stoffel.org> <47BC4554.10304@linux.vnet.ibm.com> <Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
->>> Thomas Meyer wrote at LKML:
->>>> With 2.6.25-rc2 my kernel log consists mainly of:
->>>>
->>>> "ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
-> 
-> There are junk interrupt events sent to ohci1394's IRQ handler.
+Hi!
 
-PS, do you still have the log lines which come from ohci1394's
-initialization?
+> >> I know this is a pedantic comment, but why the heck is it called such
+> >> a generic term as "Memory Controller" which doesn't give any
+> >> indication of what it does.
+> >> 
+> >> Shouldn't it be something like "Memory Quota Controller", or "Memory
+> >> Limits Controller"?
+> >
+> >It's called the memory controller since it controls the amount of
+> >memory that a user can allocate (via limits). The generic term for
+> >any resource manager plugged into cgroups is a controller.
+> 
+> For ordinary desktop people, memory controller is what developers
+> know as MMU or sometimes even some other mysterious piece of silicon
+> inside the heavy box.
+
+Actually I'd guess 'memory controller' == 'DRAM controller' == part of
+northbridge that talks to DRAM.
+							Pavel
 -- 
-Stefan Richter
--=====-==--- --=- =-=--
-http://arcgraph.de/sr/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
