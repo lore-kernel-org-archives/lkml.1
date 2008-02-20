@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763399AbYBTXEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934246AbYBTXEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763399AbYBTXEV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:04:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbYBTXEF
+	id S934246AbYBTXEi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755685AbYBTXEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:04:05 -0500
-Received: from outbound-mail-09.bluehost.com ([69.89.17.209]:59363 "HELO
-	outbound-mail-09.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751266AbYBTXEE (ORCPT
+	Wed, 20 Feb 2008 18:04:08 -0500
+Received: from host64.cybernetics.com ([70.169.137.4]:3719 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753232AbYBTXEG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:04:04 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 15:03:44 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com> <200802201432.13393.jesse.barnes@intel.com>
-In-Reply-To: <200802201432.13393.jesse.barnes@intel.com>
+	Wed, 20 Feb 2008 18:04:06 -0500
+Message-ID: <47BCB1E9.8020102@cybernetics.com>
+Date: Wed, 20 Feb 2008 18:04:09 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, netdev <netdev@vger.kernel.org>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220013824.GA5416@localdomain>
+In-Reply-To: <20080220013824.GA5416@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201503.44656.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 2:32 pm Jesse Barnes wrote:
-> On Wednesday, February 20, 2008 11:10 am Jeff Chua wrote:
-> > On Feb 21, 2008 2:53 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > > > So, next I'll try "shutdown" to see if it work. I was using
-> > > > "platform".
-> > >
-> > > Ok, that would be good to try.
-> >
-> > "shutdown" does power down properly. But still green on resume.
-> >
-> > > Looks like the AR registers are hosed, which is what I thought I
-> > > fixed... Can you attach your i915_drv.c file just so I can sanity check
-> > > it?
-> >
-> > Attached.
->
-> Jeff, for the hang on suspend problem, I know suspect something else in
-> 2.6.25-rc2 caused that.
+The following patch fixes the problem for me.  Do we want to accept this
+patch and call it a day or continue investigating the source of the problem?
 
-Looks like 2.6.25-rc1 also had broken suspend (my test was broken).  IIRC, 
-Dave and I had it working at LCA using the out of tree DRM modules on 
-2.6.23.14 or 15...  Maybe you could give that a try?
+Patch applies to 2.6.24.2, but doesn't apply to 2.6.25-rc.  If everyone
+agrees that this is the right solution, I will resubmit with a proper
+subject line and description.
 
-Thanks,
-Jesse
+Tony
+
+--- linux-2.6.24.2/include/net/sock.h.orig	2008-02-20 17:19:20.000000000 -0500
++++ linux-2.6.24.2/include/net/sock.h	2008-02-20 17:25:55.000000000 -0500
+@@ -1236,8 +1236,10 @@ static inline struct sk_buff *sk_stream_
+ {
+ 	struct sk_buff *skb;
+ 
+-	/* The TCP header must be at least 32-bit aligned.  */
+-	size = ALIGN(size, 4);
++	/* The TCP header must be at least 32-bit aligned, but some chipsets
++	 * such as Broadcom BCM5701 require at least 16-byte alignment.
++	 */
++	size = ALIGN(size, 16);
+ 
+ 	skb = alloc_skb_fclone(size + sk->sk_prot->max_header, gfp);
+ 	if (skb) {
+
+
