@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbYBTW0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbYBTW0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932240AbYBTW0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbYBTWZx
+	id S933414AbYBTW0f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:26:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765437AbYBTW0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:25:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59426 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758304AbYBTWZv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:25:51 -0500
-Date: Wed, 20 Feb 2008 14:22:48 -0800
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Parisc List <linux-parisc@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] pci: remove parisc consumer of the pci global_list
-Message-ID: <20080220222248.GA15308@kroah.com>
-References: <1203542065.3109.42.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203542065.3109.42.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 20 Feb 2008 17:26:03 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39271 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765094AbYBTW0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:26:01 -0500
+Subject: Re: [PATCH 07/30] r/o bind mounts: stub functions
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@MIT.EDU>,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu
+In-Reply-To: <20080216063129.GA8592@lst.de>
+References: <20080215223721.9E0A088A@kernel>
+	 <20080215223730.90A85F4A@kernel> <20080216003219.GA26734@mit.edu>
+	 <1203122979.13230.3.camel@nimitz.home.sr71.net>
+	 <20080216010030.GC26734@mit.edu>
+	 <20080215171119.578bd302.akpm@linux-foundation.org>
+	 <20080216063129.GA8592@lst.de>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 14:25:52 -0800
+Message-Id: <1203546352.29823.57.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 03:14:24PM -0600, James Bottomley wrote:
-> The patch  pci-remove-global-list-of-pci-devices.patch misses the parisc
-> dino use of this.  However, it's a simple removal job.
-> 
-> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+On Sat, 2008-02-16 at 07:31 +0100, Christoph Hellwig wrote:
+> once we put pieces in the first three patches would be useful aswell,
+> to easily catch additions in the next cycle that might be adding
+> NULL-vfsmount calls to dentry_open.
 
-Ah, sorry about that, I'll add that to my tree in the correct order so
-we don't get bisect problems.
+So, we want
 
-thanks,
+	"[PATCH 07/30] r/o bind mounts: stub functions"
+and 
+	"[PATCH 03/30] check for null vfsmount in dentry_open()"
 
-greg k-h
+But what's the third patch?
+
+-- Dave
+
