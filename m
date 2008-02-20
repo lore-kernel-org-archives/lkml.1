@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933382AbYBTUN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933468AbYBTUOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933382AbYBTUN3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765921AbYBTUL3
+	id S933468AbYBTUOk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYBTUOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:11:29 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:53822 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765793AbYBTUL0 (ORCPT
+	Wed, 20 Feb 2008 15:14:31 -0500
+Received: from mho-02-bos.mailhop.org ([63.208.196.179]:61857 "EHLO
+	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbYBTUOa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:11:26 -0500
-Message-ID: <47BC893C.6060309@oracle.com>
-Date: Wed, 20 Feb 2008 12:10:36 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 20 Feb 2008 15:14:30 -0500
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 12.53.176.4
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX19x5vPDOJR3GkynG84Z+Eln
+Message-ID: <47BC89F5.90305@reed.com>
+Date: Wed, 20 Feb 2008 15:13:41 -0500
+From: "David P. Reed" <dpreed@reed.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
- build
-References: <20080218162216.ee1501fd.randy.dunlap@oracle.com> <20080220064642.GA22884@kroah.com>
-In-Reply-To: <20080220064642.GA22884@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Rene Herman <rene.herman@keyaccess.nl>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
+Subject: Re: [linux-kernel] Re: [PATCH] x86: use explicit timing delay for
+ pit accesses in kernel and pcspkr driver
+References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com> <47B9F2EC.4070308@keyaccess.nl> <47B9FC3A.2010508@zytor.com> <47B9FFD5.6040801@keyaccess.nl> <47BA002B.7070806@zytor.com> <47BA0188.6000808@keyaccess.nl> <47BA077B.50401@keyaccess.nl> <47BA0A3D.1060708@zytor.com> <47BC17BE.9010800@keyaccess.nl> <47BC5DF4.9020300@zytor.com> <47BC5EE3.5090101@keyaccess.nl>
+In-Reply-To: <47BC5EE3.5090101@keyaccess.nl>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Feb 18, 2008 at 04:22:16PM -0800, Randy Dunlap wrote:
->> From: Randy Dunlap <randy.dunlap@oracle.com>
+Actually, disparaging things as "one idiotic system" doesn't seem like a 
+long-term thoughtful process - it's not even accurate.  There are more 
+such systems that are running code today than the total number of 486 
+systems ever manufactured.  The production rate is $1M/month.
+
+a) ENE chips are "documented" to receive port 80, and also it is the 
+case that modern chipsets will happily diagnose writes to non-existent 
+ports as MCE's.   Using side effects that depend on non-existent ports 
+just creates a brittle failure mode down the road.  And it's not just 
+post ACPI "initialization".   The pcspkr use of port 80 caused solid 
+freezes if you typed "tab" to complete a command line and there were 
+more than one choice, leading to beeps.
+
+b) sad to say, Linux is not what hardware vendors use as the system that 
+their BIOSes MUST work with.  That's Windows, and Windows, whether we 
+like it or not does not require hardware vendors to stay away from port 80.
+
+IMHO, calling something "idiotic" is hardly evidence-based decision 
+making.   Maybe you love to hate Microsoft, but until Intel writes an 
+architecture standard that says explicitly that a "standard PC" must not 
+use port 80 for any peripheral, the port 80 thing is folklore, and one 
+that is solely Linux-defined.
+
+Rene Herman wrote:
+> On 20-02-08 18:05, H. Peter Anvin wrote:
+>  
+>> Rene Herman wrote:
+>>>
+>>> _Something_ like this would seem to be the only remaining option. It 
+>>> seems fairly unuseful to #ifdef around that switch statement for 
+>>> kernels without support for the earlier families, but if you insist...
+>>>
 >>
->> Fix firmware_sample_firmware_class module to build without error.
->> sysfs.h already has the function prototypes and has them correctly.
->>
->> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
->> include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
->>
->> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
->> ---
->>  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
->>  1 file changed, 3 deletions(-)
-> 
-> Can we move this file to the samples/ directory, so the build will catch
-> stuff like this?
-> 
-> What's the final version of this patch?
-
-I've moved it to samples/, but it (still) has a build problem:
-
-ERROR: "firmware_class" [samples/firmware_class/firmware_sample_firmware_class.ko] undefined!
-
-Can you give me hint(s) about how to fix that?
-
--- 
-~Randy
+>> "Only remaining option" other than the one we've had all along.  Even 
+>> on the one idiotic set of systems which break, it only breaks 
+>> post-ACPI intialization, IIRC.
+>
+> Linus vetoed the DMI switch.
+>
+> Rene.
+>
