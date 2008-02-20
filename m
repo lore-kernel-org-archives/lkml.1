@@ -1,143 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764758AbYBTPXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765567AbYBTPYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764758AbYBTPXt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:23:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbYBTPTa
+	id S1765567AbYBTPYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:24:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbYBTPTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:19:30 -0500
-Received: from viefep11-int.chello.at ([62.179.121.31]:61610 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753565AbYBTPSj (ORCPT
+	Wed, 20 Feb 2008 10:19:38 -0500
+Received: from viefep18-int.chello.at ([213.46.255.22]:8446 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbYBTPSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:18:39 -0500
-Message-Id: <20080220144610.548202000@chello.nl>
+	Wed, 20 Feb 2008 10:18:40 -0500
+X-SourceIP: 80.56.237.116
+Message-Id: <20080220150308.230961000@chello.nl>
+References: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:10 +0100
+Date: Wed, 20 Feb 2008 15:46:33 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 00/28] Swap over NFS -v16
+Subject: [PATCH 23/28] mm: methods for teaching filesystems about PG_swapcache pages
+Content-Disposition: inline; filename=mm-page_file_methods.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+In order to teach filesystems to handle swap cache pages, two new page
+functions are introduced:
 
-Another posting of the full swap over NFS series. 
+  pgoff_t page_file_index(struct page *);
+  struct address_space *page_file_mapping(struct page *);
 
-Andrew/Linus, could we start thinking of sticking this in -mm?
+page_file_index - gives the offset of this page in the file in PAGE_CACHE_SIZE
+blocks. Like page->index is for mapped pages, this function also gives the
+correct index for PG_swapcache pages.
 
-[ patches against 2.6.25-rc2-mm1, also to be found online at:
-  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v2.6.25-rc2-mm1/ ]
+page_file_mapping - gives the mapping backing the actual page; that is for
+swap cache pages it will give swap_file->f_mapping.
 
-The patch-set can be split in roughtly 5 parts, for each of which I shall give
-a description.
+page_offset() is modified to use page_file_index(), so that it will give the
+expected result, even for PG_swapcache pages.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/mm.h      |   25 +++++++++++++++++++++++++
+ include/linux/pagemap.h |    2 +-
+ mm/swapfile.c           |   19 +++++++++++++++++++
+ 3 files changed, 45 insertions(+), 1 deletion(-)
 
-  Part 1, patches 1-11
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -600,6 +600,17 @@ static inline struct address_space *page
+ 	return mapping;
+ }
+ 
++extern struct address_space *__page_file_mapping(struct page *);
++
++static inline
++struct address_space *page_file_mapping(struct page *page)
++{
++	if (unlikely(PageSwapCache(page)))
++		return __page_file_mapping(page);
++
++	return page->mapping;
++}
++
+ static inline int PageAnon(struct page *page)
+ {
+ 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
+@@ -616,6 +627,20 @@ static inline pgoff_t page_index(struct 
+ 	return page->index;
+ }
+ 
++extern pgoff_t __page_file_index(struct page *page);
++
++/*
++ * Return the file index of the page. Regular pagecache pages use ->index
++ * whereas swapcache pages use swp_offset(->private)
++ */
++static inline pgoff_t page_file_index(struct page *page)
++{
++	if (unlikely(PageSwapCache(page)))
++		return __page_file_index(page);
++
++	return page->index;
++}
++
+ /*
+  * The atomic page->_mapcount, like _count, starts from -1:
+  * so that transitions both from it and to it can be tracked,
+Index: linux-2.6/include/linux/pagemap.h
+===================================================================
+--- linux-2.6.orig/include/linux/pagemap.h
++++ linux-2.6/include/linux/pagemap.h
+@@ -145,7 +145,7 @@ extern void __remove_from_page_cache(str
+  */
+ static inline loff_t page_offset(struct page *page)
+ {
+-	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
++	return ((loff_t)page_file_index(page)) << PAGE_CACHE_SHIFT;
+ }
+ 
+ static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+Index: linux-2.6/mm/swapfile.c
+===================================================================
+--- linux-2.6.orig/mm/swapfile.c
++++ linux-2.6/mm/swapfile.c
+@@ -1818,6 +1818,25 @@ struct swap_info_struct *page_swap_info(
+ }
+ 
+ /*
++ * out-of-line __page_file_ methods to avoid include hell.
++ */
++
++struct address_space *__page_file_mapping(struct page *page)
++{
++	VM_BUG_ON(!PageSwapCache(page));
++	return page_swap_info(page)->swap_file->f_mapping;
++}
++EXPORT_SYMBOL_GPL(__page_file_mapping);
++
++pgoff_t __page_file_index(struct page *page)
++{
++	swp_entry_t swap = { .val = page_private(page) };
++	VM_BUG_ON(!PageSwapCache(page));
++	return swp_offset(swap);
++}
++EXPORT_SYMBOL_GPL(__page_file_index);
++
++/*
+  * swap_lock prevents swap_map being freed. Don't grab an extra
+  * reference on the swaphandle, it doesn't matter if it becomes unused.
+  */
 
-The problem with swap over network is the generic swap problem: needing memory
-to free memory. Normally this is solved using mempools, as can be seen in the
-BIO layer.
-
-Swap over network has the problem that the network subsystem does not use fixed
-sized allocations, but heavily relies on kmalloc(). This makes mempools
-unusable.
-
-This first part provides a generic reserve framework. This framework
-could also be used to get rid of some of the __GFP_NOFAIL users.
-
-Care is taken to only affect the slow paths - when we're low on memory.
-
-Caveats: it currently doesn't do SLOB.
-
- 1 - mm: gfp_to_alloc_flags()
- 2 - mm: tag reseve pages
- 3 - mm: sl[au]b: add knowledge of reserve pages
- 4 - mm: kmem_estimate_pages()
- 5 - mm: allow PF_MEMALLOC from softirq context
- 6 - mm: serialize access to min_free_kbytes
- 7 - mm: emergency pool
- 8 - mm: system wide ALLOC_NO_WATERMARK
- 9 - mm: __GFP_MEMALLOC
-10 - mm: memory reserve management
-11 - selinux: tag avc cache alloc as non-critical
-
-
-  Part 2, patches 12-14
-
-Provide some generic network infrastructure needed later on.
-
-12 - net: wrap sk->sk_backlog_rcv()
-13 - net: packet split receive api
-14 - net: sk_allocation() - concentrate socket related allocations
-
-
-  Part 3, patches 15-21
-
-Now that we have a generic memory reserve system, use it on the network stack.
-The thing that makes this interesting is that, contrary to BIO, both the
-transmit and receive path require memory allocations. 
-
-That is, in the BIO layer write back completion is usually just an ISR flipping
-a bit and waking stuff up. A network write back completion involved receiving
-packets, which when there is no memory, is rather hard. And even when there is
-memory there is no guarantee that the required packet comes in in the window
-that that memory buys us.
-
-The solution to this problem is found in the fact that network is to be assumed
-lossy. Even now, when there is no memory to receive packets the network card
-will have to discard packets. What we do is move this into the network stack.
-
-So we reserve a little pool to act as a receive buffer, this allows us to
-inspect packets before tossing them. This way, we can filter out those packets
-that ensure progress (writeback completion) and disregard the others (as would
-have happened anyway). [ NOTE: this is a stable mode of operation with limited
-memory usage, exactly the kind of thing we need ]
-
-Again, care is taken to keep much of the overhead of this to only affect the
-slow path. Only packets allocated from the reserves will suffer the extra
-atomic overhead needed for accounting.
-
-15 - netvm: network reserve infrastructure
-16 - netvm: INET reserves.
-17 - netvm: hook skb allocation to reserves
-18 - netvm: filter emergency skbs.
-19 - netvm: prevent a TCP specific deadlock
-20 - netfilter: NF_QUEUE vs emergency skbs
-21 - netvm: skb processing
-
-
-  Part 4, patches 22-23
-
-Generic vm infrastructure to handle swapping to a filesystem instead of a block
-device.
-
-This provides new a_ops to handle swapcache pages and could be used to obsolete
-the bmap usage for swapfiles.
-
-22 - mm: add support for non block device backed swap files
-23 - mm: methods for teaching filesystems about PG_swapcache pages
-
-
-  Part 5, patches 24-28
-
-Finally, convert NFS to make use of the new network and vm infrastructure to
-provide swap over NFS.
-
-24 - nfs: remove mempools
-25 - nfs: teach the NFS client how to treat PG_swapcache pages
-26 - nfs: disable data cache revalidation for swapfiles
-27 - nfs: enable swap on NFS
-28 - nfs: fix various memory recursions possible with swap over NFS.
-
-
-Changes since -v15:
- - fwd port
- - more SGE fragment drivers ported
- - made the new swapfile logic unconditional
- - various bug fixes and cleanups
-
+--
 
