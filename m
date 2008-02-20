@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759548AbYBTGpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbYBTGu2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759548AbYBTGpd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 01:45:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYBTGpW
+	id S1757641AbYBTGu2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 01:50:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYBTGuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 01:45:22 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:19172 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751693AbYBTGpV (ORCPT
+	Wed, 20 Feb 2008 01:50:16 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:38064 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbYBTGuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 01:45:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=b2BpRp/y6zd5pkysARXm65sLdW4rp5XZ/axI3+fagVAuWvt3BPE7gHwtzMdwsfBsBf5HZ5BghR48QU0L5GemRNpPKs+s9nKcBdn2kFKCT9mXuy28wtA5yRhxIcsN7j3JimJgbuB5DuvH94xd0NlIzFYmmakkyVWESc8GakqouWQ=
-Date: Wed, 20 Feb 2008 06:46:13 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Ron Rindjunsky <ron.rindjunsky@intel.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [2.6.25 patch] fix broken error handling in
-	ieee80211_sta_process_addba_request()
-Message-ID: <20080220064613.GA3885@ff.dom.local>
+	Wed, 20 Feb 2008 01:50:15 -0500
+Date: Tue, 19 Feb 2008 22:46:42 -0800
+From: Greg KH <greg@kroah.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Subject: Re: [PATCH] documentation: fix firmware_sample_firmware_class to
+	build
+Message-ID: <20080220064642.GA22884@kroah.com>
+References: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080219225852.GQ31955@cs181133002.pp.htv.fi>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080218162216.ee1501fd.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 19-02-2008 23:58, Adrian Bunk wrote:
-...
-> --- a/net/mac80211/ieee80211_sta.c
-> +++ b/net/mac80211/ieee80211_sta.c
-> @@ -1116,9 +1116,10 @@ static void ieee80211_sta_process_addba_request(struct net_device *dev,
-...
-> +			printk(KERN_ERR "can not allocate reordering buffer "
+On Mon, Feb 18, 2008 at 04:22:16PM -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix firmware_sample_firmware_class module to build without error.
+> sysfs.h already has the function prototypes and has them correctly.
+> 
+> Documentation/firmware_class/firmware_sample_firmware_class.c:37: error: conflicting types for 'sysfs_remove_bin_file'
+> include/linux/sysfs.h:100: error: previous declaration of 'sysfs_remove_bin_file' was here
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> ---
+>  Documentation/firmware_class/firmware_sample_firmware_class.c |    3 ---
+>  1 file changed, 3 deletions(-)
 
-  +			printk(KERN_ERR "cannot allocate reordering buffer "
+Can we move this file to the samples/ directory, so the build will catch
+stuff like this?
 
-Probably this can be fixed during the commit.
+What's the final version of this patch?
 
-Jarek P.
+thanks,
+
+greg k-h
