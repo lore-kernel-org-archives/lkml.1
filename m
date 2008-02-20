@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbYBTXWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763469AbYBTX1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbYBTXWg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 18:22:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbYBTXWM
+	id S1763469AbYBTX1y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 18:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbYBTX1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 18:22:12 -0500
-Received: from [216.31.210.20] ([216.31.210.20]:2117 "EHLO mms5.broadcom.com"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1765715AbYBTXWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 18:22:10 -0500
-X-Greylist: delayed 418 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 18:22:10 EST
-X-Server-Uuid: 93BB6497-3EF8-45A3-B447-1CDF3B37573C
-Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>
-cc: tonyb@cybernetics.com, mcarlson@broadcom.com, herbert@gondor.apana.org.au,
-       netdev <netdev@vger.kernel.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20080220.150850.56732755.davem@davemloft.net>
-References: <47BB54C2.6090501@cybernetics.com>
- <20080220013824.GA5416@localdomain> <47BCB1E9.8020102@cybernetics.com>
- <20080220.150850.56732755.davem@davemloft.net>
-Date: Wed, 20 Feb 2008 15:17:29 -0800
-Message-ID: <1203549449.13495.140.camel@dell>
+	Wed, 20 Feb 2008 18:27:47 -0500
+Received: from mail2.neteffect.com ([204.57.75.68]:60008 "EHLO
+	mail2.neteffect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752632AbYBTX1q convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 18:27:46 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6BA26BED38S3509000-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix off-by-one
+Date: Wed, 20 Feb 2008 17:27:45 -0600
+Message-ID: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+In-Reply-To: <adaejb7dxir.fsf@cisco.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix off-by-one
+Thread-Index: Ach0F2EYM4bTqehKSfOyes7uKJ+ApwAALd9w
+From: "Glenn Streiff" <gstreiff@NetEffect.com>
+To: "Roland Dreier" <rdreier@cisco.com>, "Adrian Bunk" <bunk@kernel.org>
+Cc: "Faisal Latif" <flatif@NetEffect.com>, <linux-kernel@vger.kernel.org>,
+       <general@lists.openfabrics.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 15:08 -0800, David Miller wrote:
-> From: Tony Battersby <tonyb@cybernetics.com>
-> Date: Wed, 20 Feb 2008 18:04:09 -0500
+
+
+> -----Original Message-----
+> From: Roland Dreier [mailto:rdreier@cisco.com]
+> Sent: Wednesday, February 20, 2008 5:22 PM
+> To: Adrian Bunk
+> Cc: Faisal Latif; Glenn Streiff; linux-kernel@vger.kernel.org;
+> general@lists.openfabrics.org
+> Subject: Re: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c:
+> fix off-by-one
 > 
-> > The following patch fixes the problem for me.  Do we want to accept this
-> > patch and call it a day or continue investigating the source of the problem?
-> > 
-> > Patch applies to 2.6.24.2, but doesn't apply to 2.6.25-rc.  If everyone
-> > agrees that this is the right solution, I will resubmit with a proper
-> > subject line and description.
 > 
-> A chipset bug, if it even exists, should be worked around in the
-> driver for that hardware.  We shouldn't make every other piece
-> of hardware in the world suffer too.
+>  > No, 51af33e8 was for a similar same bug 400 lines below this bug...
 > 
+> Heh, sorry.
+> 
+> Glenn -- please review Adrian's patches and let me know which ones are
+> good to apply.
 > 
 
-Yes, we should workaround this in the TG3 driver once we understand what
-the problem is and how to workaround it.  We are still looking through
-the errata list to sort this out.  It looks like it is the starting DMA
-address of the TX buffer that is causing the problem.
+Sweeping through them right now.  Should have something for you
+tonight.
 
+Glenn
