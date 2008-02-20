@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbYBTRy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762993AbYBTRzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762139AbYBTRy6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:54:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbYBTRys
+	id S1762993AbYBTRzb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:55:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756811AbYBTRzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:54:48 -0500
-Received: from el-out-1112.google.com ([209.85.162.177]:46070 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756754AbYBTRyr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:54:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=yIYefCAPT4OK1i9r5Y/LtAN3gikqwIoqVeg1mrHJ0VNjiioxWFlGIJYLtoum+J1T1+LYgO/Fs1bUv4UOB9AoiCy+m4DDXoTxIz4i40aYGHXCLoJS42hWnwWNAhhWlSaHUtssQYA+DaiwK+crrajCGHHqlAeyPgeJyw97FTXXH9Y=
-Message-ID: <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com>
-Date: Thu, 21 Feb 2008 01:54:45 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Cc: "Jesse Barnes" <jesse.barnes@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-In-Reply-To: <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org>
+	Wed, 20 Feb 2008 12:55:06 -0500
+Received: from mail.hevs.ch ([153.109.23.10]:52690 "EHLO mail.hevs.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761395AbYBTRzE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:55:04 -0500
+From: Marc Pignat <marc.pignat@hevs.ch>
+Organization: HEVs
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH] atmel_spi: support zero length transfer
+Date: Wed, 20 Feb 2008 18:55:01 +0100
+User-Agent: KMail/1.9.7
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       David Brownell <david-b@pacbell.net>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20080221.005432.07645461.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080221.005432.07645461.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-	 <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org>
+Message-Id: <200802201855.02605.marc.pignat@hevs.ch>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 21, 2008 1:28 AM, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Hi!
 
-> That said, before you do anything else, try if suspend-to-RAM works.
+On Wednesday 20 February 2008, you wrote:
+> A spi transfer with zero length is not invalid.  Such transfer can be
+> used to achieve delay before first CLK edge after chipselect assertion.
+How long will be that delay?
 
-Linus, guess I missed this part ... so before touch anything, I did
-tried suspend-to-ram, and it works on console and in X.
+If they are really users of that kind of thing, this should be fixed by adding
+a "delay_us_before_xfer" field in the  struct spi_transfer.
 
-And suspend-to-disk hangs, but I can still press and hold the power
-button to power it off. Then upon powering on and resume, I get the
-ugly green "console" screen. I can still type and move around.
-Starting X runs fine. Ctrl-Alt-Del or switching back to console will
-get back to the green screen.
+Have you tested it? I think if you start a transfer with 0 len, the ENDRX bit
+will never rise, however, I'm not sure about this.
 
-Thanks,
-Jeff.
+Regards
+
+Marc
