@@ -1,43 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933384AbYBTPiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933428AbYBTPi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933384AbYBTPiI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:38:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932324AbYBTPek
+	id S933428AbYBTPi5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765733AbYBTPiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:34:40 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50722 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932980AbYBTPej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:34:39 -0500
-Date: Wed, 20 Feb 2008 16:34:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Avi Kivity <avi@qumranet.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: complete segment descriptor unification
-Message-ID: <20080220153425.GA23153@elte.hu>
-References: <1203521180-21489-1-git-send-email-avi@qumranet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203521180-21489-1-git-send-email-avi@qumranet.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0001]
+	Wed, 20 Feb 2008 10:38:19 -0500
+Received: from viefep11-int.chello.at ([62.179.121.31]:51420 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933386AbYBTPiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 10:38:15 -0500
+Message-Id: <20080220150305.905314000@chello.nl>
+References: <20080220144610.548202000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Wed, 20 Feb 2008 15:46:15 +0100
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 05/28] mm: allow PF_MEMALLOC from softirq context
+Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
+a borrowed context save current->flags, ksoftirqd will have its own 
+task_struct.
 
-* Avi Kivity <avi@qumranet.com> wrote:
+This is needed to allow network softirq packet processing to make use of
+PF_MEMALLOC.
 
-> Remove the final line in asm-x86/desc_64.h
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/sched.h |    4 ++++
+ kernel/softirq.c      |    3 +++
+ mm/page_alloc.c       |    7 ++++---
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
-thanks, applied :-)
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -1471,9 +1471,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
+ 		alloc_flags |= ALLOC_HARDER;
+ 
+ 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
+-		if (!in_interrupt() &&
+-		    ((p->flags & PF_MEMALLOC) ||
+-		     unlikely(test_thread_flag(TIF_MEMDIE))))
++		if (!in_irq() && (p->flags & PF_MEMALLOC))
++			alloc_flags |= ALLOC_NO_WATERMARKS;
++		else if (!in_interrupt() &&
++				unlikely(test_thread_flag(TIF_MEMDIE)))
+ 			alloc_flags |= ALLOC_NO_WATERMARKS;
+ 	}
+ 
+Index: linux-2.6/kernel/softirq.c
+===================================================================
+--- linux-2.6.orig/kernel/softirq.c
++++ linux-2.6/kernel/softirq.c
+@@ -213,6 +213,8 @@ asmlinkage void __do_softirq(void)
+ 	__u32 pending;
+ 	int max_restart = MAX_SOFTIRQ_RESTART;
+ 	int cpu;
++	unsigned long pflags = current->flags;
++	current->flags &= ~PF_MEMALLOC;
+ 
+ 	pending = local_softirq_pending();
+ 	account_system_vtime(current);
+@@ -251,6 +253,7 @@ restart:
+ 
+ 	account_system_vtime(current);
+ 	_local_bh_enable();
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ }
+ 
+ #ifndef __ARCH_HAS_DO_SOFTIRQ
+Index: linux-2.6/include/linux/sched.h
+===================================================================
+--- linux-2.6.orig/include/linux/sched.h
++++ linux-2.6/include/linux/sched.h
+@@ -1497,6 +1497,10 @@ static inline void put_task_struct(struc
+ #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
+ #define used_math() tsk_used_math(current)
+ 
++#define tsk_restore_flags(p, pflags, mask) \
++	do {	(p)->flags &= ~(mask); \
++		(p)->flags |= ((pflags) & (mask)); } while (0)
++
+ #ifdef CONFIG_SMP
+ extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
+ #else
 
-	Ingo
+--
+
