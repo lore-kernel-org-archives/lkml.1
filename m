@@ -1,47 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbYBTNOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761599AbYBTNPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbYBTNOs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:14:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751727AbYBTNOk
+	id S1761599AbYBTNPc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:15:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbYBTNPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:14:40 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42403 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbYBTNOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:14:39 -0500
-Date: Wed, 20 Feb 2008 14:14:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Howells <dhowells@redhat.com>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [QUESTION] FRV: linking error?
-Message-ID: <20080220131442.GA18790@uranus.ravnborg.org>
-References: <20080218200302.GA6741@cvg> <19148.1203512465@redhat.com>
-Mime-Version: 1.0
+	Wed, 20 Feb 2008 08:15:24 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:43494 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751788AbYBTNPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 08:15:23 -0500
+Date: Wed, 20 Feb 2008 07:15:15 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
+       akpm@linux-foundation.org, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v6
+Message-ID: <20080220131515.GF11364@sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220113313.GD11364@sgi.com> <20080220120324.GW7128@v2.random> <20080220122424.GE11364@sgi.com> <20080220123235.GX7128@v2.random>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19148.1203512465@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20080220123235.GX7128@v2.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:01:05PM +0000, David Howells wrote:
-> Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+On Wed, Feb 20, 2008 at 01:32:36PM +0100, Andrea Arcangeli wrote:
+> On Wed, Feb 20, 2008 at 06:24:24AM -0600, Robin Holt wrote:
+> > We do not need to do any allocation in the messaging layer, all
+> > structures used for messaging are allocated at module load time.
+> > The allocation discussions we had early on were about trying to
+> > rearrange you notifiers to allow a seperate worker thread to do the
+> > invalidate and then the main thread would spin waiting for the worker to
+> > complete.  That was canned by the moving your notifier to before the
+> > lock was grabbed which led us to the point of needing a _begin and _end.
 > 
-> > being see over vmlinux.lds for FRV architecture I found the string:
-> > 
-> > 	. = ALIGN(4096);
-> > 	.data.page_aligned : { *(.data.idt) }
-> > 
-> > though the PAGE_SIZE is 16K. Can't figure out why is that...
-> > Do you have a few spare minutes to explain, please?
+> I thought you called some net/* function inside the mmu notifier
+> methods. Those always require several ram allocations internally.
+
+Nope, that was the discussions with the IB folks.  We only use XPC and
+both the messages we send and the XPC internals do not need to allocate.
+
+> > So, fundamentally, how would they be different?  Would we be required to
+> > add another notifier list to the mm and have two seperate callout
+> > points?  Reduction would end up with the same half-registered
+> > half-not-registered situation you point out above.  Then further
+> > reduction would lead to the elimination of the callouts you have just
+> > proposed and using the _begin/_end callouts and we are back to
+> > Christoph's current patch.
 > 
-> Ummm...  Good question.  Probably a legacy thing.  I think the .data.idt
-> section is also an x86-only thing and should be dispensed with for FRV.
-> Leastways, the section has nothing in it according to the link map.
+> Did you miss Nick's argument that we'd need to change some VM lock to
+> mutex and solve lock issues first? Are you implying mutex are more
+> efficient for the VM? (you may seek support from preempt-rt folks at
+> least) or are you implying the VM would better run slower with mutex
+> in order to have a single config option?
 
-A quick grep agree with you.
-I see it used only in x86 in traps_32 for the F0 0F bug.
-It exist in several .lds files - including frv.
+That would be if we needed to support file backed mappings and hugetlbfs
+mappings.  Currently (and for the last 6 years), XPMEM has not supported
+either of those.  I don't view either as being a realistic possibility,
+but it is certainly something we would need to address before either
+could be supported.
 
-	Sam
+Robin
