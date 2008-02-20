@@ -1,57 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbYBTQw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbYBTQxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760840AbYBTQw4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:52:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759696AbYBTQwf
+	id S1760924AbYBTQxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:53:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761312AbYBTQxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:52:35 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48871 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759569AbYBTQwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:52:31 -0500
-Message-ID: <47BC5ACB.6070203@pobox.com>
-Date: Wed, 20 Feb 2008 11:52:27 -0500
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 20 Feb 2008 11:53:13 -0500
+Received: from smtp120.sbc.mail.re3.yahoo.com ([66.196.96.93]:30011 "HELO
+	smtp120.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759778AbYBTQxK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 11:53:10 -0500
+X-YMail-OSG: wdNB_A8VM1lbi.tiZUz1ULuQ2AdiEwTfrYZD6JwwHZbgjBo8jPGcBeyH7tlEgiQijzd0tXyMW.5dHesYktXtp9M562YPaaxW8vHbojtiZEMRTpB_moU-
+X-Yahoo-Newman-Property: ymail-3
+Date: Wed, 20 Feb 2008 10:50:34 -0600
+From: serge@hallyn.com
+To: Nick Andrew <nick@nick-andrew.net>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, Pavel Emelyanov <xemul@openvz.org>,
+       trivial@kernel.org, linux-kernel@vger.kernel.org,
+       Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH 2.6.25-rc2 3/9] config: Improve init/Kconfig help
+	descriptions - namespaces
+Message-ID: <20080220165034.GA14550@vino.hallyn.com>
+References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com> <20080220121915.GA2169@tull.net>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@kernel.org>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] net/phy/mdio_bus.c: fix a check-after-use
-References: <20080220001353.GV31955@cs181133002.pp.htv.fi>
-In-Reply-To: <20080220001353.GV31955@cs181133002.pp.htv.fi>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220121915.GA2169@tull.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> This patch fixes a check-after-use spotted by the Coverity checker.
+Quoting Nick Andrew (nick@nick-andrew.net):
+> Rewrite the help descriptions for clarity, accuracy and consistency.
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
+> Kernel config options affected:
 > 
+>   - NAMESPACES
+>   - UTS_NS
+>   - IPC_NS
+>   - USER_NS
+>   - PID_NS
+> 
+> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 > ---
-> 6beeb3ac577d74d72b2f91bd654eecb904c3c17e diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-> index 6e9f619..963630c 100644
-> --- a/drivers/net/phy/mdio_bus.c
-> +++ b/drivers/net/phy/mdio_bus.c
-> @@ -49,13 +49,13 @@ int mdiobus_register(struct mii_bus *bus)
->  	int i;
->  	int err = 0;
->  
-> -	mutex_init(&bus->mdio_lock);
-> -
->  	if (NULL == bus || NULL == bus->name ||
->  			NULL == bus->read ||
->  			NULL == bus->write)
->  		return -EINVAL;
->  
-> +	mutex_init(&bus->mdio_lock);
+> Here's try #2 at the 3rd patch in the series, for namespace
+> descriptions. Patching against Linus' git tree now, and trying
+> to comply with the standards for submitting patches. Each of
+> the UTS/IPC/USER/PID descriptions is subtly different, but I
+> hope they all are clear and accurate.
+> 
+> 
+> --- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
+> +++ b/init/Kconfig	2008-02-20 22:55:41.000000000 +1100
+> @@ -414,31 +414,71 @@
+>  	bool "Namespaces support" if EMBEDDED
+>  	default !EMBEDDED
+>  	help
+> -	  Provides the way to make tasks work with different objects using
+> -	  the same id. For example same IPC id may refer to different objects
+> -	  or same user id or pid may refer to different tasks when used in
+> -	  different namespaces.
+> +	  Select various namespace options.
 > +
+> +	  Namespaces allow different kernel objects (such as processes
+> +	  or sockets) to have the same ID in different namespaces.
+> +	  Identifiers like process IDs, which historically were globally
+> +	  unique, will now be unique only within each PID namespace.
+> +	  Each task can refer only to PIDs within the same namespace
+> +	  as the task itself.
+> +
+> +	  Namespaces are used by container systems (i.e. vservers)
+> +	  to provide isolation between the containers.
+> +
+> +	  This option does not affect any kernel code directly; it merely
+> +	  allows you to select namespace options below.
+> +
+> +	  Answer Y if you will be using a container system, and you
+> +	  will probably want to enable all the namespace options
+> +	  below.
+>  
+>  config UTS_NS
+>  	bool "UTS namespace"
+>  	depends on NAMESPACES
+>  	help
+> -	  In this namespace tasks see different info provided with the
+> -	  uname() system call
+> +	  Enable support for multiple UTS system attributes.
+> +
+> +	  Each UTS namespace provides an individual view of the
+> +	  information returned by the uname() system call including
+> +	  hostname, kernel version and domain name.
+> +
+> +	  This is used by container systems (i.e. vservers) so that
+> +	  each container has its own hostname and other attributes.
+> +	  Tasks in the container are placed in the UTS namespace
+> +	  corresponding to the container.
+> +
+> +	  Answer Y if you will be using a container system.
+>  
+>  config IPC_NS
+>  	bool "IPC namespace"
+>  	depends on NAMESPACES && SYSVIPC
+>  	help
+> -	  In this namespace tasks work with IPC ids which correspond to
+> -	  different IPC objects in different namespaces
+> +	  Enable support for namespace-specific IPC IDs.
+> +
+> +	  IPC IDs will be unique only within each IPC namespace.
+> +
+> +	  This is used by container systems (i.e. vservers).
+> +	  Tasks in the container are placed in the IPC namespace
+> +	  corresponding to the container.
+> +
+> +	  Answer Y if you will be using a container system.
+>  
+>  config USER_NS
+>  	bool "User namespace (EXPERIMENTAL)"
+>  	depends on NAMESPACES && EXPERIMENTAL
+>  	help
+> -	  This allows containers, i.e. vservers, to use user namespaces
+> -	  to provide different user info for different servers.
+> +	  Enable experimental support for user namespaces.
+> +
+> +	  This is a function used by container-based virtualisation systems
+> +	  (e.g. vservers). User namespaces are intended to ensure that
+> +	  processes with the same uid which are in different containers are
+> +	  isolated from each other.
+> +
+> +	  Currently user namespaces provide separate accounting, while
+> +	  isolation must be provided using SELinux or a custom security
+> +	  module.
+> +
+>  	  If unsure, say N.
+>  
+>  config PID_NS
+> @@ -446,12 +486,20 @@
+>  	default n
+>  	depends on NAMESPACES && EXPERIMENTAL
+>  	help
+> -	  Suport process id namespaces.  This allows having multiple
+> -	  process with the same pid as long as they are in different
+> -	  pid namespaces.  This is a building block of containers.
+> +	  Enable experimental support for hierarchical process id namespaces.
+>  
+> -	  Unless you want to work with an experimental feature
+> -	  say N here.
+> +	  Process IDs will be unique only within each PID namespace.
+> +	  This allows multiple processes to have the same PID
+> +	  so long as they are in different PID namespaces. Furthermore,
+> +	  each process will have a distinct PID in each namespace
+> +	  the process is in.
+> +
+> +	  This is used by container systems (i.e. vservers).
+> +	  Tasks in the container are placed in the PID namespace
+> +	  corresponding to the container, and can only see or
+> +	  affect processes in the same PID namespace.
 
-applied
+Hi Nick,
 
+thanks for all this work.
 
+Perhaps it would be better to have a Documentation/Namespaces/PID file
+describing these semantics, and have the description read something
+briefer like
+
+	  Pid namespaces provide filtered views of processes and their
+	  process ids.  This features is used to implement containers.
+	  Please see Documentation/Namespaces/PID for details.
+
+But in any case with Pavel's comments this looks very good.
+
+thanks,
+-serge
+
+> +
+> +	  If unsure, say N.
+>  
+>  config BLK_DEV_INITRD
+>  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
