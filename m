@@ -1,149 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761617AbYBTBMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbYBTBQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761617AbYBTBMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 20:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbYBTBMe
+	id S1761642AbYBTBQI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 20:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbYBTBP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 20:12:34 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:55108 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755462AbYBTBMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 20:12:33 -0500
-Date: Wed, 20 Feb 2008 01:10:25 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: [git pull] drm patches for 2.6.25-rc3
-Message-ID: <alpine.DEB.0.82.0802200107360.23529@skynet.skynet.ie>
+	Tue, 19 Feb 2008 20:15:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:17761 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755595AbYBTBPz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 20:15:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:sender:to:subject:cc:mime-version:content-type:x-google-sender-auth;
+        b=LTTI5BBhsTmodpwgMqu2pVjZlExxnZVyAyV7YhLePhnUGQt9fE+opeasaHUeB9jT4wbkSfYNMs0RJKfkOkF0Qr/ar0JXq9qVTFSNyyeTSvUBbjy0bfuv+5cfirr5x2nqi9RTlipYQ2CPvJDiSI8eex0fpezSI466eZnkvzayG3A=
+Message-ID: <ff6a9c820802191715o1640cf9bu8dc0c1ff83d4ad55@mail.gmail.com>
+Date: Wed, 20 Feb 2008 09:15:54 +0800
+From: SDiZ <sdiz@sdiz.net>
+To: "Marcel Holtmann" <marcel@holtmann.org>,
+       "David Miller" <davem@davemloft.net>
+Subject: [PATCH][BLUETOOTH] CONWISE Technology based adapters with buggy SCO support (bugzilla #9027)
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_19036_15322957.1203470154559"
+X-Google-Sender-Auth: cec721072de73b2c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+------=_Part_19036_15322957.1203470154559
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hi Linus,
+Hi,
 
-Please pull the 'drm-patches' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+The attached patch (against current git head) fix the CONWISE
+Technology based adapters with buggy SCO support issue (bugzilla
+#9027)
 
-Mainly fixes for i915 suspend/resume issues, sis/radeon pci id addition,
-and initial support for the GART on the AMD rs690 chipsets, along with 
-the final nopage removal.
 
-Dave.
+Regrads,
+Daniel Cheng (SDiZ)
 
- drivers/char/drm/drmP.h       |    2 +-
- drivers/char/drm/drm_pciids.h |    3 +
- drivers/char/drm/drm_sysfs.c  |    2 +-
- drivers/char/drm/drm_vm.c     |  125 ++++++++++++++++++-----------------------
- drivers/char/drm/i915_dma.c   |    5 +-
- drivers/char/drm/i915_drv.c   |   51 +++++++++++++----
- drivers/char/drm/i915_drv.h   |   17 ++++++
- drivers/char/drm/radeon_cp.c  |   81 ++++++++++++++++++++++++++
- drivers/char/drm/radeon_drv.h |   38 ++++++++++++
- 9 files changed, 240 insertions(+), 84 deletions(-)
+------=_Part_19036_15322957.1203470154559
+Content-Type: application/octet-stream;
+ name=conwise-buggy-sco-support.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fcv6zqhu0
+Content-Disposition: attachment; filename=conwise-buggy-sco-support.patch
 
-commit feac7af508ebdfe1db9920d4e45d0ffd286abe75
-Author: Chaoyu Chen <chaoyu_chen@sis.com>
-Date:   Wed Feb 20 10:12:39 2008 +1000
-
-    drm/sis: add pciid for SiS 662/671 chipset
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit f9e9716a67fbea4594749bf1022fdfd0b96099db
-Author: Mirko <mailbox.stan@gmail.com>
-Date:   Wed Feb 20 10:07:57 2008 +1000
-
-    drm: add new rv380 pciid
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit b932ccb5674eb649133b5c33950405c37d17aab3
-Author: Dave Airlie <airlied@redhat.com>
-Date:   Wed Feb 20 10:02:20 2008 +1000
-
-    drm: add support for passing state into the suspend hooks.
-    
-    fix i915 driver to use state for hibernate save avoidance.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit da636ad6a0d72eb5cb99738056af0bcc3db9ef9d
-Author: Jesse Barnes <jesse.barnes@intel.com>
-Date:   Mon Jan 28 21:05:22 2008 -0800
-
-    drm/i915: Fix hibernate save/restore of VGA attribute regs
-    
-    In hibernate, we may end up calling the VGA save regs function twice, so we need to make sure it's idempotent.  That means leaving ARX in index mode after the first save operation.  Fixes hibernate on 965.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 1f84e550a870bf5f5f399b611db68f3324ea7883
-Author: Keith Packard <keithp@keithp.com>
-Date:   Sat Feb 16 19:19:29 2008 -0800
-
-    drm/i915 more registers for S3 (DSPCLK_GATE_D, CACHE_MODE_0, MI_ARB_STATE)
-    
-    Failing to preserve the MI_ARB_STATE register was causing FIFO underruns on
-    the VGA output on my HP 2510p after resume.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit c0c4261b6fd80f0fc5546ed67058592469a4f5b7
-Author: Jesse Barnes <jbarnes@hobbes.virtuousgeek.org>
-Date:   Thu Feb 7 17:33:28 2008 -0800
-
-    drm/i915: restore pipeconf regs unconditionally
-    
-    On many chipsets, the checks for DPLL enable or VGA mode will prevent the pipeconf regs from being restored, which could result in a blank display or X failing to come back after resume.  So restore them unconditionally along with actually restoring pipe B's palette correctly.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 0da3ea12fc2607beb67c2d54d0347807ea615573
-Author: Jesse Barnes <jbarnes@nietzche.virtuousgeek.org>
-Date:   Wed Feb 20 09:39:58 2008 +1000
-
-    drm/i915: save/restore interrupt state
-    
-    On resume, if the interrupt state isn't restored correctly, we may end
-    up with a flood of unexpected or ill-timed interrupts, which could cause
-    the kernel to disable the interrupt or vblank events to happen at the
-    wrong time.  So save/restore them properly.
-    
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit ca0b07d9a969c6561e5d6f69c861fbedf8d09e5d
-Author: Nick Piggin <npiggin@suse.de>
-Date:   Thu Feb 7 16:20:50 2008 +1000
-
-    drm: convert drm from nopage to fault.
-    
-    Remove redundant vma range checks.
-    
-    Signed-off-by: Nick Piggin <npiggin@suse.de>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit b39d50e53b1bb27f6c29f88a697a4af78427dffd
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Tue Feb 19 20:59:09 2008 +1000
-
-    i915: wrap chipset types requiring hw status set ioctl
-    
-    Also applys to recent added new chipset.
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 60f92683943c5b7a85963b283d6f8a853aa09203
-Author: Maciej Cencora <m.cencora@gmail.com>
-Date:   Tue Feb 19 21:32:45 2008 +1000
-
-    drm/radeon: add initial rs690 support to drm.
-    
-    This adds support for configuring the RS690 GART.
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
+RnJvbSBhYzYzN2JlYjcxMDM3MmQ5YjFlZjFjNDcyZWEzYWQ1ODM1YzIwMzRhIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBEYW5pZWwgQ2hlbmcgKFNEaVopIDxzZGl6QHNkaXoubmV0PgpE
+YXRlOiBXZWQsIDIwIEZlYiAyMDA4IDA5OjEwOjE2ICswODAwClN1YmplY3Q6IFtQQVRDSF0gQ09O
+V0lTRSBUZWNobm9sb2d5IGJhc2VkIGFkYXB0ZXJzIHdpdGggYnVnZ3kgU0NPIHN1cHBvcnQKCi0t
+LQogZHJpdmVycy9ibHVldG9vdGgvaGNpX3VzYi5jIHwgICAgMyArKysKIDEgZmlsZXMgY2hhbmdl
+ZCwgMyBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMv
+Ymx1ZXRvb3RoL2hjaV91c2IuYyBiL2RyaXZlcnMvYmx1ZXRvb3RoL2hjaV91c2IuYwppbmRleCAz
+NzJjN2VmLi40ZjhhNzQ0IDEwMDY0NAotLS0gYS9kcml2ZXJzL2JsdWV0b290aC9oY2lfdXNiLmMK
+KysrIGIvZHJpdmVycy9ibHVldG9vdGgvaGNpX3VzYi5jCkBAIC0xNDgsNiArMTQ4LDkgQEAgc3Rh
+dGljIHN0cnVjdCB1c2JfZGV2aWNlX2lkIGJsYWNrbGlzdF9pZHNbXSA9IHsKIAl7IFVTQl9ERVZJ
+Q0UoMHgwNDAwLCAweDA4MDcpLCAuZHJpdmVyX2luZm8gPSBIQ0lfQlJPS0VOX0lTT0MgfSwKIAl7
+IFVTQl9ERVZJQ0UoMHgwNDAwLCAweDA4MGEpLCAuZHJpdmVyX2luZm8gPSBIQ0lfQlJPS0VOX0lT
+T0MgfSwKIAorCS8qIENPTldJU0UgVGVjaG5vbG9neSBiYXNlZCBhZGFwdGVycyB3aXRoIGJ1Z2d5
+IFNDTyBzdXBwb3J0ICovCisJeyBVU0JfREVWSUNFKDB4MGU1ZSwgMHg2NjIyKSwgLmRyaXZlcl9p
+bmZvID0gSENJX0JST0tFTl9JU09DIH0sCisKIAkvKiBCZWxraW4gRjhUMDEyIGFuZCBGOFQwMTMg
+ZGV2aWNlcyAqLwogCXsgVVNCX0RFVklDRSgweDA1MGQsIDB4MDAxMiksIC5kcml2ZXJfaW5mbyA9
+IEhDSV9SRVNFVCB8IEhDSV9XUk9OR19TQ09fTVRVIH0sCiAJeyBVU0JfREVWSUNFKDB4MDUwZCwg
+MHgwMDEzKSwgLmRyaXZlcl9pbmZvID0gSENJX1JFU0VUIHwgSENJX1dST05HX1NDT19NVFUgfSwK
+LS0gCjEuNS40LjEKCg==
+------=_Part_19036_15322957.1203470154559--
