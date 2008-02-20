@@ -1,111 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbYBTDxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbYBTECt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761495AbYBTDxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYBTDxJ
+	id S1757846AbYBTECt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 23:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYBTECj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:53:09 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:57480 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751484AbYBTDxI (ORCPT
+	Tue, 19 Feb 2008 23:02:39 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:52424 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751555AbYBTECi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:53:08 -0500
-Message-ID: <47BBA3E1.3030307@oracle.com>
-Date: Tue, 19 Feb 2008 19:52:01 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 19 Feb 2008 23:02:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LdxlUT6Qm4lCjDijT37JQj9INgnxNrFSvSwmbcRMGWYOOYBcnQhU1bVsenEFCwR0caRUHmSRtbb2ZLpvFs9SQ02M2d9Fkb9++TNELCGYn/9VzU7OLDIlJTYJYHOnU+9d/Tbug+IKXDZtANCMoCp8Tlm0VCZ0k0utDpO2cS8todg=
+Message-ID: <8bd0f97a0802192002o3446901dh9140dd166af0f1e@mail.gmail.com>
+Date: Tue, 19 Feb 2008 23:02:35 -0500
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Matt Helsley" <matthltc@us.ibm.com>
+Subject: Re: [PATCH] procfs task exe symlink
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Oleg Nesterov" <oleg@tv-sign.ru>,
+       "David Howells" <dhowells@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Christoph Hellwig" <chellwig@de.ibm.com>,
+       "Al Viro" <viro@zeniv.linux.org.uk>, "Hugh Dickins" <hugh@veritas.com>,
+       "Bryan Wu" <Bryan.Wu@analog.com>
+In-Reply-To: <1203458065.7408.27.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Jonathan Lim <jlim@sgi.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
-References: <200802200217.m1K2H1m5003739@sabah.engr.sgi.com>
-In-Reply-To: <200802200217.m1K2H1m5003739@sabah.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <1202348669.9062.271.camel@localhost.localdomain>
+	 <8bd0f97a0802160412ve49103cya446b89d8560458b@mail.gmail.com>
+	 <1203458065.7408.27.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Lim wrote:
-> It's possible that the values used in and returned from jiffies_to_usecs() are
-> incorrect because of truncation when variables of type u64 are involved.  So a
-> function specific to that type is used instead.
-> 
-> This version implements a correction to jiffies_64_to_usecs() based on feedback
-> from Randy Dunlap.
-> 
-> Diff'd against: linux/kernel/git/torvalds/linux-2.6.git
-> 
-> Signed-off-by: Jonathan Lim <jlim@sgi.com>
-> 
-> --- a/include/linux/jiffies.h	Thu Feb 14 18:04:14 PST 2008
-> +++ b/include/linux/jiffies.h	Thu Feb 14 18:07:17 PST 2008
-> @@ -42,7 +42,7 @@
->  /* LATCH is used in the interval timer and ftape setup. */
->  #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
->  
-> -/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
-> +/* Suppose we want to divide two numbers NOM and DEN: NOM/DEN, then we can
->   * improve accuracy by shifting LSH bits, hence calculating:
->   *     (NOM << LSH) / DEN
->   * This however means trouble for large NOM, because (NOM << LSH) may no
-> @@ -204,7 +204,7 @@ extern unsigned long preset_lpj;
->   * operator if the result is a long long AND at least one of the
->   * operands is cast to long long (usually just prior to the "*" so as
->   * not to confuse it into thinking it really has a 64-bit operand,
-> - * which, buy the way, it can do, but it takes more code and at least 2
-> + * which, by the way, it can do, but it takes more code and at least 2
->   * mpys).
->  
->   * We also need to be aware that one second in nanoseconds is only a
-> @@ -269,6 +269,7 @@ extern unsigned long preset_lpj;
->   */
->  extern unsigned int jiffies_to_msecs(const unsigned long j);
->  extern unsigned int jiffies_to_usecs(const unsigned long j);
-> +extern u64 jiffies_64_to_usecs(const u64 j);
->  extern unsigned long msecs_to_jiffies(const unsigned int m);
->  extern unsigned long usecs_to_jiffies(const unsigned int u);
->  extern unsigned long timespec_to_jiffies(const struct timespec *value);
-> --- a/kernel/time.c	Thu Feb 14 18:05:12 PST 2008
-> +++ b/kernel/time.c	Tue Feb 19 17:00:11 PST 2008
+On Feb 19, 2008 4:54 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> On Sat, 2008-02-16 at 07:12 -0500, Mike Frysinger wrote:
+> > On Feb 6, 2008 8:44 PM, Matt Helsley <matthltc@us.ibm.com> wrote:
+> > > The kernel implements readlink of /proc/pid/exe by getting the file from the
+> > > first executable VMA. Then the path to the file is reconstructed and reported as
+> > > the result.
+> > >
+> > > Because of the VMA walk the code is slightly different on nommu systems. This
+> > > patch avoids separate /proc/pid/exe code on nommu systems. Instead of walking
+> > > the VMAs to find the first executable file-backed VMA we store a reference to
+> > > the exec'd file in the mm_struct.
+> > >
+> > > That reference would prevent the filesystem holding the executable file from
+> > > being unmounted even after unmapping the VMAs. So we track the number of
+> > > VM_EXECUTABLE VMAs and drop the new reference when the last one is unmapped.
+> > > This avoids pinning the mounted filesystem.
+> > >
+> > > Andrew, these are the updates I promised. Please consider this patch for
+> > > inclusion in -mm.
+> >
+> > mm/nommu.c wasnt compiled tested, it's trivially broken:
+>
+> Thanks for the report. I've looked into this and the "obvious" fix,
+> using vma->vm_mm, isn't correct since it's never set. This means the
+> portions of the procfs task exe symlink patch using vma->vm_mm in
+> mm/nommu.c are incorrect.
+>
+> The patch below attempts to fix this by using current->mm during mmap
+> and passing the current mm to put_vma() as well.
+>
+> Mike, does this patch fix the compile problem(s)?
 
-kernel/time.c needs:
-#include <asm/div64.h>
+thanks, that does fix compiling.
 
-After that, it's
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+> Mike, I don't have a nommu compile or test environment. I have yet
+> to to generate a good CONFIG_MMU=n config on i386 (got one?). Since I
+> don't have any nommu hardware I'm also looking into using qemu. It looks
+> like I may need to build my own image from scratch. Do you have any
+> recommendations on testing nommu configs without hardware?
 
-> @@ -268,6 +268,12 @@ unsigned int inline jiffies_to_usecs(con
->  }
->  EXPORT_SYMBOL(jiffies_to_usecs);
->  
-> +u64 jiffies_64_to_usecs(const u64 j)
-> +{
-> +	return div64_64(j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1, HZ_TO_USEC_DEN);
-> +}
-> +EXPORT_SYMBOL(jiffies_64_to_usecs);
-> +
->  /**
->   * timespec_trunc - Truncate timespec to a granularity
->   * @t: Timespec
-> --- a/kernel/tsacct.c	Thu Feb 14 18:06:17 PST 2008
-> +++ b/kernel/tsacct.c	Thu Feb 14 18:08:47 PST 2008
-> @@ -85,8 +85,8 @@ void xacct_add_tsk(struct taskstats *sta
->  	struct mm_struct *mm;
->  
->  	/* convert pages-jiffies to Mbyte-usec */
-> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
-> +	stats->coremem = jiffies_64_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> +	stats->virtmem = jiffies_64_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
->  	mm = get_task_mm(p);
->  	if (mm) {
->  		/* adjust to KB unit */
-
-
--- 
-~Randy
+it should be easy to cross-compile a kernel for the Blackfin
+processor, but there is no qemu port.  the Blackfin port is the only
+one ive done with no-mmu, so i cant comment on any other port.
+-mike
