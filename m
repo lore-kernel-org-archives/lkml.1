@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932368AbYBTWAB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYBTWAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932368AbYBTWAB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:00:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbYBTV7w
+	id S1758226AbYBTWAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:00:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760790AbYBTWAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:59:52 -0500
-Received: from mx1.suse.de ([195.135.220.2]:47369 "EHLO mx1.suse.de"
+	Wed, 20 Feb 2008 17:00:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:44397 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751706AbYBTV7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:59:50 -0500
-Subject: patch pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch added to gregkh-2.6 tree
-To: rjw@sisk.pl, greg@kroah.com, gregkh@suse.de, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, pavel@ucw.cz, stern@rowland.harvard.edu
-From: <gregkh@suse.de>
-Date: Wed, 20 Feb 2008 13:57:18 -0800
-In-Reply-To: <200802200201.42543.rjw@sisk.pl>
-Message-ID: <12035446381218@kroah.org>
+	id S1760500AbYBTWA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:00:27 -0500
+Message-ID: <47BCA275.7000504@goop.org>
+Date: Wed, 20 Feb 2008 13:58:13 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ian Campbell <ijc@hellion.org.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Joel Becker <Joel.Becker@oracle.com>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com> <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+In-Reply-To: <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ian Campbell wrote:
+> On Tue, 2008-02-19 at 23:43 -0800, H. Peter Anvin wrote:
+>   
+>> Ian Campbell wrote:
+>>     
+>>> On Mon, 2008-02-18 at 02:40 -0800, Joel Becker wrote:
+>>>       
+>>>> On Sun, Feb 17, 2008 at 06:49:21PM +0000, Ian Campbell wrote:
+>>>>         
+>>>>> x86/xen: Do not scan for DMI unless the DMI region is reserved by e820.
+>>>>>           
+>>>> 	This fixed it.  I'm now booting successfully.  Thank you!
+>>>>         
+>>> Excellent. Jeremy, are you happy for this to go in?
+>>>       
 
-This is a note to let you know that I've just added the patch titled
+I had no problem with it, but Peter's objection seems substantial enough.
 
-     Subject: PM: Remove unbalanced mutex_unlock() from dpm_resume()
+> As far as the actual change goes I was assuming that any machine that
+> has DMI/SMBIOS would easily be new enough to have an E820 which could be
+> expected to reserve this region. Looks like I was mistaken about how
+> long E820 had been around and/or how reliably it is used to reserve the
+> tables.
+>
+> Anyway, will have to think of another solution.
+>   
 
-to my gregkh-2.6 tree.  Its filename is
-
-     pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From rjw@sisk.pl  Wed Feb 20 12:56:19 2008
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Wed, 20 Feb 2008 02:01:41 +0100
-Subject: PM: Remove unbalanced mutex_unlock() from dpm_resume()
-To: Greg KH <greg@kroah.com>
-Cc: ACPI Devel Maling List <linux-acpi@vger.kernel.org>, Alan Stern <stern@rowland.harvard.edu>, Len Brown <lenb@kernel.org>, "Linux-pm mailing list" <linux-pm@lists.osdl.org>, LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-Message-ID: <200802200201.42543.rjw@sisk.pl>
-Content-Disposition: inline
-
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-Remove an unnecessary unlocking of dpm_list_mtx in the error path
-in drivers/base/power/main.c:dpm_suspend() .
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/base/power/main.c |    1 -
- 1 file changed, 1 deletion(-)
-
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -479,7 +479,6 @@ static int dpm_suspend(pm_message_t stat
- 			mutex_lock(&dpm_list_mtx);
- 			if (list_empty(&dev->power.entry))
- 				list_add(&dev->power.entry, &dpm_locked);
--			mutex_unlock(&dpm_list_mtx);
- 			break;
- 		}
- 		mutex_lock(&dpm_list_mtx);
+Well, the way we've handled this kind of thing elsewhere is to just 
+reserve that pseudophys address space in earlish Xen init code and fill 
+it with not-DMI things (zero, I guess).  It's a bit of a waste of 
+memory, but maybe we can recover it once DMI has given up and gone 
+away.  This also makes it easy to insert faked-up DMI info if that turns 
+out to be useful.
 
 
-Patches currently in gregkh-2.6 which might be from rjw@sisk.pl are
-
-driver/driver-core-pm-make-suspend_device-static.patch
-driver/pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
+    J
