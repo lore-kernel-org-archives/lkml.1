@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765841AbYBTSvN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763222AbYBTSyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765841AbYBTSvN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:51:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYBTSu5
+	id S1763222AbYBTSyT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:54:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbYBTSyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:50:57 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40487 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751778AbYBTSu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:50:56 -0500
-Date: Wed, 20 Feb 2008 19:51:04 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, John Stoffel <john@stoffel.org>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory
-	controller in Kconfig
-Message-ID: <20080220185104.GA30416@elf.ucw.cz>
-References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <18364.16552.455371.242369@stoffel.org> <47BC4554.10304@linux.vnet.ibm.com> <Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr> <20080220181911.GA4760@ucw.cz> <Pine.LNX.4.64.0802201927440.26109@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0802201927440.26109@fbirervta.pbzchgretzou.qr>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 20 Feb 2008 13:54:08 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:46408 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753768AbYBTSyH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:54:07 -0500
+Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, sandmann@redhat.com,
+       tglx@tglx.de, hpa@zytor.com
+In-Reply-To: <20080220103940.0a0b5ce0@laptopd505.fenrus.org>
+References: <20080219123756.6261c13c@laptopd505.fenrus.org>
+	 <1203531375.6243.52.camel@lappy>
+	 <20080220103940.0a0b5ce0@laptopd505.fenrus.org>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 19:53:42 +0100
+Message-Id: <1203533622.6243.55.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2008-02-20 19:28:03, Jan Engelhardt wrote:
+
+On Wed, 2008-02-20 at 10:39 -0800, Arjan van de Ven wrote:
+> On Wed, 20 Feb 2008 19:16:15 +0100
+> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> On Feb 20 2008 18:19, Pavel Machek wrote:
-> >> 
-> >> For ordinary desktop people, memory controller is what developers
-> >> know as MMU or sometimes even some other mysterious piece of silicon
-> >> inside the heavy box.
-> >
-> >Actually I'd guess 'memory controller' == 'DRAM controller' == part of
-> >northbridge that talks to DRAM.
+> > 
+> > On Tue, 2008-02-19 at 12:37 -0800, Arjan van de Ven wrote:
+> > > From: Soren Sandmann <sandmann@redhat.com>
+> > > Subject: [PATCH] x86: add the debugfs interface for the sysprof tool
+> > > 
+> > > The sysprof tool is a very easy to use GUI tool to find out where
+> > > userspace is spending CPU time. See
+> > > http://www.daimi.au.dk/~sandmann/sysprof/
+> > > for more information and screenshots on this tool.
+> > > 
+> > > Sysprof needs a 200 line kernel module to do it's work, this
+> > > module puts some simple profiling data into debugfs.
+> > 
+> > What is the added value over oprofile?
 > 
-> Yeah that must have been it when Windows says it found a new controller
-> after changing the mainboard underneath.
+> it actually works and is usable by humans ;)
 
-Just for fun... this option really has to be renamed:
+# sysprof
 
-Memory controller
-~~~~~~~~~~~~~~~~~
->From Wikipedia, the free encyclopedia
+(sysprof:12480): Gtk-WARNING **: cannot open display:
 
-The memory controller is a chip on a computer's motherboard or CPU die
-which manages the flow of data going to and from the memory.
+-ENOX
 
-Most computers based on an Intel processor have a memory controller
-implemented on their motherboard's north bridge, though some modern
-microprocessors, such as AMD's Athlon 64 and Opteron processors, IBM's
-POWER5, and Sun Microsystems UltraSPARC T1 have a memory controller on
-the CPU die to reduce the memory latency. 
+> what oprofile doesn't do is the nice userland hierarchy of where cpu time is spend.
+> (and that is also what makes it mostly useless in practice)
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+so why not fix oprofile callgraph output and build a GUI on top of
+oprofile for those of us who really want RSI from mouse movement :-)
+
