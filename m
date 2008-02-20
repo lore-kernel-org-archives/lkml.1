@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765466AbYBTTZu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932417AbYBTT0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765466AbYBTTZu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 14:25:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbYBTTZk
+	id S932417AbYBTT0b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 14:26:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765957AbYBTT0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 14:25:40 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:56711 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbYBTTZj (ORCPT
+	Wed, 20 Feb 2008 14:26:18 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:56736 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761265AbYBTT0R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 14:25:39 -0500
-Date: Wed, 20 Feb 2008 19:25:16 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-Message-ID: <20080220192516.GA24771@srcf.ucam.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org> <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com> <alpine.LFD.1.00.0802201007300.7833@woody.linux-foundation.org> <b6a2187b0802201049r25959293r1e6b83ca67f65f04@mail.gmail.com>
+	Wed, 20 Feb 2008 14:26:17 -0500
+Date: Wed, 20 Feb 2008 14:26:16 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <20080220183041.46c16ef0@mjolnir.drzeus.cx>
+Message-ID: <Pine.LNX.4.44L0.0802201418520.7056-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6a2187b0802201049r25959293r1e6b83ca67f65f04@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 02:49:39AM +0800, Jeff Chua wrote:
+On Wed, 20 Feb 2008, Pierre Ossman wrote:
 
-> Here's an interesting discovery. After I found that "echo reboot >
-> /sys/power/disk" does reboot, I tried "echo shutdown >
-> /sys/power/disk", it does shutdown properly.
+> Not really. But you have some things confused. What it checks is if
+> the mmc bus handler (not a proper driver model, just a way of
+> separating the MMC, SD and SDIO stuff) has a resume function. And if
+> it doesn't, it removes the card (since it cannot revive it at
+> resume).
 > 
-> With "platform" it refuses to shutdown. Both reboot and shutdown still
-> end up with Mr. Green at resume.
+> So the only thing I can think of is to delay the removal until the
+> resume routine, if that is safer.
 
-That kind of suggests that the ACPI platform code is hitting the 
-hardware directly - we've seen similar issues with PATA controllers. The 
-right thing to do here is almost certainly just to avoid explicitly 
-powering down hardware on hibernation.
+Do I understand this correctly?  You've got special handling for the 
+case where a bus handler doesn't have a resume routine, but no special 
+handling for the case where it doesn't have a suspend routine?  Why 
+bother to remove the device if neither routine exists (there won't be 
+any need to revive it since the bus never got suspended)?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+And why not simply fail the suspend if the resume routine doesn't exist
+and the suspend routine does?  Maybe with an error message in the
+system log.
+
+Alan Stern
+
