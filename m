@@ -1,77 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763633AbYBTPAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbYBTPAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763633AbYBTPAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbYBTPAW
+	id S1764255AbYBTPAo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:00:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756118AbYBTPA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:00:22 -0500
-Received: from ra.tuxdriver.com ([70.61.120.52]:2794 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750980AbYBTPAV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:00:21 -0500
-Date: Wed, 20 Feb 2008 09:57:36 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx@linutronix.de
-Subject: Re: [PATCH], issue EOI to APIC prior to calling crash_kexec in die_nmi path
-Message-ID: <20080220145736.GA3771@localhost.localdomain>
-References: <20080206220001.GA15155@elte.hu> <20080206224805.GD11886@redhat.com> <47AA3B16.7000507@zytor.com> <20080206233657.GB12393@elte.hu> <m1r6fpd2uo.fsf@ebiederm.dsl.xmission.com> <20080207121719.GA29279@hmsreliant.think-freely.org> <20080207122404.GA8195@elte.hu> <20080208161422.GA32204@hmsreliant.think-freely.org> <20080208164544.GA23772@redhat.com> <20080212210816.GA1862@hmsreliant.think-freely.org>
-Mime-Version: 1.0
+	Wed, 20 Feb 2008 10:00:27 -0500
+Received: from exprod7og109.obsmtp.com ([64.18.2.171]:48522 "EHLO
+	exprod7og109.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762949AbYBTPA0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 10:00:26 -0500
+Date: Wed, 20 Feb 2008 15:00:21 +0000
+From: Stephane Chazelas <stephane.chazelas@emerson.com>
+To: Joern Engel <joern@lazybastard.org>
+Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
+Subject: [PATCH 2.6.25-rc2] block2mtd: logging typo fixes
+Message-ID: <chaz20080220150021.GM4539@artesyncp.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080212210816.GA1862@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.4.2.3i
+Organization: Embedded Computing Emerson Network Power
+X-URL: http://www.emersonembeddedcomputing.com
+User-Agent: Mutt/1.5.16 (2007-09-19)
+X-OriginalArrivalTime: 20 Feb 2008 15:00:22.0558 (UTC) FILETIME=[51126BE0:01C873D1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 12, 2008 at 04:08:16PM -0500, Neil Horman wrote:
-> > 
-> > Neil, is it possible to do some serial console debugging to find out
-> > where exactly we are hanging? Beats me, what's that operation which can
-> > not be executed while being in NMI handler and makes system to hang. I am
-> > also curious to know if it is nested NMI case.
-> > 
-> > Thanks
-> > Vivek
-> > 
-> 
-> 
-> Hey-
-> 	Some intermediate results:
-> 
-> I've instrumented head.S in the kernel with the following code:
-> #define SEROUT(z) \     
-> mov $0x3F8,%dx;\
-> movb z,%al;\
-> outb %dx
-> 
-> 
-> And peppered different ascii characters throughout the startup code from
-> startup_32 to right before the jump to start_kernel.  When I panic the system
-> via an:
-> echo c > /proc/sysrq_trigger
-> I see an appropriate sequence of characters on the serial console
-> 
-> When I panic the box by forcing an NMI watchdog timeout however, I see nothing.
->  The machine will either hang, or reset into the bios.  I think this is
-> reasonably conclusive in its indication that we're not getting into the second
-> kernel when this problem occurs.  Next I'll instrument the purgatory code in a
-> simmilar way.
-> 
-> Regards
-> Neil
-> 
-Hey, further update.  I instrumented purgatory, and turned on the console
-options that Eric mentioned, which resulted in no output to the console, so I've
-concluded that we don't get to purgatory at all.  Further instrumenting shows
-that the last C level printk I can issue is right before we call
-relocate_kernel.  So it appears that we hang/reset somewhere in there.  I'll
-instrument down that path shortly.
+Hi joern,
 
-Regards
-Neil
+this patch addresses a number of small issues mainly regarding
+the output made by this driver to dmesg:
+  - Some of the blkmtd's had not been changed to block2mtd which
+    caused display problem
+  - the parse_err() macro was displaying "block2mtd: " twice
 
+Signed-off-by: Stephane Chazelas <stephane.chazelas@emerson.com>
+
+--- drivers/mtd/devices/block2mtd.c~	2008-02-20 14:56:56.942145223 +0000
++++ drivers/mtd/devices/block2mtd.c	2008-02-20 14:57:15.802131021 +0000
+@@ -305,7 +305,7 @@ static struct block2mtd_dev *add_device(
+ 	}
+ 	list_add(&dev->list, &blkmtd_device_list);
+ 	INFO("mtd%d: [%s] erase_size = %dKiB [%d]", dev->mtd.index,
+-			dev->mtd.name + strlen("blkmtd: "),
++			dev->mtd.name + strlen("block2mtd: "),
+ 			dev->mtd.erasesize >> 10, dev->mtd.erasesize);
+ 	return dev;
+ 
+@@ -366,9 +366,9 @@ static inline void kill_final_newline(ch
+ }
+ 
+ 
+-#define parse_err(fmt, args...) do {		\
+-	ERROR("block2mtd: " fmt "\n", ## args);	\
+-	return 0;				\
++#define parse_err(fmt, args...) do {	\
++	ERROR(fmt, ## args);		\
++	return 0;			\
+ } while (0)
+ 
+ #ifndef MODULE
+@@ -474,7 +474,7 @@ static void __devexit block2mtd_exit(voi
+ 		block2mtd_sync(&dev->mtd);
+ 		del_mtd_device(&dev->mtd);
+ 		INFO("mtd%d: [%s] removed", dev->mtd.index,
+-				dev->mtd.name + strlen("blkmtd: "));
++				dev->mtd.name + strlen("block2mtd: "));
+ 		list_del(&dev->list);
+ 		block2mtd_free_device(dev);
+ 	}
