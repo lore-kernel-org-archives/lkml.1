@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933140AbYBTV10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765505AbYBTVaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933140AbYBTV10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:27:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYBTV05
+	id S1765505AbYBTVaT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:30:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbYBTV37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:26:57 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:33948 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759405AbYBTV0z (ORCPT
+	Wed, 20 Feb 2008 16:29:59 -0500
+Received: from host64.cybernetics.com ([70.169.137.4]:2767 "EHLO
+	mail.cybernetics.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754611AbYBTV35 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:26:55 -0500
-X-Sasl-enc: tBeQ33hw2oH/FySZr0o82aKXJtxM/D/awi71CDISN6xR 1203542813
-Message-ID: <47BC9B1B.3010800@imap.cc>
-Date: Wed, 20 Feb 2008 22:26:51 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Wed, 20 Feb 2008 16:29:57 -0500
+Message-ID: <47BC9BD5.8040900@cybernetics.com>
+Date: Wed, 20 Feb 2008 16:29:57 -0500
+From: Tony Battersby <tonyb@cybernetics.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: [2.6.25-rc2] Drivers sd, sr, st, osst need updating - please use
- bus_type methods
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig085842E8F732FE158B66CF95"
+To: Matt Carlson <mcarlson@broadcom.com>
+Cc: Michael Chan <mchan@broadcom.com>, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, netdev <netdev@vger.kernel.org>,
+       gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: TG3 network data corruption regression 2.6.24/2.6.23.4
+References: <47BA0984.2070306@cybernetics.com> <1203381120.13495.78.camel@dell> <20080218.163554.74130592.davem@davemloft.net> <1203383046.13495.87.camel@dell> <47BB00EC.3010607@cybernetics.com> <1203448265.13495.95.camel@dell> <47BB54C2.6090501@cybernetics.com> <20080220013824.GA5416@localdomain>
+In-Reply-To: <20080220013824.GA5416@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig085842E8F732FE158B66CF95
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Update:
 
-Finding these in my syslog when testing 2.6.25-rc2{,-mm1} with
-CONFIG_ENABLE_WARN_DEPRECATED=3Dy:
+Herbert's patch alters the arguments to alloc_skb_fclone() and
+skb_reserve() from within sk_stream_alloc_pskb().  This changes the
+skb_headroom() and skb_tailroom() of the returned skb.  I decided to see
+if I could detect the precise point at which data corruption started to
+happen.  The result is this table:
 
-<4>[    5.312173] Driver 'sd' needs updating - please use bus_type method=
-s
+(sk_stream_alloc_pskb() called with size == 1448;
+sk->sk_prot->max_header == 160)
 
-<4>[   20.028800] Driver 'sr' needs updating - please use bus_type method=
-s
+skb_headroom  skb_tailroom  test result  note
+216           1448          fail         [1]
+344           1448          fail
+340           1452          pass
+336           1456          pass
+332           1460          pass
+328           1464          fail
+324           1468          pass
+320           1472          pass
+316           1476          pass
+312           1480          fail
+308           1484          pass
+304           1488          pass
+300           1492          pass
+296           1496          fail
+292           1500          pass
+288           1504          pass
+284           1508          pass
+280           1512          fail
+276           1516          pass
+272           1520          pass
+268           1524          pass
+264           1528          fail
+260           1532          pass
+256           1536          pass         [2]
 
-<6>[   22.849626] st: Version 20080117, fixed bufsize 32768, s/g segs 256=
+Notes:
+[1] Kernels 2.6.23.4 - 2.6.23.16 and 2.6.24 - current with Herbert's patch
+[2] Kernels 2.6.23.3 and before without Herbert's patch
 
-<4>[   22.849813] Driver 'st' needs updating - please use bus_type method=
-s
+Note that the first row has skb_headroom + skb_tailroom == 1664; the
+remaining rows have skb_headroom + skb_tailroom == 1792.
 
-<6>[   22.930275] osst :I: Tape driver with OnStream support version 0.99=
-=2E4
-<4>[   22.930278] osst :I: $Id: osst.c,v 1.73 2005/01/01 21:13:34 wriede =
-Exp $
-<4>[   22.930554] Driver 'osst' needs updating - please use bus_type meth=
-ods
+>From these results, it looks like a data alignment issue.  Herbert's
+patch unfortunately just happened to change the alignment in a way that
+made it break.
 
-Just thought I'd let you know.
+Tony
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig085842E8F732FE158B66CF95
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHvJsbMdB4Whm86/kRAvWhAJwMjuwpsXuIugwA+Awrh1Sy5Ti1qACfew34
-SHQV24EhWHpGuUzBi9Dms94=
-=ahW2
------END PGP SIGNATURE-----
-
---------------enig085842E8F732FE158B66CF95--
