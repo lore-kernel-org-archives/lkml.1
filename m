@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933690AbYBTQnQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934497AbYBTQnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933690AbYBTQnQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:43:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757029AbYBTQm4
+	id S934497AbYBTQnq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764783AbYBTQm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:42:56 -0500
-Received: from lazybastard.de ([212.112.238.170]:52263 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759068AbYBTQmz (ORCPT
+	Wed, 20 Feb 2008 11:42:58 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:45913 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761605AbYBTQm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:42:55 -0500
-Date: Wed, 20 Feb 2008 17:42:27 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Stephane Chazelas <stephane.chazelas@emerson.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
-Message-ID: <20080220164226.GF5539@lazybastard.org>
-References: <chaz20080212134751.GI30304@artesyncp.com> <20080212152124.GA21878@lazybastard.org> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <chaz20080220143646.GJ4539@artesyncp.com>
+	Wed, 20 Feb 2008 11:42:57 -0500
+Date: Wed, 20 Feb 2008 11:42:56 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <20080219232338.E9A24108068@picon.linux-foundation.org>
+Message-ID: <Pine.LNX.4.44L0.0802201136170.5630-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <chaz20080220143646.GJ4539@artesyncp.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 February 2008 14:36:46 +0000, Stephane Chazelas wrote:
+On Tue, 19 Feb 2008 bugme-daemon@bugzilla.kernel.org wrote:
+
+> http://bugzilla.kernel.org/show_bug.cgi?id=10030
 > 
-> At the moment, when we bind a mtd device to a block device, we
-> don't increase the refcount. When a mtdblock on a block2mtd, the
-> refcount is not increased either (the mtdblock's one is I
-> guess).
+> 
+> 
+> 
+> 
+> ------- Comment #14 from rjw@sisk.pl  2008-02-19 15:23 -------
+> Thanks a lot for the debugging work!
+> 
+> First, the patch triggers, which means that the problem discovered by Alan is
+> troubling us.  [Alan, do you have an idea how to fix that cleanly?]
 
-That is a bug then.
+I suggest we ask the maintainer for the MMC subsystem.
 
-Jörn
+Pierre, you can find the details in the bugzilla entry.  Briefly,
+there's a pathway in the MMC core suspend routine (if the driver
+doesn't implement a resume hook) which could lead to the host being
+removed during a system suspend.  This is an illegal operation and it
+will deadlock.
 
--- 
-The story so far:
-In the beginning the Universe was created.  This has made a lot
-of people very angry and been widely regarded as a bad move.
--- Douglas Adams
+Do you have a suggestion for a way to fix it?
+
+Alan Stern
+
