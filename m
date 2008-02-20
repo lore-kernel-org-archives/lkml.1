@@ -1,73 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757555AbYBTMYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756982AbYBTM0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757555AbYBTMYg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 07:24:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751324AbYBTMY1
+	id S1756982AbYBTM0Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 07:26:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbYBTM0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 07:24:27 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:33168 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751306AbYBTMY0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 07:24:26 -0500
-Date: Wed, 20 Feb 2008 06:24:24 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Robin Holt <holt@sgi.com>, Nick Piggin <npiggin@suse.de>,
-       akpm@linux-foundation.org, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v6
-Message-ID: <20080220122424.GE11364@sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220113313.GD11364@sgi.com> <20080220120324.GW7128@v2.random>
+	Wed, 20 Feb 2008 07:26:18 -0500
+Received: from sacred.ru ([62.205.161.221]:48512 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751408AbYBTM0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 07:26:17 -0500
+Message-ID: <47BC1BA9.5040009@openvz.org>
+Date: Wed, 20 Feb 2008 15:23:05 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220120324.GW7128@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Nick Andrew <nick@nick-andrew.net>
+CC: Randy Dunlap <randy.dunlap@oracle.com>, trivial@kernel.org,
+       linux-kernel@vger.kernel.org, Serge Hallyn <serue@us.ibm.com>
+Subject: Re: [PATCH 2.6.25-rc2 3/9] config: Improve init/Kconfig help	descriptions
+ - namespaces
+References: <20080219140609.GA26619@tull.net> <20080219143307.GA27352@tull.net> <47BAEABF.6050005@openvz.org> <20080219151028.GA28294@tull.net> <47BAF2E5.8050001@openvz.org> <20080219084420.f3104e3f.randy.dunlap@oracle.com> <20080220121915.GA2169@tull.net>
+In-Reply-To: <20080220121915.GA2169@tull.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Wed, 20 Feb 2008 15:22:58 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 01:03:24PM +0100, Andrea Arcangeli wrote:
-> I'm unconvinced both the main linux VM and the mmu notifier should be
-> changed like this just to support xpmem. All non-sleeping users don't
-> need that. Nevertheless I'm fully welcome to support xpmem (and it's
-> not my call nor my interest to comment if allocating skbs in
-> try_to_unmap in order to unpin pages is workable, let's assume it's
-> workable for the sake of this discussion) with a new config option
-> that will also alter how the core VM works, in order to fully support
-> the sleeping users for filebacked mappings.
-
-We do not need to do any allocation in the messaging layer, all
-structures used for messaging are allocated at module load time.
-The allocation discussions we had early on were about trying to
-rearrange you notifiers to allow a seperate worker thread to do the
-invalidate and then the main thread would spin waiting for the worker to
-complete.  That was canned by the moving your notifier to before the
-lock was grabbed which led us to the point of needing a _begin and _end.
-
-> This will also create less confusion in the registration. With
-> Christoph's one-config-option-fits-all you had to half register into
-> the mmu notifier (the sleeping calls, so not invalidate_page) and full
-> register in the external rmap notifier, and I had to only half
-> register into the mmu notifier (not range_begin) and not register in
-> the rmap external notifier.
+Nick Andrew wrote:
+> Rewrite the help descriptions for clarity, accuracy and consistency.
 > 
-> With two separate config options for sleeping and non sleeping users,
-> I'll 100% register in the mmu notifier methods, and the non-sleeping
-> users will 100% register the xpmem methods. You won't have to have
-> designed the mmu notifier patches to understand how to use it.
+> Kernel config options affected:
+> 
+>   - NAMESPACES
+>   - UTS_NS
+>   - IPC_NS
+>   - USER_NS
+>   - PID_NS
+> 
+> Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+> ---
+> Here's try #2 at the 3rd patch in the series, for namespace
+> descriptions. Patching against Linus' git tree now, and trying
+> to comply with the standards for submitting patches. Each of
+> the UTS/IPC/USER/PID descriptions is subtly different, but I
+> hope they all are clear and accurate.
+> 
+> 
+> --- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
+> +++ b/init/Kconfig	2008-02-20 22:55:41.000000000 +1100
+> @@ -414,31 +414,71 @@
+>  	bool "Namespaces support" if EMBEDDED
+>  	default !EMBEDDED
+>  	help
+> -	  Provides the way to make tasks work with different objects using
+> -	  the same id. For example same IPC id may refer to different objects
+> -	  or same user id or pid may refer to different tasks when used in
+> -	  different namespaces.
+> +	  Select various namespace options.
+> +
+> +	  Namespaces allow different kernel objects (such as processes
+> +	  or sockets) to have the same ID in different namespaces.
+> +	  Identifiers like process IDs, which historically were globally
+> +	  unique, will now be unique only within each PID namespace.
+> +	  Each task can refer only to PIDs within the same namespace
+> +	  as the task itself.
+> +
+> +	  Namespaces are used by container systems (i.e. vservers)
+> +	  to provide isolation between the containers.
+> +
+> +	  This option does not affect any kernel code directly; it merely
+> +	  allows you to select namespace options below.
+> +
+> +	  Answer Y if you will be using a container system, and you
+> +	  will probably want to enable all the namespace options
+> +	  below.
+>  
+>  config UTS_NS
+>  	bool "UTS namespace"
+>  	depends on NAMESPACES
+>  	help
+> -	  In this namespace tasks see different info provided with the
+> -	  uname() system call
+> +	  Enable support for multiple UTS system attributes.
+> +
+> +	  Each UTS namespace provides an individual view of the
+> +	  information returned by the uname() system call including
+> +	  hostname, kernel version and domain name.
+> +
+> +	  This is used by container systems (i.e. vservers) so that
+> +	  each container has its own hostname and other attributes.
+> +	  Tasks in the container are placed in the UTS namespace
+> +	  corresponding to the container.
+> +
+> +	  Answer Y if you will be using a container system.
+>  
+>  config IPC_NS
+>  	bool "IPC namespace"
+>  	depends on NAMESPACES && SYSVIPC
+>  	help
+> -	  In this namespace tasks work with IPC ids which correspond to
+> -	  different IPC objects in different namespaces
+> +	  Enable support for namespace-specific IPC IDs.
+> +
+> +	  IPC IDs will be unique only within each IPC namespace.
+> +
+> +	  This is used by container systems (i.e. vservers).
+> +	  Tasks in the container are placed in the IPC namespace
+> +	  corresponding to the container.
+> +
+> +	  Answer Y if you will be using a container system.
+>  
+>  config USER_NS
+>  	bool "User namespace (EXPERIMENTAL)"
+>  	depends on NAMESPACES && EXPERIMENTAL
+>  	help
+> -	  This allows containers, i.e. vservers, to use user namespaces
+> -	  to provide different user info for different servers.
+> +	  Enable experimental support for user namespaces.
+> +
+> +	  This is a function used by container-based virtualisation systems
+> +	  (e.g. vservers). User namespaces are intended to ensure that
+> +	  processes with the same uid which are in different containers are
+> +	  isolated from each other.
+> +
+> +	  Currently user namespaces provide separate accounting, while
+> +	  isolation must be provided using SELinux or a custom security
+> +	  module.
+> +
+>  	  If unsure, say N.
+>  
+>  config PID_NS
+> @@ -446,12 +486,20 @@
+>  	default n
+>  	depends on NAMESPACES && EXPERIMENTAL
+>  	help
+> -	  Suport process id namespaces.  This allows having multiple
+> -	  process with the same pid as long as they are in different
+> -	  pid namespaces.  This is a building block of containers.
+> +	  Enable experimental support for hierarchical process id namespaces.
+>  
+> -	  Unless you want to work with an experimental feature
+> -	  say N here.
+> +	  Process IDs will be unique only within each PID namespace.
+> +	  This allows multiple processes to have the same PID
+> +	  so long as they are in different PID namespaces. Furthermore,
+> +	  each process will have a distinct PID in each namespace
+> +	  the process is in.
+> +
+> +	  This is used by container systems (i.e. vservers).
+> +	  Tasks in the container are placed in the PID namespace
+> +	  corresponding to the container, and can only see or
+> +	  affect processes in the same PID namespace.
 
-So, fundamentally, how would they be different?  Would we be required to
-add another notifier list to the mm and have two seperate callout
-points?  Reduction would end up with the same half-registered
-half-not-registered situation you point out above.  Then further
-reduction would lead to the elimination of the callouts you have just
-proposed and using the _begin/_end callouts and we are back to
-Christoph's current patch.
+same of one of child namespaces. In other words when you create
+a new pid namespace, you still see the tasks from this new one,
+but the tasks from this one, doesn't see yours :)
 
-Robin
+> +
+> +	  If unsure, say N.
+>  
+>  config BLK_DEV_INITRD
+>  	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+> 
+
