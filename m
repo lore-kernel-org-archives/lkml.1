@@ -1,52 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761508AbYBTIOz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbYBTIRo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761508AbYBTIOz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 03:14:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760167AbYBTIOa
+	id S1760632AbYBTIRo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 03:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbYBTIRf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 03:14:30 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56495
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760053AbYBTIO2 (ORCPT
+	Wed, 20 Feb 2008 03:17:35 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:47961 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751631AbYBTIRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 03:14:28 -0500
-Date: Wed, 20 Feb 2008 00:15:05 -0800 (PST)
-Message-Id: <20080220.001505.196948168.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: tony.luck@gmail.com, rdreier@cisco.com, linux-kernel@vger.kernel.org
-Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20080220081228.GA27036@elte.hu>
-References: <12c511ca0802141817i3295e83cxd7c05e07f2c54fea@mail.gmail.com>
-	<12c511ca0802191440q6a2f5604xe6b563c32c3a90b2@mail.gmail.com>
-	<20080220081228.GA27036@elte.hu>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 20 Feb 2008 03:17:34 -0500
+X-Sasl-enc: sowv6S+hKFXPerF/DBn2vukeEAjLjWpU81Aov+WHENyJ 1203495453
+Message-ID: <47BBE288.7010501@ladisch.de>
+Date: Wed, 20 Feb 2008 09:19:20 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Andreas Matthus <matthus@nexgo.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: snd_bt87x crash with kernel 2.6.24.2 on amd64
+References: <1203449798.9669.19.camel@mahome1.localdomain>
+In-Reply-To: <1203449798.9669.19.camel@mahome1.localdomain>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Wed, 20 Feb 2008 09:12:28 +0100
+Andreas Matthus wrote:
+> Feb 19 19:17:01 mahome1 kernel: RIP: 0010:[<ffffffff88486a52>]  [<ffffffff88486a52>] :snd_bt87x:snd_bt87x_interrupt+0x13/0x1b8
+> ...
+> Feb 19 19:17:01 mahome1 kernel:  [<ffffffff80262739>] free_irq+0xf6/0x141
+> Feb 19 19:17:01 mahome1 kernel:  [<ffffffff884861f2>] :snd_bt87x:snd_bt87x_free+0x34/0x52
 
-> 
-> * Tony Luck <tony.luck@gmail.com> wrote:
-> 
-> > > Perhaps what is happening is that cpu0 comes online ... safely skips 
-> > > over the early printk calls.  Calls cpu_init() which sets up the 
-> > > resources *it* needs (ar.k3 points to per-cpu space), and then 
-> > > executes sched_init() which marks it safe for all printk's. Then 
-> > > cpu1 comes up and does a printk before it gets to cpu_init().
-> > 
-> > I just tried Ingo's patch[1] on a 2.6.25-rc2 kernel with printk 
-> > timestamps turned on ... and it booted just fine on my tiger4.  The 
-> > default path for non-boot cpus is from head.S to start_secondary(), 
-> > and that calls cpu_init() pretty quickly.  There shouldn't normally[2] 
-> > be any printk() calls on the non-boot cpu before it is safe to do so.
-> 
-> ok. I've queued up the patch again in sched.git, as a .25 fix. Can i add 
-> your Tested-by and Acked-by tags?
+This is caused a bug in the driver (it calls iounmap() before
+free_irq()).
 
-Acked-by: David S. Miller <davem@davemloft.net>
+The patch below fixes this (I just applied it to the ALSA tree);
+or you could disable CONFIG_DEBUG_SHIRQ.
+
+
+Regards,
+Clemens
+
+-- 
+bt87X: fix freeing of shared interrupt
+
+Call free_irq() after iounmap() because other devices could trigger our
+shared interrupt handler.
+
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+
+--- linux.orig/sound/pci/bt87x.c	Tue Feb 19 15:03:57 2008 +0100
++++ linux/sound/pci/bt87x.c	Wed Feb 20 08:55:18 2008 +0100
+@@ -681,15 +681,12 @@ static struct snd_kcontrol_new snd_bt87x
+
+ static int snd_bt87x_free(struct snd_bt87x *chip)
+ {
+-	if (chip->mmio) {
++	if (chip->mmio)
+ 		snd_bt87x_stop(chip);
+-		if (chip->irq >= 0)
+-			synchronize_irq(chip->irq);
+-
+-		iounmap(chip->mmio);
+-	}
+ 	if (chip->irq >= 0)
+ 		free_irq(chip->irq, chip);
++	if (chip->mmio)
++		iounmap(chip->mmio);
+ 	pci_release_regions(chip->pci);
+ 	pci_disable_device(chip->pci);
+ 	kfree(chip);
