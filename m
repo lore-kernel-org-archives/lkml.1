@@ -1,89 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbYBTQ1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933192AbYBTQ2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934412AbYBTQ1h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765574AbYBTQLx
+	id S933192AbYBTQ2V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764393AbYBTQLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:11:53 -0500
-Received: from Mycroft.westnet.com ([216.187.52.7]:46782 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765408AbYBTQLP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:11:15 -0500
+	Wed, 20 Feb 2008 11:11:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45592 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765524AbYBTQLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 11:11:38 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 30/37] NFS: Add some new I/O event counters for FS-Cache events
+To: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com
+Cc: nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, dhowells@redhat.com
+Date: Wed, 20 Feb 2008 16:08:39 +0000
+Message-ID: <20080220160839.4715.90209.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080220160557.4715.66608.stgit@warthog.procyon.org.uk>
+References: <20080220160557.4715.66608.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18364.20755.798295.881259@stoffel.org>
-Date: Wed, 20 Feb 2008 11:10:59 -0500
-From: "John Stoffel" <john@stoffel.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, John Stoffel <john@stoffel.org>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
- in Kconfig
-In-Reply-To: <Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
-References: <20080220122338.GA4352@basil.nowhere.org>
-	<47BC2275.4060900@linux.vnet.ibm.com>
-	<18364.16552.455371.242369@stoffel.org>
-	<47BC4554.10304@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
-X-Mailer: VM 8.0.x-xemacs-542 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Jan" == Jan Engelhardt <jengelh@computergmbh.de> writes:
+Add some new NFS I/O event counters for FS-Cache events.  They have to be
+added as byte counters because I may need to be able to increase the numbers
+by more than 1 at a time.
 
-Jan> On Feb 20 2008 20:50, Balbir Singh wrote:
->> John Stoffel wrote:
->>> I know this is a pedantic comment, but why the heck is it called such
->>> a generic term as "Memory Controller" which doesn't give any
->>> indication of what it does.
->>> 
->>> Shouldn't it be something like "Memory Quota Controller", or "Memory
->>> Limits Controller"?
->> 
->> It's called the memory controller since it controls the amount of
->> memory that a user can allocate (via limits). The generic term for
->> any resource manager plugged into cgroups is a controller.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Jan> For ordinary desktop people, memory controller is what developers
-Jan> know as MMU or sometimes even some other mysterious piece of
-Jan> silicon inside the heavy box.
+ fs/nfs/iostat.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-That's what was confusing me at first.  I was wondering why we needed
-a memory controller when we already had one in Linux!  
 
-Also, controlling a resource is more a matter of limits or quotas, not
-controls.  Well, I'll actually back off on that, since controls does
-have a history in other industries.  
+diff --git a/fs/nfs/iostat.h b/fs/nfs/iostat.h
+index 6350ecb..0e3b170 100644
+--- a/fs/nfs/iostat.h
++++ b/fs/nfs/iostat.h
+@@ -60,6 +60,13 @@ enum nfs_stat_bytecounters {
+ 	NFSIOS_SERVERWRITTENBYTES,
+ 	NFSIOS_READPAGES,
+ 	NFSIOS_WRITEPAGES,
++#ifdef CONFIG_NFS_FSCACHE
++	NFSIOS_FSCACHE_READ_OK,
++	NFSIOS_FSCACHE_READ_FAIL,
++	NFSIOS_FSCACHE_WRITE_OK,
++	NFSIOS_FSCACHE_WRITE_FAIL,
++	NFSIOS_FSCACHE_UNCACHE,
++#endif
+ 	__NFSIOS_BYTESMAX,
+ };
+ 
 
-But for computers, limits is an expected and understood term, and for
-filesystems it's quotas.  So in this case, I *still* think you should
-be using the term "Memory Quota Controller" instead.  It just makes it
-clearer to a larger audience what you mean.
-
->> If you look through some of the references in the document, we've
->> listed our plans to support other categories of memory as well.
->> Hence it's called a memory controller
->> 
->>> Also, the Kconfig name "CGROUP_MEM_CONT" is just wrong, it should
->>> be "CGROUP_MEM_CONTROLLER", just spell it out so it's clear what's
->>> up.
-
->> This has some history as well. Control groups was called containers
->> earlier. That way a name like CGROUP_MEM_CONT could stand for
->> cgroup memory container or cgroup memory controller.
-
-Jan> CONT is shorthand for "continue" ;-) (SIGCONT, f.ex.), ctrl or
-Jan> ctrlr it is for controllers (comes from Solaris iirc.)
-
-Right, CTLR would be more regular shorthand for CONTROLLER.  
-
-Basically, I think you're overloading a commonly used term for your
-own uses and when it's exposed to regular users, it will cause
-confusion.
-
-Thanks,
-John
