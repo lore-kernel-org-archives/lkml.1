@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934733AbYBTVpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933612AbYBTVr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934733AbYBTVpi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:45:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934355AbYBTVo4
+	id S933612AbYBTVr3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbYBTVrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:44:56 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:45023 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933417AbYBTVoy (ORCPT
+	Wed, 20 Feb 2008 16:47:20 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:10132 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757037AbYBTVrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:44:54 -0500
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, sandmann@redhat.com,
-       tglx@tglx.de, hpa@zytor.com
-In-Reply-To: <20080220130736.4ccb2687@laptopd505.fenrus.org>
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>
-	 <1203531375.6243.52.camel@lappy>
-	 <20080220103940.0a0b5ce0@laptopd505.fenrus.org>
-	 <1203533622.6243.55.camel@lappy>
-	 <20080220112655.18011dab@laptopd505.fenrus.org>
-	 <1203541122.6243.103.camel@lappy>
-	 <20080220130736.4ccb2687@laptopd505.fenrus.org>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 22:44:29 +0100
-Message-Id: <1203543869.6243.106.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 16:47:18 -0500
+Date: Wed, 20 Feb 2008 13:42:17 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Ian Campbell <ijc@hellion.org.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+Message-ID: <20080220214217.GA28444@mail.oracle.com>
+Mail-Followup-To: Ian Campbell <ijc@hellion.org.uk>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Mika Penttila <mika.penttila@kolumbus.fi>
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org> <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org> <20080215202336.GE26034@mail.oracle.com> <1203274161.27987.6.camel@localhost.localdomain> <20080218104025.GA15899@ca-server1.us.oracle.com> <1203458366.26910.15.camel@cthulhu.hellion.org.uk> <47BBDA20.8030105@zytor.com> <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2008-02-20 at 13:07 -0800, Arjan van de Ven wrote:
-> On Wed, 20 Feb 2008 21:58:42 +0100
-> Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Wed, Feb 20, 2008 at 08:51:50AM +0000, Ian Campbell wrote:
 > 
-> > 
-> > On Wed, 2008-02-20 at 11:26 -0800, Arjan van de Ven wrote:
-> > 
-> > > feel free to reinvent a whole GUI just to avoid a 200 line kernel
-> > > module. sysprof is here. it works. 
-> > 
-> > > the gui is REALLY nice.
-> > 
-> > I guess we have to agree to disagree here. Its plain useless from my
-> > POV.
+> On Tue, 2008-02-19 at 23:43 -0800, H. Peter Anvin wrote:
+> > NAK!
 > 
-> that's fine. Different tools for different people. sysprof isn't aimed
-> at kernel developers.
+> As far as the actual change goes I was assuming that any machine that
+> has DMI/SMBIOS would easily be new enough to have an E820 which could be
+> expected to reserve this region. Looks like I was mistaken about how
+> long E820 had been around and/or how reliably it is used to reserve the
+> tables.
+> 
+> Anyway, will have to think of another solution.
 
-That was speaking from userland days.
+	What changed to make this not work in the first place?  New dmi
+code?
 
-But you forgot the more important points about API and wild-growth of
-duplicate interfaces.
+Joel
 
+-- 
+
+"The real reason GNU ls is 8-bit-clean is so that they can
+ start using ISO-8859-1 option characters."
+	- Christopher Davis (ckd@loiosh.kei.com)
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
