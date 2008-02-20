@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756164AbYBTFQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbYBTFRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756164AbYBTFQh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750903AbYBTFQ2
+	id S1761464AbYBTFRk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:17:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbYBTFRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:16:28 -0500
-Received: from gate.crashing.org ([63.228.1.57]:53967 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbYBTFQ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 00:16:27 -0500
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Message-Id: <7A7ECF09-E547-4C04-A388-C3E8755478DD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080219.204525.193731674.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 20 Feb 2008 00:17:32 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53944 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750903AbYBTFRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 00:17:31 -0500
+Date: Tue, 19 Feb 2008 23:17:26 -0600
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: lizf@cn.fujitsu.com, balbir@linux.vnet.ibm.com, balbir@in.ibm.com,
+       xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 1/7] CGroup API: Add cgroup.api control file
+Message-Id: <20080219231726.4bd97520.pj@sgi.com>
+In-Reply-To: <6599ad830802191851l66281e67rb49c766c2b1427c9@mail.gmail.com>
+References: <20080215204418.535025000@menage.corp.google.com>
+	<20080215204820.734926000@menage.corp.google.com>
+	<47B6B5CA.7040201@linux.vnet.ibm.com>
+	<6599ad830802160944v6d529570k1ade6df273ca3d0d@mail.gmail.com>
+	<47B953A8.9030206@cn.fujitsu.com>
+	<20080219155742.0298f25f.pj@sgi.com>
+	<6599ad830802191851l66281e67rb49c766c2b1427c9@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.12.0; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH] [LMB]: Fix lmb_add_region if region should be added at the head
-Date: Tue, 19 Feb 2008 23:16:18 -0600
-References: <Pine.LNX.4.64.0802192227170.2215@blarg.am.freescale.net> <20080219.204525.193731674.davem@davemloft.net>
-X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Paul M wrote:
+> I guess it's not essential, I just figured that if we had that
+> information, it made sense to make it available to userspace. I guess
+> I'm happy with dropping the actual exposed cgroup.api file for now as
+> long as we can work towards reducing the number of control files that
+> just return strings, and make use of the structured output such as
+> read_uint() miore.
 
-On Feb 19, 2008, at 10:45 PM, David Miller wrote:
+I could certainly go along with that ... reducing the proportion of
+control files returning untyped strings.
 
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Tue, 19 Feb 2008 22:27:48 -0600 (CST)
->
->> We introduced a bug in fixing lmb_add_region to handle an initial
->> region being non-zero.  Before that fix it was impossible to insert
->> a region at the head of the list since the first region always  
->> started
->> at zero.
->>
->> Now that its possible for the first region to be non-zero we need to
->> check to see if the new region should be added at the head and if so
->> actually add it.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ...
->> @@ -184,6 +184,11 @@ static long __init lmb_add_region(struct  
->> lmb_region *rgn, u64 base, u64 size)
->> 			break;
->> 		}
->> 	}
->> +
->> +	if (base < rgn->region[0].base) {
->> +		rgn->region[0].base = base;
->> +		rgn->region[0].size = size;
->> +	}
->> 	rgn->cnt++;
->>
->> 	return 0;
->
-> Are you sure this is sufficient?
->
-> It seems to me, to handle this properly, you'll need to handle
-> the case where the lower addressed entry you are inserting is
-> not contiguous with the existing entry 0.
->
-> Therefore, you need to move all existing entries up a slot,
-> then you can set the 0 entry to 'base' and 'size'.
+My sense of kernel-user API's is that usually the less said the better.
+Identify the essential information that one side requires from the
+other via a runtime API, and pass only that.  API's represent a
+lifetime commitment, so the less promised the better.
 
-The for loop above the code I added will move all the existing slots  
-up one.  Its just the tail cleanup we are missing.
+Perhaps my primary concern with these *.api files was that I did not
+understand who or what the critical use or user was; who found this
+essential, not just nice to have.
 
-- k
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.940.382.4214
