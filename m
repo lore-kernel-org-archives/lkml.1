@@ -1,121 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbYBTP0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765148AbYBTP1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932105AbYBTP0j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:26:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762893AbYBTPTz
+	id S1765148AbYBTP1A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:27:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757798AbYBTPT6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:19:55 -0500
-Received: from viefep25-int.chello.at ([62.179.121.45]:28835 "EHLO
+	Wed, 20 Feb 2008 10:19:58 -0500
+Received: from viefep25-int.chello.at ([62.179.121.45]:21516 "EHLO
 	viefep25-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754012AbYBTPSl (ORCPT
+	with ESMTP id S1753970AbYBTPSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:18:41 -0500
+	Wed, 20 Feb 2008 10:18:40 -0500
 X-SourceIP: 80.56.237.116
-Message-Id: <20080220150307.719988000@chello.nl>
+Message-Id: <20080220150307.968389000@chello.nl>
 References: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:29 +0100
+Date: Wed, 20 Feb 2008 15:46:31 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 19/28] netvm: prevent a stream specific deadlock
-Content-Disposition: inline; filename=netvm-tcp-deadlock.patch
+Subject: [PATCH 21/28] netvm: skb processing
+Content-Disposition: inline; filename=netvm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It could happen that all !SOCK_MEMALLOC sockets have buffered so much data
-that we're over the global rmem limit. This will prevent SOCK_MEMALLOC buffers
-from receiving data, which will prevent userspace from running, which is needed
-to reduce the buffered data.
+In order to make sure emergency packets receive all memory needed to proceed
+ensure processing of emergency SKBs happens under PF_MEMALLOC.
 
-Fix this by exempting the SOCK_MEMALLOC sockets from the rmem limit.
+Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
+
+Skip taps, since those are user-space again.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/net/sock.h   |    7 ++++---
- net/core/sock.c      |    2 +-
- net/ipv4/tcp_input.c |    8 ++++----
- net/sctp/ulpevent.c  |    2 +-
- 4 files changed, 10 insertions(+), 9 deletions(-)
+ include/net/sock.h |    5 ++++
+ net/core/dev.c     |   59 +++++++++++++++++++++++++++++++++++++++++++++++------
+ net/core/sock.c    |   18 ++++++++++++++++
+ 3 files changed, 76 insertions(+), 6 deletions(-)
 
+Index: linux-2.6/net/core/dev.c
+===================================================================
+--- linux-2.6.orig/net/core/dev.c
++++ linux-2.6/net/core/dev.c
+@@ -2004,6 +2004,30 @@ out:
+ }
+ #endif
+ 
++/*
++ * Filter the protocols for which the reserves are adequate.
++ *
++ * Before adding a protocol make sure that it is either covered by the existing
++ * reserves, or add reserves covering the memory need of the new protocol's
++ * packet processing.
++ */
++static int skb_emergency_protocol(struct sk_buff *skb)
++{
++	if (skb_emergency(skb))
++		switch (skb->protocol) {
++		case __constant_htons(ETH_P_ARP):
++		case __constant_htons(ETH_P_IP):
++		case __constant_htons(ETH_P_IPV6):
++		case __constant_htons(ETH_P_8021Q):
++			break;
++
++		default:
++			return 0;
++		}
++
++	return 1;
++}
++
+ /**
+  *	netif_receive_skb - process receive buffer from network
+  *	@skb: buffer to process
+@@ -2025,10 +2049,23 @@ int netif_receive_skb(struct sk_buff *sk
+ 	struct net_device *orig_dev;
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
++	unsigned long pflags = current->flags;
++
++	/* Emergency skb are special, they should
++	 *  - be delivered to SOCK_MEMALLOC sockets only
++	 *  - stay away from userspace
++	 *  - have bounded memory usage
++	 *
++	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
++	 * This saves us from propagating the allocation context down to all
++	 * allocation sites.
++	 */
++	if (skb_emergency(skb))
++		current->flags |= PF_MEMALLOC;
+ 
+ 	/* if we've gotten here through NAPI, check netpoll */
+ 	if (netpoll_receive_skb(skb))
+-		return NET_RX_DROP;
++		goto out;
+ 
+ 	if (!skb->tstamp.tv64)
+ 		net_timestamp(skb);
+@@ -2039,7 +2076,7 @@ int netif_receive_skb(struct sk_buff *sk
+ 	orig_dev = skb_bond(skb);
+ 
+ 	if (!orig_dev)
+-		return NET_RX_DROP;
++		goto out;
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
+ 
+@@ -2058,6 +2095,9 @@ int netif_receive_skb(struct sk_buff *sk
+ 	}
+ #endif
+ 
++	if (skb_emergency(skb))
++		goto skip_taps;
++
+ 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
+ 		if (!ptype->dev || ptype->dev == skb->dev) {
+ 			if (pt_prev)
+@@ -2066,19 +2106,23 @@ int netif_receive_skb(struct sk_buff *sk
+ 		}
+ 	}
+ 
++skip_taps:
+ #ifdef CONFIG_NET_CLS_ACT
+ 	skb = handle_ing(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ ncls:
+ #endif
+ 
++	if (!skb_emergency_protocol(skb))
++		goto drop;
++
+ 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ 	skb = handle_macvlan(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ 
+ 	type = skb->protocol;
+ 	list_for_each_entry_rcu(ptype,
+@@ -2094,6 +2138,7 @@ ncls:
+ 	if (pt_prev) {
+ 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ 	} else {
++drop:
+ 		kfree_skb(skb);
+ 		/* Jamal, now you will not able to escape explaining
+ 		 * me how you were going to use this. :-)
+@@ -2101,8 +2146,10 @@ ncls:
+ 		ret = NET_RX_DROP;
+ 	}
+ 
+-out:
++unlock:
+ 	rcu_read_unlock();
++out:
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ 	return ret;
+ }
+ 
 Index: linux-2.6/include/net/sock.h
 ===================================================================
 --- linux-2.6.orig/include/net/sock.h
 +++ linux-2.6/include/net/sock.h
-@@ -791,12 +791,13 @@ static inline int sk_wmem_schedule(struc
- 		__sk_mem_schedule(sk, size, SK_MEM_SEND);
+@@ -512,8 +512,13 @@ static inline void sk_add_backlog(struct
+ 	skb->next = NULL;
  }
  
--static inline int sk_rmem_schedule(struct sock *sk, int size)
-+static inline int sk_rmem_schedule(struct sock *sk, struct sk_buff *skb)
++extern int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
++
+ static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
  {
- 	if (!sk_has_account(sk))
- 		return 1;
--	return size <= sk->sk_forward_alloc ||
--		__sk_mem_schedule(sk, size, SK_MEM_RECV);
-+	return skb->truesize <= sk->sk_forward_alloc ||
-+		__sk_mem_schedule(sk, skb->truesize, SK_MEM_RECV) ||
-+		skb_emergency(skb);
++	if (skb_emergency(skb))
++		return __sk_backlog_rcv(sk, skb);
++
+ 	return sk->sk_backlog_rcv(sk, skb);
  }
  
- static inline void sk_mem_reclaim(struct sock *sk)
 Index: linux-2.6/net/core/sock.c
 ===================================================================
 --- linux-2.6.orig/net/core/sock.c
 +++ linux-2.6/net/core/sock.c
-@@ -388,7 +388,7 @@ int sock_queue_rcv_skb(struct sock *sk, 
- 	if (err)
- 		goto out;
+@@ -319,6 +319,24 @@ int sk_clear_memalloc(struct sock *sk)
+ }
+ EXPORT_SYMBOL_GPL(sk_clear_memalloc);
  
--	if (!sk_rmem_schedule(sk, skb->truesize)) {
-+	if (!sk_rmem_schedule(sk, skb)) {
- 		err = -ENOBUFS;
- 		goto out;
- 	}
-Index: linux-2.6/net/ipv4/tcp_input.c
-===================================================================
---- linux-2.6.orig/net/ipv4/tcp_input.c
-+++ linux-2.6/net/ipv4/tcp_input.c
-@@ -3858,9 +3858,9 @@ static void tcp_data_queue(struct sock *
- queue_and_out:
- 			if (eaten < 0 &&
- 			    (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
--			     !sk_rmem_schedule(sk, skb->truesize))) {
-+			     !sk_rmem_schedule(sk, skb))) {
- 				if (tcp_prune_queue(sk) < 0 ||
--				    !sk_rmem_schedule(sk, skb->truesize))
-+				    !sk_rmem_schedule(sk, skb))
- 					goto drop;
- 			}
- 			skb_set_owner_r(skb, sk);
-@@ -3932,9 +3932,9 @@ drop:
- 	TCP_ECN_check_ce(tp, skb);
- 
- 	if (atomic_read(&sk->sk_rmem_alloc) > sk->sk_rcvbuf ||
--	    !sk_rmem_schedule(sk, skb->truesize)) {
-+	    !sk_rmem_schedule(sk, skb)) {
- 		if (tcp_prune_queue(sk) < 0 ||
--		    !sk_rmem_schedule(sk, skb->truesize))
-+		    !sk_rmem_schedule(sk, skb))
- 			goto drop;
- 	}
- 
-Index: linux-2.6/net/sctp/ulpevent.c
-===================================================================
---- linux-2.6.orig/net/sctp/ulpevent.c
-+++ linux-2.6/net/sctp/ulpevent.c
-@@ -701,7 +701,7 @@ struct sctp_ulpevent *sctp_ulpevent_make
- 	if (rx_count >= asoc->base.sk->sk_rcvbuf) {
- 
- 		if ((asoc->base.sk->sk_userlocks & SOCK_RCVBUF_LOCK) ||
--		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb->truesize)))
-+		    (!sk_rmem_schedule(asoc->base.sk, chunk->skb)))
- 			goto fail;
- 	}
- 
++#ifdef CONFIG_NETVM
++int __sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
++{
++	int ret;
++	unsigned long pflags = current->flags;
++
++	/* these should have been dropped before queueing */
++	BUG_ON(!sk_has_memalloc(sk));
++
++	current->flags |= PF_MEMALLOC;
++	ret = sk->sk_backlog_rcv(sk, skb);
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
++
++	return ret;
++}
++EXPORT_SYMBOL(__sk_backlog_rcv);
++#endif
++
+ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ {
+ 	struct timeval tv;
 
 --
 
