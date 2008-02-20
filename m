@@ -1,67 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762468AbYBTS5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbYBTS6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762468AbYBTS5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:57:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbYBTS5d
+	id S1758443AbYBTS6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761824AbYBTS56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:57:33 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:42301 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752001AbYBTS5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:57:32 -0500
-Message-ID: <47BC7816.2030008@sgi.com>
-Date: Wed, 20 Feb 2008 10:57:26 -0800
-From: Mike Travis <travis@sgi.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 20 Feb 2008 13:57:58 -0500
+Received: from mga11.intel.com ([192.55.52.93]:34335 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756191AbYBTS54 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:57:56 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
+   d="scan'208";a="521780127"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 10:57:32 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <b6a2187b0802200954p1cccb01aqbc48c865797f0af1@mail.gmail.com> <alpine.LFD.1.00.0802201007300.7833@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802201007300.7833@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>
-Subject: Re: [PATCH 1/2] x86_64: Fold pda into per cpu area v3
-References: <20080219203335.866324000@polaris-admin.engr.sgi.com> <20080219203336.046039000@polaris-admin.engr.sgi.com> <20080220120747.GA13695@elte.hu>
-In-Reply-To: <20080220120747.GA13695@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201057.33055.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Mike Travis <travis@sgi.com> wrote:
-> 
->>   * Declare the pda as a per cpu variable. This will move the pda area
->>     to an address accessible by the x86_64 per cpu macros.  
->>     Subtraction of __per_cpu_start will make the offset based from the 
->>     beginning of the per cpu area.  Since %gs is pointing to the pda, 
->>     it will then also point to the per cpu variables and can be 
->>     accessed thusly:
->>
->> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
-> 
-> randconfig QA on x86.git found a crash on x86.git#testing with 
-> nmi_watchdog=2 (config attached) - and i bisected it down to this patch.
-> 
-> config and crashlog attached. You can pick up x86.git#testing via:
-> 
->   http://people.redhat.com/mingo/x86.git/README
-> 
-> (since i had to hand-merge the patch when integrating it, i've attached 
-> the merged version below.)
-> 
-> 	Ingo
-> 
+On Wednesday, February 20, 2008 10:37 am Linus Torvalds wrote:
+> This *sounds* like some part of the suspend-to-disk sequence is doing
+> something stupid like trying to access the screen after it has been turned
+> off, which doesn't surprise me at all. My oft-stated opinion has been that
+> suspend-to-disk isn't a suspend at all, and should never have been
+> confused with "suspending" anything.
+>
+> It's "snapshot-and-restore", and my opinion is that:
+>
+>  - it should *never* call "suspend()"/"resume()" at all (that should be
+>    reserved purely for suspend-to-RAM and has real power management
+>    issues!)
+>
+>  - it should have a totally separate "halt/unhalt/restore" thing
+>    that has nothing what-so-ever to do with power management, and is
+>    purely about stopping the hardware for things like USB and network
+>    cards (which otherwise do things like scan their command lists
+>    asynchronously) and making sure that the driver state is consistent
+>    with that stopped hw state.
+>
+>  - the people who confuse snapshot/restore with suspend/resume are
+>    horrible people that cause problems exactly because driver people then
+>    get those things mixed up, and something like the video suspend/resume
+>    should probably never have impacted suspend-to-disk in the first place!
 
-I must need some different test machines as my AMD box does not fail with
-either yours or Thomas's configs, and the Intel box complains about the
-PCI-e e1000 driver and dies.  I'll see about configuring a new box.
+Totally agreed.  I remember when I started getting hibernation bug reports 
+against this new code and boggling at how hibernate was actually done.  The 
+driver actually gets its ->suspend routine called twice with two different 
+pm_message_t values.  We tried to do different stuff depending on the 
+pm_message_t (like only putting the device in D3hot if PM_EVENT_SUSPEND), but 
+it appears we're not doing enough...
 
-Did you try Eric's patch to see if that fixed the failure?
+> So there seems to be two (probably largely independent) problems:
+>
+>  - the hang at shutdown that requires you to press-and-hold the power
+>    button to actually cut power.
+>
+>    At a guess: putting the VGA device into D3hot makes the ACPI code that
+>    actually does the shutoff unhappy. Probably because it wants to access
+>    the device, and ends up not ever getting the replies it wants, since
+>    the hardware has been turned off.
 
-Thanks,
-Mike
+Sounds like a good theory... now if we could just use set_power_state in the 
+suspend case only.  That's what the latest code *tries* to do...
 
+JEsse
