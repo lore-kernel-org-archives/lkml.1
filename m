@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760909AbYBTKQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYBTKUn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760909AbYBTKQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:16:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762528AbYBTKQb
+	id S1759198AbYBTKUn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:20:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYBTKUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:16:31 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:58744 "EHLO
+	Wed, 20 Feb 2008 05:20:34 -0500
+Received: from sovereign.computergmbh.de ([85.214.69.204]:37740 "EHLO
 	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762471AbYBTKQa (ORCPT
+	with ESMTP id S1752505AbYBTKUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:16:30 -0500
-Date: Wed, 20 Feb 2008 11:16:29 +0100 (CET)
+	Wed, 20 Feb 2008 05:20:34 -0500
+Date: Wed, 20 Feb 2008 11:20:33 +0100 (CET)
 From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Karl Dahlke <eklhad@comcast.net>
-cc: linux-kernel@vger.kernel.org
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Karl Dahlke <eklhad@comcast.net>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Valdis.Kletnieks@vt.edu
 Subject: Re: adapter, what's in a name
-In-Reply-To: <20080119181606.eklhad@comcast.net>
-Message-ID: <Pine.LNX.4.64.0802201106521.26109@fbirervta.pbzchgretzou.qr>
-References: <20080119181606.eklhad@comcast.net>
+In-Reply-To: <47BBF532.4030704@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0802201116300.26109@fbirervta.pbzchgretzou.qr>
+References: <20080119181606.eklhad@comcast.net> <47BBF532.4030704@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,60 +27,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Feb 19 2008 18:16, Karl Dahlke wrote:
+On Feb 20 2008 10:38, Stefan Richter wrote:
+>Karl Dahlke wrote:
+>> The longer I stay on this list, the more I will learn.
+>> But it's high volume, so I may not be able to stay for long.
 >
->I completely understand your point about the word adapter.
->It is highly overloaded, to the point that it is almost meaningless.
->How about "accessibility"?
->Drivers and modules designed to make linux more accessible
->could be placed in drivers/accessibility in the source tree.
->It's just a suggestion.
->If there is a better word for this concept, please let me know.
+>Because of the high volume at this list, it is essential that
+>  - you keep everyone who posted in a tread in the Cc: list of your
+>    replies, (that way it is possible to discuss on LKML even with
+>    people who are not subscribed; but more importantly, people who
+>    take part in a discussion are less likely to miss replies),
+>  - you actually reply rather than start new threads all the time.
 
-Yes, that does not sound bad. It is a common term in the redmond os,
-and I think I even saw it in the kde control center last time I used
-that.
+Indeed, in PINE, mails with your address in Cc get preprended with a
+minus sign, mails with your addr in To gets prepended with a plus
+sign, conveniently marking the discussions one has taken part in. (Or
+alternatively, one can use 'select all mails with my address' to
+color-highlight it.) Pretty nifty.
 
->And I finally understand what you are trying to say about /proc.
->Processes, and perhaps memory and raid by extension,
+>Aren't those drivers ones for
+>  - input devices,
+>  - display devices (in a more general sense than visual displays, i.e.
+>    also including audible and tactile displays)?
+>Besides, if you had for example an USB device of that type, the most
+>natural place for its sources would be somewhere beneath drivers/usb/.
 
-RAID is in /sys/block/md*/md  ;-)
+Well actually, I think it would go into drivers/input/. It is not
+quite obvious.
 
->but not everything under the planet.
->Would it be better for accessibility drivers to create files through sysfs, e.g.
->/sys/accessibility/jupiter/synth
->Naturally the jupiter subtree would appear when that module was loaded,
->and disappear when it was removed.
+Wireless USB -- drivers/net/wireless, not drivers/usb/
+Serial USB   -- drivers/usb/serial, not drivers/serial/usb/
+for example, but it seems to flow well anyway.
 
-Naturally, just like it would in procfs.
-
->One person said, essentially,
->"We'll worry about this when the first such driver comes along."
->But that's a chicken egg problem, isn't it?
-
-To a given extent yes, because procfs code is somewhat different
-from sysfs is somewhat different from a character-based device.
-(Maybe you also want to have both a device and a sysfs file, like md.)
-
->Let's set it up now, so things have a place to be.
->Besides, speakup has been around for a long long time,
->and jupiter almost as long.
->These have both been converted to use the new notifiers,
->along with pcclicks (sounds accompanying console output),
->halfqwerty (one handed typing), and others.
-
-(Mentioning "halfqwerty" reminds me of Sony's 13-key Thumb Phrase "IM".)
-
->Many of these will not need any virtual files, but some will,
->and they need a place to be.
->Beyond this, the software should exist somewhere, someday, in the source tree.
->Not every driver under the sun, but some of them,
->that have proved their merit, and meet the high standard of Linux coding, etc.
->Mac comes bundled with an internal screen reader,
->and windows has had an accessibility section for a long time, why not linux?
-
-What accessibility functions does Windows have that Linux (in
-general, things are usually implemented only in X or KDE) does not?
-
->This is the best operating system in so many ways;
->let's not be behind when it comes to accessibility.
