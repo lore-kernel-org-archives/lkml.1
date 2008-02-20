@@ -1,110 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761983AbYBTJfn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760917AbYBTJjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761983AbYBTJfn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 04:35:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbYBTJfd
+	id S1760917AbYBTJjQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 04:39:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756454AbYBTJjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 04:35:33 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:15137 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756102AbYBTJfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 04:35:31 -0500
-Date: Wed, 20 Feb 2008 10:35:28 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Johann Felix Soden <johfel@gmx.de>
-Cc: Patrick McManus <mcmanus@ducksong.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] splice: fix problem with sys_tee and SPLICE_F_NONBLOCK
-Message-ID: <20080220093528.GU23197@kernel.dk>
-References: <1203452091.7758.5.camel@localhost> <20080219202543.GK23197@kernel.dk> <1203455538.7758.17.camel@localhost> <20080219212530.GN23197@kernel.dk> <1203457661.7758.31.camel@localhost>
+	Wed, 20 Feb 2008 04:39:03 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:44154 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754115AbYBTJjA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 04:39:00 -0500
+Message-ID: <47BBF532.4030704@s5r6.in-berlin.de>
+Date: Wed, 20 Feb 2008 10:38:58 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203457661.7758.31.camel@localhost>
+To: Karl Dahlke <eklhad@comcast.net>
+CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Valdis.Kletnieks@vt.edu
+Subject: Re: adapter, what's in a name
+References: <20080119181606.eklhad@comcast.net>
+In-Reply-To: <20080119181606.eklhad@comcast.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19 2008, Johann Felix Soden wrote:
+Karl Dahlke wrote:
+> The longer I stay on this list, the more I will learn.
+> But it's high volume, so I may not be able to stay for long.
+
+Because of the high volume at this list, it is essential that
+  - you keep everyone who posted in a tread in the Cc: list of your
+    replies, (that way it is possible to discuss on LKML even with
+    people who are not subscribed; but more importantly, people who
+    take part in a discussion are less likely to miss replies),
+  - you actually reply rather than start new threads all the time.
+
+So, as Randy already asked you, please use reply-to-all when continuing
+this discussion.  That way (and with other measures like good subjects,
+or respectively keeping the subject in replies if applicable) the list
+volume becomes easily manageable.
+
+> Drivers and modules designed to make linux more accessible
+> could be placed in drivers/accessibility in the source tree.
+> It's just a suggestion.
+> If there is a better word for this concept, please let me know.
 > 
-> Am Dienstag, den 19.02.2008, 22:25 +0100 schrieb Jens Axboe:
-> > On Tue, Feb 19 2008, Johann Felix Soden wrote:
-> > > > On Tue, Feb 19 2008, Johann Felix Soden wrote:
-> > > > > From: Johann Felix Soden <johfel@users.sourceforge.net>
-> > > > > 
-> > > > > With SPLICE_F_NONBLOCK sys_tee should return number of duplicated bytes,
-> > > > > not only -EAGAIN on success.
-> > > > 
-> > > > ?
-> > > > 
-> > > > The current behaviour is to return bytes tee'd, or return -EAGAIN for
-> > > > zero bytes if SPLICE_F_NONBLOCK is set. It doesn't return "-EAGAIN on
-> > > > success", not sure what you mean there.
-> > > > 
-> > > Sorry, my patch description was not correct. 
-> > > 
-> > > The new behavior of sys_tee with my patch is: 
-> > > 	- return -EAGAIN if there are no data in the pipe, but writer
-> > > 	  connected to the pipe, 
-> > > 	- return 0 if there are not writers connected
-> > > 	- else return number of duplicated byte 
-> > > 
-> > > The old behavior was: return -EAGAIN or the number (>0) of duplicated
-> > > bytes.
-> > 
-> > Your patch has an odd way of achieving that goal, modify the real
-> > location of the assignment instead of overriding something. That has the
-> > potential to turn into another confusing bug later on, wondering why the
-> > heck your return value isn't being passed back.
-> > 
-> > Improvement is welcome though, you can't distuingish -EAGAIN on the
-> > input side from the output side currently.
-> > 
-> 
-> I thought again about the problem and my patch: you are right, the patch
-> is nonsense. I have learnt, that the correctness of a patch is not
-> guaranteed by the (bad, but anyhow working) solution of the problem the
-> patch was written for.
-> Sorry for wasting your time.
+> And I finally understand what you are trying to say about /proc.
+> Processes, and perhaps memory and raid by extension,
+> but not everything under the planet.
+> Would it be better for accessibility drivers to create files through sysfs, e.g.
+> /sys/accessibility/jupiter/synth
+> Naturally the jupiter subtree would appear when that module was loaded,
+> and disappear when it was removed.
 
-Don't worry, it's not a waste of time even though your solution isn't
-the correct one.
+Aren't those drivers ones for
+  - input devices,
+  - display devices (in a more general sense than visual displays, i.e.
+    also including audible and tactile displays)?
+Besides, if you had for example an USB device of that type, the most
+natural place for its sources would be somewhere beneath drivers/usb/.
 
-When non-blocking is set, ideally we want to return 0 if there's no hope
-of anymore data and EAGAIN if trying later may yield some data. So how
-about this instead?
+About the userspace interfaces of such drivers:
 
-diff --git a/fs/splice.c b/fs/splice.c
-index 9b559ee..0670c91 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -1669,6 +1669,13 @@ static int link_pipe(struct pipe_inode_info *ipipe,
- 		i++;
- 	} while (len);
- 
-+	/*
-+	 * return EAGAIN if we have the potential of some data in the
-+	 * future, otherwise just return 0
-+	 */
-+	if (!ret && ipipe->waiting_writers && (flags & SPLICE_F_NONBLOCK))
-+		ret = -EAGAIN;
-+
- 	inode_double_unlock(ipipe->inode, opipe->inode);
- 
- 	/*
-@@ -1709,11 +1716,8 @@ static long do_tee(struct file *in, struct file *out, size_t len,
- 		ret = link_ipipe_prep(ipipe, flags);
- 		if (!ret) {
- 			ret = link_opipe_prep(opipe, flags);
--			if (!ret) {
-+			if (!ret)
- 				ret = link_pipe(ipipe, opipe, len, flags);
--				if (!ret && (flags & SPLICE_F_NONBLOCK))
--					ret = -EAGAIN;
--			}
- 		}
- 	}
- 
+  - As was noted, /proc is generally not for userspace ABIs except to
+expose properties of processes and a few selected other core properties
+of the kernel.
 
+  - /sys is for userspace ABIs which specifically pertain to properties
+of kernel objects, notably properties of the kernel representations of
+devices and of kernel modules.  Have a look into /sys/devices, /sys/bus,
+and /sys/modules to get an idea.  Note, a lot of what is exposed in /sys
+does not constitute stable long-time supported ABIs; see
+Documentation/sysfs-rules.txt.
+
+  - There are other types of ABIs for I/O (character device files, block
+device files), message-based(?) I/O (netlink), configuration (configfs),
+and more.
+
+I have no idea what kind of communication with userspace the various
+accessibility related drivers maintain.
 -- 
-Jens Axboe
-
+Stefan Richter
+-=====-==--- --=- =-=--
+http://arcgraph.de/sr/
