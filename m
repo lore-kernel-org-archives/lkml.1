@@ -1,93 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934129AbYBTUbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934215AbYBTUcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934129AbYBTUbq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:31:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933836AbYBTUbO
+	id S934215AbYBTUcg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934018AbYBTUbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:31:14 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:56889 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933375AbYBTUbL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:31:11 -0500
-Date: Wed, 20 Feb 2008 15:30:18 -0500
-From: Vivek Goyal <vgoyal@redhat.com>
-To: mingo@elte.hu
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>
-Subject: Re: [patch 1/3] x86_64: CPA, fix cache attribute inconsistency
-	bug, v2.6.22 backport
-Message-ID: <20080220203018.GD7415@redhat.com>
-References: <20080215195508.GA12405@elte.hu> <20080215195821.GA15432@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080215195821.GA15432@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Wed, 20 Feb 2008 15:31:20 -0500
+Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:22202 "EHLO
+	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933971AbYBTUbS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:31:18 -0500
+X-ME-UUID: 20080220203112618.970B2700008C@mwinf3104.me.freeserve.com
+Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
+From: Chris Vine <chris@cvine.freeserve.co.uk>
+To: Dan Williams <dcbw@redhat.com>
+Cc: Ivo van Doorn <ivdoorn@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, chris2553@googlemail.com,
+       rt2400-devel@lists.sourceforge.net
+In-Reply-To: <1203523555.693.2.camel@localhost.localdomain>
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
+	 <200802191026.57640.IvDoorn@gmail.com>
+	 <200802191900.09543.chris2553@googlemail.com>
+	 <200802192046.14184.IvDoorn@gmail.com>
+	 <1203462247.6397.15.camel@boulder.homenet>
+	 <1203523555.693.2.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 20 Feb 2008 20:27:15 +0000
+Message-Id: <1203539235.3189.4.camel@boulder.homenet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 15, 2008 at 08:58:22PM +0100, Ingo Molnar wrote:
-> 
-> fix CPA cache attribute bug in v2.6.23. When phys_base is nonzero
-> (when CONFIG_RELOCATABLE=y) then change_page_attr_addr() miscalculates
-> the secondary alias address by -14 MB (depending on the configured
-> offset).
-> 
-> The default 64-bit kernels of Fedora and Ubuntu are affected:
-> 
->    $ grep RELOCA /boot/config-2.6.23.9-85.fc8
->      CONFIG_RELOCATABLE=y
-> 
->    $ grep RELOC /boot/config-2.6.22-14-generic
->      CONFIG_RELOCATABLE=y
-> 
-> and probably on many other distros as well.
-> 
-> the bug affects all pages in the first 40 MB of physical RAM that
-> are allocated by some subsystem that does ioremap_nocache() on them:
-> 
->        if (__pa(address) < KERNEL_TEXT_SIZE) {
-> 
-> Hence we might leave page table entries with inconsistent cache
-> attributes around (pages mapped at both UnCacheable and Write-Back),
-> and we can also set the wrong kernel text pages to UnCacheable.
-> 
-> the effects of this bug can be random slowdowns and other misbehavior.
-> If for example AGP allocates its aperture pages into the first 40 MB
-> of physical RAM, then the -14 MB bug might mark random kernel texto
-> pages as uncacheable, slowing down a random portion of the 64-bit
-> kernel until the AGP driver is unloaded.
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Acked-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  arch/x86_64/mm/pageattr.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-tmp/arch/x86_64/mm/pageattr.c
-> ===================================================================
-> --- linux-tmp.orig/arch/x86_64/mm/pageattr.c
-> +++ linux-tmp/arch/x86_64/mm/pageattr.c
-> @@ -204,7 +204,7 @@ int change_page_attr_addr(unsigned long 
->  		if (__pa(address) < KERNEL_TEXT_SIZE) {
 
-Hi Ingo,
+On Wed, 2008-02-20 at 11:05 -0500, Dan Williams wrote: 
+> On Tue, 2008-02-19 at 23:04 +0000, Chris Vine wrote:
+> > On Tue, 2008-02-19 at 20:46 +0100, Ivo van Doorn wrote:
+> > > Hi,
+> > > 
+> > > [added rt2400-devel (rt2x00 development mailinglist) to the CC list.]
+> > > 
+> > > > > > > I have a series of tests I would like to request from you,
+> > > > > > > you mentioned you already enabled debugfs, and that is just what we need. ;)
+> > > > > > > Please use attached script to create dumps of the hardware register contents.
+> > > > > > > 
+> > > > > > > There are specific moments that should be dumped:
+> > > > > > > - kernel 2.6.24 (last known working version for you).
+> > > > > > > - kernel 2.6.25-rc2 (after ifup, before TX dies)
+> > > > > > > - kernel 2.6.25-rc2 (after ifup, after TX dies)
+> > > > > > >  
+> > > > > > 
+> > > > > > These diagnostics are attached, with obvious filenames.
+> > > > > 
+> > > > > Thanks. I think I found something, please test below patch:
+> > > > > 
+> > > > 
+> > > > I've tried the patch but, unfortunately, my wireless LAN still dies after a few pings.
+> > 
+> > rt2x00 2.0.14 is broken with my rt73 stick in the vanilla 2.6.25-rc2
+> > kernel (not wireless-2.6/rt2x00 git).  The modules load when I plug the
+> > stick in but I then get a complete kernel lock up with two flashing
+> > leds.  Nothing is recorded to system logs.  The last logged messages are
+> > that usbcore has registered new interface driver rt73usb, and that the
+> > rate control algorithm has been selected on phy0.  This happens whether
+> > the simple or pid mac80211 rate control algorithms have been chosen.
+> > 
+> > This is a shame because 2.0.14 was working really well for me until the
+> > mac80211 changes 2 or 3 weeks ago broke it.  (Shortly followed by the
+> > release of 2.1.*).
+> 
+> Switch to a VT with Ctl+Alt+1, then plug the stick in, and take a
+> picture of the panic if one shows up.  _Something_ should show up on the
+> VT.
 
-Should we change above condition also to something like following.
+I did that yesterday and it just reported a kernel panic on the terminal
+with the message:
 
-kernel_phys_start = __pa(__START_KERNEL_map) + phys_base
-kernel_phys_end = kernel_phys_start + KERNEL_TEXT_SIZE
+  Kernel panic - not syncing: Aiee, killing interrupt handler!
 
-if (__pa(address) >= kernel_phys_start
-	&& __pa(address) <= kernel_phys_end)  
+There is a complete lock up.  Even the two leds don't send a dump in
+morse code (if that is still a feature of the 2.6 kernels).  They just
+flash together at 1 second intervals.
 
-Looks like we are trying to see if a physical page has been mapped
-by kernel text/data region also then change the caching attributes there too.
+However, I do not have debugging enabled on 2.6.25-rc2 (I was just
+interested to see how it worked).  If it is thought to be useful I can
+recompile the kernel with debugging enabled, but this should be
+reproducible by anyone with a rt73 stick.
 
-In case of relocatable kernel, not necessarily first 40MB will be mapped by
-the kernel text/data region, If boot loader decides to load kernel
-at a higher address and phys_base is non-zero.
+By way of a further data point, I can scan OK using 2.6.25-rc2 and it
+will report all the available access points in my area.  But as soon as
+association is attempted, it blows up.
 
-Thanks
-Vivek
+Chris
+
+
