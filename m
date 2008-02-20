@@ -1,62 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbYBTRbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765748AbYBTRba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763300AbYBTRbG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:31:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYBTRau
+	id S1765748AbYBTRba (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:31:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764603AbYBTRa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:30:50 -0500
-Received: from gateway.drzeus.cx ([85.8.24.16]:50680 "EHLO smtp.drzeus.cx"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754292AbYBTRat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:30:49 -0500
-Date: Wed, 20 Feb 2008 18:30:41 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Message-ID: <20080220183041.46c16ef0@mjolnir.drzeus.cx>
-In-Reply-To: <Pine.LNX.4.44L0.0802201136170.5630-100000@iolanthe.rowland.org>
-References: <20080219232338.E9A24108068@picon.linux-foundation.org>
-	<Pine.LNX.4.44L0.0802201136170.5630-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 12:30:58 -0500
+Received: from orannis.acns.msu.edu ([35.8.3.59]:55560 "EHLO
+	orannis.acns.msu.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763426AbYBTRa5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:30:57 -0500
+X-Greylist: delayed 458 seconds by postgrey-1.27 at vger.kernel.org; Wed, 20 Feb 2008 12:30:56 EST
+From: Joshua Roys <roysjosh@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Joshua Roys <roysjosh@gmail.com>
+Subject: [PATCH] Fix a compile warning under gcc-4.2.3.
+Date: Wed, 20 Feb 2008 12:23:17 -0500
+Message-Id: <1203528197-24227-1-git-send-email-roysjosh@gmail.com>
+X-Mailer: git-send-email 1.5.4.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 11:42:56 -0500 (EST)
-Alan Stern <stern@rowland.harvard.edu> wrote:
+sound/core/init.c: In function ‘snd_card_disconnect’:
+sound/core/init.c:307: warning: the address of ‘snd_shutdown_f_ops’ will always evaluate as ‘true’
 
-> > 
-> > ------- Comment #14 from rjw@sisk.pl  2008-02-19 15:23 -------
-> > Thanks a lot for the debugging work!
-> > 
-> > First, the patch triggers, which means that the problem discovered by Alan is
-> > troubling us.  [Alan, do you have an idea how to fix that cleanly?]
-> 
-> I suggest we ask the maintainer for the MMC subsystem.
-> 
-> Pierre, you can find the details in the bugzilla entry.  Briefly,
-> there's a pathway in the MMC core suspend routine (if the driver
-> doesn't implement a resume hook) which could lead to the host being
-> removed during a system suspend.  This is an illegal operation and it
-> will deadlock.
-> 
-> Do you have a suggestion for a way to fix it?
-> 
+Signed-off-by: Joshua Roys <roysjosh@gmail.com>
+---
+ sound/core/init.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Not really. But you have some things confused. What it checks is if the mmc bus handler (not a proper driver model, just a way of separating the MMC, SD and SDIO stuff) has a resume function. And if it doesn't, it removes the card (since it cannot revive it at resume).
-
-So the only thing I can think of is to delay the removal until the resume routine, if that is safer.
-
-Rgds
+diff --git a/sound/core/init.c b/sound/core/init.c
+index 2cb7099..1afc58b 100644
+--- a/sound/core/init.c
++++ b/sound/core/init.c
+@@ -304,7 +304,6 @@ int snd_card_disconnect(struct snd_card *card)
+ 		list_add(&mfile->shutdown_list, &shutdown_files);
+ 		spin_unlock(&shutdown_lock);
+ 
+-		fops_get(&snd_shutdown_f_ops);
+ 		mfile->file->f_op = &snd_shutdown_f_ops;
+ 		
+ 		mfile = mfile->next;
 -- 
-     -- Pierre Ossman
+1.5.4.2
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
