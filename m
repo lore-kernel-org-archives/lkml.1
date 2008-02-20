@@ -1,53 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763634AbYBSX5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763663AbYBSX6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763634AbYBSX5l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 18:57:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYBSX5a
+	id S1763663AbYBSX6f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 18:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756222AbYBSX60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 18:57:30 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:54642 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756841AbYBSX53 (ORCPT
+	Tue, 19 Feb 2008 18:58:26 -0500
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:60955 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756140AbYBSX6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 18:57:29 -0500
-Date: Tue, 19 Feb 2008 15:56:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [GIT pull] x86 updates
-Message-Id: <20080219155653.4e6bc958.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.1.00.0802192357550.7583@apollo.tec.linutronix.de>
-References: <alpine.LFD.1.00.0802192357550.7583@apollo.tec.linutronix.de>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 19 Feb 2008 18:58:25 -0500
+Message-ID: <47BB6DAB.5050506@keyaccess.nl>
+Date: Wed, 20 Feb 2008 01:00:43 +0100
+From: Rene Herman <rene.herman@keyaccess.nl>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: ambx1@neo.rr.com, linux-kernel@vger.kernel.org,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: Re: pnp_bus_resume(): inconsequent NULL checking
+References: <20080219224908.GM31955@cs181133002.pp.htv.fi>
+In-Reply-To: <20080219224908.GM31955@cs181133002.pp.htv.fi>
+Content-Type: multipart/mixed;
+ boundary="------------010405010000090802070009"
+X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 00:13:13 +0100 (CET) Thomas Gleixner wrote:
+This is a multi-part message in MIME format.
+--------------010405010000090802070009
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Linus,
+On 19-02-08 23:49, Adrian Bunk wrote:
+
+> The Coverity checker spotted the following inconsequent NULL checking 
+> introduced by commit 5d38998ed15b31f524bde9a193d60150af30d916:
 > 
-> please pull x86 updates from:
+> <--  snip  -->
 > 
->   ssh://master.kernel.org/pub/scm/linux/kernel/git/x86/linux-2.6-x86.git master
+> ...
+> static int pnp_bus_resume(struct device *dev)
+> {
+> ...
+>         if (pnp_dev->protocol && pnp_dev->protocol->resume)
+>                 pnp_dev->protocol->resume(pnp_dev);
 > 
-> The major part of this pull are sparse fixes, section fixups,
-> documentation updates and cleanups.
+>         if (pnp_can_write(pnp_dev)) {
+> ...
+> 
+> <--  snip  -->
+> 
+> pnp_can_write(pnp_dev) dereferences pnp_dev->protocol.
 
+I see, thanks. pnp_bus_suspend() has the same problem (I added this test to 
+complete the mirror in fact) and/but is not a real problem since the tests 
+are also the first things done inside the blocks they protect -- if 
+pnp_dev->protocol isn't set here, we're dead anyway therefore.
 
-Hi,
-What happened to the kernel-doc x86/cpu/mtrr patch, which you applied,
-according to your email reply...
+That probably means we can just delete the pnp_dev->protocol tests but this 
+  would need an ack from for example Bjorn Helgaas who might have an idea 
+about how generically useful this is designed to be. The no brain thing to 
+do would be just as per attached.
 
----
-~Randy
+Bjorn?
+
+--------------010405010000090802070009
+Content-Type: text/plain;
+ name="coverity-pnp_bus_suspend_resume.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="coverity-pnp_bus_suspend_resume.diff"
+
+pnp: be consistent about testing pnp_dev->protocol in pnp_bus_{suspend,resume}
+
+pnp_can_{disable,write}() dereference pnp_dev->protocol. So do the
+pnp_{stop,start}_dev() the tests protect, but let's be consistent
+at least.
+
+Spotted by Adrian Bunk <bunk@kernel.org> and the Coverity checker.
+
+Signed-off-by: Rene Herman <rene.herman@gmail.com>
+
+diff --git a/drivers/pnp/driver.c b/drivers/pnp/driver.c
+index 12a1645..170af61 100644
+--- a/drivers/pnp/driver.c
++++ b/drivers/pnp/driver.c
+@@ -160,15 +160,15 @@ static int pnp_bus_suspend(struct device *dev, pm_message_t state)
+ 		if (error)
+ 			return error;
+ 	}
+-
+-	if (pnp_can_disable(pnp_dev)) {
+-		error = pnp_stop_dev(pnp_dev);
+-		if (error)
+-			return error;
++	if (pnp_dev->protocol) {
++		if (pnp_can_disable(pnp_dev)) {
++			error = pnp_stop_dev(pnp_dev);
++			if (error)
++				return error;
++		}
++		if (pnp_dev->protocol->suspend)
++			pnp_dev->protocol->suspend(pnp_dev, state);
+ 	}
+-
+-	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
+-		pnp_dev->protocol->suspend(pnp_dev, state);
+ 	return 0;
+ }
+ 
+@@ -181,21 +181,21 @@ static int pnp_bus_resume(struct device *dev)
+ 	if (!pnp_drv)
+ 		return 0;
+ 
+-	if (pnp_dev->protocol && pnp_dev->protocol->resume)
+-		pnp_dev->protocol->resume(pnp_dev);
++	if (pnp_dev->protocol) {
++		if (pnp_dev->protocol->resume)
++			pnp_dev->protocol->resume(pnp_dev);
+ 
+-	if (pnp_can_write(pnp_dev)) {
+-		error = pnp_start_dev(pnp_dev);
+-		if (error)
+-			return error;
++		if (pnp_can_write(pnp_dev)) {
++			error = pnp_start_dev(pnp_dev);
++			if (error)
++				return error;
++		}
+ 	}
+-
+ 	if (pnp_drv->resume) {
+ 		error = pnp_drv->resume(pnp_dev);
+ 		if (error)
+ 			return error;
+ 	}
+-
+ 	return 0;
+ }
+ 
+
+--------------010405010000090802070009--
