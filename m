@@ -1,86 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbYBTNkF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762092AbYBTNrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754603AbYBTNkF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 08:40:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbYBTNjz
+	id S1762092AbYBTNrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 08:47:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbYBTNrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 08:39:55 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:39094 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757624AbYBTNjx (ORCPT
+	Wed, 20 Feb 2008 08:47:21 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:47679 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbYBTNrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 08:39:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
-        b=eTFT3Bc/F9l2xWwgXcCxZXmoA/6SmQkRtOw/F5oKMoX0YGrs4G3BtP9222ZScprXa+lpHaK2OIjmPZoqZEirKU/OmaQyDaCZq5hJXzgQiLmjfTHpw0ztTaLeuRdKfgAojwGW9zb7tuZWA3tV1c1tm/Gewvns0buqMOdUUUXH/3A=
-Date: Wed, 20 Feb 2008 15:37:18 +0200
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Tasklets: Avoid duplicating __tasklet_{,hi_}schedule()
-	code
-Message-ID: <20080220133718.GA8205@ubuntu>
-References: <20080219153720.GA2967@ubuntu> <20080219155252.GA27280@elte.hu> <20080219162718.GA3372@ubuntu> <20080220104113.GI3881@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220104113.GI3881@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+	Wed, 20 Feb 2008 08:47:20 -0500
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: [RFC PATCH 0/8]: uninline & uninline
+Date: Wed, 20 Feb 2008 15:47:10 +0200
+Message-Id: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+X-Mailer: git-send-email 1.5.4.2.156.ge3c5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 11:41:13AM +0100, Ingo Molnar wrote:
-> 
-> * Ahmed S. Darwish <darwish.07@gmail.com> wrote:
-> 
-> > > > -		local_irq_disable();
-> > > > -		t->next = __get_cpu_var(tasklet_vec).list;
-> > > > -		__get_cpu_var(tasklet_vec).list = t;
-> > > > -		__raise_softirq_irqoff(TASKLET_SOFTIRQ);
-> > > > -		local_irq_enable();
-> > > > +		/* We were not lucky enough to run, reschedule. */
-> > > > +		__tasklet_schedule(t);
-> > > 
-> > > i think there's a subtle difference that you missed: this one does 
-> > > __raise_softirq_irqoff(), while __tasklet_schedule() does a 
-> > > raise_softirq_irqoff(). (note the lack of undescores)
-> > > 
-> > > the reason is to avoid infinitely self-activating tasklets.
-> > 
-> > Indeed, thanks a lot for the explanation. (maybe it's time to check 
-> > for new eyeglasses ;)).
-> 
-> nah, it's rather subtle and the code looked good to me at first but i 
-> remembered that there was some small detail here to watch out for.
-> 
-> i really dont like tasklets due to their many, arbitrary scheduling 
-> limitations, we should really use the "turn tasklets into kthreads" 
-> patch i posted last year.
-> 
+Hi all,
 
-While we are at it, there's a small question that is bothering me
-for a while (and I'm really thankful for help). 
+I run some lengthy tests to measure cost of inlines in headers under
+include/, simple coverage calculations yields to 89% but most of the
+failed compiles are due to preprocessor cutting the tested block away
+anyway. Test setup: v2.6.24-mm1, make allyesconfig, 32-bit x86,
+gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13). Because one inline was
+tested (function uninlined) at a time, the actual benefits of removing
+multiple inlines may well be below what the sum of those individually
+is (especially when something calls __-func with equal name).
 
-I keep reading that softirqs (and naturally, tasklets) got executed 
-in interrupt context at the return from hardirq code path.
+Ok, here's the top of the list (10000+ bytes):
 
-Checking entry_32.S, I find no mentioning of softirqs on the return
-path (beginning from ret_from_intr: to restore_all: )
+-110805  869 f, 198 +, 111003 -, diff: -110805  skb_put 
+-41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
+-36290  42 f, 197 +, 36487 -, diff: -36290  cfi_build_cmd 
+-35698  1234 f, 2391 +, 38089 -, diff: -35698  atomic_dec_and_test 
+-28162  354 f, 3005 +, 31167 -, diff: -28162  skb_pull 
+-23668  392 f, 104 +, 23772 -, diff: -23668  dev_alloc_skb 
+-22212  415 f, 130 +, 22342 -, diff: -22212  __dev_alloc_skb 
+-21593  356 f, 2418 +, 24011 -, diff: -21593  skb_push 
+-19036  478 f, 259 +, 19295 -, diff: -19036  netif_wake_queue 
+-18409  396 f, 6447 +, 24856 -, diff: -18409  __skb_pull 
+-16420  187 f, 103 +, 16523 -, diff: -16420  dst_release 
+-16025  13 f, 280 +, 16305 -, diff: -16025  cfi_send_gen_cmd 
+-14925  486 f, 978 +, 15903 -, diff: -14925  add_timer 
+-14896  199 f, 558 +, 15454 -, diff: -14896  sg_page 
+-12870  36 f, 121 +, 12991 -, diff: -12870  le_key_k_type 
+-12310  692 f, 7215 +, 19525 -, diff: -12310  signal_pending 
+-11640  251 f, 118 +, 11758 -, diff: -11640  __skb_trim 
+-11059  111 f, 293 +, 11352 -, diff: -11059  __nlmsg_put 
+-10976  209 f, 123 +, 11099 -, diff: -10976  skb_trim 
+-10344  125 f, 462 +, 10806 -, diff: -10344  pskb_may_pull 
+-10061  300 f, 1163 +, 11224 -, diff: -10061  try_module_get 
+-10008  75 f, 341 +, 10349 -, diff: -10008  nlmsg_put 
 
-The only invocation I'm able to find is from local_bh_enable() and
-from ksoftirqd/n threads (by calling do_softirq()). AFAIK, both 
-invocations occur in a _nont-interrupt_ context (exception context).
+~250 are in 1000+ bytes category and ~440 in 500+. Full list
+has some entries without number because given config doesn't
+build them, and therefore nothing got uninlined, and the missing
+entries consists solely of compile failures, available here:
 
-So, where does the interrupt-context tasklets invocation really 
-occur ?
+  http://www.cs.helsinki.fi/u/ijjarvin/inlines/sorted
 
-Thanks
+I made some patches to uninline couple of them (picked mostly
+net related) to stir up some discussion, however, some of them
+are not ready for inclusion as is (see patch descriptions).
+The cases don't represent all top 8 cases because some of the
+cases require a bit more analysis (e.g., config dependant,
+comments about gcc optimizations).
 
--- 
-Ahmed S. Darwish
-Homepage: http://darwish.07.googlepages.com
-Blog: http://darwish-07.blogspot.com
+The tools I used are available here except the site-specific
+distribute machinery (in addition one needs pretty late
+codiff from Arnaldo's toolset because there were some inline
+related bugs fixed lately):
+
+  http://www.cs.helsinki.fi/u/ijjarvin/inline-tools.git/
+
+I'm planning to run similar tests also on inlines in headers that
+are not under include/ but it requires minor modifications to
+those tools.
+
+--
+ i.
+
+ps. I'm sorry about the duplicates, old git-send-email's
+8-bit-header problem bit me again. :-(
+
+
 
