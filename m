@@ -1,77 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757242AbYBTHeh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756143AbYBTHi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757242AbYBTHeh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 02:34:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbYBTHe1
+	id S1756143AbYBTHi2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 02:38:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbYBTHiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 02:34:27 -0500
-Received: from fwil.voltaire.com ([193.47.165.2]:47565 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751462AbYBTHe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 02:34:26 -0500
-Message-ID: <47BBD7FA.9090101@Voltaire.COM>
-Date: Wed, 20 Feb 2008 09:34:18 +0200
-From: Erez Zilber <erezz@Voltaire.COM>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Wed, 20 Feb 2008 02:38:17 -0500
+Received: from neuf-infra-smtp-out-sp604006av.neufgp.fr ([84.96.92.121]:39775
+	"EHLO neuf-infra-smtp-out-sp604006av.neufgp.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750814AbYBTHiP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 02:38:15 -0500
+Message-ID: <47BBD8E9.2090700@cosmosbay.com>
+Date: Wed, 20 Feb 2008 08:38:17 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, rdreier@cisco.com,
-       James.Bottomley@hansenpartnership.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, vst@vlnb.net, linux-scsi@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: Integration of SCST in the mainstream Linux kernel
-References: <e2e108260801230622x42045058v926e84c60f2be7f4@mail.gmail.com>	 <1201639331.3069.58.camel@localhost.localdomain>	 <adazluoe2t3.fsf@cisco.com>	 <20080130083239E.fujita.tomonori@lab.ntt.co.jp>	 <e2e108260801300038q10132aafs1dbc6e5400fc47bb@mail.gmail.com>	 <47A89660.1080804@Voltaire.COM>	 <e2e108260802060416w492db372mc09848edd365d441@mail.gmail.com>	 <47B95343.9060802@Voltaire.COM> <e2e108260802180301o5c376024t72e649a9debd5157@mail.gmail.com>
-In-Reply-To: <e2e108260802180301o5c376024t72e649a9debd5157@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 20 Feb 2008 07:34:23.0647 (UTC) FILETIME=[0384A2F0:01C87393]
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: Valdis.Kletnieks@vt.edu, David Miller <davem@davemloft.net>,
+       herbert@gondor.apana.org.au, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: tbench regression in 2.6.25-rc1
+References: <47B52B95.3070607@cosmosbay.com>	 <1203057044.3027.134.camel@ymzhang> <47B59FFC.4030603@cosmosbay.com>	 <20080215.152200.145584182.davem@davemloft.net>	 <1203322358.3027.200.camel@ymzhang>	 <20040.1203356033@turing-police.cc.vt.edu>	 <1203403903.3248.29.camel@ymzhang>  <47BA87F0.1050709@cosmosbay.com> <1203491081.3248.60.camel@ymzhang>
+In-Reply-To: <1203491081.3248.60.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> On Feb 18, 2008 10:43 AM, Erez Zilber <erezz@voltaire.com> wrote:
->   
->> If you use a high value for FirstBurstLength, all (or most) of your data
->> will be sent as unsolicited data-out PDUs. These PDUs don't use the RDMA
->> engine, so you miss the advantage of IB.
->>     
->
-> Hello Erez,
->
-> Did you notice the e-mail Roland Dreier wrote on Februari 6, 2008 ?
-> This is what Roland wrote:
->   
->> I think the confusion here is caused by a slight misuse of the term
->> "RDMA".  It is true that all data is always transported over an
->> InfiniBand connection when iSER is used, but not all such transfers
->> are one-sided RDMA operations; some data can be transferred using
->> send/receive operations.
->>     
->
->   
-Yes, I saw that. I tried to give an explanation with more details.
+Zhang, Yanmin a écrit :
+> On Tue, 2008-02-19 at 08:40 +0100, Eric Dumazet wrote:
+>> Zhang, Yanmin a �crit :
+>>> On Mon, 2008-02-18 at 12:33 -0500, Valdis.Kletnieks@vt.edu wrote: 
+>>>> On Mon, 18 Feb 2008 16:12:38 +0800, "Zhang, Yanmin" said:
+>>>>
+>>>>> I also think __refcnt is the key. I did a new testing by adding 2 unsigned long
+>>>>> pading before lastuse, so the 3 members are moved to next cache line. The performance is
+>>>>> recovered.
+>>>>>
+>>>>> How about below patch? Almost all performance is recovered with the new patch.
+>>>>>
+>>>>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+>>>> Could you add a comment someplace that says "refcnt wants to be on a different
+>>>> cache line from input/output/ops or performance tanks badly", to warn some
+>>>> future kernel hacker who starts adding new fields to the structure?
+>>> Ok. Below is the new patch.
+>>>
+>>> 1) Move tclassid under ops in case CONFIG_NET_CLS_ROUTE=y. So sizeof(dst_entry)=200
+>>> no matter if CONFIG_NET_CLS_ROUTE=y/n. I tested many patches on my 16-core tigerton by
+>>> moving tclassid to different place. It looks like tclassid could also have impact on
+>>> performance.
+>>> If moving tclassid before metrics, or just don't move tclassid, the performance isn't
+>>> good. So I move it behind metrics.
+>>>
+>>> 2) Add comments before __refcnt.
+>>>
+>>> If CONFIG_NET_CLS_ROUTE=y, the result with below patch is about 18% better than
+>>> the one without the patch.
+>>>
+>>> If CONFIG_NET_CLS_ROUTE=n, the result with below patch is about 30% better than
+>>> the one without the patch.
+>>>
+>>> Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
+>>>
+>>> ---
+>>>
+>>> --- linux-2.6.25-rc1/include/net/dst.h	2008-02-21 14:33:43.000000000 +0800
+>>> +++ linux-2.6.25-rc1_work/include/net/dst.h	2008-02-22 12:52:19.000000000 +0800
+>>> @@ -52,15 +52,10 @@ struct dst_entry
+>>>  	unsigned short		header_len;	/* more space at head required */
+>>>  	unsigned short		trailer_len;	/* space to reserve at tail */
+>>>  
+>>> -	u32			metrics[RTAX_MAX];
+>>> -	struct dst_entry	*path;
+>>> -
+>>> -	unsigned long		rate_last;	/* rate limiting for ICMP */
+>>>  	unsigned int		rate_tokens;
+>>> +	unsigned long		rate_last;	/* rate limiting for ICMP */
+>>>  
+>>> -#ifdef CONFIG_NET_CLS_ROUTE
+>>> -	__u32			tclassid;
+>>> -#endif
+>>> +	struct dst_entry	*path;
+>>>  
+>>>  	struct neighbour	*neighbour;
+>>>  	struct hh_cache		*hh;
+>>> @@ -70,10 +65,20 @@ struct dst_entry
+>>>  	int			(*output)(struct sk_buff*);
+>>>  
+>>>  	struct  dst_ops	        *ops;
+>>> -		
+>>> -	unsigned long		lastuse;
+>>> +
+>>> +	u32			metrics[RTAX_MAX];
+>>> +
+>>> +#ifdef CONFIG_NET_CLS_ROUTE
+>>> +	__u32			tclassid;
+>>> +#endif
+>>> +
+>>> +	/*
+>>> +	 * __refcnt wants to be on a different cache line from
+>>> +	 * input/output/ops or performance tanks badly
+>>> +	 */
+>>>  	atomic_t		__refcnt;	/* client references	*/
+>>>  	int			__use;
+>>> +	unsigned long		lastuse;
+>>>  	union {
+>>>  		struct dst_entry *next;
+>>>  		struct rtable    *rt_next;
+>>>
+>>>
+>>>
+>> I prefer this patch, but unfortunatly your perf numbers are for 64 bits kernels.
+>>
+>> Could you please test now with 32 bits one ?
+> I tested it with 32bit 2.6.25-rc1 on 8-core stoakley. The result almost has no difference
+> between pure kernel and patched kernel.
+> 
+> New update: On 8-core stoakley, the regression becomes 2~3% with kernel 2.6.25-rc2. On
+> tigerton, the regression is still 30% with 2.6.25-rc2. On Tulsa( 8 cores+hyperthreading),
+> the regression is still 4% with 2.6.25-rc2.
+> 
+> With my patch, on tigerton, almost all regression disappears. On tulsa, only about 2%
+> regression disappears.
+> 
+> So this issue is triggerred with multiple-cpu. Perhaps process scheduler is another
+> factor causing the issue to happen, but it's very hard to change scheduler.
+> 
 
-> Or: data sent during the first burst is not transferred via one-sided
-> remote memory reads or writes but via two-sided send/receive
-> operations. At least on my setup, these operations are as fast as
-> one-sided remote memory reads or writes. As an example, I obtained the
-> following numbers on my setup (SDR 4x network);
-> ib_write_bw: 933 MB/s.
-> ib_read_bw: 905 MB/s.
-> ib_send_bw: 931 MB/s.
->
->   
-According to these numbers one can think that you don't need RDMA at
-all, just send iSCSI PDUs over IB. The benchmarks that you use are
-synthetic IB benchmarks that are not equivalent to iSCSI over iSER. They
-just send IB packets. I'm not surprised that you got more or less the
-same performance because, AFAIK, ib_send_bw doesn't copy data (unlike
-iSCSI that has to copy data that is sent/received without RDMA).
+Thanks very much Yanmin, I think we can apply your patch as is, if no 
+regression was found for 32bits.
 
-When you use RDMA with iSCSI (i.e. iSER), you don't need to create iSCSI
-PDUs and process them. The CPU is not busy as it is with iSCSI over TCP
-because no data copies are required. Another advantage is that you don't
-need header/data digest because the IB HW does that.
+> 
+> Eric,
+> 
+> I tested your new patch in function loopback_xmit. It has no improvement, while it doesn't
+> introduce new issues. As you tested it on dual-core machine and got improvement, how about
+> merging your patch with mine?
 
-Erez
+No, thank you, that was an experiment and is not related to your findings on 
+dst_entry.
+
+I am currently working on a 'distributed refcount' infrastructure, to be able 
+to spread on several nodes (for NUMA machines) or several cache lines (normal 
+SMP machines)  the high pressure we currently have on some refcnt (struct 
+dst_entry, struct net_device, and many more refcnts ...)
+
+Instead of NR_CPUS allocations, goal is to be able to restrict to a small 
+value like 4, 8 or 16 the number of 32bits entities used to store one refcnt, 
+even if NR_CPUS=4096 or so.
+
+atomic_inc(&p->refcnt) ->  distref_inc(&p->refcnt)
+
+distref_inc(struct distref *p)
+{
+	atomic_inc(myptr[p->offset]);
+}
+
