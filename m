@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYBTCgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbYBTCh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760901AbYBTCgU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbYBTCgI
+	id S1763009AbYBTCh1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:37:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbYBTChO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:36:08 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:54006 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756317AbYBTCgH (ORCPT
+	Tue, 19 Feb 2008 21:37:14 -0500
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:38479 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbYBTChM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:36:07 -0500
-Date: Tue, 19 Feb 2008 18:35:59 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       David Somayajulu <david.somayajulu@qlogic.com>
-Cc: Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Message-ID: <20080220023559.GF23759@plap3.qlogic.org>
-References: <20080219192922.GH31955@cs181133002.pp.htv.fi> <1203473618.3103.37.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203473618.3103.37.camel@localhost.localdomain>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-OriginalArrivalTime: 20 Feb 2008 02:36:06.0716 (UTC) FILETIME=[581DAFC0:01C87369]
+	Tue, 19 Feb 2008 21:37:12 -0500
+Date: Tue, 19 Feb 2008 18:45:28 -0800
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: [PATCH] mm: fix dma_poor_create
+To: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200802191845.28802.yinghai.lu@sun.com>
+Organization: Sun
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 19 Feb 2008, James Bottomley wrote:
 
-> On Tue, 2008-02-19 at 21:29 +0200, Adrian Bunk wrote:
-> > This patch removes dead code spotted by the Coverity checker.
-> > 
-> > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > 
-> > ---
-> > 
-> >  drivers/scsi/qla4xxx/ql4_isr.c |   18 +-----------------
-> >  1 file changed, 1 insertion(+), 17 deletions(-)
-> > 
-> > --- linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c.old	2008-02-19 20:29:16.000000000 +0200
-> > +++ linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c	2008-02-19 20:30:37.000000000 +0200
-> > @@ -91,38 +91,22 @@ static void qla4xxx_status_entry(struct 
-> >  		if (scsi_status == 0) {
-> >  			cmd->result = DID_OK << 16;
-> >  			break;
-> >  		}
-> >  
-> >  		if (sts_entry->iscsiFlags & ISCSI_FLAG_RESIDUAL_OVER) {
-> >  			cmd->result = DID_ERROR << 16;
-> >  			break;
-> >  		}
-> >  
-> > -		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
-> > +		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
-> >  			scsi_set_resid(cmd, residual);
-> > -			if (!scsi_status && ((scsi_bufflen(cmd) - residual) <
-> > -				cmd->underflow)) {
-> > -
-> > -				cmd->result = DID_ERROR << 16;
-> > -
-> > -				DEBUG2(printk("scsi%ld:%d:%d:%d: %s: "
-> > -					"Mid-layer Data underrun0, "
-> > -					"xferlen = 0x%x, "
-> > -					"residual = 0x%x\n", ha->host_no,
-> > -					cmd->device->channel,
-> > -					cmd->device->id,
-> > -					cmd->device->lun, __func__,
-> > -					scsi_bufflen(cmd), residual));
-> > -				break;
-> > -			}
-> > -		}
-> 
-> This code doesn't look dead to me, it looks to be enforcing
-> cmd->underrun if set ... what makes the coverity checker think it can
-> never be executed?
+dev_to_node could return node that without RAM. So check it before use it in kmalloc_node
 
-Hmm, guess it's the earlier 'if (scsi_status == 0)' check a few lines
-up...  Dave S., can you take a look at this...  Thanks, av
+Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+
+diff --git a/mm/dmapool.c b/mm/dmapool.c
+index 34aaac4..6be5b5a 100644
+--- a/mm/dmapool.c
++++ b/mm/dmapool.c
+@@ -128,6 +128,7 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
+ {
+ 	struct dma_pool *retval;
+ 	size_t allocation;
++	int node;
+ 
+ 	if (align == 0) {
+ 		align = 1;
+@@ -152,7 +153,11 @@ struct dma_pool *dma_pool_create(const char *name, struct device *dev,
+ 		return NULL;
+ 	}
+ 
+-	retval = kmalloc_node(sizeof(*retval), GFP_KERNEL, dev_to_node(dev));
++	node = dev_to_node(dev);
++	if (node == -1 || !node_online(node))
++		node = numa_node_id();
++
++	retval = kmalloc_node(sizeof(*retval), GFP_KERNEL, node);
+ 	if (!retval)
+ 		return retval;
+ 
