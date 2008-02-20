@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763996AbYBTOhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764286AbYBTOh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763996AbYBTOhV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759331AbYBTOg7
+	id S1764286AbYBTOh5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbYBTOhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:36:59 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:51186 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758160AbYBTOg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:36:58 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: David Chinner <dgc@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: inode leak in 2.6.24?
-References: <87hcg9hkpp.fsf@szonett.ki.iif.hu>
-	<20080218215344.GM155407@sgi.com> <87skzoanq3.fsf@szonett.ki.iif.hu>
-	<20080220010405.GF155407@sgi.com>
-Date: Wed, 20 Feb 2008 15:36:53 +0100
-In-Reply-To: <20080220010405.GF155407@sgi.com> (David Chinner's message of
-	"Wed, 20 Feb 2008 12:04:06 +1100")
-Message-ID: <87fxvny9ru.fsf@szonett.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 20 Feb 2008 09:37:48 -0500
+Received: from qmta05.emeryville.ca.mail.comcast.net ([76.96.30.48]:52458 "EHLO
+	QMTA05.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751314AbYBTOhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 09:37:47 -0500
+X-Authority-Analysis: v=1.0 c=1 a=rITDv7nW5hcA:10 a=8TLePNenFDic99RKUK0A:9
+ a=d4RbsQrIE7BbMYYZQWkA:7 a=bnbfXHxa-eXCAca4eyb5IkHsjaQA:4 a=igkdSQrOE6AA:10
+To: linux-kernel@vger.kernel.org
+CC: sam@ravnborg.org, jengelh@computergmbh.de, randy.dunlap@oracle.com,
+       Valdis.Kletnieks@vt.edu
+From: Karl Dahlke <eklhad@comcast.net>
+Reply-to: Karl Dahlke <eklhad@comcast.net>
+Subject: adapter, what's in a name
+Date: Wed, 20 Feb 2008 09:37:44 -0500
+Message-ID: <20080120093744.eklhad@comcast.net>
+Mime-Version: 1.0
+Content-type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner <dgc@sgi.com> writes:
+First, my mail client, edbrowse.sourceforge.net,
+doesn't have a reply all function.
+Never needed it.
+Guess I better implement it.   :-)
+Should probably take me a couple days of spare time,
+if I can find a couple days of spare time;
+and I'm sure other users will want it.
+Meantime, I pulled the emails out of the headers and pasted them in.
+Hope that reasonably works.
 
-> The xfs inodes are clearly pinned by the dentry cache, so the issue
-> is dentries, not inodes. What's causing dentries not to be
-> reclaimed?  I can't see anything that cold pin them (e.g. no filp's
-> that would indicate open files being responsible), so my initial
-> thoughts are that memory reclaim may have changed behaviour.
->
-> I guess the first thing to find out is whether memory pressure
-> results in freeing the dentries. To simulate memory pressure causing
-> slab cache reclaim, can you run:
->
-> # echo 2 > /proc/sys/vm/drop_caches
->
-> and see if the number of dentries and inodes drops. If the number
-> goes down significantly, then we aren't leaking dentries and there's
-> been a change in memoy reclaim behaviour. If it stays the same, then
-> we probably are leaking dentries....
+As was pointed out, it is difficult to place an accessibility adapter
+under one particular subsystem.
+Mine takes over the screen, to be a screen reader,
+and it captures tty output, because it is more than just a screen reader,
+it buffers output, exactly as generated, for my review.
+And it uses the serial port to send text to my external synthesizer,
+but sometimes it uses an on-board synth, and all this would be useless
+if it didn't intercept keystrokes to read lines,
+words, letters, and so on.
+And I want to enhance it to do the same thing for usb keyboards.
+It touches many subsystems, and doesn't belong in any one of them over the others.
+It actually changes the computer, in a fundamental way.
+That's why I suggested a new directory drivers/accessibility.
 
-Hi Dave,
+Here is another reason.
+When you run make config, these accessibility adapters belong together logically.
+CONFIG_ACCESSIBILITY
+help:
+Say Y here if you need to adapt this computer for a disabled user.
+Saying Y will not increase the size of your kernel,
+it will only offer various modules that you can use to
+magnify the screen, modify the keyboard, send text to a speech synthesizer,
+and so on.
+If you don't anticipate any disabled users, it is ok to say N.
 
-Thanks for looking into this.  There's no real conclusion yet: the
-simulated memory pressure sent the numbers down allright, but
-meanwhile it turned out that this is a different case: on this machine
-the increase wasn't a constant growth, but related to the daily
-updatedb job.  I'll reload the original kernel on the original
-machine, and collect the same info if the problem reappers.
--- 
-Regards,
-Feri.
+Most people will say N,
+or perhaps M, building everything as modules in case they are needed some day.
+I don't know, it just makes sense to me I guess.
+If we can go along with this,
+I can write a patch for drivers/Makefile and drivers/Kconfig
+that would put this in place.
+
+Karl Dahlke
