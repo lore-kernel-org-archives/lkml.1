@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762268AbYBTVUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764214AbYBTVXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762268AbYBTVUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:20:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbYBTVU1
+	id S1764214AbYBTVXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:23:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbYBTVXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:20:27 -0500
-Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:49110 "EHLO
-	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751806AbYBTVU0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:20:26 -0500
-X-ME-UUID: 20080220212022976.025F47000084@mwinf3109.me.freeserve.com
-Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
-From: Chris Vine <chris@cvine.freeserve.co.uk>
-To: Ivo van Doorn <ivdoorn@gmail.com>
-Cc: Dan Williams <dcbw@redhat.com>, chris2553@googlemail.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rt2400-devel@lists.sourceforge.net
-In-Reply-To: <200802202150.20303.IvDoorn@gmail.com>
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
-	 <1203523555.693.2.camel@localhost.localdomain>
-	 <1203539235.3189.4.camel@boulder.homenet>
-	 <200802202150.20303.IvDoorn@gmail.com>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 21:16:35 +0000
-Message-Id: <1203542195.3240.1.camel@boulder.homenet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 16:23:07 -0500
+Received: from mail.fieldses.org ([66.93.2.214]:44589 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756232AbYBTVXG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 16:23:06 -0500
+Date: Wed, 20 Feb 2008 16:23:02 -0500
+To: David Miller <davem@davemloft.net>
+Cc: jeff@garzik.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] net driver fixes
+Message-ID: <20080220212302.GJ30160@fieldses.org>
+References: <20080220165557.GA18816@havoc.gtf.org> <20080220.131530.18314167.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220.131530.18314167.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 21:50 +0100, Ivo van Doorn wrote:
-[snip]
-> On Wednesday 20 February 2008, Chris Vine wrote:
-> > I did that yesterday and it just reported a kernel panic on the terminal
-> > with the message:
+On Wed, Feb 20, 2008 at 01:15:30PM -0800, David Miller wrote:
+> From: Jeff Garzik <jeff@garzik.org>
+> Date: Wed, 20 Feb 2008 11:55:57 -0500
+> 
 > > 
-> >   Kernel panic - not syncing: Aiee, killing interrupt handler!
+> > Note:  this is based off of Linus's latest commit
+> > (5d9c4a7de64d398604a978d267a6987f1f4025b7), since all my previous
+> > submissions are now upstream (thanks!).
 > 
-> I have an idea, could you try below patch?
-> Note that while applying it will mention something about a line offset, but that can be ignored.
+> The whole point of my not rebasing net-2.6 is so that you can always
+> use it as a base.
 > 
-> This could perhaps also fix the TX/RX issue mentioned earlier in the thread, but I am not
-> quite sure about that.
+> With what you've giving me now I either have to:
+> 
+> 1) Pull in Linus's tree to net-2.6, then pull from you.
+> 
+> 2) Pull in directly from you to get it all.
 
-The patch applied OK (with some offsets as you say) but it doesn't help.
-The kernel panic still occurs when association is attempted.
+Why are either of those a problem?
 
-Chris
-
-
+--b.
