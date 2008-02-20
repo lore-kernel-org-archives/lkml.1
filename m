@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763048AbYBTGAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbYBTGBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763048AbYBTGAT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 01:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYBTGAF
+	id S1764088AbYBTGBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 01:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYBTGBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 01:00:05 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:40496 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752652AbYBTGAD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 01:00:03 -0500
-Date: Tue, 19 Feb 2008 21:53:28 -0800
-From: Greg KH <greg@kroah.com>
-To: Kohei KaiGai <kaigai@ak.jp.nec.com>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: [PATCH] exporting capability code/name pairs (try #6)
-Message-ID: <20080220055328.GA32014@kroah.com>
-References: <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com> <20080219161610.GA3344@kroah.com> <47BBAEE3.6040301@ak.jp.nec.com> <20080220050236.GA20181@kroah.com> <47BBBCC8.7070707@ak.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BBBCC8.7070707@ak.jp.nec.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 20 Feb 2008 01:01:15 -0500
+Received: from nn7.de ([85.214.94.156]:40877 "EHLO nn7.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753945AbYBTGBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 01:01:15 -0500
+Subject: Re: 2.6.25-rc2 regression - hang on suspend
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200802200050.10158.rjw@sisk.pl>
+References: <1203422386.10992.2.camel@localhost>
+	 <200802192206.13350.rjw@sisk.pl> <1203458394.28475.7.camel@localhost>
+	 <200802200050.10158.rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 20 Feb 2008 07:01:09 +0100
+Message-Id: <1203487269.6542.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 02:38:16PM +0900, Kohei KaiGai wrote:
-> Greg KH wrote:
->> On Wed, Feb 20, 2008 at 01:38:59PM +0900, Kohei KaiGai wrote:
->>>>> If we can have a private member in kobj_attribute, we can found the 
->>> content
->>>>> to be returned in a single step.
->>>> Ok, again, just send me a patch that adds this functionality and we will
->>>> be very glad to consider it.
->>> [1/2] Add a private data field within kobj_attribute structure.
->>>
->>> This patch add a private data field, declared as void *, within 
->>> kobj_attribute
->>> structure. Anyone wants to use sysfs can store their private data to 
->>> refer at
->>> _show() and _store() method.
->>> It enables to share a single method function with several similar 
->>> entries,
->>> like ones to export the list of capabilities the running kernel 
->>> supported.
->> But your patch 2/2 doesn't use this interface, why not?
->
-> Really?
-> The following two _show() methods shared by every capabilities refer
-> the private member of kobj_attribute.
->
-> | +static ssize_t capability_name_show(struct kobject *kobj,
-> | +                    struct kobj_attribute *attr,
-> | +                    char *buffer)
-> | +{
-> | +    /* It returns numerical representation of capability. */
-> | +    return scnprintf(buffer, PAGE_SIZE, "%d\n", (int) attr->data);
-> | +}
-> | +
-> | +static ssize_t capability_code_show(struct kobject *kobj,
-> | +                    struct kobj_attribute *attr,
-> | +                    char *buffer)
-> | +{
-> | +    /* It returns symbolic representation of capability. */
-> | +    return scnprintf(buffer, PAGE_SIZE, "%s\n", (char *) attr->data);
-> | +}
+On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
+> On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> > On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
+> > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
+> > > > Hi,
+> > > 
+> > > Hi,
+> > > 
+> > > > since 2.6.25-rc1 (first version I tried) and still in rc2 (and git), I
+> > > > see a hang on s2ram already when trying to suspend.
+> > > 
+> > > Does it work with 2.6.24?
+> > 
+> > yes.
+> 
+> Please take the current mainline (there are a couple of nasty bugs fixed in
+> it), configure it with CONFIG_PM_DEBUG set, boot it with "no_console_suspend",
+> run
+> 
+> # echo 8 > /proc/sys/kernel/printk
+> # echo devices > /sys/power/pm_test
+> # echo mem > /sys/power/state
+> 
+> If it hangs, it should leave a stack trace before and I need that trace to see
+> what's going on.  If it doesn't hang, I'll tell you what to do next.
 
-Ah, sorry, missed that.  I also missed where this was set up as well :(
+I tried with 2.6.24.2 with CONFIG_PM_DEBUG set, following your steps and
+yes it works flawlessly (though the display did not come back I could
+suspend/resume multiple times without problems, and finally s2ram -f -p
+brought the display back).
 
-thanks,
+So what next?
 
-greg k-h
+Soeren
