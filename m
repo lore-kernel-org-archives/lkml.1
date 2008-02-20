@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761932AbYBTRXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762626AbYBTRZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761932AbYBTRXf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:23:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbYBTRXZ
+	id S1762626AbYBTRZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbYBTRZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:23:25 -0500
-Received: from lazybastard.de ([212.112.238.170]:45429 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751863AbYBTRXY (ORCPT
+	Wed, 20 Feb 2008 12:25:11 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:52582 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753609AbYBTRZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:23:24 -0500
-Date: Wed, 20 Feb 2008 18:22:50 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Stephane Chazelas <stephane.chazelas@emerson.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
-Message-ID: <20080220172250.GA6873@lazybastard.org>
-References: <chaz20080212134751.GI30304@artesyncp.com> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <200802192333.39707.arnd@arndb.de> <chaz20080220144339.GK4539@artesyncp.com> <20080220163042.GC5539@lazybastard.org> <chaz20080220170231.GV4539@artesyncp.com>
+	Wed, 20 Feb 2008 12:25:09 -0500
+Date: Thu, 21 Feb 2008 01:24:49 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Milan Broz <mbroz@redhat.com>
+Cc: "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       dm-crypt@saout.de
+Subject: Re: 2.6.25-rc[1,2]: failed to setup dm-crypt key mapping
+Message-ID: <20080220172449.GD27726@gondor.apana.org.au>
+References: <8f53421d0802192343v2267cb66ub579d4503e3b7eb1@mail.gmail.com> <47BC0DA9.1030607@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <chaz20080220170231.GV4539@artesyncp.com>
+In-Reply-To: <47BC0DA9.1030607@redhat.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 February 2008 17:02:31 +0000, Stephane Chazelas wrote:
+On Wed, Feb 20, 2008 at 12:23:21PM +0100, Milan Broz wrote:
+>
+> It seems that some module dependency was lost, 
+> dm-crypt with async crypto depends now on crypto_blkcipher module
+> for this configuration.
 > 
-> sorry, I wasn't very clear.
-> 
-> With "loop", you're doing an ioctl() to /dev/loop<x> so that
-> /dev/loop<x> become a block device associated with a given file.
-> 
-> Applying that strictly to block2mtd wouldn't make sense.
-> 
-> At the moment, when you create a new block2mtd, the only thing
-> you see is an entry in /proc/mtd.
-> 
-> You don't access that mtd device directly (there's no
-> /dev/mtd<x>). Instead, you may access it via a /dev/mtdblock<x>
-> if you have "block2mtd" for instance.
+> Herbert, any following change required for dm-crypt or it is only
+> crypto subsystem issue?
+> (With old kernel/dm-crypt it loads "blkcipher" not "crypto_blkcipher",
+> maybe some initramdisk change required too...)
 
-Actually, there is /dev/mtd<x>.  Enable CONFIG_MTD_CHAR.
+Right blkcipher was renamed to crypto_blkcipher due to the merge
+of blkcipher/ablkcipher.  If this is causing a problem with the
+initramfs then we need to fix the initramfs tools to look at the
+actual dependencies rather than hard-coding it.
 
-> Here, what you need, is an API that gets a block device (with fd
-> or path) and an erase size and that returns a mtd identifier.
-
-Erase size is a real difference, agreed.  Otherwise the loop analogy is
-quite good.  Occasionally people are asking for file->mtd translation as
-well.
-
-Jörn
-
+Cheers,
 -- 
-To announce that there must be no criticism of the President, or that we
-are to stand by the President, right or wrong, is not only unpatriotic
-and servile, but is morally treasonable to the American public.
--- Theodore Roosevelt, Kansas City Star, 1918
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
