@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbYBTDAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764419AbYBTDBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbYBTDAo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:00:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYBTDAf
+	id S1764419AbYBTDBU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbYBTDBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:00:35 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:44605 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751350AbYBTDAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:00:34 -0500
-Date: Tue, 19 Feb 2008 21:00:31 -0600
-From: Robin Holt <holt@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 2/6] mmu_notifier: Callbacks to invalidate address
-	ranges
-Message-ID: <20080220030031.GC11364@sgi.com>
-References: <20080215064859.384203497@sgi.com> <20080215064932.620773824@sgi.com> <200802201008.49933.nickpiggin@yahoo.com.au> <20080220010038.GQ7128@v2.random>
+	Tue, 19 Feb 2008 22:01:07 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:53373 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751350AbYBTDBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 22:01:05 -0500
+Message-ID: <47BB977D.5090406@cn.fujitsu.com>
+Date: Wed, 20 Feb 2008 10:59:09 +0800
+From: Shi Weihua <shiwh@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080220010038.GQ7128@v2.random>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Roland McGrath <roland@redhat.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 1/5] signal(x86_32): Improve the signal stack overflow
+ check
+References: <47B95C4D.6080000@cn.fujitsu.com>	<20080218134720.GA28851@elte.hu>	<47BA299A.3040207@cn.fujitsu.com>	<20080219185009.122ED2701BA@magilla.localdomain>	<47BB7922.1010400@cn.fujitsu.com>	<20080220011822.C510B2701BA@magilla.localdomain>	<47BB83E2.1030504@cn.fujitsu.com>	<20080220014419.B85D02701BA@magilla.localdomain>	<47BB8F05.3050001@cn.fujitsu.com> <20080220024928.0EE172701BA@magilla.localdomain>
+In-Reply-To: <20080220024928.0EE172701BA@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 02:00:38AM +0100, Andrea Arcangeli wrote:
-> On Wed, Feb 20, 2008 at 10:08:49AM +1100, Nick Piggin wrote:
-> > You can't sleep inside rcu_read_lock()!
-> > 
-> > I must say that for a patch that is up to v8 or whatever and is
-> > posted twice a week to such a big cc list, it is kind of slack to
-> > not even test it and expect other people to review it.
+Roland McGrath wrote::
+>> I spent some time read you mail carefully and dig into the code again.
+>>
+>> And yes, you are right. It's possible that SA_ONSTACK has been cleared
+>> before the second signal on the same stack comes.
 > 
-> Well, xpmem requirements are complex. As as side effect of the
-> simplicity of my approach, my patch is 100% safe since #v1. Now it
-> also works for GRU and it cluster invalidates.
-> 
-> > Also, what we are going to need here are not skeleton drivers
-> > that just do all the *easy* bits (of registering their callbacks),
-> > but actual fully working examples that do everything that any
-> > real driver will need to do. If not for the sanity of the driver
-> 
-> I've a fully working scenario for my patch, infact I didn't post the
-> mmu notifier patch until I got KVM to swap 100% reliably to be sure I
-> would post something that works well. mmu notifiers are already used
-> in KVM for:
-> 
-> 1) 100% reliable and efficient swapping of guest physical memory
-> 2) copy-on-writes of writeprotect faults after ksm page sharing of guest
->    physical memory
-> 3) ballooning using madvise to give the guest memory back to the host
-> 
-> My implementation is the most handy because it requires zero changes
-> to the ksm code too (no explicit mmu notifier calls after
-> ptep_clear_flush) and it's also 100% safe (no mess with schedules over
-> rcu_read_lock), no "atomic" parameters, and it doesn't open a window
-> where sptes have a view on older pages and linux pte has view on newer
-> pages (this can happen with remap_file_pages with my KVM swapping
-> patch to use V8 Christoph's patch).
-> 
-> > Also, how to you resolve the case where you are not allowed to sleep?
-> > I would have thought either you have to handle it, in which case nobody
-> > needs to sleep; or you can't handle it, in which case the code is
-> > broken.
-> 
-> I also asked exactly this, glad you reasked this too.
+> It's not necessary for SA_ONSTACK to have "been cleared", by which I assume
+> you mean a sigaction call with SA_ONSTACK not set in sa_flags.  That is
+> indeed possible, but it's not the only case your patch broke.  It can just
+> be a different signal whose sigaction never had SA_ONSTACK, when you are
+> still on the signal stack from an earlier signal that did have SA_ONSTACK.
 
-Currently, we BUG_ON having a PFN in our tables and not being able
-to sleep.  These are mappings which MPT has never supported in the past
-and XPMEM was already not allowing page faults for VMAs which are not
-anonymous so it should never happen.  If the file-backed operations can
-ever get changed to allow for sleeping and a customer has a need for it,
-we would need to change XPMEM to allow those types of faults to succeed.
+Thanks for your explanation.
 
-Thanks,
-Robin
+> 
+>> So this patch is wrong  :( . I will revise the other 4 patches.
+> 
+> For 2 and 3, I would rather just wait until we unify signal.c anyway.
+
+Ok. I see.
+
