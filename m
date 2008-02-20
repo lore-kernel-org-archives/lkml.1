@@ -1,126 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761494AbYBTFj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757810AbYBTFsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761494AbYBTFj0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 00:39:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbYBTFjR
+	id S1757810AbYBTFsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 00:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753403AbYBTFsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 00:39:17 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36418 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752940AbYBTFjP (ORCPT
+	Wed, 20 Feb 2008 00:48:12 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:39692 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753106AbYBTFsK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 00:39:15 -0500
-Message-ID: <47BBBCC8.7070707@ak.jp.nec.com>
-Date: Wed, 20 Feb 2008 14:38:16 +0900
-From: Kohei KaiGai <kaigai@ak.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: "Serge E. Hallyn" <serue@us.ibm.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       akpm@osdl.org, "Andrew G. Morgan" <morgan@kernel.org>,
-       jmorris@namei.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, adobriyan@gmail.com
-Subject: Re: [PATCH] exporting capability code/name pairs (try #6)
-References: <47B4ED1B.6070206@ak.jp.nec.com> <47B4F1C5.9010408@cn.fujitsu.com> <47B4FFE0.3000702@ak.jp.nec.com> <20080215183802.GA3925@sergelap.austin.ibm.com> <20080215185003.GA7495@kroah.com> <47B92FF5.1080301@ak.jp.nec.com> <20080218074056.GA19915@kroah.com> <47B945BA.2060107@ak.jp.nec.com> <20080219161610.GA3344@kroah.com> <47BBAEE3.6040301@ak.jp.nec.com> <20080220050236.GA20181@kroah.com>
-In-Reply-To: <20080220050236.GA20181@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 00:48:10 -0500
+To: menage@google.com
+Cc: kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, balbir@in.ibm.com,
+       xemul@openvz.org
+Subject: Re: [PATCH 0/2] cgroup map files: Add a key/value map file type to
+ cgroups
+In-Reply-To: Your message of "Tue, 19 Feb 2008 21:15:44 -0800"
+	<20080220051544.018684000@menage.corp.google.com>
+References: <20080220051544.018684000@menage.corp.google.com>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20080220054809.86BFC1E3C58@siro.lan>
+Date: Wed, 20 Feb 2008 14:48:09 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Feb 20, 2008 at 01:38:59PM +0900, Kohei KaiGai wrote:
->>>> If we can have a private member in kobj_attribute, we can found the 
->> content
->>>> to be returned in a single step.
->>> Ok, again, just send me a patch that adds this functionality and we will
->>> be very glad to consider it.
->> [1/2] Add a private data field within kobj_attribute structure.
->>
->> This patch add a private data field, declared as void *, within 
->> kobj_attribute
->> structure. Anyone wants to use sysfs can store their private data to refer 
->> at
->> _show() and _store() method.
->> It enables to share a single method function with several similar entries,
->> like ones to export the list of capabilities the running kernel supported.
+> These patches add a new cgroup control file output type - a map from
+> strings to u64 values - and make use of it for the memory controller
+> "stat" file.
 > 
-> But your patch 2/2 doesn't use this interface, why not?
-
-Really?
-The following two _show() methods shared by every capabilities refer
-the private member of kobj_attribute.
-
-| +static ssize_t capability_name_show(struct kobject *kobj,
-| +                    struct kobj_attribute *attr,
-| +                    char *buffer)
-| +{
-| +    /* It returns numerical representation of capability. */
-| +    return scnprintf(buffer, PAGE_SIZE, "%d\n", (int) attr->data);
-| +}
-| +
-| +static ssize_t capability_code_show(struct kobject *kobj,
-| +                    struct kobj_attribute *attr,
-| +                    char *buffer)
-| +{
-| +    /* It returns symbolic representation of capability. */
-| +    return scnprintf(buffer, PAGE_SIZE, "%s\n", (char *) attr->data);
-| +}
-
->>  include/linux/kobject.h |    1 +
->>  include/linux/sysfs.h   |    7 +++++++
->>  2 files changed, 8 insertions(+), 0 deletions(-)
->>
->> diff --git a/include/linux/kobject.h b/include/linux/kobject.h
->> index caa3f41..57d5bf1 100644
->> --- a/include/linux/kobject.h
->> +++ b/include/linux/kobject.h
->> @@ -130,6 +130,7 @@ struct kobj_attribute {
->>  			char *buf);
->>  	ssize_t (*store)(struct kobject *kobj, struct kobj_attribute *attr,
->>  			 const char *buf, size_t count);
->> +	void *data;	/* a private field */
+> It is intended for use when the subsystem wants to return a collection
+> of values that are related in some way, for which a separate control
+> file for each value would make the reporting unwieldy.
 > 
-> Hm, can you really use this?
-
-Yes,
-
->>  extern struct sysfs_ops kobj_sysfs_ops;
->> diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
->> index 8027104..6f40ff9 100644
->> --- a/include/linux/sysfs.h
->> +++ b/include/linux/sysfs.h
->> @@ -50,6 +50,13 @@ struct attribute_group {
->>  	.store	= _store,					\
->>  }
->>
->> +#define __ATTR_DATA(_name,_mode,_show,_store,_data) {		\
->> +	.attr = {.name = __stringify(_name), .mode = _mode },   \
->> +	.show	= _show,					\
->> +	.store	= _store,					\
->> +	.data	= (void *)(_data),				\
->> +}
+> The advantages of this are:
 > 
-> I don't see how this would be any different from the original?  You are
-> always passed a kobject, which can be embedded in anything else.
+> - more standardized output from control files that report
+> similarly-structured data
+> 
+> - less boilerplate required in cgroup subsystems
+> 
+> - simplifies transition to a future efficient cgroups binary API
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
 
-The intension of the latest patch is same as the version which uses
-capability_attribute structure.
-It enables to store the content to be returned in the expanded field.
-Applying kobj_attribute killed needs to declare my own structure.
+it changes the format from "%s %lld" to "%s: %llu", right?
+why?
 
-However, every entries had its own _show() method, generated by macros
-automatically, in the previous version. It fundamentally differ from
-the latest one.
-
-> Could you also modify the documentation and the sample code to use this
-> new field, showing how it is to be used, and testing that it works
-> properly at the same time?
-
-OK, Please wait for a while.
-
-Thanks,
--- 
-OSS Platform Development Division, NEC
-KaiGai Kohei <kaigai@ak.jp.nec.com>
+YAMAMOTO Takashi
