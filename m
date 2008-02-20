@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbYBTPew@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932145AbYBTPf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933055AbYBTPew (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:34:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbYBTP23
+	id S932145AbYBTPf1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:35:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932390AbYBTP2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:28:29 -0500
-Received: from viefep25-int.chello.at ([62.179.121.45]:26340 "EHLO
-	viefep25-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932343AbYBTP2U (ORCPT
+	Wed, 20 Feb 2008 10:28:55 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:45544 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932364AbYBTP2x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:28:20 -0500
-X-SourceIP: 80.56.237.116
-Message-Id: <20080220150308.890418000@chello.nl>
-References: <20080220144610.548202000@chello.nl>
-User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:38 +0100
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 28/28] nfs: fix various memory recursions possible with swap over NFS.
-Content-Disposition: inline; filename=nfs-alloc-recursions.patch
+	Wed, 20 Feb 2008 10:28:53 -0500
+Message-ID: <47BC4734.1070806@s5r6.in-berlin.de>
+Date: Wed, 20 Feb 2008 16:28:52 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
+MIME-Version: 1.0
+To: Karl Dahlke <eklhad@comcast.net>
+CC: linux-kernel@vger.kernel.org, sam@ravnborg.org, jengelh@computergmbh.de,
+       randy.dunlap@oracle.com, Valdis.Kletnieks@vt.edu
+Subject: Re: adapter, what's in a name
+References: <20080120093744.eklhad@comcast.net>
+In-Reply-To: <20080120093744.eklhad@comcast.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GFP_NOFS is not enough, since swap traffic is IO, hence fall back to GFP_NOIO.
+Karl Dahlke wrote:
+> As was pointed out, it is difficult to place an accessibility adapter
+> under one particular subsystem.
+> Mine takes over the screen, to be a screen reader,
+> and it captures tty output, because it is more than just a screen reader,
+> it buffers output, exactly as generated, for my review.
+> And it uses the serial port to send text to my external synthesizer,
+> but sometimes it uses an on-board synth, and all this would be useless
+> if it didn't intercept keystrokes to read lines,
+> words, letters, and so on.
+> And I want to enhance it to do the same thing for usb keyboards.
+> It touches many subsystems, and doesn't belong in any one of them over the others.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- fs/nfs/pagelist.c |    2 +-
- fs/nfs/write.c    |    6 +++---
- 2 files changed, 4 insertions(+), 4 deletions(-)
+I would expect that these various functions are implemented in a modular
+fashion, thus also giving some flexibility regarding the file layout of
+the source code.
 
-Index: linux-2.6/fs/nfs/write.c
-===================================================================
---- linux-2.6.orig/fs/nfs/write.c
-+++ linux-2.6/fs/nfs/write.c
-@@ -44,7 +44,7 @@ static struct kmem_cache *nfs_wdata_cach
- 
- struct nfs_write_data *nfs_commit_alloc(void)
- {
--	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -68,7 +68,7 @@ void nfs_commit_free(struct nfs_write_da
- 
- struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
- {
--	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
-+	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOIO);
- 
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
-@@ -77,7 +77,7 @@ struct nfs_write_data *nfs_writedata_all
- 		if (pagecount <= ARRAY_SIZE(p->page_array))
- 			p->pagevec = p->page_array;
- 		else {
--			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
-+			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOIO);
- 			if (!p->pagevec) {
- 				kmem_cache_free(nfs_wdata_cachep, p);
- 				p = NULL;
-Index: linux-2.6/fs/nfs/pagelist.c
-===================================================================
---- linux-2.6.orig/fs/nfs/pagelist.c
-+++ linux-2.6/fs/nfs/pagelist.c
-@@ -27,7 +27,7 @@ static inline struct nfs_page *
- nfs_page_alloc(void)
- {
- 	struct nfs_page	*p;
--	p = kmem_cache_alloc(nfs_page_cachep, GFP_KERNEL);
-+	p = kmem_cache_alloc(nfs_page_cachep, GFP_NOIO);
- 	if (p) {
- 		memset(p, 0, sizeof(*p));
- 		INIT_LIST_HEAD(&p->wb_list);
+> Here is another reason.
+> When you run make config, these accessibility adapters belong together logically.
+> CONFIG_ACCESSIBILITY
+> help:
+> Say Y here if you need to adapt this computer for a disabled user.
+> Saying Y will not increase the size of your kernel,
+> it will only offer various modules that you can use to
+> magnify the screen, modify the keyboard, send text to a speech synthesizer,
+> and so on.
+> If you don't anticipate any disabled users, it is ok to say N.
 
---
-
+I agree that it makes a lot of sense to group all of these drivers into
+a common menu.  The menu layout doesn't have to be entirely the same as
+the source code files layout (it never is the same in the last
+consequence anyway), but it would of course help to keep config menu
+layout and source files layout mostly aligned.
+-- 
+Stefan Richter
+-=====-==--- --=- =-=--
+http://arcgraph.de/sr/
