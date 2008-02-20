@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbYBTPol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765639AbYBTPpL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764703AbYBTPol (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:44:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbYBTPob
+	id S1765639AbYBTPpL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:45:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbYBTPoc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:44:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.186]:62507 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752874AbYBTPoa (ORCPT
+	Wed, 20 Feb 2008 10:44:32 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34237 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753070AbYBTPob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:44:30 -0500
-Message-ID: <47BC4AAE.8020908@anagramm.de>
-Date: Wed, 20 Feb 2008 16:43:42 +0100
-From: Clemens Koller <clemens.koller@anagramm.de>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 20 Feb 2008 10:44:31 -0500
+Date: Wed, 20 Feb 2008 10:42:35 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-ID: <20080220154235.GD30305@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20080211203146.3d28d1a0@laptopd505.fenrus.org> <1202791555.20739.6.camel@heimdal.trondhjem.org> <20080212051136.GA12802@mit.edu> <20080211221535.bc0dc9cf.akpm@linux-foundation.org> <20080212225716.cf695fe4.sfr@canb.auug.org.au> <20080214081405.GA20791@flint.arm.linux.org.uk> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au> <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org> <20080221015511.1b54d4d3.sfr@canb.auug.org.au> <47BC498C.6000400@s5r6.in-berlin.de>
 MIME-Version: 1.0
-To: linux-fbdev-devel@lists.sourceforge.net
-CC: Andrew Morton <akpm@linux-foundation.org>, adaplas@gmail.com,
-       benh@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-References: <20080205154432.GA8749@localhost.localdomain>	<20080214224942.a0cb6218.akpm@linux-foundation.org>	<20080215164542.GB16810@localhost.localdomain>	<Pine.LNX.4.64.0802171030330.6848@anakin>	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>	<19805.1203355811@turing-police.cc.vt.edu>	<47BA162C.5000807@anagramm.de> <1203381353.6740.59.camel@pasglop>	<47BABD3A.7010102@anagramm.de>	<20080219040530.7b1d115d.akpm@linux-foundation.org> <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-In-Reply-To: <18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1+X3/4EnLclbiQkYcdOPa9+gl2Uf0vgAhUY9T8
- 6G5J3SGyXSrfwJfx9k9Y+HF0FE4Zvib6Di44Tn0tZkNMzp9IFr
- c0jrSmnkNXqmWQRNPUz2w==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BC498C.6000400@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras schrieb:
-> Andrew Morton writes:
+On Wed, Feb 20, 2008 at 04:38:52PM +0100, Stefan Richter wrote:
+> Two things may largely eliminate the need for parallel branches.
 > 
->> Bizarrely, the original author of the patch (Anton) has fallen off the cc. 
->> Could whoever did that please thwap himself?
->>
->> Anyway, my head is now officially spinning.  Did anyone actually have a
->> reason why we shouldn't proceed with Anton's patch?
+> 1. Do infrastructure changes and whole tree wide refactoring etc. in a
+> compatible manner with a brief but nonzero transition period.
 > 
-> I was wondering if it would be sufficient to provide alternative
-> versions of fb_readl, fb_writel etc. that do byte-swapping.  That
-> would mean that all framebuffers would have to have the same
-> endianness, but that would suffice for embedded systems such as
-> Anton's and would end up a lot simpler IMHO.
+> 2. Insert a second merge window right after the usual merge window for
+> changes which cannot be well done with a transition period.
 
-Yes. At least the affected PowerPC platforms can do byte-swapping on
-the fly, so this should be sufficient and without performance
-penalty, AFAICS.
+A third option would be if people add new functions (with no users) in
+-rc2 or -rc3 timeframes as long as it is part of a fully reviewed
+patch with users that will use those new features in various kernel
+development trees.
 
-Regards,
+Since there wouldn't be any users in Linus's tree, there's no risk in
+making those functions available in mainline ahead of time.
 
-Clemens
+						- Ted
