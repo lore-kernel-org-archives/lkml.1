@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762935AbYBTSKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763367AbYBTSMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762935AbYBTSKv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752982AbYBTSK3
+	id S1763367AbYBTSMF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:12:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbYBTSLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:10:29 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49401 "EHLO mx1.redhat.com"
+	Wed, 20 Feb 2008 13:11:52 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49524 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757583AbYBTSK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:10:28 -0500
+	id S1751582AbYBTSLv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:11:51 -0500
 Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
 	Kingdom.
@@ -17,12 +17,12 @@ Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
 	David Owens (Ireland)
 From: David Howells <dhowells@redhat.com>
 Subject: [PATCH 2/2] FRV: Change the timerfd syscalls to be the same as i386
-To: torvalds@osdl.org, apkm@linux-foundation.org, gorcunov@gmail.com
+To: torvalds@osdl.org, akpm@linux-foundation.org, gorcunov@gmail.com
 Cc: sam@ravnborg.org, linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 20 Feb 2008 18:10:19 +0000
-Message-ID: <20080220181019.11052.17220.stgit@warthog.procyon.org.uk>
-In-Reply-To: <20080220181014.11052.31263.stgit@warthog.procyon.org.uk>
-References: <20080220181014.11052.31263.stgit@warthog.procyon.org.uk>
+Date: Wed, 20 Feb 2008 18:11:44 +0000
+Message-ID: <20080220181144.11136.28517.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20080220181139.11136.57460.stgit@warthog.procyon.org.uk>
+References: <20080220181139.11136.57460.stgit@warthog.procyon.org.uk>
 User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
