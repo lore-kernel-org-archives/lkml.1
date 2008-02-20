@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbYBTRaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763300AbYBTRbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbYBTRaa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 12:30:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYBTRaH
+	id S1763300AbYBTRbG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 12:31:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbYBTRau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 12:30:07 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52600 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752973AbYBTRaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 12:30:05 -0500
-Date: Wed, 20 Feb 2008 09:28:54 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: Jesse Barnes <jesse.barnes@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
- Screen becomes green.
-In-Reply-To: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-Message-ID: <alpine.LFD.1.00.0802200922590.7833@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 20 Feb 2008 12:30:50 -0500
+Received: from gateway.drzeus.cx ([85.8.24.16]:50680 "EHLO smtp.drzeus.cx"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754292AbYBTRat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 12:30:49 -0500
+Date: Wed, 20 Feb 2008 18:30:41 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+Message-ID: <20080220183041.46c16ef0@mjolnir.drzeus.cx>
+In-Reply-To: <Pine.LNX.4.44L0.0802201136170.5630-100000@iolanthe.rowland.org>
+References: <20080219232338.E9A24108068@picon.linux-foundation.org>
+	<Pine.LNX.4.44L0.0802201136170.5630-100000@iolanthe.rowland.org>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 20 Feb 2008 11:42:56 -0500 (EST)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-
-On Thu, 21 Feb 2008, Jeff Chua wrote:
+> > 
+> > ------- Comment #14 from rjw@sisk.pl  2008-02-19 15:23 -------
+> > Thanks a lot for the debugging work!
+> > 
+> > First, the patch triggers, which means that the problem discovered by Alan is
+> > troubling us.  [Alan, do you have an idea how to fix that cleanly?]
 > 
-> After inserting "return 0;" right at the top of those two functions, suspend
-> (and power-off properly), and resume (without green screen) works just fine.
+> I suggest we ask the maintainer for the MMC subsystem.
 > 
-> I would like to know what they're for.
+> Pierre, you can find the details in the bugzilla entry.  Briefly,
+> there's a pathway in the MMC core suspend routine (if the driver
+> doesn't implement a resume hook) which could lead to the host being
+> removed during a system suspend.  This is an illegal operation and it
+> will deadlock.
+> 
+> Do you have a suggestion for a way to fix it?
+> 
 
-Try suspend-and-resume without X.
+Not really. But you have some things confused. What it checks is if the mmc bus handler (not a proper driver model, just a way of separating the MMC, SD and SDIO stuff) has a resume function. And if it doesn't, it removes the card (since it cannot revive it at resume).
 
-Also, try it on one of the more modern laptops - even *with* X.
+So the only thing I can think of is to delay the removal until the resume routine, if that is safer.
 
-Basically, the kernel wants to be able to do what X does, because it means 
-that when it works, it works _so_ much better than doing it in X. So 
-getting it working is definitely worth it.
+Rgds
+-- 
+     -- Pierre Ossman
 
-That said, before you do anything else, try if suspend-to-RAM works. 
-
-That's the primary goal for this code anyway, and if it works that gives a 
-good hint. Suspend-to-disk is fundamentally different, and it's entirely 
-possible that for the suspend-to-disk case we should just say "screw 
-trying to suspend/resume graphics", since you'll have the BIOS resuming 
-text-mode anyway, and there are no performance or debugging advantages.
-
-		Linus
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
