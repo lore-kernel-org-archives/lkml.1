@@ -1,46 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765418AbYBTPyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932187AbYBTPyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765418AbYBTPyY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:54:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbYBTPyO
+	id S932187AbYBTPyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764902AbYBTPyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:54:14 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:58065 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751462AbYBTPyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:54:13 -0500
-Date: Thu, 21 Feb 2008 00:54:32 +0900 (JST)
-Message-Id: <20080221.005432.07645461.anemo@mba.ocn.ne.jp>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: David Brownell <david-b@pacbell.net>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH] atmel_spi: support zero length transfer
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 20 Feb 2008 10:54:21 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59774 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764765AbYBTPyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 10:54:19 -0500
+Message-ID: <47BC4D26.2080102@sgi.com>
+Date: Wed, 20 Feb 2008 07:54:14 -0800
+From: Mike Travis <travis@sgi.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Eric Dumazet <dada1@cosmosbay.com>
+CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, Jack Steiner <steiner@sgi.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andy Whitcroft <apw@shadowen.org>, Randy Dunlap <rdunlap@xenotime.net>,
+       Joel Schopp <jschopp@austin.ibm.com>
+Subject: Re: [PATCH 1/2] x86_64: Fold pda into per cpu area v3
+References: <20080219203335.866324000@polaris-admin.engr.sgi.com>	<20080219203336.046039000@polaris-admin.engr.sgi.com>	<20080220120747.GA13695@elte.hu> <20080220141659.45ec31fa.dada1@cosmosbay.com>
+In-Reply-To: <20080220141659.45ec31fa.dada1@cosmosbay.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A spi transfer with zero length is not invalid.  Such transfer can be
-used to achieve delay before first CLK edge after chipselect assertion.
+Eric Dumazet wrote:
+> On Wed, 20 Feb 2008 13:07:47 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+>> * Mike Travis <travis@sgi.com> wrote:
+>>
+>>>   * Declare the pda as a per cpu variable. This will move the pda area
+>>>     to an address accessible by the x86_64 per cpu macros.  
+>>>     Subtraction of __per_cpu_start will make the offset based from the 
+>>>     beginning of the per cpu area.  Since %gs is pointing to the pda, 
+>>>     it will then also point to the per cpu variables and can be 
+>>>     accessed thusly:
+>>>
+>>> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
+>> randconfig QA on x86.git found a crash on x86.git#testing with 
+>> nmi_watchdog=2 (config attached) - and i bisected it down to this patch.
+>>
+>> config and crashlog attached. You can pick up x86.git#testing via:
+>>
+>>   http://people.redhat.com/mingo/x86.git/README
+>>
+>> (since i had to hand-merge the patch when integrating it, i've attached 
+>> the merged version below.)
+>>
+>> 	Ingo
+>>
+>> -------------->
+>> Subject: x86_64: Fold pda into per cpu area v3
+>> From: Mike Travis <travis@sgi.com>
+>> Date: Tue, 19 Feb 2008 12:33:36 -0800
+>>
+>>   * Declare the pda as a per cpu variable. This will move the pda area
+>>     to an address accessible by the x86_64 per cpu macros.  Subtraction
+>>     of __per_cpu_start will make the offset based from the beginning
+>>     of the per cpu area.  Since %gs is pointing to the pda, it will
+>>     then also point to the per cpu variables and can be accessed thusly:
+>>
+>> 	%gs:[&per_cpu_xxxx - __per_cpu_start]
+>>
+>>   * The boot_pdas are only needed in head64.c so move the declaration
+>>     over there.  And since the boot_cpu_pda is only used during
+>>     bootup and then copied to the per_cpu areas during init, it is
+>>     then removable.  In addition, the initial cpu_pda pointer table
+>>     is reallocated to be the correct size for the number of cpus.
+>>
+>>   * Remove the code that allocates special pda data structures.
+>>     Since the percpu area is currently maintained for all possible
+>>     cpus then the pda regions will stay intact in case cpus are
+>>     hotplugged off and then back on.
+>>
+>>   * Relocate the x86_64 percpu variables to begin at zero. Then
+>>     we can directly use the x86_32 percpu operations. x86_32
+>>     offsets %fs by __per_cpu_start. x86_64 has %gs pointing
+>>     directly to the pda and the per cpu area thereby allowing
+>>     access to the pda with the x86_64 pda operations and access
+>>     to the per cpu variables using x86_32 percpu operations.
+>>
+>>   * This also supports further integration of x86_32/64.
+>>
+>> Cc:	Andy Whitcroft <apw@shadowen.org>
+>> Cc:	Randy Dunlap <rdunlap@xenotime.net>
+>> Cc:	Joel Schopp <jschopp@austin.ibm.com>
+>> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>> Signed-off-by: Mike Travis <travis@sgi.com>
+>> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  arch/x86/Kconfig                 |    3 +
+>>  arch/x86/kernel/head64.c         |   41 ++++++++++++++++++++++++
+>>  arch/x86/kernel/setup64.c        |   66 ++++++++++++++++++++++++---------------
+>>  arch/x86/kernel/smpboot_64.c     |   16 ---------
+>>  arch/x86/kernel/vmlinux_64.lds.S |    1 
+>>  include/asm-x86/pda.h            |   13 +++++--
+>>  include/asm-x86/percpu.h         |   33 +++++++++++--------
+>>  7 files changed, 115 insertions(+), 58 deletions(-)
+>>
+>> Index: linux-x86.q/arch/x86/Kconfig
+>> ===================================================================
+>> --- linux-x86.q.orig/arch/x86/Kconfig
+>> +++ linux-x86.q/arch/x86/Kconfig
+>> @@ -122,6 +122,9 @@ config ARCH_HAS_CPU_RELAX
+>>  config HAVE_SETUP_PER_CPU_AREA
+>>  	def_bool X86_64
+>>  
+>> +config HAVE_ZERO_BASED_PER_CPU
+>> +	def_bool X86_64
+>> +
+>>  config ARCH_HIBERNATION_POSSIBLE
+>>  	def_bool y
+>>  	depends on !SMP || !X86_VOYAGER
+>> Index: linux-x86.q/arch/x86/kernel/head64.c
+>> ===================================================================
+>> --- linux-x86.q.orig/arch/x86/kernel/head64.c
+>> +++ linux-x86.q/arch/x86/kernel/head64.c
+>> @@ -11,6 +11,7 @@
+>>  #include <linux/string.h>
+>>  #include <linux/percpu.h>
+>>  #include <linux/start_kernel.h>
+>> +#include <linux/bootmem.h>
+>>  
+>>  #include <asm/processor.h>
+>>  #include <asm/proto.h>
+>> @@ -23,6 +24,12 @@
+>>  #include <asm/kdebug.h>
+>>  #include <asm/e820.h>
+>>  
+>> +#ifdef CONFIG_SMP
+>> +/* Only used before the per cpu areas are setup. */
+>> +static struct x8664_pda boot_cpu_pda[NR_CPUS] __initdata;
+>> +static struct x8664_pda *_cpu_pda_init[NR_CPUS] __initdata;
+>> +#endif
+>> +
+>>  static void __init zap_identity_mappings(void)
+>>  {
+>>  	pgd_t *pgd = pgd_offset_k(0UL);
+>> @@ -102,8 +109,14 @@ void __init x86_64_start_kernel(char * r
+>>  
+>>  	early_printk("Kernel alive\n");
+>>  
+>> +#ifdef CONFIG_SMP
+>> +	_cpu_pda = (void *)_cpu_pda_init;
+>>   	for (i = 0; i < NR_CPUS; i++)
+>>   		cpu_pda(i) = &boot_cpu_pda[i];
+>> +#endif
+>> +
+>> +	/* setup percpu segment offset for cpu 0 */
+>> +	cpu_pda(0)->data_offset = (unsigned long)__per_cpu_load;
+>>  
+>>  	pda_init(0);
+>>  	copy_bootdata(__va(real_mode_data));
+>> @@ -128,3 +141,31 @@ void __init x86_64_start_kernel(char * r
+>>  
+>>  	start_kernel();
+>>  }
+>> +
+>> +#ifdef	CONFIG_SMP
+>> +/*
+>> + * Remove initial boot_cpu_pda array and cpu_pda pointer table.
+>> + *
+>> + * This depends on setup_per_cpu_areas relocating the pda to the beginning
+>> + * of the per_cpu area so that (_cpu_pda[i] != &boot_cpu_pda[i]).  If it
+>> + * is equal then the new pda has not been setup for this cpu, and the pda
+>> + * table will have a NULL address for this cpu.
+>> + */
+>> +void __init x86_64_cleanup_pda(void)
+>> +{
+>> +	int i;
+>> +
+>> +	_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
+> 
+> Here we allocate an array of [nr_cpu_ids] slots
+> 
+>> +
+>> +	if (!_cpu_pda)
+>> +		panic("Cannot allocate cpu pda table\n");
+>> +
+>> +	/* cpu_pda() now points to allocated cpu_pda_table */
+>> +
+>> +	for (i = 0; i < NR_CPUS; i++)
+> 
+> But in this loop we want to read/write on [NR_CPUS] slots of this array
+> 
+>> +		if (_cpu_pda_init[i] == &boot_cpu_pda[i])
+>> +			cpu_pda(i) = NULL;
+>> +		else
+>> +			cpu_pda(i) = _cpu_pda_init[i];
+>> +}
+>> +#endif
+> 
+> You might want to apply this patch.
+> 
+> I also wonder if _cpu_pda should be set only at the very end of 
+> x86_64_cleanup_pda(), after array initialization, or maybe other
+> cpus are not yet running ? (Sorry I cannot boot test this patch at this momeent)
+> 
+> [PATCH] x86_64: x86_64_cleanup_pda() should use nr_cpu_ids instead of NR_CPUS
+> 
+> We allocate an array of nr_cpu_ids pointers, so we should respect its bonds.
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
-index 293b7ca..5dff5e0 100644
---- a/drivers/spi/atmel_spi.c
-+++ b/drivers/spi/atmel_spi.c
-@@ -606,7 +606,7 @@ static int atmel_spi_transfer(struct spi_device *spi, struct spi_message *msg)
- 		return -ESHUTDOWN;
- 
- 	list_for_each_entry(xfer, &msg->transfers, transfer_list) {
--		if (!(xfer->tx_buf || xfer->rx_buf)) {
-+		if (!(xfer->tx_buf || xfer->rx_buf) && xfer->len) {
- 			dev_dbg(&spi->dev, "missing rx or tx buf\n");
- 			return -EINVAL;
- 		}
+> 
+> Delay change of _cpu_pda after array initialization.
+> 
+> Also take into account that alloc_bootmem_low() :
+> - calls panic() if not enough memory
+> - already clears allocated memory
+> 
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+> diff --git a/arch/x86/kernel/head64.c b/arch/x86/kernel/head64.c
+> index 3942e6a..21532eb 100644
+> --- a/arch/x86/kernel/head64.c
+> +++ b/arch/x86/kernel/head64.c
+> @@ -154,18 +154,16 @@ void __init x86_64_start_kernel(char * real_mode_data)
+>  void __init x86_64_cleanup_pda(void)
+>  {
+>  	int i;
+> +	struct x8664_pda **new_cpu_pda;
+>  
+> -	_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
+> +	new_cpu_pda = alloc_bootmem_low(nr_cpu_ids * sizeof(void *));
+>  
+> -	if (!_cpu_pda)
+> -		panic("Cannot allocate cpu pda table\n");
+>  
+> +	for (i = 0; i < nr_cpu_ids; i++)
+> +		if (_cpu_pda_init[i] != &boot_cpu_pda[i])
+> +			new_cpu_pda[i] = _cpu_pda_init[i];
+> +	mb();
+> +	_cpu_pda = new_cpu_pda;
+>  	/* cpu_pda() now points to allocated cpu_pda_table */
+> -
+> -	for (i = 0; i < NR_CPUS; i++)
+> -		if (_cpu_pda_init[i] == &boot_cpu_pda[i])
+> -			cpu_pda(i) = NULL;
+> -		else
+> -			cpu_pda(i) = _cpu_pda_init[i];
+>  }
+>  #endif
+
+
+Yes, thank you!  I had changed this in a later version ... I must have grabbed
+an earlier version to do the patch split.  (But I did not have the memory barrier.)
+
+At this point only the boot cpu is running and we're in the time slot between
+allocating per cpu areas and sched_init().
+
+I'm just building an x86.git#testing branch.  I will see if I can't replicate
+the problem.
+
+Thanks again,
+Mike
