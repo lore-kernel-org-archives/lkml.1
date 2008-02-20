@@ -1,93 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764293AbYBTWTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765789AbYBTWUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764293AbYBTWTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756400AbYBTWSy
+	id S1765789AbYBTWUh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:20:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754658AbYBTWU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:18:54 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33257 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbYBTWSw (ORCPT
+	Wed, 20 Feb 2008 17:20:26 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:25269 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752093AbYBTWUY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:18:52 -0500
-Date: Thu, 21 Feb 2008 00:18:49 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Patrick McHardy <kaber@trash.net>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 3/8] [NET]: uninline dev_alloc_skb, de-bloats a lot
-In-Reply-To: <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0802202135080.32171@kivilampi-30.cs.helsinki.fi>
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
- <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
- <Pine.LNX.4.64.0802201651580.26109@fbirervta.pbzchgretzou.qr>
- <47BC54FB.2050508@trash.net> <Pine.LNX.4.64.0802201730240.26109@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 17:20:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=xq7qE4Ickx7ytsaK6wy/jAisMtZv1wEquo04j97pQxjiTXz/mK/5Siphhy30AwakhyUSn+foZySFysq6xf4Foo3zXfC10aEYrGlru7P5jti76n+SMt/kQZVPpbDvapLFtkBlg9EEAy+jDXAqWAA7rEk0J6cREJUdZy6Q+v4LHK4=  ;
+X-YMail-OSG: nsEdpekVM1lLCAzbEqsZYip60PjDThOqG4DWfxzp_0pIAJoW
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: USB OOPS 2.6.25-rc2-git1
+Date: Wed, 20 Feb 2008 13:56:28 -0800
+User-Agent: KMail/1.9.6
+Cc: Andre Tomt <andre@tomt.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+References: <Pine.LNX.4.44L0.0802201606430.7212-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0802201606430.7212-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200802201356.28723.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, Jan Engelhardt wrote:
-
+On Wednesday 20 February 2008, Alan Stern wrote:
+> > ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
 > 
-> On Feb 20 2008 17:27, Patrick McHardy wrote:
-> >> Striking. How can this even happen? A callsite which calls
-> >> 
-> >>  dev_alloc_skb(n)
-> >> 
-> >> is just equivalent to
-> >> 
-> >>  __dev_alloc_skb(n, GFP_ATOMIC);
-> >> 
-> >> which means there's like 4 (or 8 if it's long) bytes more on the
-> >> stack. For a worst case, count in another 8 bytes for push and pop or mov on
-> >> the stack. But that still does not add up to 23 kb.
+> lines in the log brings up some ideas that have been percolating in my 
+> mind for a while.  They have to do with the possibility of a race 
+> between the watchdog routine and assertion of IAA.
 
-I think you misunderstood the results, if I uninlined dev_alloc_skb(), it 
-_alone_ was uninlined which basically means that __dev_alloc_skb() that is 
-inline as well is included inside that uninlined function.
+The curious bit IMO being STS_INT (0001), which should also have
+triggered an IRQ.  Suggesting to me that the race might be lower
+level than that ... at the level of a conflict between the various
+mechanisms to ack irqs.
 
-When both were inlined, they add up to everywhere, and uninlining 
-dev_alloc_skb alone mitigates that for both(!) of them in every place 
-where dev_alloc_skb is being called. Because __dev_alloc_skb call sites 
-are few, most benefits show up already with dev_alloc_skb uninlining 
-alone. On the other hand, if __dev_alloc_skb is uninlined, the size 
-reasoning you used above applies to dev_alloc_skb callsites, and that
-is definately less than 23kB.
-
-> > __dev_alloc_skb() is also an inline function which performs
-> > some extra work. Which raises the question - if dev_alloc_skb()
-> > is uninlined, shouldn't __dev_alloc_skb() be uninline as well?
-
-Of course that could be done as well, however, I wouldn't be too keen to 
-deepen callchain by both of them, ie., uninlined dev_alloc_skb would just 
-contain few bytes which perform the call to __dev_alloc_skb which has the 
-bit larger content due to that "extra work". IMHO the best solution would 
-duplicate the "extra work" to both of them on binary level (obviously 
-not on the source level), e.g., by adding static inline ___dev_alloc_skb() 
-to .h which is inlined to both of the variants. I'm not too sure if inline 
-to __dev_alloc_skb() alone is enough in .c file to result in inlining of 
-__dev_alloc_skb to dev_alloc_skb (with all gcc versions and relevant 
-optimization settings).
-
-> I'd like to see the results when {__dev_alloc_skb is externed
-> and dev_alloc_skb remains inlined}.
-
-The results are right under your nose already... ;-)
-See from the list of the series introduction:
-
-  http://marc.info/?l=linux-netdev&m=120351526210711&w=2
-
-IMHO more interesting number (which I currently don't have) is the 
-_remaining_ benefits of uninlining __dev_alloc_skb after
-dev_alloc_skb was first uninlined.
+See the appended patch (Andre, this is the additional one I meant)
+for a tweak at that level.
 
 
--- 
- i.
+> In fact, if the timing comes out just wrong then it's possible (on SMP
+> systems) for an IAA interrupt to arrive when the watchdog
+> routine has already started running.  Then end_unlink_async() might get 
+> called right at the start of a new IAA cycle, or when the reclaim list 
+> is empty.
+
+The driver's spinlock should prevent that particular problem from
+appearing.
+
+- Dave
+
+
+========= CUT HERE
+Modify EHCI irq handling on the theory that at least some of the
+"lost" IRQs are caused by goofage between multiple lowlevel IRQ
+acking mechanisms:  try rescanning before we exit the handler, in
+case the EHCI-internal ack (by clearing the irq status) doesn't
+always suffice for IRQs triggered nearly back-to-back.
+
+---
+ drivers/usb/host/ehci-hcd.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+--- g26.orig/drivers/usb/host/ehci-hcd.c	2008-02-20 13:26:00.000000000 -0800
++++ g26/drivers/usb/host/ehci-hcd.c	2008-02-20 13:54:37.000000000 -0800
+@@ -638,6 +638,8 @@ static irqreturn_t ehci_irq (struct usb_
+ 		return IRQ_NONE;
+ 	}
+ 
++retrigger:
++
+ 	/* clear (just) interrupts */
+ 	ehci_writel(ehci, status, &ehci->regs->status);
+ 	cmd = ehci_readl(ehci, &ehci->regs->command);
+@@ -725,6 +727,12 @@ dead:
+ 
+ 	if (bh)
+ 		ehci_work (ehci);
++
++	status = ehci_readl(ehci, &ehci->regs->status);
++	status &= INTR_MASK;
++	if (status)
++		goto retrigger;
++
+ 	spin_unlock (&ehci->lock);
+ 	if (pcd_status & STS_PCD)
+ 		usb_hcd_poll_rh_status(hcd);
