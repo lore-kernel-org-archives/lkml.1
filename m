@@ -1,76 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933468AbYBTUOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765670AbYBTUQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933468AbYBTUOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 15:14:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbYBTUOb
+	id S1765670AbYBTUQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 15:16:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbYBTUQQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 15:14:31 -0500
-Received: from mho-02-bos.mailhop.org ([63.208.196.179]:61857 "EHLO
-	mho-02-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbYBTUOa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 15:14:30 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 12.53.176.4
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.mailhop.org/outbound/abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19x5vPDOJR3GkynG84Z+Eln
-Message-ID: <47BC89F5.90305@reed.com>
-Date: Wed, 20 Feb 2008 15:13:41 -0500
-From: "David P. Reed" <dpreed@reed.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.9) Gecko/20071115 Fedora/2.0.0.9-1.fc8 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Wed, 20 Feb 2008 15:16:16 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:58202 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752782AbYBTUQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 15:16:14 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 21:14:42 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: "Jeff Chua" <jeff.chua.linux@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201118.08468.jesse.barnes@intel.com> <200802201209.03807.jesse.barnes@intel.com>
+In-Reply-To: <200802201209.03807.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: Rene Herman <rene.herman@keyaccess.nl>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Dmitry Torokhov <dtor_core@ameritech.net>, linux-kernel@vger.kernel.org
-Subject: Re: [linux-kernel] Re: [PATCH] x86: use explicit timing delay for
- pit accesses in kernel and pcspkr driver
-References: <6gr00g$g7qpu0@smtp01.lnh.mail.rcn.net> <47B9ECE0.70000@keyaccess.nl> <47B9EDF1.5050404@zytor.com> <47B9F2EC.4070308@keyaccess.nl> <47B9FC3A.2010508@zytor.com> <47B9FFD5.6040801@keyaccess.nl> <47BA002B.7070806@zytor.com> <47BA0188.6000808@keyaccess.nl> <47BA077B.50401@keyaccess.nl> <47BA0A3D.1060708@zytor.com> <47BC17BE.9010800@keyaccess.nl> <47BC5DF4.9020300@zytor.com> <47BC5EE3.5090101@keyaccess.nl>
-In-Reply-To: <47BC5EE3.5090101@keyaccess.nl>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802202114.43007.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Actually, disparaging things as "one idiotic system" doesn't seem like a 
-long-term thoughtful process - it's not even accurate.  There are more 
-such systems that are running code today than the total number of 486 
-systems ever manufactured.  The production rate is $1M/month.
+On Wednesday, 20 of February 2008, Jesse Barnes wrote:
+> On Wednesday, February 20, 2008 11:18 am Jesse Barnes wrote:
+> > On Wednesday, February 20, 2008 11:10 am Jeff Chua wrote:
+> > > On Feb 21, 2008 2:53 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
+> > > > > So, next I'll try "shutdown" to see if it work. I was using
+> > > > > "platform".
+> > > >
+> > > > Ok, that would be good to try.
+> > >
+> > > "shutdown" does power down properly. But still green on resume.
+> >
+> > Ok, so Linus' theory about something later in the resume path trying to
+> > touch video is looking good.
+> >
+> > Rafael, is there anyway to prevent the device shutdown in the hibernate
+> > path?
+> 
+> Given the way the PM core works, do we need to set a flag like this?  I really 
+> hope there's a better way of doing this...
 
-a) ENE chips are "documented" to receive port 80, and also it is the 
-case that modern chipsets will happily diagnose writes to non-existent 
-ports as MCE's.   Using side effects that depend on non-existent ports 
-just creates a brittle failure mode down the road.  And it's not just 
-post ACPI "initialization".   The pcspkr use of port 80 caused solid 
-freezes if you typed "tab" to complete a command line and there were 
-more than one choice, leading to beeps.
+I think we should export the target sleep state somehow.
 
-b) sad to say, Linux is not what hardware vendors use as the system that 
-their BIOSes MUST work with.  That's Windows, and Windows, whether we 
-like it or not does not require hardware vendors to stay away from port 80.
-
-IMHO, calling something "idiotic" is hardly evidence-based decision 
-making.   Maybe you love to hate Microsoft, but until Intel writes an 
-architecture standard that says explicitly that a "standard PC" must not 
-use port 80 for any peripheral, the port 80 thing is folklore, and one 
-that is solely Linux-defined.
-
-Rene Herman wrote:
-> On 20-02-08 18:05, H. Peter Anvin wrote:
+> diff --git a/drivers/char/drm/i915_drv.c b/drivers/char/drm/i915_drv.c
+> index 4048f39..a2d6242 100644
+> --- a/drivers/char/drm/i915_drv.c
+> +++ b/drivers/char/drm/i915_drv.c
+> @@ -238,6 +238,13 @@ static void i915_restore_vga(struct drm_device *dev)
 >  
->> Rene Herman wrote:
->>>
->>> _Something_ like this would seem to be the only remaining option. It 
->>> seems fairly unuseful to #ifdef around that switch statement for 
->>> kernels without support for the earlier families, but if you insist...
->>>
->>
->> "Only remaining option" other than the one we've had all along.  Even 
->> on the one idiotic set of systems which break, it only breaks 
->> post-ACPI intialization, IIRC.
->
-> Linus vetoed the DMI switch.
->
-> Rene.
->
+>  }
+>  
+> +/*
+> + * If we're doing a suspend to disk, we don't want to power off the device.
+> + * Unfortunately, the PM core doesn't tell us if we're headed for a regular
+> + * S3 state or that it's about to shut down the machine, so we use this flag.
+> + */
+> +static int i915_hibernate;
+> +
+>  static int i915_suspend(struct drm_device *dev, pm_message_t state)
+>  {
+>  	struct drm_i915_private *dev_priv = dev->dev_private;
+> @@ -252,6 +259,9 @@ static int i915_suspend(struct drm_device *dev, 
+> pm_message_t state)
+>  	if (state.event == PM_EVENT_PRETHAW)
+>  		return 0;
+>  
+> +	if (state.event == PM_EVENT_FREEZE)
+> +		i915_hibernate = 1;
+> +
+>  	pci_save_state(dev->pdev);
+>  	pci_read_config_byte(dev->pdev, LBB, &dev_priv->saveLBB);
+>  
+> @@ -366,7 +376,7 @@ static int i915_suspend(struct drm_device *dev, 
+> pm_message_t state)
+>  
+>  	i915_save_vga(dev);
+>  
+> -	if (state.event == PM_EVENT_SUSPEND) {
+> +	if (!i915_hibernate) {
+>  		/* Shut down the device */
+>  		pci_disable_device(dev->pdev);
+>  		pci_set_power_state(dev->pdev, PCI_D3hot);
+> @@ -385,6 +395,8 @@ static int i915_resume(struct drm_device *dev)
+>  	if (pci_enable_device(dev->pdev))
+>  		return -1;
+>  
+> +	i915_hibernate = 0;
+> +
+>  	pci_write_config_byte(dev->pdev, LBB, dev_priv->saveLBB);
+>  
+>  	/* Pipe & plane A info */
+
+Then, the .resume() called after the image creation will clear the flag and I
+don't think it's safe to allow it to survive i915_resume() ...
+
+Thanks,
+Rafael
