@@ -1,28 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbYBTQvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758627AbYBTQvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756604AbYBTQvQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 11:51:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbYBTQut
+	id S1758627AbYBTQvv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 11:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbYBTQvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 11:50:49 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:48779 "EHLO mail.dvmed.net"
+	Wed, 20 Feb 2008 11:51:40 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:48825 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750751AbYBTQus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 11:50:48 -0500
-Message-ID: <47BC5A62.2030701@garzik.org>
-Date: Wed, 20 Feb 2008 11:50:42 -0500
+	id S1757201AbYBTQvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 11:51:37 -0500
+Message-ID: <47BC5A94.8060908@garzik.org>
+Date: Wed, 20 Feb 2008 11:51:32 -0500
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>
-Subject: Re: [PATCH] ehea: add kdump support
-References: <47B30A49.8080404@de.ibm.com>
-In-Reply-To: <47B30A49.8080404@de.ibm.com>
+To: Leonardo Potenza <lpotenza@inwind.it>
+CC: kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net/cs89x0.c: compilation warning fix
+References: <200802171823.15759.lpotenza@inwind.it>
+In-Reply-To: <200802171823.15759.lpotenza@inwind.it>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 X-Spam-Score: -4.4 (----)
@@ -32,21 +28,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Klein wrote:
-> This patch adds kdump support to the ehea driver. As the firmware doesn't free
-> resource handles automatically, the driver has to run an as simple as possible
-> free resource function in case of a crash shutdown. The function iterates over
-> two arrays freeing all resource handles which are stored there. The arrays are
-> kept up-to-date during normal runtime. The crash handler fn is triggered by the
-> recently introduced PPC crash shutdown reg/unreg functions.
+Leonardo Potenza wrote:
+> From: Leonardo Potenza <lpotenza@inwind.it>
 > 
+> Suppress the warning message about the 'netcard_portlist' defined but not used.
 > 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
+> Signed-off-by: Leonardo Potenza <lpotenza@inwind.it>
 > ---
->  drivers/net/ehea/ehea.h      |   34 +++++-
->  drivers/net/ehea/ehea_main.c |  281 ++++++++++++++++++++++++++++++++++++++----
->  2 files changed, 290 insertions(+), 25 deletions(-)
+> 
+> When building cs89x0 as a module, the following warning message is generated:
+> drivers/net/cs89x0.c:198: warning: 'netcard_portlist' defined but not used
+> 
+> Since the netcard_portlist is not so big, I just marked the array as __used.
 
 applied
 
