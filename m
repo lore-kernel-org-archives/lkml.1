@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbYBTWAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934612AbYBTWBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbYBTWAr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 17:00:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760790AbYBTWAa
+	id S934612AbYBTWBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 17:01:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbYBTWBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 17:00:30 -0500
-Received: from gw.goop.org ([64.81.55.164]:44397 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760500AbYBTWA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 17:00:27 -0500
-Message-ID: <47BCA275.7000504@goop.org>
-Date: Wed, 20 Feb 2008 13:58:13 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 20 Feb 2008 17:01:38 -0500
+Received: from Mycroft.westnet.com ([216.187.52.7]:52350 "EHLO
+	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756432AbYBTWBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 17:01:37 -0500
 MIME-Version: 1.0
-To: Ian Campbell <ijc@hellion.org.uk>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Joel Becker <Joel.Becker@oracle.com>,
-       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>
-Subject: Re: 2.6.25-rc1 xen pvops regression
-References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com> <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
-In-Reply-To: <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18364.41753.194174.253318@stoffel.org>
+Date: Wed, 20 Feb 2008 17:00:57 -0500
+From: "John Stoffel" <john@stoffel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "John Stoffel" <john@stoffel.org>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cyclades: Prepare for relaxed locking in callers
+In-Reply-To: <20080220214847.1a5590c3@core>
+References: <20080220201216.40d70747@core>
+	<18364.39445.347911.402466@stoffel.org>
+	<20080220214847.1a5590c3@core>
+X-Mailer: VM 8.0.x-xemacs-542 under Emacs 22.1.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> On Tue, 2008-02-19 at 23:43 -0800, H. Peter Anvin wrote:
->   
->> Ian Campbell wrote:
->>     
->>> On Mon, 2008-02-18 at 02:40 -0800, Joel Becker wrote:
->>>       
->>>> On Sun, Feb 17, 2008 at 06:49:21PM +0000, Ian Campbell wrote:
->>>>         
->>>>> x86/xen: Do not scan for DMI unless the DMI region is reserved by e820.
->>>>>           
->>>> 	This fixed it.  I'm now booting successfully.  Thank you!
->>>>         
->>> Excellent. Jeremy, are you happy for this to go in?
->>>       
+>>>>> "Alan" == Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-I had no problem with it, but Peter's objection seems substantial enough.
+Alan> On Wed, 20 Feb 2008 16:22:29 -0500
+Alan> "John Stoffel" <john@stoffel.org> wrote:
 
-> As far as the actual change goes I was assuming that any machine that
-> has DMI/SMBIOS would easily be new enough to have an E820 which could be
-> expected to reserve this region. Looks like I was mistaken about how
-> long E820 had been around and/or how reliably it is used to reserve the
-> tables.
->
-> Anyway, will have to think of another solution.
->   
+>> 
+Alan> Basically wrap it in lock_kernel where it is hard to prove the
+Alan> locking is ok.
+>> 
+>> I've got cyclades cards, both ISA and Serial.  Do you want/need any
+>> specific tests?  Or should I just send you (or your deputy) the ISA
+>> card for your collection?
 
-Well, the way we've handled this kind of thing elsewhere is to just 
-reserve that pseudophys address space in earlish Xen init code and fill 
-it with not-DMI things (zero, I guess).  It's a bit of a waste of 
-memory, but maybe we can recover it once DMI has given up and gone 
-away.  This also makes it easy to insert faked-up DMI info if that turns 
-out to be useful.
+Alan> At the moment its fairly tricky to test unless you want to hack
+Alan> your tree up further. The patch prepares for stuff that I've not
+Alan> yet sent Andrew. I want to make sure we haven't broken anything
+Alan> before sending the small patches to fire it all up.
 
+Ok, please feel free to keep me in mind for testing. I've still got
+ISA box(en) here up and running and being used.  As well as my
+Cyclom-Y PCI card in actual use still.
 
-    J
+John
+
