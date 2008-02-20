@@ -1,286 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765419AbYBTPXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764758AbYBTPXt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765419AbYBTPXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 10:23:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764297AbYBTPT1
+	id S1764758AbYBTPXt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 10:23:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbYBTPTa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 10:19:27 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:42513 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753370AbYBTPSh (ORCPT
+	Wed, 20 Feb 2008 10:19:30 -0500
+Received: from viefep11-int.chello.at ([62.179.121.31]:61610 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753565AbYBTPSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 10:18:37 -0500
-X-SourceIP: 80.56.237.116
-Message-Id: <20080220150307.208040000@chello.nl>
-References: <20080220144610.548202000@chello.nl>
+	Wed, 20 Feb 2008 10:18:39 -0500
+Message-Id: <20080220144610.548202000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Wed, 20 Feb 2008 15:46:25 +0100
+Date: Wed, 20 Feb 2008 15:46:10 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        linux-mm@kvack.org, netdev@vger.kernel.org, trond.myklebust@fys.uio.no
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 15/28] netvm: network reserve infrastructure
-Content-Disposition: inline; filename=netvm-reserve.patch
+Subject: [PATCH 00/28] Swap over NFS -v16
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide the basic infrastructure to reserve and charge/account network memory.
+Hi,
 
-We provide the following reserve tree:
+Another posting of the full swap over NFS series. 
 
-1)  total network reserve
-2)    network TX reserve
-3)      protocol TX pages
-4)    network RX reserve
-5)      SKB data reserve
+Andrew/Linus, could we start thinking of sticking this in -mm?
 
-[1] is used to make all the network reserves a single subtree, for easy
-manipulation.
+[ patches against 2.6.25-rc2-mm1, also to be found online at:
+  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v2.6.25-rc2-mm1/ ]
 
-[2] and [4] are merely for eastetic reasons.
+The patch-set can be split in roughtly 5 parts, for each of which I shall give
+a description.
 
-The TX pages reserve [3] is assumed bounded by it being the upper bound of
-memory that can be used for sending pages (not quite true, but good enough)
 
-The SKB reserve [5] is an aggregate reserve, which is used to charge SKB data
-against in the fallback path.
+  Part 1, patches 1-11
 
-The consumers for these reserves are sockets marked with:
-  SOCK_MEMALLOC
+The problem with swap over network is the generic swap problem: needing memory
+to free memory. Normally this is solved using mempools, as can be seen in the
+BIO layer.
 
-Such sockets are to be used to service the VM (iow. to swap over). They
-must be handled kernel side, exposing such a socket to user-space is a BUG.
+Swap over network has the problem that the network subsystem does not use fixed
+sized allocations, but heavily relies on kmalloc(). This makes mempools
+unusable.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/net/sock.h |   35 +++++++++++++++-
- net/Kconfig        |    3 +
- net/core/sock.c    |  113 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 150 insertions(+), 1 deletion(-)
+This first part provides a generic reserve framework. This framework
+could also be used to get rid of some of the __GFP_NOFAIL users.
 
-Index: linux-2.6/include/net/sock.h
-===================================================================
---- linux-2.6.orig/include/net/sock.h
-+++ linux-2.6/include/net/sock.h
-@@ -51,6 +51,7 @@
- #include <linux/skbuff.h>	/* struct sk_buff */
- #include <linux/mm.h>
- #include <linux/security.h>
-+#include <linux/reserve.h>
- 
- #include <linux/filter.h>
- 
-@@ -405,6 +406,7 @@ enum sock_flags {
- 	SOCK_RCVTSTAMPNS, /* %SO_TIMESTAMPNS setting */
- 	SOCK_LOCALROUTE, /* route locally only, %SO_DONTROUTE setting */
- 	SOCK_QUEUE_SHRUNK, /* write queue has been shrunk recently */
-+	SOCK_MEMALLOC, /* the VM depends on us - make sure we're serviced */
- };
- 
- static inline void sock_copy_flags(struct sock *nsk, struct sock *osk)
-@@ -427,9 +429,40 @@ static inline int sock_flag(struct sock 
- 	return test_bit(flag, &sk->sk_flags);
- }
- 
-+static inline int sk_has_memalloc(struct sock *sk)
-+{
-+	return sock_flag(sk, SOCK_MEMALLOC);
-+}
-+
-+/*
-+ * Guestimate the per request queue TX upper bound.
-+ *
-+ * Max packet size is 64k, and we need to reserve that much since the data
-+ * might need to bounce it. Double it to be on the safe side.
-+ */
-+#define TX_RESERVE_PAGES DIV_ROUND_UP(2*65536, PAGE_SIZE)
-+
-+extern atomic_t memalloc_socks;
-+
-+extern struct mem_reserve net_rx_reserve;
-+extern struct mem_reserve net_skb_reserve;
-+
-+static inline int sk_memalloc_socks(void)
-+{
-+	return atomic_read(&memalloc_socks);
-+}
-+
-+extern int rx_emergency_get(int bytes);
-+extern int rx_emergency_get_overcommit(int bytes);
-+extern void rx_emergency_put(int bytes);
-+
-+extern int sk_adjust_memalloc(int socks, long tx_reserve_pages);
-+extern int sk_set_memalloc(struct sock *sk);
-+extern int sk_clear_memalloc(struct sock *sk);
-+
- static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
- {
--	return gfp_mask;
-+	return gfp_mask | (sk->sk_allocation & __GFP_MEMALLOC);
- }
- 
- static inline void sk_acceptq_removed(struct sock *sk)
-Index: linux-2.6/net/core/sock.c
-===================================================================
---- linux-2.6.orig/net/core/sock.c
-+++ linux-2.6/net/core/sock.c
-@@ -112,6 +112,7 @@
- #include <linux/tcp.h>
- #include <linux/init.h>
- #include <linux/highmem.h>
-+#include <linux/reserve.h>
- 
- #include <asm/uaccess.h>
- #include <asm/system.h>
-@@ -213,6 +214,111 @@ __u32 sysctl_rmem_default __read_mostly 
- /* Maximal space eaten by iovec or ancilliary data plus some space */
- int sysctl_optmem_max __read_mostly = sizeof(unsigned long)*(2*UIO_MAXIOV+512);
- 
-+atomic_t memalloc_socks;
-+
-+static struct mem_reserve net_reserve;
-+struct mem_reserve net_rx_reserve;
-+EXPORT_SYMBOL_GPL(net_rx_reserve); /* modular ipv6 only */
-+struct mem_reserve net_skb_reserve;
-+EXPORT_SYMBOL_GPL(net_skb_reserve); /* modular ipv6 only */
-+static struct mem_reserve net_tx_reserve;
-+static struct mem_reserve net_tx_pages;
-+
-+
-+/*
-+ * is there room for another emergency packet?
-+ */
-+static int __rx_emergency_get(int bytes, bool overcommit)
-+{
-+	return mem_reserve_kmalloc_charge(&net_skb_reserve, bytes, overcommit);
-+}
-+
-+int rx_emergency_get(int bytes)
-+{
-+	return __rx_emergency_get(bytes, false);
-+}
-+
-+int rx_emergency_get_overcommit(int bytes)
-+{
-+	return __rx_emergency_get(bytes, true);
-+}
-+
-+void rx_emergency_put(int bytes)
-+{
-+	mem_reserve_kmalloc_charge(&net_skb_reserve, -bytes, 0);
-+}
-+
-+/**
-+ *	sk_adjust_memalloc - adjust the global memalloc reserve for critical RX
-+ *	@socks: number of new %SOCK_MEMALLOC sockets
-+ *	@tx_resserve_pages: number of pages to (un)reserve for TX
-+ *
-+ *	This function adjusts the memalloc reserve based on system demand.
-+ *	The RX reserve is a limit, and only added once, not for each socket.
-+ *
-+ *	NOTE:
-+ *	   @tx_reserve_pages is an upper-bound of memory used for TX hence
-+ *	   we need not account the pages like we do for RX pages.
-+ */
-+int sk_adjust_memalloc(int socks, long tx_reserve_pages)
-+{
-+	int nr_socks;
-+	int err;
-+
-+	err = mem_reserve_pages_add(&net_tx_pages, tx_reserve_pages);
-+	if (err)
-+		return err;
-+
-+	nr_socks = atomic_read(&memalloc_socks);
-+	if (!nr_socks && socks > 0)
-+		err = mem_reserve_connect(&net_reserve, &mem_reserve_root);
-+	nr_socks = atomic_add_return(socks, &memalloc_socks);
-+	if (!nr_socks && socks)
-+		err = mem_reserve_disconnect(&net_reserve);
-+
-+	if (err)
-+		mem_reserve_pages_add(&net_tx_pages, -tx_reserve_pages);
-+
-+	return err;
-+}
-+
-+/**
-+ *	sk_set_memalloc - sets %SOCK_MEMALLOC
-+ *	@sk: socket to set it on
-+ *
-+ *	Set %SOCK_MEMALLOC on a socket and increase the memalloc reserve
-+ *	accordingly.
-+ */
-+int sk_set_memalloc(struct sock *sk)
-+{
-+	int set = sock_flag(sk, SOCK_MEMALLOC);
-+#ifndef CONFIG_NETVM
-+	BUG();
-+#endif
-+	if (!set) {
-+		int err = sk_adjust_memalloc(1, 0);
-+		if (err)
-+			return err;
-+
-+		sock_set_flag(sk, SOCK_MEMALLOC);
-+		sk->sk_allocation |= __GFP_MEMALLOC;
-+	}
-+	return !set;
-+}
-+EXPORT_SYMBOL_GPL(sk_set_memalloc);
-+
-+int sk_clear_memalloc(struct sock *sk)
-+{
-+	int set = sock_flag(sk, SOCK_MEMALLOC);
-+	if (set) {
-+		sk_adjust_memalloc(-1, 0);
-+		sock_reset_flag(sk, SOCK_MEMALLOC);
-+		sk->sk_allocation &= ~__GFP_MEMALLOC;
-+	}
-+	return set;
-+}
-+EXPORT_SYMBOL_GPL(sk_clear_memalloc);
-+
- static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
- {
- 	struct timeval tv;
-@@ -968,6 +1074,7 @@ void sk_free(struct sock *sk)
- {
- 	struct sk_filter *filter;
- 
-+	sk_clear_memalloc(sk);
- 	if (sk->sk_destruct)
- 		sk->sk_destruct(sk);
- 
-@@ -1095,6 +1202,12 @@ void __init sk_init(void)
- 		sysctl_wmem_max = 131071;
- 		sysctl_rmem_max = 131071;
- 	}
-+
-+	mem_reserve_init(&net_reserve, "total network reserve", NULL);
-+	mem_reserve_init(&net_rx_reserve, "network RX reserve", &net_reserve);
-+	mem_reserve_init(&net_skb_reserve, "SKB data reserve", &net_rx_reserve);
-+	mem_reserve_init(&net_tx_reserve, "network TX reserve", &net_reserve);
-+	mem_reserve_init(&net_tx_pages, "protocol TX pages", &net_tx_reserve);
- }
- 
- /*
-Index: linux-2.6/net/Kconfig
-===================================================================
---- linux-2.6.orig/net/Kconfig
-+++ linux-2.6/net/Kconfig
-@@ -250,6 +250,9 @@ endmenu
- source "net/rfkill/Kconfig"
- source "net/9p/Kconfig"
- 
-+config NETVM
-+	def_bool n
-+
- endif   # if NET
- endmenu # Networking
- 
+Care is taken to only affect the slow paths - when we're low on memory.
 
---
+Caveats: it currently doesn't do SLOB.
+
+ 1 - mm: gfp_to_alloc_flags()
+ 2 - mm: tag reseve pages
+ 3 - mm: sl[au]b: add knowledge of reserve pages
+ 4 - mm: kmem_estimate_pages()
+ 5 - mm: allow PF_MEMALLOC from softirq context
+ 6 - mm: serialize access to min_free_kbytes
+ 7 - mm: emergency pool
+ 8 - mm: system wide ALLOC_NO_WATERMARK
+ 9 - mm: __GFP_MEMALLOC
+10 - mm: memory reserve management
+11 - selinux: tag avc cache alloc as non-critical
+
+
+  Part 2, patches 12-14
+
+Provide some generic network infrastructure needed later on.
+
+12 - net: wrap sk->sk_backlog_rcv()
+13 - net: packet split receive api
+14 - net: sk_allocation() - concentrate socket related allocations
+
+
+  Part 3, patches 15-21
+
+Now that we have a generic memory reserve system, use it on the network stack.
+The thing that makes this interesting is that, contrary to BIO, both the
+transmit and receive path require memory allocations. 
+
+That is, in the BIO layer write back completion is usually just an ISR flipping
+a bit and waking stuff up. A network write back completion involved receiving
+packets, which when there is no memory, is rather hard. And even when there is
+memory there is no guarantee that the required packet comes in in the window
+that that memory buys us.
+
+The solution to this problem is found in the fact that network is to be assumed
+lossy. Even now, when there is no memory to receive packets the network card
+will have to discard packets. What we do is move this into the network stack.
+
+So we reserve a little pool to act as a receive buffer, this allows us to
+inspect packets before tossing them. This way, we can filter out those packets
+that ensure progress (writeback completion) and disregard the others (as would
+have happened anyway). [ NOTE: this is a stable mode of operation with limited
+memory usage, exactly the kind of thing we need ]
+
+Again, care is taken to keep much of the overhead of this to only affect the
+slow path. Only packets allocated from the reserves will suffer the extra
+atomic overhead needed for accounting.
+
+15 - netvm: network reserve infrastructure
+16 - netvm: INET reserves.
+17 - netvm: hook skb allocation to reserves
+18 - netvm: filter emergency skbs.
+19 - netvm: prevent a TCP specific deadlock
+20 - netfilter: NF_QUEUE vs emergency skbs
+21 - netvm: skb processing
+
+
+  Part 4, patches 22-23
+
+Generic vm infrastructure to handle swapping to a filesystem instead of a block
+device.
+
+This provides new a_ops to handle swapcache pages and could be used to obsolete
+the bmap usage for swapfiles.
+
+22 - mm: add support for non block device backed swap files
+23 - mm: methods for teaching filesystems about PG_swapcache pages
+
+
+  Part 5, patches 24-28
+
+Finally, convert NFS to make use of the new network and vm infrastructure to
+provide swap over NFS.
+
+24 - nfs: remove mempools
+25 - nfs: teach the NFS client how to treat PG_swapcache pages
+26 - nfs: disable data cache revalidation for swapfiles
+27 - nfs: enable swap on NFS
+28 - nfs: fix various memory recursions possible with swap over NFS.
+
+
+Changes since -v15:
+ - fwd port
+ - more SGE fragment drivers ported
+ - made the new swapfile logic unconditional
+ - various bug fixes and cleanups
+
 
