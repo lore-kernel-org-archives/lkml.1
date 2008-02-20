@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764154AbYBTOXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbYBTOYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764154AbYBTOXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:23:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761836AbYBTOXm
+	id S1763289AbYBTOYd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:24:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbYBTOYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:23:42 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:51387 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753105AbYBTOXl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:23:41 -0500
-Date: Thu, 21 Feb 2008 01:23:32 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: first tree
-Message-Id: <20080221012332.dc1948ac.sfr@canb.auug.org.au>
-In-Reply-To: <20080214160231.GC10713@shadowen.org>
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>
-	<20080214160231.GC10713@shadowen.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__21_Feb_2008_01_23_32_+1100_IavXq2RlDjLH4u_H"
+	Wed, 20 Feb 2008 09:24:24 -0500
+Received: from mail.phnxsoft.com ([195.227.45.4]:3880 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbYBTOYX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 09:24:23 -0500
+Message-ID: <47BC3802.1070107@imap.cc>
+Date: Wed, 20 Feb 2008 15:24:02 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Andi Kleen <andi@firstfloor.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Greg KH <greg@kroah.com>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <20080219094034.GD6485@one.firstfloor.org> <20080219095622.GC4164@uranus.ravnborg.org> <20080219095834.GB6940@one.firstfloor.org> <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
+In-Reply-To: <79536BD8-1BB6-451E-9047-EBAC37F2073E@holtmann.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig91D4A7C9422F8C7665839397"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__21_Feb_2008_01_23_32_+1100_IavXq2RlDjLH4u_H
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig91D4A7C9422F8C7665839397
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: quoted-printable
 
-Hi Andy,
+Marcel Holtmann schrieb:
+> My proposal is to merge mISDN and then see what falls out. My guess it =
+=20
+> won't be that bad as everybody thinks and then we go from there. Next  =
 
-On Thu, 14 Feb 2008 16:04:36 +0000 Andy Whitcroft <apw@shadowen.org> wrote:
->
-> As devout believers in testing things early we test -mm and -git releases
-> as they drop.  I am keen that we are able to continue this with the -next
-> tree once it gets going.  Having just pulled this tree its not obvious how
-> I would communicate which tree I had tested.  I guess we could use the
-> SHA1 of the actual head used, but that really is cumbersome for the poor
-> people who have to check the results and actually report things to lkml.
+> step is to remove ISDN4Linux since that should not be used at all =20
+> anymore.
 
-I hope I have addressed this issue by tagging each tree with its date
-i.e. todays was next-20080220.
+No. Next step is to create the missing documentation.
+The step after that is to convert the remaining isdn4linux
+drivers to mISDN. Then you can remove isdn4linux.
 
-> Also will you be producing any tarballs for these releases?  If so I
-> would say they would definatly need to be against some common base, like
-> against the nearest official tag "below".
+HTH
+T.
 
-I hadn't considered tarballs, but I will give it some thought.
-
-Thanks for your thoughts.
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
---Signature=_Thu__21_Feb_2008_01_23_32_+1100_IavXq2RlDjLH4u_H
-Content-Type: application/pgp-signature
+
+--------------enig91D4A7C9422F8C7665839397
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFHvDfsTgG2atn1QN8RAgv6AJ4ndn+rmQtfVmf2xAmDq7SGI9qW5QCdH9d4
-JSQ5BUhogQ0ifR3raX3lQUw=
-=sXDK
+iD8DBQFHvDgDQ3+did9BuFsRAgDJAKCKeM13pqelTK5Xy/VrFKMmGlV5LgCfRcR5
+oiGVLSl24Wi8dBBENC+ycV8=
+=Mx1p
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__21_Feb_2008_01_23_32_+1100_IavXq2RlDjLH4u_H--
+--------------enig91D4A7C9422F8C7665839397--
