@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761946AbYBTJqJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761335AbYBTJsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761946AbYBTJqJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 04:46:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755393AbYBTJp4
+	id S1761335AbYBTJsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 04:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYBTJsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 04:45:56 -0500
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:62441 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755279AbYBTJpy (ORCPT
+	Wed, 20 Feb 2008 04:48:35 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:44192 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756171AbYBTJse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 04:45:54 -0500
-Date: Wed, 20 Feb 2008 10:45:52 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Bastian Blank <bastian@waldi.eu.org>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [patch 07/13] Initialize per cpu lowcores on cpu hotplug.
-Message-ID: <20080220094552.GA12635@osiris.boeblingen.de.ibm.com>
-References: <20080219144047.587547541@de.ibm.com> <20080219144504.392301782@de.ibm.com> <20080219151355.GA24547@wavehammer.waldi.eu.org> <20080219153855.GA11599@osiris.boeblingen.de.ibm.com> <20080219154149.GB11599@osiris.boeblingen.de.ibm.com> <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org>
+	Wed, 20 Feb 2008 04:48:34 -0500
+Message-ID: <47BBF771.40203@s5r6.in-berlin.de>
+Date: Wed, 20 Feb 2008 10:48:33 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <0d276daad249ac20ae922f4aa9a6e88b@kernel.crashing.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Thomas Meyer <thomas@m3y3r.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: 2.6.25-rc2: ohci1394 problem
+References: <47BBDB07.80409@m3y3r.de>
+In-Reply-To: <47BBDB07.80409@m3y3r.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> Boah, workaround alert. Why do you not fix the compiler?
->>>
->>> We need to copy from address 0 (that's where the lowcore resides). But 
->>> gcc
->>> insists to complain if memcpy is used with src == NULL.. Now what?
->>
->> Erm sorry, misread your question. Usually it's a bug to use memcpy with
->> src == NULL. In this case it's ok. So I think it's perfectly ok if gcc
->> emits a warning.
->> If you know of a better way to get around this please let me know.
->
-> -ffreestanding or -Wno-nonnull?
+Thomas Meyer wrote at LKML:
+> Hi.
+> 
+> With 2.6.25-rc2 my kernel log consists mainly of:
+> 
+> "ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+> ohci1394: fw-host0: Unrecoverable error!
+> ohci1394: fw-host0: Async Rsp Tx Context died: ctrl[f0002a00] 
+> cmdptr[f0002a00]
+> ohci1394: fw-host0: Iso Recv 3 Context died: ctrl[d4000d0e] 
+> cmdptr[0005c806] match[00000000]
+> ohci1394: fw-host0: Iso Recv 17 Context died: ctrl[7c006e38] 
+> cmdptr[f58b18cd] match[4910c683]
+> ohci1394: fw-host0: Iso Recv 18 Context died: ctrl[003cacf0] 
+> cmdptr[88f2eb10] match[46e8104e]
+> ohci1394: fw-host0: Iso Recv 19 Context died: ctrl[0c047e80] 
+> cmdptr[83060246] match[83060846]
+> ohci1394: fw-host0: Iso Recv 26 Context died: ctrl[00656c62] 
+> cmdptr[6e696461] match[706f2067]
+> ohci1394: fw-host0: Iso Recv 27 Context died: ctrl[4d006d65] 
+> cmdptr[61726570] match[676e6974]
+> ohci1394: fw-host0: physical posted write error
+> ohci1394: fw-host0: respTxComplete: dma prg stopped
+> ohci1394: fw-host0: SelfID received outside of bus reset sequence
+> ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+> ohci1394: fw-host0: Unrecoverable error!
+> ohci1394: fw-host0: Async Rsp Tx Context died: ctrl[f0002a00] 
+> cmdptr[f0002a00]
+> ohci1394: fw-host0: Iso Recv 3 Context died: ctrl[d4000d0e] 
+> cmdptr[0005c806] match[00000000]
+> ohci1394: fw-host0: Iso Recv 17 Context died: ctrl[7c006e38] 
+> cmdptr[f58b18cd] match[4910c683]
+> ohci1394: fw-host0: Iso Recv 18 Context died: ctrl[003cacf0] 
+> cmdptr[88f2eb10] match[46e8104e]
+> ohci1394: fw-host0: Iso Recv 19 Context died: ctrl[0c047e80] 
+> cmdptr[83060246] match[83060846]
+> ohci1394: fw-host0: Iso Recv 26 Context died: ctrl[00656c62] 
+> cmdptr[6e696461] match[706f2067]
+> ohci1394: fw-host0: Iso Recv 27 Context died: ctrl[4d006d65] 
+> cmdptr[61726570] match[676e6974]
+> ohci1394: fw-host0: physical posted write error
+> ohci1394: fw-host0: respTxComplete: dma prg stopped
+> ohci1394: fw-host0: SelfID received outside of bus reset sequence
+> ohci1394: fw-host0: Unhandled interrupt(s) 0xfc7cfe0c
+> ohci1394: fw-host0: Unrecoverable error!
+> "
+> 
+> Strange, isn't it?
 
-Ok, how about the patch below? Everybody happy with it?
+Do you have any hardware attached to the FireWire bus at that time?
 
----
- arch/s390/kernel/Makefile |    5 +++++
- arch/s390/kernel/smp.c    |    8 +-------
- 2 files changed, 6 insertions(+), 7 deletions(-)
-
-Index: linux-2.5/arch/s390/kernel/Makefile
-===================================================================
---- linux-2.5.orig/arch/s390/kernel/Makefile
-+++ linux-2.5/arch/s390/kernel/Makefile
-@@ -4,6 +4,11 @@
- 
- EXTRA_AFLAGS	:= -traditional
- 
-+#
-+# Passing null pointers is ok for smp code, since we access the lowcore here.
-+#
-+CFLAGS_smp.o	:= -Wno-nonnull
-+
- obj-y	:=  bitmap.o traps.o time.o process.o base.o early.o \
-             setup.o sys_s390.o ptrace.o signal.o cpcmd.o ebcdic.o \
- 	    semaphore.o s390_ext.o debug.o irq.o ipl.o dis.o diag.o
-Index: linux-2.5/arch/s390/kernel/smp.c
-===================================================================
---- linux-2.5.orig/arch/s390/kernel/smp.c
-+++ linux-2.5/arch/s390/kernel/smp.c
-@@ -631,13 +631,7 @@ static int __cpuinit smp_alloc_lowcore(i
- 	panic_stack = __get_free_page(GFP_KERNEL);
- 	if (!panic_stack || !async_stack)
- 		goto out;
--	/*
--	 * Only need to copy the first 512 bytes from address 0. But since
--	 * the compiler emits a warning if src == NULL for memcpy use copy_page
--	 * instead. Copies more than needed but this code is not performance
--	 * critical.
--	 */
--	copy_page(lowcore, &S390_lowcore);
-+	memcpy(lowcore, &S390_lowcore, 512);
- 	memset((void *)lowcore + 512, 0, sizeof(*lowcore) - 512);
- 	lowcore->async_stack = async_stack + ASYNC_SIZE;
- 	lowcore->panic_stack = panic_stack + PAGE_SIZE;
+What does /proc/interrupts contain?
+-- 
+Stefan Richter
+-=====-==--- --=- =-=--
+http://arcgraph.de/sr/
