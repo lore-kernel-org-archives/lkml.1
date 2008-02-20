@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbYBTCoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbYBTCqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762665AbYBTCoA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbYBTCnv
+	id S1762878AbYBTCqT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757035AbYBTCqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:43:51 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:60006 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753512AbYBTCnu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:43:50 -0500
-Subject: Re: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: David Somayajulu <david.somayajulu@qlogic.com>,
-       Adrian Bunk <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <20080220023559.GF23759@plap3.qlogic.org>
-References: <20080219192922.GH31955@cs181133002.pp.htv.fi>
-	 <1203473618.3103.37.camel@localhost.localdomain>
-	 <20080220023559.GF23759@plap3.qlogic.org>
-Content-Type: text/plain
-Date: Tue, 19 Feb 2008 20:43:45 -0600
-Message-Id: <1203475425.3103.42.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
-Content-Transfer-Encoding: 7bit
+	Tue, 19 Feb 2008 21:46:08 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:57574 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755594AbYBTCqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 21:46:07 -0500
+Date: Tue, 19 Feb 2008 20:46:03 -0600
+From: Robin Holt <holt@sgi.com>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Nick Piggin <npiggin@suse.de>, Jack Steiner <steiner@sgi.com>,
+       akpm@linux-foundation.org, Robin Holt <holt@sgi.com>,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080220024602.GA11364@sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219142725.GA23200@sgi.com> <20080219230427.GB18912@wotan.suse.de> <20080220005206.GP7128@v2.random>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220005206.GP7128@v2.random>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2008-02-19 at 18:35 -0800, Andrew Vasquez wrote:
-> On Tue, 19 Feb 2008, James Bottomley wrote:
+On Wed, Feb 20, 2008 at 01:52:06AM +0100, Andrea Arcangeli wrote:
+> On Wed, Feb 20, 2008 at 12:04:27AM +0100, Nick Piggin wrote:
+> > OK (thanks to Robin as well). Now I understand why you are using it,
+> > but I don't understand why you don't defer new TLBs after the point
+> > where the linux pte changes. If you can do that, then you look and
+> > act much more like a TLB from the point of view of the Linux vm.
 > 
-> > On Tue, 2008-02-19 at 21:29 +0200, Adrian Bunk wrote:
-> > > This patch removes dead code spotted by the Coverity checker.
-> > > 
-> > > Signed-off-by: Adrian Bunk <bunk@kernel.org>
-> > > 
-> > > ---
-> > > 
-> > >  drivers/scsi/qla4xxx/ql4_isr.c |   18 +-----------------
-> > >  1 file changed, 1 insertion(+), 17 deletions(-)
-> > > 
-> > > --- linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c.old	2008-02-19 20:29:16.000000000 +0200
-> > > +++ linux-2.6/drivers/scsi/qla4xxx/ql4_isr.c	2008-02-19 20:30:37.000000000 +0200
-> > > @@ -91,38 +91,22 @@ static void qla4xxx_status_entry(struct 
-> > >  		if (scsi_status == 0) {
-> > >  			cmd->result = DID_OK << 16;
-> > >  			break;
-> > >  		}
-> > >  
-> > >  		if (sts_entry->iscsiFlags & ISCSI_FLAG_RESIDUAL_OVER) {
-> > >  			cmd->result = DID_ERROR << 16;
-> > >  			break;
-> > >  		}
-> > >  
-> > > -		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
-> > > +		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
-> > >  			scsi_set_resid(cmd, residual);
-> > > -			if (!scsi_status && ((scsi_bufflen(cmd) - residual) <
-> > > -				cmd->underflow)) {
-> > > -
-> > > -				cmd->result = DID_ERROR << 16;
-> > > -
-> > > -				DEBUG2(printk("scsi%ld:%d:%d:%d: %s: "
-> > > -					"Mid-layer Data underrun0, "
-> > > -					"xferlen = 0x%x, "
-> > > -					"residual = 0x%x\n", ha->host_no,
-> > > -					cmd->device->channel,
-> > > -					cmd->device->id,
-> > > -					cmd->device->lun, __func__,
-> > > -					scsi_bufflen(cmd), residual));
-> > > -				break;
-> > > -			}
-> > > -		}
-> > 
-> > This code doesn't look dead to me, it looks to be enforcing
-> > cmd->underrun if set ... what makes the coverity checker think it can
-> > never be executed?
-> 
-> Hmm, guess it's the earlier 'if (scsi_status == 0)' check a few lines
-> up...  Dave S., can you take a look at this...  Thanks, av
+> Christoph was forced to put the invalidate_range callback _after_
+> dropping the PT lock because xpmem has to wait I/O there. But
+> invalidate_range is called after freeing the VM reference on the pages
+> so then GRU needed a _range_begin too because GRU has to flush the tlb
+> before the VM reference on the page is released (xpmem and KVM pin the
+> pages mapped by the secondary mmu, GRU doesn't). So then
+> invalidate_range was renamed to invalidate_range_end.
 
-Ah, so the !scsi_status is wrong it was supposed to be scsi_status !=
-0 ... and even then it can just be dropped.
+Currently, xpmem blocks faults for the range specified at the _begin
+callout, then shoots down remote TLBs and does the put_page for all the
+pages in the specified range.  The _end callout merely removes the block.
+We do not do any wait for I/O.  By the time we return from the _begin
+callout, all activity by the remotes is stopped, pages are dereferenced,
+and future faults are blocked until released by the _end callout.
 
-James
-
-
+Thanks,
+Robin
