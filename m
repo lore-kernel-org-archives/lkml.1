@@ -1,72 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758281AbYBTDwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbYBTDxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758281AbYBTDwH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:52:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYBTDvz
+	id S1761495AbYBTDxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:53:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbYBTDxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:51:55 -0500
-Received: from n21.bullet.mail.mud.yahoo.com ([68.142.200.112]:21057 "HELO
-	n21.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751438AbYBTDvy (ORCPT
+	Tue, 19 Feb 2008 22:53:09 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:57480 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751484AbYBTDxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:51:54 -0500
-X-Yahoo-Newman-Id: 340437.92160.bm@omp413.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rgq1fHEVSzSe+njK3uTL3IgnQfMQN1QlXFq0bI+nyPFvZ2cxwa3QlWQ3XITVPVRMFn2TRAPzzeV79FdoL+7K/sikGkdFnyEa/mjJ1dcmDH5Jim68IalHy7T1psvdnqv4+1NH8pO5TWQpGL1hePIQ/JscyxhdlMqxacbzriIYt78=  ;
-X-YMail-OSG: UxhXQGUVM1k5SUPQ5.24NHQLL3BmBRSwg96UbmNvBNQI54Z4q9aSyBbhDpK_meQyG.fHr2ir5A--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Robin Holt <holt@sgi.com>
-Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps (f.e. for XPmem)
-Date: Wed, 20 Feb 2008 14:51:45 +1100
-User-Agent: KMail/1.9.5
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       Andrea Arcangeli <andrea@qumranet.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-References: <20080215064859.384203497@sgi.com> <200802201055.21343.nickpiggin@yahoo.com.au> <20080220031221.GE11391@sgi.com>
-In-Reply-To: <20080220031221.GE11391@sgi.com>
+	Tue, 19 Feb 2008 22:53:08 -0500
+Message-ID: <47BBA3E1.3030307@oracle.com>
+Date: Tue, 19 Feb 2008 19:52:01 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jonathan Lim <jlim@sgi.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Provide u64 version of jiffies_to_usecs() in kernel/tsacct.c
+References: <200802200217.m1K2H1m5003739@sabah.engr.sgi.com>
+In-Reply-To: <200802200217.m1K2H1m5003739@sabah.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201451.46069.nickpiggin@yahoo.com.au>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 February 2008 14:12, Robin Holt wrote:
-> For XPMEM, we do not currently allow file backed
-> mapping pages from being exported so we should never reach this condition.
-> It has been an issue since day 1.  We have operated with that assumption
-> for 6 years and have not had issues with that assumption.  The user of
-> xpmem is MPT and it controls the communication buffers so it is reasonable
-> to expect this type of behavior.
+Jonathan Lim wrote:
+> It's possible that the values used in and returned from jiffies_to_usecs() are
+> incorrect because of truncation when variables of type u64 are involved.  So a
+> function specific to that type is used instead.
+> 
+> This version implements a correction to jiffies_64_to_usecs() based on feedback
+> from Randy Dunlap.
+> 
+> Diff'd against: linux/kernel/git/torvalds/linux-2.6.git
+> 
+> Signed-off-by: Jonathan Lim <jlim@sgi.com>
+> 
+> --- a/include/linux/jiffies.h	Thu Feb 14 18:04:14 PST 2008
+> +++ b/include/linux/jiffies.h	Thu Feb 14 18:07:17 PST 2008
+> @@ -42,7 +42,7 @@
+>  /* LATCH is used in the interval timer and ftape setup. */
+>  #define LATCH  ((CLOCK_TICK_RATE + HZ/2) / HZ)	/* For divider */
+>  
+> -/* Suppose we want to devide two numbers NOM and DEN: NOM/DEN, then we can
+> +/* Suppose we want to divide two numbers NOM and DEN: NOM/DEN, then we can
+>   * improve accuracy by shifting LSH bits, hence calculating:
+>   *     (NOM << LSH) / DEN
+>   * This however means trouble for large NOM, because (NOM << LSH) may no
+> @@ -204,7 +204,7 @@ extern unsigned long preset_lpj;
+>   * operator if the result is a long long AND at least one of the
+>   * operands is cast to long long (usually just prior to the "*" so as
+>   * not to confuse it into thinking it really has a 64-bit operand,
+> - * which, buy the way, it can do, but it takes more code and at least 2
+> + * which, by the way, it can do, but it takes more code and at least 2
+>   * mpys).
+>  
+>   * We also need to be aware that one second in nanoseconds is only a
+> @@ -269,6 +269,7 @@ extern unsigned long preset_lpj;
+>   */
+>  extern unsigned int jiffies_to_msecs(const unsigned long j);
+>  extern unsigned int jiffies_to_usecs(const unsigned long j);
+> +extern u64 jiffies_64_to_usecs(const u64 j);
+>  extern unsigned long msecs_to_jiffies(const unsigned int m);
+>  extern unsigned long usecs_to_jiffies(const unsigned int u);
+>  extern unsigned long timespec_to_jiffies(const struct timespec *value);
+> --- a/kernel/time.c	Thu Feb 14 18:05:12 PST 2008
+> +++ b/kernel/time.c	Tue Feb 19 17:00:11 PST 2008
 
-OK, that makes things simpler.
+kernel/time.c needs:
+#include <asm/div64.h>
 
-So why can't you export a device from your xpmem driver, which
-can be mmap()ed to give out "anonymous" memory pages to be used
-for these communication buffers?
+After that, it's
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-I guess you may also want an "munmap/mprotect" callback, which
-we don't have in the kernel right now... but at least you could
-prototype it easily by having an ioctl to be called before
-munmapping or mprotecting (eg. the ioctl could prevent new TLB
-setup for the region, and shoot down existing ones).
+> @@ -268,6 +268,12 @@ unsigned int inline jiffies_to_usecs(con
+>  }
+>  EXPORT_SYMBOL(jiffies_to_usecs);
+>  
+> +u64 jiffies_64_to_usecs(const u64 j)
+> +{
+> +	return div64_64(j*HZ_TO_USEC_NUM + HZ_TO_USEC_DEN-1, HZ_TO_USEC_DEN);
+> +}
+> +EXPORT_SYMBOL(jiffies_64_to_usecs);
+> +
+>  /**
+>   * timespec_trunc - Truncate timespec to a granularity
+>   * @t: Timespec
+> --- a/kernel/tsacct.c	Thu Feb 14 18:06:17 PST 2008
+> +++ b/kernel/tsacct.c	Thu Feb 14 18:08:47 PST 2008
+> @@ -85,8 +85,8 @@ void xacct_add_tsk(struct taskstats *sta
+>  	struct mm_struct *mm;
+>  
+>  	/* convert pages-jiffies to Mbyte-usec */
+> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+> +	stats->coremem = jiffies_64_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+> +	stats->virtmem = jiffies_64_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+>  	mm = get_task_mm(p);
+>  	if (mm) {
+>  		/* adjust to KB unit */
 
-This is actually going to be much faster for you if you use any
-threaded applications, because you will be able to do all the
-shootdown round trips outside mmap_sem, and so you will be able
-to have other threads faulting and even mmap()ing / munmaping
-at the same time as the shootdown is happening.
 
-I guess there is some catch...
-
+-- 
+~Randy
