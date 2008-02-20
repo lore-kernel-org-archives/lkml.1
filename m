@@ -1,73 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762457AbYBTOOO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762355AbYBTOUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762457AbYBTOOO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 09:14:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbYBTON5
+	id S1762355AbYBTOUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 09:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYBTOUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 09:13:57 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:40028 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754840AbYBTON4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 09:13:56 -0500
-Date: Thu, 21 Feb 2008 01:13:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, hch@infradead.org, serue@us.ibm.com,
-       haveblue@us.ibm.com, linuxram@us.ibm.com, viro@ZenIV.linux.org.uk,
-       linux-fsdevel@vger.kernel.org, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: git tree with VFS stuff
-Message-Id: <20080221011348.ef5da6c5.sfr@canb.auug.org.au>
-In-Reply-To: <E1JRSaC-0005T2-Ew@pomaz-ex.szeredi.hu>
-References: <E1JRSaC-0005T2-Ew@pomaz-ex.szeredi.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX"
+	Wed, 20 Feb 2008 09:20:39 -0500
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:3371 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754492AbYBTOUh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 09:20:37 -0500
+Message-ID: <47BC370F.3000705@imap.cc>
+Date: Wed, 20 Feb 2008 15:19:59 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.11) Gecko/20071128 SeaMonkey/1.1.7 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Gregory Nietsky <gregory@networksentry.co.za>
+CC: Sam Ravnborg <sam@ravnborg.org>, Andi Kleen <andi@firstfloor.org>,
+       Greg KH <greg@kroah.com>, kkeil@suse.de,
+       isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <47BAA072.9050601@networksentry.co.za>
+In-Reply-To: <47BAA072.9050601@networksentry.co.za>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig293FCE1DEB42272BB63C6917"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig293FCE1DEB42272BB63C6917
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: quoted-printable
 
-Hi Miklos,
+Gregory Nietsky schrieb:
+> ive been hackin away at mISDN for a while and use it with recent kernel=
+s=20
+>   2.6.2X and have a patch for 2.6.24 (move from semaphore to complition=
+)=20
+> the distro we built is heavily reliant on mISDN (voip) i dont use the=20
+> isdn kernel drivers at all any longer.
+>=20
+> im all for mISDN been mainlined into the kernel and the old stuff been =
 
-On Tue, 19 Feb 2008 14:32:28 +0100 Miklos Szeredi <miklos@szeredi.hu> wrote:
->
-> I've created a git tree with the following mounts related stuff:
->=20
->   - read-only bind mounts
->   - /proc/<pid>/mountinfo
->   - unprivileged mounts
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/vfsstuff.git master
->=20
-> I guess, giving these a spin in linux-next wouldn't hurt?
+> removed there could be users still it is marked as depricated and the=20
+> plan was with 2.6 to use mISDN from the start.
 
-I don't think this is what we want to use linux-next for.  Linux-next is
-really a place for stuff that will pretty clearly go into the next kernel
-release i.e. 2.6.26 right now.  If you want to experiment on things for
-beyond that timeframe, then a snapshot of linux-next may be a good base.
-I will take them when they reach the appropriate subsystem tree and are
-ready for integration.
+mISDN has two problems, which are of course interrelated:
+
+a) complete lack of documentation for the in-kernel driver interface
+    (equivalent of Documentation/isdn/INTERFACE)
+
+b) still doesn't support all the hardware isdn4linux supports.
+
+As long as those problems aren't solved, the old stuff cannot be removed.=
+
+Perhaps merging the current state of mISDN into the -mm tree would help
+with this. Perhaps not.
+
+Regards,
+Tilman
+(maintainer of an isdn4linux driver, waiting desperately for
+documentation on how to convert to the new CAPI/mISDN world
+but tired of asking for it in vain)
 
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
---Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX
-Content-Type: application/pgp-signature
+
+--------------enig293FCE1DEB42272BB63C6917
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-iD8DBQFHvDWhTgG2atn1QN8RAiLrAJ46p80TvrjvgxSEqzfh3XjJ8owuIwCdHNik
-gZvWxJyeWxymq9S6aJQF2m0=
-=zCOW
+iD8DBQFHvDcPQ3+did9BuFsRAk3bAJ93+SrUAZYc6ECscKzHnbP05w/SlwCggbaD
+WqePBZrJbMC/23YP5xnQcus=
+=z48m
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__21_Feb_2008_01_13_48_+1100_QcCNV3vW.M.J+tOX--
+--------------enig293FCE1DEB42272BB63C6917--
