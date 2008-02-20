@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYBTKUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbYBTKXf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759198AbYBTKUn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 05:20:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbYBTKUe
+	id S1759981AbYBTKXf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 05:23:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbYBTKX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 05:20:34 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37740 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbYBTKUe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 05:20:34 -0500
-Date: Wed, 20 Feb 2008 11:20:33 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Karl Dahlke <eklhad@comcast.net>, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: adapter, what's in a name
-In-Reply-To: <47BBF532.4030704@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.64.0802201116300.26109@fbirervta.pbzchgretzou.qr>
-References: <20080119181606.eklhad@comcast.net> <47BBF532.4030704@s5r6.in-berlin.de>
+	Wed, 20 Feb 2008 05:23:28 -0500
+Received: from cantor.suse.de ([195.135.220.2]:39011 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbYBTKX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 05:23:27 -0500
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] [2/5] Use 2000 offset for 32bit kernels
+Date: Wed, 20 Feb 2008 11:23:23 +0100
+User-Agent: KMail/1.9.6
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+References: <20080209416.271135970@suse.de> <alpine.LFD.1.00.0802162024220.7583@apollo.tec.linutronix.de> <alpine.LFD.1.00.0802201049310.7583@apollo.tec.linutronix.de>
+In-Reply-To: <alpine.LFD.1.00.0802201049310.7583@apollo.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201123.23830.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 20 February 2008 11:07:02 Thomas Gleixner wrote:
+> On Sat, 16 Feb 2008, Thomas Gleixner wrote:
+> > On Sat, 9 Feb 2008, Andi Kleen wrote:
+> > > 
+> > > We know it is already after 2000.
+> > > 
+> > > This extends the effective lifetime of 32bit systems by 8 years:
+> > > from 2030 to 2038.
+> 
+> Could you please explain what magic math does the 2030 -> 2038
+> extension ?
 
-On Feb 20 2008 10:38, Stefan Richter wrote:
->Karl Dahlke wrote:
->> The longer I stay on this list, the more I will learn.
->> But it's high volume, so I may not be able to stay for long.
->
->Because of the high volume at this list, it is essential that
->  - you keep everyone who posted in a tread in the Cc: list of your
->    replies, (that way it is possible to discuss on LKML even with
->    people who are not subscribed; but more importantly, people who
->    take part in a discussion are less likely to miss replies),
->  - you actually reply rather than start new threads all the time.
+Hmm, yes on rechecking I also don't know how I got the original
+conclusion.
 
-Indeed, in PINE, mails with your address in Cc get preprended with a
-minus sign, mails with your addr in To gets prepended with a plus
-sign, conveniently marking the discussions one has taken part in. (Or
-alternatively, one can use 'select all mails with my address' to
-color-highlight it.) Pretty nifty.
-
->Aren't those drivers ones for
->  - input devices,
->  - display devices (in a more general sense than visual displays, i.e.
->    also including audible and tactile displays)?
->Besides, if you had for example an USB device of that type, the most
->natural place for its sources would be somewhere beneath drivers/usb/.
-
-Well actually, I think it would go into drivers/input/. It is not
-quite obvious.
-
-Wireless USB -- drivers/net/wireless, not drivers/usb/
-Serial USB   -- drivers/usb/serial, not drivers/serial/usb/
-for example, but it seems to flow well anyway.
+-Andi
 
