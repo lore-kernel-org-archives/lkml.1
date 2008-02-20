@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbYBTSI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbYBTSJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbYBTSI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 13:08:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYBTSIS
+	id S1761755AbYBTSJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 13:09:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbYBTSIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 13:08:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49281 "EHLO mx1.redhat.com"
+	Wed, 20 Feb 2008 13:08:49 -0500
+Received: from www.tglx.de ([62.245.132.106]:57835 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbYBTSIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 13:08:18 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [RESEND] [PATCH] fix invalidate_inode_pages2_range not to clear ret
-References: <6.0.0.20.2.20080215132604.06091618@172.19.0.2>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 20 Feb 2008 13:08:10 -0500
-In-Reply-To: <6.0.0.20.2.20080215132604.06091618@172.19.0.2> (Hisashi Hifumi's
-	message of "Fri, 15 Feb 2008 13:36:32 +0900")
-Message-ID: <x49mypv4i2d.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1753855AbYBTSIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 13:08:48 -0500
+Date: Wed, 20 Feb 2008 19:08:30 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arne Georg Gleditsch <arne.gleditsch@dolphinics.no>
+cc: LKML <linux-kernel@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: arch/x86/kernel/vsyscall_64.c: overeager NOP of syscalls
+In-Reply-To: <kjm4pc3d92p.fsf@pelargir.dolphinics.no>
+Message-ID: <alpine.LFD.1.00.0802201836480.7583@apollo.tec.linutronix.de>
+References: <kjm4pc3d92p.fsf@pelargir.dolphinics.no>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> writes:
+Arne,
 
-> Hi Andrew.
->
-> DIO invalidates page cache through invalidate_inode_pages2_range().
-> invalidate_inode_pages2_range() sets ret=-EIO when invalidate_complete_page2()
-> fails, but this ret is cleared if do_launder_page() succeed on a page of next index. 
-> In this case, dio is carried out even if invalidate_complete_page2() fails on some pages.
-> This can cause inconsistency between memory and blocks on HDD because the page
-> cache still exists.
->
-> Following patch fixes this issue.
+On Wed, 20 Feb 2008, Arne Georg Gleditsch wrote:
+> I'm looking at 2.6.25-rc2.  vsyscall_sysctl_change contains code to NOP
+> out the actual system call instructions of the vsyscall page when
+> vsyscall64 is enabled.  This seems to interact badly with the fallback
+> code in do_vgettimeofday which tries to call gettimeofday if the
+> configured clock source does not support vread.  (In effect,
+> gettimeofday() becomes a nop and time() always returns 0.  Not very
+> useful.)
 
-I agree with the patch (and I see Andrew already accepted it).  Do you
-have a reproducer for this problem?
+Indeed.
+ 
+> Is there a good reason to keep this?  Aren't the instructions in
+> question avoided (or invoked) according to the vsyscall64 flag by the
+> surrounding logic anyway?
 
-Cheers,
+The initial intent of this was to make it harder for malicious code to
+attack via the vsysall area.
 
-Jeff
+But you are right, the code is indeed fundamentally unsafe in various
+aspects:
+
+1) the patching code runs without synchronizing other CPUs
+
+2) it inserts NOPs even if there is no clock source which provides
+vread
+
+3) when the clock source changes to one without vread we run in
+exactly the same problem as in #2
+
+The correct solution is randomizing that area, but that's definitely
+not an ad hoc fix.
+
+Thanks for pointing this out. I'm looking into fixing this ASAP.
+
+       tglx
