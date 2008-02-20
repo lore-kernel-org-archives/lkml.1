@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbYBTILr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758882AbYBTIMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbYBTILr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 03:11:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbYBTILk
+	id S1758882AbYBTIMt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 03:12:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752041AbYBTIMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 03:11:40 -0500
-Received: from www.tglx.de ([62.245.132.106]:33142 "EHLO www.tglx.de"
+	Wed, 20 Feb 2008 03:12:41 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53542 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750837AbYBTILi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 03:11:38 -0500
-Date: Wed, 20 Feb 2008 09:11:16 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Marcel Holtmann <marcel@holtmann.org>
-cc: Quel Qun <kelk1@comcast.net>, LKML <linux-kernel@vger.kernel.org>,
-       Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Kernel oops with bluetooth usb dongle
-In-Reply-To: <alpine.LFD.1.00.0802200108040.7583@apollo.tec.linutronix.de>
-Message-ID: <alpine.LFD.1.00.0802200908250.7583@apollo.tec.linutronix.de>
-References: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net> <alpine.LFD.1.00.0802181245370.7583@apollo.tec.linutronix.de> <895FB10F-5E5C-4409-AC3E-5F83BBF9ED72@holtmann.org>
- <alpine.LFD.1.00.0802200108040.7583@apollo.tec.linutronix.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1751932AbYBTIMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 03:12:39 -0500
+Date: Wed, 20 Feb 2008 09:12:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tony Luck <tony.luck@gmail.com>
+Cc: Roland Dreier <rdreier@cisco.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Strange hang on ia64 with CONFIG_PRINTK_TIME=y
+Message-ID: <20080220081228.GA27036@elte.hu>
+References: <20080213.050340.64342037.davem@davemloft.net> <12c511ca0802131659u6e4407d9w96148fe72d6e11d7@mail.gmail.com> <20080213.170452.68851396.davem@davemloft.net> <12c511ca0802131933g6aaaec9cidbfbfcac6f394c63@mail.gmail.com> <adaprv0rygh.fsf@cisco.com> <12c511ca0802141327j6e31e8c2tee1d679053b604fc@mail.gmail.com> <ada7ih7qjoq.fsf@cisco.com> <1FE6DD409037234FAB833C420AA843EC97C8B0@orsmsx424.amr.corp.intel.com> <12c511ca0802141817i3295e83cxd7c05e07f2c54fea@mail.gmail.com> <12c511ca0802191440q6a2f5604xe6b563c32c3a90b2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12c511ca0802191440q6a2f5604xe6b563c32c3a90b2@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, Thomas Gleixner wrote:
-> On Tue, 19 Feb 2008, Marcel Holtmann wrote:
-> > I don't really have any idea. Nothing has been changed in this area for a
-> > couple of years. The command TX timeout is the timeout that indicates a
-> > missing answer to a command sent down to the Bluetooth chip.
-> > 
-> > However this involves some atomic and tasklet stuff. Did we have some changes
-> > that I missed and might now render this usage as broken.
+
+* Tony Luck <tony.luck@gmail.com> wrote:
+
+> > Perhaps what is happening is that cpu0 comes online ... safely skips 
+> > over the early printk calls.  Calls cpu_init() which sets up the 
+> > resources *it* needs (ar.k3 points to per-cpu space), and then 
+> > executes sched_init() which marks it safe for all printk's. Then 
+> > cpu1 comes up and does a printk before it gets to cpu_init().
 > 
-> Not that I'm aware off, but this might as well be some old use after
-> free bug which got exposed by some unrelated change. The good news is
-> that it is reproducible. I'll hack up some nasty debug patch which
-> lets us - hopefully - decode where the timer was armed.
+> I just tried Ingo's patch[1] on a 2.6.25-rc2 kernel with printk 
+> timestamps turned on ... and it booted just fine on my tiger4.  The 
+> default path for non-boot cpus is from head.S to start_secondary(), 
+> and that calls cpu_init() pretty quickly.  There shouldn't normally[2] 
+> be any printk() calls on the non-boot cpu before it is safe to do so.
 
-Quel, before I do that, is there any chance that you retest with the
-latest mainline git version ?
+ok. I've queued up the patch again in sched.git, as a .25 fix. Can i add 
+your Tested-by and Acked-by tags?
 
-http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.25-rc2-git4.bz2
-
-Is the delta which applies on top of rc2.
-
-Thanks,
-
-	tglx
+	Ingo
