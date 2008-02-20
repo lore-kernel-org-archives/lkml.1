@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764665AbYBTDC0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764733AbYBTDCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764665AbYBTDC0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 22:02:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764551AbYBTDCQ
+	id S1764733AbYBTDCv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 22:02:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbYBTDCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 22:02:16 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59799 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764536AbYBTDCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 22:02:14 -0500
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Message-Id: <4130F47E-4F4A-4911-B63B-403A8C423565@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20080219.163003.152862383.davem@davemloft.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Tue, 19 Feb 2008 22:02:41 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:28537 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757049AbYBTDCk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 22:02:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=eOFYEzp2c5HqctPCSiGgp07DmaeEC9sPriJ6gqvtc78u+YsXruIWtjDvkR6DvzG2+
+	57Fg4YFlvh4W+HdEgaC4g==
+Message-ID: <6599ad830802191902n7b15591eqc471d1bbe923a36f@mail.gmail.com>
+Date: Tue, 19 Feb 2008 19:02:35 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Li Zefan" <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 6/7] cgroup: remove duplicate code in find_css_set()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       containers@lists.linux-foundation.org
+In-Reply-To: <47B91C84.4080806@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v919.2)
-Subject: Re: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero base
-Date: Tue, 19 Feb 2008 21:02:04 -0600
-References: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net> <20080219.163003.152862383.davem@davemloft.net>
-X-Mailer: Apple Mail (2.919.2)
+Content-Disposition: inline
+References: <47B91C84.4080806@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Feb 19, 2008, at 6:30 PM, David Miller wrote:
-
-> From: Kumar Gala <galak@kernel.crashing.org>
-> Date: Tue, 19 Feb 2008 13:51:37 -0600 (CST)
+On Feb 17, 2008 9:49 PM, Li Zefan <lizf@cn.fujitsu.com> wrote:
+> The list head res->tasks gets initialized twice in find_css_set().
 >
->> If we add to an empty lmb region with a non-zero base we will not  
->> coalesce
->> the number of regions down to one.  This causes problems on ppc32  
->> for the
->> memory region as its assumed to only have one region.
->>
->> We can fix this easily by causing the initial add to replace the  
->> dummy
->> region.
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->>
->> Fix a bug the initial patch introduced if we have a region that  
->> gets added
->> at the beginning of the list we wouldn't actually add it.
->>
->> Dave can you replace the patch in you tree with this one.
->
-> I think my tree has already or will soon be pulled in so
-> I don't want to rebase it.
->
-> Why don't you simply send me the relative bug fix instead?
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-np.  Are we trying to get this into 2.6.25 or .26?
+Acked-by: Paul Menage <menage@google.com>
 
-- k
+> ---
+>  kernel/cgroup.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index e8c8e58..71cf961 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -473,7 +473,6 @@ static struct css_set *find_css_set(
+>         /* Link this cgroup group into the list */
+>         list_add(&res->list, &init_css_set.list);
+>         css_set_count++;
+> -       INIT_LIST_HEAD(&res->tasks);
+>         write_unlock(&css_set_lock);
+>
+>         return res;
+> --
+> 1.5.4.rc3
+>
+>
