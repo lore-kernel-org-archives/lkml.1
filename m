@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765452AbYBTVZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933178AbYBTV0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765452AbYBTVZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 16:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765580AbYBTVYn
+	id S933178AbYBTV0d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 16:26:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756232AbYBTV0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 16:24:43 -0500
-Received: from smtp116.sbc.mail.sp1.yahoo.com ([69.147.64.89]:37329 "HELO
-	smtp116.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933772AbYBTVYk (ORCPT
+	Wed, 20 Feb 2008 16:26:20 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:49738 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753027AbYBTV0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 16:24:40 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=5+t82vknHP4LQM+ChdOLF2qjGBwarWxFOj67Xwy0hdDvf0z1Hi67ANfEftSY1qgtGqGxzDO8U1Ii86xryyzJNItReMEwIWVb3a0H7SW/Q0H2hYNe++9ioRX/CE0QF6rI3hCiAmyPVO+VYku1FJcYa0ptux3uoUAcAR80jAO7dMI=  ;
-X-YMail-OSG: d2fOs6oVM1nqO7_AZNSXxgEynEohz6G.O1qcITgV06xQqRrYxcv7iVap9jhJV6sWoaqCAkT5.Q--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andre Tomt <andre@tomt.net>
-Subject: Re: USB OOPS 2.6.25-rc2-git1
-Date: Wed, 20 Feb 2008 13:24:36 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <47BAF36C.4000509@tomt.net> <200802191632.35732.david-b@pacbell.net> <47BC8E9D.8080309@tomt.net>
-In-Reply-To: <47BC8E9D.8080309@tomt.net>
+	Wed, 20 Feb 2008 16:26:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=b6dTyrMzOD2AJsOO1ci3HJNfHzfkYGmsdYcEjEca4p4nRf11ZciO50t2dF8GIjLERoM1EOOXjdlwvFpCv/nDBJogJgUqcFhkk9rqLgho3kLUiytcuQvAosefP6pRBvoD1kmgrG37tjyDSKE3xCgJtGfr6ocX8xa+mFWRaUislMM=
+Message-ID: <47BC9AF4.10807@gmail.com>
+Date: Thu, 21 Feb 2008 00:26:12 +0300
+From: Alexey Starikovskiy <aystarik@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       suspend-devel@lists.sourceforge.net,
+       Jeff Chua <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org, Jesse Barnes <jesse.barnes@intel.com>
+Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off after
+ suspend-to-disk. Screen becomes green.
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802202114.43007.rjw@sisk.pl> <alpine.LFD.1.00.0802201224380.7833@woody.linux-foundation.org> <200802202145.01882.rjw@sisk.pl>
+In-Reply-To: <200802202145.01882.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802201324.37519.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 February 2008, Andre Tomt wrote:
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8028 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8028 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8028 cmd 10021
-> ehci_hcd 0000:00:1d.7: IAA watchdog, lost IAA: status 8029 cmd 10021
+Rafael J. Wysocki wrote:
+> On Wednesday, 20 of February 2008, Linus Torvalds wrote:
+>   
+>> On Wed, 20 Feb 2008, Rafael J. Wysocki wrote:
+>>     
+>>> I think we should export the target sleep state somehow.
+>>>       
+>> Yeah. By *not* using "->suspend()" for freezing or hibernate.
+>>
+>> Please, Rafael - just make the f*cking suspend-to-disk use other routines 
+>> already.
+>>     
+>
+> Okay, I think I'll just start sending patches for that, but rather not earlier
+> than in the 2.6.27 time frame.  No one else works on that and I've been busy
+> with other things recently.  Besides, I'm not even a full time kernel
+> developer ...
+>
+>   
+Rafael,
+If I can help, please  say so.
 
-... etc.
+Regards,
+Alex.
+>> 99% of all hardware needs to do exactly *nothing* on suspend-to-disk, and the
+>> ones that really do need things tend to need to not do a whole lot.
+>>
+>> For example, the "freeze" action for USB (which is one of the hardest 
+>> things to suspend) should literally be something like just setting the 
+>> controller STOP bit, and waiting for it to have stopped. The "unfreeze" 
+>> should be to just clear the stop bit, while the "restart" should be just a 
+>> controller reset to use the current memory image.
+>>
+>> NONE OF THIS HAS ABSOLUTELY ANYTHING TO DO WITH SUSPEND.
+>>
+>> It never did. I've told people so for years. Maybe actually seeing the 
+>> problems will make people realize.
+>>     
+>
+> I think so.
+>
+>   
+>> So please, we shouldn't call "->suspend[_late]" or "->resume[_early]" at 
+>> all. Not with PMSG_FREEZE, not with PMSG_*anything*.
+>>
+>> Can we please get this fixed some day? 
+>>     
+>
+> Yes, we can (hopefully).
+>
+> Thanks,
+> Rafael
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
 
-OK, the relevant bits are:
-
-   status  0001 == some transaction completed normally (ignored here)
-   status  0020 == IAA set, which should have triggered an IRQ
-   command 0040 == IAAD clear, meaning IAA should have triggered
-
-Meaning the hardware is misbehaving in a "traditional" way, one
-that the watchdog is supposed to catch:  IAA set, but no IRQ.
-
-If you see any "IAA" messages *other* than those, please report
-them ASAP.  They'll indicate "nontraditional" misbehavior.
-
-
-> It has not crashed yet with the patch though.
-
-It seems that one of the tweks in this patch made the watchdog
-act better than before.  So unless I hear from you (before the
-start of next week) that some other message appears, or that your
-oops re-appears, I'll submit some version of this patch for RC3.
-
-And if you're up for it, I may have another patch for you
-to try on top of this one ... I had an idea about IRQ trigger
-modes that might be causing this problem.
-
-- Dave
