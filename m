@@ -1,59 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764052AbYBTCuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758557AbYBTCvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764052AbYBTCuf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYBTCuR
+	id S1758557AbYBTCvs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:51:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757651AbYBTCvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:50:17 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42127 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755380AbYBTCuO (ORCPT
+	Tue, 19 Feb 2008 21:51:41 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:10044 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757300AbYBTCvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:50:14 -0500
-Date: Wed, 20 Feb 2008 11:48:41 +0900
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH 0/8][for -mm] mem_notify v6
-Cc: kosaki.motohiro@jp.fujitsu.com, Pavel Machek <pavel@ucw.cz>,
-       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, marcelo@kvack.org, daniel.spang@gmail.com,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       linux-fsdevel@vger.kernel.org, a1426z@gawab.com,
-       jonathan@jonmasters.org, zlynx@acm.org
-In-Reply-To: <20080219210739.27325078@bree.surriel.com>
-References: <20080219222828.GB28786@elf.ucw.cz> <20080219210739.27325078@bree.surriel.com>
-Message-Id: <20080220114317.642F.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 19 Feb 2008 21:51:40 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=eMnvAf5QVTvPqpnkmY6IZjCPPKTiX0RHe1MkjT0SN7HZdXgrcWpCn4i2GosCYyyz/
+	kqd7NfmWBixYkS48YDMbA==
+Message-ID: <6599ad830802191851l66281e67rb49c766c2b1427c9@mail.gmail.com>
+Date: Tue, 19 Feb 2008 18:51:29 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Paul Jackson" <pj@sgi.com>
+Subject: Re: [RFC][PATCH 1/7] CGroup API: Add cgroup.api control file
+Cc: "Li Zefan" <lizf@cn.fujitsu.com>, balbir@linux.vnet.ibm.com,
+       balbir@in.ibm.com, xemul@openvz.org, kamezawa.hiroyu@jp.fujitsu.com,
+       vatsa@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20080219155742.0298f25f.pj@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
+Content-Disposition: inline
+References: <20080215204418.535025000@menage.corp.google.com>
+	 <20080215204820.734926000@menage.corp.google.com>
+	 <47B6B5CA.7040201@linux.vnet.ibm.com>
+	 <6599ad830802160944v6d529570k1ade6df273ca3d0d@mail.gmail.com>
+	 <47B953A8.9030206@cn.fujitsu.com> <20080219155742.0298f25f.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik
+On Feb 19, 2008 1:57 PM, Paul Jackson <pj@sgi.com> wrote:
+>
+> Finally, it goes against the one thingie per file (at most, one scalar
+> vector) that has worked well for us when tried.
 
-> > Sounds like a job for memory limits (ulimit?), not for OOM
-> > notification, right?
-> 
-> I suspect one problem could be that an HPC job scheduling program
-> does not know exactly how much memory each job can take, so it can
-> sometimes end up making a mistake and overcommitting the memory on
-> one HPC node.
-> 
-> In that case the user is better off having that job killed and
-> restarted elsewhere, than having all of the jobs on that node
-> crawl to a halt due to swapping.
-> 
-> Paul, is this guess correct? :)
+Right, I like the idea of keeping things simple. But if you're going
+to accept that a vector is useful, then it seems reasonable that some
+other *simple* structured datatypes can be useful. An N-element
+key/value map (a la /proc/meminfo) is, I think, nicer than having to
+read values from N separate files.
 
-Yes.
-Fujitsu HPC middleware watching sum of memory consumption of the job
-and, if over-consumption happened, kill process and remove job schedule.
+>
+> As to the motivations Paul M gives:
+>  1) Avoid "an arbitrary mess of ad-hoc APIs":
+>         We can still do that, whether or not we "self-document" these
+>         API's in this manner.
 
-I think that is common hpc requirement.
-but we watching to user defined memory limit, not swap.
+We can, but this file makes it more clear what control files have a
+well-defined API and which are just returning some ad-hoc string.
 
-Thanks.
+I guess it's not essential, I just figured that if we had that
+information, it made sense to make it available to userspace. I guess
+I'm happy with dropping the actual exposed cgroup.api file for now as
+long as we can work towards reducing the number of control files that
+just return strings, and make use of the structured output such as
+read_uint() miore.
+
+>  2) binary APIs versus ASCII APIs:
+>         Well, I have an ASCII API bias, not surprising.  But I'd
+>         suggest not doing things "in anticipation" of some future
+>         fuzzy binary API support.  Wait until that day actually arrives.
+
+I have a reasonably clear idea of how we can do the binary API.
+
+That's mostly for a separate RFC. But for example, reading a map via
+the binary API would be able to just return a list values since the
+keys could be parsed once from the ascii map (provided that the
+subsystem guaranteed that the map keys and their order wouldn't change
+between reboots).
 
 
+>  3) The memory controller currently has files with the "_in_bytes":
+>         The traditional way to handle this is Documentation and man
+>         pages; good enough for my granddad, good enough for me ;).
+
+I've tried submitting patches to remove the in_bytes suffix and just
+rely on the documentation, and people didn't seem to like it ...
+
+Paul
