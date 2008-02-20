@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764088AbYBTGBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764283AbYBTGCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764088AbYBTGBX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 01:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754033AbYBTGBP
+	id S1764283AbYBTGCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 01:02:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754997AbYBTGCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 01:01:15 -0500
-Received: from nn7.de ([85.214.94.156]:40877 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbYBTGBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 01:01:15 -0500
-Subject: Re: 2.6.25-rc2 regression - hang on suspend
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Rafael J\. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <200802200050.10158.rjw@sisk.pl>
-References: <1203422386.10992.2.camel@localhost>
-	 <200802192206.13350.rjw@sisk.pl> <1203458394.28475.7.camel@localhost>
-	 <200802200050.10158.rjw@sisk.pl>
-Content-Type: text/plain
+	Wed, 20 Feb 2008 01:02:14 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:17303 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754014AbYBTGCN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 01:02:13 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=XLguNncsb19U78kkU1BEJ+yGM7cGP/1Pum6/oX+RgxmnldZ8pFFFR/k7TrK+3bjkg
+	nTWFnU/GpU4RRu1GWGeWg==
+Message-ID: <6599ad830802192202t19c1f597jb7927e975eb80aa6@mail.gmail.com>
+Date: Tue, 19 Feb 2008 22:02:00 -0800
+From: "Paul Menage" <menage@google.com>
+To: "YAMAMOTO Takashi" <yamamoto@valinux.co.jp>
+Subject: Re: [PATCH 0/2] cgroup map files: Add a key/value map file type to cgroups
+Cc: kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, balbir@in.ibm.com,
+       xemul@openvz.org
+In-Reply-To: <20080220054809.86BFC1E3C58@siro.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 20 Feb 2008 07:01:09 +0100
-Message-Id: <1203487269.6542.1.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+Content-Disposition: inline
+References: <20080220051544.018684000@menage.corp.google.com>
+	 <20080220054809.86BFC1E3C58@siro.lan>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
-> On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
-> > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > > Hi,
-> > > 
-> > > Hi,
-> > > 
-> > > > since 2.6.25-rc1 (first version I tried) and still in rc2 (and git), I
-> > > > see a hang on s2ram already when trying to suspend.
-> > > 
-> > > Does it work with 2.6.24?
-> > 
-> > yes.
-> 
-> Please take the current mainline (there are a couple of nasty bugs fixed in
-> it), configure it with CONFIG_PM_DEBUG set, boot it with "no_console_suspend",
-> run
-> 
-> # echo 8 > /proc/sys/kernel/printk
-> # echo devices > /sys/power/pm_test
-> # echo mem > /sys/power/state
-> 
-> If it hangs, it should leave a stack trace before and I need that trace to see
-> what's going on.  If it doesn't hang, I'll tell you what to do next.
+On Feb 19, 2008 9:48 PM, YAMAMOTO Takashi <yamamoto@valinux.co.jp> wrote:
+>
+> it changes the format from "%s %lld" to "%s: %llu", right?
+> why?
+>
 
-I tried with 2.6.24.2 with CONFIG_PM_DEBUG set, following your steps and
-yes it works flawlessly (though the display did not come back I could
-suspend/resume multiple times without problems, and finally s2ram -f -p
-brought the display back).
+The colon for consistency with maps in /proc. I think it also makes it
+slightly more readable.
 
-So what next?
+For %lld versus %llu - I think that cgroup resource APIs are much more
+likely to need to report unsigned rather than signed values. In the
+case of the memory.stat file, that's certainly the case.
 
-Soeren
+But I guess there's an argument to be made that nothing's likely to
+need the final 64th bit of an unsigned value, whereas the ability to
+report negative numbers could potentially be useful for some cgroups.
+
+Paul
