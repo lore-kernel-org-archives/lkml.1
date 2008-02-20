@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbYBTCtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbYBTCt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762399AbYBTCtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 19 Feb 2008 21:49:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbYBTCtc
+	id S1763923AbYBTCt7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 19 Feb 2008 21:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763616AbYBTCtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 19 Feb 2008 21:49:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:37058 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755604AbYBTCtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 19 Feb 2008 21:49:31 -0500
+	Tue, 19 Feb 2008 21:49:47 -0500
+Received: from relay1.sgi.com ([192.48.171.29]:53953 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755853AbYBTCtp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 19 Feb 2008 21:49:45 -0500
+Date: Tue, 19 Feb 2008 20:49:44 -0600
+From: Robin Holt <holt@sgi.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080220024944.GB11364@sgi.com>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Shi Weihua <shiwh@cn.fujitsu.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 1/5] signal(x86_32): Improve the signal stack overflow
- check
-In-Reply-To: Shi Weihua's message of  Wednesday, 20 February 2008 10:23:01 +0800 <47BB8F05.3050001@cn.fujitsu.com>
-References: <47B95C4D.6080000@cn.fujitsu.com>
-	<20080218134720.GA28851@elte.hu>
-	<47BA299A.3040207@cn.fujitsu.com>
-	<20080219185009.122ED2701BA@magilla.localdomain>
-	<47BB7922.1010400@cn.fujitsu.com>
-	<20080220011822.C510B2701BA@magilla.localdomain>
-	<47BB83E2.1030504@cn.fujitsu.com>
-	<20080220014419.B85D02701BA@magilla.localdomain>
-	<47BB8F05.3050001@cn.fujitsu.com>
-X-Shopping-List: (1) Cretinous ecstasy yies
-   (2) Runcible ants
-   (3) Stimulating intrinsic rectractors
-   (4) Skeptical ambidextrous compasses
-Message-Id: <20080220024928.0EE172701BA@magilla.localdomain>
-Date: Tue, 19 Feb 2008 18:49:28 -0800 (PST)
+Content-Disposition: inline
+In-Reply-To: <20080219231157.GC18912@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I spent some time read you mail carefully and dig into the code again.
+On Wed, Feb 20, 2008 at 12:11:57AM +0100, Nick Piggin wrote:
+> On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
+> > On Tue, Feb 19, 2008 at 09:43:57AM +0100, Nick Piggin wrote:
+> > > anything when changing the pte to be _more_ permissive, and I don't
+> > 
+> > Note that in my patch the invalidate_pages in mprotect can be
+> > trivially switched to a mprotect_pages with proper params. This will
+> > prevent page faults completely in the secondary MMU (there will only
+> > be tlb misses after the tlb flush just like for the core linux pte),
+> > and it'll allow all the secondary MMU pte blocks (512/1024 at time
+> > with my PT lock design) to be updated to have proper permissions
+> > matching the core linux pte.
 > 
-> And yes, you are right. It's possible that SA_ONSTACK has been cleared
-> before the second signal on the same stack comes.
+> Sorry, I realise I still didn't get this through my head yet (and also
+> have not seen your patch recently). So I don't know exactly what you
+> are doing...
+> 
+> But why does _anybody_ (why does Christoph's patches) need to invalidate
+> when they are going to be more permissive? This should be done lazily by
+> the driver, I would have thought.
 
-It's not necessary for SA_ONSTACK to have "been cleared", by which I assume
-you mean a sigaction call with SA_ONSTACK not set in sa_flags.  That is
-indeed possible, but it's not the only case your patch broke.  It can just
-be a different signal whose sigaction never had SA_ONSTACK, when you are
-still on the signal stack from an earlier signal that did have SA_ONSTACK.
-
-> So this patch is wrong  :( . I will revise the other 4 patches.
-
-For 2 and 3, I would rather just wait until we unify signal.c anyway.
-
+I don't believe it should, but it probably does right now.  I do know
+the case where a write fault where there is no need for a COW does
+not call out on the PTE change.  I see no reason the others should not
+handle this as well.  Just off the top of my head, I can only think of
+the mprotect case needing to special case the more permissive state and
+I don't think that changes PTEs at all, merely updates the VMA.
 
 Thanks,
-Roland
+Robin
