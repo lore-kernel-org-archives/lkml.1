@@ -1,116 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYBUW0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbYBUWck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbYBUW0c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:26:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYBUW0V
+	id S932805AbYBUWck (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbYBUWc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:26:21 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:53305 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752138AbYBUW0T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:26:19 -0500
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-In-Reply-To: <47BDBC23.10605@cosmosbay.com>
-References: <47BDBC23.10605@cosmosbay.com>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 23:26:05 +0100
-Message-Id: <1203632765.6112.20.camel@lappy>
+	Thu, 21 Feb 2008 17:32:29 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:42192 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758366AbYBUWc2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 17:32:28 -0500
+Date: Thu, 21 Feb 2008 23:32:39 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Harvey Harrison <harvey.harrison@gmail.com>,
+       Al Viro <viro@ftp.linux.org.uk>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       John Linville <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: __bitwise versus __bitwise__ [Was: [PATCH] mac80211: check endianness/types in sparse runs]
+Message-ID: <20080221223239.GA31048@uranus.ravnborg.org>
+References: <1203503909.17534.14.camel@johannes.berg> <20080220195913.GE21139@uranus.ravnborg.org> <1203597776.20331.5.camel@johannes.berg> <1203624091.20345.63.camel@brick>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203624091.20345.63.camel@brick>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Al - can I ask you to explain the difference between __bitwise
+and __bitwise__ as used by the kernel.
 
-On Thu, 2008-02-21 at 19:00 +0100, Eric Dumazet wrote:
-> Some oprofile results obtained while using tbench on a 2x2 cpu machine 
-> were very surprising.
-> 
-> For example, loopback_xmit() function was using high number of cpu 
-> cycles to perform the statistic updates, supposed to be real cheap
-> since they use percpu data
-> 
->         pcpu_lstats = netdev_priv(dev);
->         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
->         lb_stats->packets++;  /* HERE : serious contention */
->         lb_stats->bytes += skb->len;
-> 
-> 
-> struct pcpu_lstats is a small structure containing two longs. It
-> appears that on my 32bits platform, alloc_percpu(8) allocates a single
-> cache line,  instead of giving to each cpu a separate cache line.
-> 
-> Using the following patch gave me impressive boost in various
-> benchmarks ( 6 % in tbench) (all percpu_counters hit this bug too)
-> 
-> Long term fix (ie >= 2.6.26) would be to let each CPU allocate their
-> own block of memory, so that we dont need to roudup sizes to
-> L1_CACHE_BYTES, or merging the SGI stuff of course...
-> 
-> Note : SLUB vs SLAB is important here to *show* the improvement, since
-> they dont have the same minimum allocation sizes (8 bytes vs 32
-> bytes). This could very well explain regressions some guys reported
-> when they switched to SLUB.
+Se below for a bit of background info.
 
-I've complained about this false sharing as well, so until we get the
-new and improved percpu allocators,
+Thanks,
+	Sam
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+On Thu, Feb 21, 2008 at 12:01:31PM -0800, Harvey Harrison wrote:
+> On Thu, 2008-02-21 at 13:42 +0100, Johannes Berg wrote:
+> > >> [patch doing CHECKFLAGS += -D__CHECK_ENDIAN__ in the
+> > >> net/mac80211/Makefile]
+> > 
+> > > I would prefer it to be kernel wide enabled.
+> > > Tried a defconfig build.
+> > 
+> > Hm. I tend to think there was a reason for this, since this is actually
+> > explicitly disabled by include/linux/types.h:
+> > 
+> > #ifdef __CHECKER__
+> > #define __bitwise__ __attribute__((bitwise))
+> > #else 
+> > #define __bitwise__
+> > #endif
+> > 
+> > #ifdef __CHECK_ENDIAN__
+> > #define __bitwise __bitwise__
+> > #else
+> > #define __bitwise
+> > #endif
+> > 
 > 
->  mm/allocpercpu.c |   15 ++++++++++++++-
->  1 files changed, 14 insertions(+), 1 deletion(-)
+> This seems somewhat suspect.
 > 
+> > I recently ran sparse on my config and was surprised by the number of
+> > warnings. Then again, something in mmzone.h or so generated billions of
+> > them...
 > 
-> plain text document attachment (percpu_populate.patch)
-> diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-> index 7e58322..b0012e2 100644
-> --- a/mm/allocpercpu.c
-> +++ b/mm/allocpercpu.c
-> @@ -6,6 +6,10 @@
->  #include <linux/mm.h>
->  #include <linux/module.h>
->  
-> +#ifndef cache_line_size
-> +#define cache_line_size()	L1_CACHE_BYTES
-> +#endif
-> +
->  /**
->   * percpu_depopulate - depopulate per-cpu data for given cpu
->   * @__pdata: per-cpu data to depopulate
-> @@ -52,6 +56,11 @@ void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
->  	struct percpu_data *pdata = __percpu_disguise(__pdata);
->  	int node = cpu_to_node(cpu);
->  
-> +	/*
-> +	 * We should make sure each CPU gets private memory.
-> +	 */
-> +	size = roundup(size, cache_line_size());
-> +
->  	BUG_ON(pdata->ptrs[cpu]);
->  	if (node_online(node))
->  		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
-> @@ -98,7 +107,11 @@ EXPORT_SYMBOL_GPL(__percpu_populate_mask);
->   */
->  void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
->  {
-> -	void *pdata = kzalloc(nr_cpu_ids * sizeof(void *), gfp);
-> +	/*
-> +	 * We allocate whole cache lines to avoid false sharing
-> +	 */
-> +	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
-> +	void *pdata = kzalloc(sz, gfp);
->  	void *__pdata = __percpu_disguise(pdata);
->  
->  	if (unlikely(!pdata))
-
+> Potentially expensive pointer subtraction 640:....
+> 
+> Patch in -mm.
+> 
+> > 
+> > In any case, I would love to have __CHECK_ENDIAN__ enabled by default at
+> > least on the wireless code (just caught another bug with it...)
+> > 
+> 
+> I'd love to have it too, but there are so many trivial warnings that
+> clutter up valid warnings that it is prohibitive.  I'm working on
+> reducing the noise level a bit for 2.6.26, we'll see about turning
+> it on then.
+> 
+> Harvey
+> 
