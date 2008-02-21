@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934130AbYBUQKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765715AbYBUQNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934130AbYBUQKv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758893AbYBUQKm
+	id S1765715AbYBUQNU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYBUQNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:10:42 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34596 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759400AbYBUQKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:10:41 -0500
-Date: Thu, 21 Feb 2008 10:10:28 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Andrea Arcangeli <andrea@qumranet.com>
-Cc: Nick Piggin <npiggin@suse.de>, akpm@linux-foundation.org,
-       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
-       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] mmu notifiers #v6
-Message-ID: <20080221161028.GA14220@sgi.com>
-References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080221045430.GC15215@wotan.suse.de> <20080221144023.GC9427@v2.random>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221144023.GC9427@v2.random>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 21 Feb 2008 11:13:04 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49052 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758893AbYBUQND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:13:03 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] MM: Fix macro argument substitution in PageHead() and
+	PageTail()
+To: torvalds@osdl.org, akpm@linux-foundation.org, clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 21 Feb 2008 16:12:45 +0000
+Message-ID: <20080221161245.12991.32410.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I really want suggestions on Jack's concern about issuing an
-> invalidate per pte entry or per-pte instead of per-range. I'll answer
-> that in a separate email. For KVM my patch is already close to optimal
-> because each single spte invalidate requires a fixed amount of work,
-> but for GRU a large invalidate-range would be more efficient.
->
-> To address the GRU _valid_ concern, I can create a second version of
-> my patch with range_begin/end instead of invalidate_pages, that still
+From: David Howells <dhowells@redhat.com>
 
-I don't know how much significance to place on this data, but it is
-a real data point.
+Fix macro argument substitution in PageHead() and PageTail() - 'page' should
+have brackets surrounding it (commit 6d7779538f765963ced45a3fa4bed7ba8d2c277d).
 
-I ran the GRU regression test suite on kernels with both types of
-mmu_notifiers. The kernel/driver using Christoph's patch had
-1/7 the number of TLB invalidates as Andrea's patch.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-This reduction is due to both differences I mentioned yesterday:
-	- different location of callout for address space teardown
-	- range callouts
+ include/linux/page-flags.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Unfortunately, the current driver does not allow me to quantify
-which of the differences is most significant.
 
-Also, I'll try to post the driver within the next few days. It is
-still in development but it compiles and can successfully run most
-workloads on a system simulator.
+diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
+index bbad43f..b5b30f1 100644
+--- a/include/linux/page-flags.h
++++ b/include/linux/page-flags.h
+@@ -266,7 +266,7 @@ static inline void SetPageUptodate(struct page *page)
+ 
+ #define PG_head_tail_mask ((1L << PG_compound) | (1L << PG_reclaim))
+ 
+-#define PageTail(page)	((page->flags & PG_head_tail_mask) \
++#define PageTail(page)	(((page)->flags & PG_head_tail_mask)	\
+ 				== PG_head_tail_mask)
+ 
+ static inline void __SetPageTail(struct page *page)
+@@ -279,7 +279,7 @@ static inline void __ClearPageTail(struct page *page)
+ 	page->flags &= ~PG_head_tail_mask;
+ }
+ 
+-#define PageHead(page)	((page->flags & PG_head_tail_mask) \
++#define PageHead(page)	(((page)->flags & PG_head_tail_mask)	\
+ 				== (1L << PG_compound))
+ #define __SetPageHead(page)	__SetPageCompound(page)
+ #define __ClearPageHead(page)	__ClearPageCompound(page)
 
---- jack
