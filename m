@@ -1,71 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934997AbYBUBRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935071AbYBUBTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934997AbYBUBRZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 20:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbYBUBRO
+	id S935071AbYBUBTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 20:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbYBUBTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 20:17:14 -0500
-Received: from crca.org.au ([67.207.131.56]:46648 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762147AbYBUBRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 20:17:12 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Message-ID: <47BCD112.3010708@nigel.suspend2.net>
-Date: Thu, 21 Feb 2008 12:17:06 +1100
-From: Nigel Cunningham <nigel@nigel.suspend2.net>
-Reply-To: nigel@nigel.suspend2.net
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 20 Feb 2008 20:19:15 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:33159 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759481AbYBUBTN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 20:19:13 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tKEAlG7m+icnUKqAoeMie4HrnRUbNllLxEMSCdSe1VigXpqcRR2U6XQrnMx0dI6kyj0ySaeZ8q2Cav8y6ovalTpTl5AvHTfBpgt/zM4SFLyk+fbvWy5t5E3wOPj7hsAn+4BC7SKRhf4I6MYI8Udu8W5FwTkvh+DAkxT9wA8z6KY=
+Message-ID: <b6a2187b0802201719x39a1298j970c563a17fe6a22@mail.gmail.com>
+Date: Thu, 21 Feb 2008 09:19:13 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+In-Reply-To: <200802201639.02502.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
- Screen becomes green.
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org> <47BCC866.9000102@nigel.suspend2.net> <20080221004632.GA25869@suse.de>
-In-Reply-To: <20080221004632.GA25869@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802201337.52247.jesse.barnes@intel.com>
+	 <b6a2187b0802201635t2acb31f2n366f8ef81f119034@mail.gmail.com>
+	 <200802201639.02502.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, Feb 21, 2008 at 8:39 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
+>  Oops, maybe this should just be pci_choose_state instead.
+>  And this change should just be reverted (leave it as PCI_D0).
 
-Greg KH wrote:
-> On Thu, Feb 21, 2008 at 11:40:06AM +1100, Nigel Cunningham wrote:
->> Hi.
->>
->> Matthew Garrett wrote:
->>> On Thu, Feb 21, 2008 at 09:45:02AM +1100, Nigel Cunningham wrote:
->>>> - people keep talking about hibernating to an ext3 fs mounted on fuse as 
->>>> a limitation of the freezer. To do that with kexec, you're still going to 
->>>> have to bmap the ext3 fs and pass the block list (in which case we can 
->>>> also do it without kexec) or umount all the ext3/fuse part and remount in 
->>>> the kexec'd kernel. Sort of defeats the purpose, doesn't it?
->>> No, with a freezer-based model you can basically *never* suspend to 
->>> anything related to FUSE or a userspace USB device or anything involving 
->>> userspace iSCSI initiators or whatever. Sure, there are cases where moving 
->>> away from the current model doesn't buy you anything, but that doesn't 
->>> mean that the current model is a good thing. It's not. The freezer is a 
->>> fundamentally broken concept.
->> Putting drivers and filesystems in userspace is the fundamentally broken 
->> concept. Not just when it comes to the freezer. The whole idea is 
->> inherently racy.
-> 
-> Racy with regards to other things becides trying to suspend a machine?
-> If so, what?
+drivers/char/drm/i915_drv.c: In function 'i915_suspend':
+drivers/char/drm/i915_drv.c:372: warning: passing argument 1 of
+'pci_choose_state' from incompatible pointer type
+drivers/char/drm/i915_drv.c:373: warning: passing argument 1 of
+'pci_choose_state' from incompatible pointer type
 
-That depends on what sort of tangled web you want to weave. Low memory 
-situations is one other situation that occurs to me quickly, especially 
-(though not only) if your ability to swap were to depend upon a 
-userspace driver and/or filesystem.
+I hope those are just warning that can just be ignored.
 
-Regards,
+Ok, rebooting and will get back shortly.
 
-Nigel
+Thanks,
+Jeff.
