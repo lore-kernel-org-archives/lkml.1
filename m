@@ -1,59 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932176AbYBULdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932410AbYBULdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932176AbYBULdQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 06:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYBULdA
+	id S932410AbYBULdi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:33:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759133AbYBULdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 06:33:00 -0500
-Received: from outbound-sin.frontbridge.com ([207.46.51.80]:15118 "EHLO
-	outbound2-sin-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752221AbYBULc7 (ORCPT
+	Thu, 21 Feb 2008 06:33:05 -0500
+Received: from nf-out-0910.google.com ([64.233.182.190]:39415 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756877AbYBULdD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 06:32:59 -0500
-X-BigFish: VP
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
-X-WSS-ID: 0JWL6QM-04-VEA-01
-X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
-From: "Joerg Roedel" <joerg.roedel@amd.com>
-To: tglx@linutronix.de, mingo@redhat.com
-cc: linux-kernel@vger.kernel.org, "Joerg Roedel" <joerg.roedel@amd.com>
-Subject: [PATCH] X86: remove WARN_ON if MTRRs are all blank
-Date: Thu, 21 Feb 2008 12:32:38 +0100
-Message-ID: <1203593558-3391-1-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.3.7
-X-OriginalArrivalTime: 21 Feb 2008 11:32:39.0168 (UTC)
- FILETIME=[76B9C800:01C8747D]
-MIME-Version: 1.0
-X-WSS-ID: 6BA3BED30QK12075801-01-01
-Content-Type: text/plain
+	Thu, 21 Feb 2008 06:33:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:organization:x-mailer:mime-version:content-type:content-transfer-encoding:from;
+        b=vKpiY5t5/0twPavJNbhGYqqBxUFrGweInx83pDIxtGOpH2tOa6VUCw40lNAjZ8yFUU6ipoNwx0pGyegMl7fWrnaqERt7cmTZgDdYVBw+isVVT9r2MooBfDZM4YT+Fd86sOXoJVAik7actkdHjdWPDyQI+06acBVGmiS0669qsAg=
+Date: Thu, 21 Feb 2008 12:33:18 +0100
+To: rpurdie@openedhand.com, rjw@sisk.pl
+Cc: linux-main <linux-kernel@vger.kernel.org>
+Subject: Apm_emulation and proper suspend
+Message-Id: <20080221123318.41273a1f.Kristoffer.ericson@gmail.com>
+Organization: JLime
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.5; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When running Linux inside KVM all MTRRs are blank because there is no reason to
-set them up. So doing a WARN_ON if all MTRRs are blank is not necessary. It is
-sufficient to print the warning message using printk.
+Greetings,
 
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/cpu/mtrr/main.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+I'm reworking a couple of apm drivers and for whatever reason it doesn't seem to update my /proc/apm_bios. I was under the impression that it should do that when apm_bios was catted? Currently I have a value that never change. I export my get_power_status.. function properly but doesn't seem to touch it. I noticed that Richard had the extern int (void..apm_get_power) (...) declare an extra time (once in apm-emulation.h and another inside sharpsl.c), is that needed?
 
-diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
-index b6e136f..e7f95a9 100644
---- a/arch/x86/kernel/cpu/mtrr/main.c
-+++ b/arch/x86/kernel/cpu/mtrr/main.c
-@@ -689,7 +689,6 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
- 	/* kvm/qemu doesn't have mtrr set right, don't trim them all */
- 	if (!highest_pfn) {
- 		printk(KERN_WARNING "WARNING: strange, CPU MTRRs all blank?\n");
--		WARN_ON(1);
- 		return 0;
- 	}
- 
--- 
-1.5.3.7
+Also, is apm the "brains" behind the suspend/resume interactions? By that I mean, should suspend be initiated through apm functions
+in order to be proper? I've tried to find examples but the best source of suspend related code is Richards code on sharp machines.
 
+I've understod the proper way to suspend going from apm_request_suspend -> all devices suspend -> ready -> arch specific code -> off.
 
-
+Best wishes
+Kristoffer
