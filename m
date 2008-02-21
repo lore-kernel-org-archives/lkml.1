@@ -1,80 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbYBUIxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761885AbYBUIzT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbYBUIxy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 03:53:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYBUIxp
+	id S1761885AbYBUIzT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 03:55:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYBUIzH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 03:53:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39818 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754336AbYBUIxo convert rfc822-to-8bit (ORCPT
+	Thu, 21 Feb 2008 03:55:07 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:42666 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751759AbYBUIzF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 03:53:44 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Subject: Re: acpi: new sparse warnings in 2.6.25-rc2
-Date: Thu, 21 Feb 2008 03:53:30 -0500
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <1203579134.20345.9.camel@brick>
-In-Reply-To: <1203579134.20345.9.camel@brick>
+	Thu, 21 Feb 2008 03:55:05 -0500
+Message-ID: <47BD3B56.3090404@linux.vnet.ibm.com>
+Date: Thu, 21 Feb 2008 14:20:30 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200802210353.30885.lenb@kernel.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peter@programming.kicks-ass.net>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: Make yield_task_fair more efficient
+References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu>  <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy>
+In-Reply-To: <1203583439.6243.119.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 February 2008 02:32, Harvey Harrison wrote:
-> Introduced between 2.6.25-rc1 and -rc2.
+Peter Zijlstra wrote:
+> On Thu, 2008-02-21 at 13:09 +0530, Balbir Singh wrote:
 > 
-> drivers/acpi/executer/exregion.c:369:8: warning: incorrect type in argument 3 (different type sizes)
-> drivers/acpi/executer/exregion.c:369:8:    expected unsigned int [usertype] *value
-> drivers/acpi/executer/exregion.c:369:8:    got unsigned long long [usertype] *value
-> drivers/acpi/executer/exregion.c: In function ‘acpi_ex_pci_config_space_handler’:
-> drivers/acpi/executer/exregion.c:369: warning: passing argument 3 of ‘acpi_os_read_pci_configuration’ from incompatible pointer type
+>> sched_yield() is supported API
+> 
+> For SCHED_FIFO/SCHED_RR.
+> 
+>>  and also look at http://lkml.org/lkml/2007/9/19/351.
+> 
+> Read on (http://lkml.org/lkml/2007/9/19/371) and find:
+>         
+>         The sched_yield() behaviour is actually very well-defined for RT
+>         tasks (now, whether it's a good interface to use or not is still
+>         open to debate, but at least it's a _defined_ interface ;), and
+>         I think we should at least try to approximate that behaviour for
+>         normal tasks, even if they aren't RT.
+> 
+> sched_yield() just isn't a very useful API except in RT and even there
+> one can question it.
 > 
 
-Subject: ACPI: fix build warning
-From: Ming Lin <ming.m.lin@intel.com>
+But it's being used very heavily by existing applications. Can we break/penalize
+them because we think it's not a good interface or a method to program?
 
-CC      drivers/acpi/executer/exregion.o
-drivers/acpi/executer/exregion.c: In function
-‘acpi_ex_pci_config_space_handler’:
-drivers/acpi/executer/exregion.c:369: attention : passing argument 3 of
-‘acpi_os_read_pci_configuration’ from incompatible pointer type
 
-exposed by 10270d4838bdc493781f5a1cf2e90e9c34c9142f
+>> I am trying to make sched_yield() efficient
+>> when compat_sched_yield is turned on (which is most likely), since people will
+>> want that behaviour (Hint, please read the man-page for sched_yield).
+> 
+> I did, so what? read the POSIX spec - its just plain undefined for
+> SCHED_OTHER. We already do something 'sensible' for those few broken
+> applications relying on unspecified behaviour.
+> 
+>> There are
+>> already several applications using sched_yield(), so they all suffer.
+> 
+> Who is using it, where is their source so we can show its faster to not
+> use it?
+> 
+> Really, hiding behind closed sores doesn't make it good.
+> 
+> 
 
-http://bugzilla.kernel.org/show_bug.cgi?id=9989
+I am not hiding behind closed source. Please refer to the regression reported by
+Yanmin where he used compat_sched_yield=1 (see
+http://lkml.org/lkml/2008/2/18/7). The regression might be due to other reasons,
+but the point is that people are using compat_sched_yield=1
 
-Signed-off-by: Ming Lin <ming.m.lin@intel.com>
----
-diff --git a/drivers/acpi/executer/exregion.c b/drivers/acpi/executer/exregion.c
-index 2e9ce94..3f51b7e 100644
---- a/drivers/acpi/executer/exregion.c
-+++ b/drivers/acpi/executer/exregion.c
-@@ -338,6 +338,7 @@ acpi_ex_pci_config_space_handler(u32 function,
- 	acpi_status status = AE_OK;
- 	struct acpi_pci_id *pci_id;
- 	u16 pci_register;
-+	u32 value32;
- 
- 	ACPI_FUNCTION_TRACE(ex_pci_config_space_handler);
- 
-@@ -364,9 +365,9 @@ acpi_ex_pci_config_space_handler(u32 function,
- 	switch (function) {
- 	case ACPI_READ:
- 
--		*value = 0;
- 		status = acpi_os_read_pci_configuration(pci_id, pci_register,
--							value, bit_width);
-+							&value32, bit_width);
-+		*value = value32;
- 		break;
- 
- 	case ACPI_WRITE:
+If you insist that sched_yield() is bad, I might agree, but how does my patch
+make things worse. In my benchmarks, it has helped the sched_yield case, why is
+that bad? As far as touching the hot-path is concerned, give me a benchmark that
+I can run on my desktop, that will convince you that the overhead of the patch
+is not all that high. If there is an overhead that is very visible, I'll stop
+pushing the patch.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
