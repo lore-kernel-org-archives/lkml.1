@@ -1,96 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbYBURwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbYBUSAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758853AbYBURwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 12:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbYBURw1
+	id S1758018AbYBUSAc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 13:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbYBUSAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 12:52:27 -0500
-Received: from qb-out-0506.google.com ([72.14.204.231]:33559 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751899AbYBURwZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 12:52:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=rfCosykrOSn0FkEVVWxYX5J/NcY/MIOYZKjjcG1lj7NsYNRaoMjOTSm0lQBwjrCJjci/1iXEV7V7K5FA6I7vUn8gHJYxJo2FNBf34YnTP56SkugwjQL0Wksyq5CZzH3MyZF8NKRQUhaaUvjTlJAtY8Ik3yI17bYHHV1huvOvBNw=
-Subject: [PATCH] saa7146: fix sparse warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
+	Thu, 21 Feb 2008 13:00:21 -0500
+Received: from smtp23.orange.fr ([193.252.22.126]:20256 "EHLO smtp23.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752873AbYBUSAT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 13:00:19 -0500
+X-ME-UUID: 20080221180016685.A771270000A1@mwinf2318.orange.fr
+Message-ID: <47BDBC23.10605@cosmosbay.com>
+Date: Thu, 21 Feb 2008 19:00:03 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+MIME-Version: 1.0
+To: "David S. Miller" <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 09:52:36 -0800
-Message-Id: <1203616356.20345.45.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Cc: linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: [PATCH] alloc_percpu() fails to allocate percpu data
+Content-Type: multipart/mixed;
+ boundary="------------090507080405000509050906"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Went along with the existing file style.
-drivers/media/common/saa7146_core.c:309:6: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_core.c:311:8: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_core.c:319:7: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_core.c:319:28: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_core.c:325:7: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_core.c:325:28: warning: Using plain integer as NULL pointer
-drivers/media/common/saa7146_fops.c:275:12: warning: Using plain integer as NULL pointer
+This is a multi-part message in MIME format.
+--------------090507080405000509050906
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/media/common/saa7146_core.c |    8 ++++----
- drivers/media/common/saa7146_fops.c |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+Some oprofile results obtained while using tbench on a 2x2 cpu machine 
+were very surprising.
 
-diff --git a/drivers/media/common/saa7146_core.c b/drivers/media/common/saa7146_core.c
-index 168a8d3..8c755a1 100644
---- a/drivers/media/common/saa7146_core.c
-+++ b/drivers/media/common/saa7146_core.c
-@@ -306,9 +306,9 @@ static irqreturn_t interrupt_hw(int irq, void *dev_id)
- 		return IRQ_NONE;
- 	}
+For example, loopback_xmit() function was using high number of cpu 
+cycles to perform
+the statistic updates, supposed to be real cheap since they use percpu data
+
+        pcpu_lstats = netdev_priv(dev);
+        lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+        lb_stats->packets++;  /* HERE : serious contention */
+        lb_stats->bytes += skb->len;
+
+
+struct pcpu_lstats is a small structure containing two longs. It appears 
+that on my 32bits platform,
+alloc_percpu(8) allocates a single cache line,  instead of giving to 
+each cpu a separate
+cache line.
+
+Using the following patch gave me impressive boost in various benchmarks 
+( 6 % in tbench)
+(all percpu_counters hit this bug too)
+
+Long term fix (ie >= 2.6.26) would be to let each CPU allocate their own 
+block of memory, so that we
+dont need to roudup sizes to L1_CACHE_BYTES, or merging the SGI stuff of 
+course...
+
+Note : SLUB vs SLAB is important here to *show* the improvement, since 
+they dont have the same minimum
+allocation sizes (8 bytes vs 32 bytes).
+This could very well explain regressions some guys reported when they 
+switched to SLUB.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+ mm/allocpercpu.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletion(-)
+
+
+
+--------------090507080405000509050906
+Content-Type: text/plain;
+ name="percpu_populate.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="percpu_populate.patch"
+
+diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
+index 7e58322..b0012e2 100644
+--- a/mm/allocpercpu.c
++++ b/mm/allocpercpu.c
+@@ -6,6 +6,10 @@
+ #include <linux/mm.h>
+ #include <linux/module.h>
  
--	if( 0 != (dev->ext)) {
-+	if( NULL != (dev->ext)) {
- 		if( 0 != (dev->ext->irq_mask & isr )) {
--			if( 0 != dev->ext->irq_func ) {
-+			if( NULL != dev->ext->irq_func ) {
- 				dev->ext->irq_func(dev, &isr);
- 			}
- 			isr &= ~dev->ext->irq_mask;
-@@ -316,13 +316,13 @@ static irqreturn_t interrupt_hw(int irq, void *dev_id)
- 	}
- 	if (0 != (isr & (MASK_27))) {
- 		DEB_INT(("irq: RPS0 (0x%08x).\n",isr));
--		if( 0 != dev->vv_data && 0 != dev->vv_callback) {
-+		if( NULL != dev->vv_data && NULL != dev->vv_callback) {
- 			dev->vv_callback(dev,isr);
- 		}
- 		isr &= ~MASK_27;
- 	}
- 	if (0 != (isr & (MASK_28))) {
--		if( 0 != dev->vv_data && 0 != dev->vv_callback) {
-+		if( NULL != dev->vv_data && NULL != dev->vv_callback) {
- 			dev->vv_callback(dev,isr);
- 		}
- 		isr &= ~MASK_28;
-diff --git a/drivers/media/common/saa7146_fops.c b/drivers/media/common/saa7146_fops.c
-index f0703d8..a73db79 100644
---- a/drivers/media/common/saa7146_fops.c
-+++ b/drivers/media/common/saa7146_fops.c
-@@ -272,7 +272,7 @@ static int fops_open(struct inode *inode, struct file *file)
++#ifndef cache_line_size
++#define cache_line_size()	L1_CACHE_BYTES
++#endif
++
+ /**
+  * percpu_depopulate - depopulate per-cpu data for given cpu
+  * @__pdata: per-cpu data to depopulate
+@@ -52,6 +56,11 @@ void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
+ 	struct percpu_data *pdata = __percpu_disguise(__pdata);
+ 	int node = cpu_to_node(cpu);
  
- 	result = 0;
- out:
--	if( fh != 0 && result != 0 ) {
-+	if( fh != NULL && result != 0 ) {
- 		kfree(fh);
- 		file->private_data = NULL;
- 	}
--- 
-1.5.4.2.200.g99e75
++	/*
++	 * We should make sure each CPU gets private memory.
++	 */
++	size = roundup(size, cache_line_size());
++
+ 	BUG_ON(pdata->ptrs[cpu]);
+ 	if (node_online(node))
+ 		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
+@@ -98,7 +107,11 @@ EXPORT_SYMBOL_GPL(__percpu_populate_mask);
+  */
+ void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
+ {
+-	void *pdata = kzalloc(nr_cpu_ids * sizeof(void *), gfp);
++	/*
++	 * We allocate whole cache lines to avoid false sharing
++	 */
++	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
++	void *pdata = kzalloc(sz, gfp);
+ 	void *__pdata = __percpu_disguise(pdata);
+ 
+ 	if (unlikely(!pdata))
 
+--------------090507080405000509050906--
 
 
