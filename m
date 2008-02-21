@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932506AbYBUAdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934401AbYBUAft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932506AbYBUAdV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbYBUAdN
+	id S934401AbYBUAft (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:35:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758896AbYBUAfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:33:13 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33334 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753525AbYBUAdM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:33:12 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: 2.6.25-rc2 regression - hang on suspend
-Date: Thu, 21 Feb 2008 01:31:53 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <1203422386.10992.2.camel@localhost> <200802200050.10158.rjw@sisk.pl> <1203487269.6542.1.camel@localhost>
-In-Reply-To: <1203487269.6542.1.camel@localhost>
+	Wed, 20 Feb 2008 19:35:41 -0500
+Received: from wx-out-0506.google.com ([66.249.82.225]:15041 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758006AbYBUAfk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:35:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c1+hYLjW1tKXvW8ylxxOHZolonxAvvwlAewfbTUINRilw9PvkaFeTThN2I7SckniFyvMpfZv/h9QAzWJccObiOCcwjsQSl2cV/9v6pQV4VdzM81vEoy8LeVc6B7k4zfmrUnhnIWcOWi1KnKXxs3EEK0Agv8Z2DhajOyz1lAA86s=
+Message-ID: <b6a2187b0802201635t2acb31f2n366f8ef81f119034@mail.gmail.com>
+Date: Thu, 21 Feb 2008 08:35:38 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+In-Reply-To: <200802201337.52247.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802210131.54272.rjw@sisk.pl>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802201053.16218.jesse.barnes@intel.com>
+	 <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com>
+	 <200802201337.52247.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
-> On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
-> > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > On Tue, 2008-02-19 at 22:06 +0100, Rafael J. Wysocki wrote:
-> > > > On Tuesday, 19 of February 2008, Soeren Sonnenburg wrote:
-> > > > > Hi,
-> > > > 
-> > > > Hi,
-> > > > 
-> > > > > since 2.6.25-rc1 (first version I tried) and still in rc2 (and git), I
-> > > > > see a hang on s2ram already when trying to suspend.
-> > > > 
-> > > > Does it work with 2.6.24?
-> > > 
-> > > yes.
-> > 
-> > Please take the current mainline (there are a couple of nasty bugs fixed in
-> > it), configure it with CONFIG_PM_DEBUG set, boot it with "no_console_suspend",
-> > run
-> > 
-> > # echo 8 > /proc/sys/kernel/printk
-> > # echo devices > /sys/power/pm_test
-> > # echo mem > /sys/power/state
-> > 
-> > If it hangs, it should leave a stack trace before and I need that trace to see
-> > what's going on.  If it doesn't hang, I'll tell you what to do next.
-> 
-> I tried with 2.6.24.2 with CONFIG_PM_DEBUG set, following your steps and
-> yes it works flawlessly (though the display did not come back I could
-> suspend/resume multiple times without problems, and finally s2ram -f -p
-> brought the display back).
+On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
 
-Hm, there's no /sys/power/pm_test in 2.6.24.2 (and the "current mainline"
-means the latest -git kernel possible or the current top of the Linus' tree),
-so in fact you tested 2.6.24 again, that is known to work ...
+>  Ok, can you give this patch a try with the 'platform' method?  It should at
+>  least tell us what ACPI would like the device to do at suspend time, but it
+>  probably won't fix the hang.
+
+I can't get it to compile.
+
+drivers/char/drm/i915_drv.c: In function 'i915_suspend':
+drivers/char/drm/i915_drv.c:372: error: implicit declaration of
+function 'acpi_pci_choose_state'
+drivers/char/drm/i915_drv.c: In function 'i915_resume':
+drivers/char/drm/i915_drv.c:383: error: 'state' undeclared (first use
+in this function)
+drivers/char/drm/i915_drv.c:383: error: (Each undeclared identifier is
+reported only once
+drivers/char/drm/i915_drv.c:383: error: for each function it appears in.)
+make[3]: *** [drivers/char/drm/i915_drv.o] Error 1
+make[2]: *** [drivers/char/drm] Error 2
+make[1]: *** [drivers/char] Error 2
+make: *** [drivers] Error 2
 
 Thanks,
-Rafael
+Jeff.
