@@ -1,109 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765227AbYBUJpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbYBUJsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765227AbYBUJpE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbYBUJov
+	id S1764021AbYBUJsv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:48:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYBUJsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:44:51 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:42225 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758273AbYBUJot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:44:49 -0500
-To: linux-kernel@vger.kernel.org
-Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       akpm@linux-foundation.org, jayakumar.lkml@gmail.com
-Subject: [PATCH 1/2] fbdev: Make deferred I/O work as advertized
-References: <871w76ejdg.fsf@pike.pond.sub.org>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Thu, 21 Feb 2008 10:43:04 +0100
-Message-ID: <87ve4id4rb.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Thu, 21 Feb 2008 04:48:43 -0500
+Received: from E23SMTP02.au.ibm.com ([202.81.18.163]:59330 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbYBUJsm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 04:48:42 -0500
+Message-ID: <47BD479F.6070901@linux.vnet.ibm.com>
+Date: Thu, 21 Feb 2008 15:12:55 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Make yield_task_fair more efficient
+References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu>  <47BD44FF.7070104@linux.vnet.ibm.com> <1203586980.6243.124.camel@lappy>
+In-Reply-To: <1203586980.6243.124.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Deferred I/O was utterly broken.  Reading the mmap()ed framebuffer
-worked, but writing it made the VM endlessly invoke
-vm_ops.page_mkwrite().  That happened because we failed to set
-page->mapping and page->index.
+Peter Zijlstra wrote:
+> On Thu, 2008-02-21 at 15:01 +0530, Balbir Singh wrote:
+> 
+>> I have an alternate approach in mind (that I need to find time for),
+>> threaded-rbtrees. Walking the tree is really efficient, specially finding
+>> successor of a node.
+> 
+> Threading the rbtrees would be even more expensive, it would require a
+> list_head in each node and a full list operation for every tree
+> operation.
+> 
 
-The fix is to set them, and clean up properly before the framebuffer
-gets released.
+Peter, when I say threaded, I don't mean threaded as in tasks. Please see
+http://www.nist.gov/dads/HTML/threadedtree.html and
+http://datastructures.itgo.com/trees/tbt.htm
 
-Fix extracted from this linux-fbdev-devel message:
-
-    Subject: [PATCH 1/1 2.6.24] fbdev: defio and Metronomefb
-    From: Jaya Kumar <jayakumar.lkml@gmail.com>
-    Date: 2008-02-18 13:41:26
-
-Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Signed-off-by: Markus Armbruster <armbru@redhat.com>
-
----
-
- drivers/video/fb_defio.c |   22 ++++++++++++++++++++--
- 1 file changed, 20 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
-index 0f8cfb9..24843fd 100644
---- a/drivers/video/fb_defio.c
-+++ b/drivers/video/fb_defio.c
-@@ -4,7 +4,7 @@
-  *  Copyright (C) 2006 Jaya Kumar
-  *
-  * This file is subject to the terms and conditions of the GNU General Public
-- * License.  See the file COPYING in the main directory of this archive
-+ * License. See the file COPYING in the main directory of this archive
-  * for more details.
-  */
- 
-@@ -31,7 +31,7 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
- 	unsigned long offset;
- 	struct page *page;
- 	struct fb_info *info = vma->vm_private_data;
--	/* info->screen_base is in System RAM */
-+	/* info->screen_base is virtual memory */
- 	void *screen_base = (void __force *) info->screen_base;
- 
- 	offset = vmf->pgoff << PAGE_SHIFT;
-@@ -43,6 +43,15 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
- 		return VM_FAULT_SIGBUS;
- 
- 	get_page(page);
-+
-+	if (vma->vm_file)
-+		page->mapping = vma->vm_file->f_mapping;
-+	else
-+		printk(KERN_ERR "no mapping available\n");
-+
-+	BUG_ON(!page->mapping);
-+	page->index = vmf->pgoff;
-+
- 	vmf->page = page;
- 	return 0;
- }
-@@ -138,11 +147,20 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
- 
- void fb_deferred_io_cleanup(struct fb_info *info)
- {
-+	void *screen_base = (void __force *) info->screen_base;
- 	struct fb_deferred_io *fbdefio = info->fbdefio;
-+	struct page *page;
-+	int i;
- 
- 	BUG_ON(!fbdefio);
- 	cancel_delayed_work(&info->deferred_work);
- 	flush_scheduled_work();
-+
-+	/* clear out the mapping that we setup */
-+	for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
-+		page = vmalloc_to_page(screen_base + i);
-+		page->mapping = NULL;
-+	}
- }
- EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
- 
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
