@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbYBUB2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933418AbYBUBdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933802AbYBUB2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 20:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755686AbYBUB2L
+	id S933418AbYBUBdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 20:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758346AbYBUBdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 20:28:11 -0500
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:44244 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751943AbYBUB2J (ORCPT
+	Wed, 20 Feb 2008 20:33:12 -0500
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23139 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755205AbYBUBdL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 20:28:09 -0500
-Date: Wed, 20 Feb 2008 17:36:19 -0800
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] x86: skip it if Fam 10h only handle bus 0
-In-reply-to: <200802190313.02551.yinghai.lu@sun.com>
-To: Ingo Molnar <mingo@elte.hu>, Greg KH <greg@kroah.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jeff Garzik <jeff@garzik.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802201736.19685.yinghai.lu@sun.com>
-Organization: Sun
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200802190311.44404.yinghai.lu@sun.com>
- <200802190313.02551.yinghai.lu@sun.com>
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+	Wed, 20 Feb 2008 20:33:11 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=PD9qCwpW1dYacpJz78pQGBcTC/5WLG+IRruejr+g04fq5NWBAbrQIt3ur1xlf3rk572O5bHW01kuCpkMfuCjnqC0B10kCSWvfBQUQX1MyRzJLdHHFOvuNXYNL/PpDPgfNV4bVrTOJKolQ01Oc2G2KhkABrET7PLIRORxcjD4X8U=  ;
+X-YMail-OSG: NlrVzMcVM1mzg2u56zZUpBG0objQthiKyShcQYnP_UWemCRCm1KVrOtcQi165.19uZMxegYu4w--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: Re: atmel_spi clock polarity
+Date: Wed, 20 Feb 2008 17:32:38 -0800
+User-Agent: KMail/1.9.6
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20080218124237.0b5f701c@dhcp-252-066.norway.atmel.com> <20080220.142109.11595419.nemoto@toshiba-tops.co.jp> <20080220103446.1621c81f@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080220103446.1621c81f@dhcp-252-066.norway.atmel.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200802201732.38932.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 20 February 2008, Haavard Skinnemoen wrote:
+> > 
+> > Unfortunately it did not work.  The clock state did not change by
+> > writing MR register.
+> 
+> Ok, thanks for testing.
+> 
+> In that case, I think the best fix is to let NPCS0 stay selected
+> permanently in MR and overwrite CSR0 with to the new slave's settings
+> before asserting CS. But that's a more complicated change, and I don't
+> know how it will affect the AT91RM9200 special cases.
 
-need to apply after
-	x86_64: check MSR to get MMCONFIG for AMD Family 10h Opteron v3
+The rm9200 special cases which, ISTR, still don't work right ...
 
-some BIOS only let AMD fam 10h handle bus0, and nvidia mcp55/ck804
-to handle other buses. at that case MCFG will cover all over them.
 
-this patch will skip it so to use MCFG later.
+> So I suggest we merge your patch for 2.6.25, and try to optimize it
+> for 2.6.26.
+> 
+> David, do you want me to pass on the patch with my signoff or just ask
+> Andrew to add my Acked-by to the patch already in mm?
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
+It'd be good to let Andrew have your ack.  It's already in MM, so
+if I don't need to sign off it's nice to have less to do there.  :)
 
-Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-+++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-@@ -123,6 +123,14 @@ static const char __init *pci_mmcfg_amd_
+- Dave
+
  
- 	busnbits = (msr >> FAM10H_MMIO_CONF_BUSRANGE_SHIFT) &
- 			 FAM10H_MMIO_CONF_BUSRANGE_MASK;
-+
-+	/*
-+	 * only handle bus 0 ?
-+	 * need to skip it
-+	 */
-+	if (!busnbits)
-+		return NULL;
-+
- 	if (busnbits > 8) {
- 		segnbits = busnbits - 8;
- 		busnbits = 8;
+
+
