@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934303AbYBUU5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbYBUU7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934303AbYBUU5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbYBUU43
+	id S1760008AbYBUU7A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 15:59:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760182AbYBUU6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:56:29 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:24165 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933326AbYBUU41 (ORCPT
+	Thu, 21 Feb 2008 15:58:49 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:46162 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757660AbYBUU6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:56:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=AiriauBGrG8ajjzndzaLZ9P7K1eGQG3+nE+wOmQE7bjTAtUTckmFMbnLZEeP7FMpJ
-	swI9Iq32mYDeb+If1VtNw==
-Message-Id: <20080221205525.165641000@menage.corp.google.com>
-References: <20080221203518.544461000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Thu, 21 Feb 2008 12:35:19 -0800
-From: menage@google.com
-To: akpm@linux-foundation.org, xemul@openvz.org, balbir@in.ibm.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 1/2] ResCounter: Add res_counter_read_uint()
-Content-Disposition: inline; filename=resource_counter_read_uint.patch
+	Thu, 21 Feb 2008 15:58:48 -0500
+Date: Thu, 21 Feb 2008 12:58:16 -0800
+From: Greg KH <greg@kroah.com>
+To: David Newall <davidn@davidnewall.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Handshaking on USB serial devices
+Message-ID: <20080221205816.GA23793@kroah.com>
+References: <47B30291.2040905@davidnewall.com> <20080214050211.GB1432@kroah.com> <47B40918.20206@davidnewall.com> <20080214121026.16a9c510@core> <47B482B4.9010208@davidnewall.com> <20080214193637.5df1c205@core> <47BD9721.70907@davidnewall.com> <20080221151549.0fa72422@core> <47BDD26D.5010004@davidnewall.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BDD26D.5010004@davidnewall.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds a function for returning the value of a resource counter member,
-in a form suitable for use in a cgroup read_uint control file method.
+On Fri, Feb 22, 2008 at 06:05:09AM +1030, David Newall wrote:
+> Alan Cox wrote:
+> >> developing is entirely wrong.  Oh well.  Mind you, providing a
+> >> write_room function is NOT a real solution; it merely reduces the
+> >> condition to a usually-winnable race.  (Ironically, when I back-ported
+> >> the 2.6 driver, I excluded its new write_room function.  Mistake.)
+> >>     
+> >
+> > What race do you see left ?
+> >   
+> 
+> On second thoughts I'm not sure that I do.  I've had my head so full of
+> 2.4 pl2303, and 2.4 pl2303 with this, that and the other added to it,
+> that I was probably just confused.  Certainly it's not important,
+> because I didn't mean the 2.6 driver, but an hypothetical 2.4 with a
+> simplistic write_room function added (e.g. return
+> port->write_urb->status == -EINPROGRESS ? 0 : 64).  OPOST processing's
+> use of putchar to expand CRLF sends two writes (or putchars), with no
+> intervening checks.  Since I'm just polishing off my back-port of
+> 2.6.24.1 pl2303 to kernel 2.4, the matter is quite irrelevant.
+> 
+> By the way, what happened to HUawei E620 UMTS/HSDPA card?  It's in
+> pl2303 in 2.6.23; not in 2.6.24.1.  (Do I remove it from my back-port?)
 
-Signed-off-by: Paul Menage <menage@google.com>
+Yes, please remove it, it was incorrectly listed in the pl2303 driver in
+the .23 kernel.
 
----
- include/linux/res_counter.h |    1 +
- kernel/res_counter.c        |    5 +++++
- 2 files changed, 6 insertions(+)
+thanks,
 
-Index: rescounter-2.6.25-rc2-mm1/include/linux/res_counter.h
-===================================================================
---- rescounter-2.6.25-rc2-mm1.orig/include/linux/res_counter.h
-+++ rescounter-2.6.25-rc2-mm1/include/linux/res_counter.h
-@@ -54,6 +54,7 @@ struct res_counter {
- ssize_t res_counter_read(struct res_counter *counter, int member,
- 		const char __user *buf, size_t nbytes, loff_t *pos,
- 		int (*read_strategy)(unsigned long long val, char *s));
-+u64 res_counter_read_uint(struct res_counter *counter, int member);
- ssize_t res_counter_write(struct res_counter *counter, int member,
- 		const char __user *buf, size_t nbytes, loff_t *pos,
- 		int (*write_strategy)(char *buf, unsigned long long *val));
-Index: rescounter-2.6.25-rc2-mm1/kernel/res_counter.c
-===================================================================
---- rescounter-2.6.25-rc2-mm1.orig/kernel/res_counter.c
-+++ rescounter-2.6.25-rc2-mm1/kernel/res_counter.c
-@@ -92,6 +92,11 @@ ssize_t res_counter_read(struct res_coun
- 			pos, buf, s - buf);
- }
- 
-+u64 res_counter_read_uint(struct res_counter *counter, int member)
-+{
-+	return *res_counter_member(counter, member);
-+}
-+
- ssize_t res_counter_write(struct res_counter *counter, int member,
- 		const char __user *userbuf, size_t nbytes, loff_t *pos,
- 		int (*write_strategy)(char *st_buf, unsigned long long *val))
-
---
+greg k-h
