@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934868AbYBUW5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbYBUW6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934868AbYBUW5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:57:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBUW5p
+	id S1758427AbYBUW6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754555AbYBUW6U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:57:45 -0500
-Received: from ik-out-1112.google.com ([66.249.90.178]:52325 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbYBUW5o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:57:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bctJMdOJVUHsf2LKPM6d1C0Px7OiAHm2GZWFPavhQ/3/PwtetP+BvZvubYvLVxepHdYtrXClRG516zgGaxpPLQBJWBrVtwui9eZSoWVW+oomVEsTLUdZ/DQGfkuOTvQA5Iyq169myd/HSjsRoMGC93n+l13r3DeXR7Wuu37GPLM=
-Message-ID: <5d6222a80802211457s2beb4d5cre331bc800c28d111@mail.gmail.com>
-Date: Thu, 21 Feb 2008 19:57:39 -0300
-From: "Glauber Costa" <glommer@gmail.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 2/2] make work have a static address in do_boot_cpu()
-Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu, arjan@infradead.org
-In-Reply-To: <1203631967.6112.16.camel@lappy>
+	Thu, 21 Feb 2008 17:58:20 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:36761 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752934AbYBUW6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 17:58:19 -0500
+Message-ID: <47BE01E7.7020508@garzik.org>
+Date: Thu, 21 Feb 2008 17:57:43 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Greg KH <greg@kroah.com>
+CC: Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <20080221223303.GD1846@martell.zuzino.mipt.ru> <20080221224315.GA27640@kroah.com>
+In-Reply-To: <20080221224315.GA27640@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
-	 <1203626456-3101-2-git-send-email-gcosta@redhat.com>
-	 <1203626456-3101-3-git-send-email-gcosta@redhat.com>
-	 <1203631967.6112.16.camel@lappy>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 7:12 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->  On Thu, 2008-02-21 at 17:40 -0300, Glauber Costa wrote:
->  > This patch makes the work field in create_idle have
->  > a static address. Otherwise, being a stack variable, it can
->  > boild down the lockdep system.
->
->  Looks way overkill. Doesn't something like:
->
->
->  > Signed-off-by: Glauber Costa <gcosta@redhat.com>
->  > ---
->  >  arch/x86/kernel/smpboot_64.c |   13 +++++++------
->  >  1 files changed, 7 insertions(+), 6 deletions(-)
->  >
->  > diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
->  > index f15b774..d79b7a8 100644
->  > --- a/arch/x86/kernel/smpboot_64.c
->  > +++ b/arch/x86/kernel/smpboot_64.c
->
->
-> > @@ -553,12 +554,12 @@ static int __cpuinit do_boot_cpu(int cpu
->  >       unsigned long boot_error;
->  >       int timeout;
->  >       unsigned long start_rip;
->  >       struct create_idle create_idle = {
->  > -             .work = __WORK_INITIALIZER(create_idle.work, do_fork_idle),
->  >               .cpu = cpu,
->  >               .done = COMPLETION_INITIALIZER_ONSTACK(create_idle.done),
->  >       };
->  > +     INIT_WORK(&create_idle.work, do_fork_idle);
->
->  work?
+Greg KH wrote:
+> On Fri, Feb 22, 2008 at 01:33:03AM +0300, Alexey Dobriyan wrote:
+>> Speaking of driver, could authors please comment all those barrier()
+>> calls and remove trailing "return;" at the end of void functions.
+> 
+> Why don't you make a patch to checkpatch.pl for those types of things?
+> :)
 
-Indeed.
+Drat, you beat me to that response.....  :)
 
-I missed the static lock_class_key definition inside INIT_WORK macro.
-It does the job neatly.
-
-
--- 
-Glauber Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
