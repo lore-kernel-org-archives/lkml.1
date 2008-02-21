@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760008AbYBUU7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932961AbYBUVBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760008AbYBUU7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760182AbYBUU6t
+	id S932961AbYBUVBQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:01:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbYBUVA7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:58:49 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:46162 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757660AbYBUU6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:58:48 -0500
-Date: Thu, 21 Feb 2008 12:58:16 -0800
-From: Greg KH <greg@kroah.com>
-To: David Newall <davidn@davidnewall.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Handshaking on USB serial devices
-Message-ID: <20080221205816.GA23793@kroah.com>
-References: <47B30291.2040905@davidnewall.com> <20080214050211.GB1432@kroah.com> <47B40918.20206@davidnewall.com> <20080214121026.16a9c510@core> <47B482B4.9010208@davidnewall.com> <20080214193637.5df1c205@core> <47BD9721.70907@davidnewall.com> <20080221151549.0fa72422@core> <47BDD26D.5010004@davidnewall.com>
+	Thu, 21 Feb 2008 16:00:59 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:41349 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756610AbYBUVA6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:00:58 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BDD26D.5010004@davidnewall.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Markus Metzger <markus.t.metzger@intel.com>
+X-Fcc: ~/Mail/linus
+Cc: ak@suse.de, hpa@zytor.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       tglx@linutronix.de, markus.t.metzger@gmail.com,
+       suresh.b.siddha@intel.com, akpm@linux-foundation.org,
+       mtk.manpages@gmail.com, eranian@googlemail.com
+Subject: Re: [patch 1/2] x86, ptrace: support pebs in ds.c
+In-Reply-To: Markus Metzger's message of  Wednesday, 13 February 2008 11:23:49 +0100 <20080213112349.A3283@sedona.ch.intel.com>
+References: <20080213112349.A3283@sedona.ch.intel.com>
+Emacs: no job too big... no job.
+Message-Id: <20080221210026.7B1C62701D5@magilla.localdomain>
+Date: Thu, 21 Feb 2008 13:00:26 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 06:05:09AM +1030, David Newall wrote:
-> Alan Cox wrote:
-> >> developing is entirely wrong.  Oh well.  Mind you, providing a
-> >> write_room function is NOT a real solution; it merely reduces the
-> >> condition to a usually-winnable race.  (Ironically, when I back-ported
-> >> the 2.6 driver, I excluded its new write_room function.  Mistake.)
-> >>     
-> >
-> > What race do you see left ?
-> >   
-> 
-> On second thoughts I'm not sure that I do.  I've had my head so full of
-> 2.4 pl2303, and 2.4 pl2303 with this, that and the other added to it,
-> that I was probably just confused.  Certainly it's not important,
-> because I didn't mean the 2.6 driver, but an hypothetical 2.4 with a
-> simplistic write_room function added (e.g. return
-> port->write_urb->status == -EINPROGRESS ? 0 : 64).  OPOST processing's
-> use of putchar to expand CRLF sends two writes (or putchars), with no
-> intervening checks.  Since I'm just polishing off my back-port of
-> 2.6.24.1 pl2303 to kernel 2.4, the matter is quite irrelevant.
-> 
-> By the way, what happened to HUawei E620 UMTS/HSDPA card?  It's in
-> pl2303 in 2.6.23; not in 2.6.24.1.  (Do I remove it from my back-port?)
+Sorry I haven't replied in this thread sooner.
 
-Yes, please remove it, it was incorrectly listed in the pl2303 driver in
-the .23 kernel.
+I would like to see all the BTS and DS work wait until after 2.6.25.
+We have a lot of x86 churn in 2.6.25 already, and I think we'd do
+better without adding this wrinkle at the same time.
 
-thanks,
+The low-level implementation pieces should gel a bit more in -mm or
+whereever.  They should both get more testing and also get more
+concrete use from the perfmon2 integration effort to iron out their
+internal interface kinks.
 
-greg k-h
+For the user-level interface, we should not be hasty with cooking up
+hairy ptrace extensions.  Personally, I'd prefer that we never add a
+ptrace-based interface for this (ptrace must die).  I think it will
+fit much better either merged into the interfaces that come from
+perfmon2 integration, or into what replaces ptrace when that comes.
+There is not yet any different userland interface framework in the
+tree to base it on, so ptrace extensions may be better than nothing if
+they are well-gelled in 2.6.26 and nothing else is close to ready.
+But I also don't know of anyone desperate and about to burst from lack
+of BTS functionality.
+
+
+Thanks,
+Roland
