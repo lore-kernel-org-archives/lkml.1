@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934658AbYBUQDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbYBUQEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934658AbYBUQDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbYBUQBZ
+	id S1763478AbYBUQEY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:04:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934495AbYBUQDB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:01:25 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:62884 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760304AbYBUQBU (ORCPT
+	Thu, 21 Feb 2008 11:03:01 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:25408 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933760AbYBUQC7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:01:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding:sender;
-        b=ZRLPzMtcIBbbvcuMXRQRN/BSMGccJ4yYVoyjO7I+z0BoA5kXOFInaTlD7sUFben5Qoxgiabf2KtdxY35lBsrhaCpeW0Ug8wuD1KBBWBzbVgR294Xe+UiBTx3OBdQLk4d0Asqv+5aVK+FznqiHr6B2gHzuKlILewZXktX0QO+xWs=
-Message-ID: <47BDA02B.9090702@student.tuwien.ac.at>
-Date: Thu, 21 Feb 2008 17:00:43 +0100
-From: Oliver Martin <oliver.martin@student.tuwien.ac.at>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 21 Feb 2008 11:02:59 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       LKML-scsi <linux-scsi@vger.kernel.org>,
+       "thenzl@redhat.com" <thenzl@redhat.com>,
+       "coldwell@redhat.com" <coldwell@redhat.com>,
+       "adobriyan@gmail.com" <adobriyan@gmail.com>,
+       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>
+Date: Thu, 21 Feb 2008 16:02:05 +0000
+Subject: RE: [PATCH 1/1] resubmit: cciss: procfs updates to display info
+ about many volumes
+Thread-Topic: [PATCH 1/1] resubmit: cciss: procfs updates to display info
+ about many volumes
+Thread-Index: Ach0X3aHsUTBUh3YSNW2qs5VKCDKFwAQ4Qtw
+Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE0428114F45@G6W0268.americas.hpqcorp.net>
+References: <20080220214400.GA13443@roadking.usa.hp.com>
+ <20080221075743.GE23197@kernel.dk>
+In-Reply-To: <20080221075743.GE23197@kernel.dk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Raynard Brown <Raynard.Brown@iongeo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Possible Serial Kernel Bug
-References: <C35C6F42A97E0C468C32F3AEE46CFF6403C07989@digiexch03.iodigi.ioroot.tld>
-In-Reply-To: <C35C6F42A97E0C468C32F3AEE46CFF6403C07989@digiexch03.iodigi.ioroot.tld>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raynard Brown schrieb:
-> 0: uart:16550A port:000003F8 irq:4	tx:72	rx:6
-> 1: uart:16550A port:000002F8 irq:3	tx:59	rx:6
-> 2: uart:16550A port:000003E8 irq:11	tx:0	rx:0 RTS|DTR
-> 3: uart:16550A port:000002E8 irq:10	tx:0	rx:0 RTS|DTR
-> 4: uart:16550A port:000004F8 irq:0	tx:59	rx:6
-> 
-                                                      ^^^^^^^
-Could it be that hardware flow control is enabled on the server, while 
-it is disabled on the other side? What happens if you disable it with 
-stty -F /dev/ttySX -rtscts?
+Jens wrote:
+>
+> On Wed, Feb 20 2008, Mike Miller wrote:
+> > Patch 1 of 1
+> >
+> > This patch hopefully fixes all the brokeness in my last
+> submission. It
+> > compiles cleanly with tape support on or off. I added a couple of
+> > #ifdef's and removed the broken macro definition. The
+> #ifdef's made it unneccesary.
+> > It also replaces create_proc_read_entry with proc_create.
+> >
+> > This patch allows us to display information about all of
+> the logical
+> > volumes configured on a particular controller without stepping on
+> > memory even when there are many volumes (128 or more) configured.
+> > Please consider this for inclusion.
+>
+> Looks a lot better, I've applied it.
+>
 
-Oliver
+Thanks.
