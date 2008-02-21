@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934888AbYBUQya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933693AbYBUQ6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934888AbYBUQya (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:54:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761870AbYBUQyT
+	id S933693AbYBUQ6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:58:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbYBUQ5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:54:19 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:4270 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752106AbYBUQyS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:54:18 -0500
-Message-Id: <47BD64D0.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 21 Feb 2008 09:47:28 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <bill.huey@gmail.com>,
-       <rostedt@goodmis.org>, <kevin@hilman.org>, <tglx@linutronix.de>,
-       <cminyard@mvista.com>, <dsingleton@mvista.com>, <dwalker@mvista.com>,
-       "Moiz Kohari" <MKohari@novell.com>,
-       "Peter Morreale" <PMorreale@novell.com>,
-       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
-       <gregkh@suse.de>, <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH [RT] 11/14] optimize the !printk fastpath through
-	the lock acquisition
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
- <20080221152722.4804.77478.stgit@novell1.haskins.net>
- <200802211736.26719.ak@suse.de>
-In-Reply-To: <200802211736.26719.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 21 Feb 2008 11:57:53 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:57105 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752829AbYBUQ5w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:57:52 -0500
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Victor <linux@maxim.org.za>,
+       michael <trimarchi@gandalf.sssup.it>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] atmel_serial: Fix interrupt handler return value
+Date: Thu, 21 Feb 2008 17:56:32 +0100
+Message-Id: <1203612992-18588-1-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Thu, Feb 21, 2008 at 11:36 AM, in message <200802211736.26719.ak@suse.de>,
-Andi Kleen <ak@suse.de> wrote: 
-> On Thursday 21 February 2008 16:27:22 Gregory Haskins wrote:
-> 
->> @@ -660,12 +660,12 @@ rt_spin_lock_fastlock(struct rt_mutex *lock,
->>  		void fastcall (*slowfn)(struct rt_mutex *lock))
->>  {
->>  	/* Temporary HACK! */
->> -	if (!current->in_printk)
->> -		might_sleep();
->> -	else if (in_atomic() || irqs_disabled())
->> +	if (unlikely(current->in_printk) && (in_atomic() || irqs_disabled()))
-> 
-> I have my doubts that gcc will honor unlikelies that don't affect
-> the complete condition of an if.
-> 
-> Also conditions guarding returns are by default predicted unlikely
-> anyways AFAIK. 
-> 
-> The patch is likely a nop.
-> 
+We should only return IRQ_HANDLED when we actually found something to
+handle. This is important since the USART interrupt handler may be
+shared with the timer interrupt on some chips.
 
-Yeah, you are probably right.  We have found that the system is *extremely* touchy on how much overhead we have in the lock-acquisition path.  For instance, using a non-inline version of adaptive_wait() can cost 5-10% in disk-io throughput.  So we were trying to find places to shave anywhere we could.  That being said, I didn't record any difference from this patch, so you are probably exactly right.  It just seemed like "the right thing to do" so I left it in.
+Pointed-out-by: michael <trimarchi@gandalf.sssup.it>
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/serial/atmel_serial.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--Greg
-
-
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index fad245b..d57bf3e 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -549,7 +549,7 @@ static irqreturn_t atmel_interrupt(int irq, void *dev_id)
+ 		atmel_handle_transmit(port, pending);
+ 	} while (pass_counter++ < ATMEL_ISR_PASS_LIMIT);
+ 
+-	return IRQ_HANDLED;
++	return pass_counter ? IRQ_HANDLED : IRQ_NONE;
+ }
+ 
+ /*
+-- 
+1.5.4.1
 
