@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760298AbYBUFvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761025AbYBUF5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760298AbYBUFvu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 00:51:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbYBUFvm
+	id S1761025AbYBUF5h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 00:57:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbYBUF5X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 00:51:42 -0500
-Received: from E23SMTP04.au.ibm.com ([202.81.18.173]:36176 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752927AbYBUFvl (ORCPT
+	Thu, 21 Feb 2008 00:57:23 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:16666 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbYBUF5W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 00:51:41 -0500
-Message-ID: <47BD1052.2090204@linux.vnet.ibm.com>
-Date: Thu, 21 Feb 2008 11:16:58 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 00:57:22 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
- in Kconfig
-References: <20080220122338.GA4352@basil.nowhere.org> <200802211535.38932.nickpiggin@yahoo.com.au> <47BD06C2.5030602@linux.vnet.ibm.com> <200802211622.51751.nickpiggin@yahoo.com.au>
-In-Reply-To: <200802211622.51751.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [git patches] net driver updates
+Date: Wed, 20 Feb 2008 21:57:08 -0800
+Message-ID: <8A71B368A89016469F72CD08050AD334026D6511@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [git patches] net driver updates
+Thread-Index: Ach0TPDbR1cUNE7UTZuQkdWlmS6KOQAAQ2ZQ
+References: <47BCD0DF.1050205@chelsio.com><OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com> <20080220.214651.235108740.davem@davemloft.net>
+From: "Divy Le Ray" <divy@chelsio.com>
+To: "David Miller" <davem@davemloft.net>, <krkumar2@in.ibm.com>
+Cc: <jeff@garzik.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
->> 1. We could create something similar to mem_map, we would need to handle 4
-> 
->> different ways of creating mem_map.
-> 
->> 2. On x86 with 64 GB ram, if we decided to use vmalloc space, we would need
-> 
->> 64 MB of vmalloc'ed memory
-> 
-> That's going to be a big job. You could probably do it quite easily for
-> 
-> flatmem (just store an offset into the start of your page array), and
-> 
-> maybe even sparsemem (add some "extra" information to the extents).
-> 
->> I have not explored your latest suggestion of pfn <-> memory controller
-> 
->> mapping yet. I'll explore it and see how that goes.
-> 
-> If you did that using a radix-tree, then it could be a runtime option
-> 
-> without having to use vmalloc. And you wouldn't have to care about
-> 
-> memory models. I'd say it will be the fastest way to get a prototype
-> 
-> running.
-> 
 
-OK, I'll explore and prototype the radix tree based approach and see how that goes.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Wednesday, February 20, 2008 9:47 PM
+> To: krkumar2@in.ibm.com
+> Cc: Divy Le Ray; jeff@garzik.org; linux-kernel@vger.kernel.org;
+> netdev@vger.kernel.org
+> Subject: Re: [git patches] net driver updates
+> 
+> From: Krishna Kumar2 <krkumar2@in.ibm.com>
+> Date: Thu, 21 Feb 2008 09:13:49 +0530
+> 
+> > Hi Divy,
+> >
+> > > > Explain why, so I can include it in the changelog please...
+> > >
+> > > Hi Jeff,
+> > >
+> > > The first part of the patch removes the !netif_queue_stopped(dev).
+> > > It opens the race discussed a while ago between Stephen hemminger
+> and
+> > > David Miller:
+> > > http://marc.info/?l=linux-netdev&m=113383224512427&w=2
+> >
+> > I feel this race cannot happen anymore. I think the fix for that
+race
+> was
+> > to introduce the
+> > __LINK_STATE_QDISC_RUNNING bit thus eliminating any races between
+> CPU's. If
+> > one
+> > CPU has called xmit, the other CPU will enqueue skbs (by holding the
+> > queue_lock) and
+> > exit from qdisc_run since it finds the bit set already.
+> 
+> And the race is talking about LLTX, which S2IO doesn't use as
+> far as I can tell.
+
+Dave,
+
+The driver is cxgb3 here, it uses LLTX.
+
+Cheers,
+Divy
