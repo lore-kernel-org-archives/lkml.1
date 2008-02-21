@@ -1,90 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbYBULnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbYBULwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbYBULnU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 06:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYBULnF
+	id S1758272AbYBULwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYBULwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 06:43:05 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:36368 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753776AbYBULnD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 06:43:03 -0500
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 21 Feb 2008 06:52:07 -0500
+Received: from cantor.suse.de ([195.135.220.2]:49655 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751340AbYBULwF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 06:52:05 -0500
+Date: Thu, 21 Feb 2008 12:53:05 +0100
+From: Holger Macht <hmacht@suse.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Tejun Heo <htejun@gmail.com>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH] libata: Register for dock events when the drive is
+	inside a dock station
+Message-ID: <20080221115305.GB5032@homac.suse.de>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+	Tejun Heo <htejun@gmail.com>,
+	Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+References: <20080214124048.GB9708@homac.suse.de> <20080214125615.GD9708@homac.suse.de> <47BC5F44.605@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Date: Thu, 21 Feb 2008 03:43:00 -0800
-Message-ID: <0BB3E5E7462EEA4295BC02D49691DC0701277989@AVEXCH1.qlogic.org>
-In-reply-to: <20080220025525.GG23759@plap3.qlogic.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Thread-Index: AchzbA+f+kJzN/WoRg2byVnWOjX3WQBElqog
-From: "David Somayajulu" <david.somayajulu@qlogic.com>
-To: "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
-       "James Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: "Adrian Bunk" <bunk@kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BC5F44.605@garzik.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-Andrew Vasquez wrote:
-<snip>
-> > > Hmm, guess it's the earlier 'if (scsi_status == 0)' check 
-> a few lines
-> > > up...  Dave S., can you take a look at this...  Thanks, av
-> > 
-> > Ah, so the !scsi_status is wrong it was supposed to be 
-> scsi_status !=
-> > 0 ... and even then it can just be dropped.
-> 
-> My guess is that the check should have been written as:
-> 
-> 	...
-> 	if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
-> 		scsi_set_resid(cmd, residual);
-> 		if ((scsi_bufflen(cmd) - residual) < cmd->underflow) {
-> 			...
-> 
-> It looks to be a logic-error while porting from qla2xxx, where
-> scsi_status during CS_COMPLETE is the full 16-bit status (high-byte is
-> transport, low-byte SCSI status) from from the FCP_RSP frame (not so
-> in iSCSI, where it's just the SCSI-status) and the residual check
-> in qla_isr.c::qla2x00_status_entry() looks like:
-> 
-> 	if (!lscsi_status &&
-> 	    ((unsigned)(scsi_bufflen(cp) - resid) <
-> 	     cp->underflow)) {
-> 		...
-> 
-> I'll defer to Dave S. for verification.
-> 
-The correct patch needs to be 
+On Wed 20. Feb - 12:11:32, Jeff Garzik wrote:
+> Holger Macht wrote:
+>> On Thu 14. Feb - 13:40:48, Holger Macht wrote:
+>>> If a device/bay is inside a docking station, we need to register for dock
+>>> events additionally to bay events. If a dock event occurs, the dock driver
+>>> will call the appropriate handler (ata_acpi_ap_notify() or
+>>> ata_acpi_dev_notify()) for us.
+>>>
+>>> Signed-off-by: Holger Macht <hmacht@suse.de>
+>>
+>> Updated patch which only includes the dock specific function if the dock
+>> driver is actually compiled.
+>>
+>> Signed-off-by: Holger Macht <hmacht@suse.de>
+>> ---
+>>
+>> diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+>> index 9e8ec19..5f16055 100644
+>> --- a/drivers/ata/libata-acpi.c
+>> +++ b/drivers/ata/libata-acpi.c
+>> @@ -191,20 +191,33 @@ void ata_acpi_associate(struct ata_host *host)
+>>  		else
+>>  			ata_acpi_associate_ide_port(ap);
+>>  -		if (ap->acpi_handle)
+>> +		if (ap->acpi_handle) {
+>>  			acpi_install_notify_handler (ap->acpi_handle,
+>>  						     ACPI_SYSTEM_NOTIFY,
+>>  						     ata_acpi_ap_notify,
+>>  						     ap);
+>> +#ifdef CONFIG_ACPI_DOCK
+>> +			/* we might be on a docking station */
+>> +			register_hotplug_dock_device(ap->acpi_handle,
+>> +						     ata_acpi_ap_notify, ap);
+>> +#endif
+>> +		}
+>>   		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
+>>  			struct ata_device *dev = &ap->link.device[j];
+>>  -			if (dev->acpi_handle)
+>> +			if (dev->acpi_handle) {
+>>  				acpi_install_notify_handler (dev->acpi_handle,
+>>  							     ACPI_SYSTEM_NOTIFY,
+>>  							     ata_acpi_dev_notify,
+>>  							     dev);
+>> +#ifdef CONFIG_ACPI_DOCK
+>> +				/* we might be on a docking station */
+>> +				register_hotplug_dock_device(ap->acpi_handle,
+>> +							     ata_acpi_dev_notify,
+>> +							     ap);
+>> +#endif
+>
+> CONFIG_ACPI_DOCK is a tristate, so you might have CONFIG_ACPI_DOCK_MODULE...
 
-Signed-off-by: David C Somayajulu <david.somayajulu@qlogic.com>
+Thanks for the hint, so once again:
 
+
+If a device/bay is inside a docking station, we need to register for dock
+events additionally to bay events. If a dock event occurs, the dock driver
+will call the appropriate handler (ata_acpi_ap_notify() or
+ata_acpi_dev_notify()) for us.
+
+Signed-off-by: Holger Macht <hmacht@suse.de>
 ---
 
-diff --git a/drivers/scsi/qla4xxx/ql4_isr.c
-b/drivers/scsi/qla4xxx/ql4_isr.c
-index 0f029d0..fc84db4 100644
---- a/drivers/scsi/qla4xxx/ql4_isr.c
-+++ b/drivers/scsi/qla4xxx/ql4_isr.c
-@@ -100,8 +100,7 @@ static void qla4xxx_status_entry(struct
+diff --git a/drivers/ata/libata-acpi.c b/drivers/ata/libata-acpi.c
+index 9e8ec19..563ad72 100644
+--- a/drivers/ata/libata-acpi.c
++++ b/drivers/ata/libata-acpi.c
+@@ -191,20 +191,33 @@ void ata_acpi_associate(struct ata_host *host)
+ 		else
+ 			ata_acpi_associate_ide_port(ap);
  
- 		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
- 			scsi_set_resid(cmd, residual);
--			if (!scsi_status && ((scsi_bufflen(cmd) -
-residual) <
--				cmd->underflow)) {
-+			if ((scsi_bufflen(cmd) - residual) <
-cmd->underflow) {
+-		if (ap->acpi_handle)
++		if (ap->acpi_handle) {
+ 			acpi_install_notify_handler (ap->acpi_handle,
+ 						     ACPI_SYSTEM_NOTIFY,
+ 						     ata_acpi_ap_notify,
+ 						     ap);
++#ifdef CONFIG_ACPI_DOCK_MODULE
++			/* we might be on a docking station */
++			register_hotplug_dock_device(ap->acpi_handle,
++						     ata_acpi_ap_notify, ap);
++#endif
++		}
  
- 				cmd->result = DID_ERROR << 16;
+ 		for (j = 0; j < ata_link_max_devices(&ap->link); j++) {
+ 			struct ata_device *dev = &ap->link.device[j];
  
+-			if (dev->acpi_handle)
++			if (dev->acpi_handle) {
+ 				acpi_install_notify_handler (dev->acpi_handle,
+ 							     ACPI_SYSTEM_NOTIFY,
+ 							     ata_acpi_dev_notify,
+ 							     dev);
++#ifdef CONFIG_ACPI_DOCK_MODULE
++				/* we might be on a docking station */
++				register_hotplug_dock_device(ap->acpi_handle,
++							     ata_acpi_dev_notify,
++							     ap);
++#endif
++			}
+ 		}
+ 	}
+ }
