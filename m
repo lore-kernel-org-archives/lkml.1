@@ -1,82 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935328AbYBUWWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbYBUW0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935328AbYBUWWs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:22:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbYBUWWh
+	id S1757442AbYBUW0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757873AbYBUW0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:22:37 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:41955 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754614AbYBUWWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:22:36 -0500
-Date: Thu, 21 Feb 2008 23:22:45 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
-Message-ID: <20080221222245.GB30976@uranus.ravnborg.org>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B73DD8.4030405@linux.vnet.ibm.com> <200802210208.47487.lenb@kernel.org> <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com>
+	Thu, 21 Feb 2008 17:26:21 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:53305 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752138AbYBUW0T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 17:26:19 -0500
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+In-Reply-To: <47BDBC23.10605@cosmosbay.com>
+References: <47BDBC23.10605@cosmosbay.com>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 23:26:05 +0100
+Message-Id: <1203632765.6112.20.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 10:54:40AM -0800, Nish Aravamudan wrote:
-> On 2/20/08, Len Brown <lenb@kernel.org> wrote:
-> > On Saturday 16 February 2008 14:47, Kamalesh Babulal wrote:
-> >  > Hi Andrew,
-> >  >
-> >  > The 2.6.25-rc2-mm1 kernel with randconfig build option, fails
-> >  > to build on x86_64 machine
-> >  >
-> >  >   CC      drivers/acpi/osl.o
-> >  > drivers/acpi/osl.c:60:38: error: empty filename in #include
-> >  > drivers/acpi/osl.c: In function 'acpi_os_table_override':
-> >  > drivers/acpi/osl.c:399: error: 'AmlCode' undeclared (first use in this function)
-> >  > drivers/acpi/osl.c:399: error: (Each undeclared identifier is reported only once
-> >  > drivers/acpi/osl.c:399: error: for each function it appears in.)
-> >  > make[2]: *** [drivers/acpi/osl.o] Error 1
-> >  > make[1]: *** [drivers/acpi] Error 2
-> >  > make: *** [drivers] Error 2
-> >  >
-> >  > #
-> >  > # Automatically generated make config: don't edit
-> >  > # Linux kernel version: 2.6.25-rc2-mm1
-> >  > # Sun Feb 17 08:07:17 2008
-> >  > #
-> >
-> >
-> > > CONFIG_ACPI_CUSTOM_DSDT=y
-> >  > CONFIG_ACPI_CUSTOM_DSDT_FILE=""
-> >
-> >
-> > garbage in, garbage out.
-> 
-> garbage explicitly *allowed* by Kconfig in this case, though.
-> 
-> >  If you don't give this build option a file name where AmlCode lives,
-> >  then the build will be unable to find AmlCode[].
-> >
-> >  http://www.lesswatts.org/projects/acpi/overridingDSDT.php
-> 
-> So we have a .config option whose sole purpose is to use another
-> .config option? That seems ... less than ideal. Is there not some
-> Kconfig voodoo we can do to only require the one option? Maybe
-> something like how CONFIG_INITRAMFS_SOURCE is done? Adding Sam to the
-> Cc, in case he has any ideas.
 
-Make sure STANDALONE is y for your randconfig builds.
-See README for examples.
+On Thu, 2008-02-21 at 19:00 +0100, Eric Dumazet wrote:
+> Some oprofile results obtained while using tbench on a 2x2 cpu machine 
+> were very surprising.
+> 
+> For example, loopback_xmit() function was using high number of cpu 
+> cycles to perform the statistic updates, supposed to be real cheap
+> since they use percpu data
+> 
+>         pcpu_lstats = netdev_priv(dev);
+>         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+>         lb_stats->packets++;  /* HERE : serious contention */
+>         lb_stats->bytes += skb->len;
+> 
+> 
+> struct pcpu_lstats is a small structure containing two longs. It
+> appears that on my 32bits platform, alloc_percpu(8) allocates a single
+> cache line,  instead of giving to each cpu a separate cache line.
+> 
+> Using the following patch gave me impressive boost in various
+> benchmarks ( 6 % in tbench) (all percpu_counters hit this bug too)
+> 
+> Long term fix (ie >= 2.6.26) would be to let each CPU allocate their
+> own block of memory, so that we dont need to roudup sizes to
+> L1_CACHE_BYTES, or merging the SGI stuff of course...
+> 
+> Note : SLUB vs SLAB is important here to *show* the improvement, since
+> they dont have the same minimum allocation sizes (8 bytes vs 32
+> bytes). This could very well explain regressions some guys reported
+> when they switched to SLUB.
 
-STANALONE is there exactly to prevent the above but we cannot
-control randconfig.
+I've complained about this false sharing as well, so until we get the
+new and improved percpu allocators,
 
-	Sam
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+> 
+>  mm/allocpercpu.c |   15 ++++++++++++++-
+>  1 files changed, 14 insertions(+), 1 deletion(-)
+> 
+> 
+> plain text document attachment (percpu_populate.patch)
+> diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
+> index 7e58322..b0012e2 100644
+> --- a/mm/allocpercpu.c
+> +++ b/mm/allocpercpu.c
+> @@ -6,6 +6,10 @@
+>  #include <linux/mm.h>
+>  #include <linux/module.h>
+>  
+> +#ifndef cache_line_size
+> +#define cache_line_size()	L1_CACHE_BYTES
+> +#endif
+> +
+>  /**
+>   * percpu_depopulate - depopulate per-cpu data for given cpu
+>   * @__pdata: per-cpu data to depopulate
+> @@ -52,6 +56,11 @@ void *percpu_populate(void *__pdata, size_t size, gfp_t gfp, int cpu)
+>  	struct percpu_data *pdata = __percpu_disguise(__pdata);
+>  	int node = cpu_to_node(cpu);
+>  
+> +	/*
+> +	 * We should make sure each CPU gets private memory.
+> +	 */
+> +	size = roundup(size, cache_line_size());
+> +
+>  	BUG_ON(pdata->ptrs[cpu]);
+>  	if (node_online(node))
+>  		pdata->ptrs[cpu] = kmalloc_node(size, gfp|__GFP_ZERO, node);
+> @@ -98,7 +107,11 @@ EXPORT_SYMBOL_GPL(__percpu_populate_mask);
+>   */
+>  void *__percpu_alloc_mask(size_t size, gfp_t gfp, cpumask_t *mask)
+>  {
+> -	void *pdata = kzalloc(nr_cpu_ids * sizeof(void *), gfp);
+> +	/*
+> +	 * We allocate whole cache lines to avoid false sharing
+> +	 */
+> +	size_t sz = roundup(nr_cpu_ids * sizeof(void *), cache_line_size());
+> +	void *pdata = kzalloc(sz, gfp);
+>  	void *__pdata = __percpu_disguise(pdata);
+>  
+>  	if (unlikely(!pdata))
 
