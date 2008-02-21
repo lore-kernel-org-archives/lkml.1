@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932426AbYBUVGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933684AbYBUVID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932426AbYBUVGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbYBUVGC
+	id S933684AbYBUVID (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:08:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbYBUVHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:06:02 -0500
-Received: from gw.goop.org ([64.81.55.164]:34640 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756875AbYBUVGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:06:00 -0500
-Message-ID: <47BDE731.60801@goop.org>
-Date: Thu, 21 Feb 2008 13:03:45 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] xen: Implement getgeo for Xen virtual block device.
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Thu, 21 Feb 2008 16:07:51 -0500
+Received: from smtp2.wanadoo.co.uk ([193.252.22.157]:18702 "EHLO
+	smtp2.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759472AbYBUVHt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:07:49 -0500
+X-ME-UUID: 20080221210743979.EEFB17000086@mwinf3108.me.freeserve.com
+Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
+From: Chris Vine <chris@cvine.freeserve.co.uk>
+To: Ivo van Doorn <ivdoorn@gmail.com>
+Cc: Dan Williams <dcbw@redhat.com>, chris2553@googlemail.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       rt2400-devel@lists.sourceforge.net
+In-Reply-To: <1203542195.3240.1.camel@boulder.homenet>
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
+	 <1203523555.693.2.camel@localhost.localdomain>
+	 <1203539235.3189.4.camel@boulder.homenet>
+	 <200802202150.20303.IvDoorn@gmail.com>
+	 <1203542195.3240.1.camel@boulder.homenet>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 21:07:29 +0000
+Message-Id: <1203628049.3277.6.camel@boulder.homenet>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The below implements the getgeo hook for Xen block devices. Extracted
-from the xen-unstable tree where it has been used for ages.
+On Wed, 2008-02-20 at 21:16 +0000, Chris Vine wrote: 
+> On Wed, 2008-02-20 at 21:50 +0100, Ivo van Doorn wrote:
+> [snip]
+> > On Wednesday 20 February 2008, Chris Vine wrote:
+> > > I did that yesterday and it just reported a kernel panic on the terminal
+> > > with the message:
+> > > 
+> > >   Kernel panic - not syncing: Aiee, killing interrupt handler!
+> > 
+> > I have an idea, could you try below patch?
+> > Note that while applying it will mention something about a line offset, but that can be ignored.
+> > 
+> > This could perhaps also fix the TX/RX issue mentioned earlier in the thread, but I am not
+> > quite sure about that.
+> 
+> The patch applied OK (with some offsets as you say) but it doesn't help.
+> The kernel panic still occurs when association is attempted.
 
-It is useful to have because it allows things like grub2 (used by the
-Debian installer images) to work in a guest domain without having to
-sprinkle Xen specific hacks around the place.
+Here's some further information.
 
-Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
-From: Ian Campbell <ijc@hellion.org.uk>
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+I have a fully functioning version of rt2x00-2.0.14 and mac80211 from
+wireless-2.6/compat-wireless-2.6 of mid January which works fine on
+kernel 2.6.24.  On doing a comparison with the rt2x00 in vanilla kernel
+2.6.25-rc2, there are no material differences.  (There was a slight
+change in the declaration a variable in rt2x00usb.c but it is
+immaterial.)
 
----
- drivers/block/xen-blkfront.c |   18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+I compiled up the working mid-January version of rt2x00 and mac80211
+under kernel 2.6.25-rc2 and I get exactly the same result as I reported
+earlier, namely I get a kernel panic as soon as I try to associate.  It
+looks therefore as if something has changed within the remainder of the
+kernel which has caused rt2x00 (and possibly mac80211?) to break.
 
-===================================================================
---- a/drivers/block/xen-blkfront.c
-+++ b/drivers/block/xen-blkfront.c
-@@ -37,6 +37,7 @@
- 
- #include <linux/interrupt.h>
- #include <linux/blkdev.h>
-+#include <linux/hdreg.h>
- #include <linux/module.h>
- 
- #include <xen/xenbus.h>
-@@ -134,6 +135,22 @@ static void blkif_restart_queue_callback
- {
- 	struct blkfront_info *info = (struct blkfront_info *)arg;
- 	schedule_work(&info->work);
-+}
-+
-+int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
-+{
-+	/* We don't have real geometry info, but let's at least return
-+	   values consistent with the size of the device */
-+	sector_t nsect = get_capacity(bd->bd_disk);
-+	sector_t cylinders = nsect;
-+
-+	hg->heads = 0xff;
-+	hg->sectors = 0x3f;
-+	sector_div(cylinders, hg->heads * hg->sectors);
-+	hg->cylinders = cylinders;
-+	if ((sector_t)(hg->cylinders + 1) * hg->heads * hg->sectors < nsect)
-+		hg->cylinders = 0xffff;
-+	return 0;
- }
- 
- /*
-@@ -946,6 +963,7 @@ static struct block_device_operations xl
- 	.owner = THIS_MODULE,
- 	.open = blkif_open,
- 	.release = blkif_release,
-+	.getgeo = blkif_getgeo,
- };
- 
- 
+This probably explains the problem another user reported with rt61.
+
+Chris
+
 
