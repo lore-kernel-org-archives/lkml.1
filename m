@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934871AbYBUAyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934948AbYBUAz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934871AbYBUAyN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:54:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932952AbYBUAxv
+	id S934948AbYBUAz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbYBUAzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:53:51 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:28933 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762648AbYBUAxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:53:49 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XvjQA6xLfVVctyIBxScReKvU10IAzQwiPazHzTF3LqHovJjeO/duRjoMygdJFjjmtfS/6s83onJxOULzeh/iO8eaISJBdAsD7w4izu+RZ5gYDBtUOSX76IN+I/FlYwZO8QyXtjAPvA7Xf6jWCUnOtwCh6kCoSuksDJrwNRAib5Q=  ;
-X-YMail-OSG: jEtN0XQVM1mM1wKaVayCYOL1wxzGOW73Y3e2lPEPAIq.wDzaX81iOtyUAzEuipaPEBgIC.fcCg--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andre Tomt <andre@tomt.net>
-Subject: Re: USB OOPS 2.6.25-rc2-git1
-Date: Wed, 20 Feb 2008 16:53:46 -0800
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-References: <47BAF36C.4000509@tomt.net> <200802201324.37519.david-b@pacbell.net> <47BCC4FD.1050701@tomt.net>
-In-Reply-To: <47BCC4FD.1050701@tomt.net>
+	Wed, 20 Feb 2008 19:55:17 -0500
+Received: from mga02.intel.com ([134.134.136.20]:17746 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758344AbYBUAzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:55:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
+   d="scan'208";a="258823187"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Wed, 20 Feb 2008 16:39:02 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201337.52247.jesse.barnes@intel.com> <b6a2187b0802201635t2acb31f2n366f8ef81f119034@mail.gmail.com>
+In-Reply-To: <b6a2187b0802201635t2acb31f2n366f8ef81f119034@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802201653.47166.david-b@pacbell.net>
+Message-Id: <200802201639.02502.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 February 2008, Andre Tomt wrote:
-> David Brownell wrote:
-> > On Wednesday 20 February 2008, Andre Tomt wrote:
-> >> It has not crashed yet with the patch though.
-> > 
-> > It seems that one of the tweks in this patch made the watchdog
-> > act better than before.  So unless I hear from you (before the
-> > start of next week) that some other message appears, or that your
-> > oops re-appears, I'll submit some version of this patch for RC3.
-> 
-> OOPS'ed again after some hours. The OOPS looks identical to me besides 
-> all kind of other crap mixed in the trace due to a lot of unrelated 
-> activity going on.
-> 
-> Quite a lot of the same IAA messages (status 8029 and 8028, cmd 10021) 
-> in /var/log/debug prior to the crash, over the entire uptime time span.
-> 
-> This was with the first patch posted only. Not any of the other ones.
+On Wednesday, February 20, 2008 4:35 pm Jeff Chua wrote:
+> On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes <jesse.barnes@intel.com> 
+wrote:
+> >  Ok, can you give this patch a try with the 'platform' method?  It should
+> > at least tell us what ACPI would like the device to do at suspend time,
+> > but it probably won't fix the hang.
+>
+> I can't get it to compile.
+>
+> drivers/char/drm/i915_drv.c: In function 'i915_suspend':
+> drivers/char/drm/i915_drv.c:372: error: implicit declaration of
+> function 'acpi_pci_choose_state'
 
-Hmm ... I'd have expected some other IAA/IAAD message too.
+Oops, maybe this should just be pci_choose_state instead.
 
+> drivers/char/drm/i915_drv.c: In function 'i915_resume':
+> drivers/char/drm/i915_drv.c:383: error: 'state' undeclared (first use
+> in this function)
+> drivers/char/drm/i915_drv.c:383: error: (Each undeclared identifier is
+> reported only once
+> drivers/char/drm/i915_drv.c:383: error: for each function it appears in.)
 
-> > And if you're up for it, I may have another patch for you
-> > to try on top of this one ... I had an idea about IRQ trigger
-> > modes that might be causing this problem.
-> 
-> It'll have to be tomorrow. Should I throw in the anti-oops patch too?
+And this change should just be reverted (leave it as PCI_D0).
 
-Sure.  I expect you'll see the stacktrace then, instead of oopsing.
-
-You might turn that one IAA message into an ehci_vdbg() call
-instead of an ehci_dbg() call, since  the data it gives isn't
-useful.  That would reduce the amount of log noise you seee.
-
-- Dave
- 
-
+Thanks,
+Jesse
