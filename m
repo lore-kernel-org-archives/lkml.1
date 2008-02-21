@@ -1,75 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933409AbYBUBLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933533AbYBUBQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933409AbYBUBLA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 20:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbYBUBKv
+	id S933533AbYBUBQk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 20:16:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757536AbYBUBQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 20:10:51 -0500
-Received: from cavan.codon.org.uk ([78.32.9.130]:43458 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755159AbYBUBKt (ORCPT
+	Wed, 20 Feb 2008 20:16:27 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:31201 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757026AbYBUBQZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 20:10:49 -0500
-Date: Thu, 21 Feb 2008 01:10:32 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Jesse Barnes <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-Message-ID: <20080221011032.GA30606@srcf.ucam.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org> <47BCC866.9000102@nigel.suspend2.net>
+	Wed, 20 Feb 2008 20:16:25 -0500
+Message-ID: <47BCD0DF.1050205@chelsio.com>
+Date: Wed, 20 Feb 2008 17:16:15 -0800
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BCC866.9000102@nigel.suspend2.net>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+To: Jeff Garzik <jeff@garzik.org>
+CC: David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] net driver updates
+References: <20080211170516.GA13872@havoc.gtf.org> <47B0AB0B.806@chelsio.com> <47BC8FBD.2070401@garzik.org>
+In-Reply-To: <47BC8FBD.2070401@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 21 Feb 2008 01:15:19.0015 (UTC) FILETIME=[3912F770:01C87427]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 11:40:06AM +1100, Nigel Cunningham wrote:
-> Matthew Garrett wrote:
-> >No, with a freezer-based model you can basically *never* suspend to 
-> >anything related to FUSE or a userspace USB device or anything involving 
-> >userspace iSCSI initiators or whatever. Sure, there are cases where 
-> >moving away from the current model doesn't buy you anything, but that 
-> >doesn't mean that the current model is a good thing. It's not. The 
-> >freezer is a fundamentally broken concept.
-> 
-> Putting drivers and filesystems in userspace is the fundamentally broken 
-> concept. Not just when it comes to the freezer. The whole idea is 
-> inherently racy. You can draw silly diagrams about how the freezer 
-> supposedly works in LCA slides and spread FUD as much as you like. In 
-> the end, though, it's not nearly as hit-and-miss as you say, and 
-> replacing the freezer with a kexec based freezer is only going to create 
-> as many problems as it removes.
+Jeff Garzik wrote:
+> Divy Le Ray wrote:
+>> Jeff Garzik wrote:
+>>> Mostly fixes, a few cleanups (generally assisting fixes), and an
+>>> exception for PS3 wireless because it had been posted, reviewed and
+>>> acked for a while, just not committed.
+>>>
+>>> Please pull from 'upstream-davem' branch of
+>>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git 
+>>> upstream-davem
+>>>
+>>> to receive the following updates:
+>>>
+>>>  
+>>>  drivers/net/cxgb3/sge.c          |   35 +-
+>>>    diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
+>>> index 9ca8c66..979f3fc 100644
+>>> --- a/drivers/net/cxgb3/sge.c
+>>> +++ b/drivers/net/cxgb3/sge.c
+>>> @@ -1059,6 +1059,14 @@ static void write_tx_pkt_wr(struct adapter 
+>>> *adap, struct sk_buff *skb,
+>>>               htonl(V_WR_TID(q->token)));
+>>>  }
+>>>  
+>>> +static inline void t3_stop_queue(struct net_device *dev, struct 
+>>> sge_qset *qs,
+>>> +                 struct sge_txq *q)
+>>> +{
+>>> +    netif_stop_queue(dev);
+>>> +    set_bit(TXQ_ETH, &qs->txq_stopped);
+>>> +    q->stops++;
+>>> +}
+>>> +
+>>>  /**
+>>>   *    eth_xmit - add a packet to the Ethernet Tx queue
+>>>   *    @skb: the packet
+>>> @@ -1090,31 +1098,18 @@ int t3_eth_xmit(struct sk_buff *skb, struct 
+>>> net_device *dev)
+>>>      ndesc = calc_tx_descs(skb);
+>>>  
+>>>      if (unlikely(credits < ndesc)) {
+>>> -        if (!netif_queue_stopped(dev)) {
+>>> -            netif_stop_queue(dev);
+>>> -            set_bit(TXQ_ETH, &qs->txq_stopped);
+>>> -            q->stops++;
+>>> -            dev_err(&adap->pdev->dev,
+>>> -                "%s: Tx ring %u full while queue awake!\n",
+>>> -                dev->name, q->cntxt_id & 7);
+>>> -        }
+>>> +        t3_stop_queue(dev, qs, q);
+>>> +        dev_err(&adap->pdev->dev,
+>>> +            "%s: Tx ring %u full while queue awake!\n",
+>>> +            dev->name, q->cntxt_id & 7);
+>>>          spin_unlock(&q->lock);
+>>>          return NETDEV_TX_BUSY;
+>>>      }
+>>>  
+>>>      q->in_use += ndesc;
+>>> -    if (unlikely(credits - ndesc < q->stop_thres)) {
+>>> -        q->stops++;
+>>> -        netif_stop_queue(dev);
+>>> -        set_bit(TXQ_ETH, &qs->txq_stopped);
+>>> -#if !USE_GTS
+>>> -        if (should_restart_tx(q) &&
+>>> -            test_and_clear_bit(TXQ_ETH, &qs->txq_stopped)) {
+>>> -            q->restarts++;
+>>> -            netif_wake_queue(dev);
+>>> -        }
+>>> -#endif
+>>> -    }
+>>> +    if (unlikely(credits - ndesc < q->stop_thres))
+>>> +        if (USE_GTS || !should_restart_tx(q))
+>>> +            t3_stop_queue(dev, qs, q);
+>>>  
+>>>      gen = q->gen;
+>>>      q->unacked += ndesc;
+>>>   
+>> Hi Jeff,
+>>
+>> I thought I had NAK'ed the patch modifying sge.c from Krishna Kumar.
+>> Looking back at my answer at the time, I was obviously unclear.
+>> Can you please revert the drivers/net/cxgb3sge.c change ?
+>
+> Explain why, so I can include it in the changelog please...
 
-I'm really not interested in debating the matter. There are all sorts of 
-potential uses for the freezer, but hibernation isn't one of them. We 
-*need* to get rid of the freezer for suspend to RAM (because a band-aid 
-to ensure atomicity is kind of pointless when the operation you're 
-entering is inherently atomic), and once all the drivers are able to 
-deal with that then it's trivial to get rid of it for hibernation as 
-well. Arguing that the reality of userspace drivers is broken doesn't 
-help here. It's what we have to work with.
+Hi Jeff,
 
-> >You're looking at a tiny amount of memory when compared to current 
-> >systems. It's really not a problem.
-> 
-> Please, quantify 'tiny'. In embedded, 5MB can be too much. I've worked 
-> on embedded solutions. I'm not pulling problems out of thin air.
+The first part of the patch removes the !netif_queue_stopped(dev).
+It opens the race discussed a while ago between Stephen hemminger and 
+David Miller:
+http://marc.info/?l=linux-netdev&m=113383224512427&w=2
 
-Then the in-kernel solution has already lost anyway, and I'm desperately 
-unconcerned about out of tree stuff.
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The second part of the patch breaks the current usage of txq_stopped and 
+the logic that stops and restarts the Tx queue.
+
+Cheers,
+Divy
+
