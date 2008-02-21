@@ -1,60 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbYBUHVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760545AbYBUHbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbYBUHVv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 02:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbYBUHVl
+	id S1760545AbYBUHbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 02:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYBUHbA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 02:21:41 -0500
-Received: from py-out-1112.google.com ([64.233.166.181]:35866 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751939AbYBUHVk (ORCPT
+	Thu, 21 Feb 2008 02:31:00 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:65090 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbYBUHa7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 02:21:40 -0500
+	Thu, 21 Feb 2008 02:30:59 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ojlIa/LJ97kzQP3xPNSp29BSywQUaaBmZUmHV1ZkgUf6wECydDlzBcOFmPga3FaraMZcXvD0PHa9uvbhiJGhVZ53SR+Ku5lycwroPEXwlPIe0e8hqKTyZEpbRmglFYHjLOlaGQm0dChiT8Z7bpTRcLV4IwaZejTMNVOlgpgvbXs=
-Subject: [PATCH] markers: fix sparse warnings in markers.c
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 23:21:54 -0800
-Message-Id: <1203578514.20345.2.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=khPQQoKzqqhe1qbj028A+UvX8RSylDz34UYaWvwiF7xY4/bu210xJ0AuyWpTEXX74WoXzJ1gjDwz4lQo/nXbZe2qp+8nvsO63ysh7mYHXuEYD9LkX0OVV+CL/h5VMtdxA1qDC6s82U6XpKom0X8TaaUn2vCLfE191cK7U1B0C0Q=
+Message-ID: <a8e1da0802202330q67f7b5ffo1258b08b043a6ac3@mail.gmail.com>
+Date: Thu, 21 Feb 2008 15:30:58 +0800
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: Re: Kernel oops with bluetooth usb dongle
+Cc: "Marcel Holtmann" <marcel@holtmann.org>, "Quel Qun" <kelk1@comcast.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Jiri Kosina" <jkosina@suse.cz>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.1.00.0802200908250.7583@apollo.tec.linutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <021820080001.29293.47B8CAD10009FD170000726D2207000953CE05040A05@comcast.net>
+	 <alpine.LFD.1.00.0802181245370.7583@apollo.tec.linutronix.de>
+	 <895FB10F-5E5C-4409-AC3E-5F83BBF9ED72@holtmann.org>
+	 <alpine.LFD.1.00.0802200108040.7583@apollo.tec.linutronix.de>
+	 <alpine.LFD.1.00.0802200908250.7583@apollo.tec.linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-char can be unsigned
-kernel/marker.c:64:20: error: dubious one-bit signed bitfield
-kernel/marker.c:65:14: error: dubious one-bit signed bitfield
+On Wed, Feb 20, 2008 at 4:11 PM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Wed, 20 Feb 2008, Thomas Gleixner wrote:
+>  > On Tue, 19 Feb 2008, Marcel Holtmann wrote:
+>
+> > > I don't really have any idea. Nothing has been changed in this area for a
+>  > > couple of years. The command TX timeout is the timeout that indicates a
+>  > > missing answer to a command sent down to the Bluetooth chip.
+>  > >
+>  > > However this involves some atomic and tasklet stuff. Did we have some changes
+>  > > that I missed and might now render this usage as broken.
+>  >
+>  > Not that I'm aware off, but this might as well be some old use after
+>  > free bug which got exposed by some unrelated change. The good news is
+>  > that it is reproducible. I'll hack up some nasty debug patch which
+>  > lets us - hopefully - decode where the timer was armed.
+>
+>  Quel, before I do that, is there any chance that you retest with the
+>  latest mainline git version ?
+>
+>  http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.25-rc2-git4.bz2
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
-Introduced between -rc1 and -rc2
- kernel/marker.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+And please test with this patch as well:
 
-diff --git a/kernel/marker.c b/kernel/marker.c
-index c4c2cd8..50effc0 100644
---- a/kernel/marker.c
-+++ b/kernel/marker.c
-@@ -61,8 +61,8 @@ struct marker_entry {
- 	int refcount;	/* Number of times armed. 0 if disarmed. */
- 	struct rcu_head rcu;
- 	void *oldptr;
--	char rcu_pending:1;
--	char ptype:1;
-+	unsigned char rcu_pending:1;
-+	unsigned char ptype:1;
- 	char name[0];	/* Contains name'\0'format'\0' */
- };
- 
--- 
-1.5.4.2.200.g99e75
+http://lkml.org/lkml/2008/2/20/121
 
-
-
+>
+>  Is the delta which applies on top of rc2.
+>
+>
+>
+>  Thanks,
+>
+>         tglx
+>  --
+>  To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>  the body of a message to majordomo@vger.kernel.org
+>  More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>  Please read the FAQ at  http://www.tux.org/lkml/
+>
