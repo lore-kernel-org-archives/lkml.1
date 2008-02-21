@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935243AbYBUBdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbYBUBtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935243AbYBUBdl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 20:33:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761322AbYBUBdM
+	id S1763014AbYBUBtV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 20:49:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYBUBtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 20:33:12 -0500
-Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:23153 "HELO
-	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757761AbYBUBdM (ORCPT
+	Wed, 20 Feb 2008 20:49:04 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:38512 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbYBUBtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 20:33:12 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=S1n4aYyQ0AfQt3BwB1s00lk3rkHzX8UKuPYnPcyag5oLaxddJI4HNNFMOquFs4rySPBEPAFUQ5gAYw4wwrnAPAlQrA0ARVmBYQTPJYd8tP1Td4VIzaF+ihqAldIBMYClAhLPfTKU8Kd8xUZ2MeFGjkROxE94/tbyzCHby47I9Sg=  ;
-X-YMail-OSG: Ih_5W5QVM1nOyQsFX2a61cRVEzeYaHt19f1KM2KbbAnO67Oao4ibqn0SPiik2oI3WlG6FG0rMQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: atmel_spi clock polarity
-Date: Wed, 20 Feb 2008 17:33:09 -0800
-User-Agent: KMail/1.9.6
-Cc: hskinnemoen@atmel.com, spi-devel-general@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <20080218153158.2ff8842a@dhcp-252-066.norway.atmel.com> <20080220103446.1621c81f@dhcp-252-066.norway.atmel.com> <20080220.185045.08317377.nemoto@toshiba-tops.co.jp>
-In-Reply-To: <20080220.185045.08317377.nemoto@toshiba-tops.co.jp>
+	Wed, 20 Feb 2008 20:49:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b+/hp9zG1i2hD+F0EXXwPVkX5tLuJB+DEtkXETyCoZX+eTwy5DFg6S3fDPI3K7zPCUvXGGA9UWFKlIEW8HsHy1QP7GxuRrkwZ1ySqPVZpI2XMKiQZgnQJwvnVsTX7GF8ZfaZoNtPAV4nFfpsYvn8GOCHxjO8lmCQoE0gLi0gnVM=
+Message-ID: <b6a2187b0802201749i950b2aeue10993722a3880c1@mail.gmail.com>
+Date: Thu, 21 Feb 2008 09:49:00 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Greg KH" <gregkh@suse.de>
+In-Reply-To: <200802201721.21353.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802201733.09451.david-b@pacbell.net>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802201639.02502.jesse.barnes@intel.com>
+	 <b6a2187b0802201719x39a1298j970c563a17fe6a22@mail.gmail.com>
+	 <200802201721.21353.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 20 February 2008, Atsushi Nemoto wrote:
-> > David, do you want me to pass on the patch with my signoff or just ask
-> > Andrew to add my Acked-by to the patch already in mm?
-> 
-> The patch in mm also lacks my Signed-off line.  I had thought Andrew
-> never take a patch without Signed-off line ;)
-> 
-> Should I resend my patch with my Signed-off and Haavard's Acked-by?
+On Thu, Feb 21, 2008 at 9:21 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
 
-Good point.  I think that's the way to go.  
+>  > I hope those are just warning that can just be ignored.
+>
+>  Oops again, should be dev->pdev.  Silly DRM layer obfuscation.
+
+I was just about to write that the test didn't work. Both std str
+hangs even before attempting to suspend.
+
+Anyway, I'm compiling and rebooting now.
+
+Thanks,
+Jeff.
