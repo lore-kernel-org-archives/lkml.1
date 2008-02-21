@@ -1,45 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbYBUPZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbYBUP1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761648AbYBUPZb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 10:25:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYBUPZV
+	id S1763648AbYBUP1r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 10:27:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYBUP1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:25:21 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47668 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752309AbYBUPZT (ORCPT
+	Thu, 21 Feb 2008 10:27:36 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:6806 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753775AbYBUP1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:25:19 -0500
-Date: Thu, 21 Feb 2008 15:15:49 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Handshaking on USB serial devices
-Message-ID: <20080221151549.0fa72422@core>
-In-Reply-To: <47BD9721.70907@davidnewall.com>
-References: <47B30291.2040905@davidnewall.com>
-	<20080214050211.GB1432@kroah.com>
-	<47B40918.20206@davidnewall.com>
-	<20080214121026.16a9c510@core>
-	<47B482B4.9010208@davidnewall.com>
-	<20080214193637.5df1c205@core>
-	<47BD9721.70907@davidnewall.com>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 10:27:35 -0500
+Message-ID: <47BD9872.9050308@hp.com>
+Date: Thu, 21 Feb 2008 10:27:46 -0500
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 7/8] [SCTP]: uninline sctp_add_cmd_sf
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi> <47BCA6B8.5000904@hp.com> <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> developing is entirely wrong.  Oh well.  Mind you, providing a
-> write_room function is NOT a real solution; it merely reduces the
-> condition to a usually-winnable race.  (Ironically, when I back-ported
-> the 2.6 driver, I excluded its new write_room function.  Mistake.)
+Ilpo Järvinen wrote:
+> On Wed, 20 Feb 2008, Vlad Yasevich wrote:
+> 
+>> Ilpo Järvinen wrote:
+>>> I added inline to sctp_add_cmd and appropriate comment there to
+>>> avoid adding another call into the call chain. This works at least
+>>> with "gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)". Alternatively,
+>>> __sctp_add_cmd could be introduced to .h.
+>>>
+>> My only concern was performance regressions, but it looks like it
+>> doesn't effect anything from the few quick runs I've made.
+> 
+> There was one call made anyway, it's a bit hard to see how it would hurt 
+> to push that BUG() deeper down (in fact, this is one of the easiest case 
+> in this respect, many other cases elsewhere that need uninlining don't 
+> currently make any calls with inlines).
+> 
+>> Since we are putting sctp_add_cmd_sf() on the call stack, we might
+>> as well get rid of sctp_add_cmd() and reduce it a bit more.
+> 
+> IMHO it is definately better solution for archiving the size reduction,
+> I just didn't know before that the only sctp_add_cmd call could be 
+> converted.
 
-What race do you see left ?
+That one was a really silly one.  The chance of not calling BUG() in
+that one case was so small, that it didn't really make any sense from
+the code robustness side.
 
+> 
+> [...snip...]
+>> diff --git a/net/sctp/command.c b/net/sctp/command.c
+>> index bb97733..3a06513 100644
+>> --- a/net/sctp/command.c
+>> +++ b/net/sctp/command.c
+>> @@ -51,19 +51,16 @@ int sctp_init_cmd_seq(sctp_cmd_seq_t *seq)
+>>  
+>>  /* Add a command to a sctp_cmd_seq_t.
+>>   * Return 0 if the command sequence is full.
+>> + *
+>> + * Inline here is not a mistake, this way sctp_add_cmd_sf doesn't need extra
+>> + * calls, size penalty is of insignificant magnitude here
+> 
+> This won't be a necessary note anymore. :-)
+> 
+> [...snip...]
+> 
+
+Yeah.  If you are going to resubmit, feel free to put my Signed-off-by line.
+
+-vlad
