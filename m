@@ -1,91 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbYBUU11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765231AbYBUU3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764797AbYBUU11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757436AbYBUU1T
+	id S1765231AbYBUU3M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 15:29:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758052AbYBUU26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:27:19 -0500
-Received: from www.tglx.de ([62.245.132.106]:46672 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755877AbYBUU1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:27:19 -0500
-Date: Thu, 21 Feb 2008 21:26:56 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Diego Calleja <diegocg@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: BUG?: "Cannot map mmconfig aperture"
-In-Reply-To: <20080221164105.145d0cbb.diegocg@gmail.com>
-Message-ID: <alpine.LFD.1.00.0802212124231.7583@apollo.tec.linutronix.de>
-References: <20080220223156.578e0a5d.diegocg@gmail.com> <alpine.LFD.1.00.0802210853060.7583@apollo.tec.linutronix.de> <20080221164105.145d0cbb.diegocg@gmail.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 21 Feb 2008 15:28:58 -0500
+Received: from sj-iport-2.cisco.com ([171.71.176.71]:52956 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757851AbYBUU24 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 15:28:56 -0500
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org
+Subject: Re: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix off-by-one
+X-Message-Flag: Warning: May contain useful information
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 21 Feb 2008 12:28:55 -0800
+In-Reply-To: <20080221154951.GA28328@cs181133002.pp.htv.fi> (Adrian Bunk's message of "Thu, 21 Feb 2008 17:49:51 +0200")
+Message-ID: <adahcg2awag.fsf@cisco.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 21 Feb 2008 20:28:55.0672 (UTC) FILETIME=[616AA780:01C874C8]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Feb 2008, Diego Calleja wrote:
-> > Hmm, that's confusing. Can you please provide a complete boot log ?
-> > 
-> > Thanks,
-> 
-> Sure
+ > This driver should really have gotten some review before being included 
+ > in the kernel.
 
-Thanks. Nothing new there. Can you please apply the patch below and
-provide the output of the ioremap code ?
+ > Even a simple checkpatch run finds more than > 250 stylistic errors
+ > (not code bugs but cases where the driver violates the standard code 
+ > formatting rules of kernel code).
 
-Thanks,
+Linus has strongly stated that we should merge hardware drivers early,
+and I agree: although the nes driver clearly needs more work, there's
+no advantage to users with the hardware in forcing them to wait for
+2.6.26 to merge the driver, since they'll just have to patch the
+grungy code in themselves anyway.  And by merging the driver early, we
+get fixed up for any tree-wide changes and allow janitors to help with
+the cleanup.
 
-	tglx
+(By the way, the code is not that pretty but it a lot closer to
+upstream style than most driver submissions)
 
-Index: linux-2.6/arch/x86/mm/ioremap.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/ioremap.c
-+++ linux-2.6/arch/x86/mm/ioremap.c
-@@ -112,6 +112,7 @@ static void __iomem *__ioremap(unsigned 
- 	unsigned long pfn, offset, last_addr, vaddr;
- 	struct vm_struct *area;
- 	pgprot_t prot;
-+	int err;
- 
- 	/* Don't allow wraparound or zero size */
- 	last_addr = phys_addr + size - 1;
-@@ -130,8 +131,11 @@ static void __iomem *__ioremap(unsigned 
- 	for (pfn = phys_addr >> PAGE_SHIFT; pfn < max_pfn_mapped &&
- 	     (pfn << PAGE_SHIFT) < last_addr; pfn++) {
- 		if (page_is_ram(pfn) && pfn_valid(pfn) &&
--		    !PageReserved(pfn_to_page(pfn)))
-+		    !PageReserved(pfn_to_page(pfn))) {
-+			printk(KERN_INFO "ioremap: (RAM) %lx %lu\n", phys_addr,
-+			       size);
- 			return NULL;
-+		}
- 	}
- 
- 	WARN_ON_ONCE(page_is_ram(pfn));
-@@ -157,16 +161,23 @@ static void __iomem *__ioremap(unsigned 
- 	 * Ok, go for it..
- 	 */
- 	area = get_vm_area(size, VM_IOREMAP);
--	if (!area)
-+	if (!area) {
-+		printk(KERN_INFO "ioremap: !area PR %lx %lu\n", phys_addr,
-+		       size);
- 		return NULL;
-+	}
- 	area->phys_addr = phys_addr;
- 	vaddr = (unsigned long) area->addr;
- 	if (ioremap_page_range(vaddr, vaddr + size, phys_addr, prot)) {
- 		remove_vm_area((void *)(vaddr & PAGE_MASK));
-+		printk(KERN_INFO "ioremap: IPR %lx %lu\n", phys_addr, size);
- 		return NULL;
- 	}
- 
--	if (ioremap_change_attr(vaddr, size, mode) < 0) {
-+	err = ioremap_change_attr(vaddr, size, mode);
-+	if (err < 0) {
-+		printk(KERN_INFO "ioremap: CPA %lx %lu %d\n", phys_addr, size,
-+		       err);
- 		vunmap(area->addr);
- 		return NULL;
- 	}
+ > And these are just comments from someone with zero knowledge about 
+ > InfiniBand, but I'd expect InfiniBand-specifig bugs might be found 
+ > before they hit users if an InfiniBand maintainer would review the 
+ > complete driver.
+
+Just for the record, although this driver is under drivers/infiniband,
+it is actually for a device that does iWARP/10 Gb ethernet.  At some
+point we may want to rename drivers/infiniband to drivers/rdma, but so
+far the churn hasn't seemed worth it for what is basically a cosmetic
+issue.
+
+ - R.
