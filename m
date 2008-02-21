@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934348AbYBUBVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763421AbYBUBX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934348AbYBUBVh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 20:21:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757381AbYBUBV3
+	id S1763421AbYBUBX1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 20:23:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbYBUBXT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 20:21:29 -0500
-Received: from mga01.intel.com ([192.55.52.88]:1549 "EHLO mga01.intel.com"
+	Wed, 20 Feb 2008 20:23:19 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33550 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751714AbYBUBV2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 20:21:28 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,382,1199692800"; 
-   d="scan'208";a="521992727"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 17:21:21 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201639.02502.jesse.barnes@intel.com> <b6a2187b0802201719x39a1298j970c563a17fe6a22@mail.gmail.com>
-In-Reply-To: <b6a2187b0802201719x39a1298j970c563a17fe6a22@mail.gmail.com>
+	id S1756780AbYBUBXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 20:23:19 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: [BUG?] APM is hidden in menuconfig
+Date: Thu, 21 Feb 2008 02:21:52 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: jarkao2@gmail.com, linux-kernel@vger.kernel.org
+References: <20080220120828.GD3885@ff.dom.local> <200802210123.44367.rjw@sisk.pl> <E1JS02I-0003gO-Py@faramir.fjphome.nl>
+In-Reply-To: <E1JS02I-0003gO-Py@faramir.fjphome.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802201721.21353.jesse.barnes@intel.com>
+Message-Id: <200802210221.52765.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 5:19 pm Jeff Chua wrote:
-> On Thu, Feb 21, 2008 at 8:39 AM, Jesse Barnes <jesse.barnes@intel.com> 
-wrote:
-> >  Oops, maybe this should just be pci_choose_state instead.
-> >  And this change should just be reverted (leave it as PCI_D0).
->
-> drivers/char/drm/i915_drv.c: In function 'i915_suspend':
-> drivers/char/drm/i915_drv.c:372: warning: passing argument 1 of
-> 'pci_choose_state' from incompatible pointer type
-> drivers/char/drm/i915_drv.c:373: warning: passing argument 1 of
-> 'pci_choose_state' from incompatible pointer type
->
-> I hope those are just warning that can just be ignored.
+On Thursday, 21 of February 2008, Frans Pop wrote:
+> Rafael J. Wysocki wrote:
+> > On Wednesday, 20 of February 2008, Jarek Poplawski wrote:
+> >> So, has it to be so hard? It seems not - at least in good old times...
+> > 
+> > Something in APM uses some code from drivers/base/power/main.c that
+> > depends on PM_SLEEP.
+> 
+> Sure, but that does not make Jarek's point invalid. From a user PoV APM is a
+> high-level configuration option. That is what he wants.
+> It should thus be easily accessible and not be buried beneath a lot of
+> other, much more technical, options.
+> 
+> Could this maybe be solved by making APM automatically 'select' some options
+> instead of 'depending' on them?
 
-Oops again, should be dev->pdev.  Silly DRM layer obfuscation.
+That, unfortunately, doesn't work.
 
-Jesse
+IMO the solution might be to separate the APM suspend code from the rest of the
+APM code and make it depend on (PM_SUSPEND && APM).
+
+Thanks,
+Rafael
