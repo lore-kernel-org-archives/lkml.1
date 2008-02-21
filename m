@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbYBUTeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbYBUTex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbYBUTeE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 14:34:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbYBUTdx
+	id S1761338AbYBUTex (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 14:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYBUTem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 14:33:53 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:38207 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751603AbYBUTdw (ORCPT
+	Thu, 21 Feb 2008 14:34:42 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:36679 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758471AbYBUTel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 14:33:52 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=Lf0ICu4Ig5LahVinyP1eY6jOzX75FTWliNSA4D1J8KKpE8wp4SoZaMEqSjjr961iKlquHmsjBeF0WihnfMwQSaQUbKiEuS8pZ2TTyNFLkMo5ZroTlaS719kPxbZ/1LMsl8JBbYMl/5UpYBYZ/C+CLd/KCmU2Rg42GO502lh07+Q=  ;
-X-YMail-OSG: TjiOtoIVM1mukEhW4yALl3u_t2rkFimRalIfKG0A86e9kaFih6dFl5J4GgexRR2qAZmdYlVr8w--
-X-Yahoo-Newman-Property: ymail-3
-Date: Thu, 21 Feb 2008 11:33:50 -0800
-From: David Brownell <david-b@pacbell.net>
-To: pavel@ucw.cz, jgarzik@pobox.com
-Subject: Re: [linux-pm] power_state: get rid of write-only variable in SATA
-Cc: linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-References: <20080221125652.GA23548@elf.ucw.cz>
- <47BDA22F.5060300@pobox.com>
-In-Reply-To: <47BDA22F.5060300@pobox.com>
+	Thu, 21 Feb 2008 14:34:41 -0500
+Message-ID: <47BDD26D.5010004@davidnewall.com>
+Date: Fri, 22 Feb 2008 06:05:09 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Handshaking on USB serial devices
+References: <47B30291.2040905@davidnewall.com>	<20080214050211.GB1432@kroah.com>	<47B40918.20206@davidnewall.com>	<20080214121026.16a9c510@core>	<47B482B4.9010208@davidnewall.com>	<20080214193637.5df1c205@core>	<47BD9721.70907@davidnewall.com> <20080221151549.0fa72422@core>
+In-Reply-To: <20080221151549.0fa72422@core>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080221193350.DA772235007@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> libata uses it under the assumption that "other parts" of the system are 
-> aware of this variable.
+Alan Cox wrote:
+>> developing is entirely wrong.  Oh well.  Mind you, providing a
+>> write_room function is NOT a real solution; it merely reduces the
+>> condition to a usually-winnable race.  (Ironically, when I back-ported
+>> the 2.6 driver, I excluded its new write_room function.  Mistake.)
+>>     
 >
-> May I assume that the API has changed such that this is no longer necessary?
+> What race do you see left ?
+>   
 
-Yes.  The original motivation for dev->power.power_state was to let
-the writes to /sys/devices/.../power/state support a PCI-specific
-policy for device power state transition.  And the motivation for
-any driver (or framework) to modify that was that the PM core didn't
-update it in all the relevant code paths (it wan't clear how to do
-that either), which mean those sysfs files could make trouble.
+On second thoughts I'm not sure that I do.  I've had my head so full of
+2.4 pl2303, and 2.4 pl2303 with this, that and the other added to it,
+that I was probably just confused.  Certainly it's not important,
+because I didn't mean the 2.6 driver, but an hypothetical 2.4 with a
+simplistic write_room function added (e.g. return
+port->write_urb->status == -EINPROGRESS ? 0 : 64).  OPOST processing's
+use of putchar to expand CRLF sends two writes (or putchars), with no
+intervening checks.  Since I'm just polishing off my back-port of
+2.6.24.1 pl2303 to kernel 2.4, the matter is quite irrelevant.
 
-That file is gone; everything supporting its usage can now go away.
-(And the PCI-specific policy -- "only transitions to/from D0 are
-allowed" -- can be managed by PCI drivers, and ignored by others
-on more flexible hardware.)
-
-The minor problem removing it is that there's some code which has
-used fields in power_state for some driver state.  But if all that
-usage is write-only in the drivers (is that true now for SATA?),
-then it's safe to remove the /sys/devices/.../power/state support
-from framework code and elsewhere.
-
-- Dave
-
-
+By the way, what happened to HUawei E620 UMTS/HSDPA card?  It's in
+pl2303 in 2.6.23; not in 2.6.24.1.  (Do I remove it from my back-port?)
