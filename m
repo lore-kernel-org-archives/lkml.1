@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935358AbYBUXnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935768AbYBUXnq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935358AbYBUXnY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758033AbYBUXnE
+	id S935768AbYBUXnq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:43:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759746AbYBUXnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:43:04 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:48625 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752781AbYBUXnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:43:01 -0500
-Date: Fri, 22 Feb 2008 00:42:20 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: David Brownell <david-b@pacbell.net>
-Cc: jgarzik@pobox.com, linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: [linux-pm] power_state: get rid of write-only variable in SATA
-Message-ID: <20080221234220.GC25977@elf.ucw.cz>
-References: <20080221125652.GA23548@elf.ucw.cz> <47BDA22F.5060300@pobox.com> <20080221193350.DA772235007@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221193350.DA772235007@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Thu, 21 Feb 2008 18:43:05 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:57229 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754647AbYBUXnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:43:03 -0500
+Date: Fri, 22 Feb 2008 10:42:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: no next-20080221 tree
+Message-Id: <20080222104257.cab90fd4.sfr@canb.auug.org.au>
+In-Reply-To: <20080222003429.802eac76.sfr@canb.auug.org.au>
+References: <20080222003429.802eac76.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_Feb_2008_10_42_57_+1100_rmUUG3KYe_iVtnix"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-02-21 11:33:50, David Brownell wrote:
-> > libata uses it under the assumption that "other parts" of the system are 
-> > aware of this variable.
+--Signature=_Fri__22_Feb_2008_10_42_57_+1100_rmUUG3KYe_iVtnix
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There are no other relevant parts, except one debug printk that is
-getting removed.
+On Fri, 22 Feb 2008 00:34:29 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> turns out to be inadequate.  So we have a new tag NEXT_BASE which may
+> name another git tree/quilt series that is also included in the
+> linux-next tree.
 
-> > May I assume that the API has changed such that this is no longer necessary?
-> 
-> Yes.  The original motivation for dev->power.power_state was to let
+Just to be clear, the "name" of a tree comes from the Name field in the
+Next/Trees file.
 
-ACK.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--Signature=_Fri__22_Feb_2008_10_42_57_+1100_rmUUG3KYe_iVtnix
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHvgyFTgG2atn1QN8RAsREAJ4gkJCnCu9DBi2PEasezvrugx+eBACdF48m
+BNQj5QxXgLg+jWLl/kh9Qnw=
+=9gpN
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_Feb_2008_10_42_57_+1100_rmUUG3KYe_iVtnix--
