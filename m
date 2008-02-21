@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763067AbYBUJmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbYBUJnN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763067AbYBUJmj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:42:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbYBUJmc
+	id S1753548AbYBUJnN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:43:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763524AbYBUJm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:42:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38255 "EHLO mx3.mail.elte.hu"
+	Thu, 21 Feb 2008 04:42:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42136 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751103AbYBUJma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:42:30 -0500
-Date: Thu, 21 Feb 2008 10:42:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Make yield_task_fair more efficient
-Message-ID: <20080221094217.GA24162@elte.hu>
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu> <47BD44FF.7070104@linux.vnet.ibm.com>
+	id S1751176AbYBUJmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 04:42:55 -0500
+To: linux-kernel@vger.kernel.org
+Cc: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org, jayakumar.lkml@gmail.com
+Subject: [PATCH 0/2] xen pvfb: Para-virtual framebuffer, keyboard and pointer
+From: Markus Armbruster <armbru@redhat.com>
+Date: Thu, 21 Feb 2008 10:42:03 +0100
+Message-ID: <871w76ejdg.fsf@pike.pond.sub.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BD44FF.7070104@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a pair of Xen para-virtual frontend device drivers:
+drivers/video/xen-fbfront.c provides a framebuffer, and
+drivers/input/xen-kbdfront provides keyboard and mouse.
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+The backends run in dom0 user space.
 
-> I have an alternate approach in mind (that I need to find time for), 
-> threaded-rbtrees. Walking the tree is really efficient, specially 
-> finding successor of a node.
+I started with the Xen version at
+http://xenbits.xensource.com/linux-2.6.18-xen.hg?rev/ca05cf1a9bdc
 
-sure, feel free to experiment with those details.
+Differences to that Xen version, for those who care:
 
-But if you want to improve Java workloads then you should probably start 
-by converting them to futexes instead of sched_yield(), that will 
-probably give far more performance than micro-optimizing the 
-sys_sched_yield() codepath. (especially when it happens at the expense 
-of other workloads, which is not acceptable for mainline) You can 
-rebuild your JVM easily and re-test with its locking fixed, right?
+* Rewritten on top of fb deferred I/O
 
-	Ingo
+* IRQ handler names visible in /proc and /sys match the driver names.
+
+* Use framebuffer helper functions appropriate for framebuffer in
+  system RAM.
+
+* write() refreshes the framebuffer properly.
+
+* off-by-one height of some screen refreshs fixed.
+
+* Crash when register_framebuffer() fails fixed.
+
+* Test for empty ring in input_handler() fixed.
+
+* Deadlock in xen-kbdfront resume fixed.
+
+* General clean up.
+
+I have a step-by-step patch series from that Xen version to my
+version, if anybody is interested.  Might be useful for reviewers
+familiar with the Xen version.
+
+The patch consists of two parts:
+
+1. fbdev: Make deferred I/O work as advertized
+
+   I need fb deferred I/O, but is utterly broken.  A fix has been
+   floating around on linux-fbdev-devel as part of a larger patch,
+   which as far as I know has not been merged anywhere, yet.  This is
+   just the fix.
+
+2. xen pvfb: Para-virtual framebuffer, keyboard and pointer driver
+
+   The actual drivers.
