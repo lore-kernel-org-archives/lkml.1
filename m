@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbYBUGui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760998AbYBUGym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758442AbYBUGui (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 01:50:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYBUGu0
+	id S1760998AbYBUGym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 01:54:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbYBUGyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 01:50:26 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50449 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbYBUGuZ (ORCPT
+	Thu, 21 Feb 2008 01:54:31 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:15250 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753426AbYBUGya convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 01:50:25 -0500
-Date: Thu, 21 Feb 2008 15:49:16 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: John Stoffel <john@stoffel.org>, Jan Engelhardt <jengelh@computergmbh.de>,
-       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory
- controller in Kconfig
-Message-Id: <20080221154916.723fed49.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <47BC5211.6030102@linux.vnet.ibm.com>
-References: <20080220122338.GA4352@basil.nowhere.org>
-	<47BC2275.4060900@linux.vnet.ibm.com>
-	<18364.16552.455371.242369@stoffel.org>
-	<47BC4554.10304@linux.vnet.ibm.com>
-	<Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
-	<18364.20755.798295.881259@stoffel.org>
-	<47BC5211.6030102@linux.vnet.ibm.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 01:54:30 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [git patches] net driver updates
+Date: Wed, 20 Feb 2008 22:54:15 -0800
+Message-ID: <8A71B368A89016469F72CD08050AD334026D652F@maui.asicdesigners.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [git patches] net driver updates
+Thread-Index: Ach0UP/jargGiv6QTxqFAjhmOwZ7GwABRPIQ
+References: <OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com><20080220.214651.235108740.davem@davemloft.net><8A71B368A89016469F72CD08050AD334026D6511@maui.asicdesigners.com> <20080220.221554.128587906.davem@davemloft.net>
+From: "Divy Le Ray" <divy@chelsio.com>
+To: "David Miller" <davem@davemloft.net>
+Cc: <krkumar2@in.ibm.com>, <jeff@garzik.org>, <linux-kernel@vger.kernel.org>,
+       <netdev@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 21:45:13 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> > But for computers, limits is an expected and understood term, and for
-> > filesystems it's quotas.  So in this case, I *still* think you should
-> > be using the term "Memory Quota Controller" instead.  It just makes it
-> > clearer to a larger audience what you mean.
-> > 
+> From: "Divy Le Ray" <divy@chelsio.com>
+> Date: Wed, 20 Feb 2008 21:57:08 -0800
 > 
-> Memory Quota sounds very confusing to me. Usually a quota implies limits, but in
-> a true framework, one can also implement guarantees and shares.
+> > The driver is cxgb3 here, it uses LLTX.
 > 
-This "cgroup memory contoller" is called as "Memory Resource Contoller"
-in my office ;)
+> That's extremely unfortunate, hopefully you can update it to
+> use a model like tg3 and others use.  LLTX is a lost cause
+> for hardware device drivers, and in fact we'd like to remove
+> it tree wide eventually.
 
-How about Memory Resouce Contoller ?
+It sounds like I messed up.
+cxgb3 does not use LLTX - The Chelsio driver does, thus should be
+converted.
 
-
--Kame
-
+Divy
