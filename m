@@ -1,38 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764856AbYBUD6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765669AbYBUD7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764856AbYBUD6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 22:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbYBUD6i
+	id S1765669AbYBUD7s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 22:59:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYBUD7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 22:58:38 -0500
-Received: from ozlabs.org ([203.10.76.45]:54727 "EHLO ozlabs.org"
+	Wed, 20 Feb 2008 22:59:40 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45619 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbYBUD6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 22:58:38 -0500
+	id S1753206AbYBUD7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 22:59:40 -0500
+Date: Thu, 21 Feb 2008 04:59:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: include/asm-x86/desc_64.h is empty
+Message-ID: <20080221035921.GA6372@elte.hu>
+References: <20080221033403.32F9E2701D5@magilla.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18364.63205.933131.746580@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Feb 2008 14:58:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
-Subject: Re: [PATCH] viocons: BKL locking
-In-Reply-To: <20080220203258.4b33f890@core>
-References: <20080220203258.4b33f890@core>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20080221033403.32F9E2701D5@magilla.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox writes:
 
-> For some weird reason I can't ascertain (translation "I think its
-> broken") the viocons driver calls directly into the n_tty ldisc code even
-> if another ldisc is in use. It'll probably break if you do that but I'm
-> just fixing the locking and adding a comment that its horked.
+* Roland McGrath <roland@redhat.com> wrote:
 
-Looks to me like it (viotty_ioctl) should return -ENOIOCTLCMD instead
-of calling n_tty_ioctl -- do you agree?
+> include/asm-x86/desc_64.h should have been removed, but is still in 
+> the tree containing just a newline.
 
-Paul.
+fix is already in x86.git. Nothing references the file so there's no 
+harm done to any puppies :-)
+
+	Ingo
