@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934845AbYBUWP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935016AbYBUWSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934845AbYBUWP3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761545AbYBUWPR
+	id S935016AbYBUWSl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:18:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755292AbYBUWSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:15:17 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:41398 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755255AbYBUWPQ (ORCPT
+	Thu, 21 Feb 2008 17:18:33 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:37781 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754472AbYBUWSc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:15:16 -0500
-Subject: Re: [PATCH 2/2] make work have a static address in do_boot_cpu()
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Glauber Costa <gcosta@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, glommer@gmail.com,
-       mingo@elte.hu, arjan@infradead.org
-In-Reply-To: <1203626456-3101-3-git-send-email-gcosta@redhat.com>
-References: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
-	 <1203626456-3101-2-git-send-email-gcosta@redhat.com>
-	 <1203626456-3101-3-git-send-email-gcosta@redhat.com>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 23:12:47 +0100
-Message-Id: <1203631967.6112.16.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 17:18:32 -0500
+Date: Thu, 21 Feb 2008 17:18:32 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: gregkh@suse.de
+cc: pavel@ucw.cz, <greg@kroah.com>, <linux-kernel@vger.kernel.org>,
+       <linux-pm@lists.osdl.org>, <pavel@suse.cz>
+Subject: Re: [linux-pm] patch power_state-remove-it-from-usb.patch added to
+ gregkh-2.6 tree
+In-Reply-To: <1203630196303@kroah.org>
+Message-ID: <Pine.LNX.4.44L0.0802211717230.4990-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Feb 2008 gregkh@suse.de wrote:
 
-On Thu, 2008-02-21 at 17:40 -0300, Glauber Costa wrote:
-> This patch makes the work field in create_idle have
-> a static address. Otherwise, being a stack variable, it can
-> boild down the lockdep system.
-
-Looks way overkill. Doesn't something like:
-
-> Signed-off-by: Glauber Costa <gcosta@redhat.com>
-> ---
->  arch/x86/kernel/smpboot_64.c |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
+> This is a note to let you know that I've just added the patch titled
 > 
-> diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
-> index f15b774..d79b7a8 100644
-> --- a/arch/x86/kernel/smpboot_64.c
-> +++ b/arch/x86/kernel/smpboot_64.c
+>      Subject: power_state: remove it from usb
+> 
+> to my gregkh-2.6 tree.  Its filename is
+> 
+>      power_state-remove-it-from-usb.patch
+> 
+> This tree can be found at 
+>     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+> 
+> 
+> From pavel@ucw.cz  Thu Feb 21 13:36:03 2008
+> From: Pavel Machek <pavel@ucw.cz>
+> Date: Thu, 21 Feb 2008 14:01:45 +0100
+> Subject: power_state: remove it from usb
+> To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Greg KH <greg@kroah.com>, stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+> Message-ID: <20080221130145.GA3789@elf.ucw.cz>
+> Content-Disposition: inline
+> 
+> 
+> 
+> power_state is scheduled for removal, and it is used only write-only
+> by USB. Remove it.
 
-> @@ -553,12 +554,12 @@ static int __cpuinit do_boot_cpu(int cpu
->  	unsigned long boot_error;
->  	int timeout;
->  	unsigned long start_rip;
-> 	struct create_idle create_idle = {
-> -		.work = __WORK_INITIALIZER(create_idle.work, do_fork_idle),
-> 		.cpu = cpu,
-> 		.done = COMPLETION_INITIALIZER_ONSTACK(create_idle.done),
-> 	};
-> +	INIT_WORK(&create_idle.work, do_fork_idle);
+Greg, this patch is incomplete.  Some of the settings that Pavel 
+removed are used by the host controller drivers.  Please revert this; 
+I'll send a more complete patch later.
 
-work?
+Alan Stern
 
