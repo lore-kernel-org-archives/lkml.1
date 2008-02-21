@@ -1,57 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934237AbYBUQjO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbYBUQjv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934237AbYBUQjO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:39:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbYBUQi4
+	id S934425AbYBUQjv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:39:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763625AbYBUQjg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:38:56 -0500
-Received: from ns2.suse.de ([195.135.220.15]:50523 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752806AbYBUQiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:38:55 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org, zippel@linux-m68k.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Make the kernel NTP code hand 64-bit *unsigned* values to do_div()
-References: <20080221155402.4414.60360.stgit@warthog.procyon.org.uk>
-X-Yow: Is this "BIKINI BEACH"?
-Date: Thu, 21 Feb 2008 17:38:52 +0100
-In-Reply-To: <20080221155402.4414.60360.stgit@warthog.procyon.org.uk> (David
-	Howells's message of "Thu\, 21 Feb 2008 15\:54\:02 +0000")
-Message-ID: <je4pc2s1r7.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+	Thu, 21 Feb 2008 11:39:36 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:55568 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755039AbYBUQje (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:39:34 -0500
+Date: Thu, 21 Feb 2008 17:39:23 +0100
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] macb: Fix speed setting
+Message-ID: <20080221173923.1301d0c9@dhcp-252-066.norway.atmel.com>
+In-Reply-To: <20080222.000731.18312290.anemo@mba.ocn.ne.jp>
+References: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
+	<20080221151246.6f2044b9@dhcp-252-066.norway.atmel.com>
+	<20080222.000731.18312290.anemo@mba.ocn.ne.jp>
+Organization: Atmel Norway
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> writes:
+On Fri, 22 Feb 2008 00:07:31 +0900 (JST)
+Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
->  			if (time_offset < 0) {
-> -			    temp64 = -temp64;
-> -			    do_div(temp64, mtemp);
-> +			    utemp64 = -temp64;
-> +			    do_div(utemp64, mtemp);
->  			    freq_adj -= temp64;
+> > I'm willing to take your word for it, but some documentation would be
+> > really nice...  
+> 
+> Well, simple grepping drivers/net/phy enlighten us ;)
 
-do_div previously modified temp64 by side effect, now it no longer does
-that.
+Yeah, the patch certainly looks correct as far as I can tell.
 
->  			} else {
-> -			    do_div(temp64, mtemp);
-> +			    utemp64 = temp64;
-> +			    do_div(utemp64, mtemp);
->  			    freq_adj += temp64;
+> Anyway, this patch fixes problem with 10Mbps on AT91SAM9260 board.
 
-Same.
+Thanks. I'll pass it on.
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Haavard
