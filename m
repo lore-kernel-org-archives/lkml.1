@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765509AbYBULip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbYBULnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765509AbYBULip (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 06:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760247AbYBULih
+	id S1763526AbYBULnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbYBULnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 06:38:37 -0500
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:56714 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755001AbYBULig (ORCPT
+	Thu, 21 Feb 2008 06:43:05 -0500
+Received: from avexch1.qlogic.com ([198.70.193.115]:36368 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753776AbYBULnD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 06:38:36 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALbxvEdMQWRV/2dsb2JhbACBWa4/
-Date: Thu, 21 Feb 2008 06:38:34 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] markers: fix sparse warnings in markers.c
-Message-ID: <20080221113834.GA13150@Krystal>
-References: <1203578514.20345.2.camel@brick>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1203578514.20345.2.camel@brick>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 06:38:06 up 10 days,  7:38,  1 user,  load average: 0.45, 0.46,
-	0.44
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 21 Feb 2008 06:43:03 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
+Date: Thu, 21 Feb 2008 03:43:00 -0800
+Message-ID: <0BB3E5E7462EEA4295BC02D49691DC0701277989@AVEXCH1.qlogic.org>
+In-reply-to: <20080220025525.GG23759@plap3.qlogic.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
+Thread-Index: AchzbA+f+kJzN/WoRg2byVnWOjX3WQBElqog
+From: "David Somayajulu" <david.somayajulu@qlogic.com>
+To: "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
+       "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: "Adrian Bunk" <bunk@kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Harvey Harrison (harvey.harrison@gmail.com) wrote:
-> char can be unsigned
-> kernel/marker.c:64:20: error: dubious one-bit signed bitfield
-> kernel/marker.c:65:14: error: dubious one-bit signed bitfield
+ 
+Andrew Vasquez wrote:
+<snip>
+> > > Hmm, guess it's the earlier 'if (scsi_status == 0)' check 
+> a few lines
+> > > up...  Dave S., can you take a look at this...  Thanks, av
+> > 
+> > Ah, so the !scsi_status is wrong it was supposed to be 
+> scsi_status !=
+> > 0 ... and even then it can just be dropped.
 > 
-> Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-
-Yep, it makes sense.
-
-Thanks!
-
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> ---
-> Introduced between -rc1 and -rc2
->  kernel/marker.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
+> My guess is that the check should have been written as:
 > 
-> diff --git a/kernel/marker.c b/kernel/marker.c
-> index c4c2cd8..50effc0 100644
-> --- a/kernel/marker.c
-> +++ b/kernel/marker.c
-> @@ -61,8 +61,8 @@ struct marker_entry {
->  	int refcount;	/* Number of times armed. 0 if disarmed. */
->  	struct rcu_head rcu;
->  	void *oldptr;
-> -	char rcu_pending:1;
-> -	char ptype:1;
-> +	unsigned char rcu_pending:1;
-> +	unsigned char ptype:1;
->  	char name[0];	/* Contains name'\0'format'\0' */
->  };
->  
-> -- 
-> 1.5.4.2.200.g99e75
+> 	...
+> 	if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER)
+> 		scsi_set_resid(cmd, residual);
+> 		if ((scsi_bufflen(cmd) - residual) < cmd->underflow) {
+> 			...
 > 
+> It looks to be a logic-error while porting from qla2xxx, where
+> scsi_status during CS_COMPLETE is the full 16-bit status (high-byte is
+> transport, low-byte SCSI status) from from the FCP_RSP frame (not so
+> in iSCSI, where it's just the SCSI-status) and the residual check
+> in qla_isr.c::qla2x00_status_entry() looks like:
 > 
+> 	if (!lscsi_status &&
+> 	    ((unsigned)(scsi_bufflen(cp) - resid) <
+> 	     cp->underflow)) {
+> 		...
 > 
+> I'll defer to Dave S. for verification.
+> 
+The correct patch needs to be 
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Signed-off-by: David C Somayajulu <david.somayajulu@qlogic.com>
+
+---
+
+diff --git a/drivers/scsi/qla4xxx/ql4_isr.c
+b/drivers/scsi/qla4xxx/ql4_isr.c
+index 0f029d0..fc84db4 100644
+--- a/drivers/scsi/qla4xxx/ql4_isr.c
++++ b/drivers/scsi/qla4xxx/ql4_isr.c
+@@ -100,8 +100,7 @@ static void qla4xxx_status_entry(struct
+ 
+ 		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
+ 			scsi_set_resid(cmd, residual);
+-			if (!scsi_status && ((scsi_bufflen(cmd) -
+residual) <
+-				cmd->underflow)) {
++			if ((scsi_bufflen(cmd) - residual) <
+cmd->underflow) {
+ 
+ 				cmd->result = DID_ERROR << 16;
+ 
