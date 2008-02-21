@@ -1,44 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934371AbYBUVTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934345AbYBUVUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934371AbYBUVTo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbYBUVTe
+	id S934345AbYBUVUF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:20:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYBUVTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 21 Feb 2008 16:19:35 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38514 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752400AbYBUVTe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 21 Feb 2008 16:19:34 -0500
-Received: from gw.goop.org ([64.81.55.164]:37264 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750960AbYBUVTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:19:33 -0500
-Message-ID: <47BDEA5E.4070800@goop.org>
-Date: Thu, 21 Feb 2008 13:17:18 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xen: Implement getgeo for Xen virtual block device.
-References: <47BDE731.60801@goop.org> <alpine.LFD.1.00.0802211315190.19896@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802211315190.19896@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Thu, 21 Feb 2008 21:19:27 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] saa7146: fix sparse warnings
+Message-ID: <20080221211927.GB27894@ZenIV.linux.org.uk>
+References: <1203616356.20345.45.camel@brick>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203616356.20345.45.camel@brick>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Thu, 21 Feb 2008, Jeremy Fitzhardinge wrote:
->   
->> Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
->> From: Ian Campbell <ijc@hellion.org.uk>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
->>     
->
-> This is just wrong. The From: goes at the *top*, and if it's not there, 
-> my scripts won't pick it up as the author. 
+On Thu, Feb 21, 2008 at 09:52:36AM -0800, Harvey Harrison wrote:
 
-OK.  Have you fixed it, or shall I resend?
-
-Thanks,
-    J
+Could you please use more descriptive names?  NULL noise removal
+is not the same as shadowing or endianness annotations or endianness
+fixes or __user/__iomem annotations/fixes, etc.
