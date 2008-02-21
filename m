@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765082AbYBUJuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765604AbYBUJur@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765082AbYBUJuc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:50:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYBUJuW
+	id S1765604AbYBUJur (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:50:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765339AbYBUJug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:50:22 -0500
-Received: from mga07.intel.com ([143.182.124.22]:12306 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752556AbYBUJuU (ORCPT
+	Thu, 21 Feb 2008 04:50:36 -0500
+Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:59700
+	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765333AbYBUJuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:50:20 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,385,1199692800"; 
-   d="scan'208";a="381813776"
-Message-ID: <2422.172.16.116.56.1203587019.squirrel@linux.intel.com>
-Date: Thu, 21 Feb 2008 01:43:39 -0800 (PST)
-Subject: From 2.6.24 to 2.6.25-rc2,
-      CPU can not do hotplug when one task set affinity to it
-From: youquan_song@linux.intel.com
-To: linux-kernel@vger.kernel.org
-Cc: youquan.song@intel.com
-User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 21 Feb 2008 04:50:35 -0500
+X-Greylist: delayed 333 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 04:50:34 EST
+X-Authority-Analysis: v=1.0 c=1 a=TEGKNp2qDdgA:10 a=Al2GMUxp3q319iOwV-4A:9
+ a=oNzJz-ubopelTF3YAn3mopJLPBgA:4 a=uv1ck3d6JtEA:10
+Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: elendil@planet.nl, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
+References: <1203123219.6176.36.camel@popeye>
+	 <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
+	 <1203163503.6124.5.camel@popeye>
+	 <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
+	 <1203221372.6124.29.camel@popeye>
+	 <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 03:45:00 -0600
+Message-Id: <1203587101.27355.4.camel@popeye>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In SMP sever platform, with kernel 2.6.24-rc2 and kernel 2.6.25-rc2,
-Set one task affinity to one CPU core, then set offline the CPU core.
-After that we can not set online the CPU core again.
+Jiri - 
+
+I am tempted to lie to you and say it was in both modes, or when running
+under X only, but to tell you the truth while I have not seen it while
+running in console mode, I have not spent enough time there to make a
+solid statement one way or the other.
+
+Sorry
+
+Chris
 
 
-1.  run the test.sh script:   test.sh 1  ( 1 is the logical CPU )
-test.sh script:
 
-#!/bin/bash
 
-main(){
 
-    typeset -i CPU=$1
-    ./task.sh > /dev/null&
-    PID=$!
-
-    if [ `cat /sys/devices/system/cpu/cpu${CPU}/online` = "0" ]; then
-        echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
-    fi
-
-    MASK=$((1<<${CPU}))
-
-    `taskset -p ${MASK} ${PID} > /dev/null 2>&1`
-
-    echo "0" > /sys/devices/system/cpu/cpu${CPU}/online
-
-    echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
-
-    kill -9 $PID > /dev/null 2>&1
-
-    echo "PASS\n"
-
-}
-
-typeset -i TEST_CPU=$1
-main $TEST_CPU
-
-2. task.sh script as following
-
-#!/bin/bash
-
-while :
-do
-  NOOP=1
-done
-
-Actual Result:
-The test.sh will block at set online the CPU ( echo "1" >
-/sys/devices/system/cpu/cpu${CPU}/online ).
-
-we check the test.sh has dead by 'ps -aux'.
+On Thu, 2008-02-21 at 10:37 +0100, Jiri Kosina wrote:
+> On Sat, 16 Feb 2008, Chris Holvenstot wrote:
+> 
+> > This is just to confirm that I have been running all day on a kernel 
+> > built with CONFIG_GROUP_SCHED turned 'off' and have not seen the problem 
+> > with my keyboard (I never noticed a problem with the mouse as others 
+> > have)
+> 
+> Chris,
+> 
+> does the keyboard malfunction with CONFIG_GROUP_SCHED only when you are 
+> running in X, or does that happen also on console?
+> 
 
