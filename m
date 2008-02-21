@@ -1,71 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbYBUHnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760275AbYBUHpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757553AbYBUHnG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 02:43:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYBUHmy
+	id S1760275AbYBUHpJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 02:45:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbYBUHo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 02:42:54 -0500
-Received: from ug-out-1314.google.com ([66.249.92.171]:47829 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752376AbYBUHmw (ORCPT
+	Thu, 21 Feb 2008 02:44:56 -0500
+Received: from E23SMTP01.au.ibm.com ([202.81.18.162]:59896 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753992AbYBUHoz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 02:42:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=lcUZuZya58saI7W2ayOmWg9w0CNuPwwISGxs2909+osOSp85SjdhyL0APFdywJMTqeGOsMwwD5ICQhGrMOthKjhOrrRkIt0NtgmAxibma1YBxJXQBvfB97pw59SVLRbR2HGB51ObxNK7X4rDZoznAHPf6fgPvEP4nJbjXbwGKHQ=
-Date: Thu, 21 Feb 2008 07:43:46 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [BUG?] APM is hidden in menuconfig
-Message-ID: <20080221074346.GA3919@ff.dom.local>
-References: <20080220120828.GD3885@ff.dom.local> <200802210123.44367.rjw@sisk.pl> <E1JS02I-0003gO-Py@faramir.fjphome.nl> <200802210221.52765.rjw@sisk.pl>
+	Thu, 21 Feb 2008 02:44:55 -0500
+Message-ID: <47BD2A99.3010608@linux.vnet.ibm.com>
+Date: Thu, 21 Feb 2008 13:09:05 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802210221.52765.rjw@sisk.pl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <peter@programming.kicks-ass.net>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Make yield_task_fair more efficient
+References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu>
+In-Reply-To: <20080221070733.GA13694@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 02:21:52AM +0100, Rafael J. Wysocki wrote:
-> On Thursday, 21 of February 2008, Frans Pop wrote:
-> > Rafael J. Wysocki wrote:
-> > > On Wednesday, 20 of February 2008, Jarek Poplawski wrote:
-> > >> So, has it to be so hard? It seems not - at least in good old times...
-> > > 
-> > > Something in APM uses some code from drivers/base/power/main.c that
-> > > depends on PM_SLEEP.
-> > 
-> > Sure, but that does not make Jarek's point invalid. From a user PoV APM is a
-> > high-level configuration option. That is what he wants.
-> > It should thus be easily accessible and not be buried beneath a lot of
-> > other, much more technical, options.
-
-Probably Frans is right: this should be my point... But I'm not so
-"greedy", and I would be happy if it were at least more visible. It
-simply seems to me quite not obvious to even think about turning
-SUSPEND on when I have problems with a basic acpi function.
-
-Even more interesting question is why this APM or PM_SLEEP dependency
-on SUSPEND (or HIBERNATION) isn't visible with "/" searching: PM_SLEEP
-looks like some "hidden" option - that's why I tried first to find some
-comment in arch/ instead of simply reading Kconfig.
-
-> > Could this maybe be solved by making APM automatically 'select' some options
-> > instead of 'depending' on them?
+Ingo Molnar wrote:
+> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> That, unfortunately, doesn't work.
+>> I disagree. The cost is only adding a field to cfs_rq [...]
 > 
-> IMO the solution might be to separate the APM suspend code from the rest of the
-> APM code and make it depend on (PM_SUSPEND && APM).
+> wrong. The cost is "only" of adding a field to cfs_rq and _updating it_, 
+> in the hottest paths of the scheduler:
+> 
+> @@ -256,6 +257,7 @@ static void __enqueue_entity(struct cfs_
+>                  */
+>                 if (key < entity_key(cfs_rq, entry)) {
+>                         link = &parent->rb_left;
+> +                       rightmost = 0;
 
-...Or at least to mention APM in SUSPEND title and description.
-Actually, this is really strange: both SUSPEND and PM_SLEEP have
-default = y. So it seems they are intended to be more "advertised"
-than they are?
+That's an update when we move leftwards.
 
-Thanks & regards,
-Jarek P.
+>                 } else {
+>                         link = &parent->rb_right;
+>                         leftmost = 0;
+> @@ -268,6 +270,8 @@ static void __enqueue_entity(struct cfs_
+>          */
+>         if (leftmost)
+>                 cfs_rq->rb_leftmost = &se->run_node;
+> +       if (rightmost)
+> +               cfs_rq->rb_rightmost = &se->run_node;
+> 
+
+&se->run_node is already in the cache, we are assigning cfs_rq->rb_rightmost to it.
+
+>> [...] For a large number of tasks - say 10000, we need to walk 14 
+>> levels before we reach the node (each time). [...]
+> 
+> 10,000 yield-ing tasks is not a common workload we care about. It's not 
+> even a rare workload we care about. _Especially_ we dont care about it 
+> if it slows down every other workload (a tiny bit).
+> 
+
+sched_yield() is supported API and also look at
+http://lkml.org/lkml/2007/9/19/351. I am trying to make sched_yield() efficient
+when compat_sched_yield is turned on (which is most likely), since people will
+want that behaviour (Hint, please read the man-page for sched_yield).There are
+already several applications using sched_yield(), so they all suffer.
+
+>> [...] Doesn't matter if the data is cached, we are still spending CPU 
+>> time looking through pointers and walking to the right node. [...]
+> 
+> have you actually measured how much it takes to walk the tree that deep
+> on recent hardware? I have.
+
+I have measured how much time can be saved by not doing that and it's quite a lot.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
