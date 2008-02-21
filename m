@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764899AbYBUE77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbYBUFCd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764899AbYBUE77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 23:59:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756378AbYBUE7u
+	id S1756099AbYBUFCd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 00:02:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbYBUFCZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 23:59:50 -0500
-Received: from ozlabs.org ([203.10.76.45]:51117 "EHLO ozlabs.org"
+	Thu, 21 Feb 2008 00:02:25 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:58964 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756259AbYBUE7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 23:59:49 -0500
-MIME-Version: 1.0
+	id S1750771AbYBUFCY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 00:02:24 -0500
+Date: Thu, 21 Feb 2008 06:02:23 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Andrea Arcangeli <andrea@qumranet.com>
+Cc: Robin Holt <holt@sgi.com>, akpm@linux-foundation.org,
+       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
+       kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] mmu notifiers #v6
+Message-ID: <20080221050223.GD15215@wotan.suse.de>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080220010941.GR7128@v2.random> <20080220103942.GU7128@v2.random> <20080220113313.GD11364@sgi.com> <20080220120324.GW7128@v2.random>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18365.1344.466799.556560@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Feb 2008 15:59:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: avorontsov@ru.mvista.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Clemens Koller <clemens.koller@anagramm.de>, benh@kernel.crashing.org,
-       linux-fbdev-devel@lists.sourceforge.net, adaplas@gmail.com,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] fb: add support for foreign endianness
-In-Reply-To: <20080220121818.GA20836@localhost.localdomain>
-References: <20080214224942.a0cb6218.akpm@linux-foundation.org>
-	<20080215164542.GB16810@localhost.localdomain>
-	<Pine.LNX.4.64.0802171030330.6848@anakin>
-	<20080218081847.e9e65f2f.krzysztof.h1@poczta.fm>
-	<19805.1203355811@turing-police.cc.vt.edu>
-	<47BA162C.5000807@anagramm.de>
-	<1203381353.6740.59.camel@pasglop>
-	<47BABD3A.7010102@anagramm.de>
-	<20080219040530.7b1d115d.akpm@linux-foundation.org>
-	<18363.31427.989835.105966@cargo.ozlabs.ibm.com>
-	<20080220121818.GA20836@localhost.localdomain>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+In-Reply-To: <20080220120324.GW7128@v2.random>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anton Vorontsov writes:
+On Wed, Feb 20, 2008 at 01:03:24PM +0100, Andrea Arcangeli wrote:
+> If there's agreement that the VM should alter its locking from
+> spinlock to mutex for its own good, then Christoph's
+> one-config-option-fits-all becomes a lot more appealing (replacing RCU
+> with a mutex in the mmu notifier list registration locking isn't my
+> main worry and the non-sleeping-users may be ok to live with it).
 
-> > I was wondering if it would be sufficient to provide alternative
-> > versions of fb_readl, fb_writel etc. that do byte-swapping.
-> 
-> This is of course viable alternative. And I was considering this, but
-> later I abandoned the idea: that way we'll end up doing math in the
-> native endianness and then converting it to the foreign. This feels
-> ugly in contrast when we can do the right math in the first place, per
-> framebuffer.
+Just from a high level view, in some cases we can just say that no we
+aren't going to support this. And this may well be one of those cases.
 
-OK.  I guess I'm convinced then.  However, your patch description
-needs to be a lot better.  It should describe things like why you
-want to make the change and why the change you are proposing is a good
-idea and is better than other alternatives.  If you'd done that
-originally we might not have needed to have all this discussion. :)
+The more constraints placed on the VM, the harder it becomes to
+improve and adapt in future. And this seems like a pretty big restriction.
+(especially if we can eg. work around it completely by having a special
+purpose driver to get_user_pages on comm buffers as I suggested in the
+other mail).
 
-Paul.
+At any rate, I believe Andrea's patch really places minimal or no further
+constraints than a regular CPU TLB (or the hash tables that some archs
+implement). So we're kind of in 2 different leagues here.
