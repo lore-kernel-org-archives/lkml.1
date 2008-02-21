@@ -1,131 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764784AbYBUAxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934871AbYBUAyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764784AbYBUAxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:53:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbYBUAxb
+	id S934871AbYBUAyN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:54:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932952AbYBUAxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:53:31 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:22371 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754431AbYBUAxa (ORCPT
+	Wed, 20 Feb 2008 19:53:51 -0500
+Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:28933 "HELO
+	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1762648AbYBUAxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:53:30 -0500
-Message-ID: <47BCCB89.4070000@ct.jp.nec.com>
-Date: Wed, 20 Feb 2008 16:53:29 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 20 Feb 2008 19:53:49 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XvjQA6xLfVVctyIBxScReKvU10IAzQwiPazHzTF3LqHovJjeO/duRjoMygdJFjjmtfS/6s83onJxOULzeh/iO8eaISJBdAsD7w4izu+RZ5gYDBtUOSX76IN+I/FlYwZO8QyXtjAPvA7Xf6jWCUnOtwCh6kCoSuksDJrwNRAib5Q=  ;
+X-YMail-OSG: jEtN0XQVM1mM1wKaVayCYOL1wxzGOW73Y3e2lPEPAIq.wDzaX81iOtyUAzEuipaPEBgIC.fcCg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andre Tomt <andre@tomt.net>
+Subject: Re: USB OOPS 2.6.25-rc2-git1
+Date: Wed, 20 Feb 2008 16:53:46 -0800
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+References: <47BAF36C.4000509@tomt.net> <200802201324.37519.david-b@pacbell.net> <47BCC4FD.1050701@tomt.net>
+In-Reply-To: <47BCC4FD.1050701@tomt.net>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Arjan van de Ven <arjan@linux.intel.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] latencytop: change /proc task_struct access method
-References: <47B4C5E7.5000802@ct.jp.nec.com> <20080214164216.45ebf51f@laptopd505.fenrus.org> <20080215011341.GA11756@elte.hu>
-In-Reply-To: <20080215011341.GA11756@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802201653.47166.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On Wednesday 20 February 2008, Andre Tomt wrote:
+> David Brownell wrote:
+> > On Wednesday 20 February 2008, Andre Tomt wrote:
+> >> It has not crashed yet with the patch though.
+> > 
+> > It seems that one of the tweks in this patch made the watchdog
+> > act better than before.  So unless I hear from you (before the
+> > start of next week) that some other message appears, or that your
+> > oops re-appears, I'll submit some version of this patch for RC3.
+> 
+> OOPS'ed again after some hours. The OOPS looks identical to me besides 
+> all kind of other crap mixed in the trace due to a lot of unrelated 
+> activity going on.
+> 
+> Quite a lot of the same IAA messages (status 8029 and 8028, cmd 10021) 
+> in /var/log/debug prior to the crash, over the entire uptime time span.
+> 
+> This was with the first patch posted only. Not any of the other ones.
 
-Here is a delta patch against sched-devel.git tree.
+Hmm ... I'd have expected some other IAA/IAAD message too.
 
-These two patches in sched-devel.git tree fix the issues.
-latencytop: fix kernel panic while reading latency proc file
-latencytop: fix memory leak on latency proc file
 
-However, this is more appropriate way to fix, I think.
+> > And if you're up for it, I may have another patch for you
+> > to try on top of this one ... I had an idea about IRQ trigger
+> > modes that might be causing this problem.
+> 
+> It'll have to be tomorrow. Should I throw in the anti-oops patch too?
 
----
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Sure.  I expect you'll see the stacktrace then, instead of oopsing.
 
-Change getting task_struct by get_proc_task() at read or write time,
-and returns -ESRCH if get_proc_task() returns NULL.
-This is same behavior as other /proc files.
+You might turn that one IAA message into an ehci_vdbg() call
+instead of an ehci_dbg() call, since  the data it gives isn't
+useful.  That would reduce the amount of log noise you seee.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- fs/proc/base.c |   40 ++++++++++++----------------------------
- 1 files changed, 12 insertions(+), 28 deletions(-)
-
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index 64661c3..bebf9a8 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -314,9 +314,12 @@ static int proc_pid_schedstat(struct task_struct *task, char *buffer)
- static int lstats_show_proc(struct seq_file *m, void *v)
- {
- 	int i;
--	struct task_struct *task = m->private;
--	seq_puts(m, "Latency Top version : v0.1\n");
-+	struct inode *inode = m->private;
-+	struct task_struct *task = get_proc_task(inode);
+- Dave
  
-+	if (!task)
-+		return -ESRCH;
-+	seq_puts(m, "Latency Top version : v0.1\n");
- 	for (i = 0; i < 32; i++) {
- 		if (task->latency_record[i].backtrace[0]) {
- 			int q;
-@@ -341,43 +344,24 @@ static int lstats_show_proc(struct seq_file *m, void *v)
- 		}
- 
- 	}
-+	put_task_struct(task);
- 	return 0;
- }
- 
- static int lstats_open(struct inode *inode, struct file *file)
- {
--	int ret;
--	struct seq_file *m;
--	struct task_struct *task = get_proc_task(inode);
--
--	if (!task)
--		return -ENOENT;
--	ret = single_open(file, lstats_show_proc, NULL);
--	if (!ret) {
--		m = file->private_data;
--		m->private = task;
--	}
--	return ret;
--}
--
--static int lstats_release(struct inode *inode, struct file *file)
--{
--	struct seq_file *m = file->private_data;
--	struct task_struct *task = m->private;
--
--	put_task_struct(task);
--	return single_release(inode, file);
-+	return single_open(file, lstats_show_proc, inode);
- }
- 
- static ssize_t lstats_write(struct file *file, const char __user *buf,
- 			    size_t count, loff_t *offs)
- {
--	struct seq_file *m;
--	struct task_struct *task;
-+	struct task_struct *task = get_proc_task(file->f_dentry->d_inode);
- 
--	m = file->private_data;
--	task = m->private;
-+	if (!task)
-+		return -ESRCH;
- 	clear_all_latency_tracing(task);
-+	put_task_struct(task);
- 
- 	return count;
- }
-@@ -387,7 +371,7 @@ static const struct file_operations proc_lstats_operations = {
- 	.read		= seq_read,
- 	.write		= lstats_write,
- 	.llseek		= seq_lseek,
--	.release	= lstats_release,
-+	.release	= single_release,
- };
- 
- #endif
--- 
-1.5.3.8
 
