@@ -1,104 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763661AbYBUK6x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764621AbYBUK70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763661AbYBUK6x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 05:58:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYBUK6p
+	id S1764621AbYBUK70 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 05:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764007AbYBUK7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 05:58:45 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:44881 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758024AbYBUK6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 05:58:43 -0500
-Date: Thu, 21 Feb 2008 04:58:39 -0600
-From: Robin Holt <holt@sgi.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Robin Holt <holt@sgi.com>, Christoph Lameter <clameter@sgi.com>,
-       akpm@linux-foundation.org, Andrea Arcangeli <andrea@qumranet.com>,
-       Avi Kivity <avi@qumranet.com>, Izik Eidus <izike@qumranet.com>,
-       kvm-devel@lists.sourceforge.net,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
-       Steve Wise <swise@opengridcomputing.com>,
-       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
-       steiner@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       daniel.blueman@quadrics.com
-Subject: Re: [patch 5/6] mmu_notifier: Support for drivers with revers maps
-	(f.e. for XPmem)
-Message-ID: <20080221105838.GJ11391@sgi.com>
-References: <20080215064859.384203497@sgi.com> <200802201451.46069.nickpiggin@yahoo.com.au> <20080220090035.GG11391@sgi.com> <200802211520.03529.nickpiggin@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200802211520.03529.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 21 Feb 2008 05:59:04 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:42315 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756786AbYBUK7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 05:59:03 -0500
+Date: Thu, 21 Feb 2008 21:58:56 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-net@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-net: no next-20080221 tree
+Message-Id: <20080221215856.53bbecc5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 03:20:02PM +1100, Nick Piggin wrote:
-> > > So why can't you export a device from your xpmem driver, which
-> > > can be mmap()ed to give out "anonymous" memory pages to be used
-> > > for these communication buffers?
-> >
-> > Because we need to have heap and stack available as well.  MPT does
-> > not control all the communication buffer areas.  I haven't checked, but
-> > this is the same problem that IB will have.  I believe they are actually
-> > allowing any memory region be accessible, but I am not sure of that.
-> 
-> Then you should create a driver that the user program can register
-> and unregister regions of their memory with. The driver can do a
-> get_user_pages to get the pages, and then you'd just need to set up
-> some kind of mapping so that userspace can unmap pages / won't leak
-> memory (and an exit_mm notifier I guess).
+--Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK.  You need to explain this better to me.  How would this driver
-supposedly work?  What we have is an MPI library.  It gets invoked at
-process load time to establish its rank-to-rank communication regions.
-It then turns control over to the processes main().  That is allowed to
-run until it hits the
-	MPI_Init(&argc, &argv);
+Hi all,
 
-The process is then totally under the users control until:
-	MPI_Send(intmessage, m_size, MPI_INT, my_rank+half, tag, MPI_COMM_WORLD);
-	MPI_Recv(intmessage, m_size, MPI_INT, my_rank+half,tag, MPI_COMM_WORLD, &status);
+I have *not* released a new tree today (If you want to see why, have a
+look at the left most column of
+http://kisskb.ellerman.id.au/kisskb/branch/9).  This was caused my me
+removing one of Greg KH's patches because it did not apply due to an
+inadequacy in my procedures.
 
-That is it.  That is all our allowed interaction with the users process.
-Are you saying at the time of the MPI_Send, we should:
+Basically, I have three quilt series from Greg and one of the patches in
+the second one depends on something in the first series.  The BASE tag we
+have implemented for series files was supposed to point to the place in
+Linus' tree where the series should apply cleanly.  This (obviously)
+turns out to be inadequate.  So we have a new tag NEXT_BASE which may
+name another git tree/quilt series that is also included in the
+linux-next tree.  This is most useful for those who have supplied more
+than one series but may be used between consenting adults who trust each
+other to keep their trees/series consistent enough.  Unfortunately this
+will introduce a loose ordering between trees/series, but I think it will
+be manageable.  I don't expect it to be used very much.
 
-	down_write(&current->mm->mmap_sem);
-	Find all the VMAs that describe this region and record their
-vm_ops structure.
-	Find all currently inserted page table information.
-	Create new VMAs that describe the same regions as before.
-	Insert our special fault handler which merely calls their old
-fault handler and then exports the page then returns the page to the
-kernel.
-	Take an extra reference count on the page for each possible
-remote rank we are exporting this to.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF
+Content-Type: application/pgp-signature
 
-That doesn't seem too unreasonable, except when you compare it to how the
-driver currently works.  Remember, this is done from a library which has
-no insight into what the user has done to its own virtual address space.
-As a result, each MPI_Send() would result in a system call (or we would
-need to have a set of callouts for changes to a processes VMAs) which
-would be a significant increase in communication overhead.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Maybe I am missing what you intend to do, but what we need is a means of
-tracking one processes virtual address space changes so other processes
-can do direct memory accesses without the need for a system call on each
-communication event.
+iD8DBQFHvVl0TgG2atn1QN8RAhw6AJoDTDQIKINQ5tnnob2tBdJnzwphbACaAzUn
+vN+W2m9aV2dnT+seNjaqwDg=
+=O/Mq
+-----END PGP SIGNATURE-----
 
-> Because you don't need to swap, you don't need coherency, and you
-> are in control of the areas, then this seems like the best choice.
-> It would allow you to use heap, stack, file-backed, anything.
-
-You are missing one point here.  The MPI specifications that have
-been out there for decades do not require the process use a library
-for allocating the buffer.  I realize that is a horrible shortcoming,
-but that is the world we live in.  Even if we could change that spec,
-we would still need to support the existing specs.  As a result, the
-user can change their virtual address space as they need and still expect
-communications be cheap.
-
-Thanks,
-Robin
+--Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF--
