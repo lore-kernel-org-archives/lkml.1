@@ -1,67 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763997AbYBUXoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934283AbYBUXrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763997AbYBUXoM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:44:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762057AbYBUXnL
+	id S934283AbYBUXrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:47:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbYBUXrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:43:11 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44408 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758747AbYBUXnH (ORCPT
+	Thu, 21 Feb 2008 18:47:11 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48829 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751723AbYBUXrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:43:07 -0500
-Date: Thu, 21 Feb 2008 23:31:44 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-Message-ID: <20080221233144.6368712c@core>
-In-Reply-To: <m3tzk1q3rt.fsf@maximus.localdomain>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-	<m3tzk1q3rt.fsf@maximus.localdomain>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 18:47:10 -0500
+Date: Thu, 21 Feb 2008 15:46:44 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       pcihpd-discuss@lists.sourceforge.net
+Subject: [GIT PATCH] PCI fixes for 2.6.25-rc2 git tree
+Message-ID: <20080221234644.GA7128@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008 00:38:14 +0100
-Krzysztof Halasa <khc@pm.waw.pl> wrote:
+Here are some PCI patches against your 2.6.25-rc2 git tree.
 
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> 
-> > I'm personally of the opinion that a lot of checkpatch "fixes" are 
-> > anything but. That mainly concerns fixing overlong lines
-> 
-> Perhaps we should increase line length limit, 132 should be fine.
-> Especially useful with long printk() lines and long arithmetic
-> expressions.
+They are a collection of PCI quirk additions, build fixes, and some PCI
+hotplug fixes.
 
-Agreed. The fact I'm having to fix bugs introduced by incorrect printk
-wrapping confirms that for printk strings at least it is overzealous.
 
-I'm all for it complaining about
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pci-2.6.git/
 
-  printk(KERN_FOO "<90 chars>", foo, bar + 37);
 
-type bits when the foo, bar should be underneath to be visible but for
-straight quoted text too long it should not warn and try to get the text
-folded.
+The full patches will be sent to the linux-pci mailing list, if anyone
+wants to see them.
 
-Alan
+thanks,
+
+greg k-h
+
+
+-------------
+
+ arch/x86/kernel/acpi/boot.c        |    3 +-
+ arch/x86/pci/irq.c                 |    4 ++
+ drivers/pci/hotplug/acpiphp_core.c |    6 +++
+ drivers/pci/hotplug/acpiphp_ibm.c  |   33 ++++++++-------
+ drivers/pci/pci-acpi.c             |    1 +
+ drivers/pci/proc.c                 |    2 +-
+ drivers/pci/quirks.c               |   79 ++++++++++++++++++++++++++++++++---
+ drivers/pci/setup-bus.c            |    6 +--
+ drivers/pcmcia/i82092.c            |    7 +++-
+ include/linux/pci_ids.h            |    6 +++
+ 10 files changed, 117 insertions(+), 30 deletions(-)
+
+---------------
+
+Andrew Morton (2):
+      PCI: drivers/pcmcia/i82092.c: fix up after pci_bus_region changes
+      PCI: fix up setup-bus.c #ifdef
+
+Crane Cai (1):
+      PCI: AMD SATA IDE mode quirk
+
+Gary Hade (1):
+      PCI: hotplug: acpiphp_ibm: Remove get device information
+
+Jason Gaston (2):
+      PCI: pci_ids: patch for Intel ICH10 DeviceID's
+      PCI: irq: patch for Intel ICH10 DeviceID's
+
+Kenji Kaneshige (1):
+      PCI: Fix wrong reference counter check for proc_dir_entry
+
+Peer Chen (1):
+      PCI: quirks: set 'En' bit of MSI Mapping for devices onHT-based nvidia platform
+
+Randy Dunlap (1):
+      PCI: kernel-doc: fix pci-acpi warning
+
+Yinghai Lu (1):
+      PCI: don't load acpi_php when acpi is disabled
+
