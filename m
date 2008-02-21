@@ -1,102 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbYBUWNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935100AbYBUWNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbYBUWNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbYBUWMx
+	id S935100AbYBUWNd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:13:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932973AbYBUWNE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:12:53 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:49429 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758552AbYBUWMw (ORCPT
+	Thu, 21 Feb 2008 17:13:04 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:16411 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764869AbYBUWNB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:12:52 -0500
-Subject: Re: [PATCH [RT] 00/14] RFC - adaptive real-time locks
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Gregory Haskins <ghaskins@novell.com>, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
-       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
-       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
-       sdietrich@novell.com, mkohari@novell.com
-In-Reply-To: <20080221212420.GA20953@elte.hu>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-	 <20080221212420.GA20953@elte.hu>
+	Thu, 21 Feb 2008 17:13:01 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Joel Becker <Joel.Becker@oracle.com>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+In-Reply-To: <47BDEF36.8000903@goop.org>
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>
+	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>
+	 <20080215202336.GE26034@mail.oracle.com>
+	 <1203274161.27987.6.camel@localhost.localdomain>
+	 <20080218104025.GA15899@ca-server1.us.oracle.com>
+	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>
+	 <47BBDA20.8030105@zytor.com>
+	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+	 <47BCA275.7000504@goop.org>
+	 <1203546597.26910.74.camel@cthulhu.hellion.org.uk>
+	 <47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com>
+	 <47BDEF36.8000903@goop.org>
 Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Thu, 21 Feb 2008 15:12:46 -0700
-Message-Id: <1203631966.4232.62.camel@hermosa.morrealenet>
+Date: Thu, 21 Feb 2008 22:12:36 +0000
+Message-Id: <1203631956.28436.4.camel@cthulhu.hellion.org.uk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 192.168.1.223
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: 2.6.25-rc1 xen pvops regression
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=qcrRp5rlbqkS0d6TfuPTVw==:17 a=xNZ4JnfWWoDiQ0WoWREA:9 a=GurOHIFMJbuUkp6txiUA:7 a=DxvAq27qi8HCbjRcIwniMl324IgA:4 a=WuK_CZDBSqoA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 22:24 +0100, Ingo Molnar wrote:
-> hm. Why is the ticket spinlock patch included in this patchset? It just 
-> skews your performance results unnecessarily. Ticket spinlocks are 
-> independent conceptually, they are already upstream in 2.6.25-rc2 and 
-> -rt will have them automatically once we rebase to .25.
+
+On Thu, 2008-02-21 at 13:37 -0800, Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+> >> Still curious about why a pagetable page is ending up in that range 
+> >> though.  Seems like it shouldn't be possible, since we shouldn't be 
+> >> allowed to allocate from those pages, at least until the DMI probe 
+> >> has happened...  Unless the early allocator is only excluded from 
+> >> e820 reserved pages, which would cause a problem on systems which 
+> >> don't reserve the DMI space...  HPA?
+> >>
+> >
+> > I thought the problem was a Xen-provided pagetable from before Linux 
+> > started? 
 > 
+> Hm, I don't think so.  The domain-builder pagetable is put after the 
+> kernel, so it shouldn't be under 1M.
 
-True, the ticket spinlock certainly adds to the throughput results we
-have seen.  However, the results without the ticket patch are still very
-significant.   (IIRC, 500-600MB/s instead of the ~730MB/s advertised) We
-can easily re-gen the previous results for an apples-to-apples
-comparison.
+I can confirm that it is Linux which is allocating it. The call path:
+        # xm create -c debian-x86_32p-1
+        Using config file "/etc/xen/debian-x86_32p-1".
+        Started domain debian-1
+        xen_alloc_pt_init PFN f0
+        Pid: 0, comm: swapper Not tainted 2.6.25-rc2 #68
+         [<c02ecb6b>] xen_alloc_pt_init+0x4b/0x60
+         [<c02f5e2b>] one_page_table_init+0x8b/0xf0
+         [<c02f63df>] paging_init+0x3bf/0x520
+         [<c02ee444>] setup_arch+0x2a4/0x410
+         [<c02e9a64>] start_kernel+0x64/0x380
+         [<c02efd7f>] cpu_detect+0x6f/0xf0
+         [<c02ed1a1>] xen_start_kernel+0x2f1/0x310
+         =======================
+        Entering add_active_range(0, 0, 262144) 0 entries of 256 used
+        Zone PFN ranges:
+          DMA             0 ->     4096
 
-Without the ticket locks we see spikes in cyclictest that have been
-mapped (via latency trace) to the non-deterministic behavior of the raw
-rt lock "wait_lock" (which is used in the rt lock code).   These spikes
-disappear with the ticket lock patch installed. 
-
-Note that we see these spikes while running cyclictest concurrently with
-dbench/hackbench/kernel builds.  
-
-> and if we take the ticket spinlock patch out of your series, the the 
-> size of the patchset shrinks in half and touches only 200-300 lines of 
-> code ;-) Considering the total size of the -rt patchset:
+Ian.
 > 
->    652 files changed, 23830 insertions(+), 4636 deletions(-)
+>     J
 > 
-> we can regard it a routine optimization ;-)
-> 
-> regarding the concept: adaptive mutexes have been talked about in the 
-> past, but their advantage is not at all clear, that's why we havent done 
-> them. It's definitely not an unambigiously win-win concept.
-> 
+-- 
+Ian Campbell
 
-Can you elaborate?  Where did you previously see that this would be
-problematic?
-
-> So lets get some real marketing-free benchmarking done, and we are not 
-> just interested in the workloads where a bit of polling on contended 
-> locks helps, but we are also interested in workloads where the polling 
-> hurts ... And lets please do the comparisons without the ticket spinlock 
-> patch ...
-> 
-> 	Ingo
-
-Certainly.  One of the things we have struggled with are real-world
-loads that prove/disprove the implementation.  Thus far, everything we
-have come up with has only seen improvement.  
-
-The worst case we have come up with so far is running dbench/hackbench
-in FIFO.  Here we have multiple tasks at the same priority contending on
-the same locks.  This should give a worst case performance since the
-tasks cannot preempt each other, and the nesting of locks should produce
-significant latencies.  However, with the addition of the lateral-steal
-patch, we do not witness that at all, rather the throughput is on par
-with CFS results.
-
-Higher priority FIFO tasks will preempt the polling tasks, and the lower
-priority tasks will wait, as they should.
-
-Are there some suggestions on workloads that would show how the polling
-hurts?  
-
-Thanks,
--PWM
-
+Why do they call a fast a fast, when it goes so slow?
 
