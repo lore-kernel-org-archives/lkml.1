@@ -1,65 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbYBUQEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934777AbYBUQEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763478AbYBUQEY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:04:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934495AbYBUQDB
+	id S934777AbYBUQEp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933383AbYBUQEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:03:01 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:25408 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933760AbYBUQC7 convert rfc822-to-8bit (ORCPT
+	Thu, 21 Feb 2008 11:04:09 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:6958 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763874AbYBUQEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:02:59 -0500
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       LKML-scsi <linux-scsi@vger.kernel.org>,
-       "thenzl@redhat.com" <thenzl@redhat.com>,
-       "coldwell@redhat.com" <coldwell@redhat.com>,
-       "adobriyan@gmail.com" <adobriyan@gmail.com>,
-       "randy.dunlap@oracle.com" <randy.dunlap@oracle.com>
-Date: Thu, 21 Feb 2008 16:02:05 +0000
-Subject: RE: [PATCH 1/1] resubmit: cciss: procfs updates to display info
- about many volumes
-Thread-Topic: [PATCH 1/1] resubmit: cciss: procfs updates to display info
- about many volumes
-Thread-Index: Ach0X3aHsUTBUh3YSNW2qs5VKCDKFwAQ4Qtw
-Message-ID: <DEE40752C8AF224BB890E455C7B8E0FE0428114F45@G6W0268.americas.hpqcorp.net>
-References: <20080220214400.GA13443@roadking.usa.hp.com>
- <20080221075743.GE23197@kernel.dk>
-In-Reply-To: <20080221075743.GE23197@kernel.dk>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 21 Feb 2008 11:04:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=KsKbY/q7lblv7bpGNEuwd3X7XihsE234OWXvWuho9fdsPNdkDebZ/j0/xiqiHSW17v31B/oXESJyIHOh20jr1EXOQi6ZXwCRToTAXvvtRgC1h/ylgidijako9SjvrnM1WB32LD7Jv7+aMR6exch3EMBJrhbbsW0yMMJ6WgGWyZU=
+Message-ID: <caf255910802210804u1ca0558u8b228a075627b4a5@mail.gmail.com>
+Date: Thu, 21 Feb 2008 17:04:04 +0100
+From: Pioz <pioz84@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Keyboard interrupt - request_irq()
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens wrote:
->
-> On Wed, Feb 20 2008, Mike Miller wrote:
-> > Patch 1 of 1
-> >
-> > This patch hopefully fixes all the brokeness in my last
-> submission. It
-> > compiles cleanly with tape support on or off. I added a couple of
-> > #ifdef's and removed the broken macro definition. The
-> #ifdef's made it unneccesary.
-> > It also replaces create_proc_read_entry with proc_create.
-> >
-> > This patch allows us to display information about all of
-> the logical
-> > volumes configured on a particular controller without stepping on
-> > memory even when there are many volumes (128 or more) configured.
-> > Please consider this for inclusion.
->
-> Looks a lot better, I've applied it.
->
+Hi all,
+  I have a problem.
+I want handle the keyboard interrupt and for this purpose I have write
+this module (I have kernel 2.6.23):
 
-Thanks.
+
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/interrupt.h>
+
+[...]
+
+irqreturn_t
+irq_myhandler (int irqn, void *dev)
+{
+        printk (KERN_INFO "Key pressed...\n");
+        return IRQ_HANDLED;
+}
+
+int
+init_module ()
+{
+        int res;
+        printk (KERN_INFO "Hello World!\n");
+        free_irq (1, NULL);
+        res = request_irq (1, irq_myhandler, IRQF_SHARED, "bao", dev_id);
+        printk (KERN_INFO "res: %d\n", res);
+        return 0;
+}
+
+void
+cleanup_module ()
+{
+        free_irq (1, NULL);
+        printk (KERN_INFO "Goodbye World!\n");
+}
+
+
+The return value of request_irq() function is -EBUSY. Why? Is the
+default handler? How can I do to change handler with my function?
+Thanks...
