@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934886AbYBUVoN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934083AbYBUVrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934886AbYBUVoN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:44:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762280AbYBUVnj
+	id S934083AbYBUVrr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758728AbYBUVrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:43:39 -0500
-Received: from mx1.suse.de ([195.135.220.2]:55482 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761669AbYBUVni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:43:38 -0500
-Subject: patch power_state-remove-it-from-usb.patch added to gregkh-2.6 tree
-To: pavel@ucw.cz, greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, pavel@suse.cz
-From: <gregkh@suse.de>
-Date: Thu, 21 Feb 2008 13:43:16 -0800
-In-Reply-To: <20080221130145.GA3789@elf.ucw.cz>
-Message-ID: <1203630196303@kroah.org>
+	Thu, 21 Feb 2008 16:47:37 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:16359 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757761AbYBUVrf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:47:35 -0500
+Message-Id: <47BDA983.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 21 Feb 2008 14:40:35 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: <a.p.zijlstra@chello.nl>, <bill.huey@gmail.com>, <rostedt@goodmis.org>,
+       <kevin@hilman.org>, <tglx@linutronix.de>, <cminyard@mvista.com>,
+       <dsingleton@mvista.com>, <dwalker@mvista.com>,
+       "Moiz Kohari" <MKohari@novell.com>,
+       "Peter Morreale" <PMorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
+       <ak@suse.de>, <gregkh@suse.de>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH [RT] 00/14] RFC - adaptive real-time locks
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
+ <20080221212420.GA20953@elte.hu>
+In-Reply-To: <20080221212420.GA20953@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> On Thu, Feb 21, 2008 at  4:24 PM, in message <20080221212420.GA20953@elte.hu>,
+Ingo Molnar <mingo@elte.hu> wrote: 
 
-This is a note to let you know that I've just added the patch titled
+> hm. Why is the ticket spinlock patch included in this patchset? It just 
+> skews your performance results unnecessarily. Ticket spinlocks are 
+> independent conceptually, they are already upstream in 2.6.25-rc2 and 
+> -rt will have them automatically once we rebase to .25.
 
-     Subject: power_state: remove it from usb
+Sorry if it was ambiguous.  I included them because we found the patch series without them can cause spikes due to the newly introduced pressure on the (raw_spinlock_t)lock->wait_lock.  You can run the adaptive-spin patches without them just fine (in fact, in many cases things run faster without them....dbench *thrives* on chaos).  But you may also measure a cyclic-test spike if you do so.  So I included them to present a "complete package without spikes".  I tried to explain that detail in the prologue, but most people probably fell asleep before they got to the end ;)
 
-to my gregkh-2.6 tree.  Its filename is
+> 
+> and if we take the ticket spinlock patch out of your series, the the 
+> size of the patchset shrinks in half and touches only 200-300 lines of 
+> code ;-) Considering the total size of the -rt patchset:
+> 
+>    652 files changed, 23830 insertions(+), 4636 deletions(-)
+> 
+> we can regard it a routine optimization ;-)
 
-     power_state-remove-it-from-usb.patch
+Its not the size of your LOC, but what you do with it :)
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+> 
+> regarding the concept: adaptive mutexes have been talked about in the 
+> past, but their advantage is not at all clear, that's why we havent done 
+> them. It's definitely not an unambigiously win-win concept.
+> 
+> So lets get some real marketing-free benchmarking done, and we are not 
+> just interested in the workloads where a bit of polling on contended 
+> locks helps, but we are also interested in workloads where the polling 
+> hurts ... And lets please do the comparisons without the ticket spinlock 
+> patch ...
 
+I'm open to suggestion, and this was just a sample of the testing we have done.  We have thrown plenty of workloads at this patch series far beyond the slides I prepared in that URL, and they all seem to indicate a net positive improvement so far.  Some of those results I cannot share due to NDA, and some I didnt share simply because I never formally collected the data like I did for these tests.  If there is something you would like to see, please let me know and I will arrange for it to be executed if at all possible.
 
->From pavel@ucw.cz  Thu Feb 21 13:36:03 2008
-From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 21 Feb 2008 14:01:45 +0100
-Subject: power_state: remove it from usb
-To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Greg KH <greg@kroah.com>, stern@rowland.harvard.edu, linux-usb@vger.kernel.org
-Message-ID: <20080221130145.GA3789@elf.ucw.cz>
-Content-Disposition: inline
+Regards,
+-Greg
 
-
-
-power_state is scheduled for removal, and it is used only write-only
-by USB. Remove it.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/core/driver.c  |    3 ---
- drivers/usb/core/hcd-pci.c |    5 -----
- drivers/usb/core/usb.h     |    2 --
- 3 files changed, 10 deletions(-)
-
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -794,8 +794,6 @@ static int usb_suspend_device(struct usb
- 
-  done:
- 	dev_vdbg(&udev->dev, "%s: status %d\n", __FUNCTION__, status);
--	if (status == 0)
--		udev->dev.power.power_state.event = msg.event;
- 	return status;
- }
- 
-@@ -826,7 +824,6 @@ static int usb_resume_device(struct usb_
- 	dev_vdbg(&udev->dev, "%s: status %d\n", __FUNCTION__, status);
- 	if (status == 0) {
- 		udev->autoresume_disabled = 0;
--		udev->dev.power.power_state.event = PM_EVENT_ON;
- 	}
- 	return status;
- }
---- a/drivers/usb/core/hcd-pci.c
-+++ b/drivers/usb/core/hcd-pci.c
-@@ -73,7 +73,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
- 	if (pci_enable_device(dev) < 0)
- 		return -ENODEV;
- 	dev->current_state = PCI_D0;
--	dev->dev.power.power_state = PMSG_ON;
- 
- 	if (!dev->irq) {
- 		dev_err(&dev->dev,
-@@ -302,8 +301,6 @@ int usb_hcd_pci_suspend(struct pci_dev *
- 
- done:
- 	if (retval == 0) {
--		dev->dev.power.power_state = PMSG_SUSPEND;
--
- #ifdef CONFIG_PPC_PMAC
- 		/* Disable ASIC clocks for USB */
- 		if (machine_is(powermac)) {
-@@ -406,8 +403,6 @@ int usb_hcd_pci_resume(struct pci_dev *d
- 	pci_set_master(dev);
- 	pci_restore_state(dev);
- 
--	dev->dev.power.power_state = PMSG_ON;
--
- 	clear_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
- 
- 	if (hcd->driver->resume) {
---- a/drivers/usb/core/usb.h
-+++ b/drivers/usb/core/usb.h
-@@ -114,13 +114,11 @@ static inline int is_usb_device_driver(s
- static inline void mark_active(struct usb_interface *f)
- {
- 	f->is_active = 1;
--	f->dev.power.power_state.event = PM_EVENT_ON;
- }
- 
- static inline void mark_quiesced(struct usb_interface *f)
- {
- 	f->is_active = 0;
--	f->dev.power.power_state.event = PM_EVENT_SUSPEND;
- }
- 
- static inline int is_active(const struct usb_interface *f)
-
-
-Patches currently in gregkh-2.6 which might be from pavel@ucw.cz are
-
-driver/driver-core-pm-make-suspend_device-static.patch
-driver/pm-remove-unbalanced-mutex_unlock-from-dpm_resume.patch
-driver/power_state-remove-it-from-driver-core.patch
-usb/power_state-remove-it-from-usb.patch
