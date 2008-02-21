@@ -1,75 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934683AbYBUVeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934637AbYBUVf0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934683AbYBUVeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933722AbYBUVeB
+	id S934637AbYBUVf0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:35:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751070AbYBUVfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:34:01 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:55746 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933762AbYBUVd7 (ORCPT
+	Thu, 21 Feb 2008 16:35:07 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:52436 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760880AbYBUVfF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:33:59 -0500
-Date: Thu, 21 Feb 2008 13:33:45 -0800
-From: Greg KH <greg@kroah.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Newall <davidn@davidnewall.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.24.1
-Message-ID: <20080221213345.GB24191@kroah.com>
-References: <479A83DE.8020002@davidnewall.com> <20080202074406.GA31516@1wt.eu> <47A46BF8.6030306@davidnewall.com> <47BDDD4E.1080000@davidnewall.com> <20080221203640.GA21764@kroah.com> <20080221210058.GA27541@1wt.eu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221210058.GA27541@1wt.eu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 21 Feb 2008 16:35:05 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:references:user-agent:date:from:to:cc:
+	subject:content-disposition;
+	b=FnmgaPu7qfCSXIIBNBkefbEfjAGeT7BhdTYPeD6i2gUfwE2xfWubNVA13hGIzxtyr
+	0Iphpk1NGGnTpJm1DV+Bg==
+Message-Id: <20080221213444.898896000@menage.corp.google.com>
+References: <20080221212854.408662000@menage.corp.google.com>
+User-Agent: quilt/0.45-1
+Date: Thu, 21 Feb 2008 13:28:55 -0800
+From: menage@google.com
+To: kamezawa.hiroyu@jp.fujitsu.com, yamamoto@valinux.co.jp,
+       akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, balbir@in.ibm.com,
+       xemul@openvz.org
+Subject: [PATCH 1/2] cgroup map files: Add cgroup map data type
+Content-Disposition: inline; filename=cgroup_read_map.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 10:00:58PM +0100, Willy Tarreau wrote:
-> Hi Greg, Hi David,
-> 
-> On Thu, Feb 21, 2008 at 12:36:40PM -0800, Greg KH wrote:
-> > On Fri, Feb 22, 2008 at 06:51:34AM +1030, David Newall wrote:
-> > > Hi Willy,
-> > > 
-> > > Lacking hardware for a week, I've had a bit of a hiatus from PL2303, but
-> > > I've got it back again now, and finished my work back-porting the 2.6
-> > > driver to 2.4.  Here's a new patch, which is more complete than my
-> > > previous one.  It's based on the 2.6.24.1.
-> > > 
-> > > There's a lot of trivial white-space changes and some things that have
-> > > been moved, which make the patch rather larger than it could be.  I
-> > > didn't include those changes before, but have now in order that the
-> > > driver be closer to the 2.6 driver.  It'll never be identical, of course.
-> > > 
-> > > Note, too, that the 2.6 driver (and thus the patched 2.4) includes a 1k
-> > > circular buffer which rather duplicates a buffer in the 2.4 usbserial.c;
-> > > 2.6's usb-serial has had that buffer removed.  As the buffer resolves
-> > > loss of the occasional putchar (e.g. from n_tty's opost), it is
-> > > important and correct, even in 2.4.
-> > > 
-> > > Speaking as a user, I no longer see any problems with PL2303, and I
-> > > think this is okay to release.
-> > 
-> > If this works for you, I have no objection to it, but I can't test it as
-> > I don't run 2.4 on anything anymore :)
-> 
-> I too agree to merge, it especially since it fixed several problems
-> for David. However, I would like to know first if the same problems
-> also happen with the 2.6 driver or if it is OK. The risk is getting
-> 2.4 fixed and not 2.6, which could cause regressions for people upgrading
-> from 2.4 to 2.6. Of course, a regression on a USB-serial adapter is
-> not dramatic, but it's a general principle to keep in mind that 2.6
-> should be safe (or at least actively being fixed) when merging driver
-> changes in 2.4.
+Adds a new type of supported control file representation, a map from
+strings to u64 values.
 
-As far as I can tell, this was a backport of the current 2.6 driver, so
-it should not have fixes that are not already in 2.6.
+The map type is printed in a similar format to /proc/meminfo or
+/proc/<pid>/status, i.e. "$key: $value\n"
 
-David, is that true?
+Signed-off-by: Paul Menage <menage@google.com>
 
-thanks,
+---
+ include/linux/cgroup.h |   19 +++++++++++++++
+ kernel/cgroup.c        |   59 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 77 insertions(+), 1 deletion(-)
 
-greg k-h
+Index: cgroupmap-2.6.25-rc2-mm1/include/linux/cgroup.h
+===================================================================
+--- cgroupmap-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
++++ cgroupmap-2.6.25-rc2-mm1/include/linux/cgroup.h
+@@ -166,6 +166,16 @@ struct css_set {
+ 
+ };
+ 
++/*
++ * cgroup_map_cb is an abstract callback API for reporting map-valued
++ * control files
++ */
++
++struct cgroup_map_cb {
++	int (*fill)(struct cgroup_map_cb *cb, const char *key, u64 value);
++	void *state;
++};
++
+ /* struct cftype:
+  *
+  * The files in the cgroup filesystem mostly have a very simple read/write
+@@ -194,6 +204,15 @@ struct cftype {
+ 	 * single integer. Use it in place of read()
+ 	 */
+ 	u64 (*read_uint) (struct cgroup *cont, struct cftype *cft);
++	/*
++	 * read_map() is used for defining a map of key/value
++	 * pairs. It should call cb->fill(cb, key, value) for each
++	 * entry. The key/value pairs (and their ordering) should not
++	 * change between reboots.
++	 */
++	int (*read_map) (struct cgroup *cont, struct cftype *cft,
++			 struct cgroup_map_cb *cb);
++
+ 	ssize_t (*write) (struct cgroup *cont, struct cftype *cft,
+ 			  struct file *file,
+ 			  const char __user *buf, size_t nbytes, loff_t *ppos);
+Index: cgroupmap-2.6.25-rc2-mm1/kernel/cgroup.c
+===================================================================
+--- cgroupmap-2.6.25-rc2-mm1.orig/kernel/cgroup.c
++++ cgroupmap-2.6.25-rc2-mm1/kernel/cgroup.c
+@@ -1487,6 +1487,46 @@ static ssize_t cgroup_file_read(struct f
+ 	return -EINVAL;
+ }
+ 
++/*
++ * seqfile ops/methods for returning structured data. Currently just
++ * supports string->u64 maps, but can be extended in future.
++ */
++
++struct cgroup_seqfile_state {
++	struct cftype *cft;
++	struct cgroup *cgroup;
++};
++
++static int cgroup_map_add(struct cgroup_map_cb *cb, const char *key, u64 value)
++{
++	struct seq_file *sf = cb->state;
++	return seq_printf(sf, "%s %llu\n", key, value);
++}
++
++static int cgroup_seqfile_show(struct seq_file *m, void *arg)
++{
++	struct cgroup_seqfile_state *state = m->private;
++	struct cftype *cft = state->cft;
++	if (cft->read_map) {
++		struct cgroup_map_cb cb = {
++			.fill = cgroup_map_add,
++			.state = m,
++		};
++		return cft->read_map(state->cgroup, cft, &cb);
++	} else {
++		BUG();
++	}
++}
++
++int cgroup_seqfile_release(struct inode *inode, struct file *file)
++{
++	struct seq_file *seq = file->private_data;
++	kfree(seq->private);
++	return single_release(inode, file);
++}
++
++static struct file_operations cgroup_seqfile_operations;
++
+ static int cgroup_file_open(struct inode *inode, struct file *file)
+ {
+ 	int err;
+@@ -1499,7 +1539,18 @@ static int cgroup_file_open(struct inode
+ 	cft = __d_cft(file->f_dentry);
+ 	if (!cft)
+ 		return -ENODEV;
+-	if (cft->open)
++	if (cft->read_map) {
++		struct cgroup_seqfile_state *state =
++			kzalloc(sizeof(*state), GFP_USER);
++		if (!state)
++			return -ENOMEM;
++		state->cft = cft;
++		state->cgroup = __d_cgrp(file->f_dentry->d_parent);
++		file->f_op = &cgroup_seqfile_operations;
++		err = single_open(file, cgroup_seqfile_show, state);
++		if (err < 0)
++			kfree(state);
++	} else if (cft->open)
+ 		err = cft->open(inode, file);
+ 	else
+ 		err = 0;
+@@ -1538,6 +1589,12 @@ static struct file_operations cgroup_fil
+ 	.release = cgroup_file_release,
+ };
+ 
++static struct file_operations cgroup_seqfile_operations = {
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = cgroup_seqfile_release,
++};
++
+ static struct inode_operations cgroup_dir_inode_operations = {
+ 	.lookup = simple_lookup,
+ 	.mkdir = cgroup_mkdir,
+
+--
