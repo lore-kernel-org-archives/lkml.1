@@ -1,64 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764405AbYBURfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbYBURtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764405AbYBURfB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 12:35:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbYBURev
+	id S1757321AbYBURtO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 12:49:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbYBURs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 12:34:51 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:56623 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752271AbYBUReu (ORCPT
+	Thu, 21 Feb 2008 12:48:57 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35582 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752318AbYBURs4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 12:34:50 -0500
-Message-ID: <47BDB5E2.4020101@oracle.com>
-Date: Thu, 21 Feb 2008 09:33:22 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Thu, 21 Feb 2008 12:48:56 -0500
+Date: Thu, 21 Feb 2008 12:48:55 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <200802211738.41552.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0802211243240.5473-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc2-git4 BUG: sysfs_readdir
-References: <20080221082553.ddc4e723.randy.dunlap@oracle.com> <20080221165214.GA30606@kroah.com>
-In-Reply-To: <20080221165214.GA30606@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Feb 21, 2008 at 08:25:53AM -0800, Randy Dunlap wrote:
->> One of my (x86_64) test machines got this on booting 2.6.25-rc2-git4.
->>
->> insmod used greatest stack depth: 4144 bytes left
->> EXT3-fs: INFO: recovery required on readonly filesystem.
->> EXT3-fs: write access will be enabled during recovery.
->> kjournald starting.  Commit interval 5 seconds
->> EXT3-fs: recovery complete.
->> EXT3-fs: mounted filesystem with ordered data mode.
->> modprobe used greatest stack depth: 3600 bytes left
->> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
->> IP: [<ffffffff802d0f16>] sysfs_readdir+0xe0/0x13f
+On Thu, 21 Feb 2008, Rafael J. Wysocki wrote:
+
+> > > --- linux-2.6.orig/drivers/base/core.c
+> > > +++ linux-2.6/drivers/base/core.c
+> > > @@ -929,6 +929,11 @@ void device_del(struct device *dev)
+> > >  	struct device *parent = dev->parent;
+> > >  	struct class_interface *class_intf;
+> > >  
+> > > +	if (in_suspend_context()) {
+> > > +		get_device(dev);
+> > 
+> > Where is this get_device() undone?  Shouldn't there be an extra 
+> > put_device() added to unregister_dropped_devices()?
 > 
-> That's really wierd, as nothing has changed in this area in a while now.
-> did 2.6.25-rc2 work for you ok?
+> No, I don't think so, because unregister_dropped_devices() calls
+> device_unregister() that does the put_device() eventually.
 
-Yes, all previous 2.6.25-versions worked for me.
+Ah, yes.
 
-> Can you enable CONFIG_DEBUG_KOBJECT and see if the kernel log shows you
-> what is happening here?  Hm, that's only going to tell you what files
-> were created, not what was being read from sysfs...
+> If we are called by device_unregister(), the get_device() is needed to balance
+> the put_device() that will be called by device_unregister() after we return.
 > 
-> How about adding the patch at:
-> 	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/sysfs-crash-debugging.patch
-> which has been in -mm for forever that will add the last-accessed sysfs
-> file to the oops report.  That might give us more information here.
+> OTOH, if we are called directly, then we need to balance the put_device()
+> that will be done by device_unregister() called from
+> unregister_dropped_devices().
+> 
+> I hope I didn't miss anything.
 
-I'll try those, but I doubt that this is easily reproducible.
+Okay, that sounds right.
 
--- 
-~Randy
+> > > +		device_pm_schedule_removal(dev);
+> > > +		return;
+> > > +	}
+> > >  	device_pm_remove(dev);
+> > >  	if (parent)
+> > >  		klist_del(&dev->knode_parent);
+> > 
+> > And now the change to device_destroy() isn't needed at all.
+> 
+> No, it's not.  Didn't I remove it?  I thought I did.
+
+Oh yes, you did.
+
+I see a possible problem in device_resume().  My copy isn't fully 
+up-to-date, but it looks like you call unregister_dropped_devices() 
+before doing the up_write(&pm_sleep_rwsem).  Won't this cause 
+warnings in device_del() about a suspicious caller?
+
+Alan Stern
+
