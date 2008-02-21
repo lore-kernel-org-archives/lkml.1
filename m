@@ -1,66 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765463AbYBUTrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932202AbYBUTr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765463AbYBUTrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 14:47:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758300AbYBUTrW
+	id S932202AbYBUTr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 14:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764914AbYBUTrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 14:47:22 -0500
-Received: from www.tglx.de ([62.245.132.106]:57064 "EHLO www.tglx.de"
+	Thu, 21 Feb 2008 14:47:23 -0500
+Received: from gw.goop.org ([64.81.55.164]:59388 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758042AbYBUTrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 14:47:20 -0500
-Date: Thu, 21 Feb 2008 20:45:53 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andi Kleen <ak@muc.de>
-cc: Arne Georg Gleditsch <arne.gleditsch@dolphinics.no>,
-       linux-kernel@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: arch/x86/kernel/vsyscall_64.c: overeager NOP of syscalls
-In-Reply-To: <20080221155852.GA42442@muc.de>
-Message-ID: <alpine.LFD.1.00.0802212039240.7583@apollo.tec.linutronix.de>
-References: <kjm4pc3d92p.fsf@pelargir.dolphinics.no> <20080221155852.GA42442@muc.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	id S1758891AbYBUTrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 14:47:22 -0500
+Message-ID: <47BDD4BF.3000808@goop.org>
+Date: Thu, 21 Feb 2008 11:45:03 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Markus Armbruster <armbru@redhat.com>
+CC: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com,
+       virtualization@lists.osdl.org, linux-input@vger.kernel.org,
+       adaplas@pol.net, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
+Subject: Re: [PATCH 0/2] xen pvfb: Para-virtual framebuffer,	keyboard and
+ pointer
+References: <871w76ejdg.fsf@pike.pond.sub.org> <87hcg2cyti.fsf@pike.pond.sub.org>
+In-Reply-To: <87hcg2cyti.fsf@pike.pond.sub.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Feb 2008, Andi Kleen wrote:
+Markus Armbruster wrote:
+> Forgot to mention: This patch depends on
+>
+>     Subject: [PATCH] xen: Make xen-blkfront write its protocol ABI to xenstore
+>     From: Markus Armbruster <>
+>     Date: Thu, 06 Dec 2007 14:45:53 +0100
+>
+> http://lkml.org/lkml/2007/12/6/132
+>
+> Sorry!
 
-> On Wed, Feb 20, 2008 at 02:57:34PM +0100, Arne Georg Gleditsch wrote:
-> > Hi,
-> > 
-> > I'm looking at 2.6.25-rc2.  vsyscall_sysctl_change contains code to NOP
-> > out the actual system call instructions of the vsyscall page when
-> > vsyscall64 is enabled.  This seems to interact badly with the fallback
-> > code in do_vgettimeofday which tries to call gettimeofday if the
-> > configured clock source does not support vread.  (In effect,
-> > gettimeofday() becomes a nop and time() always returns 0.  Not very
-> > useful.)
-> > 
-> > Is there a good reason to keep this?  Aren't the instructions in
-> > question avoided (or invoked) according to the vsyscall64 flag by the
-> > surrounding logic anyway?
-> 
-> Yes they are.  But a system call sequence at a known fixed address
-> is potentially useful to exploits. That is why it is nop'ed out when
-> it is not needed.
+Sorry, I haven't pushed this upstream yet, since there didn't seem to be 
+any particular urgency.  What's the dependency?
 
-That's a nice intent, but the reality is that this code is broken as
-hell:
-
-1) the patching code runs without synchronizing other CPUs
-
-2) it inserts NOPs even if there is no clock source which provides
-vread
-
-3) when the clock source changes to one without vread we run in
-exactly the same problem as in #2
-
-4) if nobody toggles the proc entry from 1 to 0 and to 1 again, then
-the syscall is not patched out contrary to your claim.
-
-Thanks,
-
-	tglx
+    J
