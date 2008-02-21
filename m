@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934004AbYBUQF6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932963AbYBUQJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934004AbYBUQF6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:05:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761521AbYBUQFo
+	id S932963AbYBUQJf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:09:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbYBUQJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:05:44 -0500
-Received: from el-out-1112.google.com ([209.85.162.178]:36676 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758379AbYBUQFm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:05:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=KT2wJ3APGZ1bKgVkiPRZAoou8e/g+8/DSrL5DvtrglPw09+ywE2xFcVqCH6cRglPsmcLxtk2IqiVcqVNuaBJloU7xUCN7PHvH/w8hZQ6zkUlOa1KVQcHbs3apNwLCPgeOHMyGDdtISNxuP0yUF7l0o+wzz6jcdVp3ZtCdOWW/48=
-Message-ID: <47BDA141.70806@gmail.com>
-Date: Thu, 21 Feb 2008 11:05:21 -0500
-From: Andrew Buehler <abuehler.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Thu, 21 Feb 2008 11:09:24 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:42298 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755130AbYBUQJX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:09:23 -0500
+Message-ID: <47BDA22F.5060300@pobox.com>
+Date: Thu, 21 Feb 2008 11:09:19 -0500
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Oliver Pinter <oliver.pntr@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]* - mostly resolved
-References: <Pine.LNX.4.44L0.0802201428390.7056-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802201428390.7056-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: kernel list <linux-kernel@vger.kernel.org>,
+       Linux-pm mailing list <linux-pm@lists.osdl.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: power_state: get rid of write-only variable in SATA
+References: <20080221125652.GA23548@elf.ucw.cz>
+In-Reply-To: <20080221125652.GA23548@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/20/2008 2:29 PM, Alan Stern wrote:
-
-> On Wed, 20 Feb 2008, Andrew Buehler wrote:
+Pavel Machek wrote:
+> power_state is scheduled for removal, and libata uses it in write-only
+> mode. Remove it.
 > 
->> In other words: I don't think that's likely to be practical in the
->> present instance. If you have reason to believe otherwise (past
->> positive experience with Novell, for instance), I'd be glad to hear
->> it.
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
 > 
-> Greg KH may be able to help in that respect.
+> diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+> index b4985bc..a31572d 100644
+> --- a/drivers/ata/libata-core.c
+> +++ b/drivers/ata/libata-core.c
+> @@ -6542,8 +6542,6 @@ int ata_host_suspend(struct ata_host *ho
+>  	ata_lpm_enable(host);
+>  
+>  	rc = ata_host_request_pm(host, mesg, 0, ATA_EHI_QUIET, 1);
+> -	if (rc == 0)
+> -		host->dev->power.power_state = mesg;
+>  	return rc;
+>  }
+>  
+> @@ -6562,7 +6560,6 @@ void ata_host_resume(struct ata_host *ho
+>  {
+>  	ata_host_request_pm(host, PMSG_ON, ATA_EH_SOFTRESET,
+>  			    ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET, 0);
+> -	host->dev->power.power_state = PMSG_ON;
+>  
+>  	/* reenable link pm */
+>  	ata_lpm_disable(host);
 
-I know he's in the CC:, but I'm not sure he's reading this thread, and
-I'm hesitant to bother people about things out of the blue unless I have
-reason to expect that it's something they're going to care about. (Just
-because it's a big deal for me doesn't mean it makes one whit of
-difference to anyone else, and from what little I've seen on
-linux-kernel he seems to be somewhat important and fairly busy...)
+libata uses it under the assumption that "other parts" of the system are 
+aware of this variable.
 
->> Is there any place (aside from maybe the kernel changelog, which
->> contains a whole lot - if not several lots - of unrelated
->> information) where I could find a list of config-symbol name
->> additions, changes, deletions and meaning changes by version or by
->> date? That would at least let me build a mapping between the
->> symbols in the older config and the ones in the new one, which is
->> about where I would have to start.
-> 
-> Not as far as I know.
+May I assume that the API has changed such that this is no longer necessary?
 
-Then I suppose I'm reduced to browsing the Kconfig files, reading old
-changelogs, and trying a lot of different configs... thanks anyway.
+	Jeff
 
--- 
-    Andrew Buehler
+
+
