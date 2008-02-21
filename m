@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761766AbYBUIoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbYBUIq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761766AbYBUIoX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 03:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753586AbYBUIoO
+	id S1759896AbYBUIq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 03:46:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754290AbYBUIqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 03:44:14 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47676 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752245AbYBUIoM (ORCPT
+	Thu, 21 Feb 2008 03:46:45 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44749 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755781AbYBUIqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 03:44:12 -0500
-Subject: Re: Make yield_task_fair more efficient
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: balbir@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peter@programming.kicks-ass.net>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <47BD2A99.3010608@linux.vnet.ibm.com>
-References: <20080221053321.GA26918@balbir.in.ibm.com>
-	 <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com>
-	 <20080221070733.GA13694@elte.hu>  <47BD2A99.3010608@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 09:43:59 +0100
-Message-Id: <1203583439.6243.119.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 03:46:44 -0500
+X-Sasl-enc: XmLlECQv2wwhWMEMgAhECvLSKWbg8QH4vl0jaMOlrYWA 1203583602
+Message-ID: <47BD3ADE.8040501@ladisch.de>
+Date: Thu, 21 Feb 2008 09:48:30 +0100
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+MIME-Version: 1.0
+To: Joshua Roys <roysjosh@gmail.com>
+CC: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
+Subject: Re: [PATCH] [alsa-devel] Fix a compile warning under gcc-4.2.3.
+References: <1203528197-24227-1-git-send-email-roysjosh@gmail.com>
+In-Reply-To: <1203528197-24227-1-git-send-email-roysjosh@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Joshua Roys wrote:
+> sound/core/init.c: In function ‘snd_card_disconnect’:
+> sound/core/init.c:307: warning: the address of ‘snd_shutdown_f_ops’ will always evaluate as ‘true’
+>
+> Signed-off-by: Joshua Roys <roysjosh@gmail.com>
+> ---
+>  sound/core/init.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+>
+> diff --git a/sound/core/init.c b/sound/core/init.c
+> index 2cb7099..1afc58b 100644
+> --- a/sound/core/init.c
+> +++ b/sound/core/init.c
+> @@ -304,7 +304,6 @@ int snd_card_disconnect(struct snd_card *card)
+>  		list_add(&mfile->shutdown_list, &shutdown_files);
+>  		spin_unlock(&shutdown_lock);
+>
+> -		fops_get(&snd_shutdown_f_ops);
+>  		mfile->file->f_op = &snd_shutdown_f_ops;
+>  		
+>  		mfile = mfile->next;
 
-On Thu, 2008-02-21 at 13:09 +0530, Balbir Singh wrote:
+This change may get rid of the warning, but is has the slight
+disadvantage that the kernel will blow up if you try to unload the sound
+modules before all device files have been closed.
 
-> sched_yield() is supported API
-
-For SCHED_FIFO/SCHED_RR.
-
->  and also look at http://lkml.org/lkml/2007/9/19/351.
-
-Read on (http://lkml.org/lkml/2007/9/19/371) and find:
-        
-        The sched_yield() behaviour is actually very well-defined for RT
-        tasks (now, whether it's a good interface to use or not is still
-        open to debate, but at least it's a _defined_ interface ;), and
-        I think we should at least try to approximate that behaviour for
-        normal tasks, even if they aren't RT.
-
-sched_yield() just isn't a very useful API except in RT and even there
-one can question it.
-
-> I am trying to make sched_yield() efficient
-> when compat_sched_yield is turned on (which is most likely), since people will
-> want that behaviour (Hint, please read the man-page for sched_yield).
-
-I did, so what? read the POSIX spec - its just plain undefined for
-SCHED_OTHER. We already do something 'sensible' for those few broken
-applications relying on unspecified behaviour.
-
-> There are
-> already several applications using sched_yield(), so they all suffer.
-
-Who is using it, where is their source so we can show its faster to not
-use it?
-
-Really, hiding behind closed sores doesn't make it good.
+If you want to get rid of this warning, tell the compiler that fops_get
+knows what it does; or try making fops_get an inline function instead of
+a macro.
 
 
+Regards,
+Clemens
