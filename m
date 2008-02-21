@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934929AbYBUV1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932832AbYBUVbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934929AbYBUV1r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbYBUV1Z
+	id S932832AbYBUVbU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbYBUVbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:27:25 -0500
-Received: from mailservice.tudelft.nl ([130.161.131.5]:5701 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761311AbYBUV1X (ORCPT
+	Thu, 21 Feb 2008 16:31:03 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43792 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751288AbYBUVbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:27:23 -0500
-X-Spam-Flag: NO
-X-Spam-Score: -4.389
-Message-ID: <47BDECAD.3020004@tremplin-utc.net>
-Date: Thu, 21 Feb 2008 22:27:09 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; fr-FR; rv:1.8.1.9) Gecko/20080214 Mandriva/2.0.0.9-8mdv2008.1 (2008.1) Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
+	Thu, 21 Feb 2008 16:31:01 -0500
+Date: Thu, 21 Feb 2008 13:30:37 -0800
+From: Greg KH <greg@kroah.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Roland Dreier <rdreier@cisco.com>, Linus Torvalds <torvalds@osdl.org>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Merging of completely unreviewed drivers
+Message-ID: <20080221213037.GA24191@kroah.com>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Cc: Sergey Vlasov <vsu@altlinux.ru>, dsdt@gaugusch.at, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       trenn@suse.de
-Subject: Re: [PATCH] Allow populate_rootfs() to be called early
-References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de> <47AEE6D1.4070402@tremplin-utc.net> <20080211164719.d42c618e.vsu@altlinux.ru> <47B0DD34.4010604@tremplin-utc.net> <47BDCACC.2030302@tremplin-utc.net> <20080221190455.GA7275@lst.de>
-In-Reply-To: <20080221190455.GA7275@lst.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080221210124.GD28328@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-21/02/08 20:04, Christoph Hellwig wrote/a écrit:
-> On Thu, Feb 21, 2008 at 08:02:36PM +0100, Eric Piel wrote:
->> It's been a week and no one has screamed, so I guess the idea looks fine
->> to everyone :-) 
->>
->> Here is a boot tested patch for integration. In addition to the previous
->> version, it removes also rootfs_initcall(), and uses fs_initcall_sync().
->> There should be absolutely no difference in behaviour as there was no
->> user of fs_initcall_sync() in the kernel.
->>
->> I'm not sure what should be the best tree to go through. Maybe the ACPI
->> tree, as all this is needed for CONFIG_ACPI_CUSTOM_DSDT_INITRD...
+On Thu, Feb 21, 2008 at 11:01:24PM +0200, Adrian Bunk wrote:
 > 
-> Actually I've just got a report today where we get an uninitialized
-> spinlock due to this in -mm.  It's probably possible to work around it,
-> though.
-What do you mean by "due to this"? Due to userspace helper being called
-too early? Then this patch should fix the bug.
+> BTW: Greg, you are Cc'ed for your joke in [3]...
 
-Eric
+> [3] http://lkml.org/lkml/2008/2/12/427
+
+That was not a joke, I ment it.  Do you have proof that the majority of
+patches going into the kernel tree are not reviewed by at least 2
+people?  Now they might not be 2 people that you personally like/agree
+with, but that's a totally different topic...
+
+And I'm with Linus on this one, it's much easier to work on driver fixes
+together with others, when they are in the kernel tree.
+
+Although I do like the checkpatch.pl script, it has helped me in making
+it easier to clean up some vendor-provided drivers recently, finding
+some obvious coding style issues that I had missed the first pass
+through.
+
+thanks,
+
+greg k-h
