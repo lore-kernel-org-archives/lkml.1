@@ -1,66 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765604AbYBUJur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763699AbYBUJwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765604AbYBUJur (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:50:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765339AbYBUJug
+	id S1763699AbYBUJwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:52:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbYBUJw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:50:36 -0500
-Received: from qmta06.westchester.pa.mail.comcast.net ([76.96.62.56]:59700
-	"EHLO QMTA06.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765333AbYBUJuf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:50:35 -0500
-X-Greylist: delayed 333 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 04:50:34 EST
-X-Authority-Analysis: v=1.0 c=1 a=TEGKNp2qDdgA:10 a=Al2GMUxp3q319iOwV-4A:9
- a=oNzJz-ubopelTF3YAn3mopJLPBgA:4 a=uv1ck3d6JtEA:10
-Subject: Re: [2.6.25-rc1] jerky mouse cursor and randoooom key repeats
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: elendil@planet.nl, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
-References: <1203123219.6176.36.camel@popeye>
-	 <Pine.LNX.4.64.0802161202430.7699@twin.jikos.cz>
-	 <1203163503.6124.5.camel@popeye>
-	 <Pine.LNX.4.64.0802161907200.30955@jikos.suse.cz>
-	 <1203221372.6124.29.camel@popeye>
-	 <Pine.LNX.4.64.0802211036580.30955@jikos.suse.cz>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 03:45:00 -0600
-Message-Id: <1203587101.27355.4.camel@popeye>
+	Thu, 21 Feb 2008 04:52:28 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:47555 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751574AbYBUJw1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 04:52:27 -0500
+Date: Thu, 21 Feb 2008 10:52:37 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Ian Campbell <ijc@hellion.org.uk>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] x86 : add init BSS sections
+Message-ID: <20080221095237.GA26714@uranus.ravnborg.org>
+References: <1203581721.4707.19.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203581721.4707.19.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri - 
+Hi Huang.
 
-I am tempted to lie to you and say it was in both modes, or when running
-under X only, but to tell you the truth while I have not seen it while
-running in console mode, I have not spent enough time there to make a
-solid statement one way or the other.
+A few comments..
 
-Sorry
+> Init BSS sections are added for uninitialized init DATA sections to
+> reduce kernel image size.
 
-Chris
+- If this is relevant for more than just x86 then the definition
+  of the section should be in include/asm-generic/vmlinux.lds.h
+
+- Please add a comment along the definitions in the .lds file
+  explaning the use of the section.
+- Same goes for init.h
+
+- Is this concept restricted to __init or is it
+  relevant for __devinit etc (I hope we can avoid that)
+
+- Can we do any kind of build time check to catch
+  accidental misuse?
+
+	Sam
 
 
 
-
-
-On Thu, 2008-02-21 at 10:37 +0100, Jiri Kosina wrote:
-> On Sat, 16 Feb 2008, Chris Holvenstot wrote:
 > 
-> > This is just to confirm that I have been running all day on a kernel 
-> > built with CONFIG_GROUP_SCHED turned 'off' and have not seen the problem 
-> > with my keyboard (I never noticed a problem with the mouse as others 
-> > have)
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 > 
-> Chris,
+> ---
+>  arch/x86/kernel/head64.c         |    2 ++
+>  arch/x86/kernel/head_32.S        |    5 +++++
+>  arch/x86/kernel/vmlinux_32.lds.S |    9 +++++++--
+>  arch/x86/kernel/vmlinux_64.lds.S |   24 ++++++++++++++----------
+>  include/asm-generic/sections.h   |    1 +
+>  include/linux/init.h             |    1 +
+>  6 files changed, 30 insertions(+), 12 deletions(-)
 > 
-> does the keyboard malfunction with CONFIG_GROUP_SCHED only when you are 
-> running in X, or does that happen also on console?
-> 
+> --- a/arch/x86/kernel/vmlinux_32.lds.S
+> +++ b/arch/x86/kernel/vmlinux_32.lds.S
+> @@ -189,10 +189,15 @@ SECTIONS
+>  	__per_cpu_end = .;
+>    }
+>    . = ALIGN(PAGE_SIZE);
+Do we really need to aling this to PAGE_SIZE - I
+assume we free everything in one go - or?
 
+> -  /* freed after init ends here */
+>  
+>    .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+> -	__init_end = .;
+> +	__init_bss_start = .;
+> +	*(.bss.init.page_aligned)
+I do not see this section used anywhere. At least init.h does not
+define it.
+
+
+> +	*(.bss.init)
+> +	. = ALIGN(4);
+> +	__init_bss_stop = .;
+> +	. = ALIGN(PAGE_SIZE);
+
+Why do we have these two ALIGN() following each other?
+The latter should be enough.
+
+> +	__init_end = .;			/* freed after init ends here */
+>  	__bss_start = .;		/* BSS */
+>  	*(.bss.page_aligned)
+>  	*(.bss)
+> --- a/arch/x86/kernel/vmlinux_64.lds.S
+> +++ b/arch/x86/kernel/vmlinux_64.lds.S
+> @@ -150,6 +150,12 @@ SECTIONS
+>    . = ALIGN(PAGE_SIZE);
+>    __smp_alt_end = .;
+>  
+> +  . = ALIGN(PAGE_SIZE);
+> +  __nosave_begin = .;
+> +  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) { *(.data.nosave) }
+> +  . = ALIGN(PAGE_SIZE);
+> +  __nosave_end = .;
+> +
+This change looks unrelated - it is not in the changelog.
+Or is it just diff that fools me?
+
+>    . = ALIGN(PAGE_SIZE);		/* Init code and data */
+>    __init_begin = .;
+>    .init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+> @@ -219,17 +225,15 @@ SECTIONS
+>  
+>    PERCPU(PAGE_SIZE)
+>  
+> -  . = ALIGN(PAGE_SIZE);
+> -  __init_end = .;
+> -
+> -  . = ALIGN(PAGE_SIZE);
+> -  __nosave_begin = .;
+> -  .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) { *(.data.nosave) }
+> -  . = ALIGN(PAGE_SIZE);
+> -  __nosave_end = .;
+> -
+> -  __bss_start = .;		/* BSS */
+> +  . = ALIGN(PAGE_SIZE);		/* BSS */
+>    .bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+> +	__init_bss_start = .;
+> +	*(.bss.init.page_aligned)
+> +	*(.bss.init)
+> +	__init_bss_stop = .;
+> +	. = ALIGN(PAGE_SIZE);
+> +	__init_end = .;
+> +	__bss_start = .;
+>  	*(.bss.page_aligned)
+>  	*(.bss)
+>  	}
+> --- a/arch/x86/kernel/head_32.S
+> +++ b/arch/x86/kernel/head_32.S
+> @@ -105,6 +105,11 @@ ENTRY(startup_32)
+>   */
+>  	cld
+>  	xorl %eax,%eax
+> +	movl $pa(__init_bss_start),%edi
+> +	movl $pa(__init_bss_stop), %ecx
+> +	subl %edi,%ecx
+> +	shrl $2,%ecx
+> +	rep ; stosl
+>  	movl $pa(__bss_start),%edi
+>  	movl $pa(__bss_stop),%ecx
+>  	subl %edi,%ecx
+
+How about introducing head32.c and do this in a similar
+way that 64 bit does?
+Then we could later move more stuff to said file.
+
+
+	Sam
