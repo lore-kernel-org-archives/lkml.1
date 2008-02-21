@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933287AbYBUVnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934886AbYBUVoN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933287AbYBUVnn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:43:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758543AbYBUVne
+	id S934886AbYBUVoN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:44:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762280AbYBUVnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:43:34 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36480 "EHLO mx2.suse.de"
+	Thu, 21 Feb 2008 16:43:39 -0500
+Received: from mx1.suse.de ([195.135.220.2]:55482 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756340AbYBUVnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:43:33 -0500
-Subject: patch power_state-remove-it-from-driver-core.patch added to gregkh-2.6 tree
+	id S1761669AbYBUVni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:43:38 -0500
+Subject: patch power_state-remove-it-from-usb.patch added to gregkh-2.6 tree
 To: pavel@ucw.cz, greg@kroah.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       linux-pm@lists.osdl.org, pavel@suse.cz, rjw@sisk.pl
+       linux-pm@lists.osdl.org, pavel@suse.cz
 From: <gregkh@suse.de>
-Date: Thu, 21 Feb 2008 13:43:15 -0800
-In-Reply-To: <20080221125809.GA30308@elf.ucw.cz>
-Message-ID: <1203630195215@kroah.org>
+Date: Thu, 21 Feb 2008 13:43:16 -0800
+In-Reply-To: <20080221130145.GA3789@elf.ucw.cz>
+Message-ID: <1203630196303@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -23,49 +23,101 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: power_state: remove it from driver core
+     Subject: power_state: remove it from usb
 
 to my gregkh-2.6 tree.  Its filename is
 
-     power_state-remove-it-from-driver-core.patch
+     power_state-remove-it-from-usb.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From pavel@ucw.cz  Thu Feb 21 13:36:22 2008
+>From pavel@ucw.cz  Thu Feb 21 13:36:03 2008
 From: Pavel Machek <pavel@ucw.cz>
-Date: Thu, 21 Feb 2008 13:58:10 +0100
-Subject: power_state: remove it from driver core
-To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>
-Message-ID: <20080221125809.GA30308@elf.ucw.cz>
+Date: Thu, 21 Feb 2008 14:01:45 +0100
+Subject: power_state: remove it from usb
+To: kernel list <linux-kernel@vger.kernel.org>, Linux-pm mailing list <linux-pm@lists.osdl.org>, Greg KH <greg@kroah.com>, stern@rowland.harvard.edu, linux-usb@vger.kernel.org
+Message-ID: <20080221130145.GA3789@elf.ucw.cz>
 Content-Disposition: inline
 
 
-power_state is scheduled for removal, and it is used only for debug
-prints by driver core. Remove it.
+
+power_state is scheduled for removal, and it is used only write-only
+by USB. Remove it.
 
 Signed-off-by: Pavel Machek <pavel@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/base/power/main.c |    5 -----
- 1 file changed, 5 deletions(-)
+ drivers/usb/core/driver.c  |    3 ---
+ drivers/usb/core/hcd-pci.c |    5 -----
+ drivers/usb/core/usb.h     |    2 --
+ 3 files changed, 10 deletions(-)
 
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -419,11 +419,6 @@ static int suspend_device(struct device 
- {
- 	int error = 0;
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -794,8 +794,6 @@ static int usb_suspend_device(struct usb
  
--	if (dev->power.power_state.event) {
--		dev_dbg(dev, "PM: suspend %d-->%d\n",
--			dev->power.power_state.event, state.event);
--	}
+  done:
+ 	dev_vdbg(&udev->dev, "%s: status %d\n", __FUNCTION__, status);
+-	if (status == 0)
+-		udev->dev.power.power_state.event = msg.event;
+ 	return status;
+ }
+ 
+@@ -826,7 +824,6 @@ static int usb_resume_device(struct usb_
+ 	dev_vdbg(&udev->dev, "%s: status %d\n", __FUNCTION__, status);
+ 	if (status == 0) {
+ 		udev->autoresume_disabled = 0;
+-		udev->dev.power.power_state.event = PM_EVENT_ON;
+ 	}
+ 	return status;
+ }
+--- a/drivers/usb/core/hcd-pci.c
++++ b/drivers/usb/core/hcd-pci.c
+@@ -73,7 +73,6 @@ int usb_hcd_pci_probe(struct pci_dev *de
+ 	if (pci_enable_device(dev) < 0)
+ 		return -ENODEV;
+ 	dev->current_state = PCI_D0;
+-	dev->dev.power.power_state = PMSG_ON;
+ 
+ 	if (!dev->irq) {
+ 		dev_err(&dev->dev,
+@@ -302,8 +301,6 @@ int usb_hcd_pci_suspend(struct pci_dev *
+ 
+ done:
+ 	if (retval == 0) {
+-		dev->dev.power.power_state = PMSG_SUSPEND;
 -
- 	if (dev->class && dev->class->suspend) {
- 		suspend_device_dbg(dev, state, "class ");
- 		error = dev->class->suspend(dev, state);
+ #ifdef CONFIG_PPC_PMAC
+ 		/* Disable ASIC clocks for USB */
+ 		if (machine_is(powermac)) {
+@@ -406,8 +403,6 @@ int usb_hcd_pci_resume(struct pci_dev *d
+ 	pci_set_master(dev);
+ 	pci_restore_state(dev);
+ 
+-	dev->dev.power.power_state = PMSG_ON;
+-
+ 	clear_bit(HCD_FLAG_SAW_IRQ, &hcd->flags);
+ 
+ 	if (hcd->driver->resume) {
+--- a/drivers/usb/core/usb.h
++++ b/drivers/usb/core/usb.h
+@@ -114,13 +114,11 @@ static inline int is_usb_device_driver(s
+ static inline void mark_active(struct usb_interface *f)
+ {
+ 	f->is_active = 1;
+-	f->dev.power.power_state.event = PM_EVENT_ON;
+ }
+ 
+ static inline void mark_quiesced(struct usb_interface *f)
+ {
+ 	f->is_active = 0;
+-	f->dev.power.power_state.event = PM_EVENT_SUSPEND;
+ }
+ 
+ static inline int is_active(const struct usb_interface *f)
 
 
 Patches currently in gregkh-2.6 which might be from pavel@ucw.cz are
