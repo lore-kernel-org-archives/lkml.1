@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765669AbYBUD7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765878AbYBUEBs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765669AbYBUD7s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 22:59:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbYBUD7k
+	id S1765878AbYBUEBs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 23:01:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755009AbYBUEBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 22:59:40 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45619 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753206AbYBUD7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 22:59:40 -0500
-Date: Thu, 21 Feb 2008 04:59:21 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: include/asm-x86/desc_64.h is empty
-Message-ID: <20080221035921.GA6372@elte.hu>
-References: <20080221033403.32F9E2701D5@magilla.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221033403.32F9E2701D5@magilla.localdomain>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 20 Feb 2008 23:01:39 -0500
+Received: from py-out-1112.google.com ([64.233.166.182]:62323 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754942AbYBUEBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 23:01:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=QoklUWWwEhiDiCdVWcqSC9LNSGrvqGIUhz1hktasPTEYxmVLOiofOaaQOD6767xNHKHGDC4SgxuxGvtn45ggU1bRLCTtvuUvHuX1sNwAS7UemE5jZvZCd7brCTll8Sl0b5VWq02g3B/WxfeQtl2CtNXKPkKfgZxuzVJ+7F7FOfs=
+Date: Wed, 20 Feb 2008 22:01:27 -0600
+From: Josh Boyer <jwboyer@gmail.com>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Kumar Gala <galak@kernel.crashing.org>, sparclinux@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2][POWERPC] Fix initial lmb add region with a non-zero
+ base
+Message-ID: <20080220220127.08555476@vader.jdub.homelinux.org>
+In-Reply-To: <18364.57054.427433.405627@cargo.ozlabs.ibm.com>
+References: <Pine.LNX.4.64.0802191350590.10089@blarg.am.freescale.net>
+	<20080219.163003.152862383.davem@davemloft.net>
+	<4130F47E-4F4A-4911-B63B-403A8C423565@kernel.crashing.org>
+	<18364.57054.427433.405627@cargo.ozlabs.ibm.com>
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Feb 2008 13:15:58 +1100
+Paul Mackerras <paulus@samba.org> wrote:
 
-* Roland McGrath <roland@redhat.com> wrote:
+> Kumar Gala writes:
+> 
+> > np.  Are we trying to get this into 2.6.25 or .26?
+> 
+> I was going to put it into my powerpc-next branch and put it in
+> 2.6.26.  I don't see any need for it to go in 2.6.25.
 
-> include/asm-x86/desc_64.h should have been removed, but is still in 
-> the tree containing just a newline.
+Is that a new branch you're going to create, or the normal "for-2.6.xx"?
 
-fix is already in x86.git. Nothing references the file so there's no 
-harm done to any puppies :-)
-
-	Ingo
+josh
