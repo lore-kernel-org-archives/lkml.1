@@ -1,79 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764738AbYBUQ3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932541AbYBUQbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764738AbYBUQ3Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933720AbYBUQ2t
+	id S932541AbYBUQbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:31:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbYBUQbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:28:49 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37281 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933511AbYBUQ2r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:28:47 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Thu, 21 Feb 2008 17:27:20 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: "Jesse Barnes" <jesse.barnes@intel.com>, Dave Airlie <airlied@linux.ie>,
-       Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201639.02502.jesse.barnes@intel.com> <b6a2187b0802201800n12f90b22x8cb0c2ad6e0c402@mail.gmail.com>
-In-Reply-To: <b6a2187b0802201800n12f90b22x8cb0c2ad6e0c402@mail.gmail.com>
+	Thu, 21 Feb 2008 11:31:07 -0500
+Received: from el-out-1112.google.com ([209.85.162.182]:11817 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754146AbYBUQbE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:31:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DHnjaPqreNKS9/Q7H5xy4ttiEaOW67S4zJdvZonGJo9ajeOhiQk1i8HA3qz+v3Q7k1DEutgPrPUOpYXaNa9x358QmAxjWEIHXjUCFU4mLgkawSKAUbLkAKSrkz5C6fz9IaKokPzWaPXIobsIQY1r5lvX0eIHVJcR62LYXLd4fSk=
+Message-ID: <45a44e480802210830o1041e612sa532acde52e42748@mail.gmail.com>
+Date: Fri, 22 Feb 2008 00:30:58 +0800
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Markus Armbruster" <armbru@redhat.com>
+Subject: Re: [PATCH 1/2] fbdev: Make deferred I/O work as advertized
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <87ve4id4rb.fsf@pike.pond.sub.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802211727.21593.rjw@sisk.pl>
+References: <871w76ejdg.fsf@pike.pond.sub.org>
+	 <87ve4id4rb.fsf@pike.pond.sub.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 21 of February 2008, Jeff Chua wrote:
-> On Thu, Feb 21, 2008 at 8:39 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
-> > On Wednesday, February 20, 2008 4:35 pm Jeff Chua wrote:
-> >  > On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes <jesse.barnes@intel.com>
-> >  wrote:
-> >  > >  Ok, can you give this patch a try with the 'platform' method?  It should
-> >  > > at least tell us what ACPI would like the device to do at suspend time,
-> >  > > but it probably won't fix the hang.
-> 
-> It says "calling pci_set_power_state with 3". Then after all then it
-> still hangs, and then resume with Mr Green.
-> 
-> PM: Syncing filesystems ... done.
-> Freezing user space processes ... (elapsed 0.00 seconds) done.
-> Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
-> PM: Shrinking memory...  ^H-^Hdone (0 pages freed)
-> PM: Freed 0 kbytes in 0.20 seconds (0.00 MB/s)
-> ACPI: Preparing to enter system sleep state S4
-> Suspending console(s)
-> sd 0:0:0:0: [sda] Synchronizing SCSI cache
-> drm_sysfs_suspend
-> ACPI: PCI interrupt for device 0000:00:02.0 disabled
-> calling pci_set_power_state with 3
+On Thu, Feb 21, 2008 at 5:43 PM, Markus Armbruster <armbru@redhat.com> wrote:
+>  Fix extracted from this linux-fbdev-devel message:
 
-So it returns the right value.
+Hi Markus,
 
-Jeff, Jesse, please check one thing for me.
+Yes, this was discussed back in November on linux-mm and hence my
+patch. I didn't push for it to be merged by itself because I don't
+think it makes sense to merge it separately from the full metronomefb
+patch. As far as I can tell, only hecubafb and metronomefb seem to be
+the consumers.
 
-Please boot 2.6.25-rc2 (or better, the current head of the Linus' tree) with
-no_console_suspend and try to do the following:
-
-# echo 8 > /proc/sys/kernel/printk
-# echo core > /sys/power/pm_test
-# echo disk > /sys/power/state
-
-(that will run a test of the freeze/unfreeze code without creating the image)
-and then
-
-# echo mem > /sys/power/state
-
-(that will run a test of the suspend/resume code without actually suspending).
-
-I'd like to know if that works.
+Out of curiosity, are you using defio or planning to use it? I would
+love to hear back from people who are using it.
 
 Thanks,
-Rafael
+jaya
+
+>
+>     Subject: [PATCH 1/1 2.6.24] fbdev: defio and Metronomefb
+>     From: Jaya Kumar <jayakumar.lkml@gmail.com>
+>     Date: 2008-02-18 13:41:26
+>
+>  Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
+>  Signed-off-by: Markus Armbruster <armbru@redhat.com>
+>
+>  ---
+>
+>   drivers/video/fb_defio.c |   22 ++++++++++++++++++++--
+>   1 file changed, 20 insertions(+), 2 deletions(-)
+>
+>  diff --git a/drivers/video/fb_defio.c b/drivers/video/fb_defio.c
+>  index 0f8cfb9..24843fd 100644
+>  --- a/drivers/video/fb_defio.c
+>  +++ b/drivers/video/fb_defio.c
+>  @@ -4,7 +4,7 @@
+>   *  Copyright (C) 2006 Jaya Kumar
+>   *
+>   * This file is subject to the terms and conditions of the GNU General Public
+>  - * License.  See the file COPYING in the main directory of this archive
+>  + * License. See the file COPYING in the main directory of this archive
+>   * for more details.
+>   */
+>
+>  @@ -31,7 +31,7 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
+>         unsigned long offset;
+>         struct page *page;
+>         struct fb_info *info = vma->vm_private_data;
+>  -       /* info->screen_base is in System RAM */
+>  +       /* info->screen_base is virtual memory */
+>         void *screen_base = (void __force *) info->screen_base;
+>
+>         offset = vmf->pgoff << PAGE_SHIFT;
+>  @@ -43,6 +43,15 @@ static int fb_deferred_io_fault(struct vm_area_struct *vma,
+>                 return VM_FAULT_SIGBUS;
+>
+>         get_page(page);
+>  +
+>  +       if (vma->vm_file)
+>  +               page->mapping = vma->vm_file->f_mapping;
+>  +       else
+>  +               printk(KERN_ERR "no mapping available\n");
+>  +
+>  +       BUG_ON(!page->mapping);
+>  +       page->index = vmf->pgoff;
+>  +
+>         vmf->page = page;
+>         return 0;
+>   }
+>  @@ -138,11 +147,20 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_init);
+>
+>   void fb_deferred_io_cleanup(struct fb_info *info)
+>   {
+>  +       void *screen_base = (void __force *) info->screen_base;
+>         struct fb_deferred_io *fbdefio = info->fbdefio;
+>  +       struct page *page;
+>  +       int i;
+>
+>         BUG_ON(!fbdefio);
+>         cancel_delayed_work(&info->deferred_work);
+>         flush_scheduled_work();
+>  +
+>  +       /* clear out the mapping that we setup */
+>  +       for (i = 0 ; i < info->fix.smem_len; i += PAGE_SIZE) {
+>  +               page = vmalloc_to_page(screen_base + i);
+>  +               page->mapping = NULL;
+>  +       }
+>   }
+>   EXPORT_SYMBOL_GPL(fb_deferred_io_cleanup);
+>
+>
