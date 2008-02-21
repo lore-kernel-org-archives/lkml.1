@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935684AbYBUWy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934868AbYBUW5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935684AbYBUWy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:54:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760269AbYBUWyK
+	id S934868AbYBUW5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:57:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBUW5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:54:10 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:49591 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935497AbYBUWyG convert rfc822-to-8bit (ORCPT
+	Thu, 21 Feb 2008 17:57:45 -0500
+Received: from ik-out-1112.google.com ([66.249.90.178]:52325 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbYBUW5o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:54:06 -0500
-X-IronPort-AV: E=Sophos;i="4.25,388,1199692800"; 
-   d="scan'208";a="211603"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 21 Feb 2008 17:57:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bctJMdOJVUHsf2LKPM6d1C0Px7OiAHm2GZWFPavhQ/3/PwtetP+BvZvubYvLVxepHdYtrXClRG516zgGaxpPLQBJWBrVtwui9eZSoWVW+oomVEsTLUdZ/DQGfkuOTvQA5Iyq169myd/HSjsRoMGC93n+l13r3DeXR7Wuu37GPLM=
+Message-ID: <5d6222a80802211457s2beb4d5cre331bc800c28d111@mail.gmail.com>
+Date: Thu, 21 Feb 2008 19:57:39 -0300
+From: "Glauber Costa" <glommer@gmail.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 2/2] make work have a static address in do_boot_cpu()
+Cc: "Glauber Costa" <gcosta@redhat.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu, arjan@infradead.org
+In-Reply-To: <1203631967.6112.16.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 00/37] Permit filesystem local caching
-Date: Thu, 21 Feb 2008 14:52:51 -0800
-Message-ID: <01AE8AF878612047A442668306EAEB0501A36EDA@SACEXMV01.hq.netapp.com>
-In-reply-to: <200802211444.04986.phillips@phunq.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 00/37] Permit filesystem local caching
-Thread-Index: Ach022kuH0t4zO1KQ6a7QKBRN0LbbAAACUeg
-References: <200802201907.40406.phillips@phunq.net><20080220160557.4715.66608.stgit@warthog.procyon.org.uk><28196.1203605703@redhat.com> <200802211444.04986.phillips@phunq.net>
-From: "Muntz, Daniel" <Dan.Muntz@netapp.com>
-To: "Daniel Phillips" <phillips@phunq.net>,
-       "David Howells" <dhowells@redhat.com>
-Cc: "Myklebust, Trond" <Trond.Myklebust@netapp.com>, <nfsv4@linux-nfs.org>,
-       <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
-       <linux-security-module@vger.kernel.org>, <selinux@tycho.nsa.gov>,
-       <casey@schaufler-ca.com>
-X-OriginalArrivalTime: 21 Feb 2008 22:53:49.0477 (UTC) FILETIME=[9F540550:01C874DC]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
+	 <1203626456-3101-2-git-send-email-gcosta@redhat.com>
+	 <1203626456-3101-3-git-send-email-gcosta@redhat.com>
+	 <1203631967.6112.16.camel@lappy>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well, the AFS paper that was referenced earlier was written around the
-time of 10bt and 100bt.  Local disk caching worked well then.  There
-should also be some papers at CITI about disk caching over slower
-connections, and disconnected operation (which should still be
-applicable today).  There are still winners from local disk caching, but
-their numbers have been reduced.  Server load reduction should be a win.
-I'm not sure if it's worth it from a security/manageability standpoint,
-but I haven't looked that closely at David's code.
+On Thu, Feb 21, 2008 at 7:12 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>
+>  On Thu, 2008-02-21 at 17:40 -0300, Glauber Costa wrote:
+>  > This patch makes the work field in create_idle have
+>  > a static address. Otherwise, being a stack variable, it can
+>  > boild down the lockdep system.
+>
+>  Looks way overkill. Doesn't something like:
+>
+>
+>  > Signed-off-by: Glauber Costa <gcosta@redhat.com>
+>  > ---
+>  >  arch/x86/kernel/smpboot_64.c |   13 +++++++------
+>  >  1 files changed, 7 insertions(+), 6 deletions(-)
+>  >
+>  > diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+>  > index f15b774..d79b7a8 100644
+>  > --- a/arch/x86/kernel/smpboot_64.c
+>  > +++ b/arch/x86/kernel/smpboot_64.c
+>
+>
+> > @@ -553,12 +554,12 @@ static int __cpuinit do_boot_cpu(int cpu
+>  >       unsigned long boot_error;
+>  >       int timeout;
+>  >       unsigned long start_rip;
+>  >       struct create_idle create_idle = {
+>  > -             .work = __WORK_INITIALIZER(create_idle.work, do_fork_idle),
+>  >               .cpu = cpu,
+>  >               .done = COMPLETION_INITIALIZER_ONSTACK(create_idle.done),
+>  >       };
+>  > +     INIT_WORK(&create_idle.work, do_fork_idle);
+>
+>  work?
 
-  -Dan
+Indeed.
 
------Original Message-----
-From: Daniel Phillips [mailto:phillips@phunq.net] 
-Sent: Thursday, February 21, 2008 2:44 PM
-To: David Howells
-Cc: Myklebust, Trond; nfsv4@linux-nfs.org; linux-kernel@vger.kernel.org;
-linux-fsdevel@vger.kernel.org; linux-security-module@vger.kernel.org;
-selinux@tycho.nsa.gov; casey@schaufler-ca.com
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
+I missed the static lock_class_key definition inside INIT_WORK macro.
+It does the job neatly.
 
-Hi David,
 
-I am trying to spot the numbers that show the sweet spot for this
-optimization, without much success so far.
+-- 
+Glauber Costa.
+"Free as in Freedom"
+http://glommer.net
 
-Who is supposed to win big?  Is this mainly about reducing the load on
-the server, or is the client supposed to win even with a lightly loaded
-server?
-
-When you say Ext3 cache vs NFS cache is the first on the server and the
-second on the client?
-
-Regards,
-
-Daniel
-_______________________________________________
-NFSv4 mailing list
-NFSv4@linux-nfs.org
-http://linux-nfs.org/cgi-bin/mailman/listinfo/nfsv4
+"The less confident you are, the more serious you have to act."
