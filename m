@@ -1,122 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbYBUXsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935911AbYBUXsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765485AbYBUXsU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763132AbYBUXrR
+	id S935911AbYBUXsw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:48:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935850AbYBUXsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:47:17 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48837 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760968AbYBUXrP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:47:15 -0500
-Date: Thu, 21 Feb 2008 15:47:00 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.25-rc2 git
-Message-ID: <20080221234700.GC7128@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 21 Feb 2008 18:48:18 -0500
+Received: from mx2.suse.de ([195.135.220.15]:52750 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935843AbYBUXsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:48:15 -0500
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 01/11] Fix broken utf-8 encodings in ja_JP translation of stable_kernel_rules.txt
+Date: Thu, 21 Feb 2008 15:47:57 -0800
+Message-Id: <1203637687-7273-1-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.4
+In-Reply-To: <20080221234649.GB7128@kroah.com>
+References: <20080221234649.GB7128@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB fixes against your 2.6.25-rc2 git tree.
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
 
-It includes:
-	- lots of device id updates for the wireless usb-serial cards
-	- more quirk additions
-	- bugfixes in various drivers
+Fix the UTF-8 broken encodings in the ja_JP version of stable_kernel_rules.txt
 
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ Documentation/ja_JP/stable_kernel_rules.txt |  106 +++++++++++++-------------
+ 1 files changed, 53 insertions(+), 53 deletions(-)
 
-A lot of these patches have been in the -mm tree for a while, as well as
--next.
-
-The full patches will be sent to the linux-usb mailing list (note the
-address change), if anyone wants to see them.
-
-thanks,
-
-greg k-h
-
-------------
-
- drivers/usb/class/cdc-acm.c        |   10 ++++----
- drivers/usb/class/usblp.c          |    1 +
- drivers/usb/core/quirks.c          |   12 ++++++++++
- drivers/usb/gadget/ether.c         |    1 +
- drivers/usb/gadget/printer.c       |    2 +-
- drivers/usb/host/Kconfig           |    5 +--
- drivers/usb/host/ehci-hcd.c        |   26 +++++++++++-----------
- drivers/usb/misc/ldusb.c           |    2 +
- drivers/usb/misc/trancevibrator.c  |    4 ++-
- drivers/usb/serial/ftdi_sio.c      |    4 +-
- drivers/usb/serial/option.c        |   43 +++++++++++++++++++++++++++++++++--
- drivers/usb/serial/sierra.c        |    1 -
- drivers/usb/storage/protocol.c     |   27 ++++++++++++----------
- drivers/usb/storage/transport.c    |   11 ---------
- drivers/usb/storage/unusual_devs.h |   34 +++++++++++++++++++++++++++-
- 15 files changed, 130 insertions(+), 53 deletions(-)
-
----------------
-
-Adrian Bunk (1):
-      USB: g_printer, fix empty if statement
-
-Alan Stern (3):
-      USB: usb-storage: don't clear-halt when Get-Max-LUN stalls
-      USB: quirks and unusual_devs entry for Actions flash drive
-      USB: usb-storage: don't access beyond the end of the sg buffer
-
-Andy Shevchenko (1):
-      USB: usb: yet another Dell wireless CDMA/EVDO modem
-
-Anton Vorontsov (2):
-      USB: POWERPC: ehci: fix ppc build
-      ehci-fsl: add PPC_MPC837x to default y
-
-Dan Williams (1):
-      USB: option: Add Kyocera KPC680 ids
-
-David Brownell (1):
-      USB: fix previous sparse fix which was incorrect
-
-Jan Altenberg (1):
-      USB: gadget: queue usb USB_CDC_GET_ENCAPSULATED_RESPONSE message
-
-Kevin Lloyd (1):
-      USB: serial: move zte MF330 from sierra to option
-
-Konstantin Kletschke (1):
-      USB: storage: Nikon D80 new FW still needs Fixup
-
-Oliver Neukum (5):
-      USB: Sane memory allocation in option driver
-      USB: fix pm counter leak in usblp
-      USB: fix usb open suspend race in cdc-acm
-      USB: fix error handling in trancevibrator
-      USB: quirks for known quirky audio devices
-
-Peter Korsgaard (1):
-      USB: ehci-fsl: mpc834x config symbol is PPC_MPC834x, not MPC834x
-
-Robert Spitzenpfeil (1):
-      USB: usb-storage: unusual_devs entry for Oracom MP3 player
-
-Roel Kluin (1):
-      USB: ftdi_sio.c add missing '|'
-
-Stefan Bader (1):
-      USB: option: Added vendor id for Dell 5720 broadband modem
-
-Stephen Ware (1):
-      USB: add new vernier product id to ldusb.c
-
-Warren Turkal (1):
-      USB: Add another Novatel U727 ID to the device table for usbserial
+diff --git a/Documentation/ja_JP/stable_kernel_rules.txt b/Documentation/ja_JP/stable_kernel_rules.txt
+index 17d8751..b3ffe87 100644
+--- a/Documentation/ja_JP/stable_kernel_rules.txt
++++ b/Documentation/ja_JP/stable_kernel_rules.txt
+@@ -11,69 +11,69 @@ comment or update of this file, please try to update Original(English)
+ file at first.
+ 
+ ==================================
+-ããã¯ã
++これは、
+ linux-2.6.24/Documentation/stable_kernel_rules.txt
+-ã®åè¨³ã§ãã
++の和訳です。
+ 
+-ç¿»è¨³å£ä½ï¼ JF ãã­ã¸ã§ã¯ã < http://www.linux.or.jp/JF/ >
+-ç¿»è¨³æ¥ï¼ 2007/12/30
+-ç¿»è¨³èï¼ Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
+-æ ¡æ­£èï¼ æ­¦äºä¼¸åããã<takei at webmasters dot gr dot jp>
+-         ãã­ããã (Seiji Kaneko) <skaneko at a2 dot mbn dot or dot jp>
+-         å°æ éå¸ãã (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
+-         éå£ãã (Kenji Noguchi) <tokyo246 at gmail dot com>
+-         ç¥å®®ä¿¡å¤ªéãã <jin at libjingu dot jp>
++翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
++翻訳日： 2007/12/30
++翻訳者： Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
++校正者： 武井伸光さん、<takei at webmasters dot gr dot jp>
++         かねこさん (Seiji Kaneko) <skaneko at a2 dot mbn dot or dot jp>
++         小林 雅典さん (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
++         野口さん (Kenji Noguchi) <tokyo246 at gmail dot com>
++         神宮信太郎さん <jin at libjingu dot jp>
+ ==================================
+ 
+-ãã£ã¨ç¥ãããã£ã Linux 2.6 -stable ãªãªã¼ã¹ã®å¨ã¦
++ずっと知りたかった Linux 2.6 -stable リリースの全て
+ 
+-"-stable" ããªã¼ã«ã©ã®ãããªç¨®é¡ã®ããããåãå¥ããããããã©ã®ãããª
+-ãã®ãåãå¥ããããªãããã«ã¤ãã¦ã®è¦å-
++"-stable" ツリーにどのような種類のパッチが受け入れられるか、どのような
++ものが受け入れられないか、についての規則-
+ 
+- - æããã«æ­£ããããã¹ãããã¦ãããã®ã§ãªããã°ãªããªãã
+- - æè(å¤æ´è¡ã®åå¾)ãå«ãã¦ 100 è¡ããå¤§ããã¦ã¯ãããªãã
+- - ãã ä¸åã®ãã¨ã ããä¿®æ­£ãã¦ããã¹ãã
+- - çãæ©ã¾ãã¦ããæ¬ç©ã®ãã°ãä¿®æ­£ããªããã°ãªããªãã("ããã¯ãã°ã§
+-   ãããããããªãã..." ã®ãããªãã®ã§ã¯ãªã)
+- - ãã«ãã¨ã©ã¼(CONFIG_BROKENã«ãªã£ã¦ãããã®ãé¤ã), oops, ãã³ã°ããã¼
+-   ã¿ç ´å£ãç¾å®ã®ã»ã­ã¥ãªãã£åé¡ããã®ä» "ãããããã¯ãã¡ã ã­"ã¨ãã
+-   ãããªãã®ãä¿®æ­£ããªããã°ãªããªããç­ãè¨ãã°ãéå¤§ãªåé¡ã
+- - ã©ã®ããã«ç«¶åç¶æãçºçãããã®èª¬æãä¸ç·ã«æ¸ããã¦ããªãéãã
+-   "çè«çã«ã¯ç«¶åç¶æã«ãªã"ãããªãã®ã¯ä¸å¯ã
+- - ãããªãäºç´°ãªä¿®æ­£ãå«ãããã¨ã¯ã§ããªãã(ã¹ãã«ã®ä¿®æ­£ãç©ºç½ã®ã¯ãªã¼
+-   ã³ã¢ãããªã©)
+- - å¯¾å¿ãããµãã·ã¹ãã ã¡ã³ãããåãå¥ãããã®ã§ãªããã°ãªããªãã
+- - Documentation/SubmittingPatches ã®è¦åã«å¾ã£ããã®ã§ãªããã°ãªããªãã
++ - 明らかに正しく、テストされているものでなければならない。
++ - 文脈(変更行の前後)を含めて 100 行より大きくてはいけない。
++ - ただ一個のことだけを修正しているべき。
++ - 皆を悩ませている本物のバグを修正しなければならない。("これはバグで
++   あるかもしれないが..." のようなものではない)
++ - ビルドエラー(CONFIG_BROKENになっているものを除く), oops, ハング、デー
++   タ破壊、現実のセキュリティ問題、その他 "ああ、これはダメだね"という
++   ようなものを修正しなければならない。短く言えば、重大な問題。
++ - どのように競合状態が発生するかの説明も一緒に書かれていない限り、
++   "理論的には競合状態になる"ようなものは不可。
++ - いかなる些細な修正も含めることはできない。(スペルの修正、空白のクリー
++   ンアップなど)
++ - 対応するサブシステムメンテナが受け入れたものでなければならない。
++ - Documentation/SubmittingPatches の規則に従ったものでなければならない。
+ 
+--stable ããªã¼ã«ããããéä»ããæç¶ã-
++-stable ツリーにパッチを送付する手続き-
+ 
+- - ä¸è¨ã®è¦åã«å¾ã£ã¦ããããç¢ºèªããå¾ã«ãstable@kernel.org ã«ããã
+-   ãéãã
+- - éä¿¡èã¯ããããã­ã¥ã¼ã«åãä»ããããéã«ã¯ ACK ããå´ä¸ãããå ´å
+-   ã«ã¯ NAK ãåãåãããã®åå¿ã¯éçºèãã¡ã®ã¹ã±ã¸ã¥ã¼ã«ã«ãã£ã¦ãæ°
+-   æ¥ãããå ´åãããã
+- - ããåãåããããããããã¯ä»ã®éçºèãã¡ã®ã¬ãã¥ã¼ã®ããã«
+-   -stable ã­ã¥ã¼ã«è¿½å ãããã
+- - ã»ã­ã¥ãªãã£ãããã¯ãã®ã¨ã¤ãªã¢ã¹ (stable@kernel.org) ã«éãããã¹
+-   ãã§ã¯ãªããä»£ããã« security@kernel.org ã®ã¢ãã¬ã¹ã«éãããã
++ - 上記の規則に従っているかを確認した後に、stable@kernel.org にパッチ
++   を送る。
++ - 送信者はパッチがキューに受け付けられた際には ACK を、却下された場合
++   には NAK を受け取る。この反応は開発者たちのスケジュールによって、数
++   日かかる場合がある。
++ - もし受け取られたら、パッチは他の開発者たちのレビューのために
++   -stable キューに追加される。
++ - セキュリティパッチはこのエイリアス (stable@kernel.org) に送られるべ
++   きではなく、代わりに security@kernel.org のアドレスに送られる。
+ 
+-ã¬ãã¥ã¼ãµã¤ã¯ã«-
++レビューサイクル-
+ 
+- - -stable ã¡ã³ãããã¬ãã¥ã¼ãµã¤ã¯ã«ãæ±ºããã¨ãããããã¯ã¬ãã¥ã¼å§
+-   å¡ä¼ã¨ããããå½±é¿ããé åã®ã¡ã³ãã(æä¾èããã®é åã®ã¡ã³ããã§ç¡
+-   ãéã)ã«éãããlinux-kernel ã¡ã¼ãªã³ã°ãªã¹ãã«CCãããã
+- - ã¬ãã¥ã¼å§å¡ä¼ã¯ 48æéã®éã« ACK ã NAK ãåºãã
+- - ããããããå§å¡ä¼ã®ã¡ã³ãããå´ä¸ããããã¡ã³ããéãã¡ã³ããæ°ä»
+-   ããªãã£ãåé¡ãæã¡ããããlinux-kernel ã¡ã³ãããããã«ç°è­°ãå±ã
+-   ãå ´åã«ã¯ããããã¯ã­ã¥ã¼ããåé¤ãããã
+- - ã¬ãã¥ã¼ãµã¤ã¯ã«ã®æå¾ã«ãACK ãåãããããã¯ææ°ã® -stable ãªãªã¼
+-   ã¹ã«è¿½å ããããã®å¾ã«æ°ãã -stable ãªãªã¼ã¹ãè¡ãããã
+- - ã»ã­ã¥ãªãã£ãããã¯ãéå¸¸ã®ã¬ãã¥ã¼ãµã¤ã¯ã«ãéãããã»ã­ã¥ãªãã£
+-   ã«ã¼ãã«ãã¼ã ããç´æ¥ -stable ããªã¼ã«åãä»ããããã
+-   ãã®æç¶ãã®è©³ç´°ã«ã¤ãã¦ã¯ kernel security ãã¼ã ã«åãåããããã¨ã
++ - -stable メンテナがレビューサイクルを決めるとき、パッチはレビュー委
++   員会とパッチが影響する領域のメンテナ(提供者がその領域のメンテナで無
++   い限り)に送られ、linux-kernel メーリングリストにCCされる。
++ - レビュー委員会は 48時間の間に ACK か NAK を出す。
++ - もしパッチが委員会のメンバから却下されるか、メンテナ達やメンバが気付
++   かなかった問題が持ちあがり、linux-kernel メンバがパッチに異議を唱え
++   た場合には、パッチはキューから削除される。
++ - レビューサイクルの最後に、ACK を受けたパッチは最新の -stable リリー
++   スに追加され、その後に新しい -stable リリースが行われる。
++ - セキュリティパッチは、通常のレビューサイクルを通らず、セキュリティ
++   カーネルチームから直接 -stable ツリーに受け付けられる。
++   この手続きの詳細については kernel security チームに問い合わせること。
+ 
+-ã¬ãã¥ã¼å§å¡ä¼-
++レビュー委員会-
+ 
+- - ãã®å§å¡ä¼ã¯ããã®ã¿ã¹ã¯ã«ã¤ãã¦æ´»åããå¤ãã®ãã©ã³ãã£ã¢ã¨ãå°æ°ã®
+-   éãã©ã³ãã£ã¢ã®ã«ã¼ãã«éçºèéã§æ§æããã¦ããã
++ - この委員会は、このタスクについて活動する多くのボランティアと、少数の
++   非ボランティアのカーネル開発者達で構成されている。
+ 
+-- 
+1.5.4
 
