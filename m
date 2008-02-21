@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbYBUQBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934248AbYBUQCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934157AbYBUQBn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYBUPzO
+	id S934248AbYBUQCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:02:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759735AbYBUPzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:55:14 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41415
-	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932586AbYBUPzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:55:10 -0500
-From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH [RT] 14/14] sysctl for runtime-control of lateral mutex
-	stealing
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
-       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
-       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
-       sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com,
-       ghaskins@novell.com
-Date: Thu, 21 Feb 2008 10:27:37 -0500
-Message-ID: <20080221152737.4804.70300.stgit@novell1.haskins.net>
-In-Reply-To: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-User-Agent: StGIT/0.12.1
+	Thu, 21 Feb 2008 10:55:18 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:48345 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932625AbYBUPzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 10:55:13 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] Make the kernel NTP code hand 64-bit *unsigned* values to
+	do_div()
+To: torvalds@osdl.org, akpm@linux-foundation.org, zippel@linux-m68k.org
+Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
+Date: Thu, 21 Feb 2008 15:54:02 +0000
+Message-ID: <20080221155402.4414.60360.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -32,81 +30,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sven-Thorsten Dietrich <sdietrich@novell.com>
+From: David Howells <dhowells@redhat.com>
 
-Add /proc/sys/kernel/lateral_steal, to allow switching on and off
-equal-priority mutex stealing between threads.
+The kernel NTP code shouldn't hand 64-bit *signed* values to do_div().  Make it
+instead hand 64-bit unsigned values.  This gets rid of a couple of warnings.
 
-Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
 
- kernel/rtmutex.c |    8 ++++++--
- kernel/sysctl.c  |   14 ++++++++++++++
- 2 files changed, 20 insertions(+), 2 deletions(-)
+ kernel/time/ntp.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index da077e5..62e7af5 100644
---- a/kernel/rtmutex.c
-+++ b/kernel/rtmutex.c
-@@ -27,6 +27,9 @@ int rtlock_timeout __read_mostly = CONFIG_RTLOCK_DELAY;
- #ifdef CONFIG_ADAPTIVE_RTMUTEX
- int rtmutex_timeout __read_mostly = CONFIG_RTMUTEX_DELAY;
- #endif
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+int rtmutex_lateral_steal __read_mostly = 1;
-+#endif
- 
- /*
-  * lock->owner state tracking:
-@@ -331,7 +334,8 @@ static inline int lock_is_stealable(struct task_struct *pendowner, int unfair)
- 	if (current->prio > pendowner->prio)
- 		return 0;
- 
--	if (!unfair && (current->prio == pendowner->prio))
-+	if (unlikely(current->prio == pendowner->prio) &&
-+	   !(unfair && rtmutex_lateral_steal))
- #endif
- 		return 0;
- 
-@@ -355,7 +359,7 @@ static inline int try_to_steal_lock(struct rt_mutex *lock, int unfair)
- 		return 1;
- 
- 	spin_lock(&pendowner->pi_lock);
--	if (!lock_is_stealable(pendowner, unfair)) {
-+	if (!lock_is_stealable(pendowner, (unfair & rtmutex_lateral_steal))) {
- 		spin_unlock(&pendowner->pi_lock);
- 		return 0;
- 	}
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 3465af2..c1a1c6d 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -179,6 +179,10 @@ extern struct ctl_table inotify_table[];
- int sysctl_legacy_va_layout;
- #endif
- 
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+extern int rtmutex_lateral_steal;
-+#endif
-+
- extern int prove_locking;
- extern int lock_stat;
- 
-@@ -986,6 +990,16 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler   = &proc_dointvec,
-        },
- #endif
-+#ifdef CONFIG_RTLOCK_LATERAL_STEAL
-+	{
-+		.ctl_name       = CTL_UNNUMBERED,
-+		.procname       = "rtmutex_lateral_steal",
-+		.data           = &rtmutex_lateral_steal,
-+		.maxlen         = sizeof(int),
-+		.mode           = 0644,
-+		.proc_handler   = &proc_dointvec,
-+       },
-+#endif
- #ifdef CONFIG_PROC_FS
- 	{
- 		.ctl_name       = CTL_UNNUMBERED,
+
+diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
+index c88b591..3bead00 100644
+--- a/kernel/time/ntp.c
++++ b/kernel/time/ntp.c
+@@ -342,13 +342,15 @@ int do_adjtimex(struct timex *txc)
+ 		    freq_adj = shift_right(freq_adj, time_constant * 2 +
+ 					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
+ 		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
++			u64 utemp64;
+ 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
+ 			if (time_offset < 0) {
+-			    temp64 = -temp64;
+-			    do_div(temp64, mtemp);
++			    utemp64 = -temp64;
++			    do_div(utemp64, mtemp);
+ 			    freq_adj -= temp64;
+ 			} else {
+-			    do_div(temp64, mtemp);
++			    utemp64 = temp64;
++			    do_div(utemp64, mtemp);
+ 			    freq_adj += temp64;
+ 			}
+ 		    }
 
