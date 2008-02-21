@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760425AbYBUJtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765082AbYBUJuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760425AbYBUJtb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:49:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752556AbYBUJtV
+	id S1765082AbYBUJuc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:50:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbYBUJuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:49:21 -0500
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:60988 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752278AbYBUJtU (ORCPT
+	Thu, 21 Feb 2008 04:50:22 -0500
+Received: from mga07.intel.com ([143.182.124.22]:12306 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752556AbYBUJuU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:49:20 -0500
-Message-ID: <47BD4812.9040407@linux.vnet.ibm.com>
-Date: Thu, 21 Feb 2008 15:14:50 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 04:50:20 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,385,1199692800"; 
+   d="scan'208";a="381813776"
+Message-ID: <2422.172.16.116.56.1203587019.squirrel@linux.intel.com>
+Date: Thu, 21 Feb 2008 01:43:39 -0800 (PST)
+Subject: From 2.6.24 to 2.6.25-rc2,
+      CPU can not do hotplug when one task set affinity to it
+From: youquan_song@linux.intel.com
+To: linux-kernel@vger.kernel.org
+Cc: youquan.song@intel.com
+User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Make yield_task_fair more efficient
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu> <47BD44FF.7070104@linux.vnet.ibm.com> <20080221094217.GA24162@elte.hu>
-In-Reply-To: <20080221094217.GA24162@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
+In SMP sever platform, with kernel 2.6.24-rc2 and kernel 2.6.25-rc2,
+Set one task affinity to one CPU core, then set offline the CPU core.
+After that we can not set online the CPU core again.
 
-You did not answer some of my earlier questions.
 
->> I have an alternate approach in mind (that I need to find time for), 
->> threaded-rbtrees. Walking the tree is really efficient, specially 
->> finding successor of a node.
-> 
-> sure, feel free to experiment with those details.
-> 
-> But if you want to improve Java workloads then you should probably start 
-> by converting them to futexes instead of sched_yield(), that will 
-> probably give far more performance than micro-optimizing the 
-> sys_sched_yield() codepath. (especially when it happens at the expense 
-> of other workloads, which is not acceptable for mainline) You can 
-> rebuild your JVM easily and re-test with its locking fixed, right?
+1.  run the test.sh script:   test.sh 1  ( 1 is the logical CPU )
+test.sh script:
 
-No.. I don't want to optimize the JVM or rebuild it. I don't have access to any
-JVM code either. I wanted to do the threaded rb-trees for the case where we use
-spend time finding the successor using rb_next() (walking the tree).
+#!/bin/bash
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+main(){
+
+    typeset -i CPU=$1
+    ./task.sh > /dev/null&
+    PID=$!
+
+    if [ `cat /sys/devices/system/cpu/cpu${CPU}/online` = "0" ]; then
+        echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
+    fi
+
+    MASK=$((1<<${CPU}))
+
+    `taskset -p ${MASK} ${PID} > /dev/null 2>&1`
+
+    echo "0" > /sys/devices/system/cpu/cpu${CPU}/online
+
+    echo "1" > /sys/devices/system/cpu/cpu${CPU}/online
+
+    kill -9 $PID > /dev/null 2>&1
+
+    echo "PASS\n"
+
+}
+
+typeset -i TEST_CPU=$1
+main $TEST_CPU
+
+2. task.sh script as following
+
+#!/bin/bash
+
+while :
+do
+  NOOP=1
+done
+
+Actual Result:
+The test.sh will block at set online the CPU ( echo "1" >
+/sys/devices/system/cpu/cpu${CPU}/online ).
+
+we check the test.sh has dead by 'ps -aux'.
+
