@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935732AbYBUXro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765485AbYBUXsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935732AbYBUXro (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:47:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760805AbYBUXrO
+	id S1765485AbYBUXsU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763132AbYBUXrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:47:14 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:48833 "EHLO
+	Thu, 21 Feb 2008 18:47:17 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:48837 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757948AbYBUXrN (ORCPT
+	with ESMTP id S1760968AbYBUXrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:47:13 -0500
-Date: Thu, 21 Feb 2008 15:46:49 -0800
+	Thu, 21 Feb 2008 18:47:15 -0500
+Date: Thu, 21 Feb 2008 15:47:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       kay.sievers@vrfy.org, Michael_E_Brown@dell.com, rdreier@cisco.com,
-       htejun@gmail.com
-Subject: [GIT PATCH] driver core fixes against 2.6.25-rc2 git
-Message-ID: <20080221234649.GB7128@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB fixes for 2.6.25-rc2 git
+Message-ID: <20080221234700.GC7128@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,25 +24,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few driver core fixes against your current git tree that fix some
-more problems that have cropped up:
-	- shutdown problem due to logic problem with cpufreq usage of
-	  kobjects.
-	- build fix for powerpc due to previous kobject changes.
-	- runtime errors when CONFIG_SYSFS=n
-	- UIO code now works properly from my previous messups
-	- proper encoding of the ja_JP stable_kernel_rules.txt file
-	- updates to the stable_kernel_rules.txt file
-	- mark ide=reverse as obsolete in preparation of 2.6.26 (Bart
-	  wanted this to go in through my tree as I have the .26 patches
-	  pending.)
-	- other minor fixes.
+Here are some USB fixes against your 2.6.25-rc2 git tree.
+
+It includes:
+	- lots of device id updates for the wireless usb-serial cards
+	- more quirk additions
+	- bugfixes in various drivers
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Patches will be sent as a follow-on to this message to lkml for people
-to see.
+A lot of these patches have been in the -mm tree for a while, as well as
+-next.
+
+The full patches will be sent to the linux-usb mailing list (note the
+address change), if anyone wants to see them.
 
 thanks,
 
@@ -52,51 +46,77 @@ greg k-h
 
 ------------
 
- Documentation/ja_JP/stable_kernel_rules.txt |  106 +++++++++++++-------------
- Documentation/stable_kernel_rules.txt       |    7 +-
- Documentation/vm/slabinfo.c                 |    2 +-
- arch/powerpc/platforms/pseries/power.c      |    2 +-
- drivers/base/bus.c                          |    9 +-
- drivers/base/driver.c                       |    3 +
- drivers/base/power/main.c                   |    2 +-
- drivers/cpufreq/cpufreq.c                   |    8 --
- drivers/ide/ide.c                           |    2 +-
- drivers/uio/uio.c                           |   54 +++++++++----
- kernel/module.c                             |    7 +-
- 11 files changed, 109 insertions(+), 93 deletions(-)
+ drivers/usb/class/cdc-acm.c        |   10 ++++----
+ drivers/usb/class/usblp.c          |    1 +
+ drivers/usb/core/quirks.c          |   12 ++++++++++
+ drivers/usb/gadget/ether.c         |    1 +
+ drivers/usb/gadget/printer.c       |    2 +-
+ drivers/usb/host/Kconfig           |    5 +--
+ drivers/usb/host/ehci-hcd.c        |   26 +++++++++++-----------
+ drivers/usb/misc/ldusb.c           |    2 +
+ drivers/usb/misc/trancevibrator.c  |    4 ++-
+ drivers/usb/serial/ftdi_sio.c      |    4 +-
+ drivers/usb/serial/option.c        |   43 +++++++++++++++++++++++++++++++++--
+ drivers/usb/serial/sierra.c        |    1 -
+ drivers/usb/storage/protocol.c     |   27 ++++++++++++----------
+ drivers/usb/storage/transport.c    |   11 ---------
+ drivers/usb/storage/unusual_devs.h |   34 +++++++++++++++++++++++++++-
+ 15 files changed, 130 insertions(+), 53 deletions(-)
 
 ---------------
 
-Balaji Rao (1):
-      cpufreq: fix kobject reference count handling
+Adrian Bunk (1):
+      USB: g_printer, fix empty if statement
 
-Bartlomiej Zolnierkiewicz (1):
-      ide: mark "ide=reverse" option as obsolete
+Alan Stern (3):
+      USB: usb-storage: don't clear-halt when Get-Max-LUN stalls
+      USB: quirks and unusual_devs entry for Actions flash drive
+      USB: usb-storage: don't access beyond the end of the sg buffer
 
-Brandon Philips (1):
-      UIO: fix Greg's stupid changes
+Andy Shevchenko (1):
+      USB: usb: yet another Dell wireless CDMA/EVDO modem
 
-Christoph Lameter (1):
-      slabinfo: fall back from /sys/kernel/slab to /sys/slab
+Anton Vorontsov (2):
+      USB: POWERPC: ehci: fix ppc build
+      ehci-fsl: add PPC_MPC837x to default y
 
-Cornelia Huck (1):
-      Driver core: Fix error handling in bus_add_driver().
+Dan Williams (1):
+      USB: option: Add Kyocera KPC680 ids
 
-Kay Sievers (1):
-      modules: do not try to add sysfs attributes if !CONFIG_SYSFS
+David Brownell (1):
+      USB: fix previous sparse fix which was incorrect
 
-Rafael J. Wysocki (1):
-      PM: Remove unbalanced mutex_unlock() from dpm_resume()
+Jan Altenberg (1):
+      USB: gadget: queue usb USB_CDC_GET_ENCAPSULATED_RESPONSE message
 
-Randy Dunlap (1):
-      driver-core: fix kernel-doc function parameters
+Kevin Lloyd (1):
+      USB: serial: move zte MF330 from sierra to option
 
-Stefan Richter (1):
-      stable_kernel_rules: fix must already be in mainline
+Konstantin Kletschke (1):
+      USB: storage: Nikon D80 new FW still needs Fixup
 
-Stephen Rothwell (1):
-      POWERPC: fix typo in pseries/power.c
+Oliver Neukum (5):
+      USB: Sane memory allocation in option driver
+      USB: fix pm counter leak in usblp
+      USB: fix usb open suspend race in cdc-acm
+      USB: fix error handling in trancevibrator
+      USB: quirks for known quirky audio devices
 
-Tsugikazu Shibata (1):
-      Fix broken utf-8 encodings in ja_JP translation of stable_kernel_rules.txt
+Peter Korsgaard (1):
+      USB: ehci-fsl: mpc834x config symbol is PPC_MPC834x, not MPC834x
+
+Robert Spitzenpfeil (1):
+      USB: usb-storage: unusual_devs entry for Oracom MP3 player
+
+Roel Kluin (1):
+      USB: ftdi_sio.c add missing '|'
+
+Stefan Bader (1):
+      USB: option: Added vendor id for Dell 5720 broadband modem
+
+Stephen Ware (1):
+      USB: add new vernier product id to ldusb.c
+
+Warren Turkal (1):
+      USB: Add another Novatel U727 ID to the device table for usbserial
 
