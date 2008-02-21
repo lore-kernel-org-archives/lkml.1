@@ -1,81 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbYBUP1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762838AbYBUPbe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbYBUP1r (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 10:27:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbYBUP1g
+	id S1762838AbYBUPbe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 10:31:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752674AbYBUPbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:27:36 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:6806 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753775AbYBUP1f (ORCPT
+	Thu, 21 Feb 2008 10:31:25 -0500
+Received: from nsmx.bridgeco.net ([213.173.191.36]:55784 "EHLO
+	nsmx.bridgeco.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754000AbYBUPbY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:27:35 -0500
-Message-ID: <47BD9872.9050308@hp.com>
-Date: Thu, 21 Feb 2008 10:27:46 -0500
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
+	Thu, 21 Feb 2008 10:31:24 -0500
+X-Greylist: delayed 1411 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 10:31:24 EST
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Ilpo_J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 7/8] [SCTP]: uninline sctp_add_cmd_sf
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi> <1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi> <47BCA6B8.5000904@hp.com> <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0802210020350.17063@kivilampi-30.cs.helsinki.fi>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] The kernel gets no IP from some DHCP servers, 2.6.24
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Thu, 21 Feb 2008 16:07:51 +0100
+Message-ID: <83116F0A4FF67A4F97BA0B6E408C48E301C5C723@zuerich.BC-Int.NET>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] The kernel gets no IP from some DHCP servers, 2.6.24
+Thread-Index: Ach0m4cSiApNdLdFScC3DSTHVH8H7w==
+From: "Wappler Marcel" <Marcel.Wappler@bridgeco.net>
+To: <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen wrote:
-> On Wed, 20 Feb 2008, Vlad Yasevich wrote:
-> 
->> Ilpo Järvinen wrote:
->>> I added inline to sctp_add_cmd and appropriate comment there to
->>> avoid adding another call into the call chain. This works at least
->>> with "gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)". Alternatively,
->>> __sctp_add_cmd could be introduced to .h.
->>>
->> My only concern was performance regressions, but it looks like it
->> doesn't effect anything from the few quick runs I've made.
-> 
-> There was one call made anyway, it's a bit hard to see how it would hurt 
-> to push that BUG() deeper down (in fact, this is one of the easiest case 
-> in this respect, many other cases elsewhere that need uninlining don't 
-> currently make any calls with inlines).
-> 
->> Since we are putting sctp_add_cmd_sf() on the call stack, we might
->> as well get rid of sctp_add_cmd() and reduce it a bit more.
-> 
-> IMHO it is definately better solution for archiving the size reduction,
-> I just didn't know before that the only sctp_add_cmd call could be 
-> converted.
+This patch fixes a DHCP issue of the kernel: some DHCP servers
+(i.e. in the Linksys WRT54Gv5) are very strict about the contents 
+of the DHCPDISCOVER packet they receive from clients. Table 5 in RFC2131
+page 36 requests the fields 'ciaddr' and 'siaddr' MUST be set to '0'.
+These DHCP servers ignore Linux kernel's DHCP discovery packets with these two
+fields set to '255.255.255.255' (in contrast to popular DHCP clients, such as
+'dhclient' or 'udhcpc'). This leads to a not booting system.
+I tested this on a ARM embedded device mounting rootfs over NFS obtaining
+its IP from a Linksys WRT54Gv5 Router running VxWorks and a PC based Server
+running a Linux. Changing the two fields to '0.0.0.0' worked.
 
-That one was a really silly one.  The chance of not calling BUG() in
-that one case was so small, that it didn't really make any sense from
-the code robustness side.
+Please CC me personaly when answering this message.
 
-> 
-> [...snip...]
->> diff --git a/net/sctp/command.c b/net/sctp/command.c
->> index bb97733..3a06513 100644
->> --- a/net/sctp/command.c
->> +++ b/net/sctp/command.c
->> @@ -51,19 +51,16 @@ int sctp_init_cmd_seq(sctp_cmd_seq_t *seq)
->>  
->>  /* Add a command to a sctp_cmd_seq_t.
->>   * Return 0 if the command sequence is full.
->> + *
->> + * Inline here is not a mistake, this way sctp_add_cmd_sf doesn't need extra
->> + * calls, size penalty is of insignificant magnitude here
-> 
-> This won't be a necessary note anymore. :-)
-> 
-> [...snip...]
-> 
+Thanks,
+Marcel
 
-Yeah.  If you are going to resubmit, feel free to put my Signed-off-by line.
+--- linux-2.6.24.2/net/ipv4/ipconfig.c	2008-02-21 15:27:47.250890963 +0100
++++ linux/net/ipv4/ipconfig.c	2008-02-21 15:36:12.686735925 +0100
+@@ -29,6 +29,10 @@
+  *
+  *  Multiple Nameservers in /proc/net/pnp
+  *              --  Josef Siemes <jsiemes@web.de>, Aug 2002
++ *
++ *  Bugfix: Not getting an IP from some DHCP servers: RFC2131 page 36
++ *  Table 5 requests DHCPDISCOVER fields ciaddr and siaddr MUST be '0'.
++ *              -- marcel.wappler@bridgeco.net
+  */
+ 
+ #include <linux/types.h>
+@@ -103,6 +107,7 @@
+ 					   - '3' from resolv.h */
+ 
+ #define NONE __constant_htonl(INADDR_NONE)
++#define ZERO __constant_htonl(((unsigned long int) 0x00000000))
+ 
+ /*
+  * Public IP configuration
+@@ -740,8 +745,8 @@
+ 		b->htype = dev->type; /* can cause undefined behavior */
+ 	}
+ 	b->hlen = dev->addr_len;
+-	b->your_ip = NONE;
+-	b->server_ip = NONE;
++	b->your_ip = ZERO;
++	b->server_ip = ZERO;
+ 	memcpy(b->hw_addr, dev->dev_addr, dev->addr_len);
+ 	b->secs = htons(jiffies_diff / HZ);
+ 	b->xid = d->xid;
 
--vlad
+--
+Marcel Wappler
+Bridgeco AG
+CH-8600 Dübendorf
+Switzerland
