@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756441AbYBUV0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934912AbYBUV1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756441AbYBUV0t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932951AbYBUV0c
+	id S934912AbYBUV1b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbYBUV1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:26:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50878 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933007AbYBUV0a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:26:30 -0500
-Date: Thu, 21 Feb 2008 22:24:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, ak@suse.de, gregkh@suse.de, sdietrich@novell.com,
-       pmorreale@novell.com, mkohari@novell.com
-Subject: Re: [PATCH [RT] 00/14] RFC - adaptive real-time locks
-Message-ID: <20080221212420.GA20953@elte.hu>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
+	Thu, 21 Feb 2008 16:27:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52823 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755002AbYBUV1T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:27:19 -0500
+Message-ID: <47BDEB57.5040203@zytor.com>
+Date: Thu, 21 Feb 2008 13:21:27 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ian Campbell <ijc@hellion.org.uk>, Joel Becker <Joel.Becker@oracle.com>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com>	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>	 <47BCA275.7000504@goop.org> <1203546597.26910.74.camel@cthulhu.hellion.org.uk> <47BDEA11.6010302@goop.org>
+In-Reply-To: <47BDEA11.6010302@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Ian Campbell wrote:
+>> I'll see if I can track down where the page is getting used and have a
+>> go at getting in there first. It must be pretty early to be allocated
+>> already when dmi_scan_machine gets called.
+>>
+>> It's possible that the domain builder might have already allocated a PT
+>> at this address. I haven't checked but I think currently the domain
+>> builder always puts PT pages after the kernel so hopefully it's only a
+>> theoretical problem.
+>>   
+> 
+> Yes, it does.  And presumably the early pagetable builder is guaranteed 
+> to avoid special memory like the DMI space.  But the bug definitely 
+> seems to be a result of the DMI code trying to make a RW mapping of a 
+> pagetable page, so something is amiss there.
+> 
+> Ooh, sleazy hack idea: make DMI always map RO, so even if it does get a 
+> pagetable it causes no complaint...  A bit awkward, since there doesn't 
+> seem to be an RO form of early_ioremap.
+> 
+>> Another option I was thinking of was a command line option to disable
+>> DMI, which (maybe) isn't terribly useful in itself but it introduces an
+>> associated variable to frob with. That's similar to how the TSC was
+>> handled in the past (well, the opposite since TSC was forced on).
+>>   
+> 
+> Yep, that would work too.
+> 
+> Still curious about why a pagetable page is ending up in that range 
+> though.  Seems like it shouldn't be possible, since we shouldn't be 
+> allowed to allocate from those pages, at least until the DMI probe has 
+> happened...  Unless the early allocator is only excluded from e820 
+> reserved pages, which would cause a problem on systems which don't 
+> reserve the DMI space...  HPA?
+> 
 
-hm. Why is the ticket spinlock patch included in this patchset? It just 
-skews your performance results unnecessarily. Ticket spinlocks are 
-independent conceptually, they are already upstream in 2.6.25-rc2 and 
--rt will have them automatically once we rebase to .25.
+I thought the problem was a Xen-provided pagetable from before Linux 
+started?
 
-and if we take the ticket spinlock patch out of your series, the the 
-size of the patchset shrinks in half and touches only 200-300 lines of 
-code ;-) Considering the total size of the -rt patchset:
-
-   652 files changed, 23830 insertions(+), 4636 deletions(-)
-
-we can regard it a routine optimization ;-)
-
-regarding the concept: adaptive mutexes have been talked about in the 
-past, but their advantage is not at all clear, that's why we havent done 
-them. It's definitely not an unambigiously win-win concept.
-
-So lets get some real marketing-free benchmarking done, and we are not 
-just interested in the workloads where a bit of polling on contended 
-locks helps, but we are also interested in workloads where the polling 
-hurts ... And lets please do the comparisons without the ticket spinlock 
-patch ...
-
-	Ingo
+	-hpa
