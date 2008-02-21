@@ -1,85 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbYBUU4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934105AbYBUU4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933706AbYBUU4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbYBUUzy
+	id S934105AbYBUU4v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 15:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765320AbYBUU4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:55:54 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:50038 "EHLO
+	Thu, 21 Feb 2008 15:56:00 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:24136 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760785AbYBUUzx (ORCPT
+	with ESMTP id S1764366AbYBUUz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:55:53 -0500
+	Thu, 21 Feb 2008 15:55:59 -0500
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=CCEMZBHls4j4eiiz7O8ago+qPJaZtATArT09Eyxys0bwrd+THAPDDcsaggye9e31a
-	SmPsIlW8eaqRRNR/qEkpA==
-Message-Id: <20080221205525.349180000@menage.corp.google.com>
-References: <20080221203518.544461000@menage.corp.google.com>
+	h=received:message-id:user-agent:date:from:to:cc:subject;
+	b=lhFyWGTJBl5v0uMBpR0DKM0HnB1SDVGVshGyomSy/b8k8kbE1CKRtnE4kM17wKNVx
+	Qds9gd+CYU/viUlBAauSg==
+Message-Id: <20080221203518.544461000@menage.corp.google.com>
 User-Agent: quilt/0.45-1
-Date: Thu, 21 Feb 2008 12:35:20 -0800
+Date: Thu, 21 Feb 2008 12:35:18 -0800
 From: menage@google.com
 To: akpm@linux-foundation.org, xemul@openvz.org, balbir@in.ibm.com
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 2/2] ResCounter: Use read_uint in memory controller
-Content-Disposition: inline; filename=memcontrol_use_res_counter_read_uint.patch
+Subject: [PATCH 0/2] ResCounter: Add res_counter_read_uint and use it in memory cgroup
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Update the memory controller to use read_uint for its
-limit/usage/failcnt control files, calling the new
-res_counter_read_uint() function.
+These patches simplify the code required to report values from a
+res_counter object in a cgroups control file.
+
+The first patch adds res_counter_read_uint, which simply reports the
+current value for a res_counter member.
+
+The second replaces the existing mem_cgroup_read() with a simpler
+version that calls res_counter_read_uint().
 
 Signed-off-by: Paul Menage <menage@google.com>
-
----
- mm/memcontrol.c |   15 ++++++---------
- 1 file changed, 6 insertions(+), 9 deletions(-)
-
-Index: rescounter-2.6.25-rc2-mm1/mm/memcontrol.c
-===================================================================
---- rescounter-2.6.25-rc2-mm1.orig/mm/memcontrol.c
-+++ rescounter-2.6.25-rc2-mm1/mm/memcontrol.c
-@@ -922,13 +922,10 @@ int mem_cgroup_write_strategy(char *buf,
- 	return 0;
- }
- 
--static ssize_t mem_cgroup_read(struct cgroup *cont,
--			struct cftype *cft, struct file *file,
--			char __user *userbuf, size_t nbytes, loff_t *ppos)
-+static u64 mem_cgroup_read(struct cgroup *cont, struct cftype *cft)
- {
--	return res_counter_read(&mem_cgroup_from_cont(cont)->res,
--				cft->private, userbuf, nbytes, ppos,
--				NULL);
-+	return res_counter_read_uint(&mem_cgroup_from_cont(cont)->res,
-+				     cft->private);
- }
- 
- static ssize_t mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
-@@ -1024,18 +1021,18 @@ static struct cftype mem_cgroup_files[] 
- 	{
- 		.name = "usage_in_bytes",
- 		.private = RES_USAGE,
--		.read = mem_cgroup_read,
-+		.read_uint = mem_cgroup_read,
- 	},
- 	{
- 		.name = "limit_in_bytes",
- 		.private = RES_LIMIT,
- 		.write = mem_cgroup_write,
--		.read = mem_cgroup_read,
-+		.read_uint = mem_cgroup_read,
- 	},
- 	{
- 		.name = "failcnt",
- 		.private = RES_FAILCNT,
--		.read = mem_cgroup_read,
-+		.read_uint = mem_cgroup_read,
- 	},
- 	{
- 		.name = "force_empty",
 
 --
