@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbYBUQBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbYBUQBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932231AbYBUQBQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:01:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757538AbYBUPzI
+	id S934157AbYBUQBn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:01:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758315AbYBUPzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:55:08 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41403
+	Thu, 21 Feb 2008 10:55:14 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41415
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932563AbYBUPzE (ORCPT
+	by vger.kernel.org with ESMTP id S932586AbYBUPzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:55:04 -0500
+	Thu, 21 Feb 2008 10:55:10 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH [RT] 13/14] allow rt-mutex lock-stealing to include lateral
-	priority
+Subject: [PATCH [RT] 14/14] sysctl for runtime-control of lateral mutex
+	stealing
 To: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        rostedt@goodmis.org, linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
@@ -20,8 +20,8 @@ Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
        npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
        sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com,
        ghaskins@novell.com
-Date: Thu, 21 Feb 2008 10:27:32 -0500
-Message-ID: <20080221152732.4804.44134.stgit@novell1.haskins.net>
+Date: Thu, 21 Feb 2008 10:27:37 -0500
+Message-ID: <20080221152737.4804.70300.stgit@novell1.haskins.net>
 In-Reply-To: <20080221152504.4804.8724.stgit@novell1.haskins.net>
 References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -32,144 +32,81 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current logic only allows lock stealing to occur if the current task
-is of higher priority than the pending owner. We can gain signficant
-throughput improvements (200%+) by allowing the lock-stealing code to
-include tasks of equal priority.  The theory is that the system will make
-faster progress by allowing the task already on the CPU to take the lock
-rather than waiting for the system to wake-up a different task.
+From: Sven-Thorsten Dietrich <sdietrich@novell.com>
 
-This does add a degree of unfairness, yes.  But also note that the users
-of these locks under non -rt environments have already been using unfair
-raw spinlocks anyway so the tradeoff is probably worth it.
+Add /proc/sys/kernel/lateral_steal, to allow switching on and off
+equal-priority mutex stealing between threads.
 
-The way I like to think of this is that higher priority tasks should
-clearly preempt, and lower priority tasks should clearly block.  However,
-if tasks have an identical priority value, then we can think of the
-scheduler decisions as the tie-breaking parameter. (e.g. tasks that the
-scheduler picked to run first have a logically higher priority amoung tasks
-of the same prio).  This helps to keep the system "primed" with tasks doing
-useful work, and the end result is higher throughput.
-
-Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+Signed-off-by: Sven-Thorsten Dietrich <sdietrich@suse.de>
 ---
 
- kernel/Kconfig.preempt |   10 ++++++++++
- kernel/rtmutex.c       |   31 +++++++++++++++++++++++--------
- 2 files changed, 33 insertions(+), 8 deletions(-)
+ kernel/rtmutex.c |    8 ++++++--
+ kernel/sysctl.c  |   14 ++++++++++++++
+ 2 files changed, 20 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index d2b0daa..343b93c 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -273,3 +273,13 @@ config SPINLOCK_BKL
- 	  Say Y here if you are building a kernel for a desktop system.
- 	  Say N if you are unsure.
- 
-+config RTLOCK_LATERAL_STEAL
-+        bool "Allow equal-priority rtlock stealing"
-+	default y
-+	depends on PREEMPT_RT
-+	help
-+	 This option alters the rtlock lock-stealing logic to allow
-+	 equal priority tasks to preempt a pending owner in addition
-+	 to higher priority tasks.  This allows for a significant
-+	 boost in throughput under certain circumstances at the expense
-+	 of strict FIFO lock access.
 diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 95c3644..da077e5 100644
+index da077e5..62e7af5 100644
 --- a/kernel/rtmutex.c
 +++ b/kernel/rtmutex.c
-@@ -323,12 +323,27 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
- 	return ret;
- }
- 
-+static inline int lock_is_stealable(struct task_struct *pendowner, int unfair)
-+{
-+#ifndef CONFIG_RTLOCK_LATERAL_STEAL
-+	if (current->prio >= pendowner->prio)
-+#else
-+	if (current->prio > pendowner->prio)
-+		return 0;
-+
-+	if (!unfair && (current->prio == pendowner->prio))
+@@ -27,6 +27,9 @@ int rtlock_timeout __read_mostly = CONFIG_RTLOCK_DELAY;
+ #ifdef CONFIG_ADAPTIVE_RTMUTEX
+ int rtmutex_timeout __read_mostly = CONFIG_RTMUTEX_DELAY;
+ #endif
++#ifdef CONFIG_RTLOCK_LATERAL_STEAL
++int rtmutex_lateral_steal __read_mostly = 1;
 +#endif
-+		return 0;
-+
-+	return 1;
-+}
-+
+ 
  /*
-  * Optimization: check if we can steal the lock from the
-  * assigned pending owner [which might not have taken the
-  * lock yet]:
-  */
--static inline int try_to_steal_lock(struct rt_mutex *lock)
-+static inline int try_to_steal_lock(struct rt_mutex *lock, int unfair)
- {
- 	struct task_struct *pendowner = rt_mutex_owner(lock);
- 	struct rt_mutex_waiter *next;
-@@ -340,7 +355,7 @@ static inline int try_to_steal_lock(struct rt_mutex *lock)
+  * lock->owner state tracking:
+@@ -331,7 +334,8 @@ static inline int lock_is_stealable(struct task_struct *pendowner, int unfair)
+ 	if (current->prio > pendowner->prio)
+ 		return 0;
+ 
+-	if (!unfair && (current->prio == pendowner->prio))
++	if (unlikely(current->prio == pendowner->prio) &&
++	   !(unfair && rtmutex_lateral_steal))
+ #endif
+ 		return 0;
+ 
+@@ -355,7 +359,7 @@ static inline int try_to_steal_lock(struct rt_mutex *lock, int unfair)
  		return 1;
  
  	spin_lock(&pendowner->pi_lock);
--	if (current->prio >= pendowner->prio) {
-+	if (!lock_is_stealable(pendowner, unfair)) {
+-	if (!lock_is_stealable(pendowner, unfair)) {
++	if (!lock_is_stealable(pendowner, (unfair & rtmutex_lateral_steal))) {
  		spin_unlock(&pendowner->pi_lock);
  		return 0;
  	}
-@@ -393,7 +408,7 @@ static inline int try_to_steal_lock(struct rt_mutex *lock)
-  *
-  * Must be called with lock->wait_lock held.
-  */
--static int try_to_take_rt_mutex(struct rt_mutex *lock)
-+static int try_to_take_rt_mutex(struct rt_mutex *lock, int unfair)
- {
- 	/*
- 	 * We have to be careful here if the atomic speedups are
-@@ -416,7 +431,7 @@ static int try_to_take_rt_mutex(struct rt_mutex *lock)
- 	 */
- 	mark_rt_mutex_waiters(lock);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 3465af2..c1a1c6d 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -179,6 +179,10 @@ extern struct ctl_table inotify_table[];
+ int sysctl_legacy_va_layout;
+ #endif
  
--	if (rt_mutex_owner(lock) && !try_to_steal_lock(lock))
-+	if (rt_mutex_owner(lock) && !try_to_steal_lock(lock, unfair))
- 		return 0;
++#ifdef CONFIG_RTLOCK_LATERAL_STEAL
++extern int rtmutex_lateral_steal;
++#endif
++
+ extern int prove_locking;
+ extern int lock_stat;
  
- 	/* We got the lock. */
-@@ -737,7 +752,7 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
- 		int saved_lock_depth = current->lock_depth;
- 
- 		/* Try to acquire the lock */
--		if (try_to_take_rt_mutex(lock))
-+		if (try_to_take_rt_mutex(lock, 1))
- 			break;
- 		/*
- 		 * waiter.task is NULL the first time we come here and
-@@ -985,7 +1000,7 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 	init_lists(lock);
- 
- 	/* Try to acquire the lock again: */
--	if (try_to_take_rt_mutex(lock)) {
-+	if (try_to_take_rt_mutex(lock, 0)) {
- 		spin_unlock_irqrestore(&lock->wait_lock, flags);
- 		return 0;
- 	}
-@@ -1006,7 +1021,7 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 		unsigned long saved_flags;
- 
- 		/* Try to acquire the lock: */
--		if (try_to_take_rt_mutex(lock))
-+		if (try_to_take_rt_mutex(lock, 0))
- 			break;
- 
- 		/*
-@@ -1120,7 +1135,7 @@ rt_mutex_slowtrylock(struct rt_mutex *lock)
- 
- 		init_lists(lock);
- 
--		ret = try_to_take_rt_mutex(lock);
-+		ret = try_to_take_rt_mutex(lock, 0);
- 		/*
- 		 * try_to_take_rt_mutex() sets the lock waiters
- 		 * bit unconditionally. Clean this up.
+@@ -986,6 +990,16 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler   = &proc_dointvec,
+        },
+ #endif
++#ifdef CONFIG_RTLOCK_LATERAL_STEAL
++	{
++		.ctl_name       = CTL_UNNUMBERED,
++		.procname       = "rtmutex_lateral_steal",
++		.data           = &rtmutex_lateral_steal,
++		.maxlen         = sizeof(int),
++		.mode           = 0644,
++		.proc_handler   = &proc_dointvec,
++       },
++#endif
+ #ifdef CONFIG_PROC_FS
+ 	{
+ 		.ctl_name       = CTL_UNNUMBERED,
 
