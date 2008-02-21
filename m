@@ -1,119 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbYBUSXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761090AbYBUSYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbYBUSXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 13:23:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbYBUSXW
+	id S1761090AbYBUSYZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 13:24:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbYBUSYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 13:23:22 -0500
-Received: from wr-out-0506.google.com ([64.233.184.234]:22509 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbYBUSXV (ORCPT
+	Thu, 21 Feb 2008 13:24:17 -0500
+Received: from mga07.intel.com ([143.182.124.22]:7400 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751305AbYBUSYQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 13:23:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FyzCYemN7ofswJ/7kTIWYg2THB1pRASfbVYPkPzLR8RrwMJ8U9wv2jbXR7XiJQ2eyZQ3/qvmpsWaFsLJoA3R21qqlw9/lf658S1E7Mw37073tO384LZAvogbHWDYIrRgcl+MJR/gJILWnuNsC0YJYPK6AVPa8XZLaDLOum6zXjc=
-Subject: [PATCH] eicon: fix sparse integer as NULL pointer warnings
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 10:23:30 -0800
-Message-Id: <1203618210.20345.51.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 13:24:16 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,387,1199692800"; 
+   d="scan'208";a="381979249"
+Date: Thu, 21 Feb 2008 10:15:55 -0800
+From: mark gross <mgross@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] copyright owner and author clean up for intel iommu and
+	related files
+Message-ID: <20080221181555.GA9593@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-drivers/isdn/hardware/eicon/message.c:745:47: warning: Using plain integer as NULL pointer
-drivers/isdn/hardware/eicon/message.c:761:45: warning: Using plain integer as NULL pointer
-drivers/isdn/hardware/eicon/message.c:9122:16: warning: Using plain integer as NULL pointer
-drivers/isdn/hardware/eicon/message.c:9147:16: warning: Using plain integer as NULL pointer
-drivers/isdn/hardware/eicon/message.c:9173:14: warning: Using plain integer as NULL pointer
-drivers/isdn/hardware/eicon/divasmain.c:396:23: warning: Using plain integer as NULL pointer
+The following is a clean up and correction of the copyright holding
+entities for the files associated with the intel iommu code.
 
-Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
----
- drivers/isdn/hardware/eicon/divasmain.c |    2 +-
- drivers/isdn/hardware/eicon/message.c   |   12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/isdn/hardware/eicon/divasmain.c b/drivers/isdn/hardware/eicon/divasmain.c
-index 6d39f93..5fcbdcc 100644
---- a/drivers/isdn/hardware/eicon/divasmain.c
-+++ b/drivers/isdn/hardware/eicon/divasmain.c
-@@ -393,7 +393,7 @@ void diva_free_dma_map(void *hdev, struct _diva_dma_map_entry *pmap)
- 	dma_addr_t dma_handle;
- 	void *addr_handle;
+Its a no brainer.
+
+--mgross
+
+
+Signed-off-by: <mgross@linux.intel.com>
+
+
+
+Index: linux-2.6.24-mm1/drivers/pci/dmar.c
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/dmar.c	2008-02-21 09:22:57.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/dmar.c	2008-02-21 09:24:02.000000000 -0800
+@@ -14,11 +14,12 @@
+  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+- * 	Copyright (C) Ashok Raj <ashok.raj@intel.com>
+- *	Copyright (C) Shaohua Li <shaohua.li@intel.com>
+- *	Copyright (C) Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ * Copyright (C) 2006-2008 Intel Corporation
++ * Author: Ashok Raj <ashok.raj@intel.com>
++ * Author: Shaohua Li <shaohua.li@intel.com>
++ * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  *
+- * 	This file implements early detection/parsing of DMA Remapping Devices
++ * This file implements early detection/parsing of DMA Remapping Devices
+  * reported to OS through BIOS via DMA remapping reporting (DMAR) ACPI
+  * tables.
+  */
+Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-21 08:53:43.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-21 09:02:25.000000000 -0800
+@@ -14,9 +14,10 @@
+  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+- * Copyright (C) Ashok Raj <ashok.raj@intel.com>
+- * Copyright (C) Shaohua Li <shaohua.li@intel.com>
+- * Copyright (C) Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ * Copyright (C) 2006-2008 Intel Corporation
++ * Author: Ashok Raj <ashok.raj@intel.com>
++ * Author: Shaohua Li <shaohua.li@intel.com>
++ * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  */
  
--	for (i = 0; (pmap != 0); i++) {
-+	for (i = 0; (pmap != NULL); i++) {
- 		diva_get_dma_map_entry(pmap, i, &cpu_addr, &phys_addr);
- 		if (!cpu_addr) {
- 			break;
-diff --git a/drivers/isdn/hardware/eicon/message.c b/drivers/isdn/hardware/eicon/message.c
-index 1ff98e7..599fed8 100644
---- a/drivers/isdn/hardware/eicon/message.c
-+++ b/drivers/isdn/hardware/eicon/message.c
-@@ -742,7 +742,7 @@ static void start_internal_command (dword Id, PLCI   *plci, t_std_internal_comma
-   else
-   {
-     i = 1;
--    while (plci->internal_command_queue[i] != 0)
-+    while (plci->internal_command_queue[i] != NULL)
-       i++;
-     plci->internal_command_queue[i] = command_function;
-   }
-@@ -758,7 +758,7 @@ static void next_internal_command (dword Id, PLCI   *plci)
+ #include <linux/init.h>
+Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.h
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.h	2008-02-21 08:53:45.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/intel-iommu.h	2008-02-21 09:22:47.000000000 -0800
+@@ -14,8 +14,9 @@
+  * this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+  * Place - Suite 330, Boston, MA 02111-1307 USA.
+  *
+- * Copyright (C) Ashok Raj <ashok.raj@intel.com>
+- * Copyright (C) Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ * Copyright (C) 2006-2008 Intel Corporation
++ * Author: Ashok Raj <ashok.raj@intel.com>
++ * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  */
  
-   plci->internal_command = 0;
-   plci->internal_command_queue[0] = NULL;
--  while (plci->internal_command_queue[1] != 0)
-+  while (plci->internal_command_queue[1] != NULL)
-   {
-     for (i = 0; i < MAX_INTERNAL_COMMAND_LEVELS - 1; i++)
-       plci->internal_command_queue[i] = plci->internal_command_queue[i+1];
-@@ -9119,7 +9119,7 @@ word AdvCodecSupport(DIVA_CAPI_ADAPTER   *a, PLCI   *plci, APPL   *appl, byte ho
-         dbug(1,dprintf("AdvSigPlci=0x%x",a->AdvSignalPLCI));
-         return 0x2001; /* codec in use by another application */
-       }
--      if(plci!=0)
-+      if(plci!=NULL)
-       {
-         a->AdvSignalPLCI = plci;
-         plci->tel=ADV_VOICE;
-@@ -9144,7 +9144,7 @@ word AdvCodecSupport(DIVA_CAPI_ADAPTER   *a, PLCI   *plci, APPL   *appl, byte ho
-         }
-                                                /* indicate D-ch connect if  */
-       }                                        /* codec is connected OK     */
--      if(plci!=0)
-+      if(plci!=NULL)
-       {
-         a->AdvSignalPLCI = plci;
-         plci->tel=ADV_VOICE;
-@@ -9170,7 +9170,7 @@ word AdvCodecSupport(DIVA_CAPI_ADAPTER   *a, PLCI   *plci, APPL   *appl, byte ho
-   {
-     if(hook_listen) return 0x300B;               /* Facility not supported */
-                                                  /* no hook with SCOM      */
--    if(plci!=0) plci->tel = CODEC;
-+    if(plci!=NULL) plci->tel = CODEC;
-     dbug(1,dprintf("S/SCOM codec"));
-     /* first time we use the scom-s codec we must shut down the internal   */
-     /* handset application of the card. This can be done by an assign with */
-@@ -14604,7 +14604,7 @@ static void channel_xmit_extended_xon (PLCI   * plci) {
-   int max_ch = ARRAY_SIZE(a->ch_flow_control);
-   int i, one_requested = 0;
+ #ifndef _INTEL_IOMMU_H_
+Index: linux-2.6.24-mm1/drivers/pci/iova.c
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/iova.c	2008-02-21 08:53:35.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/iova.c	2008-02-21 09:02:51.000000000 -0800
+@@ -3,7 +3,8 @@
+  *
+  * This file is released under the GPLv2.
+  *
+- * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ * Copyright (C) 2006-2008 Intel Corporation
++ * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  */
  
--  if ((!plci) || (!plci->Id) || ((a = plci->adapter) == 0)) {
-+  if ((!plci) || (!plci->Id) || ((a = plci->adapter) == NULL)) {
-     return;
-   }
+ #include "iova.h"
+Index: linux-2.6.24-mm1/drivers/pci/iova.h
+===================================================================
+--- linux-2.6.24-mm1.orig/drivers/pci/iova.h	2008-02-21 08:53:39.000000000 -0800
++++ linux-2.6.24-mm1/drivers/pci/iova.h	2008-02-21 09:03:20.000000000 -0800
+@@ -3,7 +3,8 @@
+  *
+  * This file is released under the GPLv2.
+  *
+- * Copyright (C) 2006 Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
++ * Copyright (C) 2006-2008 Intel Corporation
++ * Author: Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
+  *
+  */
  
--- 
-1.5.4.2.200.g99e75
-
-
-
