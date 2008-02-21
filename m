@@ -1,72 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763902AbYBURJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765591AbYBURSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763902AbYBURJn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 12:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbYBURJU
+	id S1765591AbYBURSJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 12:18:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYBURRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 12:09:20 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:37761 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932392AbYBURJS (ORCPT
+	Thu, 21 Feb 2008 12:17:48 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2384 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755328AbYBURRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 12:09:18 -0500
-X-Greylist: delayed 305 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 12:09:17 EST
-Subject: Re: [PATCH [RT] 10/14] adjust pi_lock usage in wakeup
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, ak@suse.de, gregkh@suse.de, sdietrich@novell.com,
-       mkohari@novell.com
-In-Reply-To: <Pine.LNX.4.58.0802211147270.11610@gandalf.stny.rr.com>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-	 <20080221152717.4804.56212.stgit@novell1.haskins.net>
-	 <Pine.LNX.4.58.0802211147270.11610@gandalf.stny.rr.com>
+	Thu, 21 Feb 2008 12:17:47 -0500
+Subject: Re: New sparse warning in net/mac80211/debugfs_sta.c
+From: Joe Perches <joe@perches.com>
+To: David Miller <davem@davemloft.net>
+Cc: harvey.harrison@gmail.com, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080221.020554.259219477.davem@davemloft.net>
+References: <1203586467.20345.14.camel@brick>
+	 <20080221.015743.222059206.davem@davemloft.net>
+	 <1203588079.20345.15.camel@brick>
+	 <20080221.020554.259219477.davem@davemloft.net>
 Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Thu, 21 Feb 2008 10:09:04 -0700
-Message-Id: <1203613744.4232.32.camel@hermosa.morrealenet>
+Date: Thu, 21 Feb 2008 09:17:13 -0800
+Message-Id: <1203614233.7181.262.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 11:48 -0500, Steven Rostedt wrote:
-> On Thu, 21 Feb 2008, Gregory Haskins wrote:
-> 
-> > From: Peter W.Morreale <pmorreale@novell.com>
-> >
-> > In wakeup_next_waiter(), we take the pi_lock, and then find out whether
-> > we have another waiter to add to the pending owner.  We can reduce
-> > contention on the pi_lock for the pending owner if we first obtain the
-> > pointer to the next waiter outside of the pi_lock.
-> >
-> > This patch adds a measureable increase in throughput.
-> 
-> I see how this may decrease contention (slightly less time in holding the
-> pi_lock). But, please, when stating something like: "adds a measurable
-> increase in throughput", show the benchmark numbers.
-> 
-> -- Steve
-> 
+On Thu, 2008-02-21 at 02:05 -0800, David Miller wrote:
+> >From another perspective adding that __pure attribute to print_mac()
+> might not have been the best idea.  But I can't think of another
+> way to eliminate the "passing print_mac() args to pr_debug()
+> still generates calls to print_mac() even when DEBUG is not
+> defined" problem :-/
 
-Approximately 3% to the dbench benchmark we used.
+Philip Craig made a suggestion:
+http://marc.info/?l=linux-wireless&m=120338413108120&w=2
 
-My "standard" sanity check was to mount a ramfs filesystem and execute:
+to use this:
 
-dbench -t 10 30
+If not debugging, guard #define wrapper_printks with if (0).
+The gcc optimizer removes the printk but gcc still does
+printf argument verification.
 
-five times and generate an average from the reported "Throughput"
-numbers displayed by the runs. 
+There are many other debug printk wrappers
 
-dbench was chosen merely because of the contention on dcache_lock.
+	#ifdef DEBUG
+	#define printk_wrapper 
+	#else
+	#define printk_wrapper printk
+	#endif
 
-Best,
--PWM
+that should be converted as well.
+
+Signed-off-by: Joe Perches <joe@perches.com>
+
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 2258d89..79601b1 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -608,21 +608,15 @@ extern const char *dev_driver_string(struct device *dev);
+ #define dev_dbg(dev, format, arg...)		\
+ 	dev_printk(KERN_DEBUG , dev , format , ## arg)
+ #else
+-static inline int __attribute__ ((format (printf, 2, 3)))
+-dev_dbg(struct device *dev, const char *fmt, ...)
+-{
+-	return 0;
+-}
++#define dev_dbg(dev, format, arg...) \
++	do { if (0) dev_printk(KERN_DEBUG , dev , format, ## arg); } while (0)
+ #endif
+ 
+ #ifdef VERBOSE_DEBUG
+ #define dev_vdbg	dev_dbg
+ #else
+-static inline int __attribute__ ((format (printf, 2, 3)))
+-dev_vdbg(struct device *dev, const char *fmt, ...)
+-{
+-	return 0;
+-}
++#define dev_vdbg(dev, format, arg...) \
++	do { if (0) dev_printk(KERN_DEBUG , dev , format, ## arg); } while (0)
+ #endif
+ 
+ /* Create alias, so I can be autoloaded. */
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 2df44e7..cd24112 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -293,10 +293,8 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+ #define pr_debug(fmt, arg...) \
+ 	printk(KERN_DEBUG fmt, ##arg)
+ #else
+-static inline int __attribute__ ((format (printf, 1, 2))) pr_debug(const char * fmt, ...)
+-{
+-	return 0;
+-}
++#define pr_debug(fmt, arg...) \
++	do { if (0) printk(KERN_DEBUG fmt, ##arg); } while (0)
+ #endif
+ 
+ /*
 
 
