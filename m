@@ -1,106 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934526AbYBUQkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934586AbYBUQl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934526AbYBUQkf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbYBUQkJ
+	id S934586AbYBUQl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757751AbYBUQlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:40:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:37360 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764276AbYBUQkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:40:05 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-Date: Thu, 21 Feb 2008 17:38:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-References: <Pine.LNX.4.44L0.0802211115380.4528-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0802211115380.4528-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802211738.41552.rjw@sisk.pl>
+	Thu, 21 Feb 2008 11:41:18 -0500
+Received: from nat-132.atmel.no ([80.232.32.132]:52155 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762874AbYBUQlR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:41:17 -0500
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, Atsushi Nemoto <anemo@mba.ocn.ne.jp>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [PATCH] macb: Fix speed setting
+Date: Thu, 21 Feb 2008 17:41:05 +0100
+Message-Id: <1203612065-18192-1-git-send-email-hskinnemoen@atmel.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
+References: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 21 of February 2008, Alan Stern wrote:
-> On Thu, 21 Feb 2008, Rafael J. Wysocki wrote:
-> 
-> > > > +bool in_suspend_context(void)
-> > > > +{
-> > > > +	bool result;
-> > > > +
-> > > > +	mutex_lock(&suspending_task_mtx);
-> > > > +	result = (suspending_task == current);
-> > > > +	mutex_unlock(&suspending_task_mtx);
-> > > > +	return result;
-> > > > +}
-> > > 
-> > > If suspending_task == current then you are guaranteed to be serialized, 
-> > > because everything a single task does is serial.
-> > 
-> > As I said before (but that doesn't seem to reach the list, so I'm repeating),
-> > this is to protect other tasks from reading an inconsistent value of
-> > suspending_task in case they attempt to remove a device concurrently with
-> > respect to us.
-> > 
-> > While this is not likely to happen right now, because of the freezer, it may
-> > very well happen when the freezer is finally removed.
-> 
-> Sorry, I don't understand.  Are you worried that process A might set
-> suspending_task = A but then process B might still see suspending_task
-> == NULL?  Or that A might set suspend_task = NULL but then B might
-> still see suspending_task == A?
-> 
-> Neither one will cause any problem, since the only case that matters is
-> when B sees suspending_task == B -- and that can happen if and only if
-> B was the last process to set suspending_task.
-> 
-> In fact, you might as well get rid of the set_suspending_task() routine 
-> entirely and just put the assignments inline.
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 
-OK, I will.
+Fix NCFGR.SPD setting on 10Mbps.  This bug was introduced by
+conversion to generic PHY layer in kernel 2.6.23.
 
-> > --- linux-2.6.orig/drivers/base/core.c
-> > +++ linux-2.6/drivers/base/core.c
-> > @@ -929,6 +929,11 @@ void device_del(struct device *dev)
-> >  	struct device *parent = dev->parent;
-> >  	struct class_interface *class_intf;
-> >  
-> > +	if (in_suspend_context()) {
-> > +		get_device(dev);
-> 
-> Where is this get_device() undone?  Shouldn't there be an extra 
-> put_device() added to unregister_dropped_devices()?
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+---
+ drivers/net/macb.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-No, I don't think so, because unregister_dropped_devices() calls
-device_unregister() that does the put_device() eventually.
+diff --git a/drivers/net/macb.c b/drivers/net/macb.c
+index 81bf005..1d210ed 100644
+--- a/drivers/net/macb.c
++++ b/drivers/net/macb.c
+@@ -148,7 +148,7 @@ static void macb_handle_link_change(struct net_device *dev)
+ 
+ 			if (phydev->duplex)
+ 				reg |= MACB_BIT(FD);
+-			if (phydev->speed)
++			if (phydev->speed == SPEED_100)
+ 				reg |= MACB_BIT(SPD);
+ 
+ 			macb_writel(bp, NCFGR, reg);
+-- 
+1.5.4.1
 
-If we are called by device_unregister(), the get_device() is needed to balance
-the put_device() that will be called by device_unregister() after we return.
-
-OTOH, if we are called directly, then we need to balance the put_device()
-that will be done by device_unregister() called from
-unregister_dropped_devices().
-
-I hope I didn't miss anything.
-
-> > +		device_pm_schedule_removal(dev);
-> > +		return;
-> > +	}
-> >  	device_pm_remove(dev);
-> >  	if (parent)
-> >  		klist_del(&dev->knode_parent);
-> 
-> And now the change to device_destroy() isn't needed at all.
-
-No, it's not.  Didn't I remove it?  I thought I did.
-
-Thanks,
-Rafael
