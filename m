@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935227AbYBUXby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935573AbYBUXc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935227AbYBUXby (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:31:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYBUXbp
+	id S935573AbYBUXc2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:32:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756140AbYBUXcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:31:45 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52088 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756758AbYBUXbo (ORCPT
+	Thu, 21 Feb 2008 18:32:09 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58197 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756021AbYBUXcH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:31:44 -0500
-Date: Fri, 22 Feb 2008 00:31:42 +0100 (CET)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <greg@kroah.com>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Merging of completely unreviewed drivers
-In-Reply-To: <20080221224315.GA27640@kroah.com>
-Message-ID: <Pine.LNX.4.64.0802220025240.26109@fbirervta.pbzchgretzou.qr>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
- <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi>
- <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi>
- <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
- <20080221223303.GD1846@martell.zuzino.mipt.ru> <20080221224315.GA27640@kroah.com>
+	Thu, 21 Feb 2008 18:32:07 -0500
+Message-ID: <47BE08C0.5060700@zytor.com>
+Date: Thu, 21 Feb 2008 15:26:56 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ian Campbell <ijc@hellion.org.uk>, Joel Becker <Joel.Becker@oracle.com>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	<20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	<20080215202336.GE26034@mail.oracle.com>	<1203274161.27987.6.camel@localhost.localdomain>	<20080218104025.GA15899@ca-server1.us.oracle.com>	<1203458366.26910.15.camel@cthulhu.hellion.org.uk>	<47BBDA20.8030105@zytor.com>	<1203497511.26910.39.camel@cthulhu.hellion.org.uk>	<47BCA275.7000504@goop.org>	<1203546597.26910.74.camel@cthulhu.hellion.org.uk>	<47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com> <m14pc26k6f.fsf@ebiederm.dsl.xmission.com> <47BE05C0.2090405@goop.org>
+In-Reply-To: <47BE05C0.2090405@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> 
+> It seems to me that those pages are being handed out as heap pages by 
+> the early allocator.  In the Xen case this is OK because there's nothing 
+> magic about them.  But if real hardware doesn't reserve these pages in 
+> the E820 map, then they could end up being used as regular memory by 
+> mistake, which is an issue.
+> 
 
-On Feb 21 2008 14:43, Greg KH wrote:
->On Fri, Feb 22, 2008 at 01:33:03AM +0300, Alexey Dobriyan wrote:
->> On Thu, Feb 21, 2008 at 01:14:55PM -0800, Linus Torvalds wrote:
->> > Quite frankly, I've several times been *this* close (holds up fingers so 
->> > you can't even see between them) to just remove checkpatch entirely.
->> 
->> Agrh! What stopped you?!
->> 
->> > I'm personally of the opinion that a lot of checkpatch "fixes" are 
->> > anything but. That mainly concerns fixing overlong lines (where the 
->> > "fixed" version is usually worse than the original), but it's been true 
->> > for some other warnings too.
->> 
->> Speaking of driver, could authors please comment all those barrier()
->> calls and remove trailing "return;" at the end of void functions.
->
->Why don't you make a patch to checkpatch.pl for those types of things?
->:)
+No, they couldn't.
 
-checkpatch would never allow a patch to patch checkpatch.
+On real hardware they'll be memory types 0 or 2, depending on whether or 
+not they're marked reserved.
+
+Available RAM is type 1.
+
+	-hpa
