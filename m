@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763914AbYBUDqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758521AbYBUDqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763914AbYBUDqB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 22:46:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbYBUDps
+	id S1758521AbYBUDqf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 22:46:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbYBUDqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 22:45:48 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:36471 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753718AbYBUDpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 22:45:46 -0500
-In-Reply-To: <47BCD0DF.1050205@chelsio.com>
-Subject: Re: [git patches] net driver updates
-To: Divy Le Ray <divy@chelsio.com>
-Cc: David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-X-Mailer: Lotus Notes Release 7.0.1P July 04, 2006
-Message-ID: <OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com>
-From: Krishna Kumar2 <krkumar2@in.ibm.com>
-Date: Thu, 21 Feb 2008 09:13:49 +0530
-X-MIMETrack: Serialize by Router on d23ml172/23/M/IBM(Release 7.0.2FP2HF300 | September
- 14, 2007) at 02/21/2008 09:23:25
+	Wed, 20 Feb 2008 22:46:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36289 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754192AbYBUDqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 22:46:24 -0500
+Date: Thu, 21 Feb 2008 04:46:12 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+Cc: hpa <hpa@zytor.com>, tglx <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86 Coding style fixes to
+	arch/x86/boot/compressed/misc.c
+Message-ID: <20080221034612.GF27593@elte.hu>
+References: <20080221001910.73cecace@paolo-desktop>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080221001910.73cecace@paolo-desktop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Divy,
 
-> > Explain why, so I can include it in the changelog please...
->
-> Hi Jeff,
->
-> The first part of the patch removes the !netif_queue_stopped(dev).
-> It opens the race discussed a while ago between Stephen hemminger and
-> David Miller:
-> http://marc.info/?l=linux-netdev&m=113383224512427&w=2
+* Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com> wrote:
 
-I feel this race cannot happen anymore. I think the fix for that race was
-to introduce the
-__LINK_STATE_QDISC_RUNNING bit thus eliminating any races between CPU's. If
-one
-CPU has called xmit, the other CPU will enqueue skbs (by holding the
-queue_lock) and
-exit from qdisc_run since it finds the bit set already.
+> Fix lot of errors and warnings.
+> Compile tested.
 
-Thanks,
+thanks Paolo, i've applied all 3 patches.
 
-- KK
-
+	Ingo
