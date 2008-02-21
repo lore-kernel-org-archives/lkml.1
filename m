@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934248AbYBUQCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934364AbYBUQCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934248AbYBUQCL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759735AbYBUPzS
+	id S934364AbYBUQCb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:02:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbYBUP47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:55:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:48345 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932625AbYBUPzN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:55:13 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] Make the kernel NTP code hand 64-bit *unsigned* values to
-	do_div()
-To: torvalds@osdl.org, akpm@linux-foundation.org, zippel@linux-m68k.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Thu, 21 Feb 2008 15:54:02 +0000
-Message-ID: <20080221155402.4414.60360.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.1
+	Thu, 21 Feb 2008 10:56:59 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:35016 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933361AbYBUP46 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 10:56:58 -0500
+Date: Thu, 21 Feb 2008 10:56:55 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Brownell <david-b@pacbell.net>
+cc: Andre Tomt <andre@tomt.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: USB OOPS 2.6.25-rc2-git1
+In-Reply-To: <200802201356.28723.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.44L0.0802211054550.4528-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+On Wed, 20 Feb 2008, David Brownell wrote:
 
-The kernel NTP code shouldn't hand 64-bit *signed* values to do_div().  Make it
-instead hand 64-bit unsigned values.  This gets rid of a couple of warnings.
+> ========= CUT HERE
+> Modify EHCI irq handling on the theory that at least some of the
+> "lost" IRQs are caused by goofage between multiple lowlevel IRQ
+> acking mechanisms:  try rescanning before we exit the handler, in
+> case the EHCI-internal ack (by clearing the irq status) doesn't
+> always suffice for IRQs triggered nearly back-to-back.
+> 
+> ---
+>  drivers/usb/host/ehci-hcd.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> --- g26.orig/drivers/usb/host/ehci-hcd.c	2008-02-20 13:26:00.000000000 -0800
+> +++ g26/drivers/usb/host/ehci-hcd.c	2008-02-20 13:54:37.000000000 -0800
+> @@ -638,6 +638,8 @@ static irqreturn_t ehci_irq (struct usb_
+>  		return IRQ_NONE;
+>  	}
+>  
+> +retrigger:
+> +
+>  	/* clear (just) interrupts */
+>  	ehci_writel(ehci, status, &ehci->regs->status);
+>  	cmd = ehci_readl(ehci, &ehci->regs->command);
+> @@ -725,6 +727,12 @@ dead:
+>  
+>  	if (bh)
+>  		ehci_work (ehci);
+> +
+> +	status = ehci_readl(ehci, &ehci->regs->status);
+> +	status &= INTR_MASK;
+> +	if (status)
+> +		goto retrigger;
+> +
+>  	spin_unlock (&ehci->lock);
+>  	if (pcd_status & STS_PCD)
+>  		usb_hcd_poll_rh_status(hcd);
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+There's one little problem here.  As a result of this change, the line 
+where pcd_status gets set (not shown in this patch) needs to be changed 
+to:
 
- kernel/time/ntp.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+		pcd_status |= (status & STS_PCD);
 
+Then the test shown above can be simplified to:
 
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index c88b591..3bead00 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -342,13 +342,15 @@ int do_adjtimex(struct timex *txc)
- 		    freq_adj = shift_right(freq_adj, time_constant * 2 +
- 					   (SHIFT_PLL + 2) * 2 - SHIFT_NSEC);
- 		    if (mtemp >= MINSEC && (time_status & STA_FLL || mtemp > MAXSEC)) {
-+			u64 utemp64;
- 			temp64 = time_offset << (SHIFT_NSEC - SHIFT_FLL);
- 			if (time_offset < 0) {
--			    temp64 = -temp64;
--			    do_div(temp64, mtemp);
-+			    utemp64 = -temp64;
-+			    do_div(utemp64, mtemp);
- 			    freq_adj -= temp64;
- 			} else {
--			    do_div(temp64, mtemp);
-+			    utemp64 = temp64;
-+			    do_div(utemp64, mtemp);
- 			    freq_adj += temp64;
- 			}
- 		    }
+	if (pcd_status)
+
+Alan Stern
 
