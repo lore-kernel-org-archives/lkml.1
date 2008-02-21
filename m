@@ -1,68 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbYBUKWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761609AbYBUKgG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761286AbYBUKWT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 05:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756078AbYBUKWI
+	id S1761609AbYBUKgG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 05:36:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbYBUKfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 05:22:08 -0500
-Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:52816 "EHLO
-	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755431AbYBUKWH (ORCPT
+	Thu, 21 Feb 2008 05:35:55 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:56491 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755343AbYBUKfy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 05:22:07 -0500
-Message-ID: <47BD4FBF.8010701@linux.vnet.ibm.com>
-Date: Thu, 21 Feb 2008 15:47:35 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 05:35:54 -0500
+Message-ID: <47BD546B.1050504@firstfloor.org>
+Date: Thu, 21 Feb 2008 11:37:31 +0100
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Make yield_task_fair more efficient
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu> <47BD44FF.7070104@linux.vnet.ibm.com>
-In-Reply-To: <47BD44FF.7070104@linux.vnet.ibm.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: balbir@linux.vnet.ibm.com, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
+ in Kconfig
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <200802211535.38932.nickpiggin@yahoo.com.au>
+In-Reply-To: <200802211535.38932.nickpiggin@yahoo.com.au>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Ingo Molnar wrote:
->> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->>
->>> If you insist that sched_yield() is bad, I might agree, but how does 
->>> my patch make things worse. [...]
->> it puts new instructions into the hotpath.
->>
->>> [...] In my benchmarks, it has helped the sched_yield case, why is 
->>> that bad? [...]
->> I had the same cache for the rightmost task in earlier CFS (it's a 
->> really obvious thing) but removed it. It wasnt a bad idea, but it hurt 
->> the fastpath hence i removed it. Algorithms and implementations are a 
->> constant balancing act.
+Nick Piggin wrote:
+> On Wednesday 20 February 2008 23:52, Balbir Singh wrote:
+>> Andi Kleen wrote:
+>>> Document huge memory/cache overhead of memory controller in Kconfig
+>>>
+>>> I was a little surprised that 2.6.25-rc* increased struct page for the
+>>> memory controller.  At least on many x86-64 machines it will not fit into
+>>> a single cache line now anymore and also costs considerable amounts of
+>>> RAM.
+>> The size of struct page earlier was 56 bytes on x86_64 and with 64 bytes it
+>> won't fit into the cacheline anymore? Please also look at
+>> http://lwn.net/Articles/234974/
 > 
-> This is more convincing, was the code ever in git? How did you measure the
-> overhead? What are your plans for reports with regressions where
-> kernel.compat_sched_yield is set to 1?
-> 
+> BTW. We'll probably want to increase the width of some counters
+> in struct page at some point for 64-bit, 
 
-Ingo,
+You mean change count to atomic64_t? Do you have real evidence
+the 32bit counter is a problem?
 
-I was looking through nptl/sysdeps/unix/sysv/linux/pthread_yield.c in the glibc
-sources and it looks like pthread_yield() calls sched_yield(). Applications
-using compat_sched_yield and pthread_yield() are also going to be impacted.
+> so then it really will
+> go over with the memory controller!
 
-I searched for pthread_yield and sched_yield using google codesearch to look at
-the applications that use these routines, the search list is too big for me to
-mark applications as candidates for potential improvement.
+Not sure how they are related? The count and the memory controller
+data would be always separate.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+BTW if the memory controllers were limited in number it would
+be also possible on 64bit to encode them in the high bits of
+->flags. I assume 16bit or so could be spared in there. Probably
+would not be enough though.
+
+> Actually, an external data structure is a pretty good idea. We
+> could probably do it easily with a radix tree (pfn->memory
+> controller). And that might be a better option for distros.
+
+I would think just a separate vmalloc()ed array for the counters
+would be easy enough. That array could be allocated the first time
+the memory controller is used (so making it zero cost for
+distribution kernels when it is not used at all) and then also on
+memory hotplug etc. If we assume most memory will be in
+memory controllers that is also more efficient (in terms of
+memory and of cache consumption) than any kind
+of tree.
+
+Balbir mentioned one reason they didn't do that earlier was
+that they worried about the limited vmalloc space on 32bit,
+but I don't think that's a good reason against it. That is because
+vmalloc on 32bit is limited because of the limited direct
+mapped kernel memory, but increasing mem_map size eats that
+the same limited resource. So rather the 32bit vmalloc
+reservation can be just increased by the same amount as the
+mem_map increase would be (ok modulo hotplug, but that
+is difficult anyways on 32bit)
+
+Another issue is that it will slightly increase TLB/cache
+cost of the memory controller, but I think that would be a fair
+trade off for it being zero cost when disabled but compiled
+in.
+
+Doing it with vmalloc should be easy enough. I can do such
+a patch later unless someone beats me to it...
+
+-Andi
