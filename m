@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbYBUATO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbYBUAZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762288AbYBUATO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYBUASx
+	id S932378AbYBUAZf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYBUAZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:18:53 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:36833 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753761AbYBUASv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:18:51 -0500
-Date: Wed, 20 Feb 2008 16:15:35 -0800
-From: Greg KH <greg@kroah.com>
-To: Jiri Olsa <olsajiri@gmail.com>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] fs: removing unused fops from struct char_device_struct
-Message-ID: <20080221001535.GA23986@kroah.com>
-References: <47BC9433.8020905@gmail.com>
+	Wed, 20 Feb 2008 19:25:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:33306 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752468AbYBUAZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:25:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Subject: Re: [BUG?] APM is hidden in menuconfig
+Date: Thu, 21 Feb 2008 01:23:44 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <20080220120828.GD3885@ff.dom.local>
+In-Reply-To: <20080220120828.GD3885@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47BC9433.8020905@gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802210123.44367.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 09:57:23PM +0100, Jiri Olsa wrote:
+On Wednesday, 20 of February 2008, Jarek Poplawski wrote:
 > Hi,
 > 
-> seems struct char_device_struct::fops is no longer used, removing it.
-> I checked with "make allyesconfig" and got proper compile.
+> I needed APM to have poweroff on old box. So, in 2.6.24.2 menuconfig:
 > 
-> Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
+> 1) Power management options -->
+>    No APM.
+> 2) [*] Power Management support
+>    No APM. I can see ACPI...
+> 3) I try searching with "/" + "APM"
+>    APM [=n]
+>    Depends on: !X86_VOYAGER && X86_32 && PM_SLEEP && !X86_VISWS
+> 4) I check above: all correct except:
+>    Symbol: PM_SLEEP [=n]
+>    No more "depends on".
+> 5) Exit menuconfig - enter grep:
+> 6) Some time wasting in arch/.
+> 7) less kernel/power/Kconfig:
+>    config PM_SLEEP
+>         bool
+>         depends on SUSPEND || HIBERNATION
+>         default y
+>    ... 
+>    config SUSPEND
+>         bool "Suspend to RAM and standby"
+>         depends on PM
+>         depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
+>         default y
+>         ---help---
+>           Allow the system to enter sleep states in which main memory is
+>           powered and thus its contents are preserved, such as the
+>           suspend-to-RAM state (i.e. the ACPI S3 state).
+> 
+> 8) Back to menuconfig:
+>    [*] Suspend to RAM and standby
+> 
+>    Bingo! APM revealed! (And not even "DEPRECATED"!)
+> 
+> So, has it to be so hard? It seems not - at least in good old times...
 
-Hm, why send this to me?
+Something in APM uses some code from drivers/base/power/main.c that depends
+on PM_SLEEP.
 
-Did I make the mistake of touching this file last?  Hm, nope, someone
-else touched it after I did, I'm safe :)
-
-Seriously, I have no problem with this, but it should probably go
-through Andrew.
-
-thanks,
-
-greg k-h
+Thanks,
+Rafael
