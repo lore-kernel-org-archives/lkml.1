@@ -1,95 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbYBUEia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763054AbYBUEnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762856AbYBUEia (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 23:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYBUEiU
+	id S1763054AbYBUEnR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 23:43:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbYBUEnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 23:38:20 -0500
-Received: from mx1.suse.de ([195.135.220.2]:54244 "EHLO mx1.suse.de"
+	Wed, 20 Feb 2008 23:43:01 -0500
+Received: from ns2.suse.de ([195.135.220.15]:57828 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755223AbYBUEiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 23:38:18 -0500
-Date: Wed, 20 Feb 2008 20:43:31 -0800
-From: Greg KH <gregkh@suse.de>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
-	Screen becomes green.
-Message-ID: <20080221044331.GB21499@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org> <47BCC866.9000102@nigel.suspend2.net> <20080221004632.GA25869@suse.de> <47BCD112.3010708@nigel.suspend2.net>
-MIME-Version: 1.0
+	id S1751030AbYBUEnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 23:43:00 -0500
+Date: Thu, 21 Feb 2008 05:42:56 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Jack Steiner <steiner@sgi.com>
+Cc: Andrea Arcangeli <andrea@qumranet.com>, akpm@linux-foundation.org,
+       Robin Holt <holt@sgi.com>, Avi Kivity <avi@qumranet.com>,
+       Izik Eidus <izike@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, general@lists.openfabrics.org,
+       Steve Wise <swise@opengridcomputing.com>,
+       Roland Dreier <rdreier@cisco.com>, Kanoj Sarcar <kanojsarcar@yahoo.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       daniel.blueman@quadrics.com, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [patch] my mmu notifiers
+Message-ID: <20080221044256.GA15215@wotan.suse.de>
+References: <20080219084357.GA22249@wotan.suse.de> <20080219135851.GI7128@v2.random> <20080219231157.GC18912@wotan.suse.de> <20080219234049.GA27856@sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47BCD112.3010708@nigel.suspend2.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20080219234049.GA27856@sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 12:17:06PM +1100, Nigel Cunningham wrote:
-> Hi.
->
-> Greg KH wrote:
->> On Thu, Feb 21, 2008 at 11:40:06AM +1100, Nigel Cunningham wrote:
->>> Hi.
->>>
->>> Matthew Garrett wrote:
->>>> On Thu, Feb 21, 2008 at 09:45:02AM +1100, Nigel Cunningham wrote:
->>>>> - people keep talking about hibernating to an ext3 fs mounted on fuse 
->>>>> as a limitation of the freezer. To do that with kexec, you're still 
->>>>> going to have to bmap the ext3 fs and pass the block list (in which 
->>>>> case we can also do it without kexec) or umount all the ext3/fuse part 
->>>>> and remount in the kexec'd kernel. Sort of defeats the purpose, doesn't 
->>>>> it?
->>>> No, with a freezer-based model you can basically *never* suspend to 
->>>> anything related to FUSE or a userspace USB device or anything involving 
->>>> userspace iSCSI initiators or whatever. Sure, there are cases where 
->>>> moving away from the current model doesn't buy you anything, but that 
->>>> doesn't mean that the current model is a good thing. It's not. The 
->>>> freezer is a fundamentally broken concept.
->>> Putting drivers and filesystems in userspace is the fundamentally broken 
->>> concept. Not just when it comes to the freezer. The whole idea is 
->>> inherently racy.
->> Racy with regards to other things becides trying to suspend a machine?
->> If so, what?
->
-> That depends on what sort of tangled web you want to weave.
+On Tue, Feb 19, 2008 at 05:40:50PM -0600, Jack Steiner wrote:
+> On Wed, Feb 20, 2008 at 12:11:57AM +0100, Nick Piggin wrote:
+> > On Tue, Feb 19, 2008 at 02:58:51PM +0100, Andrea Arcangeli wrote:
+> > > On Tue, Feb 19, 2008 at 09:43:57AM +0100, Nick Piggin wrote:
+> > > > anything when changing the pte to be _more_ permissive, and I don't
+> > > 
+> > > Note that in my patch the invalidate_pages in mprotect can be
+> > > trivially switched to a mprotect_pages with proper params. This will
+> > > prevent page faults completely in the secondary MMU (there will only
+> > > be tlb misses after the tlb flush just like for the core linux pte),
+> > > and it'll allow all the secondary MMU pte blocks (512/1024 at time
+> > > with my PT lock design) to be updated to have proper permissions
+> > > matching the core linux pte.
+> > 
+> > Sorry, I realise I still didn't get this through my head yet (and also
+> > have not seen your patch recently). So I don't know exactly what you
+> > are doing...
+> > 
+> > But why does _anybody_ (why does Christoph's patches) need to invalidate
+> > when they are going to be more permissive? This should be done lazily by
+> > the driver, I would have thought.
+> 
+> 
+> Agree. Although for most real applications, the performance difference
+> is probably negligible.
 
-Lots of them :)
+But importantly, doing it that way means you share test coverage with
+the CPU TLB flushing code, and you don't introduce a new concept to the
+VM.
 
-We have tanks running Linux using userspace USB drivers for vision
-control systems (scary, I know...)  They seem to be successfully running
-for many years now, and I'm interested in making sure those kinds of
-things keep working.
-
-We also have laser welding robots with userspace PCI drivers in car
-manufacturing plants.  And other laser cutting robots slicing wood in
-patterns moving at a rate of over 3 meters a second.  Again, with
-userspace drivers and Linux.
-
-Those users would also love to know of any potential problems you know
-of for this situation.
-
-> Low memory situations is one other situation that occurs to me
-> quickly, especially (though not only) if your ability to swap were to
-> depend upon a userspace driver and/or filesystem.
-
-Sure, swap over a userspace filesystem or driver isn't a sane idea.  And
-neither is swaping over NFS over a PPP connection attached to a USB to
-serial device.  Yes, it's possible, and all in the kernel, but not a
-wise decision.
-
-Other than foolish configurations, if you come up with other issues
-surrounding userspace drivers that could cause problems, please let me
-know.
-
-thanks,
-
-greg k-h
+So, it _has_ to be lazy flushing, IMO (as there doesn't seem to be a
+good reason otherwise). mprotect shouldn't really be a special case,
+because it still has to flush the CPU tlbs as well when restricting
+access.
