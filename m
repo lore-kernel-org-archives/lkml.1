@@ -1,70 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbYBUFLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbYBUFiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbYBUFLS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 00:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbYBUFLH
+	id S1757537AbYBUFiP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 00:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbYBUFh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 00:11:07 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:53085 "EHLO
-	e28esmtp06.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751059AbYBUFLF (ORCPT
+	Thu, 21 Feb 2008 00:37:58 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:41380 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751852AbYBUFh5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 00:11:05 -0500
-Message-ID: <47BD06C2.5030602@linux.vnet.ibm.com>
-Date: Thu, 21 Feb 2008 10:36:10 +0530
+	Thu, 21 Feb 2008 00:37:57 -0500
+Date: Thu, 21 Feb 2008 11:03:21 +0530
 From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peter@programming.kicks-ass.net>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Make yield_task_fair more efficient
+Message-ID: <20080221053321.GA26918@balbir.in.ibm.com>
 Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <peter@programming.kicks-ass.net>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-CC: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
- in Kconfig
-References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <200802211535.38932.nickpiggin@yahoo.com.au>
-In-Reply-To: <200802211535.38932.nickpiggin@yahoo.com.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nick Piggin wrote:
-> On Wednesday 20 February 2008 23:52, Balbir Singh wrote:
->> Andi Kleen wrote:
->>> Document huge memory/cache overhead of memory controller in Kconfig
->>>
->>> I was a little surprised that 2.6.25-rc* increased struct page for the
->>> memory controller.  At least on many x86-64 machines it will not fit into
->>> a single cache line now anymore and also costs considerable amounts of
->>> RAM.
->> The size of struct page earlier was 56 bytes on x86_64 and with 64 bytes it
->> won't fit into the cacheline anymore? Please also look at
->> http://lwn.net/Articles/234974/
-> 
-> BTW. We'll probably want to increase the width of some counters
-> in struct page at some point for 64-bit, so then it really will
-> go over with the memory controller!
-> 
+__pick_last_entity() walks the entire tree on O(lgn) time to find the
+rightmost entry. This patch makes the routine more efficient by
+reducing the cost of the lookup
 
-Hmm...
+Description
+-----------
 
-> Actually, an external data structure is a pretty good idea. We
-> could probably do it easily with a radix tree (pfn->memory
-> controller). And that might be a better option for distros.
-> 
+Cache the rightmost entry in the rb_tree in the same way that we cache
+the leftmost entry. __pick_last_entity now uses the cached value.
+A cautious reviewer might note that the rb_erase() in dequeue entity
+might cause the tree to be rebalanced and thus effect the cached value.
+In the case of the rightmost entity, we assign the value to the parent,
+which even if the tree is rebalanced will become the rightmost entity.
 
-I'll put in my long list of TODOs. I started looking at it yesterday again and
-here are my early thoughts
+NOTE: This depends on Peter Zijlstra's patch which checks for !rightmost.
+Check out http://lkml.org/lkml/2008/2/18/295. Peter that patch works
+for me, could you please push that as well.
 
-1. We could create something similar to mem_map, we would need to handle 4
-different ways of creating mem_map.
-2. On x86 with 64 GB ram, if we decided to use vmalloc space, we would need 64
-MB of vmalloc'ed memory
+I've seen improvements with this patch. Specifically for
+the case reported by Yanmin (http://lkml.org/lkml/2008/2/13/128)
 
-I have not explored your latest suggestion of pfn <-> memory controller mapping
-yet. I'll explore it and see how that goes.
+Comments?
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ kernel/sched.c      |    7 +++++++
+ kernel/sched_fair.c |   30 +++++++++++++++++++-----------
+ 2 files changed, 26 insertions(+), 11 deletions(-)
+
+diff -puN kernel/sched.c~make-sched-yield-fair-more-efficient kernel/sched.c
+--- linux-2.6.25-rc2/kernel/sched.c~make-sched-yield-fair-more-efficient	2008-02-21 08:49:06.000000000 +0530
++++ linux-2.6.25-rc2-balbir/kernel/sched.c	2008-02-21 09:50:13.000000000 +0530
+@@ -537,7 +537,13 @@ struct cfs_rq {
+ 	u64 min_vruntime;
+ 
+ 	struct rb_root tasks_timeline;
++
++	/*
++	 * Cached data to help improve performance (avoid walking the
++	 * tree)
++	 */
+ 	struct rb_node *rb_leftmost;
++	struct rb_node *rb_rightmost;
+ 
+ 	struct list_head tasks;
+ 	struct list_head *balance_iterator;
+@@ -7332,6 +7338,7 @@ static void init_cfs_rq(struct cfs_rq *c
+ 	cfs_rq->tasks_timeline = RB_ROOT;
+ 	INIT_LIST_HEAD(&cfs_rq->tasks);
+ 	cfs_rq->rb_leftmost = NULL;
++	cfs_rq->rb_rightmost = NULL;
+ #ifdef CONFIG_FAIR_GROUP_SCHED
+ 	cfs_rq->rq = rq;
+ #endif
+diff -puN kernel/sched_fair.c~make-sched-yield-fair-more-efficient kernel/sched_fair.c
+--- linux-2.6.25-rc2/kernel/sched_fair.c~make-sched-yield-fair-more-efficient	2008-02-21 08:49:06.000000000 +0530
++++ linux-2.6.25-rc2-balbir/kernel/sched_fair.c	2008-02-21 10:26:06.000000000 +0530
+@@ -233,6 +233,7 @@ static void __enqueue_entity(struct cfs_
+ 	struct sched_entity *entry;
+ 	s64 key;
+ 	int leftmost = 1;
++	int rightmost = 1;
+ 
+ 	if (!entity_is_task(se))
+ 		return;
+@@ -256,6 +257,7 @@ static void __enqueue_entity(struct cfs_
+ 		 */
+ 		if (key < entity_key(cfs_rq, entry)) {
+ 			link = &parent->rb_left;
++			rightmost = 0;
+ 		} else {
+ 			link = &parent->rb_right;
+ 			leftmost = 0;
+@@ -268,6 +270,8 @@ static void __enqueue_entity(struct cfs_
+ 	 */
+ 	if (leftmost)
+ 		cfs_rq->rb_leftmost = &se->run_node;
++	if (rightmost)
++		cfs_rq->rb_rightmost = &se->run_node;
+ 
+ 	rb_link_node(&se->run_node, parent, link);
+ 	rb_insert_color(&se->run_node, &cfs_rq->tasks_timeline);
+@@ -286,6 +290,12 @@ static void __dequeue_entity(struct cfs_
+ 	if (cfs_rq->rb_leftmost == &se->run_node)
+ 		cfs_rq->rb_leftmost = rb_next(&se->run_node);
+ 
++	/*
++	 * The parent becomes the rightmost node
++	 */
++	if (cfs_rq->rb_rightmost == &se->run_node)
++		cfs_rq->rb_rightmost = rb_parent(&se->run_node);
++
+ 	rb_erase(&se->run_node, &cfs_rq->tasks_timeline);
+ }
+ 
+@@ -294,6 +304,11 @@ static inline struct rb_node *first_fair
+ 	return cfs_rq->rb_leftmost;
+ }
+ 
++static inline struct rb_node *last_fair(struct cfs_rq *cfs_rq)
++{
++	return cfs_rq->rb_rightmost;
++}
++
+ static struct sched_entity *__pick_next_entity(struct cfs_rq *cfs_rq)
+ {
+ 	return rb_entry(first_fair(cfs_rq), struct sched_entity, run_node);
+@@ -301,17 +316,10 @@ static struct sched_entity *__pick_next_
+ 
+ static inline struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
+-	struct sched_entity *se = NULL;
+-	struct rb_node *parent;
+-
+-	while (*link) {
+-		parent = *link;
+-		se = rb_entry(parent, struct sched_entity, run_node);
+-		link = &parent->rb_right;
+-	}
+-
+-	return se;
++	struct rb_node *rightmost = last_fair(cfs_rq);
++	if (!rightmost)
++		return NULL;
++	return rb_entry(rightmost, struct sched_entity, run_node);
+ }
+ 
+ /**************************************************************
+_
 
 -- 
 	Warm Regards,
