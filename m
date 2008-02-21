@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935911AbYBUXsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYBUXtg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935911AbYBUXsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:48:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935850AbYBUXsS
+	id S1757916AbYBUXtg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:49:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935852AbYBUXsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:48:18 -0500
-Received: from mx2.suse.de ([195.135.220.15]:52750 "EHLO mx2.suse.de"
+	Thu, 21 Feb 2008 18:48:20 -0500
+Received: from cantor.suse.de ([195.135.220.2]:45008 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935843AbYBUXsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:48:15 -0500
+	id S1765485AbYBUXsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:48:18 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Tsugikazu Shibata <tshibata@ab.jp.nec.com>,
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 01/11] Fix broken utf-8 encodings in ja_JP translation of stable_kernel_rules.txt
-Date: Thu, 21 Feb 2008 15:47:57 -0800
-Message-Id: <1203637687-7273-1-git-send-email-gregkh@suse.de>
+Subject: [PATCH 02/11] slabinfo: fall back from /sys/kernel/slab to /sys/slab
+Date: Thu, 21 Feb 2008 15:47:58 -0800
+Message-Id: <1203637687-7273-2-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4
 In-Reply-To: <20080221234649.GB7128@kroah.com>
 References: <20080221234649.GB7128@kroah.com>
@@ -23,143 +24,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+From: Christoph Lameter <clameter@sgi.com>
 
-Fix the UTF-8 broken encodings in the ja_JP version of stable_kernel_rules.txt
+I keep running upstream and mm kernels and the location of the slab
+directory is different since upstream still uses /sys/slab.  This patch
+makes slabinfo check /sys/slab if /sys/kernel/slab is not there.  Makes
+slabinfo work on any kernel.
 
-From: Tsugikazu Shibata <tshibata@ab.jp.nec.com>
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/ja_JP/stable_kernel_rules.txt |  106 +++++++++++++-------------
- 1 files changed, 53 insertions(+), 53 deletions(-)
+ Documentation/vm/slabinfo.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/ja_JP/stable_kernel_rules.txt b/Documentation/ja_JP/stable_kernel_rules.txt
-index 17d8751..b3ffe87 100644
---- a/Documentation/ja_JP/stable_kernel_rules.txt
-+++ b/Documentation/ja_JP/stable_kernel_rules.txt
-@@ -11,69 +11,69 @@ comment or update of this file, please try to update Original(English)
- file at first.
+diff --git a/Documentation/vm/slabinfo.c b/Documentation/vm/slabinfo.c
+index 7123fee..22d7e3e 100644
+--- a/Documentation/vm/slabinfo.c
++++ b/Documentation/vm/slabinfo.c
+@@ -1123,7 +1123,7 @@ void read_slab_dir(void)
+ 	char *t;
+ 	int count;
  
- ==================================
--ããã¯ã
-+これは、
- linux-2.6.24/Documentation/stable_kernel_rules.txt
--ã®åè¨³ã§ãã
-+の和訳です。
+-	if (chdir("/sys/kernel/slab"))
++	if (chdir("/sys/kernel/slab") && chdir("/sys/slab"))
+ 		fatal("SYSFS support for SLUB not active\n");
  
--ç¿»è¨³å£ä½ï¼ JF ãã­ã¸ã§ã¯ã < http://www.linux.or.jp/JF/ >
--ç¿»è¨³æ¥ï¼ 2007/12/30
--ç¿»è¨³èï¼ Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
--æ ¡æ­£èï¼ æ­¦äºä¼¸åããã<takei at webmasters dot gr dot jp>
--         ãã­ããã (Seiji Kaneko) <skaneko at a2 dot mbn dot or dot jp>
--         å°æ éå¸ãã (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
--         éå£ãã (Kenji Noguchi) <tokyo246 at gmail dot com>
--         ç¥å®®ä¿¡å¤ªéãã <jin at libjingu dot jp>
-+翻訳団体： JF プロジェクト < http://www.linux.or.jp/JF/ >
-+翻訳日： 2007/12/30
-+翻訳者： Tsugikazu Shibata <tshibata at ab dot jp dot nec dot com>
-+校正者： 武井伸光さん、<takei at webmasters dot gr dot jp>
-+         かねこさん (Seiji Kaneko) <skaneko at a2 dot mbn dot or dot jp>
-+         小林 雅典さん (Masanori Kobayasi) <zap03216 at nifty dot ne dot jp>
-+         野口さん (Kenji Noguchi) <tokyo246 at gmail dot com>
-+         神宮信太郎さん <jin at libjingu dot jp>
- ==================================
- 
--ãã£ã¨ç¥ãããã£ã Linux 2.6 -stable ãªãªã¼ã¹ã®å¨ã¦
-+ずっと知りたかった Linux 2.6 -stable リリースの全て
- 
--"-stable" ããªã¼ã«ã©ã®ãããªç¨®é¡ã®ããããåãå¥ããããããã©ã®ãããª
--ãã®ãåãå¥ããããªãããã«ã¤ãã¦ã®è¦å-
-+"-stable" ツリーにどのような種類のパッチが受け入れられるか、どのような
-+ものが受け入れられないか、についての規則-
- 
-- - æããã«æ­£ããããã¹ãããã¦ãããã®ã§ãªããã°ãªããªãã
-- - æè(å¤æ´è¡ã®åå¾)ãå«ãã¦ 100 è¡ããå¤§ããã¦ã¯ãããªãã
-- - ãã ä¸åã®ãã¨ã ããä¿®æ­£ãã¦ããã¹ãã
-- - çãæ©ã¾ãã¦ããæ¬ç©ã®ãã°ãä¿®æ­£ããªããã°ãªããªãã("ããã¯ãã°ã§
--   ãããããããªãã..." ã®ãããªãã®ã§ã¯ãªã)
-- - ãã«ãã¨ã©ã¼(CONFIG_BROKENã«ãªã£ã¦ãããã®ãé¤ã), oops, ãã³ã°ããã¼
--   ã¿ç ´å£ãç¾å®ã®ã»ã­ã¥ãªãã£åé¡ããã®ä» "ãããããã¯ãã¡ã ã­"ã¨ãã
--   ãããªãã®ãä¿®æ­£ããªããã°ãªããªããç­ãè¨ãã°ãéå¤§ãªåé¡ã
-- - ã©ã®ããã«ç«¶åç¶æãçºçãããã®èª¬æãä¸ç·ã«æ¸ããã¦ããªãéãã
--   "çè«çã«ã¯ç«¶åç¶æã«ãªã"ãããªãã®ã¯ä¸å¯ã
-- - ãããªãäºç´°ãªä¿®æ­£ãå«ãããã¨ã¯ã§ããªãã(ã¹ãã«ã®ä¿®æ­£ãç©ºç½ã®ã¯ãªã¼
--   ã³ã¢ãããªã©)
-- - å¯¾å¿ãããµãã·ã¹ãã ã¡ã³ãããåãå¥ãããã®ã§ãªããã°ãªããªãã
-- - Documentation/SubmittingPatches ã®è¦åã«å¾ã£ããã®ã§ãªããã°ãªããªãã
-+ - 明らかに正しく、テストされているものでなければならない。
-+ - 文脈(変更行の前後)を含めて 100 行より大きくてはいけない。
-+ - ただ一個のことだけを修正しているべき。
-+ - 皆を悩ませている本物のバグを修正しなければならない。("これはバグで
-+   あるかもしれないが..." のようなものではない)
-+ - ビルドエラー(CONFIG_BROKENになっているものを除く), oops, ハング、デー
-+   タ破壊、現実のセキュリティ問題、その他 "ああ、これはダメだね"という
-+   ようなものを修正しなければならない。短く言えば、重大な問題。
-+ - どのように競合状態が発生するかの説明も一緒に書かれていない限り、
-+   "理論的には競合状態になる"ようなものは不可。
-+ - いかなる些細な修正も含めることはできない。(スペルの修正、空白のクリー
-+   ンアップなど)
-+ - 対応するサブシステムメンテナが受け入れたものでなければならない。
-+ - Documentation/SubmittingPatches の規則に従ったものでなければならない。
- 
---stable ããªã¼ã«ããããéä»ããæç¶ã-
-+-stable ツリーにパッチを送付する手続き-
- 
-- - ä¸è¨ã®è¦åã«å¾ã£ã¦ããããç¢ºèªããå¾ã«ãstable@kernel.org ã«ããã
--   ãéãã
-- - éä¿¡èã¯ããããã­ã¥ã¼ã«åãä»ããããéã«ã¯ ACK ããå´ä¸ãããå ´å
--   ã«ã¯ NAK ãåãåãããã®åå¿ã¯éçºèãã¡ã®ã¹ã±ã¸ã¥ã¼ã«ã«ãã£ã¦ãæ°
--   æ¥ãããå ´åãããã
-- - ããåãåããããããããã¯ä»ã®éçºèãã¡ã®ã¬ãã¥ã¼ã®ããã«
--   -stable ã­ã¥ã¼ã«è¿½å ãããã
-- - ã»ã­ã¥ãªãã£ãããã¯ãã®ã¨ã¤ãªã¢ã¹ (stable@kernel.org) ã«éãããã¹
--   ãã§ã¯ãªããä»£ããã« security@kernel.org ã®ã¢ãã¬ã¹ã«éãããã
-+ - 上記の規則に従っているかを確認した後に、stable@kernel.org にパッチ
-+   を送る。
-+ - 送信者はパッチがキューに受け付けられた際には ACK を、却下された場合
-+   には NAK を受け取る。この反応は開発者たちのスケジュールによって、数
-+   日かかる場合がある。
-+ - もし受け取られたら、パッチは他の開発者たちのレビューのために
-+   -stable キューに追加される。
-+ - セキュリティパッチはこのエイリアス (stable@kernel.org) に送られるべ
-+   きではなく、代わりに security@kernel.org のアドレスに送られる。
- 
--ã¬ãã¥ã¼ãµã¤ã¯ã«-
-+レビューサイクル-
- 
-- - -stable ã¡ã³ãããã¬ãã¥ã¼ãµã¤ã¯ã«ãæ±ºããã¨ãããããã¯ã¬ãã¥ã¼å§
--   å¡ä¼ã¨ããããå½±é¿ããé åã®ã¡ã³ãã(æä¾èããã®é åã®ã¡ã³ããã§ç¡
--   ãéã)ã«éãããlinux-kernel ã¡ã¼ãªã³ã°ãªã¹ãã«CCãããã
-- - ã¬ãã¥ã¼å§å¡ä¼ã¯ 48æéã®éã« ACK ã NAK ãåºãã
-- - ããããããå§å¡ä¼ã®ã¡ã³ãããå´ä¸ããããã¡ã³ããéãã¡ã³ããæ°ä»
--   ããªãã£ãåé¡ãæã¡ããããlinux-kernel ã¡ã³ãããããã«ç°è­°ãå±ã
--   ãå ´åã«ã¯ããããã¯ã­ã¥ã¼ããåé¤ãããã
-- - ã¬ãã¥ã¼ãµã¤ã¯ã«ã®æå¾ã«ãACK ãåãããããã¯ææ°ã® -stable ãªãªã¼
--   ã¹ã«è¿½å ããããã®å¾ã«æ°ãã -stable ãªãªã¼ã¹ãè¡ãããã
-- - ã»ã­ã¥ãªãã£ãããã¯ãéå¸¸ã®ã¬ãã¥ã¼ãµã¤ã¯ã«ãéãããã»ã­ã¥ãªãã£
--   ã«ã¼ãã«ãã¼ã ããç´æ¥ -stable ããªã¼ã«åãä»ããããã
--   ãã®æç¶ãã®è©³ç´°ã«ã¤ãã¦ã¯ kernel security ãã¼ã ã«åãåããããã¨ã
-+ - -stable メンテナがレビューサイクルを決めるとき、パッチはレビュー委
-+   員会とパッチが影響する領域のメンテナ(提供者がその領域のメンテナで無
-+   い限り)に送られ、linux-kernel メーリングリストにCCされる。
-+ - レビュー委員会は 48時間の間に ACK か NAK を出す。
-+ - もしパッチが委員会のメンバから却下されるか、メンテナ達やメンバが気付
-+   かなかった問題が持ちあがり、linux-kernel メンバがパッチに異議を唱え
-+   た場合には、パッチはキューから削除される。
-+ - レビューサイクルの最後に、ACK を受けたパッチは最新の -stable リリー
-+   スに追加され、その後に新しい -stable リリースが行われる。
-+ - セキュリティパッチは、通常のレビューサイクルを通らず、セキュリティ
-+   カーネルチームから直接 -stable ツリーに受け付けられる。
-+   この手続きの詳細については kernel security チームに問い合わせること。
- 
--ã¬ãã¥ã¼å§å¡ä¼-
-+レビュー委員会-
- 
-- - ãã®å§å¡ä¼ã¯ããã®ã¿ã¹ã¯ã«ã¤ãã¦æ´»åããå¤ãã®ãã©ã³ãã£ã¢ã¨ãå°æ°ã®
--   éãã©ã³ãã£ã¢ã®ã«ã¼ãã«éçºèéã§æ§æããã¦ããã
-+ - この委員会は、このタスクについて活動する多くのボランティアと、少数の
-+   非ボランティアのカーネル開発者達で構成されている。
- 
+ 	dir = opendir(".");
 -- 
 1.5.4
 
