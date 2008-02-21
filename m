@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934961AbYBUAS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762288AbYBUATO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934961AbYBUAS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:18:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbYBUASM
+	id S1762288AbYBUATO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:19:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755823AbYBUASx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:18:12 -0500
-Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:33403 "HELO
-	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754372AbYBUASK (ORCPT
+	Wed, 20 Feb 2008 19:18:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36833 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753761AbYBUASv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:18:10 -0500
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Wed, 20 Feb 2008 16:17:51 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Jeff Chua" <jeff.chua.linux@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201534.36174.jbarnes@virtuousgeek.org> <200802210049.42820.rjw@sisk.pl>
-In-Reply-To: <200802210049.42820.rjw@sisk.pl>
+	Wed, 20 Feb 2008 19:18:51 -0500
+Date: Wed, 20 Feb 2008 16:15:35 -0800
+From: Greg KH <greg@kroah.com>
+To: Jiri Olsa <olsajiri@gmail.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH] fs: removing unused fops from struct char_device_struct
+Message-ID: <20080221001535.GA23986@kroah.com>
+References: <47BC9433.8020905@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802201617.51387.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <47BC9433.8020905@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 20, 2008 3:49 pm Rafael J. Wysocki wrote:
-> > And just to confirm that, I just tested the current DRM modules against a
-> > 2.6.23.15 kernel.
->
-> In 2.6.23.x there's no second ->suspend() during hibernation, so no wonder.
+On Wed, Feb 20, 2008 at 09:57:23PM +0100, Jiri Olsa wrote:
+> Hi,
+> 
+> seems struct char_device_struct::fops is no longer used, removing it.
+> I checked with "make allyesconfig" and got proper compile.
+> 
+> Signed-off-by: Jiri Olsa <olsajiri@gmail.com>
 
-In 2.6.23 it's just:
-  ->suspend()
-  ->resume()
-  *S4*
-?
+Hm, why send this to me?
 
-I ask because we still do the D3hot call in the DRM tree, so the hang should 
-still occur unless the PM or ACPI core has changed.
+Did I make the mistake of touching this file last?  Hm, nope, someone
+else touched it after I did, I'm safe :)
 
-> I'll figure out how to work around this issue in the current mainline, but
-> a real fix will only be possible when we have separate callbacks for
-> hibernation.
+Seriously, I have no problem with this, but it should probably go
+through Andrew.
 
-Ok, thanks.
+thanks,
 
-Jesse
+greg k-h
