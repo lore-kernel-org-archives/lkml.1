@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbYBUMeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbYBUMh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbYBUMeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 07:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbYBUMeM
+	id S1764958AbYBUMh5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 07:37:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYBUMht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 07:34:12 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:60743 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755501AbYBUMeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 07:34:11 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20080220220542.GB22382@uranus.ravnborg.org>
-References: <20080220220542.GB22382@uranus.ravnborg.org> <20080220194123.114692303@gmail.com> <20080220194444.018019215@gmail.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: dhowells@redhat.com, gorcunov@gmail.com, takata@linux-m32r.org,
-       schwidefsky@de.ibm.com, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: [patch 2/3] mn10300: cleanup - drop .data.idt section in vmlinux.lds script
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 21 Feb 2008 12:33:51 +0000
-Message-ID: <19615.1203597231@redhat.com>
+	Thu, 21 Feb 2008 07:37:49 -0500
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34458 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755851AbYBUMhr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 07:37:47 -0500
+Message-ID: <47BD705A.9020309@bull.net>
+Date: Thu, 21 Feb 2008 13:36:42 +0100
+From: Nadia Derbey <Nadia.Derbey@bull.net>
+Organization: BULL/DT/OSwR&D/Linux
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: subrata@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       ltp-list@lists.sourceforge.net, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, cmm@us.ibm.com,
+       y-goto@jp.fujitsu.com
+Subject: Re: [LTP] [PATCH 1/8] Scaling msgmni to the amount of lowmem
+References: <20080211141646.948191000@bull.net>	 <20080211141813.354484000@bull.net>	 <20080215215916.8566d337.akpm@linux-foundation.org>	 <47B94D8C.8040605@bull.net>  <47B9835A.3060507@bull.net>	 <1203411055.4612.5.camel@subratamodak.linux.ibm.com>	 <47BB0EDC.5000002@bull.net> <1203459418.7408.39.camel@localhost.localdomain>
+In-Reply-To: <1203459418.7408.39.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Matt Helsley wrote:
+> On Tue, 2008-02-19 at 18:16 +0100, Nadia Derbey wrote:
+> 
+> <snip>
+> 
+>>+#define MAX_MSGQUEUES  16      /* MSGMNI as defined in linux/msg.h */
+>>+
+> 
+> 
+> It's not quite the maximum anymore, is it? More like the minumum
+> maximum ;). A better name might better document what the test is
+> actually trying to do.
+> 
+> One question I have is whether the unpatched test is still valuable.
+> Based on my limited knowledge of the test I suspect it's still a correct
+> test of message queues. If so, perhaps renaming the old test (so it's
+> not confused with a performance regression) and adding your patched
+> version is best?
+> 
 
-The section .data.idt is not used at all - so drop it.
+So, here's the new patch based on Matt's points.
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-Acked-by: David Howells <dhowells@redhat.com>
----
+Subrata, it has to be applied on top of the original ltp-full-20080131. 
+Please tell me if you'd prefer one based on the merged version you've 
+got (i.e. with my Tuesday patch applied).
 
- vmlinux.lds.S |    3 ---
- 1 file changed, 3 deletions(-)
-
-Index: linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6.git.orig/arch/mn10300/kernel/vmlinux.lds.S	2008-02-10 10:46:37.000000000 +0300
-+++ linux-2.6.git/arch/mn10300/kernel/vmlinux.lds.S	2008-02-20 22:26:01.000000000 +0300
-@@ -61,9 +61,6 @@ SECTIONS
-   . = ALIGN(4096);
-   __nosave_end = .;
- 
--  . = ALIGN(4096);
--  .data.page_aligned : { *(.data.idt) }
--
-   . = ALIGN(32);
-   .data.cacheline_aligned : { *(.data.cacheline_aligned) }
- 
+Regards,
+Nadia
