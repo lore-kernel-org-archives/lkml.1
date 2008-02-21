@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbYBVDOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765662AbYBVDSH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934464AbYBVDOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 22:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbYBVDOJ
+	id S1765662AbYBVDSH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 22:18:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbYBVDRz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 22:14:09 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:48641 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758275AbYBVDOI (ORCPT
+	Thu, 21 Feb 2008 22:17:55 -0500
+Received: from n7b.bullet.sp1.yahoo.com ([69.147.64.166]:25625 "HELO
+	n7b.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754325AbYBVDRy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 22:14:08 -0500
-Date: Thu, 21 Feb 2008 19:13:19 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: David Newall <davidn@davidnewall.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-In-Reply-To: <20080222020615.GE27894@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.1.00.0802211858140.19896@woody.linux-foundation.org>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi>
- <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <m3tzk1q3rt.fsf@maximus.localdomain> <47BE2985.6020305@davidnewall.com> <20080222020615.GE27894@ZenIV.linux.org.uk>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 21 Feb 2008 22:17:54 -0500
+X-Greylist: delayed 365 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 22:17:54 EST
+X-yahoo-newman-spamcop: yes
+X-Yahoo-Newman-Id: 686907.78367.bm@omp418.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=d60r/DKOFd+iDsWZfuYDee2IBtoBrebC3Q18HP+1Lyt1a3h8vsIm0RCvnJZsns8p/F7uIQCkFvsRsnRuJ1KiczhIf6XeyNf9ipblO24YIhP1LfBewvb+AKSNjHjUVdwPiztfkOTb7oX2PXp4c/lUc1VXfZad2wIVfHjNsibWhcE=  ;
+X-YMail-OSG: ZCnwtloVM1k2aSTXqfUZhCAiUCyG6ykPUbq_hyurR8uKzC79i0P4YuhKRSLo25Kz3ZR2zsZWZ_kbo7_H00b2ciizccxe4PBmOh2ar_.Z34kGdh6Pqww-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller in Kconfig
+Date: Thu, 21 Feb 2008 15:35:38 +1100
+User-Agent: KMail/1.9.5
+Cc: Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com>
+In-Reply-To: <47BC2275.4060900@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802211535.38932.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 22 Feb 2008, Al Viro wrote:
+On Wednesday 20 February 2008 23:52, Balbir Singh wrote:
+> Andi Kleen wrote:
+> > Document huge memory/cache overhead of memory controller in Kconfig
+> >
+> > I was a little surprised that 2.6.25-rc* increased struct page for the
+> > memory controller.  At least on many x86-64 machines it will not fit into
+> > a single cache line now anymore and also costs considerable amounts of
+> > RAM.
 >
-> ... if your style is lousy.  I agree that situation with printks is
-> not normal in that respect and I certainly have no love for the
-> checkpatch nonsense, but pressure to keep the fucking nesting depth
-> low is a Good Thing(tm).
+> The size of struct page earlier was 56 bytes on x86_64 and with 64 bytes it
+> won't fit into the cacheline anymore? Please also look at
+> http://lwn.net/Articles/234974/
 
-I do agree, but that has little to do with line length *directly*.
+BTW. We'll probably want to increase the width of some counters
+in struct page at some point for 64-bit, so then it really will
+go over with the memory controller!
 
-IOW, I'd personally be happier with a checkpatch that calculated 
-"complexity" and indentation over line length.
+Actually, an external data structure is a pretty good idea. We
+could probably do it easily with a radix tree (pfn->memory
+controller). And that might be a better option for distros.
 
-There is definitely a correlation there: there is no question that complex 
-lines with deep indentation tend to be long. So yes, "long lines are 
-correlated with bad code" is certainly true to some degree.
-
-But sometimes lines are long just because it's a function call with 
-multiple parameters, and it's just three levels indented, and it had a 
-string there too. It may be long, but it's not complex, and keeping it on 
-one line actually makes it much easier to visually parse (and grep for, 
-for that matter).
-
-So I'd be happier with warnings about deep indentation (but how do you 
-count it? Will people then try to fake things out by using 4-space indents 
-and then "deep" indentations will look like just a couple of tabs?) and 
-against complex expressions (ie "if ((a = xyz()) == NULL) .." should just 
-be split up into "a = xyz(); if (!a) ..", but there are sometimes reasons 
-for those things too!
-
-		Linus
