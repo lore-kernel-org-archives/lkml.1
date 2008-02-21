@@ -1,82 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbYBUWDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932798AbYBUWJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765033AbYBUWDW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYBUWDM
+	id S932798AbYBUWJh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:09:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760546AbYBUWJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:03:12 -0500
-Received: from sinclair.provo.novell.com ([137.65.248.137]:17054 "EHLO
-	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbYBUWDL convert rfc822-to-8bit (ORCPT
+	Thu, 21 Feb 2008 17:09:28 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:36277 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758934AbYBUWJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:03:11 -0500
-Message-Id: <47BDAD3C.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Thu, 21 Feb 2008 14:56:28 -0700
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Bill Huey (hui)" <bill.huey@gmail.com>
-Cc: <a.p.zijlstra@chello.nl>, <rostedt@goodmis.org>, <kevin@hilman.org>,
-       <tglx@linutronix.de>, <cminyard@mvista.com>, <dsingleton@mvista.com>,
-       <dwalker@mvista.com>, "Moiz Kohari" <MKohari@novell.com>,
-       "Peter Morreale" <PMorreale@novell.com>,
-       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
-       <ak@suse.de>, <gregkh@suse.de>, <npiggin@suse.de>,
-       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH [RT] 00/14] RFC - adaptive real-time locks
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
- <20080221212420.GA20953@elte.hu>
- <9810cff90802211333k3d19ca2exf28c18ae5a2b86a@mail.gmail.com>
- <20080221214219.GA27209@elte.hu>
-In-Reply-To: <20080221214219.GA27209@elte.hu>
+	Thu, 21 Feb 2008 17:09:27 -0500
+Date: Thu, 21 Feb 2008 14:08:55 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Roland Dreier <rdreier@cisco.com>, Linus Torvalds <torvalds@osdl.org>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+Message-ID: <20080221140855.6aea8cc1@laptopd505.fenrus.org>
+In-Reply-To: <20080221210124.GD28328@cs181133002.pp.htv.fi>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Thu, Feb 21, 2008 at  4:42 PM, in message <20080221214219.GA27209@elte.hu>,
-Ingo Molnar <mingo@elte.hu> wrote: 
+On Thu, 21 Feb 2008 23:01:24 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
-> * Bill Huey (hui) <bill.huey@gmail.com> wrote:
+> [ Linus Added to the To: since I want to hear his opinion on this
+> issue. ]
 > 
->> I came to the original conclusion that it wasn't originally worth it, 
->> but the dbench number published say otherwise. [...]
+> On Thu, Feb 21, 2008 at 12:28:55PM -0800, Roland Dreier wrote:
+> >  > This driver should really have gotten some review before being
+> >  > included in the kernel.
+> > 
+> >  > Even a simple checkpatch run finds more than > 250 stylistic
+> >  > errors (not code bugs but cases where the driver violates the
+> >  > standard code formatting rules of kernel code).
+> > 
+> > Linus has strongly stated that we should merge hardware drivers
+> > early, and I agree: although the nes driver clearly needs more
+> > work, there's no advantage to users with the hardware in forcing
+> > them to wait for 2.6.26 to merge the driver, since they'll just
+> > have to patch the grungy code in themselves anyway.  And by merging
+> > the driver early, we get fixed up for any tree-wide changes and
+> > allow janitors to help with the cleanup.
 > 
-> dbench is a notoriously unreliable and meaningless workload. It's being 
-> frowned upon by the VM and the IO folks.
+> Is it really intended to merge drivers without _any_ kind of review?
 
-I agree...its a pretty weak benchmark.  BUT, it does pound on dcache_lock and therefore was a good demonstration of the benefits of lower-contention overhead.  Also note we also threw other tests in that PDF if you scroll to the subsequent pages.
+No of course not.
 
-> If that's the only workload 
-> where spin-mutexes help, and if it's only a 3% improvement [of which it 
-> is unclear how much of that improvement was due to ticket spinlocks], 
-> then adaptive mutexes are probably not worth it.
-
-Note that the "3%" figure being thrown around was from a single patch within the series.  We are actually getting a net average gain of 443% in dbench.  And note that the number goes *up* when you remove the ticketlocks.  The ticketlocks are there to prevent latency spikes, not improve throughput.
-
-Also take a look at the hackbench numbers which are particularly promising.   We get a net average gain of 493% faster for RT10 based hackbench runs.  The kernel build was only a small gain, but it was all gain nonetheless.  We see similar results for any other workloads we throw at this thing.  I will gladly run any test requested to which I have the ability to run, and I would encourage third party results as well.
-
-
-> 
-> I'd not exclude them fundamentally though, it's really the numbers that 
-> matter. The code is certainly simple enough (albeit the .config and 
-> sysctl controls are quite ugly and unacceptable - adaptive mutexes 
-> should really be ... adaptive, with no magic constants in .configs or 
-> else).
-
-We can clean this up, per your suggestions.
-
-> 
-> But ... i'm somewhat sceptic, after having played with spin-a-bit 
-> mutexes before.
-
-Its very subtle to get this concept to work.  The first few weeks, we were getting 90% regressions ;)  Then we had a breakthrough and started to get this thing humming along quite nicely.
-
-Regards,
--Greg
+I totally agree we should be more agressive in merging drivers earlier.
+A minimal review needs to happen so for a few things imo
+1) That the driver doesn't break the build
+2) That the driver has no obvious huge security holes
+   (this is a big deal for unsuspecting users)
+3) that there's not an obscene amount of "uses deprecated api" compiler warnings
+   (since those are annoying for everyone else)
+4) that people who don't have the hardware are not negatively affected
+   (say crashes without the hw or so)
 
 
-
-
+beyond that.. that's what EXPERIMENTAL is for
+(joking; lets not open that can of fish)
