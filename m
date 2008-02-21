@@ -1,150 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbYBUXgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbYBUXiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934044AbYBUXgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:36:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757911AbYBUXgI
+	id S1765113AbYBUXiY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:38:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYBUXiQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:36:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:58430 "EHLO mx1.redhat.com"
+	Thu, 21 Feb 2008 18:38:16 -0500
+Received: from khc.piap.pl ([195.187.100.11]:37286 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753708AbYBUXgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:36:05 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <28196.1203605703@redhat.com>
-References: <28196.1203605703@redhat.com> <200802201907.40406.phillips@phunq.net> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk>
-Cc: dhowells@redhat.com, Daniel Phillips <phillips@phunq.net>,
-       Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
-       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 21 Feb 2008 23:33:53 +0000
-Message-ID: <17916.1203636833@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	id S1755690AbYBUXiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:38:16 -0500
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 22 Feb 2008 00:38:14 +0100
+In-Reply-To: <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 21 Feb 2008 13\:14\:55 -0800 \(PST\)")
+Message-ID: <m3tzk1q3rt.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> > Have you got before/after benchmark results?
-> 
-> See attached.
+> I'm personally of the opinion that a lot of checkpatch "fixes" are 
+> anything but. That mainly concerns fixing overlong lines
 
-Attached here are results using BTRFS (patched so that it'll work at all)
-rather than Ext3 on the client on the partition backing the cache.
-
-Note that I didn't bother redoing the tests that didn't involve a cache as the
-choice of filesystem backing the cache should have no bearing on the result.
-
-Generally, completely cold caches shouldn't show much variation as all the
-writing can be done completely asynchronously, provided the client doesn't
-fill its RAM.
-
-The interesting case is where the disk cache is warm, but the pagecache is
-cold (ie: just after a reboot after filling the caches).  Here, for the two
-big files case, BTRFS appears quite a bit better than Ext3, showing a 21%
-reduction in time for the smaller case and a 13% reduction for the larger
-case.
-
-For the many small/medium files case, BTRFS performed significantly better
-(15% reduction in time) in the case where the caches were completely cold.
-I'm not sure why, though - perhaps because it doesn't execute a write_begin()
-stage during the write_one_page() call and thus doesn't go allocating disk
-blocks to back the data, but instead allocates them later.
-
-More surprising is that BTRFS performed significantly worse (15% increase in
-time) in the case where the cache on disk was fully populated and then the
-machine had been rebooted to clear the pagecaches.
-
-It's important to note that I've only run each test once apiece, so the
-numbers should be taken with a modicum of salt (bad statistics and all that).
-
-David
----
-===========================
-FEW BIG FILES TEST ON BTRFS
-===========================
-
-Completely cold caches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m2.124s
-	user    0m0.000s
-	sys     0m1.260s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m4.538s
-	user    0m0.000s
-	sys     0m2.624s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.061s
-	user    0m0.000s
-	sys     0m0.064s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m0.118s
-	user    0m0.000s
-	sys     0m0.116s
-
-Warm BTRFS pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.189s
-	user    0m0.000s
-	sys     0m0.188s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m0.369s
-	user    0m0.000s
-	sys     0m0.368s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m1.540s
-	user    0m0.000s
-	sys     0m1.440s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m3.132s
-	user    0m0.000s
-	sys     0m1.724s
-
-
-============================================
-MANY SMALL/MEDIUM FILE READING TEST ON BTRFS
-============================================
-
-Completely cold caches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m31.838s
-	user    0m0.192s
-	sys     0m6.076s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m14.841s
-	user    0m0.148s
-	sys     0m4.988s
-
-Warm BTRFS pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m16.773s
-	user    0m0.148s
-	sys     0m5.512s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    2m12.527s
-	user    0m0.080s
-	sys     0m2.908s
-
+Perhaps we should increase line length limit, 132 should be fine.
+Especially useful with long printk() lines and long arithmetic
+expressions.
+-- 
+Krzysztof Halasa
