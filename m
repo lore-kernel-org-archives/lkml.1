@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935279AbYBUXUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbYBUXbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935279AbYBUXUw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:20:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758923AbYBUXUn
+	id S932931AbYBUXbJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:31:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756021AbYBUXax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:20:43 -0500
-Received: from smtp5.freeserve.com ([193.252.22.152]:53304 "EHLO
-	smtp5.freeserve.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755806AbYBUXUm (ORCPT
+	Thu, 21 Feb 2008 18:30:53 -0500
+Received: from senator.holtmann.net ([87.106.208.187]:59705 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755713AbYBUXaw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:20:42 -0500
-X-ME-UUID: 20080221232036270.41F7E1C00081@mwinf3421.me.freeserve.com
-Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
-From: Chris Vine <chris@cvine.freeserve.co.uk>
-To: chris2553@googlemail.com
-Cc: Ivo van Doorn <ivdoorn@gmail.com>, Dan Williams <dcbw@redhat.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rt2400-devel@lists.sourceforge.net
-In-Reply-To: <200802212304.28731.chris2553@googlemail.com>
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
-	 <1203628049.3277.6.camel@boulder.homenet>
-	 <200802212251.26897.IvDoorn@gmail.com>
-	 <200802212304.28731.chris2553@googlemail.com>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 23:20:27 +0000
-Message-Id: <1203636027.3186.5.camel@boulder.homenet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.2 
+	Thu, 21 Feb 2008 18:30:52 -0500
+Cc: Simon Richter <sjr@debian.org>, Tilman Schmidt <tilman@imap.cc>,
+       Gregory Nietsky <gregory@networksentry.co.za>,
+       Jeff Garzik <jeff@garzik.org>, kkeil@suse.de, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       Sam Ravnborg <sam@ravnborg.org>
+Message-Id: <5F9B7248-82DA-43F1-8937-8B52D5146298@holtmann.org>
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <47BE06EB.6010301@firstfloor.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v919.2)
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Date: Fri, 22 Feb 2008 00:30:45 +0100
+References: <098123kjff90231nv098233rnvd908u234@garzik.org>	<20080217195235.GN14588@uranus.ravnborg.org>	<20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de>	<20080219085033.GA1775@uranus.ravnborg.org>	<47BAA072.9050601@networksentry.co.za> <47BC370F.3000705@imap.cc> <47BD5360.5070706@debian.org> <AC06F991-72AC-4DFB-825A-F046C1943F10@holtmann.org> <47BE06EB.6010301@firstfloor.org>
+X-Mailer: Apple Mail (2.919.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 23:04 +0000, Chris Clayton wrote:
-> On Thursday 21 February 2008, Ivo van Doorn wrote:
-> > On Thursday 21 February 2008, Chris Vine wrote:
-[snip]
-> > > This probably explains the problem another user reported with rt61.
-> > 
-> > Perhaps something similar like:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10058
-> > in there a reference is made to the following patch:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/broken-out/revert-send-a-single-notification-on-device-state-changes.patch
-> > 
-> > Does applying that help?
-> 
-> I'm afraid not, Ivo. The test I ran last night was against 2.6.25.-rc2-git4 and
-> that already has this patch applied. Furthermore, I have another card that uses
-> the rtl8180 driver and that works reliably. I, therefore, suspect that my problem
-> lies within the rt61pci driver or the rt2x00 infrastructure.
+Hi Andi,
 
-Does the same happen with 2.0.14 under kernel 2.6.24?
+>> that is not a big problem at all. If you have to enforce a specific
+>> module load order then create some dummy exports like misdn_load()  
+>> and
+>> use them from the module that depends on it.
+>
+> That's not necessarily enough. There are races during module load
+> when the next module is loaded already before the module it depends
+> on has finished initializing.
 
-Chris
+we were talking about the load order. This will solve the load order,  
+but if we have races like the kind you described, then the whole mISDN  
+design is broken. So if that is the fact, then my understanding is  
+that we have too many modules. Simple combine the modules and use  
+proper locking. More modules is not always better.
 
+> I regularly run into such a problem on my workstation with one
+> of the USB serial drivers for example. It errors out when autoloaded
+> during boot, but loads fine on retry later.
 
+Report this to the USB mailing list.
+
+Regards
+
+Marcel
 
