@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbYBUTex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbYBUThR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761338AbYBUTex (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 14:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753674AbYBUTem
+	id S1760065AbYBUThR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 14:37:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753662AbYBUThE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 14:34:42 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:36679 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758471AbYBUTel (ORCPT
+	Thu, 21 Feb 2008 14:37:04 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48670 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753123AbYBUThB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 14:34:41 -0500
-Message-ID: <47BDD26D.5010004@davidnewall.com>
-Date: Fri, 22 Feb 2008 06:05:09 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Greg KH <greg@kroah.com>, linux-usb@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Handshaking on USB serial devices
-References: <47B30291.2040905@davidnewall.com>	<20080214050211.GB1432@kroah.com>	<47B40918.20206@davidnewall.com>	<20080214121026.16a9c510@core>	<47B482B4.9010208@davidnewall.com>	<20080214193637.5df1c205@core>	<47BD9721.70907@davidnewall.com> <20080221151549.0fa72422@core>
-In-Reply-To: <20080221151549.0fa72422@core>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 Feb 2008 14:37:01 -0500
+Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, linux-kernel@vger.kernel.org,
+       Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20080221043828.bcd5cbce.akpm@linux-foundation.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
+	 <47BC982C.7050402@imap.cc>
+	 <20080221043828.bcd5cbce.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 11:36:47 -0800
+Message-Id: <1203622607.29823.96.camel@nimitz.home.sr71.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> developing is entirely wrong.  Oh well.  Mind you, providing a
->> write_room function is NOT a real solution; it merely reduces the
->> condition to a usually-winnable race.  (Ironically, when I back-ported
->> the 2.6 driver, I excluded its new write_room function.  Mistake.)
->>     
->
-> What race do you see left ?
->   
 
-On second thoughts I'm not sure that I do.  I've had my head so full of
-2.4 pl2303, and 2.4 pl2303 with this, that and the other added to it,
-that I was probably just confused.  Certainly it's not important,
-because I didn't mean the 2.6 driver, but an hypothetical 2.4 with a
-simplistic write_room function added (e.g. return
-port->write_urb->status == -EINPROGRESS ? 0 : 64).  OPOST processing's
-use of putchar to expand CRLF sends two writes (or putchars), with no
-intervening checks.  Since I'm just polishing off my back-port of
-2.6.24.1 pl2303 to kernel 2.4, the matter is quite irrelevant.
+On Thu, 2008-02-21 at 04:38 -0800, Andrew Morton wrote:
+> 
+> > <4>[    0.071378]  [do_name+279/440] do_name+0x117/0x1b8
+> > <4>[    0.071570]  [write_buffer+34/49] write_buffer+0x22/0x31
+> > <4>[    0.071763]  [flush_window+105/184] flush_window+0x69/0xb8
+> > <4>[    0.071996]  [unpack_to_rootfs+1585/2238] unpack_to_rootfs+0x631/0x8be
+> > <4>[    0.072192]  [trace_hardirqs_on_caller+248/301] ? trace_hardirqs_on_caller+0xf8/0x12d
+> > <4>[    0.072440]  [restore_nocheck_notrace+0/16] ? restore_nocheck_notrace+0x0/0x10
+> > <4>[    0.072689]  [populate_rootfs+37/270] populate_rootfs+0x25/0x10e
+> > <4>[    0.072886]  [alternative_instructions+344/349] ? alternative_instructions+0x158/0x15d
+> > <4>[    0.073139]  [start_kernel+840/858] start_kernel+0x348/0x35a
+> > <4>[    0.073335]  =======================
+> 
+> (net-related cc's removed)
+> 
+> This look like a startup ordering bug in mnt_want_write().
 
-By the way, what happened to HUawei E620 UMTS/HSDPA card?  It's in
-pl2303 in 2.6.23; not in 2.6.24.1.  (Do I remove it from my back-port?)
+Let me look into it a bit.  Although, it does seem that this stuff is
+just calling into the filesystem code too early.  The mnt_writers[]
+spinlocks are init'd with a:
+
+	fs_initcall(init_mnt_writers);
+
+and populate_rootfs() is supposed to happen in a rootfs_initcall() so
+I'm a bit confused how it happened in this order.
+
+-- Dave
+
