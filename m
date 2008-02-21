@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763619AbYBUHBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765303AbYBUHCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763619AbYBUHBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 02:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYBUHBM
+	id S1765303AbYBUHCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 02:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbYBUHCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 02:01:12 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:1852 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1752747AbYBUHBL (ORCPT
+	Thu, 21 Feb 2008 02:02:45 -0500
+Received: from mga05.intel.com ([192.55.52.89]:49906 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753771AbYBUHCo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 02:01:11 -0500
-Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
-	behavior
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: Steve.Hawkes@motorola.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <20080220.223219.165157596.davem@davemloft.net>
-References: <7BFDACCD6948EF4D8FE8F4888A91596A016371E8@tx14exm60.ds.mot.com>
-	 <20080220.223219.165157596.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 20 Feb 2008 23:00:46 -0800
-Message-Id: <1203577246.7181.241.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 02:02:44 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,385,1199692800"; 
+   d="scan'208";a="522102432"
+Message-ID: <1638.172.16.116.56.1203577279.squirrel@linux.intel.com>
+Date: Wed, 20 Feb 2008 23:01:19 -0800 (PST)
+Subject: kernel-2.6.25-rc2,
+      CPU C state "active state" always remain C0 unchangeable by cat 
+     'proc/'
+From: youquan_song@linux.intel.com
+To: linux-kernel@vger.kernel.org
+Cc: youquan.song@intel.com
+User-Agent: SquirrelMail/1.4.8-4.0.1.el4.centos
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2008-02-20 at 22:32 -0800, David Miller wrote:
-> > +		if (lost) {
-> > +			printk(KERN_WARNING
-> > +			       "printk: %d %s%smessage%s suppressed.\n",
-> > +			       lost,
-> > +			       (state->facility == 0 ? "" :
-> > state->facility),
-> > +			       (state->facility == 0 ? "" : " "),
-> > +			       (lost > 1 ? "s" : ""));
-> > +		}
-> >  		return 1;
-> >  	}
+On Fedora9 Alpha with  kernel-2.6.25-rc2,
+I run " watch -n 0.1 "cat /proc/acpi/processor/CPU*/power | grep 'active
+state'" ", I find that the CPU C state information "active state" remain
+at "C0" and it do not change any time. The same issue also exit on
+2.6.24-rc2 kernel.
+But with RHEL5.1 kernel-2.6.18 the CPU C state information is normal.
 
-This compares a pointer to 0.
 
-How about something like:
+Every 0.1s: cat /proc/acpi/processor/CPU*/power | grep 'active state'     
+                                                                        
+Thu Feb 21 09:44:33 2008
 
-	if (lost)
-		pr_warn("printk: %s suppressed message count: %d\n",
-			state->facility ? : "ratelimit", lost);
+active state:            C0
+active state:            C0
+active state:            C0
+active state:            C0
+active state:            C0
+active state:            C0
+active state:            C0
+active state:            C0
 
-> > -	missed++;
-> > +	state->missed++;
-> >  	spin_unlock_irqrestore(&ratelimit_lock, flags);
-> >  	return 0;
-> >  }
-> > @@ -1280,8 +1290,18 @@ int printk_ratelimit_burst = 10;
-> >  
-> >  int printk_ratelimit(void)
-> >  {
-> > +	static struct printk_ratelimit_state limit_state = {
-> > +		.toks          = 10 * 5 * HZ,
-> > +		.last_jiffies  = 0,
-> > +		.missed        = 0,
-> > +		.limit_jiffies = 5 * HZ,
-> > +		.limit_burst   = 10,
-> > +		.facility      = 0
-> > +	};
-> > +
+On RHEL5.1  kernel-2.6.18-53.el5
+[root@localhost ~]# cat /proc/acpi/processor/CPU*/power | grep 'active state'
+active state:            C2
+active state:            C2
+active state:            C2
+active state:            C2
+active state:            C2
+active state:            C3
+active state:            C2
+active state:            C3
 
-.facility = NULL
-
+The hardware platform: bensley and santarosa.
 
