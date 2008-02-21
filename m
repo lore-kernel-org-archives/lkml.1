@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934364AbYBUQCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933138AbYBUQC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934364AbYBUQCb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:02:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932440AbYBUP47
+	id S933138AbYBUQC5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbYBUP65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:56:59 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:35016 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S933361AbYBUP46 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:56:58 -0500
-Date: Thu, 21 Feb 2008 10:56:55 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: David Brownell <david-b@pacbell.net>
-cc: Andre Tomt <andre@tomt.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB OOPS 2.6.25-rc2-git1
-In-Reply-To: <200802201356.28723.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.44L0.0802211054550.4528-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Feb 2008 10:58:57 -0500
+Received: from colin.muc.de ([193.149.48.1]:4235 "EHLO mail.muc.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933663AbYBUP6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 10:58:55 -0500
+Date: 21 Feb 2008 16:58:52 +0100
+Date: Thu, 21 Feb 2008 16:58:52 +0100
+From: Andi Kleen <ak@muc.de>
+To: Arne Georg Gleditsch <arne.gleditsch@dolphinics.no>
+Cc: linux-kernel@vger.kernel.org, John Stultz <johnstul@us.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: arch/x86/kernel/vsyscall_64.c: overeager NOP of syscalls
+Message-ID: <20080221155852.GA42442@muc.de>
+References: <kjm4pc3d92p.fsf@pelargir.dolphinics.no>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <kjm4pc3d92p.fsf@pelargir.dolphinics.no>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008, David Brownell wrote:
-
-> ========= CUT HERE
-> Modify EHCI irq handling on the theory that at least some of the
-> "lost" IRQs are caused by goofage between multiple lowlevel IRQ
-> acking mechanisms:  try rescanning before we exit the handler, in
-> case the EHCI-internal ack (by clearing the irq status) doesn't
-> always suffice for IRQs triggered nearly back-to-back.
+On Wed, Feb 20, 2008 at 02:57:34PM +0100, Arne Georg Gleditsch wrote:
+> Hi,
 > 
-> ---
->  drivers/usb/host/ehci-hcd.c |    8 ++++++++
->  1 file changed, 8 insertions(+)
+> I'm looking at 2.6.25-rc2.  vsyscall_sysctl_change contains code to NOP
+> out the actual system call instructions of the vsyscall page when
+> vsyscall64 is enabled.  This seems to interact badly with the fallback
+> code in do_vgettimeofday which tries to call gettimeofday if the
+> configured clock source does not support vread.  (In effect,
+> gettimeofday() becomes a nop and time() always returns 0.  Not very
+> useful.)
 > 
-> --- g26.orig/drivers/usb/host/ehci-hcd.c	2008-02-20 13:26:00.000000000 -0800
-> +++ g26/drivers/usb/host/ehci-hcd.c	2008-02-20 13:54:37.000000000 -0800
-> @@ -638,6 +638,8 @@ static irqreturn_t ehci_irq (struct usb_
->  		return IRQ_NONE;
->  	}
->  
-> +retrigger:
-> +
->  	/* clear (just) interrupts */
->  	ehci_writel(ehci, status, &ehci->regs->status);
->  	cmd = ehci_readl(ehci, &ehci->regs->command);
-> @@ -725,6 +727,12 @@ dead:
->  
->  	if (bh)
->  		ehci_work (ehci);
-> +
-> +	status = ehci_readl(ehci, &ehci->regs->status);
-> +	status &= INTR_MASK;
-> +	if (status)
-> +		goto retrigger;
-> +
->  	spin_unlock (&ehci->lock);
->  	if (pcd_status & STS_PCD)
->  		usb_hcd_poll_rh_status(hcd);
+> Is there a good reason to keep this?  Aren't the instructions in
+> question avoided (or invoked) according to the vsyscall64 flag by the
+> surrounding logic anyway?
 
-There's one little problem here.  As a result of this change, the line 
-where pcd_status gets set (not shown in this patch) needs to be changed 
-to:
+Yes they are.  But a system call sequence at a known fixed address
+is potentially useful to exploits. That is why it is nop'ed out when
+it is not needed.
 
-		pcd_status |= (status & STS_PCD);
-
-Then the test shown above can be simplified to:
-
-	if (pcd_status)
-
-Alan Stern
-
+-Andi
