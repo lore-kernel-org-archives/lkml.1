@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbYBUNXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762467AbYBUNYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932929AbYBUNXo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 08:23:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbYBUNXS
+	id S1762467AbYBUNYN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 08:24:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbYBUNXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 08:23:18 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57467 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752635AbYBUNXR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 08:23:17 -0500
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [RESEND] [PATCH] fix invalidate_inode_pages2_range not to clear ret
-References: <6.0.0.20.2.20080215132604.06091618@172.19.0.2>
-	<x49mypv4i2d.fsf@segfault.boston.devel.redhat.com>
-	<6.0.0.20.2.20080221111433.0394f1c8@172.19.0.2>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 21 Feb 2008 08:22:14 -0500
-In-Reply-To: <6.0.0.20.2.20080221111433.0394f1c8@172.19.0.2> (Hisashi Hifumi's
-	message of "Thu, 21 Feb 2008 11:23:20 +0900")
-Message-ID: <x49ejb64f7d.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Feb 2008 08:23:44 -0500
+Received: from 75.neteffect.com ([204.57.75.75]:63941 "EHLO
+	velma.neteffect.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932922AbYBUNXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 08:23:43 -0500
+Date: Thu, 21 Feb 2008 08:17:54 -0600
+From: gstreiff@neteffect.com
+Message-Id: <200802211417.m1LEHsQu005081@velma.neteffect.com>
+To: rdreier@cisco.com
+Subject: [PATCH 2.6 5/8] infiniband/hw/nes/nes_verbs.c: fix use-after-free
+Cc: bunk@kernel.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> writes:
+Adrian Bunk flagged this check-after-use issue spotted by the 
+Coverity checker.
 
-> Hi Jeff.
->
->>
->>I agree with the patch (and I see Andrew already accepted it).  Do you
->>have a reproducer for this problem?
->
-> Do you want to know the way of failing invalidate_complete_page2() ?
+Signed-off-by: Glenn Streiff <gstreiff@neteffect.com>
 
-I was hoping for a test program that shows the problem.  Looking through
-the previous threads on this subject, it seems that Zach may have had a
-reproducer.  I tried running the aio-dio-regress tests on the 2.6.25-rc2
-kernel, but was unable to trigger this problem.
+---
+ drivers/infiniband/hw/nes/nes_verbs.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
 
--Jeff
+diff --git a/drivers/infiniband/hw/nes/nes_verbs.c b/drivers/infiniband/hw/nes/nes_verbs.c
+index 692f0d8..a651e9d 100644
+--- a/drivers/infiniband/hw/nes/nes_verbs.c
++++ b/drivers/infiniband/hw/nes/nes_verbs.c
+@@ -1832,9 +1832,6 @@ static struct ib_cq *nes_create_cq(struct ib_device *ibdev, int entries,
+ 				spin_unlock_irqrestore(&nesdev->cqp.lock, flags);
+ 			}
+ 		}
+-		nes_debug(NES_DBG_CQ, "iWARP CQ%u create timeout expired, major code = 0x%04X,"
+-				" minor code = 0x%04X\n",
+-				nescq->hw_cq.cq_number, cqp_request->major_code, cqp_request->minor_code);
+ 		if (!context)
+ 			pci_free_consistent(nesdev->pcidev, nescq->cq_mem_size, mem,
+ 					nescq->hw_cq.cq_pbase);
