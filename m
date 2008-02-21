@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932489AbYBUMl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760427AbYBUMvA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932489AbYBUMl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 07:41:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758067AbYBUMlT
+	id S1760427AbYBUMvA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 07:51:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbYBUMuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 07:41:19 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:2795 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758172AbYBUMlS (ORCPT
+	Thu, 21 Feb 2008 07:50:51 -0500
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50754 "EHLO
+	outbound2-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751513AbYBUMuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 07:41:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OE/4YrYyHgVYyhP4y2J4qDQXcV07PzLJ1ycAbrJVd9yGQ/cf3dMfnx2kMCNfW9XXdqt35wN6OuPSPAsPRvN00s4kqo/f8AzsA7Nf9EcCND7KQUbJmddZlzt0OhFQzlXT3/30DBMVQ+5tv7y1hdWuSsuGu5bziLZ7vR9VvOuJfAw=
-Message-ID: <2f11576a0802210441n5912ddcfne45138c52e77c159@mail.gmail.com>
-Date: Thu, 21 Feb 2008 21:41:15 +0900
-From: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>
-To: "minchan Kim" <barrioskmc@gmail.com>
-Subject: Re: [RFC][PATCH] the proposal of improve page reclaim by throttle
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Rik van Riel" <riel@redhat.com>,
-       "Lee Schermerhorn" <Lee.Schermerhorn@hp.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <44c63dc40802210429y24757a34p2cc8093a2db6181a@mail.gmail.com>
+	Thu, 21 Feb 2008 07:50:50 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0JWLACA-04-17S-01
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Date: Thu, 21 Feb 2008 13:47:35 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: remove WARN_ON if MTRRs are all blank
+Message-ID: <20080221124735.GA20053@amd.com>
+References: <1203593558-3391-1-git-send-email-joerg.roedel@amd.com>
+ <20080221115452.GB13948@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20080221115452.GB13948@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 21 Feb 2008 12:47:36.0053 (UTC)
+ FILETIME=[EF13FA50:01C87487]
+X-WSS-ID: 6BA3AC1B0QK12079872-12-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-References: <20080220181447.6444.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <44c63dc40802200149r6b03d970g2fbde74b85ad5443@mail.gmail.com>
-	 <20080220185648.6447.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <44c63dc40802210138s100e921ekde01b30bae13beb1@mail.gmail.com>
-	 <2f11576a0802210255k1e3acad7n87814e916fd24509@mail.gmail.com>
-	 <44c63dc40802210429y24757a34p2cc8093a2db6181a@mail.gmail.com>
-X-Google-Sender-Auth: a2935adf2880c512
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  >  please repost question with change subject.
->  >  i don't know reason of vanilla kernel behavior, sorry.
->
->  Normally, embedded linux have only one zone(DMA).
->
->  If your patch isn't applied, several processes can reclaim memory in parallel.
->  then, DMA zone's pages_scanned is suddenly increased largely. Because
->  embedded linux have no swap device,  kernel can't stop to scan lru
->  list until meeting page cache page. so if zone->pages_scanned is
->  greater six time than lru list pages, kernel make the zone with
->  unreclaimable state, As a result, OOM will kill it, too.
+On Thu, Feb 21, 2008 at 12:54:52PM +0100, Ingo Molnar wrote:
+> 
+> * Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> >  	if (!highest_pfn) {
+> >  		printk(KERN_WARNING "WARNING: strange, CPU MTRRs all blank?\n");
+> > -		WARN_ON(1);
+> >  		return 0;
+> >  	}
+> 
+> instead of obscuring a possibly useful warning, please instead detect 
+> that it's a KVM guest and skip both the warning and the backtrace in 
+> that case.
 
-sorry, my last mail is easy confusious.
-if you want discuss vanilla kernel bug, you shold post mail by another thread.
-if not, your mail is only readed by few people.
+How usefull is the backtrace in that place? I agree that the printk
+warning may be usefull, but I don't see why the backtrace from the
+WARN_ON is necessary.
 
-Thanks.
+Joerg
+
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+
