@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759044AbYBUFpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYBUFqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759044AbYBUFpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 00:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbYBUFpH
+	id S1762103AbYBUFqZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 00:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbYBUFqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 00:45:07 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:44656 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752563AbYBUFpF (ORCPT
+	Thu, 21 Feb 2008 00:46:15 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40253
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752620AbYBUFqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 00:45:05 -0500
-Message-ID: <47BD1069.1060109@keyaccess.nl>
-Date: Thu, 21 Feb 2008 06:47:21 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Adrian Bunk <bunk@kernel.org>, ambx1@neo.rr.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: pnp_bus_resume(): inconsequent NULL checking
-References: <20080219224908.GM31955@cs181133002.pp.htv.fi> <47BB6DAB.5050506@keyaccess.nl> <200802200959.21814.bjorn.helgaas@hp.com>
-In-Reply-To: <200802200959.21814.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Thu, 21 Feb 2008 00:46:14 -0500
+Date: Wed, 20 Feb 2008 21:46:51 -0800 (PST)
+Message-Id: <20080220.214651.235108740.davem@davemloft.net>
+To: krkumar2@in.ibm.com
+Cc: divy@chelsio.com, jeff@garzik.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [git patches] net driver updates
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com>
+References: <47BCD0DF.1050205@chelsio.com>
+	<OF5F5F5698.07AB615F-ON652573F6.00142D8A-652573F6.00147DC9@in.ibm.com>
+X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 20-02-08 17:59, Bjorn Helgaas wrote:
+From: Krishna Kumar2 <krkumar2@in.ibm.com>
+Date: Thu, 21 Feb 2008 09:13:49 +0530
 
-> I agree with you that we can just delete the dev->protocol tests
-> completely. So I'd rather see something like this (built but untested):
+> Hi Divy,
 > 
+> > > Explain why, so I can include it in the changelog please...
+> >
+> > Hi Jeff,
+> >
+> > The first part of the patch removes the !netif_queue_stopped(dev).
+> > It opens the race discussed a while ago between Stephen hemminger and
+> > David Miller:
+> > http://marc.info/?l=linux-netdev&m=113383224512427&w=2
 > 
-> PNP: remove dev->protocol NULL checks
-> 
-> Every PNP device should have a valid protocol pointer.  If it doesn't,
-> something's wrong and we should oops so we can find and fix the problem.
-> 
-> Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+> I feel this race cannot happen anymore. I think the fix for that race was
+> to introduce the
+> __LINK_STATE_QDISC_RUNNING bit thus eliminating any races between CPU's. If
+> one
+> CPU has called xmit, the other CPU will enqueue skbs (by holding the
+> queue_lock) and
+> exit from qdisc_run since it finds the bit set already.
 
-Ack from a functional standpoint: we are oopsing in pnp_start/stop_dev 
-_anyway_ if the protocol pointer isn't set.
-
-Will you coach this upstream? A 2.6.25-rc1 change from me made the coverity 
-checker pick up on it which might be considered enough of an excuse to call 
-it a regression and submit this as a fix...
-
-> Index: work6/drivers/pnp/driver.c
-> ===================================================================
-> --- work6.orig/drivers/pnp/driver.c	2008-02-20 09:46:01.000000000 -0700
-> +++ work6/drivers/pnp/driver.c	2008-02-20 09:46:28.000000000 -0700
-> @@ -167,7 +167,7 @@
->  			return error;
->  	}
->  
-> -	if (pnp_dev->protocol && pnp_dev->protocol->suspend)
-> +	if (pnp_dev->protocol->suspend)
->  		pnp_dev->protocol->suspend(pnp_dev, state);
->  	return 0;
->  }
-> @@ -181,7 +181,7 @@
->  	if (!pnp_drv)
->  		return 0;
->  
-> -	if (pnp_dev->protocol && pnp_dev->protocol->resume)
-> +	if (pnp_dev->protocol->resume)
->  		pnp_dev->protocol->resume(pnp_dev);
->  
->  	if (pnp_can_write(pnp_dev)) {
-> 
-
-Rene.
+And the race is talking about LLTX, which S2IO doesn't use as
+far as I can tell.
