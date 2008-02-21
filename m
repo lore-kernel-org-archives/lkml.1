@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763992AbYBUQ2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765752AbYBUQ2c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763992AbYBUQ2J (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:28:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbYBUQ1y
+	id S1765752AbYBUQ2c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:28:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbYBUQ14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:27:54 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:18024 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754146AbYBUQ1w (ORCPT
+	Thu, 21 Feb 2008 11:27:56 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:47175 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754146AbYBUQ1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:27:52 -0500
-Date: Thu, 21 Feb 2008 08:25:53 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: gregkh <greg@kroah.com>
-Subject: 2.6.25-rc2-git4 BUG: sysfs_readdir
-Message-Id: <20080221082553.ddc4e723.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Thu, 21 Feb 2008 11:27:55 -0500
+Date: Thu, 21 Feb 2008 11:27:54 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <200802210102.11611.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0802211115380.4528-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of my (x86_64) test machines got this on booting 2.6.25-rc2-git4.
+On Thu, 21 Feb 2008, Rafael J. Wysocki wrote:
 
-insmod used greatest stack depth: 4144 bytes left
-EXT3-fs: INFO: recovery required on readonly filesystem.
-EXT3-fs: write access will be enabled during recovery.
-kjournald starting.  Commit interval 5 seconds
-EXT3-fs: recovery complete.
-EXT3-fs: mounted filesystem with ordered data mode.
-modprobe used greatest stack depth: 3600 bytes left
-BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-IP: [<ffffffff802d0f16>] sysfs_readdir+0xe0/0x13f
-PGD 0
-Oops: 0000 [1] SMP
-CPU 2
-Modules linked in: cciss ehci_hcd ohci_hcd uhci_hcd
-Pid: 697, comm: udevtrigger Not tainted 2.6.25-rc2-git5 #1
-RIP: 0010:[<ffffffff802d0f16>]  [<ffffffff802d0f16>] sysfs_readdir+0xe0/0x13f
-RSP: 0018:ffff81027e8c3eb8  EFLAGS: 00010286
-RAX: 0000000000000000 RBX: ffff81027fb35a50 RCX: ffffffffffffffff
-RDX: 0000000000000020 RSI: 0000000000000000 RDI: 0000000000000000
-RBP: ffff81027e8c3ee8 R08: 000000006765b9c6 R09: 000000000000000a
-R10: 0000000000000000 R11: 0000000000000202 R12: ffff81027e093b40
-R13: ffffffff80299e04 R14: ffff81027e8c3f38 R15: ffffffff80299e04
-FS:  00007ffe6743f710(0000) GS:ffff81027f88c680(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 000000027e8d6000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process udevtrigger (pid: 697, threadinfo ffff81027e8c2000, task ffff81027e5fa000)
-Stack:  ffff81027f467280 ffff81027f467338 ffff81027e093b40 00000000fffffffe
- ffff81027f467280 ffff81027f467338 ffff81027e8c3f28 ffffffff80299f33
- ffff81027e8c3f38 00007ffe6765b618 00000000fffffff7 ffff81027e093b40
-Call Trace:
- [<ffffffff80299f33>] vfs_readdir+0x6a/0x9f
- [<ffffffff8029a1b1>] sys_getdents+0x7a/0xc5
- [<ffffffff8020bf5b>] system_call_after_swapgs+0x7b/0x80
+> > > +bool in_suspend_context(void)
+> > > +{
+> > > +	bool result;
+> > > +
+> > > +	mutex_lock(&suspending_task_mtx);
+> > > +	result = (suspending_task == current);
+> > > +	mutex_unlock(&suspending_task_mtx);
+> > > +	return result;
+> > > +}
+> > 
+> > If suspending_task == current then you are guaranteed to be serialized, 
+> > because everything a single task does is serial.
+> 
+> As I said before (but that doesn't seem to reach the list, so I'm repeating),
+> this is to protect other tasks from reading an inconsistent value of
+> suspending_task in case they attempt to remove a device concurrently with
+> respect to us.
+> 
+> While this is not likely to happen right now, because of the freezer, it may
+> very well happen when the freezer is finally removed.
 
+Sorry, I don't understand.  Are you worried that process A might set
+suspending_task = A but then process B might still see suspending_task
+== NULL?  Or that A might set suspend_task = NULL but then B might
+still see suspending_task == A?
 
-Code: 00 48 8b 5b 28 eb 04 48 8b 5b 10 48 85 db 74 62 48 8b 43 38 49 39 44 24 38 77 ec eb 40 48 8b 73 18 31 c0 48 83 c9 ff fc 48 89 f7 <f2> ae 4c 89 f7 48 f7 d1 48 8d 41 ff 48 8b 4b 38 89 c2 49 89 4c
-RIP  [<ffffffff802d0f16>] sysfs_readdir+0xe0/0x13f
- RSP <ffff81027e8c3eb8>
-CR2: 0000000000000000
----[ end trace b4dedabc6a9f743a ]---
+Neither one will cause any problem, since the only case that matters is
+when B sees suspending_task == B -- and that can happen if and only if
+B was the last process to set suspending_task.
 
----
-~Randy
+In fact, you might as well get rid of the set_suspending_task() routine 
+entirely and just put the assignments inline.
+
+> --- linux-2.6.orig/drivers/base/core.c
+> +++ linux-2.6/drivers/base/core.c
+> @@ -929,6 +929,11 @@ void device_del(struct device *dev)
+>  	struct device *parent = dev->parent;
+>  	struct class_interface *class_intf;
+>  
+> +	if (in_suspend_context()) {
+> +		get_device(dev);
+
+Where is this get_device() undone?  Shouldn't there be an extra 
+put_device() added to unregister_dropped_devices()?
+
+> +		device_pm_schedule_removal(dev);
+> +		return;
+> +	}
+>  	device_pm_remove(dev);
+>  	if (parent)
+>  		klist_del(&dev->knode_parent);
+
+And now the change to device_destroy() isn't needed at all.
+
+Alan Stern
+
