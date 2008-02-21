@@ -1,41 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764679AbYBUTtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764437AbYBUTvD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764679AbYBUTtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 14:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbYBUTt0
+	id S1764437AbYBUTvD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 14:51:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754755AbYBUTux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 14:49:26 -0500
-Received: from viefep18-int.chello.at ([213.46.255.22]:15443 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754558AbYBUTtZ (ORCPT
+	Thu, 21 Feb 2008 14:50:53 -0500
+Received: from nf-out-0910.google.com ([64.233.182.185]:47058 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbYBUTuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 14:49:25 -0500
-Message-ID: <47BDD5B0.3040806@trash.net>
-Date: Thu, 21 Feb 2008 20:49:04 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 21 Feb 2008 14:50:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=uqbCGTQHhGFFzuOlaAOkWFCj2Jyz7c8IObTO2cVONObDA7Jd2BknMUl7GZz+aCWA/G99hNx8fueDjUHpGI1mhEDJdNQozD6uWkulCE7C2J14CFKc0FthvimavuUTzgsHR63d55vWSoCWiOn8f4wapNXjlWYGMUjpccmCIsGOh4c=
+Date: Thu, 21 Feb 2008 22:50:22 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: cleanup - use PAGE_SIZE instead of numeric constant
+	in boot code
+Message-ID: <20080221195022.GA6772@cvg>
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: Netfilter Developer Mailing List 
-	<netfilter-devel@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [announce] Xtables, Xtables-addons 1.5.1 and Writing Xtables
- Modules
-References: <Pine.LNX.4.64.0802211742431.26109@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0802211742431.26109@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> I have released “Xtables” 1.5.1, which is a package of my ongoing
-> iptables development¹ that I did lately. Patrick McHardy was not
-> available last week to merge patches due to higher powers, so I
-> branched off the iptables subversion trunk into git since quilting on
-> top of svn was not so fun.
+This patch replaces 4096 numeric constant with PAGE_SIZE macro.
+
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+
+Text segments of old and new files *are* the same so
+it wouldn't break current kernel.
+
+ main.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
 
-I'm back to full power, so feel free to post patches :)
-
+Index: linux-2.6.git/arch/x86/boot/main.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/boot/main.c	2008-02-09 22:27:13.000000000 +0300
++++ linux-2.6.git/arch/x86/boot/main.c	2008-02-21 22:28:10.000000000 +0300
+@@ -14,6 +14,7 @@
+  * Main module for the real-mode kernel code
+  */
+ 
++#include <asm/page.h>
+ #include "boot.h"
+ 
+ struct boot_params boot_params __attribute__((aligned(16)));
+@@ -36,7 +37,7 @@ static void copy_boot_params(void)
+ 	const struct old_cmdline * const oldcmd =
+ 		(const struct old_cmdline *)OLD_CL_ADDRESS;
+ 
+-	BUILD_BUG_ON(sizeof boot_params != 4096);
++	BUILD_BUG_ON(sizeof boot_params != PAGE_SIZE);
+ 	memcpy(&boot_params.hdr, &hdr, sizeof hdr);
+ 
+ 	if (!boot_params.hdr.cmd_line_ptr &&
