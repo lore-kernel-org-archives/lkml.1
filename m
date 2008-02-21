@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934401AbYBUAft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932804AbYBUAk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934401AbYBUAft (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:35:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758896AbYBUAfl
+	id S932804AbYBUAk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758763AbYBUAkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:35:41 -0500
-Received: from wx-out-0506.google.com ([66.249.82.225]:15041 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758006AbYBUAfk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:35:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=c1+hYLjW1tKXvW8ylxxOHZolonxAvvwlAewfbTUINRilw9PvkaFeTThN2I7SckniFyvMpfZv/h9QAzWJccObiOCcwjsQSl2cV/9v6pQV4VdzM81vEoy8LeVc6B7k4zfmrUnhnIWcOWi1KnKXxs3EEK0Agv8Z2DhajOyz1lAA86s=
-Message-ID: <b6a2187b0802201635t2acb31f2n366f8ef81f119034@mail.gmail.com>
-Date: Thu, 21 Feb 2008 08:35:38 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Jesse Barnes" <jesse.barnes@intel.com>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "Dave Airlie" <airlied@linux.ie>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Greg KH" <gregkh@suse.de>
-In-Reply-To: <200802201337.52247.jesse.barnes@intel.com>
+	Wed, 20 Feb 2008 19:40:19 -0500
+Received: from crca.org.au ([67.207.131.56]:48766 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756104AbYBUAkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:40:17 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Message-ID: <47BCC866.9000102@nigel.suspend2.net>
+Date: Thu, 21 Feb 2008 11:40:06 +1100
+From: Nigel Cunningham <nigel@nigel.suspend2.net>
+Reply-To: nigel@nigel.suspend2.net
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: Jesse Barnes <jesse.barnes@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
+ Screen becomes green.
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org>
+In-Reply-To: <20080221001357.GA29796@srcf.ucam.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
-	 <200802201053.16218.jesse.barnes@intel.com>
-	 <b6a2187b0802201110k6e6c458dg6f48c586fff6187a@mail.gmail.com>
-	 <200802201337.52247.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
+Hi.
 
->  Ok, can you give this patch a try with the 'platform' method?  It should at
->  least tell us what ACPI would like the device to do at suspend time, but it
->  probably won't fix the hang.
+Matthew Garrett wrote:
+> On Thu, Feb 21, 2008 at 09:45:02AM +1100, Nigel Cunningham wrote:
+> 
+>> - people keep talking about hibernating to an ext3 fs mounted on fuse as 
+>> a limitation of the freezer. To do that with kexec, you're still going 
+>> to have to bmap the ext3 fs and pass the block list (in which case we 
+>> can also do it without kexec) or umount all the ext3/fuse part and 
+>> remount in the kexec'd kernel. Sort of defeats the purpose, doesn't it?
+> 
+> No, with a freezer-based model you can basically *never* suspend to 
+> anything related to FUSE or a userspace USB device or anything involving 
+> userspace iSCSI initiators or whatever. Sure, there are cases where 
+> moving away from the current model doesn't buy you anything, but that 
+> doesn't mean that the current model is a good thing. It's not. The 
+> freezer is a fundamentally broken concept.
 
-I can't get it to compile.
+Putting drivers and filesystems in userspace is the fundamentally broken 
+concept. Not just when it comes to the freezer. The whole idea is 
+inherently racy. You can draw silly diagrams about how the freezer 
+supposedly works in LCA slides and spread FUD as much as you like. In 
+the end, though, it's not nearly as hit-and-miss as you say, and 
+replacing the freezer with a kexec based freezer is only going to create 
+as many problems as it removes.
 
-drivers/char/drm/i915_drv.c: In function 'i915_suspend':
-drivers/char/drm/i915_drv.c:372: error: implicit declaration of
-function 'acpi_pci_choose_state'
-drivers/char/drm/i915_drv.c: In function 'i915_resume':
-drivers/char/drm/i915_drv.c:383: error: 'state' undeclared (first use
-in this function)
-drivers/char/drm/i915_drv.c:383: error: (Each undeclared identifier is
-reported only once
-drivers/char/drm/i915_drv.c:383: error: for each function it appears in.)
-make[3]: *** [drivers/char/drm/i915_drv.o] Error 1
-make[2]: *** [drivers/char/drm] Error 2
-make[1]: *** [drivers/char] Error 2
-make: *** [drivers] Error 2
+>> I also wonder about how much of a pain it's going to be setting up 
+>> userspace for this kexec'd kernel. Will you need a separate partition 
+>> just for it? If not, will the userspace be loaded into memory all the 
+>> time (more memory wasted for normal use), or loaded from ordinary 
+>> partitions at kexec time (how to do safely? - more info to transfer 
+>> between kernels?).
+> 
+> You're looking at a tiny amount of memory when compared to current 
+> systems. It's really not a problem.
 
-Thanks,
-Jeff.
+Please, quantify 'tiny'. In embedded, 5MB can be too much. I've worked 
+on embedded solutions. I'm not pulling problems out of thin air.
+
+Regards,
+
+Nigel
+
+
