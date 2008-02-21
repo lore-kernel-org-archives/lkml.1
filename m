@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763379AbYBUQg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934218AbYBUQhq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763379AbYBUQg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934296AbYBUQg0
+	id S934218AbYBUQhq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:37:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764237AbYBUQh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:36:26 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:38769 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934282AbYBUQgY (ORCPT
+	Thu, 21 Feb 2008 11:37:26 -0500
+Received: from el-out-1112.google.com ([209.85.162.177]:21901 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764436AbYBUQhX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:36:24 -0500
-Date: Thu, 21 Feb 2008 11:36:23 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Andrew Buehler <abuehler.kernel@gmail.com>
-cc: Oliver Pinter <oliver.pntr@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       SCSI development list <linux-scsi@vger.kernel.org>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: USB regression (and other failures) in 2.6.2[45]* - mostly
- resolved
-In-Reply-To: <47BDA141.70806@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0802211134040.4528-100000@iolanthe.rowland.org>
+	Thu, 21 Feb 2008 11:37:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Z/lkznMOKx6GUj0gE/eLkCVwt+ZvygfbiyfAIE+tEuP0Nv7wQtvcn5kYrZX0NNXBwavMAiBu+yavIB2vqkMkTZVw8mUpY+smmGz39j5jyA9L3SrEb62Qiy1ANn00M/ZCc8qbJiv079xY/bi99ZuIzV+4qiEKtTc/F+8N3bXRx9k=
+Message-ID: <45a44e480802210837o6caa9a9k8b26825b31cbf54d@mail.gmail.com>
+Date: Fri, 22 Feb 2008 00:37:19 +0800
+From: "Jaya Kumar" <jayakumar.lkml@gmail.com>
+To: "Markus Armbruster" <armbru@redhat.com>
+Subject: Re: [PATCH 2/2] xen pvfb: Para-virtual framebuffer, keyboard and pointer driver
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com, linux-fbdev-devel@lists.sourceforge.net,
+       adaplas@pol.net, linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       akpm@linux-foundation.org
+In-Reply-To: <87skzmd4qc.fsf@pike.pond.sub.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <871w76ejdg.fsf@pike.pond.sub.org>
+	 <87skzmd4qc.fsf@pike.pond.sub.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Feb 2008, Andrew Buehler wrote:
+On Thu, Feb 21, 2008 at 5:43 PM, Markus Armbruster <armbru@redhat.com> wrote:
+>  +config XEN_FBDEV_FRONTEND
+>  +       select FB_DEFERRED_IO
 
-> On 2/20/2008 2:29 PM, Alan Stern wrote:
-> 
-> > On Wed, 20 Feb 2008, Andrew Buehler wrote:
-> > 
-> >> In other words: I don't think that's likely to be practical in the
-> >> present instance. If you have reason to believe otherwise (past
-> >> positive experience with Novell, for instance), I'd be glad to hear
-> >> it.
-> > 
-> > Greg KH may be able to help in that respect.
-> 
-> I know he's in the CC:, but I'm not sure he's reading this thread, and
-> I'm hesitant to bother people about things out of the blue unless I have
-> reason to expect that it's something they're going to care about. (Just
-> because it's a big deal for me doesn't mean it makes one whit of
-> difference to anyone else, and from what little I've seen on
-> linux-kernel he seems to be somewhat important and fairly busy...)
+Groovy. :-)
 
-In this case you shouldn't worry about it.  I don't know whether Greg
-has been following this thread either, but I do know that he spends a
-lot of time and effort trying to improve vendors' support for Linux.  
-This is right up his alley.  What I'm not sure about is the extent of
-his influence over Novell...
-
-Alan Stern
-
+Thanks,
+jaya
