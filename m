@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933508AbYBUUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764812AbYBUUtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933508AbYBUUjU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:39:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758505AbYBUUi5
+	id S1764812AbYBUUtS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 15:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbYBUUtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:38:57 -0500
-Received: from brick.kernel.dk ([87.55.233.238]:22529 "EHLO kernel.dk"
+	Thu, 21 Feb 2008 15:49:06 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45855 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758598AbYBUUiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:38:55 -0500
-Date: Thu, 21 Feb 2008 21:38:51 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: balbir@linux.vnet.ibm.com, Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Make yield_task_fair more efficient
-Message-ID: <20080221203849.GU23197@kernel.dk>
-References: <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu> <47BD44FF.7070104@linux.vnet.ibm.com> <1203586980.6243.124.camel@lappy> <47BD479F.6070901@linux.vnet.ibm.com> <1203588090.6243.128.camel@lappy> <47BD4D48.4080606@linux.vnet.ibm.com> <1203592374.6243.138.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1203592374.6243.138.camel@lappy>
+	id S1755119AbYBUUtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 15:49:05 -0500
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       pzijlstr@redhat.com, arjan@infradead.org,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 2/2] make work have a static address in do_boot_cpu()
+Date: Thu, 21 Feb 2008 17:40:56 -0300
+Message-Id: <1203626456-3101-3-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1203626456-3101-2-git-send-email-gcosta@redhat.com>
+References: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
+ <1203626456-3101-2-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21 2008, Peter Zijlstra wrote:
-> 
-> On Thu, 2008-02-21 at 15:37 +0530, Balbir Singh wrote:
-> 
-> > You use the empty pointer (missing right child), so why do we need a list. May
-> > be I am missing something.
-> 
-> A fully threaded tree also has back-pointer to traverse backwards
-> through the ordered elements.
-> 
-> That said, overloading the right child pointer might not be the best
-> thing for the linux kernel, as it will impact all the rb-tree lookups
-> which are open-coded and often performance critical (this is the reason
-> the colour isn't bit encoded in either of the child pointers either).
-> 
-> But if you only want a uni directional thread, I guess we can stick it
-> in the unsigned long we use for the node colour.
-> 
-> Still, perhaps it's worth it to grow rb_node to 4 words and do the fully
-> threaded thing as there are also a lot of rb_prev() users in the kernel.
-> Who knows..
-> 
-> Anyway, I agree that improving rb_next() is worth looking into for the
-> scheduler.
+This patch makes the work field in create_idle have
+a static address. Otherwise, being a stack variable, it can
+boild down the lockdep system.
 
-For the IO scheduler as well, it's used quite extensively! So speeding
-up rb_next() would definitely help, as it's typically invoked for every
-bio queued (attempting to back merge with the next request). CFQ and AS
-additionally does an rb_next() and rb_prev() when trying to decide which
-request to do next.
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_64.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index f15b774..d79b7a8 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -545,6 +545,7 @@ static void __cpuinit do_fork_idle(struc
+ 	complete(&c_idle->done);
+ }
+ 
++static DEFINE_PER_CPU(struct create_idle, cpu_idle);
+ /*
+  * Boot one CPU.
+  */
+@@ -553,12 +554,12 @@ static int __cpuinit do_boot_cpu(int cpu
+ 	unsigned long boot_error;
+ 	int timeout;
+ 	unsigned long start_rip;
+-	struct create_idle create_idle = {
+-		.work = __WORK_INITIALIZER(create_idle.work, do_fork_idle),
+-		.cpu = cpu,
+-		.done = COMPLETION_INITIALIZER_ONSTACK(create_idle.done),
+-	};
+-	struct create_idle *c_idle = &create_idle;
++	struct create_idle *c_idle = &per_cpu(cpu_idle, cpu);
++	struct work_struct *c_idle_work = &c_idle->work;
++
++	INIT_WORK(c_idle_work, do_fork_idle);
++	c_idle->cpu = cpu;
++	init_completion(&c_idle->done);
+ 
+ 	/* allocate memory for gdts of secondary cpus. Hotplug is considered */
+ 	if (!cpu_gdt_descr[cpu].address &&
 -- 
-Jens Axboe
+1.4.2
 
