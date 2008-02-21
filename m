@@ -1,90 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935129AbYBUWdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934709AbYBUWfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935129AbYBUWdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:33:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934361AbYBUWdc
+	id S934709AbYBUWfM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:35:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759470AbYBUWe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:33:32 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:54296 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934216AbYBUWd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:33:29 -0500
-Message-ID: <47BDFC26.8000201@garzik.org>
-Date: Thu, 21 Feb 2008 17:33:10 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 17:34:57 -0500
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51624 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758753AbYBUWez (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 17:34:55 -0500
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ian Campbell <ijc@hellion.org.uk>,
+       Joel Becker <Joel.Becker@oracle.com>, Jody Belka <lists-lkml@pimb.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>
+	<20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>
+	<20080215202336.GE26034@mail.oracle.com>
+	<1203274161.27987.6.camel@localhost.localdomain>
+	<20080218104025.GA15899@ca-server1.us.oracle.com>
+	<1203458366.26910.15.camel@cthulhu.hellion.org.uk>
+	<47BBDA20.8030105@zytor.com>
+	<1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+	<47BCA275.7000504@goop.org>
+	<1203546597.26910.74.camel@cthulhu.hellion.org.uk>
+	<47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com>
+Date: Thu, 21 Feb 2008 15:04:08 -0700
+In-Reply-To: <47BDEB57.5040203@zytor.com> (H. Peter Anvin's message of "Thu,
+	21 Feb 2008 13:21:27 -0800")
+Message-ID: <m14pc26k6f.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Linus Torvalds <torvalds@osdl.org>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>	<20080221154951.GA28328@cs181133002.pp.htv.fi>	<adahcg2awag.fsf@cisco.com>	<20080221210124.GD28328@cs181133002.pp.htv.fi> <20080221140855.6aea8cc1@laptopd505.fenrus.org>
-In-Reply-To: <20080221140855.6aea8cc1@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Thu, 21 Feb 2008 23:01:24 +0200
-> Adrian Bunk <bunk@kernel.org> wrote:
-> 
->> [ Linus Added to the To: since I want to hear his opinion on this
->> issue. ]
+"H. Peter Anvin" <hpa@zytor.com> writes:
+
+> Jeremy Fitzhardinge wrote:
+>> Ian Campbell wrote:
+>>> I'll see if I can track down where the page is getting used and have a
+>>> go at getting in there first. It must be pretty early to be allocated
+>>> already when dmi_scan_machine gets called.
+>>>
+>>> It's possible that the domain builder might have already allocated a PT
+>>> at this address. I haven't checked but I think currently the domain
+>>> builder always puts PT pages after the kernel so hopefully it's only a
+>>> theoretical problem.
+>>>
 >>
->> On Thu, Feb 21, 2008 at 12:28:55PM -0800, Roland Dreier wrote:
->>>  > This driver should really have gotten some review before being
->>>  > included in the kernel.
+>> Yes, it does.  And presumably the early pagetable builder is guaranteed to
+>> avoid special memory like the DMI space.  But the bug definitely seems to be a
+>> result of the DMI code trying to make a RW mapping of a pagetable page, so
+>> something is amiss there.
+>>
+>> Ooh, sleazy hack idea: make DMI always map RO, so even if it does get a
+>> pagetable it causes no complaint...  A bit awkward, since there doesn't seem
+>> to be an RO form of early_ioremap.
+>>
+>>> Another option I was thinking of was a command line option to disable
+>>> DMI, which (maybe) isn't terribly useful in itself but it introduces an
+>>> associated variable to frob with. That's similar to how the TSC was
+>>> handled in the past (well, the opposite since TSC was forced on).
 >>>
->>>  > Even a simple checkpatch run finds more than > 250 stylistic
->>>  > errors (not code bugs but cases where the driver violates the
->>>  > standard code formatting rules of kernel code).
->>>
->>> Linus has strongly stated that we should merge hardware drivers
->>> early, and I agree: although the nes driver clearly needs more
->>> work, there's no advantage to users with the hardware in forcing
->>> them to wait for 2.6.26 to merge the driver, since they'll just
->>> have to patch the grungy code in themselves anyway.  And by merging
->>> the driver early, we get fixed up for any tree-wide changes and
->>> allow janitors to help with the cleanup.
->> Is it really intended to merge drivers without _any_ kind of review?
-> 
-> No of course not.
-> 
-> I totally agree we should be more agressive in merging drivers earlier.
-> A minimal review needs to happen so for a few things imo
-> 1) That the driver doesn't break the build
-> 2) That the driver has no obvious huge security holes
->    (this is a big deal for unsuspecting users)
-> 3) that there's not an obscene amount of "uses deprecated api" compiler warnings
->    (since those are annoying for everyone else)
-> 4) that people who don't have the hardware are not negatively affected
->    (say crashes without the hw or so)
+>>
+>> Yep, that would work too.
+>>
+>> Still curious about why a pagetable page is ending up in that range though.
+>> Seems like it shouldn't be possible, since we shouldn't be allowed to allocate
+>> from those pages, at least until the DMI probe has happened...  Unless the
+>> early allocator is only excluded from e820 reserved pages, which would cause a
+>> problem on systems which don't reserve the DMI space...  HPA?
+>>
+>
+> I thought the problem was a Xen-provided pagetable from before Linux started?
 
-FWIW, my general guidelines for merging drivers in my areas are:
+The immediate symptom was that we have a page table at the address we
+are doing the DMI probe.  Xen does not allow pages tables to be mapped
+read-write so early_ioremap get into trouble.
 
-1) it's not fugly
+We have a mystery:
+- Why did the Xen domain builder or the linux kernel use 0xf0000 - 0x10000
+  for a page table.
 
-2) it has an active maintainer who responds to feedback
+  It should be possible to instrument the early linux page allocation
+  and see what page pages linux is using to see who is doing weird
+  things.
 
+We have possible solutions.
+- Add a read-only flag to early_ioremap for use by our table scans.
+- Don't do a DMI scan in the case of Xen.
+- Fix the Xen domain builder.
 
-I tend to think it is NOT in the best interests of Linux users, for us 
-to merge vendor-fugly drivers with many layers of OS wrappers and 
-similar obfuscation.
+My inclination is that we disable the fruitless DMI scan in the case
+Xen, or we get the Xen domain builder fixed.
 
-But similarly...  I merge drivers long before our SCSI maintainer will, 
-and I value "it works" above stupid checkpatch warnings.
+If Xen is going to increasingly look like a normal X86 BIOS we should
+let the DMI scan run and be put the burden on Xen to keep things
+looking like a normal x86 machine.  If Xen is not going to look more
+like a normal x86 machine we can say oh, that is nice, it's Xen so
+don't bother doing things that will cause problems.
 
-	Jeff
+In this case can we confirm that the domain builder is using those
+early 64k as pages for a page table, and then educate it that not
+allowing OS access to those pages is a little silly.
 
+All of that said.  For DMI tables other early tables we should not
+be writing to them anyway so learning to use read-only maps may be
+the right solution.  If the reason Xen was complaining was that
+we were accessing an area that was not page tables but instead
+should only be mapped read-only I would have a lot of sympathy
+with that.  As mapping areas that are architecturally ROMs read-write
+is silly.
 
+So guys can you please finish the root cause and really see why there
+is a page table page at in 64K ROM BIOS area?
 
+Eric
