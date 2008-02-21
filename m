@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbYBUJ0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbYBUJd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbYBUJ0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:26:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbYBUJ0T
+	id S1761770AbYBUJd6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756833AbYBUJdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:26:19 -0500
-Received: from mail.hevs.ch ([153.109.23.10]:38925 "EHLO mail.hevs.ch"
+	Thu, 21 Feb 2008 04:33:41 -0500
+Received: from mga03.intel.com ([143.182.124.21]:63409 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752156AbYBUJ0R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:26:17 -0500
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Subject: Re: [PATCH] atmel_spi: support zero length transfer
-Date: Thu, 21 Feb 2008 10:26:16 +0100
-User-Agent: KMail/1.9.7
-Cc: hskinnemoen@atmel.com, david-b@pacbell.net,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20080221.005432.07645461.anemo@mba.ocn.ne.jp> <200802201855.02605.marc.pignat@hevs.ch> <20080221.105233.41199605.nemoto@toshiba-tops.co.jp>
-In-Reply-To: <20080221.105233.41199605.nemoto@toshiba-tops.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="ansi_x3.4-1968"
+	id S1755471AbYBUJdj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 04:33:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,385,1199692800"; 
+   d="scan'208";a="381807988"
+Subject: Re: [PATCH 2/2] x86 : relocate uninitialized variable in init DATA
+	section into init BSS section
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Ian Campbell <ijc@hellion.org.uk>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080221090557.GB20055@elte.hu>
+References: <1203581723.4707.20.camel@caritas-dev.intel.com>
+	 <20080221090557.GB20055@elte.hu>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802211026.17816.marc.pignat@hevs.ch>
+Date: Thu, 21 Feb 2008 17:28:26 +0800
+Message-Id: <1203586106.4707.25.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 21 Feb 2008 09:27:08.0252 (UTC) FILETIME=[EDF331C0:01C8746B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 2008-02-21 at 10:05 +0100, Ingo Molnar wrote:
+> * Huang, Ying <ying.huang@intel.com> wrote:
+> 
+> > Uninitialized variable in init DATA sections are relocated into init 
+> > BSS sections to reduce kernel image size. Several KB can be reduced.
+> 
+> > -int __initdata early_ioremap_debug;
+> > +int __initbss early_ioremap_debug;
+> 
+> will we get some sort of build error if we accidentally do:
+> 
+>    int __initbss early_ioremap_debug = 1;
+> 
+> ?
 
-On Thursday 21 February 2008, Atsushi Nemoto wrote:
-...
-> Yes.  I tested it on AT91SAM9260 and it seems ENDRX rises soon.
-> Though it can be possible to avoid starting DMA for zero length
-> transfer, I think it is not worth to optimize for such a rare case.
-Ok, verified to work on at91rm9200, should be tested on AVR32.
+I tested it just now, and there is no build error.
 
-David, do you think writing 0 bytes is a valid use of this API?
-IMHO, we should add a fied to the spi_transfer struct.
-
-Regards
-
-Marc
-
+Best Regards,
+Huang Ying
