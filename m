@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933710AbYBUP7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933784AbYBUP7i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933710AbYBUP7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 10:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932325AbYBUPyq
+	id S933784AbYBUP7i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 10:59:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932507AbYBUPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:54:46 -0500
-Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41365
+	Thu, 21 Feb 2008 10:54:51 -0500
+Received: from 75-130-111-13.dhcp.oxfr.ma.charter.com ([75.130.111.13]:41375
 	"EHLO novell1.haskins.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S932270AbYBUPyn (ORCPT
+	by vger.kernel.org with ESMTP id S932450AbYBUPys (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:54:43 -0500
+	Thu, 21 Feb 2008 10:54:48 -0500
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [PATCH [RT] 09/14] adaptive mutexes
+Subject: [PATCH [RT] 10/14] adjust pi_lock usage in wakeup
 To: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
        rostedt@goodmis.org, linux-rt-users@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
@@ -19,8 +19,8 @@ Cc: linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
        npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
        sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com,
        ghaskins@novell.com
-Date: Thu, 21 Feb 2008 10:27:12 -0500
-Message-ID: <20080221152712.4804.64576.stgit@novell1.haskins.net>
+Date: Thu, 21 Feb 2008 10:27:17 -0500
+Message-ID: <20080221152717.4804.56212.stgit@novell1.haskins.net>
 In-Reply-To: <20080221152504.4804.8724.stgit@novell1.haskins.net>
 References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
 User-Agent: StGIT/0.12.1
@@ -33,250 +33,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Peter W.Morreale <pmorreale@novell.com>
 
-This patch adds the adaptive spin lock busywait to rtmutexes.  It adds
-a new tunable: rtmutex_timeout, which is the companion to the
-rtlock_timeout tunable.
+In wakeup_next_waiter(), we take the pi_lock, and then find out whether
+we have another waiter to add to the pending owner.  We can reduce
+contention on the pi_lock for the pending owner if we first obtain the
+pointer to the next waiter outside of the pi_lock.
+
+This patch adds a measureable increase in throughput.
 
 Signed-off-by: Peter W. Morreale <pmorreale@novell.com>
 ---
 
- kernel/Kconfig.preempt    |   37 +++++++++++++++++++++++++++++++++++++
- kernel/rtmutex.c          |   44 ++++++++++++++++++++++++++------------------
- kernel/rtmutex_adaptive.h |   32 ++++++++++++++++++++++++++++++--
- kernel/sysctl.c           |   10 ++++++++++
- 4 files changed, 103 insertions(+), 20 deletions(-)
+ kernel/rtmutex.c |   14 +++++++++-----
+ 1 files changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-index eebec19..d2b0daa 100644
---- a/kernel/Kconfig.preempt
-+++ b/kernel/Kconfig.preempt
-@@ -223,6 +223,43 @@ config RTLOCK_DELAY
- 	 tunable at runtime via a sysctl.  A setting of 0 (zero) disables
- 	 the adaptive algorithm entirely.
- 
-+config ADAPTIVE_RTMUTEX
-+        bool "Adaptive real-time mutexes"
-+        default y
-+        depends on ADAPTIVE_RTLOCK
-+        help
-+         This option adds the adaptive rtlock spin/sleep algorithm to
-+         rtmutexes.  In rtlocks, a significant gain in throughput
-+         can be seen by allowing rtlocks to spin for a distinct
-+         amount of time prior to going to sleep for deadlock avoidence.
-+ 
-+         Typically, mutexes are used when a critical section may need to
-+         sleep due to a blocking operation.  In the event the critical 
-+	 section does not need to sleep, an additional gain in throughput 
-+	 can be seen by avoiding the extra overhead of sleeping.
-+ 
-+         This option alters the rtmutex code to use an adaptive
-+         spin/sleep algorithm.  It will spin unless it determines it must
-+         sleep to avoid deadlock.  This offers a best of both worlds
-+         solution since we achieve both high-throughput and low-latency.
-+ 
-+         If unsure, say Y
-+ 
-+config RTMUTEX_DELAY
-+        int "Default delay (in loops) for adaptive mutexes"
-+        range 0 10000000
-+        depends on ADAPTIVE_RTMUTEX
-+        default "3000"
-+        help
-+         This allows you to specify the maximum delay a task will use
-+	 to wait for a rt mutex before going to sleep.  Note that that
-+	 although the delay is implemented as a preemptable loop, tasks
-+	 of like priority cannot preempt each other and this setting can
-+	 result in increased latencies.
-+	 
-+         The value is tunable at runtime via a sysctl.  A setting of 0
-+	 (zero) disables the adaptive algorithm entirely.
-+
- config SPINLOCK_BKL
- 	bool "Old-Style Big Kernel Lock"
- 	depends on (PREEMPT || SMP) && !PREEMPT_RT
 diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
-index 4a7423f..a7ed7b2 100644
+index a7ed7b2..122f143 100644
 --- a/kernel/rtmutex.c
 +++ b/kernel/rtmutex.c
-@@ -24,6 +24,10 @@
- int rtlock_timeout __read_mostly = CONFIG_RTLOCK_DELAY;
- #endif
- 
-+#ifdef CONFIG_ADAPTIVE_RTMUTEX
-+int rtmutex_timeout __read_mostly = CONFIG_RTMUTEX_DELAY;
-+#endif
-+
- /*
-  * lock->owner state tracking:
-  *
-@@ -521,17 +525,16 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
- 	 * Do the wakeup before the ownership change to give any spinning
- 	 * waiter grantees a headstart over the other threads that will
- 	 * trigger once owner changes.
-+	 *
-+	 * This may appear to be a race, but the barriers close the
-+	 * window.
- 	 */
--	if (!savestate)
--		wake_up_process(pendowner);
--	else {
--		smp_mb();
--		/*
--		 * This may appear to be a race, but the barriers close the
--		 * window.
--		 */
--		if ((pendowner->state != TASK_RUNNING)
--		    && (pendowner->state != TASK_RUNNING_MUTEX))
-+	smp_mb();
-+	if ((pendowner->state != TASK_RUNNING)
-+	    && (pendowner->state != TASK_RUNNING_MUTEX)) {
-+		if (!savestate)
-+			wake_up_process(pendowner);
-+		else
- 			wake_up_process_mutex(pendowner);
- 	}
- 
-@@ -764,7 +767,7 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
- 		debug_rt_mutex_print_deadlock(&waiter);
- 
- 		/* adaptive_wait() returns 1 if we need to sleep */
--		if (adaptive_wait(lock, &waiter, &adaptive)) {
-+		if (adaptive_wait(lock, 0, &waiter, &adaptive)) {
- 			update_current(TASK_UNINTERRUPTIBLE, &saved_state);
- 			if (waiter.task)
- 				schedule_rt_mutex(lock);
-@@ -975,6 +978,7 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 	int ret = 0, saved_lock_depth = -1;
- 	struct rt_mutex_waiter waiter;
- 	unsigned long flags;
-+	DECLARE_ADAPTIVE_MUTEX_WAITER(adaptive);
- 
- 	debug_rt_mutex_init_waiter(&waiter);
- 	waiter.task = NULL;
-@@ -995,8 +999,6 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 	if (unlikely(current->lock_depth >= 0))
- 		saved_lock_depth = rt_release_bkl(lock, flags);
- 
--	set_current_state(state);
--
- 	/* Setup the timer, when timeout != NULL */
- 	if (unlikely(timeout))
- 		hrtimer_start(&timeout->timer, timeout->timer.expires,
-@@ -1049,6 +1051,9 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 			if (unlikely(ret))
- 				break;
- 		}
-+
-+		mutex_prepare_adaptive_wait(lock, &adaptive);
-+
- 		saved_flags = current->flags & PF_NOSCHED;
- 		current->flags &= ~PF_NOSCHED;
- 
-@@ -1056,17 +1061,20 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
- 
- 		debug_rt_mutex_print_deadlock(&waiter);
- 
--		if (waiter.task)
--			schedule_rt_mutex(lock);
-+		if (mutex_adaptive_wait(lock,
-+					(state == TASK_INTERRUPTIBLE),
-+					&waiter, &adaptive)) {
-+			set_current_state(state);
-+			if (waiter.task)
-+				schedule_rt_mutex(lock);
-+			set_current_state(TASK_RUNNING);
-+		}
- 
- 		spin_lock_irq(&lock->wait_lock);
- 
- 		current->flags |= saved_flags;
--		set_current_state(state);
- 	}
- 
--	set_current_state(TASK_RUNNING);
--
- 	if (unlikely(waiter.task))
- 		remove_waiter(lock, &waiter, flags);
- 
-diff --git a/kernel/rtmutex_adaptive.h b/kernel/rtmutex_adaptive.h
-index b7e282b..72f8def 100644
---- a/kernel/rtmutex_adaptive.h
-+++ b/kernel/rtmutex_adaptive.h
-@@ -56,7 +56,8 @@ struct adaptive_waiter {
-  *
-  */
- static inline int
--adaptive_wait(struct rt_mutex *lock, struct rt_mutex_waiter *waiter,
-+adaptive_wait(struct rt_mutex *lock, int interruptible,
-+	      struct rt_mutex_waiter *waiter,
- 	      struct adaptive_waiter *adaptive)
+@@ -505,6 +505,7 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
  {
- 	int sleep = 0;
-@@ -77,6 +78,14 @@ adaptive_wait(struct rt_mutex *lock, struct rt_mutex_waiter *waiter,
- 		if (adaptive->owner != rt_mutex_owner(lock))
- 			break;
+ 	struct rt_mutex_waiter *waiter;
+ 	struct task_struct *pendowner;
++	struct rt_mutex_waiter *next;
  
-+#ifdef CONFIG_ADAPTIVE_RTMUTEX
-+		/*
-+		 * Mutexes may need to check for signals...
-+		 */
-+		if (interruptible && signal_pending(current))
-+			break;
-+#endif
-+
- 		/*
- 		 * If we got here, presumably the lock ownership is still
- 		 * current.  We will use it to our advantage to be able to
-@@ -132,10 +141,29 @@ extern int rtlock_timeout;
+ 	spin_lock(&current->pi_lock);
  
- #define DECLARE_ADAPTIVE_WAITER(name)
+@@ -549,6 +550,12 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
+ 	 * waiter with higher priority than pending-owner->normal_prio
+ 	 * is blocked on the unboosted (pending) owner.
+ 	 */
++
++	if (rt_mutex_has_waiters(lock))
++		next = rt_mutex_top_waiter(lock);
++	else
++		next = NULL;
++
+ 	spin_lock(&pendowner->pi_lock);
  
--#define adaptive_wait(lock, waiter, busy) 1
-+#define adaptive_wait(lock, intr, waiter, busy) 1
- #define prepare_adaptive_wait(lock, busy) {}
+ 	WARN_ON(!pendowner->pi_blocked_on);
+@@ -557,12 +564,9 @@ static void wakeup_next_waiter(struct rt_mutex *lock, int savestate)
  
- #endif /* CONFIG_ADAPTIVE_RTLOCK */
+ 	pendowner->pi_blocked_on = NULL;
  
-+#ifdef CONFIG_ADAPTIVE_RTMUTEX
+-	if (rt_mutex_has_waiters(lock)) {
+-		struct rt_mutex_waiter *next;
+-
+-		next = rt_mutex_top_waiter(lock);
++	if (next)
+ 		plist_add(&next->pi_list_entry, &pendowner->pi_waiters);
+-	}
 +
-+#define mutex_adaptive_wait         adaptive_wait
-+#define mutex_prepare_adaptive_wait prepare_adaptive_wait
-+
-+extern int rtmutex_timeout;
-+
-+#define DECLARE_ADAPTIVE_MUTEX_WAITER(name) \
-+     struct adaptive_waiter name = { .owner = NULL,               \
-+                                     .timeout = rtmutex_timeout, }
-+
-+#else
-+
-+#define DECLARE_ADAPTIVE_MUTEX_WAITER(name)
-+
-+#define mutex_adaptive_wait(lock, intr, waiter, busy) 1
-+#define mutex_prepare_adaptive_wait(lock, busy) {}
-+
-+#endif /* CONFIG_ADAPTIVE_RTMUTEX */
+ 	spin_unlock(&pendowner->pi_lock);
+ }
  
- #endif /* __KERNEL_RTMUTEX_ADAPTIVE_H */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 36259e4..3465af2 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -976,6 +976,16 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- #endif
-+#ifdef CONFIG_ADAPTIVE_RTMUTEX
-+	{
-+		.ctl_name       = CTL_UNNUMBERED,
-+		.procname       = "rtmutex_timeout",
-+		.data           = &rtmutex_timeout,
-+		.maxlen         = sizeof(int),
-+		.mode           = 0644,
-+		.proc_handler   = &proc_dointvec,
-+       },
-+#endif
- #ifdef CONFIG_PROC_FS
- 	{
- 		.ctl_name       = CTL_UNNUMBERED,
 
