@@ -1,202 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbYBUGbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbYBUGhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759055AbYBUGbz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 01:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753052AbYBUGbn
+	id S1760431AbYBUGhk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 01:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYBUGha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 01:31:43 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56108
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753022AbYBUGbm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 01:31:42 -0500
-Date: Wed, 20 Feb 2008 22:32:19 -0800 (PST)
-Message-Id: <20080220.223219.165157596.davem@davemloft.net>
-To: Steve.Hawkes@motorola.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: printk_ratelimit and net_ratelimit conflict and tunable
- behavior
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <7BFDACCD6948EF4D8FE8F4888A91596A016371E8@tx14exm60.ds.mot.com>
-References: <7BFDACCD6948EF4D8FE8F4888A91596A016371E8@tx14exm60.ds.mot.com>
-X-Mailer: Mew version 5.2 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 01:37:30 -0500
+Received: from ns2.suse.de ([195.135.220.15]:36804 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752448AbYBUGh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 01:37:29 -0500
+Date: Wed, 20 Feb 2008 22:37:18 -0800
+From: Greg KH <gregkh@suse.de>
+To: Nigel Cunningham <nigel@nigel.suspend2.net>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
+	Screen becomes green.
+Message-ID: <20080221063718.GA25036@suse.de>
+References: <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org> <47BCC866.9000102@nigel.suspend2.net> <20080221004632.GA25869@suse.de> <47BCD112.3010708@nigel.suspend2.net> <20080221044331.GB21499@suse.de> <47BD14AC.5070002@nigel.suspend2.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BD14AC.5070002@nigel.suspend2.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Hawkes Steve-FSH016" <Steve.Hawkes@motorola.com>
-Date: Tue, 19 Feb 2008 15:30:51 -0600
+On Thu, Feb 21, 2008 at 05:05:32PM +1100, Nigel Cunningham wrote:
+> Hi Greg.
+>
+> Greg KH wrote:
+>> On Thu, Feb 21, 2008 at 12:17:06PM +1100, Nigel Cunningham wrote:
+>>> Hi.
+>>>
+>>> Greg KH wrote:
+>>>> On Thu, Feb 21, 2008 at 11:40:06AM +1100, Nigel Cunningham wrote:
+>>>>> Hi.
+>>>>>
+>>>>> Matthew Garrett wrote:
+>>>>>> On Thu, Feb 21, 2008 at 09:45:02AM +1100, Nigel Cunningham wrote:
+>>>>>>> - people keep talking about hibernating to an ext3 fs mounted on fuse 
+>>>>>>> as a limitation of the freezer. To do that with kexec, you're still 
+>>>>>>> going to have to bmap the ext3 fs and pass the block list (in which 
+>>>>>>> case we can also do it without kexec) or umount all the ext3/fuse 
+>>>>>>> part and remount in the kexec'd kernel. Sort of defeats the purpose, 
+>>>>>>> doesn't it?
+>>>>>> No, with a freezer-based model you can basically *never* suspend to 
+>>>>>> anything related to FUSE or a userspace USB device or anything 
+>>>>>> involving userspace iSCSI initiators or whatever. Sure, there are 
+>>>>>> cases where moving away from the current model doesn't buy you 
+>>>>>> anything, but that doesn't mean that the current model is a good 
+>>>>>> thing. It's not. The freezer is a fundamentally broken concept.
+>>>>> Putting drivers and filesystems in userspace is the fundamentally 
+>>>>> broken concept. Not just when it comes to the freezer. The whole idea 
+>>>>> is inherently racy.
+>>>> Racy with regards to other things becides trying to suspend a machine?
+>>>> If so, what?
+>>> That depends on what sort of tangled web you want to weave.
+>> Lots of them :)
+>> We have tanks running Linux using userspace USB drivers for vision
+>> control systems (scary, I know...)  They seem to be successfully running
+>> for many years now, and I'm interested in making sure those kinds of
+>> things keep working.
+>> We also have laser welding robots with userspace PCI drivers in car
+>> manufacturing plants.  And other laser cutting robots slicing wood in
+>> patterns moving at a rate of over 3 meters a second.  Again, with
+>> userspace drivers and Linux.
+>> Those users would also love to know of any potential problems you know
+>> of for this situation.
+>>> Low memory situations is one other situation that occurs to me
+>>> quickly, especially (though not only) if your ability to swap were to
+>>> depend upon a userspace driver and/or filesystem.
+>> Sure, swap over a userspace filesystem or driver isn't a sane idea.  And
+>> neither is swaping over NFS over a PPP connection attached to a USB to
+>> serial device.  Yes, it's possible, and all in the kernel, but not a
+>> wise decision.
+>> Other than foolish configurations, if you come up with other issues
+>> surrounding userspace drivers that could cause problems, please let me
+>> know.
+>
+> A simple OOM condition isn't an issue? Surely a driver stalling because 
+> some of its memory gets swapped out just before it goes to use it would be 
+> a problem if it resulted in getting the length of a cut wrong or caused 
+> some distorted vision or a late turn :>
+>
+> Am I missing something? Maybe these drivers mlock memory to avoid those 
+> issues or something like that?
 
-[ netdev CC:'d ]
+I think the mlock their memory to prevent this from happening, it's not
+hard when you control all the applications on the box :)
 
-> The printk_ratelimit() and net_ratelimit() functions are coupled and
-> interfere with each other. Each has their own tunable parameters to
-> control their respective rate limiting feature, but they share common
-> state variables, causing the rate limiting to behave in an unexpected
-> fashion when the tunables for each are set to different values.
-> 
-> Also, changes to rate limiting tunable parameters do not always take
-> effect
-> properly since state is not recomputed when changes occur. For example,
-> if
-> the ratelimit_burst tunable value is increased while rate limiting
-> is occurring, the change doesn't take full effect until at least enough
-> time between messages occurs so that the toks value reaches
-> ratelimit_burst * ratelimit_jiffies. This can result in messages being
-> suppressed when they should be allowed.
+thanks,
 
-This looks fine to me, please provide a proper "Signed-off-by: " as
-described in linux/Documentation/SubmittingPatches
-
-Thanks.
-
-> diff -Naup OLD/include/linux/kernel.h NEW/include/linux/kernel.h
-> --- OLD/include/linux/kernel.h	2008-02-19 10:02:07.461496000 -0600
-> +++ NEW/include/linux/kernel.h	2008-02-19 10:45:32.858306000 -0600
-> @@ -196,8 +196,20 @@ static inline int log_buf_copy(char *des
->  
->  unsigned long int_sqrt(unsigned long);
->  
-> +struct printk_ratelimit_state
-> +{
-> +	unsigned long toks;
-> +	unsigned long last_jiffies;
-> +	int missed;
-> +	int limit_jiffies;
-> +	int limit_burst;
-> +	char const *facility;
-> +};
-> +
-> +extern int __printk_ratelimit(int ratelimit_jiffies,
-> +			      int ratelimit_burst,
-> +			      struct printk_ratelimit_state *state);
->  extern int printk_ratelimit(void);
-> -extern int __printk_ratelimit(int ratelimit_jiffies, int
-> ratelimit_burst);
->  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  				unsigned int interval_msec);
->  
-> diff -Naup OLD/net/core/utils.c NEW/net/core/utils.c
-> --- OLD/net/core/utils.c	2008-02-19 10:01:26.442370000 -0600
-> +++ NEW/net/core/utils.c	2008-02-19 10:46:45.026731000 -0600
-> @@ -41,7 +41,18 @@ EXPORT_SYMBOL(net_msg_warn);
->   */
->  int net_ratelimit(void)
->  {
-> -	return __printk_ratelimit(net_msg_cost, net_msg_burst);
-> +	static struct printk_ratelimit_state limit_state = {
-> +		.toks          = 10 * 5 * HZ,
-> +		.last_jiffies  = 0,
-> +		.missed        = 0,
-> +		.limit_jiffies = 5 * HZ,
-> +		.limit_burst   = 10,
-> +		.facility      = "net"
-> +	};
-> +
-> +	return __printk_ratelimit(net_msg_cost,
-> +				  net_msg_burst,
-> +				  &limit_state);
->  }
->  EXPORT_SYMBOL(net_ratelimit);
->  
-> diff -Naup OLD/kernel/printk.c NEW/kernel/print.c
-> --- OLD/kernel/printk.c	2008-02-19 10:00:47.359068000 -0600
-> +++ NEW/kernel/printk.c	2008-02-19 10:46:30.748743000 -0600
-> @@ -1236,37 +1236,47 @@ void tty_write_message(struct tty_struct
->  }
->  
->  /*
-> - * printk rate limiting, lifted from the networking subsystem.
-> + * printk rate limiting.
->   *
-> - * This enforces a rate limit: not more than one kernel message
-> - * every printk_ratelimit_jiffies to make a denial-of-service
-> - * attack impossible.
-> + * This enforces a rate limit to mitigate denial-of-service attacks:
-> + * not more than ratelimit_burst messages every ratelimit_jiffies.
->   */
-> -int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst)
-> +int __printk_ratelimit(int ratelimit_jiffies,
-> +		       int ratelimit_burst,
-> +		       struct printk_ratelimit_state *state)
->  {
->  	static DEFINE_SPINLOCK(ratelimit_lock);
-> -	static unsigned long toks = 10 * 5 * HZ;
-> -	static unsigned long last_msg;
-> -	static int missed;
->  	unsigned long flags;
->  	unsigned long now = jiffies;
->  
->  	spin_lock_irqsave(&ratelimit_lock, flags);
-> -	toks += now - last_msg;
-> -	last_msg = now;
-> -	if (toks > (ratelimit_burst * ratelimit_jiffies))
-> -		toks = ratelimit_burst * ratelimit_jiffies;
-> -	if (toks >= ratelimit_jiffies) {
-> -		int lost = missed;
-> -
-> -		missed = 0;
-> -		toks -= ratelimit_jiffies;
-> +	state->toks += now - state->last_jiffies;
-> +	/* Reset limiting if tunables changed */
-> +	if ((state->limit_jiffies != ratelimit_jiffies) ||
-> +	    (state->limit_burst != ratelimit_burst)) {
-> +		state->toks = ratelimit_burst * ratelimit_jiffies;
-> +		state->limit_jiffies = ratelimit_jiffies;
-> +		state->limit_burst = ratelimit_burst;
-> +	}
-> +	state->last_jiffies = now;
-> +	if (state->toks > (ratelimit_burst * ratelimit_jiffies))
-> +		state->toks = ratelimit_burst * ratelimit_jiffies;
-> +	if (state->toks >= ratelimit_jiffies) {
-> +		int lost = state->missed;
-> +		state->missed = 0;
-> +		state->toks -= ratelimit_jiffies;
->  		spin_unlock_irqrestore(&ratelimit_lock, flags);
-> -		if (lost)
-> -			printk(KERN_WARNING "printk: %d messages
-> suppressed.\n", lost);
-> +		if (lost) {
-> +			printk(KERN_WARNING
-> +			       "printk: %d %s%smessage%s suppressed.\n",
-> +			       lost,
-> +			       (state->facility == 0 ? "" :
-> state->facility),
-> +			       (state->facility == 0 ? "" : " "),
-> +			       (lost > 1 ? "s" : ""));
-> +		}
->  		return 1;
->  	}
-> -	missed++;
-> +	state->missed++;
->  	spin_unlock_irqrestore(&ratelimit_lock, flags);
->  	return 0;
->  }
-> @@ -1280,8 +1290,18 @@ int printk_ratelimit_burst = 10;
->  
->  int printk_ratelimit(void)
->  {
-> +	static struct printk_ratelimit_state limit_state = {
-> +		.toks          = 10 * 5 * HZ,
-> +		.last_jiffies  = 0,
-> +		.missed        = 0,
-> +		.limit_jiffies = 5 * HZ,
-> +		.limit_burst   = 10,
-> +		.facility      = 0
-> +	};
-> +
->  	return __printk_ratelimit(printk_ratelimit_jiffies,
-> -				printk_ratelimit_burst);
-> +				  printk_ratelimit_burst,
-> +				  &limit_state);
->  }
->  EXPORT_SYMBOL(printk_ratelimit);
->  
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+greg k-h
