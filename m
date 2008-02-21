@@ -1,64 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933203AbYBUVPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934756AbYBUVQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933203AbYBUVPw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:15:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754489AbYBUVPn
+	id S934756AbYBUVQc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:16:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762875AbYBUVQT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:15:43 -0500
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59406 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753891AbYBUVPm (ORCPT
+	Thu, 21 Feb 2008 16:16:19 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:37322 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753649AbYBUVQR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:15:42 -0500
-Date: Thu, 21 Feb 2008 13:14:55 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Adrian Bunk <bunk@kernel.org>
-cc: Roland Dreier <rdreier@cisco.com>, Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-In-Reply-To: <20080221210124.GD28328@cs181133002.pp.htv.fi>
-Message-ID: <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 21 Feb 2008 16:16:17 -0500
+Date: Thu, 21 Feb 2008 21:16:10 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Sam Ravnborg <sam@ravnborg.org>, John Linville <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Stefano Brivio <stefano.brivio@polimi.it>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mac80211: check endianness/types in sparse runs
+Message-ID: <20080221211610.GA27894@ZenIV.linux.org.uk>
+References: <1203503909.17534.14.camel@johannes.berg> <20080220195913.GE21139@uranus.ravnborg.org> <1203597776.20331.5.camel@johannes.berg>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203597776.20331.5.camel@johannes.berg>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 21 Feb 2008, Adrian Bunk wrote:
+On Thu, Feb 21, 2008 at 01:42:56PM +0100, Johannes Berg wrote:
+> >> [patch doing CHECKFLAGS += -D__CHECK_ENDIAN__ in the
+> >> net/mac80211/Makefile]
 > 
-> Is it really intended to merge drivers without _any_ kind of review?
+> > I would prefer it to be kernel wide enabled.
+> > Tried a defconfig build.
+> 
+> Hm. I tend to think there was a reason for this, since this is actually
+> explicitly disabled by include/linux/types.h:
+> 
+> #ifdef __CHECKER__
+> #define __bitwise__ __attribute__((bitwise))
+> #else 
+> #define __bitwise__
+> #endif
+> 
+> #ifdef __CHECK_ENDIAN__
+> #define __bitwise __bitwise__
+> #else
+> #define __bitwise
+> #endif
+> 
+> The commit that introduced __CHECK_ENDIAN__ was
+> af4ca457eaf2d6682059c18463eb106e2ce58198 ("gfp_t: infrastructure") but
+> it doesn't say anything about the rationale for it.
+> 
+> > When I enabled __CHECK_ENDIAN I got:
+> > 8 files with > 100 warnings
+> > 14 files with 10 to 99 warnings.
+> > 
+> > So nothing that should scare a kernel hacker...
+> > 
+> > warnings without: 1686
+> > warnings with: 2788
+> > 
+> > OK - thats a lot, but then fixing 8 files will significantly
+> > reduce this.
+> 
+> I recently ran sparse on my config and was surprised by the number of
+> warnings. Then again, something in mmzone.h or so generated billions of
+> them...
+> 
+> In any case, I would love to have __CHECK_ENDIAN__ enabled by default at
+> least on the wireless code (just caught another bug with it...)
 
-I'd really rather have the driver merged, and then *other* people can send 
-patches!
+So build with make C=2 -D__CHECK_ENDIAN__ net/ieee80211/, etc. - it's not
+that such a script would be tricky...
 
-The thing is, that's what merging really means - people can work on it 
-sanely together. Before it's merged, it's a lot harder for people to work 
-on it unless they are really serious about that driver, so before 
-merging, the janitorial kind of things seldom happen.
+I've been shooting the endianness crap down for quite a while (see e.g.
+drivers/net/* patches in 2.6.24 and 2.6.24-rc1; there's more in queue)
+and it's getting better, but not enough to enable it unconditionally.
 
-So yes, I really do believe that we should merge drivers in particular a 
-lot more aggressively. I'd like to see *testing* feedback, in order to not 
-merge drivers that simply don't work well enough, but anything else? I 
-suspect other feedback is as likely to cause problems as it is to fix 
-things.
-
-> This driver even lacks a basic "please fix the > 250 checkpatch errors" [1]
-> and similar low hanging fruits that could easily be spotted and then 
-> fixed by the submitter within a short amount of time.
-
-Quite frankly, I've several times been *this* close (holds up fingers so 
-you can't even see between them) to just remove checkpatch entirely.
-
-I'm personally of the opinion that a lot of checkpatch "fixes" are 
-anything but. That mainly concerns fixing overlong lines (where the 
-"fixed" version is usually worse than the original), but it's been true 
-for some other warnings too.
-
-		Linus
+Note that it's not quite a janitor-level stuff; blind "fixing" of warnings
+in that area is very likely to result in hidden bugs - you need serious
+RTFS + RTFDatasheet + ask maintainer + trawl list archives for bug reports
+in quite a few cases.
