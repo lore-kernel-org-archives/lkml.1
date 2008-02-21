@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933220AbYBUWBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765033AbYBUWDW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933220AbYBUWBr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:01:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756264AbYBUWBk
+	id S1765033AbYBUWDW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:03:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbYBUWDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:01:40 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41145 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755094AbYBUWBj (ORCPT
+	Thu, 21 Feb 2008 17:03:12 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:17054 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751405AbYBUWDL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:01:39 -0500
-Message-ID: <47BDF0C4.10407@zytor.com>
-Date: Thu, 21 Feb 2008 13:44:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ian Campbell <ijc@hellion.org.uk>, Joel Becker <Joel.Becker@oracle.com>,
-       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>
-Subject: Re: 2.6.25-rc1 xen pvops regression
-References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com>	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>	 <47BCA275.7000504@goop.org> <1203546597.26910.74.camel@cthulhu.hellion.org.uk> <47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com> <47BDEF36.8000903@goop.org>
-In-Reply-To: <47BDEF36.8000903@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 17:03:11 -0500
+Message-Id: <47BDAD3C.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 21 Feb 2008 14:56:28 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Ingo Molnar" <mingo@elte.hu>, "Bill Huey (hui)" <bill.huey@gmail.com>
+Cc: <a.p.zijlstra@chello.nl>, <rostedt@goodmis.org>, <kevin@hilman.org>,
+       <tglx@linutronix.de>, <cminyard@mvista.com>, <dsingleton@mvista.com>,
+       <dwalker@mvista.com>, "Moiz Kohari" <MKohari@novell.com>,
+       "Peter Morreale" <PMorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
+       <ak@suse.de>, <gregkh@suse.de>, <npiggin@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH [RT] 00/14] RFC - adaptive real-time locks
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
+ <20080221212420.GA20953@elte.hu>
+ <9810cff90802211333k3d19ca2exf28c18ae5a2b86a@mail.gmail.com>
+ <20080221214219.GA27209@elte.hu>
+In-Reply-To: <20080221214219.GA27209@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> H. Peter Anvin wrote:
->>> Still curious about why a pagetable page is ending up in that range 
->>> though.  Seems like it shouldn't be possible, since we shouldn't be 
->>> allowed to allocate from those pages, at least until the DMI probe 
->>> has happened...  Unless the early allocator is only excluded from 
->>> e820 reserved pages, which would cause a problem on systems which 
->>> don't reserve the DMI space...  HPA?
->>>
->>
->> I thought the problem was a Xen-provided pagetable from before Linux 
->> started? 
-> 
-> Hm, I don't think so.  The domain-builder pagetable is put after the 
-> kernel, so it shouldn't be under 1M.
-> 
+>>> On Thu, Feb 21, 2008 at  4:42 PM, in message <20080221214219.GA27209@elte.hu>,
+Ingo Molnar <mingo@elte.hu> wrote: 
 
-That's weird, then.  If we put a page table at 0xf0000, it would crash 
-hard on real hardware (there is ROM there); as I mentioned, I do have 
-hardware which both reserves and doesn't reserve this region.
+> * Bill Huey (hui) <bill.huey@gmail.com> wrote:
+> 
+>> I came to the original conclusion that it wasn't originally worth it, 
+>> but the dbench number published say otherwise. [...]
+> 
+> dbench is a notoriously unreliable and meaningless workload. It's being 
+> frowned upon by the VM and the IO folks.
 
-	-hpa
+I agree...its a pretty weak benchmark.  BUT, it does pound on dcache_lock and therefore was a good demonstration of the benefits of lower-contention overhead.  Also note we also threw other tests in that PDF if you scroll to the subsequent pages.
+
+> If that's the only workload 
+> where spin-mutexes help, and if it's only a 3% improvement [of which it 
+> is unclear how much of that improvement was due to ticket spinlocks], 
+> then adaptive mutexes are probably not worth it.
+
+Note that the "3%" figure being thrown around was from a single patch within the series.  We are actually getting a net average gain of 443% in dbench.  And note that the number goes *up* when you remove the ticketlocks.  The ticketlocks are there to prevent latency spikes, not improve throughput.
+
+Also take a look at the hackbench numbers which are particularly promising.   We get a net average gain of 493% faster for RT10 based hackbench runs.  The kernel build was only a small gain, but it was all gain nonetheless.  We see similar results for any other workloads we throw at this thing.  I will gladly run any test requested to which I have the ability to run, and I would encourage third party results as well.
+
+
+> 
+> I'd not exclude them fundamentally though, it's really the numbers that 
+> matter. The code is certainly simple enough (albeit the .config and 
+> sysctl controls are quite ugly and unacceptable - adaptive mutexes 
+> should really be ... adaptive, with no magic constants in .configs or 
+> else).
+
+We can clean this up, per your suggestions.
+
+> 
+> But ... i'm somewhat sceptic, after having played with spin-a-bit 
+> mutexes before.
+
+Its very subtle to get this concept to work.  The first few weeks, we were getting 90% regressions ;)  Then we had a breakthrough and started to get this thing humming along quite nicely.
+
+Regards,
+-Greg
+
+
+
+
