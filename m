@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934277AbYBUVJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764967AbYBUVLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934277AbYBUVJp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:09:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760182AbYBUVJe
+	id S1764967AbYBUVLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:11:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbYBUVLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:09:34 -0500
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:42293 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758819AbYBUVJc (ORCPT
+	Thu, 21 Feb 2008 16:11:37 -0500
+Received: from agminet01.oracle.com ([141.146.126.228]:13163 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750994AbYBUVLf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:09:32 -0500
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-X-Message-Flag: Warning: May contain useful information
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 21 Feb 2008 13:09:27 -0800
-In-Reply-To: <20080221210124.GD28328@cs181133002.pp.htv.fi> (Adrian Bunk's message of "Thu, 21 Feb 2008 23:01:24 +0200")
-Message-ID: <adamypu9fug.fsf@cisco.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.21 (linux)
+	Thu, 21 Feb 2008 16:11:35 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       btrfs-devel@oss.oracle.com
+Subject: [ANNOUNCE] Btrfs v0.13
+Date: Thu, 21 Feb 2008 16:09:49 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 21 Feb 2008 21:09:28.0078 (UTC) FILETIME=[0B3E5AE0:01C874CE]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802211609.50563.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Is it really intended to merge drivers without _any_ kind of review?
- > 
- > This driver even lacks a basic "please fix the > 250 checkpatch errors" [1]
- > and similar low hanging fruits that could easily be spotted and then 
- > fixed by the submitter within a short amount of time.
+Hello everyone,
 
-Just to be clear, this driver was reviewed.  Many issues were found,
-and many were fixed while others are being worked on.
+Btrfs v0.13 is now available for download from:
 
-It's a judgement call when to merge things, but in this case given the
-good engagement from the vendor, I didn't see anything to be gained by
-delaying the merge.
+http://oss.oracle.com/projects/btrfs/
 
- - R.
+We took another short break from the multi-device code to make the minor mods 
+required to compile on 2.6.25, fix some problematic bugs and do more tuning.
+
+The most important fix is for file data checksumming errors.  These might show 
+up on .o files from compiles or other files where seeky writes were done 
+internally to fill it up.   The end result was a bunch of zeros in the file 
+where people expected their data to be.  Thanks to Yan Zheng for tracking it 
+down.
+
+GregKH provided most of the 2.6.25 port with some sysfs updates.  Since the 
+sysfs files are not used much and Greg has offered additional cleanups, I've 
+disabled the btrfs sysfs interface on kernels older than 2.6.25.  This way he 
+won't have to back port any of his changes.
+
+Optimizations and other fixes:
+
+* File data checksumming done in larger chunks, resulting in fewer btree 
+searches and fewer kmap calls.
+
+* CPU Optimizations for back reference removal
+
+* CPU Optimizations for block allocation, and much more efficient searching 
+through the free space cache.
+
+* Allocation optimizations, the free space clustering code was not properly 
+allocating from a cluster once it found it.  For normal mounts the fix 
+improves metadata writeback, for mount -o ssd it improves everything.
+
+* Unaligned access fixes from Dave Miller
+
+* Btree reads are done in larger bios when possible
+
+* i_block accounting is fixed
+
+-chris
