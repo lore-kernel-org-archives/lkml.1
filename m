@@ -1,45 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbYBUXiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934866AbYBUXjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765113AbYBUXiY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:38:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbYBUXiQ
+	id S934866AbYBUXjZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbYBUXjN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:38:16 -0500
-Received: from khc.piap.pl ([195.187.100.11]:37286 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755690AbYBUXiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:38:16 -0500
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 22 Feb 2008 00:38:14 +0100
-In-Reply-To: <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> (Linus Torvalds's message of "Thu\, 21 Feb 2008 13\:14\:55 -0800 \(PST\)")
-Message-ID: <m3tzk1q3rt.fsf@maximus.localdomain>
+	Thu, 21 Feb 2008 18:39:13 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:33574 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755098AbYBUXjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:39:11 -0500
+Message-ID: <47BE0C03.4000904@firstfloor.org>
+Date: Fri, 22 Feb 2008 00:40:51 +0100
+From: Andi Kleen <andi@firstfloor.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Marcel Holtmann <marcel@holtmann.org>
+CC: Simon Richter <sjr@debian.org>, Tilman Schmidt <tilman@imap.cc>,
+       Gregory Nietsky <gregory@networksentry.co.za>,
+       Jeff Garzik <jeff@garzik.org>, kkeil@suse.de, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, isdn4linux@listserv.isdn4linux.de,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+References: <098123kjff90231nv098233rnvd908u234@garzik.org>	<20080217195235.GN14588@uranus.ravnborg.org>	<20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de>	<20080219085033.GA1775@uranus.ravnborg.org>	<47BAA072.9050601@networksentry.co.za> <47BC370F.3000705@imap.cc> <47BD5360.5070706@debian.org> <AC06F991-72AC-4DFB-825A-F046C1943F10@holtmann.org> <47BE06EB.6010301@firstfloor.org> <5F9B7248-82DA-43F1-8937-8B52D5146298@holtmann.org>
+In-Reply-To: <5F9B7248-82DA-43F1-8937-8B52D5146298@holtmann.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> I'm personally of the opinion that a lot of checkpatch "fixes" are 
-> anything but. That mainly concerns fixing overlong lines
+> we were talking about the load order. This will solve the load order,
+> but if we have races like the kind you described, then the whole mISDN
+> design is broken. 
 
-Perhaps we should increase line length limit, 132 should be fine.
-Especially useful with long printk() lines and long arithmetic
-expressions.
--- 
-Krzysztof Halasa
+It's more a generic problem of the module code.
+
+-Andi
