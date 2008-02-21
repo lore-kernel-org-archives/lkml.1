@@ -1,116 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934403AbYBUVEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932426AbYBUVGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934403AbYBUVEy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 16:04:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756875AbYBUVEp
+	id S932426AbYBUVGS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 16:06:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759740AbYBUVGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 16:04:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:38296 "EHLO ozlabs.org"
+	Thu, 21 Feb 2008 16:06:02 -0500
+Received: from gw.goop.org ([64.81.55.164]:34640 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756065AbYBUVEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 16:04:43 -0500
+	id S1756875AbYBUVGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 16:06:00 -0500
+Message-ID: <47BDE731.60801@goop.org>
+Date: Thu, 21 Feb 2008 13:03:45 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] xen: Implement getgeo for Xen virtual block device.
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <18365.27476.485545.810868@cargo.ozlabs.ibm.com>
-Date: Thu, 21 Feb 2008 23:15:16 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-CC: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <18363.41603.210217.163071@cargo.ozlabs.ibm.com>
-References: <18363.41603.210217.163071@cargo.ozlabs.ibm.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+The below implements the getgeo hook for Xen block devices. Extracted
+from the xen-unstable tree where it has been used for ages.
 
-Since I send the last pull request I have added four more commits to
-the powerpc.git merge branch, two from Olof Johansson fixing a bug and
-a warning for the pasemi platform, and two spufs bugfixes from Jeremy
-Kerr.
+It is useful to have because it allows things like grub2 (used by the
+Debian installer images) to work in a guest domain without having to
+sprinkle Xen specific hacks around the place.
 
-Please do:
+Signed-off-by: Ian Campbell <ijc@hellion.org.uk>
+From: Ian Campbell <ijc@hellion.org.uk>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+---
+ drivers/block/xen-blkfront.c |   18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-The diffstat and log below reflect all the outstanding commits, not
-just the new four.
-
-Thanks,
-Paul.
-
- arch/powerpc/boot/Makefile                 |    8 
- arch/powerpc/boot/dts/bamboo.dts           |    3 
- arch/powerpc/boot/dts/ebony.dts            |    2 
- arch/powerpc/boot/dts/katmai.dts           |    2 
- arch/powerpc/boot/dts/kilauea.dts          |    3 
- arch/powerpc/boot/dts/makalu.dts           |    3 
- arch/powerpc/boot/dts/rainier.dts          |    4 
- arch/powerpc/boot/dts/sequoia.dts          |    4 
- arch/powerpc/boot/dts/taishan.dts          |    4 
- arch/powerpc/configs/bamboo_defconfig      |   81 ++-
- arch/powerpc/configs/ebony_defconfig       |   79 ++
- arch/powerpc/configs/ep405_defconfig       |   92 ++-
- arch/powerpc/configs/kilauea_defconfig     |   69 +-
- arch/powerpc/configs/makalu_defconfig      |   69 +-
- arch/powerpc/configs/ppc44x_defconfig      |  904 ++++++++++++++++++++++++++++
- arch/powerpc/configs/rainier_defconfig     |   82 ++-
- arch/powerpc/configs/sequoia_defconfig     |   77 ++
- arch/powerpc/configs/taishan_defconfig     |   81 ++-
- arch/powerpc/configs/walnut_defconfig      |   81 ++-
- arch/powerpc/configs/warp_defconfig        |  139 +++-
- arch/powerpc/kernel/kprobes.c              |    9 
- arch/powerpc/kernel/prom.c                 |   13 
- arch/powerpc/platforms/44x/Kconfig         |   10 
- arch/powerpc/platforms/cell/spu_base.c     |   12 
- arch/powerpc/platforms/cell/spufs/run.c    |    1 
- arch/powerpc/platforms/cell/spufs/sched.c  |    8 
- arch/powerpc/platforms/cell/spufs/switch.c |    6 
- arch/powerpc/platforms/pasemi/Makefile     |    2 
- arch/powerpc/platforms/pasemi/misc.c       |   97 +++
- arch/powerpc/platforms/pseries/power.c     |    2 
- arch/powerpc/sysdev/mpic_pasemi_msi.c      |    5 
- arch/ppc/platforms/4xx/ibm440ep.c          |    6 
- drivers/net/ibm_newemac/rgmii.c            |    1 
- include/asm-powerpc/spu.h                  |    3 
- 34 files changed, 1605 insertions(+), 357 deletions(-)
- create mode 100644 arch/powerpc/configs/ppc44x_defconfig
- create mode 100644 arch/powerpc/platforms/pasemi/misc.c
-
-Ananth N Mavinakayanahalli (1):
-      [POWERPC] Kill sparse warnings in kprobes
-
-Andre Detsch (1):
-      [POWERPC] cell: fix spurious false return from spu_trap_data_{map,seg}
-
-Becky Bruce (1):
-      [POWERPC] Fix dt_mem_next_cell() to read the full address
-
-Jeremy Kerr (1):
-      [POWERPC] spufs: fix scheduler starvation by idle contexts
-
-Josh Boyer (4):
-      [POWERPC] 4xx: Update defconfigs for 2.6.25
-      [POWERPC] 44x: Fix Kconfig formatting
-      [POWERPC] 44x: Add multiplatform defconfig
-      [POWERPC] Fix bootwrapper builds with older gcc versions
-
-Olof Johansson (2):
-      [POWERPC] pasemi: Register i2c devices at boot
-      [POWERPC] pasemi: Remove warning in mpic_pasemi_msi.c
-
-Stefan Roese (2):
-      [POWERPC] net: NEWEMAC: Remove "rgmii-interface" from rgmii matching table
-      [POWERPC] 4xx: Remove "i2c" and "xxmii-interface" device_types from dts
-
-Stephen Rothwell (1):
-      [POWERPC] Fix warning in pseries/power.c
-
-Wolfgang Ocker (1):
-      [POWERPC] PPC440EP Interrupt Triggering and Level Settings
+===================================================================
+--- a/drivers/block/xen-blkfront.c
++++ b/drivers/block/xen-blkfront.c
+@@ -37,6 +37,7 @@
+ 
+ #include <linux/interrupt.h>
+ #include <linux/blkdev.h>
++#include <linux/hdreg.h>
+ #include <linux/module.h>
+ 
+ #include <xen/xenbus.h>
+@@ -134,6 +135,22 @@ static void blkif_restart_queue_callback
+ {
+ 	struct blkfront_info *info = (struct blkfront_info *)arg;
+ 	schedule_work(&info->work);
++}
++
++int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
++{
++	/* We don't have real geometry info, but let's at least return
++	   values consistent with the size of the device */
++	sector_t nsect = get_capacity(bd->bd_disk);
++	sector_t cylinders = nsect;
++
++	hg->heads = 0xff;
++	hg->sectors = 0x3f;
++	sector_div(cylinders, hg->heads * hg->sectors);
++	hg->cylinders = cylinders;
++	if ((sector_t)(hg->cylinders + 1) * hg->heads * hg->sectors < nsect)
++		hg->cylinders = 0xffff;
++	return 0;
+ }
+ 
+ /*
+@@ -946,6 +963,7 @@ static struct block_device_operations xl
+ 	.owner = THIS_MODULE,
+ 	.open = blkif_open,
+ 	.release = blkif_release,
++	.getgeo = blkif_getgeo,
+ };
+ 
+ 
 
