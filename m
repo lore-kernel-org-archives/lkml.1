@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762467AbYBUNYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933184AbYBUNY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762467AbYBUNYN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 08:24:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932931AbYBUNXo
+	id S933184AbYBUNY4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 08:24:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758440AbYBUNYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 08:23:44 -0500
-Received: from 75.neteffect.com ([204.57.75.75]:63941 "EHLO
-	velma.neteffect.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932922AbYBUNXn (ORCPT
+	Thu, 21 Feb 2008 08:24:44 -0500
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:36983 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758411AbYBUNYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 08:23:43 -0500
-Date: Thu, 21 Feb 2008 08:17:54 -0600
-From: gstreiff@neteffect.com
-Message-Id: <200802211417.m1LEHsQu005081@velma.neteffect.com>
-To: rdreier@cisco.com
-Subject: [PATCH 2.6 5/8] infiniband/hw/nes/nes_verbs.c: fix use-after-free
-Cc: bunk@kernel.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
+	Thu, 21 Feb 2008 08:24:42 -0500
+Date: Thu, 21 Feb 2008 08:22:52 -0500
+From: Theodore Tso <tytso@MIT.EDU>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+       linux-arch@vger.kernel.org
+Subject: Re: Announce: Linux-next (Or Andrew's dream  :-))
+Message-ID: <20080221132252.GC14614@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Adrian Bunk <bunk@kernel.org>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Stephen Rothwell <sfr@canb.auug.org.au>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Russell King <rmk+lkml@arm.linux.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Trond Myklebust <trond.myklebust@fys.uio.no>,
+	Arjan van de Ven <arjan@infradead.org>, Greg KH <greg@kroah.com>,
+	LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+	linux-arch@vger.kernel.org
+References: <20080212051136.GA12802@mit.edu> <20080211221535.bc0dc9cf.akpm@linux-foundation.org> <20080212225716.cf695fe4.sfr@canb.auug.org.au> <20080214081405.GA20791@flint.arm.linux.org.uk> <20080214232229.f7bdc6ac.sfr@canb.auug.org.au> <alpine.LFD.1.00.0802140949460.6110@woody.linux-foundation.org> <20080221015511.1b54d4d3.sfr@canb.auug.org.au> <47BC498C.6000400@s5r6.in-berlin.de> <20080220154235.GD30305@mit.edu> <20080220171316.GA4749@cs181133002.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080220171316.GA4749@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk flagged this check-after-use issue spotted by the 
-Coverity checker.
+On Wed, Feb 20, 2008 at 07:13:16PM +0200, Adrian Bunk wrote:
+> > A third option would be if people add new functions (with no users) in
+> > -rc2 or -rc3 timeframes as long as it is part of a fully reviewed
+> > patch with users that will use those new features in various kernel
+> > development trees.
+> >...
+> 
+> I don't like suggestions based on unrealistic assumptions like
+> "a fully reviewed patch".
+> 
+> E.g. userspace ABI's are much more stable and everyone is aware that 
+> they must be gotten right with the first try since they are then cast in 
+> stone - but we all remember the recent timerfd fiasco.
 
-Signed-off-by: Glenn Streiff <gstreiff@neteffect.com>
+I'm talking about kernel interfaces, not userspace API's.  And we can
+change them if they are wrong, since they *are* kernel interfaces; but
+if they correct, they ease the cross-tree merge pain.
 
----
- drivers/infiniband/hw/nes/nes_verbs.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/infiniband/hw/nes/nes_verbs.c b/drivers/infiniband/hw/nes/nes_verbs.c
-index 692f0d8..a651e9d 100644
---- a/drivers/infiniband/hw/nes/nes_verbs.c
-+++ b/drivers/infiniband/hw/nes/nes_verbs.c
-@@ -1832,9 +1832,6 @@ static struct ib_cq *nes_create_cq(struct ib_device *ibdev, int entries,
- 				spin_unlock_irqrestore(&nesdev->cqp.lock, flags);
- 			}
- 		}
--		nes_debug(NES_DBG_CQ, "iWARP CQ%u create timeout expired, major code = 0x%04X,"
--				" minor code = 0x%04X\n",
--				nescq->hw_cq.cq_number, cqp_request->major_code, cqp_request->minor_code);
- 		if (!context)
- 			pci_free_consistent(nesdev->pcidev, nescq->cq_mem_size, mem,
- 					nescq->hw_cq.cq_pbase);
+   		      	       		  	 - Ted
