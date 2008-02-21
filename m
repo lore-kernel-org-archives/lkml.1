@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932627AbYBUNTp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765056AbYBUNX0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932627AbYBUNTp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 08:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbYBUNTh
+	id S1765056AbYBUNX0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 08:23:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbYBUNXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 08:19:37 -0500
-Received: from 75.neteffect.com ([204.57.75.75]:63880 "EHLO
-	velma.neteffect.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752805AbYBUNTh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 08:19:37 -0500
-Date: Thu, 21 Feb 2008 08:13:47 -0600
-From: gstreiff@neteffect.com
-Message-Id: <200802211413.m1LEDlts005057@velma.neteffect.com>
-To: rdreier@cisco.com
-Subject: [PATCH 2.6 4/8] infiniband/hw/nes/nes.c: fix a check-after-use
-Cc: bunk@kernel.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
+	Thu, 21 Feb 2008 08:23:17 -0500
+Received: from mail.macqel.be ([194.78.208.39]:6793 "EHLO mail.macqel.be"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752736AbYBUNXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 08:23:16 -0500
+X-Greylist: delayed 2076 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 08:23:16 EST
+Date: Thu, 21 Feb 2008 13:35:34 +0100
+From: Philippe De Muyter <phdm@macqel.be>
+To: linux-kernel@vger.kernel.org
+Subject: POWERPC : What's "SPE used in kernel" ?
+Message-ID: <20080221123534.GA17716@ingate.macqel>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@kernel.org>
+Dear list,
 
-This patch fixes a check-after-use spotted by the Coverity checker.
+I have just compiled linux-2.6.24 for a MPC8540 target using a MPC8540
+specific gcc.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Glenn Streiff <gstreiff@neteffect.com>
+I then got thousands of "SPE used in kernel" messages.  Looking at the
+sources I ifdeffed out the printk call in KernelSPE, and I now have a
+silent kernel, that seems to work fine.
 
----
- drivers/infiniband/hw/nes/nes.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Is there something wrong in my setting and should I look further to
+debug this problem or is this perfectly normal ?
 
-diff --git a/drivers/infiniband/hw/nes/nes.c b/drivers/infiniband/hw/nes/nes.c
-index 7f8853b..b2112f5 100644
---- a/drivers/infiniband/hw/nes/nes.c
-+++ b/drivers/infiniband/hw/nes/nes.c
-@@ -567,12 +567,12 @@ static int __devinit nes_probe(struct pci_dev *pcidev, const struct pci_device_i
- 
- 	/* Init the adapter */
- 	nesdev->nesadapter = nes_init_adapter(nesdev, hw_rev);
--	nesdev->nesadapter->et_rx_coalesce_usecs_irq = interrupt_mod_interval;
- 	if (!nesdev->nesadapter) {
- 		printk(KERN_ERR PFX "Unable to initialize adapter.\n");
- 		ret = -ENOMEM;
- 		goto bail5;
- 	}
-+	nesdev->nesadapter->et_rx_coalesce_usecs_irq = interrupt_mod_interval;
- 
- 	/* nesdev->base_doorbell_index =
- 			nesdev->nesadapter->pd_config_base[PCI_FUNC(nesdev->pcidev->devfn)]; */
+I wonder why a kernel configured for E500 using a E500-specific gcc
+triggers this message.  Is it invalid to use SPE instructions in the kernel ?
+
+Philippe
