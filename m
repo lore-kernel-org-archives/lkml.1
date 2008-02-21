@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936497AbYBUXyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762994AbYBUXzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936497AbYBUXyr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:54:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935951AbYBUXtk
+	id S1762994AbYBUXzS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:55:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936415AbYBUXxp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:49:40 -0500
-Received: from gw.goop.org ([64.81.55.164]:40466 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759078AbYBUXth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:49:37 -0500
-Message-ID: <47BE0D70.2020009@goop.org>
-Date: Thu, 21 Feb 2008 15:46:56 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 18:53:45 -0500
+Received: from testure.choralone.org ([194.9.77.134]:43850 "EHLO
+	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936409AbYBUXxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:53:42 -0500
+Date: Thu, 21 Feb 2008 18:53:29 -0500
+From: Dave Jones <davej@codemonkey.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Yi Yang <yi.y.yang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Frans Pop <elendil@planet.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 03/11] cpufreq: fix kobject reference count handling
+Message-ID: <20080221235329.GA28514@codemonkey.org.uk>
+Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
+	Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+	Balaji Rao <balajirrao@gmail.com>, Yi Yang <yi.y.yang@intel.com>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	Frans Pop <elendil@planet.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>
+References: <20080221234649.GB7128@kroah.com> <1203637687-7273-3-git-send-email-gregkh@suse.de>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ian Campbell <ijc@hellion.org.uk>, Joel Becker <Joel.Becker@oracle.com>,
-       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andi Kleen <andi@firstfloor.org>,
-       Mika Penttila <mika.penttila@kolumbus.fi>
-Subject: Re: 2.6.25-rc1 xen pvops regression
-References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	<20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	<20080215202336.GE26034@mail.oracle.com>	<1203274161.27987.6.camel@localhost.localdomain>	<20080218104025.GA15899@ca-server1.us.oracle.com>	<1203458366.26910.15.camel@cthulhu.hellion.org.uk>	<47BBDA20.8030105@zytor.com>	<1203497511.26910.39.camel@cthulhu.hellion.org.uk>	<47BCA275.7000504@goop.org>	<1203546597.26910.74.camel@cthulhu.hellion.org.uk>	<47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com> <m14pc26k6f.fsf@ebiederm.dsl.xmission.com> <47BE05C0.2090405@goop.org> <47BE08C0.5060700@zytor.com>
-In-Reply-To: <47BE08C0.5060700@zytor.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1203637687-7273-3-git-send-email-gregkh@suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeremy Fitzhardinge wrote:
->>
->> It seems to me that those pages are being handed out as heap pages by 
->> the early allocator.  In the Xen case this is OK because there's 
->> nothing magic about them.  But if real hardware doesn't reserve these 
->> pages in the E820 map, then they could end up being used as regular 
->> memory by mistake, which is an issue.
->>
->
-> No, they couldn't.
->
-> On real hardware they'll be memory types 0 or 2, depending on whether 
-> or not they're marked reserved.
->
-> Available RAM is type 1. 
+On Thu, Feb 21, 2008 at 03:47:59PM -0800, Greg Kroah-Hartman wrote:
+ > From: Balaji Rao <balajirrao@gmail.com>
+ > 
+ > The cpufreq core should not take an extra kobject reference count for no
+ > reason, and then refuse to release it.  This has been reported as
+ > keeping machines from properly powering down all the way.
+ > 
+ > 
+ > Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+ > Cc: Dave Jones <davej@codemonkey.org.uk>
+ > Cc: Yi Yang <yi.y.yang@intel.com>
+ > Cc: Alan Stern <stern@rowland.harvard.edu>
+ > Cc: Frans Pop <elendil@planet.nl>
+ > Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+ > Cc: Ingo Molnar <mingo@elte.hu>
+ > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-OK.  Well, perhaps Ian's patch could be amended to test to see if the 
-e820 map marks the ISA ROM region as normal RAM, and skip it if so?
+ACK. This needs to go in soon, so I can stop hearing about it :-)
 
-    J
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
