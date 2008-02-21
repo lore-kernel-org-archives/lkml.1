@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764223AbYBUL30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764916AbYBULbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764223AbYBUL30 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 06:29:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbYBUL3P
+	id S1764916AbYBULbw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbYBULbn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 06:29:15 -0500
-Received: from viefep31-int.chello.at ([62.179.121.49]:59763 "EHLO
-	viefep31-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752630AbYBUL3N (ORCPT
+	Thu, 21 Feb 2008 06:31:43 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:42234 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753578AbYBULbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 06:29:13 -0500
-Message-ID: <47BD6072.4000407@trash.net>
-Date: Thu, 21 Feb 2008 12:28:50 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.6 (X11/20071008)
+	Thu, 21 Feb 2008 06:31:42 -0500
+Message-ID: <47BD600D.800@linux.vnet.ibm.com>
+Date: Thu, 21 Feb 2008 16:57:09 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc>
-In-Reply-To: <47BC982C.7050402@imap.cc>
-Content-Type: multipart/mixed;
- boundary="------------020401060508010500060202"
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: Make yield_task_fair more efficient
+References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu>  <47BD44FF.7070104@linux.vnet.ibm.com> <1203586980.6243.124.camel@lappy>  <47BD479F.6070901@linux.vnet.ibm.com> <1203588090.6243.128.camel@lappy>  <47BD4D48.4080606@linux.vnet.ibm.com> <1203592374.6243.138.camel@lappy>
+In-Reply-To: <1203592374.6243.138.camel@lappy>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020401060508010500060202
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Tilman Schmidt wrote:
-> Still, X came up fine, I could log in (Gnome feeling subjectively
-> a bit sluggish), call up a web page from the Internet in Firefox,
-> and start perusing the logs, when the whole system froze: neither
-> mouse nor keyboard would react anymore, and only the Wind^Wreset
-> button would put me back in control. After rebooting into the
-> previous, non-mm kernel I found this in the syslog:
+Peter Zijlstra wrote:
+> On Thu, 2008-02-21 at 15:37 +0530, Balbir Singh wrote:
 > 
-> Feb 20 17:22:40 xenon kernel: [   48.180297] BUG: using smp_processor_id() in preemptible [00000000] code: ntpdate/3562
-> Feb 20 17:22:40 xenon kernel: [   48.180297] caller is __nf_conntrack_find+0x9b/0xeb [nf_conntrack]
-> Feb 20 17:22:40 xenon kernel: [   48.180297] Pid: 3562, comm: ntpdate Not tainted 2.6.25-rc2-mm1-testing #1
-> Feb 20 17:22:40 xenon kernel: [   48.180297]  [<c02015b9>] debug_smp_processor_id+0x99/0xb0
+>> You use the empty pointer (missing right child), so why do we need a list. May
+>> be I am missing something.
+> 
+> A fully threaded tree also has back-pointer to traverse backwards
+> through the ordered elements.
+> 
 
+The back pointer is implemented using missing left children. I am referring to
+Don Knuth's volume 1: The art of computer programming, section 2.3.1, page 322.
+Please see the threaded representation of the tree, it is compared with the
+unthreaded representation.
 
-Could you test whether this patch fixes the netfilter
-warnings please?
+> That said, overloading the right child pointer might not be the best
+> thing for the linux kernel, as it will impact all the rb-tree lookups
+> which are open-coded and often performance critical (this is the reason
+> the colour isn't bit encoded in either of the child pointers either).
+> 
 
+We always look at the child, irrespective of whether it is to the right or left
+to terminate our walk. Overloading them and setting a bit stating it is threaded
+should not be that bad.
 
---------------020401060508010500060202
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
+> But if you only want a uni directional thread, I guess we can stick it
+> in the unsigned long we use for the node colour.
+> 
+> Still, perhaps it's worth it to grow rb_node to 4 words and do the fully
+> threaded thing as there are also a lot of rb_prev() users in the kernel.
+> Who knows..
+> 
 
-commit 736b33102292be0d75be1e950ca9bcd5361db7dd
-Author: Patrick McHardy <kaber@trash.net>
-Date:   Thu Feb 21 12:26:01 2008 +0100
+Why does the rb_node need to grow? We can encode the bits in the children
 
-    [NETFILTER]: nf_conntrack: fix smp_processor_id() in preemptible code warning
-    
-    Since we're using RCU for the conntrack hash now, we need to avoid
-    getting preempted or interrupted by BHs while changing the stats.
-    
-    Fixes warning reported by Tilman Schmidt <tilman@imap.cc> when using
-    preemptible RCU:
-    
-    [   48.180297] BUG: using smp_processor_id() in preemptible [00000000] code: ntpdate/3562
-    [   48.180297] caller is __nf_conntrack_find+0x9b/0xeb [nf_conntrack]
-    [   48.180297] Pid: 3562, comm: ntpdate Not tainted 2.6.25-rc2-mm1-testing #1
-    [   48.180297]  [<c02015b9>] debug_smp_processor_id+0x99/0xb0
-    [   48.180297]  [<fac643a7>] __nf_conntrack_find+0x9b/0xeb [nf_conntrack]
-    
-    Signed-off-by: Patrick McHardy <kaber@trash.net>
+> Anyway, I agree that improving rb_next() is worth looking into for the
+> scheduler.
 
-diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-index 327e847..b77eb56 100644
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -256,13 +256,19 @@ __nf_conntrack_find(const struct nf_conntrack_tuple *tuple)
- 	struct hlist_node *n;
- 	unsigned int hash = hash_conntrack(tuple);
- 
-+	/* Disable BHs the entire time since we normally need to disable them
-+	 * at least once for the stats anyway.
-+	 */
-+	local_bh_disable();
- 	hlist_for_each_entry_rcu(h, n, &nf_conntrack_hash[hash], hnode) {
- 		if (nf_ct_tuple_equal(tuple, &h->tuple)) {
- 			NF_CT_STAT_INC(found);
-+			local_bh_enable();
- 			return h;
- 		}
- 		NF_CT_STAT_INC(searched);
- 	}
-+	local_bh_enable();
- 
- 	return NULL;
- }
-@@ -400,17 +406,20 @@ nf_conntrack_tuple_taken(const struct nf_conntrack_tuple *tuple,
- 	struct hlist_node *n;
- 	unsigned int hash = hash_conntrack(tuple);
- 
--	rcu_read_lock();
-+	/* Disable BHs the entire time since we need to disable them at
-+	 * least once for the stats anyway.
-+	 */
-+	rcu_read_lock_bh();
- 	hlist_for_each_entry_rcu(h, n, &nf_conntrack_hash[hash], hnode) {
- 		if (nf_ct_tuplehash_to_ctrack(h) != ignored_conntrack &&
- 		    nf_ct_tuple_equal(tuple, &h->tuple)) {
- 			NF_CT_STAT_INC(found);
--			rcu_read_unlock();
-+			rcu_read_unlock_bh();
- 			return 1;
- 		}
- 		NF_CT_STAT_INC(searched);
- 	}
--	rcu_read_unlock();
-+	rcu_read_unlock_bh();
- 
- 	return 0;
- }
+Sure, will experiment and see if we can bump up performance.
 
---------------020401060508010500060202--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
