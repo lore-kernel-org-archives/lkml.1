@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759144AbYBUJFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761684AbYBUJGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759144AbYBUJFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 04:05:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbYBUJEz
+	id S1761684AbYBUJGz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 04:06:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbYBUJGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 04:04:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39639 "EHLO mx2.mail.elte.hu"
+	Thu, 21 Feb 2008 04:06:36 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52101 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750838AbYBUJEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 04:04:52 -0500
-Date: Thu, 21 Feb 2008 10:04:30 +0100
+	id S1750831AbYBUJGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 04:06:33 -0500
+Date: Thu, 21 Feb 2008 10:05:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Peter Zijlstra <peter@programming.kicks-ass.net>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: Make yield_task_fair more efficient
-Message-ID: <20080221090430.GA20055@elte.hu>
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu> <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Ian Campbell <ijc@hellion.org.uk>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] x86 : relocate uninitialized variable in init DATA
+	section into init BSS section
+Message-ID: <20080221090557.GB20055@elte.hu>
+References: <1203581723.4707.20.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47BD3B56.3090404@linux.vnet.ibm.com>
+In-Reply-To: <1203581723.4707.20.camel@caritas-dev.intel.com>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,19 +38,18 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Huang, Ying <ying.huang@intel.com> wrote:
 
-> If you insist that sched_yield() is bad, I might agree, but how does 
-> my patch make things worse. [...]
+> Uninitialized variable in init DATA sections are relocated into init 
+> BSS sections to reduce kernel image size. Several KB can be reduced.
 
-it puts new instructions into the hotpath.
+> -int __initdata early_ioremap_debug;
+> +int __initbss early_ioremap_debug;
 
-> [...] In my benchmarks, it has helped the sched_yield case, why is 
-> that bad? [...]
+will we get some sort of build error if we accidentally do:
 
-I had the same cache for the rightmost task in earlier CFS (it's a 
-really obvious thing) but removed it. It wasnt a bad idea, but it hurt 
-the fastpath hence i removed it. Algorithms and implementations are a 
-constant balancing act.
+   int __initbss early_ioremap_debug = 1;
+
+?
 
 	Ingo
