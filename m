@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932378AbYBUAZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYBUA0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932378AbYBUAZf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:25:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYBUAZZ
+	id S1758462AbYBUA0L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:26:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933997AbYBUAZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:25:25 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:33306 "EHLO ogre.sisk.pl"
+	Wed, 20 Feb 2008 19:25:43 -0500
+Received: from mail1.ugh.no ([80.239.42.168]:34718 "EHLO mail1.ugh.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752468AbYBUAZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:25:24 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Subject: Re: [BUG?] APM is hidden in menuconfig
-Date: Thu, 21 Feb 2008 01:23:44 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <20080220120828.GD3885@ff.dom.local>
-In-Reply-To: <20080220120828.GD3885@ff.dom.local>
+	id S932529AbYBUAZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:25:35 -0500
+Message-ID: <47BCC4FD.1050701@tomt.net>
+Date: Thu, 21 Feb 2008 01:25:33 +0100
+From: Andre Tomt <andre@tomt.net>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Brownell <david-b@pacbell.net>
+CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: USB OOPS 2.6.25-rc2-git1
+References: <47BAF36C.4000509@tomt.net> <200802191632.35732.david-b@pacbell.net> <47BC8E9D.8080309@tomt.net> <200802201324.37519.david-b@pacbell.net>
+In-Reply-To: <200802201324.37519.david-b@pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802210123.44367.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of February 2008, Jarek Poplawski wrote:
-> Hi,
+David Brownell wrote:
+> On Wednesday 20 February 2008, Andre Tomt wrote:
+>> It has not crashed yet with the patch though.
 > 
-> I needed APM to have poweroff on old box. So, in 2.6.24.2 menuconfig:
-> 
-> 1) Power management options -->
->    No APM.
-> 2) [*] Power Management support
->    No APM. I can see ACPI...
-> 3) I try searching with "/" + "APM"
->    APM [=n]
->    Depends on: !X86_VOYAGER && X86_32 && PM_SLEEP && !X86_VISWS
-> 4) I check above: all correct except:
->    Symbol: PM_SLEEP [=n]
->    No more "depends on".
-> 5) Exit menuconfig - enter grep:
-> 6) Some time wasting in arch/.
-> 7) less kernel/power/Kconfig:
->    config PM_SLEEP
->         bool
->         depends on SUSPEND || HIBERNATION
->         default y
->    ... 
->    config SUSPEND
->         bool "Suspend to RAM and standby"
->         depends on PM
->         depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
->         default y
->         ---help---
->           Allow the system to enter sleep states in which main memory is
->           powered and thus its contents are preserved, such as the
->           suspend-to-RAM state (i.e. the ACPI S3 state).
-> 
-> 8) Back to menuconfig:
->    [*] Suspend to RAM and standby
-> 
->    Bingo! APM revealed! (And not even "DEPRECATED"!)
-> 
-> So, has it to be so hard? It seems not - at least in good old times...
+> It seems that one of the tweks in this patch made the watchdog
+> act better than before.  So unless I hear from you (before the
+> start of next week) that some other message appears, or that your
+> oops re-appears, I'll submit some version of this patch for RC3.
 
-Something in APM uses some code from drivers/base/power/main.c that depends
-on PM_SLEEP.
+OOPS'ed again after some hours. The OOPS looks identical to me besides 
+all kind of other crap mixed in the trace due to a lot of unrelated 
+activity going on.
 
-Thanks,
-Rafael
+Quite a lot of the same IAA messages (status 8029 and 8028, cmd 10021) 
+in /var/log/debug prior to the crash, over the entire uptime time span.
+
+This was with the first patch posted only. Not any of the other ones.
+
+> And if you're up for it, I may have another patch for you
+> to try on top of this one ... I had an idea about IRQ trigger
+> modes that might be causing this problem.
+
+It'll have to be tomorrow. Should I throw in the anti-oops patch too?
