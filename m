@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764523AbYBUHHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765734AbYBUHJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764523AbYBUHHy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 02:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbYBUHHq
+	id S1765734AbYBUHJW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 02:09:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbYBUHJL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 02:07:46 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46314 "EHLO mx2.mail.elte.hu"
+	Thu, 21 Feb 2008 02:09:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42323 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753843AbYBUHHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 02:07:45 -0500
-Date: Thu, 21 Feb 2008 08:07:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peter@programming.kicks-ass.net>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: Make yield_task_fair more efficient
-Message-ID: <20080221070733.GA13694@elte.hu>
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com>
+	id S1753843AbYBUHJK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 02:09:10 -0500
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Subject: Re: [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
+Date: Thu, 21 Feb 2008 02:08:47 -0500
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B73DD8.4030405@linux.vnet.ibm.com>
+In-Reply-To: <47B73DD8.4030405@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <47BD1F75.5030506@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200802210208.47487.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 16 February 2008 14:47, Kamalesh Babulal wrote:
+> Hi Andrew,
+> 
+> The 2.6.25-rc2-mm1 kernel with randconfig build option, fails
+> to build on x86_64 machine
+> 
+>   CC      drivers/acpi/osl.o
+> drivers/acpi/osl.c:60:38: error: empty filename in #include
+> drivers/acpi/osl.c: In function ‘acpi_os_table_override’:
+> drivers/acpi/osl.c:399: error: ‘AmlCode’ undeclared (first use in this function)
+> drivers/acpi/osl.c:399: error: (Each undeclared identifier is reported only once
+> drivers/acpi/osl.c:399: error: for each function it appears in.)
+> make[2]: *** [drivers/acpi/osl.o] Error 1
+> make[1]: *** [drivers/acpi] Error 2
+> make: *** [drivers] Error 2
+> 
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.25-rc2-mm1
+> # Sun Feb 17 08:07:17 2008
+> #
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> CONFIG_ACPI_CUSTOM_DSDT=y
+> CONFIG_ACPI_CUSTOM_DSDT_FILE=""
 
-> I disagree. The cost is only adding a field to cfs_rq [...]
+garbage in, garbage out.
 
-wrong. The cost is "only" of adding a field to cfs_rq and _updating it_, 
-in the hottest paths of the scheduler:
+If you don't give this build option a file name where AmlCode lives,
+then the build will be unable to find AmlCode[].
 
-@@ -256,6 +257,7 @@ static void __enqueue_entity(struct cfs_
-                 */
-                if (key < entity_key(cfs_rq, entry)) {
-                        link = &parent->rb_left;
-+                       rightmost = 0;
-                } else {
-                        link = &parent->rb_right;
-                        leftmost = 0;
-@@ -268,6 +270,8 @@ static void __enqueue_entity(struct cfs_
-         */
-        if (leftmost)
-                cfs_rq->rb_leftmost = &se->run_node;
-+       if (rightmost)
-+               cfs_rq->rb_rightmost = &se->run_node;
+http://www.lesswatts.org/projects/acpi/overridingDSDT.php
 
-> [...] For a large number of tasks - say 10000, we need to walk 14 
-> levels before we reach the node (each time). [...]
-
-10,000 yield-ing tasks is not a common workload we care about. It's not 
-even a rare workload we care about. _Especially_ we dont care about it 
-if it slows down every other workload (a tiny bit).
-
-> [...] Doesn't matter if the data is cached, we are still spending CPU 
-> time looking through pointers and walking to the right node. [...]
-
-have you actually measured how much it takes to walk the tree that deep
-on recent hardware? I have.
-
-	Ingo
+cheers,
+-Len
