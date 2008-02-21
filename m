@@ -1,247 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759490AbYBUO4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762153AbYBUO5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759490AbYBUO4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 09:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbYBUO4B
+	id S1762153AbYBUO5S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 09:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbYBUO5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 09:56:01 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:54537 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752133AbYBUOz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 09:55:59 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <200802201907.40406.phillips@phunq.net>
-References: <200802201907.40406.phillips@phunq.net> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
-       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Thu, 21 Feb 2008 14:55:03 +0000
-Message-ID: <28196.1203605703@redhat.com>
+	Thu, 21 Feb 2008 09:57:04 -0500
+Received: from E23SMTP03.au.ibm.com ([202.81.18.172]:59711 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753513AbYBUO5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 09:57:01 -0500
+Message-ID: <47BD9028.3080103@linux.vnet.ibm.com>
+Date: Thu, 21 Feb 2008 20:22:24 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
+CC: Pavel Machek <pavel@ucw.cz>, Jan Engelhardt <jengelh@computergmbh.de>,
+       John Stoffel <john@stoffel.org>, Andi Kleen <andi@firstfloor.org>,
+       akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
+ in Kconfig
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <18364.16552.455371.242369@stoffel.org> <47BC4554.10304@linux.vnet.ibm.com> <Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr> <20080220181911.GA4760@ucw.cz> <Pine.LNX.4.64.0802201927440.26109@fbirervta.pbzchgretzou.qr> <20080220185104.GA30416@elf.ucw.cz> <2f11576a0802210646u77409690me940717fac746315@mail.gmail.com>
+In-Reply-To: <2f11576a0802210646u77409690me940717fac746315@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Phillips <phillips@phunq.net> wrote:
+KOSAKI Motohiro wrote:
+> Hi
+> 
+>>  > >> For ordinary desktop people, memory controller is what developers
+>>  > >> know as MMU or sometimes even some other mysterious piece of silicon
+>>  > >> inside the heavy box.
+>>  > >
+>>  > >Actually I'd guess 'memory controller' == 'DRAM controller' == part of
+>>  > >northbridge that talks to DRAM.
+>>  >
+>>  > Yeah that must have been it when Windows says it found a new controller
+>>  > after changing the mainboard underneath.
+>>
+>>  Just for fun... this option really has to be renamed:
+> 
+> I think one reason of many people easy confusion is caused by bad menu
+> hierarchy.
+> I popose mem-cgroup move to child of cgroup and resource counter
+> (= obey denend on).
+> 
+> if you don't mind, please try to following patch.
+> may be, looks good than before.
+> 
 
-> Have you got before/after benchmark results?
+Sure makes sense
 
-See attached.
+> ---
+>  init/Kconfig |   52 ++++++++++++++++++++++++++--------------------------
+>  1 file changed, 26 insertions(+), 26 deletions(-)
+> 
+> Index: b/init/Kconfig
+> ===================================================================
+> --- a/init/Kconfig	2008-02-17 16:44:46.000000000 +0900
+> +++ b/init/Kconfig	2008-02-21 23:33:51.000000000 +0900
+> @@ -311,6 +311,32 @@ config CPUSETS
+> 
+>  	  Say N if unsure.
+> 
+> +config PROC_PID_CPUSET
+> +	bool "Include legacy /proc/<pid>/cpuset file"
+> +	depends on CPUSETS
+> +	default y
+> +
+> +config CGROUP_CPUACCT
+> +	bool "Simple CPU accounting cgroup subsystem"
+> +	depends on CGROUPS
+> +	help
+> +	  Provides a simple Resource Controller for monitoring the
+> +	  total CPU consumed by the tasks in a cgroup
+> +
+> +config RESOURCE_COUNTERS
+> +	bool "Resource counters"
+> +	help
+> +	  This option enables controller independent resource accounting
+> +          infrastructure that works with cgroups
+> +	depends on CGROUPS
+> +
+> +config CGROUP_MEM_CONT
+> +	bool "Memory controller for cgroups"
+> +	depends on CGROUPS && RESOURCE_COUNTERS
+> +	help
+> +	  Provides a memory controller that manages both page cache and
+> +	  RSS memory.
+> +
 
-These show a couple of things:
+We have some more changes planned for the text and renames planned, including
+calling the component as a memory resource controller. The menu changes make
+sense, so feel free to push them
 
- (1) Dealing with lots of metadata slows things down a lot.  Note the result of
-     looking and reading lots of small files with tar (the last result).  The
-     NFS client has to both consult the NFS server *and* the cache.  Not only
-     that, but any asynchronicity the cache may like to do is rendered
-     ineffective by the fact tar wants to do a read on a file pretty much
-     directly after opening it.
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
- (2) Getting metadata from the local disk fs is slower than pulling it across
-     an unshared gigabit ethernet from a server that already has it in memory.
-
-These points don't mean that fscache is no use, just that you have to consider
-carefully whether it's of use to *you* given your particular situation, and
-that depends on various factors.
-
-Note that currently FS-Caching is disabled for individual NFS files opened for
-writing as there's no way to handle the coherency problems thereby introduced.
-
-David
----
-
-			  ===========================
-			  FS-CACHE FOR NFS BENCHMARKS
-			  ===========================
-
- (*) The NFS client has a 1.86GHz Core2 Duo CPU and 1GB of RAM.
-
- (*) The NFS client has a Seagate ST380211AS 80GB 7200rpm SATA disk on an
-     interface running in AHCI mode.  The chipset is an Intel G965.
-
- (*) A partition of approx 4.5GB is committed to caching, and is formatted as
-     Ext3 with a blocksize of 4096 and directory indices.
-
- (*) The NFS client is using SELinux.
-
- (*) The NFS server is running an in-kernel NFSd, and has a 2.66GHz Core2 Duo
-     CPU and 6GB of RAM.  The chipset is an Intel P965.
-
- (*) The NFS client is connected to the NFS server by Gigabit Ethernet.
-
- (*) The NFS mount is made with defaults for all options not relating to the
-     cache:
-
-	warthog:/warthog /warthog nfs
-		rw,vers=3,rsize=1048576,wsize=1048576,hard,proto=tcp,timeo=600,
-		retrans=2,sec=sys,fsc,addr=w.x.y.z 0 0
-
-
-==================
-FEW BIG FILES TEST
-==================
-
-Where:
-
- (*) The NFS server has two files:
-
-	[root@andromeda ~]# ls -l /warthog/bigfile
-	-rw-rw-r-- 1 4043 4043 104857600 2006-11-30 09:39 /warthog/bigfile
-	[root@andromeda ~]# ls -l /warthog/biggerfile 
-	-rw-rw-r-- 1 4043 4041 209715200 2006-03-21 13:56 /warthog/biggerfile
-
-     Both of which are in memory on the server in all cases.
-
-
-No patches, cold NFS cache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m1.909s
-	user    0m0.000s
-	sys     0m0.520s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m3.750s
-	user    0m0.000s
-	sys     0m0.904s
-
-CONFIG_FSCACHE=n, cold NFS cache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m2.003s
-	user    0m0.000s
-	sys     0m0.124s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m4.100s
-	user    0m0.004s
-	sys     0m0.488s
-
-Cold NFS cache, no disk cache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m2.084s
-	user    0m0.000s
-	sys     0m0.136s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m4.020s
-	user    0m0.000s
-	sys     0m0.720s
-
-Completely cold caches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m2.412s
-	user    0m0.000s
-	sys     0m0.892s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m4.449s
-	user    0m0.000s
-	sys     0m2.300s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.067s
-	user    0m0.000s
-	sys     0m0.064s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m0.133s
-	user    0m0.000s
-	sys     0m0.136s
-
-Warm Ext3 pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.173s
-	user    0m0.000s
-	sys     0m0.172s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m0.316s
-	user    0m0.000s
-	sys     0m0.316s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m1.955s
-	user    0m0.000s
-	sys     0m0.244s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m3.596s
-	user    0m0.000s
-	sys     0m0.460s
+>  config GROUP_SCHED
+>  	bool "Group CPU scheduler"
+>  	default y
+> @@ -352,20 +378,6 @@ config CGROUP_SCHED
+> 
+>  endchoice
+> 
+> -config CGROUP_CPUACCT
+> -	bool "Simple CPU accounting cgroup subsystem"
+> -	depends on CGROUPS
+> -	help
+> -	  Provides a simple Resource Controller for monitoring the
+> -	  total CPU consumed by the tasks in a cgroup
+> -
+> -config RESOURCE_COUNTERS
+> -	bool "Resource counters"
+> -	help
+> -	  This option enables controller independent resource accounting
+> -          infrastructure that works with cgroups
+> -	depends on CGROUPS
+> -
+>  config SYSFS_DEPRECATED
+>  	bool "Create deprecated sysfs files"
+>  	depends on SYSFS
+> @@ -387,18 +399,6 @@ config SYSFS_DEPRECATED
+>  	  If you are using a distro that was released in 2006 or later,
+>  	  it should be safe to say N here.
+> 
+> -config CGROUP_MEM_CONT
+> -	bool "Memory controller for cgroups"
+> -	depends on CGROUPS && RESOURCE_COUNTERS
+> -	help
+> -	  Provides a memory controller that manages both page cache and
+> -	  RSS memory.
+> -
+> -config PROC_PID_CPUSET
+> -	bool "Include legacy /proc/<pid>/cpuset file"
+> -	depends on CPUSETS
+> -	default y
+> -
+>  config RELAY
+>  	bool "Kernel->user space relay support (formerly relayfs)"
+>  	help
 
 
-===================================
-MANY SMALL/MEDIUM FILE READING TEST
-===================================
-
-Where:
-
- (*) The NFS server has an old kernel tree:
-
-	[root@andromeda ~]# du -s /warthog/aaa
-	347340  /warthog/aaa
-	[root@andromeda ~]# find /warthog/aaa | wc -l
-	20443
-
-     All of which is in memory on the server in all cases.
-
-
-No patches, cold NFS cache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m21.698s
-	user    0m0.156s
-	sys     0m5.284s
-
-CONFIG_FSCACHE=n, cold NFS cache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m22.337s
-	user    0m0.152s
-	sys     0m5.476s
-
-Cold NFS cache, no disk cache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m22.734s
-	user    0m0.124s
-	sys     0m5.796s
-
-Completely cold caches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m37.497s
-	user    0m0.248s
-	sys     0m6.648s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m15.167s
-	user    0m0.168s
-	sys     0m4.856s
-
-Warm Ext3 pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	tar: Removing leading `/' from member names
-	tar: Removing leading `/' from hard link targets
-
-	real    0m13.818s
-	user    0m0.200s
-	sys     0m5.492s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    1m54.350s
-	user    0m0.044s
-	sys     0m1.256s
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
