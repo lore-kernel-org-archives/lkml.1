@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbYBUMh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbYBUMjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764958AbYBUMh5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 07:37:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756269AbYBUMht
+	id S932115AbYBUMjz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 07:39:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbYBUMjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 07:37:49 -0500
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:34458 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755851AbYBUMhr (ORCPT
+	Thu, 21 Feb 2008 07:39:47 -0500
+Received: from mail2.neteffect.com ([204.57.75.68]:8766 "EHLO
+	mail2.neteffect.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754762AbYBUMjq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 07:37:47 -0500
-Message-ID: <47BD705A.9020309@bull.net>
-Date: Thu, 21 Feb 2008 13:36:42 +0100
-From: Nadia Derbey <Nadia.Derbey@bull.net>
-Organization: BULL/DT/OSwR&D/Linux
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.6) Gecko/20040115
-X-Accept-Language: en-us, en
+	Thu, 21 Feb 2008 07:39:46 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Matt Helsley <matthltc@us.ibm.com>
-Cc: subrata@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       ltp-list@lists.sourceforge.net, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, cmm@us.ibm.com,
-       y-goto@jp.fujitsu.com
-Subject: Re: [LTP] [PATCH 1/8] Scaling msgmni to the amount of lowmem
-References: <20080211141646.948191000@bull.net>	 <20080211141813.354484000@bull.net>	 <20080215215916.8566d337.akpm@linux-foundation.org>	 <47B94D8C.8040605@bull.net>  <47B9835A.3060507@bull.net>	 <1203411055.4612.5.camel@subratamodak.linux.ibm.com>	 <47BB0EDC.5000002@bull.net> <1203459418.7408.39.camel@localhost.localdomain>
-In-Reply-To: <1203459418.7408.39.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix off-by-one
+Date: Thu, 21 Feb 2008 06:39:45 -0600
+Message-ID: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+In-Reply-To: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [ofa-general] [2.6 patch] infiniband/hw/nes/nes_verbs.c: fix off-by-one
+Thread-Index: Ach0F2EYM4bTqehKSfOyes7uKJ+ApwAALd9wABt2PjA=
+From: "Glenn Streiff" <gstreiff@NetEffect.com>
+To: "Roland Dreier" <rdreier@cisco.com>, "Adrian Bunk" <bunk@kernel.org>
+Cc: "Faisal Latif" <flatif@NetEffect.com>, <linux-kernel@vger.kernel.org>,
+       <general@lists.openfabrics.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Helsley wrote:
-> On Tue, 2008-02-19 at 18:16 +0100, Nadia Derbey wrote:
-> 
-> <snip>
-> 
->>+#define MAX_MSGQUEUES  16      /* MSGMNI as defined in linux/msg.h */
->>+
-> 
-> 
-> It's not quite the maximum anymore, is it? More like the minumum
-> maximum ;). A better name might better document what the test is
-> actually trying to do.
-> 
-> One question I have is whether the unpatched test is still valuable.
-> Based on my limited knowledge of the test I suspect it's still a correct
-> test of message queues. If so, perhaps renaming the old test (so it's
-> not confused with a performance regression) and adding your patched
-> version is best?
+
+> >  > No, 51af33e8 was for a similar same bug 400 lines below 
+> this bug...
+> > 
+> > Heh, sorry.
+> > 
+> > Glenn -- please review Adrian's patches and let me know 
+> which ones are
+> > good to apply.
+> > 
 > 
 
-So, here's the new patch based on Matt's points.
+I went ahead and created a patch series and attributed Adrian
+for the patches of his I liked.  There were a couple that
+I tweaked.  Wasn't sure if all the hunks would apply nicely
+after that if we mixed and matched his and mine, hence the series.
 
-Subrata, it has to be applied on top of the original ltp-full-20080131. 
-Please tell me if you'd prefer one based on the merged version you've 
-got (i.e. with my Tuesday patch applied).
+Hope that's okay.  Should I have gotten his ack for the ones
+I rewrote?  The fixes were pretty small so I figured they didn't
+really need more review.
 
-Regards,
-Nadia
+The patch series is on the way...
+
+Glenn
