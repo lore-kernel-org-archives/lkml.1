@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbYBUXtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935979AbYBUXuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757916AbYBUXtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 18:49:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935852AbYBUXsU
+	id S935979AbYBUXuU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 18:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935722AbYBUXsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 18:48:20 -0500
-Received: from cantor.suse.de ([195.135.220.2]:45008 "EHLO mx1.suse.de"
+	Thu, 21 Feb 2008 18:48:25 -0500
+Received: from mail.suse.de ([195.135.220.2]:45010 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765485AbYBUXsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 18:48:18 -0500
+	id S1765143AbYBUXsX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 18:48:23 -0500
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 02/11] slabinfo: fall back from /sys/kernel/slab to /sys/slab
-Date: Thu, 21 Feb 2008 15:47:58 -0800
-Message-Id: <1203637687-7273-2-git-send-email-gregkh@suse.de>
+Cc: Balaji Rao <balajirrao@gmail.com>, Dave Jones <davej@codemonkey.org.uk>,
+       Yi Yang <yi.y.yang@intel.com>, Alan Stern <stern@rowland.harvard.edu>,
+       Frans Pop <elendil@planet.nl>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 03/11] cpufreq: fix kobject reference count handling
+Date: Thu, 21 Feb 2008 15:47:59 -0800
+Message-Id: <1203637687-7273-3-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.4
 In-Reply-To: <20080221234649.GB7128@kroah.com>
 References: <20080221234649.GB7128@kroah.com>
@@ -24,33 +25,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <clameter@sgi.com>
+From: Balaji Rao <balajirrao@gmail.com>
 
-I keep running upstream and mm kernels and the location of the slab
-directory is different since upstream still uses /sys/slab.  This patch
-makes slabinfo check /sys/slab if /sys/kernel/slab is not there.  Makes
-slabinfo work on any kernel.
+The cpufreq core should not take an extra kobject reference count for no
+reason, and then refuse to release it.  This has been reported as
+keeping machines from properly powering down all the way.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+Cc: Dave Jones <davej@codemonkey.org.uk>
+Cc: Yi Yang <yi.y.yang@intel.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Frans Pop <elendil@planet.nl>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/vm/slabinfo.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/cpufreq/cpufreq.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/Documentation/vm/slabinfo.c b/Documentation/vm/slabinfo.c
-index 7123fee..22d7e3e 100644
---- a/Documentation/vm/slabinfo.c
-+++ b/Documentation/vm/slabinfo.c
-@@ -1123,7 +1123,7 @@ void read_slab_dir(void)
- 	char *t;
- 	int count;
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 64926aa..89a29cd 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -1006,14 +1006,6 @@ static int __cpufreq_remove_dev (struct sys_device * sys_dev)
+ 	}
+ #endif
  
--	if (chdir("/sys/kernel/slab"))
-+	if (chdir("/sys/kernel/slab") && chdir("/sys/slab"))
- 		fatal("SYSFS support for SLUB not active\n");
+-
+-	if (!kobject_get(&data->kobj)) {
+-		spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
+-		cpufreq_debug_enable_ratelimit();
+-		unlock_policy_rwsem_write(cpu);
+-		return -EFAULT;
+-	}
+-
+ #ifdef CONFIG_SMP
  
- 	dir = opendir(".");
+ #ifdef CONFIG_HOTPLUG_CPU
 -- 
 1.5.4
 
