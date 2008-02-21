@@ -1,94 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761885AbYBUIzT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763296AbYBUI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761885AbYBUIzT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 03:55:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbYBUIzH
+	id S1763296AbYBUI4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 03:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbYBUI4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 03:55:07 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:42666 "EHLO
-	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751759AbYBUIzF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 03:55:05 -0500
-Message-ID: <47BD3B56.3090404@linux.vnet.ibm.com>
-Date: Thu, 21 Feb 2008 14:20:30 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 21 Feb 2008 03:56:07 -0500
+Received: from sacred.ru ([62.205.161.221]:45986 "EHLO sacred.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754607AbYBUI4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 03:56:05 -0500
+Message-ID: <47BD3C96.40501@openvz.org>
+Date: Thu, 21 Feb 2008 11:55:50 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peter@programming.kicks-ass.net>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: Make yield_task_fair more efficient
-References: <20080221053321.GA26918@balbir.in.ibm.com> <20080221060427.GA9159@elte.hu> <47BD1F75.5030506@linux.vnet.ibm.com> <20080221070733.GA13694@elte.hu>  <47BD2A99.3010608@linux.vnet.ibm.com> <1203583439.6243.119.camel@lappy>
-In-Reply-To: <1203583439.6243.119.camel@lappy>
+To: Jan Kara <jack@suse.cz>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yuri Per <Yuri.Per@acronis.com>,
+       Max Lyadvinsky <Max.Lyadvinsky@acronis.com>,
+       Vladimir Simonov <Vladimir.Simonov@acronis.com>,
+       Andrew Neporada <Andrew.Neporada@acronis.com>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH] UDF: fix anchor point detection
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Thu, 21 Feb 2008 11:55:40 +0300 (MSK)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2008-02-21 at 13:09 +0530, Balbir Singh wrote:
-> 
->> sched_yield() is supported API
-> 
-> For SCHED_FIFO/SCHED_RR.
-> 
->>  and also look at http://lkml.org/lkml/2007/9/19/351.
-> 
-> Read on (http://lkml.org/lkml/2007/9/19/371) and find:
->         
->         The sched_yield() behaviour is actually very well-defined for RT
->         tasks (now, whether it's a good interface to use or not is still
->         open to debate, but at least it's a _defined_ interface ;), and
->         I think we should at least try to approximate that behaviour for
->         normal tasks, even if they aren't RT.
-> 
-> sched_yield() just isn't a very useful API except in RT and even there
-> one can question it.
-> 
+According to ECMA 167 rev. 3 (see 3/8.4.2.1), Anchor Volume
+Descriptor Pointer should be recorded at two or more anchor 
+points located at sectors 256, N, N - 256, where N - is a 
+largest logical sector number at volume space.
 
-But it's being used very heavily by existing applications. Can we break/penalize
-them because we think it's not a good interface or a method to program?
+So we should always try to detect N on UDF volume before 
+trying to find Anchor Volume Descriptor (i.e. calling to 
+udf_find_anchor()).
 
+That said, all this patch does is updates the s_last_block 
+even if the udf_vrs() returns positive value.
 
->> I am trying to make sched_yield() efficient
->> when compat_sched_yield is turned on (which is most likely), since people will
->> want that behaviour (Hint, please read the man-page for sched_yield).
-> 
-> I did, so what? read the POSIX spec - its just plain undefined for
-> SCHED_OTHER. We already do something 'sensible' for those few broken
-> applications relying on unspecified behaviour.
-> 
->> There are
->> already several applications using sched_yield(), so they all suffer.
-> 
-> Who is using it, where is their source so we can show its faster to not
-> use it?
-> 
-> Really, hiding behind closed sores doesn't make it good.
-> 
-> 
+Originally written and tested by Yuri Per, ported on latest 
+mainline by me.
 
-I am not hiding behind closed source. Please refer to the regression reported by
-Yanmin where he used compat_sched_yield=1 (see
-http://lkml.org/lkml/2008/2/18/7). The regression might be due to other reasons,
-but the point is that people are using compat_sched_yield=1
+Signed-off-by: Yuri Per <Yuri.Per@acronis.com>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Cc: Max Lyadvinsky <Max.Lyadvinsky@acronis.com>
+Cc: Vladimir Simonov <Vladimir.Simonov@acronis.com>
+Cc: Andrew Neporada <Andrew.Neporada@acronis.com>
+Cc: Kirill Korotaev <dev@openvz.org>
 
-If you insist that sched_yield() is bad, I might agree, but how does my patch
-make things worse. In my benchmarks, it has helped the sched_yield case, why is
-that bad? As far as touching the hot-path is concerned, give me a benchmark that
-I can run on my desktop, that will convince you that the overhead of the patch
-is not all that high. If there is an overhead that is very visible, I'll stop
-pushing the patch.
+---
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+diff --git a/fs/udf/super.c b/fs/udf/super.c
+index f3ac4ab..abd5e30 100644
+--- a/fs/udf/super.c
++++ b/fs/udf/super.c
+@@ -1486,16 +1486,17 @@ static int udf_check_valid(struct super_block *sb, int novrs, int silent)
+ 	/* Check that it is NSR02 compliant */
+ 	/* Process any "CD-ROM Volume Descriptor Set" (ECMA 167 2/8.3.1) */
+ 	else {
++		struct udf_sb_info *sbi = UDF_SB(sb);
++
+ 		block = udf_vrs(sb, silent);
+-		if (block == -1) {
+-			struct udf_sb_info *sbi = UDF_SB(sb);
++		if (block == -1)
+ 			udf_debug("Failed to read byte 32768. Assuming open "
+ 				  "disc. Skipping validity check\n");
+-			if (!sbi->s_last_block)
+-				sbi->s_last_block = udf_get_last_block(sb);
+-			return 0;
+-		} else
+-			return !block;
++
++		if (block && !sbi->s_last_block)
++			sbi->s_last_block = udf_get_last_block(sb);
++
++		return !block;
+ 	}
+ }
+ 
