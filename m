@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764621AbYBUK70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764235AbYBULBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764621AbYBUK70 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 05:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764007AbYBUK7E
+	id S1764235AbYBULBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:01:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758685AbYBULBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 05:59:04 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:42315 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756786AbYBUK7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 05:59:03 -0500
-Date: Thu, 21 Feb 2008 21:58:56 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-net@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-net: no next-20080221 tree
-Message-Id: <20080221215856.53bbecc5.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	Thu, 21 Feb 2008 06:01:11 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:39910 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758636AbYBULBK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 06:01:10 -0500
+Date: Thu, 21 Feb 2008 10:50:56 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Paul Mackerras <paulus@samba.org>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: Re: [PATCH] viocons: BKL locking
+Message-ID: <20080221105056.69e6678c@core>
+In-Reply-To: <18364.63205.933131.746580@cargo.ozlabs.ibm.com>
+References: <20080220203258.4b33f890@core>
+	<18364.63205.933131.746580@cargo.ozlabs.ibm.com>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 21 Feb 2008 14:58:29 +1100
+Paul Mackerras <paulus@samba.org> wrote:
 
-Hi all,
+> Alan Cox writes:
+> 
+> > For some weird reason I can't ascertain (translation "I think its
+> > broken") the viocons driver calls directly into the n_tty ldisc code even
+> > if another ldisc is in use. It'll probably break if you do that but I'm
+> > just fixing the locking and adding a comment that its horked.
+> 
+> Looks to me like it (viotty_ioctl) should return -ENOIOCTLCMD instead
+> of calling n_tty_ioctl -- do you agree?
 
-I have *not* released a new tree today (If you want to see why, have a
-look at the left most column of
-http://kisskb.ellerman.id.au/kisskb/branch/9).  This was caused my me
-removing one of Greg KH's patches because it did not apply due to an
-inadequacy in my procedures.
+I think that is probably what is intended. That would then bounce back
+throuh the tty layer to the right places.
 
-Basically, I have three quilt series from Greg and one of the patches in
-the second one depends on something in the first series.  The BASE tag we
-have implemented for series files was supposed to point to the place in
-Linus' tree where the series should apply cleanly.  This (obviously)
-turns out to be inadequate.  So we have a new tag NEXT_BASE which may
-name another git tree/quilt series that is also included in the
-linux-next tree.  This is most useful for those who have supplied more
-than one series but may be used between consenting adults who trust each
-other to keep their trees/series consistent enough.  Unfortunately this
-will introduce a loose ordering between trees/series, but I think it will
-be manageable.  I don't expect it to be used very much.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHvVl0TgG2atn1QN8RAhw6AJoDTDQIKINQ5tnnob2tBdJnzwphbACaAzUn
-vN+W2m9aV2dnT+seNjaqwDg=
-=O/Mq
------END PGP SIGNATURE-----
-
---Signature=_Thu__21_Feb_2008_21_58_56_+1100_lwvabIx0dGd7e6AF--
+Alan
