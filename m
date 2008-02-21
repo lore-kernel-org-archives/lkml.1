@@ -1,102 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbYBUGhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbYBUGui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760431AbYBUGhk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 01:37:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbYBUGha
+	id S1758442AbYBUGui (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 01:50:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbYBUGu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 01:37:30 -0500
-Received: from ns2.suse.de ([195.135.220.15]:36804 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752448AbYBUGh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 01:37:29 -0500
-Date: Wed, 20 Feb 2008 22:37:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: Nigel Cunningham <nigel@nigel.suspend2.net>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
-	Screen becomes green.
-Message-ID: <20080221063718.GA25036@suse.de>
-References: <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <47BCAD6E.9080704@nigel.suspend2.net> <20080221001357.GA29796@srcf.ucam.org> <47BCC866.9000102@nigel.suspend2.net> <20080221004632.GA25869@suse.de> <47BCD112.3010708@nigel.suspend2.net> <20080221044331.GB21499@suse.de> <47BD14AC.5070002@nigel.suspend2.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BD14AC.5070002@nigel.suspend2.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 21 Feb 2008 01:50:26 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50449 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258AbYBUGuZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 01:50:25 -0500
+Date: Thu, 21 Feb 2008 15:49:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: John Stoffel <john@stoffel.org>, Jan Engelhardt <jengelh@computergmbh.de>,
+       Andi Kleen <andi@firstfloor.org>, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory
+ controller in Kconfig
+Message-Id: <20080221154916.723fed49.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <47BC5211.6030102@linux.vnet.ibm.com>
+References: <20080220122338.GA4352@basil.nowhere.org>
+	<47BC2275.4060900@linux.vnet.ibm.com>
+	<18364.16552.455371.242369@stoffel.org>
+	<47BC4554.10304@linux.vnet.ibm.com>
+	<Pine.LNX.4.64.0802201647060.26109@fbirervta.pbzchgretzou.qr>
+	<18364.20755.798295.881259@stoffel.org>
+	<47BC5211.6030102@linux.vnet.ibm.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 05:05:32PM +1100, Nigel Cunningham wrote:
-> Hi Greg.
->
-> Greg KH wrote:
->> On Thu, Feb 21, 2008 at 12:17:06PM +1100, Nigel Cunningham wrote:
->>> Hi.
->>>
->>> Greg KH wrote:
->>>> On Thu, Feb 21, 2008 at 11:40:06AM +1100, Nigel Cunningham wrote:
->>>>> Hi.
->>>>>
->>>>> Matthew Garrett wrote:
->>>>>> On Thu, Feb 21, 2008 at 09:45:02AM +1100, Nigel Cunningham wrote:
->>>>>>> - people keep talking about hibernating to an ext3 fs mounted on fuse 
->>>>>>> as a limitation of the freezer. To do that with kexec, you're still 
->>>>>>> going to have to bmap the ext3 fs and pass the block list (in which 
->>>>>>> case we can also do it without kexec) or umount all the ext3/fuse 
->>>>>>> part and remount in the kexec'd kernel. Sort of defeats the purpose, 
->>>>>>> doesn't it?
->>>>>> No, with a freezer-based model you can basically *never* suspend to 
->>>>>> anything related to FUSE or a userspace USB device or anything 
->>>>>> involving userspace iSCSI initiators or whatever. Sure, there are 
->>>>>> cases where moving away from the current model doesn't buy you 
->>>>>> anything, but that doesn't mean that the current model is a good 
->>>>>> thing. It's not. The freezer is a fundamentally broken concept.
->>>>> Putting drivers and filesystems in userspace is the fundamentally 
->>>>> broken concept. Not just when it comes to the freezer. The whole idea 
->>>>> is inherently racy.
->>>> Racy with regards to other things becides trying to suspend a machine?
->>>> If so, what?
->>> That depends on what sort of tangled web you want to weave.
->> Lots of them :)
->> We have tanks running Linux using userspace USB drivers for vision
->> control systems (scary, I know...)  They seem to be successfully running
->> for many years now, and I'm interested in making sure those kinds of
->> things keep working.
->> We also have laser welding robots with userspace PCI drivers in car
->> manufacturing plants.  And other laser cutting robots slicing wood in
->> patterns moving at a rate of over 3 meters a second.  Again, with
->> userspace drivers and Linux.
->> Those users would also love to know of any potential problems you know
->> of for this situation.
->>> Low memory situations is one other situation that occurs to me
->>> quickly, especially (though not only) if your ability to swap were to
->>> depend upon a userspace driver and/or filesystem.
->> Sure, swap over a userspace filesystem or driver isn't a sane idea.  And
->> neither is swaping over NFS over a PPP connection attached to a USB to
->> serial device.  Yes, it's possible, and all in the kernel, but not a
->> wise decision.
->> Other than foolish configurations, if you come up with other issues
->> surrounding userspace drivers that could cause problems, please let me
->> know.
->
-> A simple OOM condition isn't an issue? Surely a driver stalling because 
-> some of its memory gets swapped out just before it goes to use it would be 
-> a problem if it resulted in getting the length of a cut wrong or caused 
-> some distorted vision or a late turn :>
->
-> Am I missing something? Maybe these drivers mlock memory to avoid those 
-> issues or something like that?
+On Wed, 20 Feb 2008 21:45:13 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-I think the mlock their memory to prevent this from happening, it's not
-hard when you control all the applications on the box :)
+> > But for computers, limits is an expected and understood term, and for
+> > filesystems it's quotas.  So in this case, I *still* think you should
+> > be using the term "Memory Quota Controller" instead.  It just makes it
+> > clearer to a larger audience what you mean.
+> > 
+> 
+> Memory Quota sounds very confusing to me. Usually a quota implies limits, but in
+> a true framework, one can also implement guarantees and shares.
+> 
+This "cgroup memory contoller" is called as "Memory Resource Contoller"
+in my office ;)
 
-thanks,
+How about Memory Resouce Contoller ?
 
-greg k-h
+
+-Kame
+
