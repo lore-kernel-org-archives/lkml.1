@@ -1,79 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764942AbYBUL6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765860AbYBUL76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764942AbYBUL6c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 06:58:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBUL6W
+	id S1765860AbYBUL76 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 06:59:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbYBUL7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 06:58:22 -0500
-Received: from mail.sf-mail.de ([62.27.20.61]:40581 "EHLO mail.sf-mail.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752826AbYBUL6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 06:58:20 -0500
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: "David Somayajulu" <david.somayajulu@qlogic.com>
-Subject: Re: [2.6 patch] scsi/qla4xxx/ql4_isr.c: remove dead code
-Date: Thu, 21 Feb 2008 12:51:23 +0100
-User-Agent: KMail/1.9.9
-Cc: "Andrew Vasquez" <andrew.vasquez@qlogic.com>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>,
-       "Adrian Bunk" <bunk@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-References: <0BB3E5E7462EEA4295BC02D49691DC0701277989@AVEXCH1.qlogic.org>
-In-Reply-To: <0BB3E5E7462EEA4295BC02D49691DC0701277989@AVEXCH1.qlogic.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2537298.1IBjjA3VHb";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Thu, 21 Feb 2008 06:59:50 -0500
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:37643 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753949AbYBUL7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 06:59:50 -0500
+Subject: Re: Apm_emulation and proper suspend
+From: Richard Purdie <rpurdie@openedhand.com>
+To: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+Cc: rjw@sisk.pl, linux-main <linux-kernel@vger.kernel.org>
+In-Reply-To: <20080221123318.41273a1f.Kristoffer.ericson@gmail.com>
+References: <20080221123318.41273a1f.Kristoffer.ericson@gmail.com>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 11:59:45 +0000
+Message-Id: <1203595185.9329.12.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200802211251.34437.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2537298.1IBjjA3VHb
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Thu, 2008-02-21 at 12:33 +0100, Kristoffer Ericson wrote:
+> I'm reworking a couple of apm drivers and for whatever reason it
+> doesn't seem to update my /proc/apm_bios. I was under the impression
+> that it should do that when apm_bios was catted? Currently I have a
+> value that never change. I export my get_power_status.. function
+> properly but doesn't seem to touch it. I noticed that Richard had the
+> extern int (void..apm_get_power) (...) declare an extra time (once in
+> apm-emulation.h and another inside sharpsl.c), is that needed?
 
-> The correct patch needs to be
->
-> Signed-off-by: David C Somayajulu <david.somayajulu@qlogic.com>
->
-> ---
->
-> diff --git a/drivers/scsi/qla4xxx/ql4_isr.c
-> b/drivers/scsi/qla4xxx/ql4_isr.c
-> index 0f029d0..fc84db4 100644
-> --- a/drivers/scsi/qla4xxx/ql4_isr.c
-> +++ b/drivers/scsi/qla4xxx/ql4_isr.c
-> @@ -100,8 +100,7 @@ static void qla4xxx_status_entry(struct
->
->  		if (sts_entry->iscsiFlags &ISCSI_FLAG_RESIDUAL_UNDER) {
->  			scsi_set_resid(cmd, residual);
-> -			if (!scsi_status && ((scsi_bufflen(cmd) -
-> residual) <
-> -				cmd->underflow)) {
-> +			if ((scsi_bufflen(cmd) - residual) <
-> cmd->underflow) {
+It should be removed from sharpsl.c in that case. The code was written
+when the apm emulation code was arm specific and looked rather
+different.
 
-The patch is line-wrapped and can' be applied.
+> Also, is apm the "brains" behind the suspend/resume interactions? By
+> that I mean, should suspend be initiated through apm functions
+> in order to be proper? I've tried to find examples but the best source
+> of suspend related code is Richards code on sharp machines.
 
-Greetings,
+APM means you can can notify userspace of the suspend/resume events and
+have some kind of interaction there through apmd. It gives a mechanism
+where both userspace and kernel space can queue suspend requests and
+where userspace can veto a voluntary suspend.
 
-Eike
+You can also suspend the system through "echo mem > /sys/power/state" in
+userspace or calling pm_suspend() in kernel space but this doesn't give
+anything else the opportunity to know about the event which is why we
+still have apm.
 
---nextPart2537298.1IBjjA3VHb
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Cheers,
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
+Richard
 
-iD8DBQBHvWXGXKSJPmm5/E4RArLGAKCmtRwDDDnSOeBTtYVIyT4x+/I3rgCgob5p
-p2A/YBvALCGRhySCQ67Css0=
-=gRJ+
------END PGP SIGNATURE-----
-
---nextPart2537298.1IBjjA3VHb--
