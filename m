@@ -1,109 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765591AbYBURSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933070AbYBURVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765591AbYBURSJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 12:18:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbYBURRs
+	id S933070AbYBURVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 12:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbYBURVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 12:17:48 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:2384 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1755328AbYBURRr (ORCPT
+	Thu, 21 Feb 2008 12:21:14 -0500
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:59402 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756839AbYBURVL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 12:17:47 -0500
-Subject: Re: New sparse warning in net/mac80211/debugfs_sta.c
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Cc: harvey.harrison@gmail.com, netdev@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080221.020554.259219477.davem@davemloft.net>
-References: <1203586467.20345.14.camel@brick>
-	 <20080221.015743.222059206.davem@davemloft.net>
-	 <1203588079.20345.15.camel@brick>
-	 <20080221.020554.259219477.davem@davemloft.net>
-Content-Type: text/plain
-Date: Thu, 21 Feb 2008 09:17:13 -0800
-Message-Id: <1203614233.7181.262.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 12:21:11 -0500
+To: roland@redhat.com
+CC: jdike@addtoit.com, miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <E1JRD9I-0004L9-6E@pomaz-ex.szeredi.hu> (message from Miklos
+	Szeredi on Mon, 18 Feb 2008 22:03:40 +0100)
+Subject: Re: [bug] uml doesn't boot under 2.6.25-rc1 host (was Re: 2.6.24-mm1 bugs)
+References: <E1JPyyn-00055D-2i@pomaz-ex.szeredi.hu> <20080215184741.GB8810@c2.user-mode-linux.org> <E1JQ6bM-0005z4-Ac@pomaz-ex.szeredi.hu> <E1JRD9I-0004L9-6E@pomaz-ex.szeredi.hu>
+Message-Id: <E1JSF5r-0007vI-1v@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 21 Feb 2008 18:20:23 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 02:05 -0800, David Miller wrote:
-> >From another perspective adding that __pure attribute to print_mac()
-> might not have been the best idea.  But I can't think of another
-> way to eliminate the "passing print_mac() args to pr_debug()
-> still generates calls to print_mac() even when DEBUG is not
-> defined" problem :-/
+> > > >  - UML doesn't boot: guest is 2.6.24-mm1 also, haven't tried any
+> > > >    other.  Same guest boots fine on 2.6.24 host.
+> > > 
+> > > What does it do?
+> > 
+> > See below.
+> 
+> This bug seems to have made it to mainline as well, starting with
+> -rc1.  Any ideas?  Should I start bisecting?
 
-Philip Craig made a suggestion:
-http://marc.info/?l=linux-wireless&m=120338413108120&w=2
+Bisected it down to
 
-to use this:
+good e7b5e11eaaa8ef93a34e68016de51152d0d62911
+bad  bde6f5f59c2b2b48a7a849c129d5b48838fe77ee
 
-If not debugging, guard #define wrapper_printks with if (0).
-The gcc optimizer removes the printk but gcc still does
-printf argument verification.
+I strongly suspect it's one of the ptrace cleanup patches.  Roland,
+could you please have a look?
 
-There are many other debug printk wrappers
+I'm running 32bit UML on 64bit host, this may have to do with
+triggering this, otherwise perhaps more people would have complained.
 
-	#ifdef DEBUG
-	#define printk_wrapper 
-	#else
-	#define printk_wrapper printk
-	#endif
+Thanks,
+Miklos
 
-that should be converted as well.
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 2258d89..79601b1 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -608,21 +608,15 @@ extern const char *dev_driver_string(struct device *dev);
- #define dev_dbg(dev, format, arg...)		\
- 	dev_printk(KERN_DEBUG , dev , format , ## arg)
- #else
--static inline int __attribute__ ((format (printf, 2, 3)))
--dev_dbg(struct device *dev, const char *fmt, ...)
--{
--	return 0;
--}
-+#define dev_dbg(dev, format, arg...) \
-+	do { if (0) dev_printk(KERN_DEBUG , dev , format, ## arg); } while (0)
- #endif
- 
- #ifdef VERBOSE_DEBUG
- #define dev_vdbg	dev_dbg
- #else
--static inline int __attribute__ ((format (printf, 2, 3)))
--dev_vdbg(struct device *dev, const char *fmt, ...)
--{
--	return 0;
--}
-+#define dev_vdbg(dev, format, arg...) \
-+	do { if (0) dev_printk(KERN_DEBUG , dev , format, ## arg); } while (0)
- #endif
- 
- /* Create alias, so I can be autoloaded. */
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 2df44e7..cd24112 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -293,10 +293,8 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
- #define pr_debug(fmt, arg...) \
- 	printk(KERN_DEBUG fmt, ##arg)
- #else
--static inline int __attribute__ ((format (printf, 1, 2))) pr_debug(const char * fmt, ...)
--{
--	return 0;
--}
-+#define pr_debug(fmt, arg...) \
-+	do { if (0) printk(KERN_DEBUG fmt, ##arg); } while (0)
- #endif
- 
- /*
-
-
+> > GNU gdb 6.6.50.20070726-cvs
+> > Copyright (C) 2007 Free Software Foundation, Inc.
+> > GDB is free software, covered by the GNU General Public License, and you are
+> > welcome to change it and/or distribute copies of it under certain conditions.
+> > Type "show copying" to see the conditions.
+> > There is absolutely no warranty for GDB.  Type "show warranty" for details.
+> > This GDB was configured as "x86_64-suse-linux"...
+> > Using host libthread_db library "/lib64/libthread_db.so.1".
+> > (gdb) r umid=uml
+> > Starting program: /store/quilt/linux/linux umid=uml
+> > Core dump limits :
+> >         soft - 0
+> >         hard - NONE
+> > Checking that ptrace can change system call numbers...OK
+> > Checking syscall emulation patch for ptrace...missing
+> > Checking for tmpfs mount on /dev/shm...nothing mounted on /dev/shm
+> > Checking PROT_EXEC mmap in /tmp/...OK
+> > Checking for the skas3 patch in the host:
+> >   - /proc/mm...not found: No such file or directory
+> >   - PTRACE_FAULTINFO...not found: Invalid argument
+> >   - PTRACE_LDT...not found: Invalid argument
+> > UML running in SKAS0 mode
+> > Adding 24977408 bytes to physical memory to account for exec-shield gap
+> > [    0.000000] Linux version 2.6.24-mm1 (mszeredi@tucsk) (gcc version 4.2.1 (SUSE Linux)) #26 Fri Feb 15 11:05:54 CET 2008
+> > [    0.010000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 14179
+> > [    0.010000] Kernel command line: root=98:0
+> > [    0.010000] PID hash table entries: 256 (order: 8, 1024 bytes)
+> > [    0.010000] Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+> > [    0.010000] Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+> > [    0.010000] Memory: 29504k available
+> > [    0.270000] Mount-cache hash table entries: 512
+> > [    0.270000] Checking for host processor cmov support...Yes
+> > [    0.270000] Checking that host ptys support output SIGIO...Yes
+> > [    0.270000] Checking that host ptys support SIGIO on close...No, enabling workaround
+> > [    0.270000] net_namespace: 184 bytes
+> > [    0.270000] Using 2.6 host AIO
+> > [    0.270000] NET: Registered protocol family 16
+> > [    0.300000] NET: Registered protocol family 2
+> > [    0.310000] Time: itimer clocksource has been installed.
+> > [    0.390000] IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+> > [    0.390000] TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+> > [    0.390000] TCP bind hash table entries: 2048 (order: 3, 40960 bytes)
+> > [    0.390000] TCP: Hash tables configured (established 2048 bind 2048)
+> > [    0.390000] TCP reno registered
+> > [    0.420000] Checking host MADV_REMOVE support...<3>MADV_REMOVE failed, err = -38
+> > [    0.420000] Can't release memory to the host - memory hotplug won't be supported
+> > [    0.420000] mconsole (version 2) initialized on /home/mszeredi/.uml/uml/mconsole
+> > [    0.420000] Host TLS support detected
+> > [    0.420000] Detected host type: x86_64 (GDT indexes 12 to 15)
+> > [    0.420000] fuse init (API version 7.9)
+> > [    0.420000] io scheduler noop registered (default)
+> > [    0.420000] loop: module loaded
+> > [    0.420000] TCP cubic registered
+> > [    0.420000] NET: Registered protocol family 1
+> > [    0.420000] Initialized stdio console driver
+> > [    0.420000] Console initialized on /dev/tty0
+> > [    0.420000] console [tty0] enabled
+> > [    0.420000] console [mc-1] enabled
+> > [    0.420000]  ubda: unknown partition table
+> > [    0.420000] kjournald starting.  Commit interval 5 seconds
+> > [    0.420000] EXT3-fs: mounted filesystem with ordered data mode.
+> > [    0.420000] VFS: Mounted root (ext3 filesystem) readonly.
+> > [    0.420000] Failed to get registers from stub, errno = 3
+> > [    0.420000] wait_stub_done : failed to wait for SIGTRAP, pid = 30073, n = 30073, errno = 0, status = 0x0
+> > [New LWP 30070]
+> >                [New LWP 30071]
+> >                               [New LWP 30072]
+> > 
+> > Program received signal SIGTERM, Terminated.
+> > 0xffffe430 in __kernel_vsyscall ()
+> > (gdb) bt
+> > #0  0xffffe430 in __kernel_vsyscall ()
+> > #1  0xf7eabc26 in kill () from /lib/libc.so.6
+> > #2  0x0806cf82 in os_dump_core () at arch/um/os-Linux/util.c:105
+> > #3  0x0805d64d in fatal_sigsegv () at arch/um/kernel/trap.c:141
+> > #4  0x0806e32b in wait_stub_done (pid=30073)
+> >     at arch/um/os-Linux/skas/process.c:94
+> > #5  0x0806d94b in run_syscall_stub (mm_idp=0xb26ff18, syscall=123,
+> >     args=0xb067e08, expected=0, addr=0xb067ea4, done=1)
+> >     at arch/um/os-Linux/skas/mem.c:86
+> > #6  0x0806f997 in write_ldt_entry (mm_idp=0xb26ff18, func=1, desc=0xb067e94,
+> >     addr=0xb067ea4, done=1) at arch/um/sys-i386/ldt.c:72
+> > #7  0x08070434 in init_new_ldt (new_mm=0xb26ff18, from_mm=0x0)
+> >     at arch/um/sys-i386/ldt.c:425
+> > #8  0x0805de43 in init_new_context (task=0xb05bc00, mm=0xb26fdc0)
+> >     at arch/um/kernel/skas/mmu.c:87
+> > #9  0x080ce3c1 in bprm_mm_init (bprm=0xb1a6980) at fs/exec.c:337
+> > #10 0x080cfa2d in do_execve (filename=0x820d61f "/sbin/init", argv=0x8250020,
+> >     envp=0x8250240, regs=0xb05be04) at fs/exec.c:1296
+> > #11 0x080599e8 in execve1 (file=0x820d61f "/sbin/init", argv=0x8250020,
+> >     env=0x8250240) at arch/um/kernel/exec.c:62
+> > #12 0x08059a4f in um_execve (file=0x820d61f "/sbin/init", argv=0x8250020,
+> >     env=0x8250240) at arch/um/kernel/exec.c:78
+> > #13 0x0805c4fb in kernel_execve (filename=0x820d61f "/sbin/init",
+> > ---Type <return> to continue, or q <return> to quit---
+> >     argv=0x8250020, envp=0x8250240) at arch/um/kernel/syscall.c:146
+> > #14 0x08059616 in run_init_process (init_filename=0x820d61f "/sbin/init")
+> >     at init/main.c:763
+> > #15 0x080596d3 in init_post () at init/main.c:809
+> > #16 0x08049a74 in kernel_init (unused=0x0) at init/main.c:865
+> > #17 0x0806ac31 in run_kernel_thread (fn=0x8049a00 <kernel_init>, arg=0x0,
+> >     jmp_ptr=0xb05be70) at arch/um/os-Linux/process.c:267
+> > #18 0x0805ad62 in new_thread_handler () at arch/um/kernel/process.c:153
+> > #19 0x00000000 in ?? ()
+> > (gdb)
+> > 
+> 
