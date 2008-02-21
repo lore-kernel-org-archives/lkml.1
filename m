@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932973AbYBUWvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934472AbYBUWxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932973AbYBUWvp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 17:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752934AbYBUWvf
+	id S934472AbYBUWxT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 17:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbYBUWxH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 17:51:35 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:5046 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752570AbYBUWvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 17:51:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=GZbHran+TsG55IatcT7myr/tHek/dzLyhpvfMupTCeeV4XKJza0z2ayI6HesWyvWKY/+E6ylwprD79sz8Qukipc6lMsVeMokq0LNEj2vMPrbqmvWd3JIe8I0y4Zz01hMUI8XHBQNQNLsZS5UVwT8bhnTUmm0ZKpNgsXPdGmyvIE=
-To: rt2400-devel@lists.sourceforge.net
-Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
-Date: Thu, 21 Feb 2008 23:51:11 +0100
-User-Agent: KMail/1.9.7
-Cc: Chris Vine <chris@cvine.freeserve.co.uk>, Dan Williams <dcbw@redhat.com>,
-       chris2553@googlemail.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802212251.26897.IvDoorn@gmail.com> <1203633991.3186.2.camel@boulder.homenet>
-In-Reply-To: <1203633991.3186.2.camel@boulder.homenet>
+	Thu, 21 Feb 2008 17:53:07 -0500
+Received: from gw.goop.org ([64.81.55.164]:40230 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751377AbYBUWxF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 17:53:05 -0500
+Message-ID: <47BE0017.1020205@goop.org>
+Date: Thu, 21 Feb 2008 14:49:59 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ian Campbell <ijc@hellion.org.uk>, Joel Becker <Joel.Becker@oracle.com>,
+       Jody Belka <lists-lkml@pimb.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+References: <20080212235404.GY7980@pimb.org> <47B2DBA5.6030001@goop.org>	 <20080214022744.GA4160@mail.oracle.com> <47B3F2DC.8080707@goop.org>	 <20080215202336.GE26034@mail.oracle.com>	 <1203274161.27987.6.camel@localhost.localdomain>	 <20080218104025.GA15899@ca-server1.us.oracle.com>	 <1203458366.26910.15.camel@cthulhu.hellion.org.uk>	 <47BBDA20.8030105@zytor.com>	 <1203497511.26910.39.camel@cthulhu.hellion.org.uk>	 <47BCA275.7000504@goop.org>	 <1203546597.26910.74.camel@cthulhu.hellion.org.uk>	 <47BDEA11.6010302@goop.org> <47BDEB57.5040203@zytor.com>	 <47BDEF36.8000903@goop.org> <1203631956.28436.4.camel@cthulhu.hellion.org.uk> <47BDF9C7.6040400@zytor.com>
+In-Reply-To: <47BDF9C7.6040400@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802212351.12637.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 February 2008, Chris Vine wrote:
-> On Thu, 2008-02-21 at 22:51 +0100, Ivo van Doorn wrote:
-> > On Thursday 21 February 2008, Chris Vine wrote:
-> [snip] 
-> > > Here's some further information.
-> > > 
-> > > I have a fully functioning version of rt2x00-2.0.14 and mac80211 from
-> > > wireless-2.6/compat-wireless-2.6 of mid January which works fine on
-> > > kernel 2.6.24.  On doing a comparison with the rt2x00 in vanilla kernel
-> > > 2.6.25-rc2, there are no material differences.  (There was a slight
-> > > change in the declaration a variable in rt2x00usb.c but it is
-> > > immaterial.)
-> > > 
-> > > I compiled up the working mid-January version of rt2x00 and mac80211
-> > > under kernel 2.6.25-rc2 and I get exactly the same result as I reported
-> > > earlier, namely I get a kernel panic as soon as I try to associate.  It
-> > > looks therefore as if something has changed within the remainder of the
-> > > kernel which has caused rt2x00 (and possibly mac80211?) to break.
-> > > 
-> > > This probably explains the problem another user reported with rt61.
-> > 
-> > Perhaps something similar like:
-> > http://bugzilla.kernel.org/show_bug.cgi?id=10058
-> > in there a reference is made to the following patch:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/broken-out/revert-send-a-single-notification-on-device-state-changes.patch
-> > 
-> > Does applying that help?
-> 
-> Yes, well done.
-> 
-> I have spent 20 minutes testing it and it seems to work fine (at least
-> as well as 2.0.14 does under kernel 2.6.24).  The rate control algorithm
-> seems to work better as well, but that is probably a mac80211 thing.
+H. Peter Anvin wrote:
+> Ian Campbell wrote:
+>> On Thu, 2008-02-21 at 13:37 -0800, Jeremy Fitzhardinge wrote:
+>>> H. Peter Anvin wrote:
+>>>>> Still curious about why a pagetable page is ending up in that 
+>>>>> range though.  Seems like it shouldn't be possible, since we 
+>>>>> shouldn't be allowed to allocate from those pages, at least until 
+>>>>> the DMI probe has happened...  Unless the early allocator is only 
+>>>>> excluded from e820 reserved pages, which would cause a problem on 
+>>>>> systems which don't reserve the DMI space...  HPA?
+>>>>>
+>>>> I thought the problem was a Xen-provided pagetable from before 
+>>>> Linux started? 
+>>> Hm, I don't think so.  The domain-builder pagetable is put after the 
+>>> kernel, so it shouldn't be under 1M.
+>>
+>> I can confirm that it is Linux which is allocating it. The call path:
+>>         # xm create -c debian-x86_32p-1
+>>         Using config file "/etc/xen/debian-x86_32p-1".
+>>         Started domain debian-1
+>>         xen_alloc_pt_init PFN f0
+>>         Pid: 0, comm: swapper Not tainted 2.6.25-rc2 #68
+>>          [<c02ecb6b>] xen_alloc_pt_init+0x4b/0x60
+>>          [<c02f5e2b>] one_page_table_init+0x8b/0xf0
+>>          [<c02f63df>] paging_init+0x3bf/0x520
+>>          [<c02ee444>] setup_arch+0x2a4/0x410
+>>          [<c02e9a64>] start_kernel+0x64/0x380
+>>          [<c02efd7f>] cpu_detect+0x6f/0xf0
+>>          [<c02ed1a1>] xen_start_kernel+0x2f1/0x310
+>>          =======================
+>>         Entering add_active_range(0, 0, 262144) 0 entries of 256 used
+>>         Zone PFN ranges:
+>>           DMA             0 ->     4096
+>>
+>
+> What is the e820 information you feed the kernel?  We should only ever 
+> allocate page tables out of available RAM, not any other type of 
+> memory (reserved or not). 
 
-Excellent, I am currently updating rt2x00.git from wireless-testing to get
-the above mentioned patch into the repository.
+The kernel gets a flat memory map; all memory is just plain RAM.  The 
+problem is that we're allocating a normal page and turning it into a 
+pagetable - so far so good.  Then the DMI code is randomly mapping that 
+same page RW so it can scan it for DMI signatures, which Xen is preventing.
 
-Ivo
+There are two immediate fixes:
 
+   1. Only scan for DMI if the memory is reserved (rejected, because HPA
+      says some machines don't reserve the DMI space).  Alternatively,
+      don't bother scanning if booting under Xen.
+   2. Make DMI map the memory RO so that Xen doesn't complain (which is
+      sensible because DMI is ROM anyway).
+
+But as far as I can tell, this shouldn't be happening anyway, and could 
+happen on real hardware which doesn't reserve the DMI space.  It 
+probably doesn't because initial pagetables on real hardware use large 
+pages, and therefore allocate less memory for pagetable memory and 
+therefore doesn't end up hitting the 0xf0000 region.  But that area 
+should be excluded from the allocation pool.
+
+    J
