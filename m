@@ -1,143 +1,726 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762048AbYBUAIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932895AbYBUAJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762048AbYBUAIU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:08:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbYBUAIK
+	id S932895AbYBUAJp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752351AbYBUAJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:08:10 -0500
-Received: from smtp.ono.com ([62.42.230.12]:5668 "EHLO resmaa05.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751221AbYBUAIJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:08:09 -0500
-Date: Thu, 21 Feb 2008 01:07:58 +0100
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: "Linux-Kernel, " <linux-kernel@vger.kernel.org>
-Subject: Questions on rtc drivers...
-Message-ID: <20080221010758.0276b369@werewolf>
-X-Mailer: Claws Mail 3.3.0cvs16 (GTK+ 2.12.8; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 20 Feb 2008 19:09:36 -0500
+Received: from mx2.suse.de ([195.135.220.15]:37632 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751208AbYBUAJf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:09:35 -0500
+Subject: patch firmware-move-firmware_class-from-documentation-to-samples.patch added to gregkh-2.6 tree
+To: randy.dunlap@oracle.com, akpm@linux-foundation.org, greg@kroah.com,
+       gregkh@suse.de, linux-kernel@vger.kernel.org, marcel@holtmann.org
+From: <gregkh@suse.de>
+Date: Wed, 20 Feb 2008 16:07:08 -0800
+In-Reply-To: <20080220132050.8f1dac05.randy.dunlap@oracle.com>
+Message-ID: <1203552428651@kroah.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all...
 
-since some time ago I have noticed that mplayer can't use the RTC for
-time accounting. Perhaps it is deprecated and should be migrated to
-hrtimers, that is what every reference I found said, but the fact is
-that nowadays it uses it.
+This is a note to let you know that I've just added the patch titled
 
-I thought I was because a misbuild of my kernel, but now I have just
-built a 2.6.24.2 with every rtc modular to test them (in my case,
-just rtc, genrtc and rtc-cmos - I'm not aware of any other that can
-work on my mobo, ICH5/i875P).
+     Subject: firmware: move firmware_class from Documentation/ to samples/
 
-I use a trimmed down version of the test in Documentacion/rtc.txt.
-Results vary:
+to my gregkh-2.6 tree.  Its filename is
 
-genrtc fails
-crw-r--r-- 1 root root 10, 135 Feb 21 00:53 /dev/rtc
-Using /dev/rtc
-RTC_IRQP_READ ioctl: Invalid argument
+     firmware-move-firmware_class-from-documentation-to-samples.patch
 
-rtc works
-crw-r--r-- 1 root root 10, 135 Feb 21 00:53 /dev/rtc
-Using /dev/rtc
-Initial PI rate: 1024Hz
-   2 Hz: ..........
-   4 Hz: ..........
-   8 Hz: ..........
-  16 Hz: ..........
-  32 Hz: ..........
-  64 Hz: ..........
-Device or resource busy
-and rtc-cmos behaves strangely. After modprobe, even when /dev/rtc*
-are already present, I have to wait even 5 seconds to not have a 'Device or
-resource busy' error on open(). And when it opens it just gets stuck
-after the first dot:
-
-Using /dev/rtc
-Initial PI rate: 1024Hz
-   2 Hz: .
-
-The loop is
-
-        for (i=0; i<10; i++)
-        {
-            res = read(rtc,&data,sizeof(unsigned long));
-            if (res<0)
-            {
-                perror("read");
-                exit(errno);
-            }
-            printf(".");
-            fflush(stdout);
-        }
-
-They all give different info in /proc/driver/rtc and
-/proc/sys/dev/rtc/max-user-freq:
-
-genrtc
-crw-r--r-- 1 root root 10, 135 Feb 21 01:03 /dev/rtc
-rtc_time    : 00:03:25
-rtc_date    : 2008-02-21
-rtc_epoch   : 1900
-alarm       : 00:00:00
-DST_enable  : no
-BCD     : yes
-24hr        : yes
-square_wave : no
-alarm_IRQ   : no
-update_IRQ  : no
-periodic_IRQ    : no
-periodic_freq   : 0
-batt_status : okay
-cat: /proc/sys/dev/rtc/max-user-freq: No such file or directory
-
-rtc
-crw-r--r-- 1 root root 10, 135 Feb 21 01:03 /dev/rtc
-rtc_time    : 00:03:26
-rtc_date    : 2008-02-21
-rtc_epoch   : 1900
-alarm       : **:00:10
-DST_enable  : no
-BCD     : yes
-24hr        : yes
-square_wave : no
-alarm_IRQ   : no
-update_IRQ  : no
-periodic_IRQ    : no
-periodic_freq   : 1024
-batt_status : okay
-64
-
-rtc-cmos
-lrwxrwxrwx 1 root root      4 Feb 21 01:03 /dev/rtc -> rtc0
-crw-r--r-- 1 root root 254, 0 Feb 21 01:03 /dev/rtc0
-rtc_time    : 00:03:39
-rtc_date    : 2008-02-21
-alrm_time   : **:00:10
-alrm_date   : ****-**-**
-alarm_IRQ   : no
-alrm_pending    : no
-24hr        : yes
-periodic_IRQ    : no
-update_IRQ  : yes
-DST_enable  : no
-periodic_freq   : 1024
-batt_status : okay
-cat: /proc/sys/dev/rtc/max-user-freq: No such file or directory
-
-So all of them are not completely interchangeable, the only one that works
-as expected is 'rtc'.
-
-What am I doing wrong ? Or is it a bug ?
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
--- 
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.1 (Cooker) for i586
-Linux 2.6.23-jam05 (gcc 4.2.2 20071128 (4.2.2-2mdv2008.1)) SMP PREEMPT
+>From randy.dunlap@oracle.com  Wed Feb 20 14:33:28 2008
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Date: Wed, 20 Feb 2008 13:20:50 -0800
+Subject: firmware: move firmware_class from Documentation/ to samples/
+To: Greg KH <greg@kroah.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
+Message-ID: <20080220132050.8f1dac05.randy.dunlap@oracle.com>
+
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Move the firmware_class sample drivers to samples/ so that they are
+buildable and can be maintained.
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Marcel Holtmann <marcel@holtmann.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ Documentation/firmware_class/firmware_sample_driver.c         |  115 -----
+ Documentation/firmware_class/firmware_sample_firmware_class.c |  207 ----------
+ samples/firmware_class/firmware_sample_driver.c               |  115 +++++
+ samples/firmware_class/firmware_sample_firmware_class.c       |  207 ++++++++++
+ 4 files changed, 322 insertions(+), 322 deletions(-)
+
+--- a/Documentation/firmware_class/firmware_sample_driver.c
++++ /dev/null
+@@ -1,115 +0,0 @@
+-/*
+- * firmware_sample_driver.c -
+- *
+- * Copyright (c) 2003 Manuel Estrada Sainz
+- *
+- * Sample code on how to use request_firmware() from drivers.
+- *
+- */
+-
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/device.h>
+-#include <linux/string.h>
+-
+-#include "linux/firmware.h"
+-
+-static struct device ghost_device = {
+-	.bus_id    = "ghost0",
+-};
+-
+-
+-static void sample_firmware_load(char *firmware, int size)
+-{
+-	u8 buf[size+1];
+-	memcpy(buf, firmware, size);
+-	buf[size] = '\0';
+-	printk(KERN_INFO "firmware_sample_driver: firmware: %s\n", buf);
+-}
+-
+-static void sample_probe_default(void)
+-{
+-	/* uses the default method to get the firmware */
+-        const struct firmware *fw_entry;
+-	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
+-
+-        if(request_firmware(&fw_entry, "sample_driver_fw", &ghost_device)!=0)
+-	{
+-		printk(KERN_ERR
+-		       "firmware_sample_driver: Firmware not available\n");
+-		return;
+-	}
+-	
+-	sample_firmware_load(fw_entry->data, fw_entry->size);
+-
+-	release_firmware(fw_entry);
+-
+-	/* finish setting up the device */
+-}
+-static void sample_probe_specific(void)
+-{
+-	/* Uses some specific hotplug support to get the firmware from
+-	 * userspace  directly into the hardware, or via some sysfs file */
+-
+-	/* NOTE: This currently doesn't work */
+-
+-	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
+-
+-        if(request_firmware(NULL, "sample_driver_fw", &ghost_device)!=0)
+-	{
+-		printk(KERN_ERR
+-		       "firmware_sample_driver: Firmware load failed\n");
+-		return;
+-	}
+-	
+-	/* request_firmware blocks until userspace finished, so at
+-	 * this point the firmware should be already in the device */
+-
+-	/* finish setting up the device */
+-}
+-static void sample_probe_async_cont(const struct firmware *fw, void *context)
+-{
+-	if(!fw){
+-		printk(KERN_ERR
+-		       "firmware_sample_driver: firmware load failed\n");
+-		return;
+-	}
+-
+-	printk(KERN_INFO "firmware_sample_driver: device pointer \"%s\"\n",
+-	       (char *)context);
+-	sample_firmware_load(fw->data, fw->size);
+-}
+-static void sample_probe_async(void)
+-{
+-	/* Let's say that I can't sleep */
+-	int error;
+-	error = request_firmware_nowait (THIS_MODULE, FW_ACTION_NOHOTPLUG,
+-					 "sample_driver_fw", &ghost_device,
+-					 "my device pointer",
+-					 sample_probe_async_cont);
+-	if(error){
+-		printk(KERN_ERR 
+-		       "firmware_sample_driver:"
+-		       " request_firmware_nowait failed\n");
+-	}
+-}
+-
+-static int sample_init(void)
+-{
+-	device_initialize(&ghost_device);
+-	/* since there is no real hardware insertion I just call the
+-	 * sample probe functions here */
+-	sample_probe_specific();
+-	sample_probe_default();
+-	sample_probe_async();
+-	return 0;
+-}
+-static void __exit sample_exit(void)
+-{
+-}
+-
+-module_init (sample_init);
+-module_exit (sample_exit);
+-
+-MODULE_LICENSE("GPL");
+--- a/Documentation/firmware_class/firmware_sample_firmware_class.c
++++ /dev/null
+@@ -1,207 +0,0 @@
+-/*
+- * firmware_sample_firmware_class.c -
+- *
+- * Copyright (c) 2003 Manuel Estrada Sainz
+- *
+- * NOTE: This is just a probe of concept, if you think that your driver would
+- * be well served by this mechanism please contact me first.
+- *
+- * DON'T USE THIS CODE AS IS
+- *
+- */
+-
+-#include <linux/device.h>
+-#include <linux/module.h>
+-#include <linux/init.h>
+-#include <linux/timer.h>
+-#include <linux/slab.h>
+-#include <linux/string.h>
+-#include <linux/firmware.h>
+-
+-
+-MODULE_AUTHOR("Manuel Estrada Sainz");
+-MODULE_DESCRIPTION("Hackish sample for using firmware class directly");
+-MODULE_LICENSE("GPL");
+-
+-static inline struct class_device *to_class_dev(struct kobject *obj)
+-{
+-	return container_of(obj,struct class_device,kobj);
+-}
+-static inline
+-struct class_device_attribute *to_class_dev_attr(struct attribute *_attr)
+-{
+-	return container_of(_attr,struct class_device_attribute,attr);
+-}
+-
+-int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
+-int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
+-
+-struct firmware_priv {
+-	char fw_id[FIRMWARE_NAME_MAX];
+-	s32 loading:2;
+-	u32 abort:1;
+-};
+-
+-extern struct class firmware_class;
+-
+-static ssize_t firmware_loading_show(struct class_device *class_dev, char *buf)
+-{
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-	return sprintf(buf, "%d\n", fw_priv->loading);
+-}
+-static ssize_t firmware_loading_store(struct class_device *class_dev,
+-				      const char *buf, size_t count)
+-{
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-	int prev_loading = fw_priv->loading;
+-
+-	fw_priv->loading = simple_strtol(buf, NULL, 10);
+-	
+-	switch(fw_priv->loading){
+-	case -1:
+-		/* abort load an panic */
+-		break;
+-	case 1:
+-		/* setup load */
+-		break;
+-	case 0:
+-		if(prev_loading==1){
+-			/* finish load and get the device back to working
+-			 * state */
+-		}
+-		break;
+-	}
+-
+-	return count;
+-}
+-static CLASS_DEVICE_ATTR(loading, 0644,
+-			 firmware_loading_show, firmware_loading_store);
+-
+-static ssize_t firmware_data_read(struct kobject *kobj,
+-				  struct bin_attribute *bin_attr,
+-				  char *buffer, loff_t offset, size_t count)
+-{
+-	struct class_device *class_dev = to_class_dev(kobj);
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-
+-	/* read from the devices firmware memory */
+-
+-	return count;
+-}
+-static ssize_t firmware_data_write(struct kobject *kobj,
+-				   struct bin_attribute *bin_attr,
+-				   char *buffer, loff_t offset, size_t count)
+-{
+-	struct class_device *class_dev = to_class_dev(kobj);
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-
+-	/* write to the devices firmware memory */
+-
+-	return count;
+-}
+-static struct bin_attribute firmware_attr_data = {
+-	.attr = {.name = "data", .mode = 0644},
+-	.size = 0,
+-	.read = firmware_data_read,
+-	.write = firmware_data_write,
+-};
+-static int fw_setup_class_device(struct class_device *class_dev,
+-				 const char *fw_name,
+-				 struct device *device)
+-{
+-	int retval;
+-	struct firmware_priv *fw_priv;
+-
+-	fw_priv = kzalloc(sizeof(struct firmware_priv),	GFP_KERNEL);
+-	if (!fw_priv) {
+-		retval = -ENOMEM;
+-		goto out;
+-	}
+-
+-	memset(class_dev, 0, sizeof(*class_dev));
+-
+-	strncpy(fw_priv->fw_id, fw_name, FIRMWARE_NAME_MAX);
+-	fw_priv->fw_id[FIRMWARE_NAME_MAX-1] = '\0';
+-
+-	strncpy(class_dev->class_id, device->bus_id, BUS_ID_SIZE);
+-	class_dev->class_id[BUS_ID_SIZE-1] = '\0';
+-	class_dev->dev = device;
+-
+-	class_dev->class = &firmware_class,
+-	class_set_devdata(class_dev, fw_priv);
+-	retval = class_device_register(class_dev);
+-	if (retval){
+-		printk(KERN_ERR "%s: class_device_register failed\n",
+-		       __FUNCTION__);
+-		goto error_free_fw_priv;
+-	}
+-
+-	retval = sysfs_create_bin_file(&class_dev->kobj, &firmware_attr_data);
+-	if (retval){
+-		printk(KERN_ERR "%s: sysfs_create_bin_file failed\n",
+-		       __FUNCTION__);
+-		goto error_unreg_class_dev;
+-	}
+-
+-	retval = class_device_create_file(class_dev,
+-					  &class_device_attr_loading);
+-	if (retval){
+-		printk(KERN_ERR "%s: class_device_create_file failed\n",
+-		       __FUNCTION__);
+-		goto error_remove_data;
+-	}
+-
+-	goto out;
+-	
+-error_remove_data:
+-	sysfs_remove_bin_file(&class_dev->kobj, &firmware_attr_data);
+-error_unreg_class_dev:
+-	class_device_unregister(class_dev);
+-error_free_fw_priv:
+-	kfree(fw_priv);
+-out:
+-	return retval;
+-}
+-static void fw_remove_class_device(struct class_device *class_dev)
+-{
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-
+-	class_device_remove_file(class_dev, &class_device_attr_loading);
+-	sysfs_remove_bin_file(&class_dev->kobj, &firmware_attr_data);
+-	class_device_unregister(class_dev);
+-}
+-
+-static struct class_device *class_dev;
+-
+-static struct device my_device = {
+-	.bus_id    = "my_dev0",
+-};
+-
+-static int __init firmware_sample_init(void)
+-{
+-	int error;
+-
+-	device_initialize(&my_device);
+-	class_dev = kmalloc(sizeof(struct class_device), GFP_KERNEL);
+-	if(!class_dev)
+-		return -ENOMEM;
+-
+-	error = fw_setup_class_device(class_dev, "my_firmware_image",
+-				      &my_device);
+-	if(error){
+-		kfree(class_dev);
+-		return error;
+-	}
+-        return 0;
+-
+-}
+-static void __exit firmware_sample_exit(void)
+-{
+-	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
+-	fw_remove_class_device(class_dev);
+-	kfree(fw_priv);
+-	kfree(class_dev);
+-}
+-module_init(firmware_sample_init);
+-module_exit(firmware_sample_exit);
+-
+--- /dev/null
++++ b/samples/firmware_class/firmware_sample_driver.c
+@@ -0,0 +1,115 @@
++/*
++ * firmware_sample_driver.c -
++ *
++ * Copyright (c) 2003 Manuel Estrada Sainz
++ *
++ * Sample code on how to use request_firmware() from drivers.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/device.h>
++#include <linux/string.h>
++
++#include "linux/firmware.h"
++
++static struct device ghost_device = {
++	.bus_id    = "ghost0",
++};
++
++
++static void sample_firmware_load(char *firmware, int size)
++{
++	u8 buf[size+1];
++	memcpy(buf, firmware, size);
++	buf[size] = '\0';
++	printk(KERN_INFO "firmware_sample_driver: firmware: %s\n", buf);
++}
++
++static void sample_probe_default(void)
++{
++	/* uses the default method to get the firmware */
++        const struct firmware *fw_entry;
++	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
++
++        if(request_firmware(&fw_entry, "sample_driver_fw", &ghost_device)!=0)
++	{
++		printk(KERN_ERR
++		       "firmware_sample_driver: Firmware not available\n");
++		return;
++	}
++
++	sample_firmware_load(fw_entry->data, fw_entry->size);
++
++	release_firmware(fw_entry);
++
++	/* finish setting up the device */
++}
++static void sample_probe_specific(void)
++{
++	/* Uses some specific hotplug support to get the firmware from
++	 * userspace  directly into the hardware, or via some sysfs file */
++
++	/* NOTE: This currently doesn't work */
++
++	printk(KERN_INFO "firmware_sample_driver: a ghost device got inserted :)\n");
++
++        if(request_firmware(NULL, "sample_driver_fw", &ghost_device)!=0)
++	{
++		printk(KERN_ERR
++		       "firmware_sample_driver: Firmware load failed\n");
++		return;
++	}
++
++	/* request_firmware blocks until userspace finished, so at
++	 * this point the firmware should be already in the device */
++
++	/* finish setting up the device */
++}
++static void sample_probe_async_cont(const struct firmware *fw, void *context)
++{
++	if(!fw){
++		printk(KERN_ERR
++		       "firmware_sample_driver: firmware load failed\n");
++		return;
++	}
++
++	printk(KERN_INFO "firmware_sample_driver: device pointer \"%s\"\n",
++	       (char *)context);
++	sample_firmware_load(fw->data, fw->size);
++}
++static void sample_probe_async(void)
++{
++	/* Let's say that I can't sleep */
++	int error;
++	error = request_firmware_nowait (THIS_MODULE, FW_ACTION_NOHOTPLUG,
++					 "sample_driver_fw", &ghost_device,
++					 "my device pointer",
++					 sample_probe_async_cont);
++	if(error){
++		printk(KERN_ERR
++		       "firmware_sample_driver:"
++		       " request_firmware_nowait failed\n");
++	}
++}
++
++static int sample_init(void)
++{
++	device_initialize(&ghost_device);
++	/* since there is no real hardware insertion I just call the
++	 * sample probe functions here */
++	sample_probe_specific();
++	sample_probe_default();
++	sample_probe_async();
++	return 0;
++}
++static void __exit sample_exit(void)
++{
++}
++
++module_init (sample_init);
++module_exit (sample_exit);
++
++MODULE_LICENSE("GPL");
+--- /dev/null
++++ b/samples/firmware_class/firmware_sample_firmware_class.c
+@@ -0,0 +1,207 @@
++/*
++ * firmware_sample_firmware_class.c -
++ *
++ * Copyright (c) 2003 Manuel Estrada Sainz
++ *
++ * NOTE: This is just a probe of concept, if you think that your driver would
++ * be well served by this mechanism please contact me first.
++ *
++ * DON'T USE THIS CODE AS IS
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/firmware.h>
++
++
++MODULE_AUTHOR("Manuel Estrada Sainz");
++MODULE_DESCRIPTION("Hackish sample for using firmware class directly");
++MODULE_LICENSE("GPL");
++
++static inline struct class_device *to_class_dev(struct kobject *obj)
++{
++	return container_of(obj,struct class_device,kobj);
++}
++static inline
++struct class_device_attribute *to_class_dev_attr(struct attribute *_attr)
++{
++	return container_of(_attr,struct class_device_attribute,attr);
++}
++
++int sysfs_create_bin_file(struct kobject * kobj, struct bin_attribute * attr);
++int sysfs_remove_bin_file(struct kobject * kobj, struct bin_attribute * attr);
++
++struct firmware_priv {
++	char fw_id[FIRMWARE_NAME_MAX];
++	s32 loading:2;
++	u32 abort:1;
++};
++
++extern struct class firmware_class;
++
++static ssize_t firmware_loading_show(struct class_device *class_dev, char *buf)
++{
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++	return sprintf(buf, "%d\n", fw_priv->loading);
++}
++static ssize_t firmware_loading_store(struct class_device *class_dev,
++				      const char *buf, size_t count)
++{
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++	int prev_loading = fw_priv->loading;
++
++	fw_priv->loading = simple_strtol(buf, NULL, 10);
++
++	switch(fw_priv->loading){
++	case -1:
++		/* abort load an panic */
++		break;
++	case 1:
++		/* setup load */
++		break;
++	case 0:
++		if(prev_loading==1){
++			/* finish load and get the device back to working
++			 * state */
++		}
++		break;
++	}
++
++	return count;
++}
++static CLASS_DEVICE_ATTR(loading, 0644,
++			 firmware_loading_show, firmware_loading_store);
++
++static ssize_t firmware_data_read(struct kobject *kobj,
++				  struct bin_attribute *bin_attr,
++				  char *buffer, loff_t offset, size_t count)
++{
++	struct class_device *class_dev = to_class_dev(kobj);
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++
++	/* read from the devices firmware memory */
++
++	return count;
++}
++static ssize_t firmware_data_write(struct kobject *kobj,
++				   struct bin_attribute *bin_attr,
++				   char *buffer, loff_t offset, size_t count)
++{
++	struct class_device *class_dev = to_class_dev(kobj);
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++
++	/* write to the devices firmware memory */
++
++	return count;
++}
++static struct bin_attribute firmware_attr_data = {
++	.attr = {.name = "data", .mode = 0644},
++	.size = 0,
++	.read = firmware_data_read,
++	.write = firmware_data_write,
++};
++static int fw_setup_class_device(struct class_device *class_dev,
++				 const char *fw_name,
++				 struct device *device)
++{
++	int retval;
++	struct firmware_priv *fw_priv;
++
++	fw_priv = kzalloc(sizeof(struct firmware_priv),	GFP_KERNEL);
++	if (!fw_priv) {
++		retval = -ENOMEM;
++		goto out;
++	}
++
++	memset(class_dev, 0, sizeof(*class_dev));
++
++	strncpy(fw_priv->fw_id, fw_name, FIRMWARE_NAME_MAX);
++	fw_priv->fw_id[FIRMWARE_NAME_MAX-1] = '\0';
++
++	strncpy(class_dev->class_id, device->bus_id, BUS_ID_SIZE);
++	class_dev->class_id[BUS_ID_SIZE-1] = '\0';
++	class_dev->dev = device;
++
++	class_dev->class = &firmware_class,
++	class_set_devdata(class_dev, fw_priv);
++	retval = class_device_register(class_dev);
++	if (retval){
++		printk(KERN_ERR "%s: class_device_register failed\n",
++		       __FUNCTION__);
++		goto error_free_fw_priv;
++	}
++
++	retval = sysfs_create_bin_file(&class_dev->kobj, &firmware_attr_data);
++	if (retval){
++		printk(KERN_ERR "%s: sysfs_create_bin_file failed\n",
++		       __FUNCTION__);
++		goto error_unreg_class_dev;
++	}
++
++	retval = class_device_create_file(class_dev,
++					  &class_device_attr_loading);
++	if (retval){
++		printk(KERN_ERR "%s: class_device_create_file failed\n",
++		       __FUNCTION__);
++		goto error_remove_data;
++	}
++
++	goto out;
++
++error_remove_data:
++	sysfs_remove_bin_file(&class_dev->kobj, &firmware_attr_data);
++error_unreg_class_dev:
++	class_device_unregister(class_dev);
++error_free_fw_priv:
++	kfree(fw_priv);
++out:
++	return retval;
++}
++static void fw_remove_class_device(struct class_device *class_dev)
++{
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++
++	class_device_remove_file(class_dev, &class_device_attr_loading);
++	sysfs_remove_bin_file(&class_dev->kobj, &firmware_attr_data);
++	class_device_unregister(class_dev);
++}
++
++static struct class_device *class_dev;
++
++static struct device my_device = {
++	.bus_id    = "my_dev0",
++};
++
++static int __init firmware_sample_init(void)
++{
++	int error;
++
++	device_initialize(&my_device);
++	class_dev = kmalloc(sizeof(struct class_device), GFP_KERNEL);
++	if(!class_dev)
++		return -ENOMEM;
++
++	error = fw_setup_class_device(class_dev, "my_firmware_image",
++				      &my_device);
++	if(error){
++		kfree(class_dev);
++		return error;
++	}
++        return 0;
++
++}
++static void __exit firmware_sample_exit(void)
++{
++	struct firmware_priv *fw_priv = class_get_devdata(class_dev);
++	fw_remove_class_device(class_dev);
++	kfree(fw_priv);
++	kfree(class_dev);
++}
++
++module_init(firmware_sample_init);
++module_exit(firmware_sample_exit);
+
+
+Patches currently in gregkh-2.6 which might be from randy.dunlap@oracle.com are
+
+driver/driver-core-fix-kernel-doc-function-parameters.patch
+driver/sysfs-small-header-file-cleanup-for-sysfs-n.patch
+driver/firmware-move-firmware_class-from-documentation-to-samples.patch
+pci/pci-kernel-doc-fix-pci-acpi-warning.patch
+usb/usb-convert-usb.h-struct-usb_device-to-kernel-doc.patch
+firmware-add-kconfig-and-makefile-to-build-the-firmware-samples.patch
