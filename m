@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758462AbYBUA0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762361AbYBUA0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758462AbYBUA0L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 20 Feb 2008 19:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933997AbYBUAZn
+	id S1762361AbYBUA0g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 20 Feb 2008 19:26:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934161AbYBUAZs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 20 Feb 2008 19:25:43 -0500
-Received: from mail1.ugh.no ([80.239.42.168]:34718 "EHLO mail1.ugh.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932529AbYBUAZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 20 Feb 2008 19:25:35 -0500
-Message-ID: <47BCC4FD.1050701@tomt.net>
-Date: Thu, 21 Feb 2008 01:25:33 +0100
-From: Andre Tomt <andre@tomt.net>
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Wed, 20 Feb 2008 19:25:48 -0500
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43706 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933953AbYBUAZl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 20 Feb 2008 19:25:41 -0500
+Date: Wed, 20 Feb 2008 16:25:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jesse Barnes <jesse.barnes@intel.com>,
+       Jeff Chua <jeff.chua.linux@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
+       linux-acpi@vger.kernel.org,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>, Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
+ Screen becomes green.
+In-Reply-To: <200802210113.05733.rjw@sisk.pl>
+Message-ID: <alpine.LFD.1.00.0802201617050.7833@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802210035.14058.rjw@sisk.pl> <alpine.LFD.1.00.0802201548000.7833@woody.linux-foundation.org> <200802210113.05733.rjw@sisk.pl>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: USB OOPS 2.6.25-rc2-git1
-References: <47BAF36C.4000509@tomt.net> <200802191632.35732.david-b@pacbell.net> <47BC8E9D.8080309@tomt.net> <200802201324.37519.david-b@pacbell.net>
-In-Reply-To: <200802201324.37519.david-b@pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
-> On Wednesday 20 February 2008, Andre Tomt wrote:
->> It has not crashed yet with the patch though.
+
+
+On Thu, 21 Feb 2008, Rafael J. Wysocki wrote:
 > 
-> It seems that one of the tweks in this patch made the watchdog
-> act better than before.  So unless I hear from you (before the
-> start of next week) that some other message appears, or that your
-> oops re-appears, I'll submit some version of this patch for RC3.
+> > Secondly, the one that people should use ("pci_choose_state()") doesn't 
+> > actually do what you claim it does. It does all kinds of wrong things, and 
+> > doesn't even take the target state into account at all. So look again.
+> 
+> Well, if platform_pci_choose_state() is defined, pci_choose_state() returns
+> its result and on ACPI systems that points to acpi_pci_choose_state(), so in
+> fact it does what I said (apart from the error path). 
 
-OOPS'ed again after some hours. The OOPS looks identical to me besides 
-all kind of other crap mixed in the trace due to a lot of unrelated 
-activity going on.
+Did you check closer?
 
-Quite a lot of the same IAA messages (status 8029 and 8028, cmd 10021) 
-in /var/log/debug prior to the crash, over the entire uptime time span.
+I repeat: acpi_pci_choose_state() (when called from pci_choose_state()) 
+doesn't even look at the target 'state'. It just blindly assumes that you 
+want the deepest sleep-state you can have.
 
-This was with the first patch posted only. Not any of the other ones.
+Which happens to be correct for normal suspend, but means that if you want 
+to test other states (through '/sys/devices/.../power'), that sounds 
+broken.
 
-> And if you're up for it, I may have another patch for you
-> to try on top of this one ... I had an idea about IRQ trigger
-> modes that might be causing this problem.
+I didn't check any closer, but go check it yourself. The short and sweet: 
+acpi_pci_choose_state() totally ignores its 'state' argument. Do you 
+really think that's correct? But yes, "pci_choose_state()' effectively 
+does that too, apart from PM_EVENT_ON, which is never used.
 
-It'll have to be tomorrow. Should I throw in the anti-oops patch too?
+(But the whole and only point of pci_choose_state() was to do the 
+PM_EVENT_FREEZE thing differently, which it doesn't do, so I think the 
+real issue here is that the interface is really rather mis-designed)
+
+I suspect most people who ever really looked and worked on this code had a 
+specific device in mind, and I'm sure that all of the code individually 
+always ends up making sense from the standpoint of some specific device 
+driver. It's just that it never seems to make sense from a bigger issues 
+standpoint, and often seems senseless from the standpoint of other devices 
+of other types.
+
+			Linus
