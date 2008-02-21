@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762224AbYBUPHX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbYBUPJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762224AbYBUPHX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 10:07:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbYBUPHL
+	id S1759389AbYBUPJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 10:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751539AbYBUPJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 10:07:11 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:51181 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752273AbYBUPHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 10:07:10 -0500
-Date: Fri, 22 Feb 2008 00:07:31 +0900 (JST)
-Message-Id: <20080222.000731.18312290.anemo@mba.ocn.ne.jp>
-To: hskinnemoen@atmel.com
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] macb: Fix speed setting
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20080221151246.6f2044b9@dhcp-252-066.norway.atmel.com>
-References: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
-	<20080221151246.6f2044b9@dhcp-252-066.norway.atmel.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 21 Feb 2008 10:09:32 -0500
+Received: from ms-smtp-01.nyroc.rr.com ([24.24.2.55]:50932 "EHLO
+	ms-smtp-01.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbYBUPJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 10:09:31 -0500
+Date: Thu, 21 Feb 2008 10:08:14 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mark Hounschell <markh@compro.net>
+cc: Mark Hounschell <dmarkh@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: 2.6.24-rt1 IRQ routing anomaly
+In-Reply-To: <47BD7D09.9050106@compro.net>
+Message-ID: <Pine.LNX.4.58.0802211005380.9890@gandalf.stny.rr.com>
+References: <47BD6802.60604@cfl.rr.com> <Pine.LNX.4.58.0802210743080.9890@gandalf.stny.rr.com>
+ <47BD7D09.9050106@compro.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Excuse me for sending broken mail...
 
-On Thu, 21 Feb 2008 15:12:46 +0100, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> I have to admit that even after looking through include/linux/phy.h and
-> include/linux/mii.h, I don't have the faintest idea what values we can
-> expect to find in the "speed" field of phydev. The comment above struct
-> phy_device says that it is used "like in mii_if_info", but struct
-> mii_if_info doesn't have a "speed" field...
-> 
-> I'm willing to take your word for it, but some documentation would be
-> really nice...
+On Thu, 21 Feb 2008, Mark Hounschell wrote:
+> >
+> > To prove this is the problem, boot with noapic in the kernel command line.
+> > 1) the problem should disappear.
+> > 2) (I'm betting) you see that the eth and EMU10K1 share the same
+> >    interrupt line.
+> >
+>
+> Yep, you were right. They do share the same IRQ and the problem does go away.
+> Unfortunately  I can't run this machine with noapic. I need irq affinity.
+>
 
-Well, simple grepping drivers/net/phy enlighten us ;)
+Thanks for verifying. OK, I'll see if I can get the workaround on i386. I
+thought I saw a patch someplace where someone ported that workaround. I'm
+still sorting out bugs in -rt2 (why it is still not out). I'll see if I
+can find time to get the workaround to i386 for -rt2 as well.
 
-Anyway, this patch fixes problem with 10Mbps on AT91SAM9260 board.
+-- Steve
 
----
-Atsushi Nemoto
