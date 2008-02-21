@@ -1,59 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbYBUUul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933437AbYBUUv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759375AbYBUUul (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 15:50:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbYBUUti
+	id S933437AbYBUUv2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 15:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbYBUUvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 15:49:38 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:45886 "EHLO mx1.redhat.com"
+	Thu, 21 Feb 2008 15:51:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:45995 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765314AbYBUUt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 15:49:29 -0500
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       linux-fbdev-devel@lists.sourceforge.net, dmitry.torokhov@gmail.com,
-       virtualization@lists.osdl.org, linux-input@vger.kernel.org,
-       adaplas@pol.net, akpm@linux-foundation.org, jayakumar.lkml@gmail.com
-Subject: Re: [PATCH 0/2] xen pvfb: Para-virtual framebuffer,	keyboard and pointer
-References: <871w76ejdg.fsf@pike.pond.sub.org>
-	<87hcg2cyti.fsf@pike.pond.sub.org> <47BDD4BF.3000808@goop.org>
-From: Markus Armbruster <armbru@redhat.com>
-Date: Thu, 21 Feb 2008 21:47:09 +0100
-In-Reply-To: <47BDD4BF.3000808@goop.org> (Jeremy Fitzhardinge's message of "Thu\, 21 Feb 2008 11\:45\:03 -0800")
-Message-ID: <871w76ca0i.fsf@pike.pond.sub.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1755642AbYBUUvM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 15:51:12 -0500
+From: Glauber Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, glommer@gmail.com, mingo@elte.hu,
+       pzijlstr@redhat.com, arjan@infradead.org,
+       Glauber Costa <gcosta@redhat.com>
+Subject: [PATCH 1/2] turn c_idle into a pointer
+Date: Thu, 21 Feb 2008 17:40:55 -0300
+Message-Id: <1203626456-3101-2-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.5.3.6
+In-Reply-To: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
+References: <1203626456-3101-1-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+This is not useful by itself, but part of making the
+underlying work_struct have a static address.
 
-> Markus Armbruster wrote:
->> Forgot to mention: This patch depends on
->>
->>     Subject: [PATCH] xen: Make xen-blkfront write its protocol ABI to xenstore
->>     From: Markus Armbruster <>
->>     Date: Thu, 06 Dec 2007 14:45:53 +0100
->>
->> http://lkml.org/lkml/2007/12/6/132
->>
->> Sorry!
->
-> Sorry, I haven't pushed this upstream yet, since there didn't seem to
-> be any particular urgency.  What's the dependency?
->
->    J
+Signed-off-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/kernel/smpboot_64.c |   37 +++++++++++++++++++------------------
+ 1 files changed, 19 insertions(+), 18 deletions(-)
 
-Here's the description again:
+diff --git a/arch/x86/kernel/smpboot_64.c b/arch/x86/kernel/smpboot_64.c
+index d53bd6f..f15b774 100644
+--- a/arch/x86/kernel/smpboot_64.c
++++ b/arch/x86/kernel/smpboot_64.c
+@@ -553,11 +553,12 @@ static int __cpuinit do_boot_cpu(int cpu
+ 	unsigned long boot_error;
+ 	int timeout;
+ 	unsigned long start_rip;
+-	struct create_idle c_idle = {
+-		.work = __WORK_INITIALIZER(c_idle.work, do_fork_idle),
++	struct create_idle create_idle = {
++		.work = __WORK_INITIALIZER(create_idle.work, do_fork_idle),
+ 		.cpu = cpu,
+-		.done = COMPLETION_INITIALIZER_ONSTACK(c_idle.done),
++		.done = COMPLETION_INITIALIZER_ONSTACK(create_idle.done),
+ 	};
++	struct create_idle *c_idle = &create_idle;
+ 
+ 	/* allocate memory for gdts of secondary cpus. Hotplug is considered */
+ 	if (!cpu_gdt_descr[cpu].address &&
+@@ -584,12 +585,12 @@ static int __cpuinit do_boot_cpu(int cpu
+ 
+ 	alternatives_smp_switch(1);
+ 
+-	c_idle.idle = get_idle_for_cpu(cpu);
++	c_idle->idle = get_idle_for_cpu(cpu);
+ 
+-	if (c_idle.idle) {
+-		c_idle.idle->thread.sp = (unsigned long) (((struct pt_regs *)
+-			(THREAD_SIZE +  task_stack_page(c_idle.idle))) - 1);
+-		init_idle(c_idle.idle, cpu);
++	if (c_idle->idle) {
++		c_idle->idle->thread.sp = (unsigned long) (((struct pt_regs *)
++			(THREAD_SIZE +  task_stack_page(c_idle->idle))) - 1);
++		init_idle(c_idle->idle, cpu);
+ 		goto do_rest;
+ 	}
+ 
+@@ -604,29 +605,29 @@ static int __cpuinit do_boot_cpu(int cpu
+ 	 * thread.
+ 	 */
+ 	if (!keventd_up() || current_is_keventd())
+-		c_idle.work.func(&c_idle.work);
++		c_idle->work.func(&c_idle->work);
+ 	else {
+-		schedule_work(&c_idle.work);
+-		wait_for_completion(&c_idle.done);
++		schedule_work(&c_idle->work);
++		wait_for_completion(&c_idle->done);
+ 	}
+ 
+-	if (IS_ERR(c_idle.idle)) {
++	if (IS_ERR(c_idle->idle)) {
+ 		printk("failed fork for CPU %d\n", cpu);
+-		return PTR_ERR(c_idle.idle);
++		return PTR_ERR(c_idle->idle);
+ 	}
+ 
+-	set_idle_for_cpu(cpu, c_idle.idle);
++	set_idle_for_cpu(cpu, c_idle->idle);
+ 
+ do_rest:
+ 
+-	cpu_pda(cpu)->pcurrent = c_idle.idle;
++	cpu_pda(cpu)->pcurrent = c_idle->idle;
+ 
+ 	start_rip = setup_trampoline();
+ 
+-	init_rsp = c_idle.idle->thread.sp;
+-	load_sp0(&per_cpu(init_tss, cpu), &c_idle.idle->thread);
++	init_rsp = c_idle->idle->thread.sp;
++	load_sp0(&per_cpu(init_tss, cpu), &c_idle->idle->thread);
+ 	initial_code = start_secondary;
+-	clear_tsk_thread_flag(c_idle.idle, TIF_FORK);
++	clear_tsk_thread_flag(c_idle->idle, TIF_FORK);
+ 
+ 	printk(KERN_INFO "Booting processor %d/%d APIC 0x%x\n", cpu,
+ 		cpus_weight(cpu_present_map),
+-- 
+1.4.2
 
-    Frontends are expected to write their protocol ABI to xenstore.  Since
-    the protocol ABI defaults to the backend's native ABI, things work
-    fine without that as long as the frontend's native ABI is identical to
-    the backend's native ABI.  This is not the case for xen-blkfront
-    running 32-on-64, because its ABI differs between 32 and 64 bit, and
-    thus needs this fix.
-
-I can break the dependency by putting the same bug that is now in
-xen-blkfront into xen-fbfront and xen-kbdfront.
