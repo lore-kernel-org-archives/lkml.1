@@ -1,57 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762172AbYBUSre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761803AbYBUSso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762172AbYBUSre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 13:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbYBUSrS
+	id S1761803AbYBUSso (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 13:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755054AbYBUSsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 13:47:18 -0500
-Received: from nat-132.atmel.no ([80.232.32.132]:50160 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760148AbYBUSrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 13:47:13 -0500
-Date: Thu, 21 Feb 2008 19:46:20 +0100
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org, kernel@avr32linux.org
-Subject: MMC card detection
-Message-ID: <20080221194620.6a3c0030@dhcp-252-066.norway.atmel.com>
-Organization: Atmel Norway
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 21 Feb 2008 13:48:35 -0500
+Received: from mga03.intel.com ([143.182.124.21]:54110 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753589AbYBUSse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 13:48:34 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,387,1199692800"; 
+   d="scan'208";a="381988099"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Date: Thu, 21 Feb 2008 10:34:21 -0800
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: "Jeff Chua" <jeff.chua.linux@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       Greg KH <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <b6a2187b0802201800n12f90b22x8cb0c2ad6e0c402@mail.gmail.com> <200802211727.21593.rjw@sisk.pl>
+In-Reply-To: <200802211727.21593.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802211034.22056.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Pierre,
+On Thursday, February 21, 2008 8:27 am Rafael J. Wysocki wrote:
+> On Thursday, 21 of February 2008, Jeff Chua wrote:
+> > On Thu, Feb 21, 2008 at 8:39 AM, Jesse Barnes <jesse.barnes@intel.com> 
+wrote:
+> > > On Wednesday, February 20, 2008 4:35 pm Jeff Chua wrote:
+> > >  > On Thu, Feb 21, 2008 at 5:37 AM, Jesse Barnes
+> > >  > <jesse.barnes@intel.com>
+> > >
+> > >  wrote:
+> > >  > >  Ok, can you give this patch a try with the 'platform' method?  It
+> > >  > > should at least tell us what ACPI would like the device to do at
+> > >  > > suspend time, but it probably won't fix the hang.
+> >
+> > It says "calling pci_set_power_state with 3". Then after all then it
+> > still hangs, and then resume with Mr Green.
+> >
+> > PM: Syncing filesystems ... done.
+> > Freezing user space processes ... (elapsed 0.00 seconds) done.
+> > Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+> > PM: Shrinking memory...  ^H-^Hdone (0 pages freed)
+> > PM: Freed 0 kbytes in 0.20 seconds (0.00 MB/s)
+> > ACPI: Preparing to enter system sleep state S4
+> > Suspending console(s)
+> > sd 0:0:0:0: [sda] Synchronizing SCSI cache
+> > drm_sysfs_suspend
+> > ACPI: PCI interrupt for device 0000:00:02.0 disabled
+> > calling pci_set_power_state with 3
+>
+> So it returns the right value.
+>
+> Jeff, Jesse, please check one thing for me.
+>
+> Please boot 2.6.25-rc2 (or better, the current head of the Linus' tree)
+> with no_console_suspend and try to do the following:
+>
+> # echo 8 > /proc/sys/kernel/printk
+> # echo core > /sys/power/pm_test
+> # echo disk > /sys/power/state
+>
+> (that will run a test of the freeze/unfreeze code without creating the
+> image) and then
 
-I've been trying to debug some card detection problems in the atmel-mci
-driver. Sometimes, when I remove a card, the event doesn't seem to get
-detected properly, and the MMC core thinks the card is still there.
-When I re-insert the card, the MMC core thinks the card is gone.
+That comes back for me, without creating the green screen.  There's a long 
+delay between it saying "entering S4" and actually resuming back to my 
+console though.
 
-I've tried to add a debouncing timer to avoid glitches on the card
-detect pin. This helps a bit, but it does not eliminate the problem
-altogether.
+> # echo mem > /sys/power/state
+>
+> (that will run a test of the suspend/resume code without actually
+> suspending).
+>
+> I'd like to know if that works.
 
-It seems like the problem only occurs if the card is removed very
-slowly. If I increase the debouncing or detection delay, I have to
-remove the card more slowly to trigger the problem.
+This also works (after doing the echo disk > ...) above.  There's still a 
+delay between "entering S3" and the resume to my console though.
 
-I think the real problem is that the card detection interrupt triggers
-while there is still electrical contact with the card. So when the MMC
-core tries to send a SEND_STATUS command to check if it's still there,
-the card will respond even though it's about to be removed. Since there
-will be no more interrupts as the card is completely removed, the MMC
-core will never notice that the card is gone.
-
-When the card is reinserted, the MMC core will try to send a
-SEND_STATUS command again. This time, the card won't respond because it
-is in the "idle" state, and the MMC core will think the card is gone.
-
-In order to fix this problem, I think I need a way to tell the MMC core
-that the card really is gone and that there's no point trying to
-communicate with it. Is there any way I can do that?
-
-Haavard
+Jesse
