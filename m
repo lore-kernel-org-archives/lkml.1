@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935037AbYBUQwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934888AbYBUQya@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935037AbYBUQwi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:52:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757010AbYBUQw3
+	id S934888AbYBUQya (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:54:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761870AbYBUQyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:52:29 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:57521 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756451AbYBUQw2 (ORCPT
+	Thu, 21 Feb 2008 11:54:19 -0500
+Received: from sinclair.provo.novell.com ([137.65.248.137]:4270 "EHLO
+	sinclair.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752106AbYBUQyS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:52:28 -0500
-Date: Thu, 21 Feb 2008 08:52:14 -0800
-From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.25-rc2-git4 BUG: sysfs_readdir
-Message-ID: <20080221165214.GA30606@kroah.com>
-References: <20080221082553.ddc4e723.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 21 Feb 2008 11:54:18 -0500
+Message-Id: <47BD64D0.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Thu, 21 Feb 2008 09:47:28 -0700
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <a.p.zijlstra@chello.nl>, <mingo@elte.hu>, <bill.huey@gmail.com>,
+       <rostedt@goodmis.org>, <kevin@hilman.org>, <tglx@linutronix.de>,
+       <cminyard@mvista.com>, <dsingleton@mvista.com>, <dwalker@mvista.com>,
+       "Moiz Kohari" <MKohari@novell.com>,
+       "Peter Morreale" <PMorreale@novell.com>,
+       "Sven Dietrich" <SDietrich@novell.com>, <dsaxena@plexity.net>,
+       <gregkh@suse.de>, <npiggin@suse.de>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH [RT] 11/14] optimize the !printk fastpath through
+	the lock acquisition
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
+ <20080221152722.4804.77478.stgit@novell1.haskins.net>
+ <200802211736.26719.ak@suse.de>
+In-Reply-To: <200802211736.26719.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20080221082553.ddc4e723.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 21, 2008 at 08:25:53AM -0800, Randy Dunlap wrote:
-> One of my (x86_64) test machines got this on booting 2.6.25-rc2-git4.
+>>> On Thu, Feb 21, 2008 at 11:36 AM, in message <200802211736.26719.ak@suse.de>,
+Andi Kleen <ak@suse.de> wrote: 
+> On Thursday 21 February 2008 16:27:22 Gregory Haskins wrote:
 > 
-> insmod used greatest stack depth: 4144 bytes left
-> EXT3-fs: INFO: recovery required on readonly filesystem.
-> EXT3-fs: write access will be enabled during recovery.
-> kjournald starting.  Commit interval 5 seconds
-> EXT3-fs: recovery complete.
-> EXT3-fs: mounted filesystem with ordered data mode.
-> modprobe used greatest stack depth: 3600 bytes left
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000000
-> IP: [<ffffffff802d0f16>] sysfs_readdir+0xe0/0x13f
+>> @@ -660,12 +660,12 @@ rt_spin_lock_fastlock(struct rt_mutex *lock,
+>>  		void fastcall (*slowfn)(struct rt_mutex *lock))
+>>  {
+>>  	/* Temporary HACK! */
+>> -	if (!current->in_printk)
+>> -		might_sleep();
+>> -	else if (in_atomic() || irqs_disabled())
+>> +	if (unlikely(current->in_printk) && (in_atomic() || irqs_disabled()))
+> 
+> I have my doubts that gcc will honor unlikelies that don't affect
+> the complete condition of an if.
+> 
+> Also conditions guarding returns are by default predicted unlikely
+> anyways AFAIK. 
+> 
+> The patch is likely a nop.
+> 
 
-That's really wierd, as nothing has changed in this area in a while now.
-did 2.6.25-rc2 work for you ok?
+Yeah, you are probably right.  We have found that the system is *extremely* touchy on how much overhead we have in the lock-acquisition path.  For instance, using a non-inline version of adaptive_wait() can cost 5-10% in disk-io throughput.  So we were trying to find places to shave anywhere we could.  That being said, I didn't record any difference from this patch, so you are probably exactly right.  It just seemed like "the right thing to do" so I left it in.
 
-Can you enable CONFIG_DEBUG_KOBJECT and see if the kernel log shows you
-what is happening here?  Hm, that's only going to tell you what files
-were created, not what was being read from sysfs...
+-Greg
 
-How about adding the patch at:
-	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-01-driver/sysfs-crash-debugging.patch
-which has been in -mm for forever that will add the last-accessed sysfs
-file to the oops report.  That might give us more information here.
 
-thanks,
 
-greg k-h
