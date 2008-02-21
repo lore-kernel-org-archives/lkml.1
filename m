@@ -1,411 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbYBUQYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933795AbYBUQ0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbYBUQYu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 11:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbYBUQYj
+	id S933795AbYBUQ0m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 11:26:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758158AbYBUQ0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 11:24:39 -0500
-Received: from mx2.compro.net ([216.54.166.4]:58766 "EHLO mx2.compro.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759603AbYBUQYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 11:24:38 -0500
-X-IronPort-AV: E=Sophos;i="4.25,386,1199682000"; 
-   d="scan'208";a="1739431"
-Message-ID: <47BDA514.5050800@compro.net>
-Date: Thu, 21 Feb 2008 11:21:40 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net> <1203608474.3208.10.camel@localhost.localdomain>
-In-Reply-To: <1203608474.3208.10.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 21 Feb 2008 11:26:34 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51054 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757028AbYBUQ0d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 11:26:33 -0500
+Subject: Re: [UPDATED v2][PATCH 0/6] regulator: voltage and current
+	regulator framework
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20080221084128.GA4931@flint.arm.linux.org.uk>
+References: <1203527326.4071.88.camel@localhost.localdomain>
+	 <20080221084128.GA4931@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Thu, 21 Feb 2008 16:26:30 +0000
+Message-Id: <1203611191.4071.186.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2008-02-21 at 10:15 -0500, Mark Hounschell wrote:
->> I seem to have run into some sort of regression in the SG_IO interface of 2.6.24.2. 
->> I have an application that up until 2.6.24 worked fine. The 2.6.23.16 kernel works fine.
->>
->> During reads I get these kernel messages. Writes and other functions _seem_ OK. Actually basic
->> reads  are working. Its with large BC reads using an io_vec list that the problem shows up.
->>
->> Feb 21 09:27:51 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
->> Feb 21 09:27:51 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
->> Feb 21 09:27:51 harley kernel: sg[0] - Addr 0x06256100 : Length 256
+On Thu, 2008-02-21 at 08:41 +0000, Russell King - ARM Linux wrote:
+> On Wed, Feb 20, 2008 at 05:08:46PM +0000, Liam Girdwood wrote:
+> > This patch series provides a generic framework to allow device drivers
+> > to control voltage and current regulators on SoC based devices (e.g.
+> > phones, gps, media players).
 > 
-> Help me a little here.  What was the io_vec and command you sent in to
-> produce this?  The aic debugging information implies a single element sg
-> list for a 256 byte read.
+> Note that I'm explicitly avoiding commenting on this as far as PXA3xx
+> devices go, until we're further down the road with PM support on that
+> SoC.  It's not clear at present whether a generic PMIC framework will
+> be suitable for this SoC since it's my understanding from Marvell that
+> we need to talk to the PMIC from IRQs-off contexts.
 > 
-> James
-> 
-> 
-> 
+> So don't take my silence as some sort of acceptance of this code; it
+> isn't.
 
-Well, I did no 256 byte xfer at all.  My failing io_vec list has 6 elements.
-The first 5 are for byte counts of 0xfffc and the last 0x6114. See below.
+I wasn't ;)
 
-This is some debug info from within my app of the commands leading up the failure:
-If you need actual values of the io_vec lists I will need to add some additional debug
-info into the app. I will do if needed.
+It then might be worth adding this functionality at a later stage when
+more can be said about PXA3xx PMIC support. We could always have a
+version of the _set() functions that are designed to handle this case.
 
-The disk BTW is formated at 768 byte sector size.
- 
-The first read has a 2 element io_vec list and reports no error:
-ScsiDev_thread_7e00: Read CBD = 0x08 0x00 0x00 0x00 0x01 0x00
-ScsiDev_thread_7e00: Read1(1) bc = 0x0078 addr = 0x000000 Skip 0
-ScsiDev_thread_7e00: Read(2) bc = 0x0288 addr = 0xb6cea368 Skip 1
-ScsiDev_thread_7e00: SRead  DC ops = 2 short_bc = 288
+In the mean time this works well on 3 other SoC CPUs.
 
-The second read has a 4 element io_vec list and reports no error:
-ScsiDev_thread_7e00: Read CBD = 0x08 0x00 0x00 0x00 0x05 0x00
-ScsiDev_thread_7e00: Read1(1) bc = 0x0780 addr = 0x000000 Skip 0
-ScsiDev_thread_7e00: Read1(2) bc = 0x0670 addr = 0x000000 Skip 1
-ScsiDev_thread_7e00: Read1(3) bc = 0x003c addr = 0x000200 Skip 0
-ScsiDev_thread_7e00: SRead(4) bc = 0x022c addr = 0xb6cea368 Skip 1
-ScsiDev_thread_7e00: Read  DC ops = 4 short_bc = 22c
+Liam
 
-There is a seek here that reports no error:
-ScsiDev_thread_7e00: Seek address 2752 BPS 768
-
-
-This read has a 6 element io_vec list and reports  the error to the app:
-ScsiDev_thread_7e00: ReadX CBD = 0x28 0x00 0x00 0x00 0x27 0x52 0x00 0x01 0xcb 0x00
-ScsiDev_thread_7e00: Read1(1) bc = 0xfffc addr = 0x000784 Skip 0
-ScsiDev_thread_7e00: Read1(2) bc = 0xfffc addr = 0x010780 Skip 0
-ScsiDev_thread_7e00: Read1(3) bc = 0xfffc addr = 0x02077c Skip 0
-ScsiDev_thread_7e00: Read1(4) bc = 0xfffc addr = 0x030778 Skip 0
-ScsiDev_thread_7e00: Read1(5) bc = 0xfffc addr = 0x040774 Skip 0
-ScsiDev_thread_7e00: Read1(6) bc = 0x6114 addr = 0x050770 Skip 0
-ScsiDev_thread_7e00: Read  DC ops = 6 short_bc = 0
-
-ScsiDev_thread_7e00: scsi = 0x0 msg 0x0 host = 0x00000007 driver = 0x00000000
-ScsiDev_thread_7e00: Read error: sns = 0x00 residual = 0x0000
-ScsiDev_thread_7e00: Posting IPL status 0x00000090 0x000e0000 for Suba 0000 to loc 0x000000
-ScsiDev_thread_7e00: Sleeping!!
-
-
-Below is the complete dump of kernel messages for the above. I assume they are
-a result of the last failing read but there is an awfull lot there just for that 6 element
-io_vec list. Sorry to put all this in there but wanted to you to get the idea.
-
-
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-
-Again, sorry for all that.
-
-regards
-Mark
