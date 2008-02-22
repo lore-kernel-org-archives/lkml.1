@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936539AbYBVWSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbYBVWTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936539AbYBVWSj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbYBVWLP
+	id S1758026AbYBVWTS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761626AbYBVWLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:11:15 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:12834 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935011AbYBVWLN (ORCPT
+	Fri, 22 Feb 2008 17:11:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:28753 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934528AbYBVWLQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:11:13 -0500
+	Fri, 22 Feb 2008 17:11:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=L+XN90Aitk0zC4z3dSygh2ARV3VFRwKwK+MR7DvBbFLjR4Dh+6TOq4E52k6RR5e9JVaPDyZ2Xwgq0imUe1cTP7dYmMpf7Yg5npYb4fJtayaLF1/Iy4zArEHxOdv4xql4unKvK5auZbm0y0UoHxGPVlkBEeR7JRvAmr6cGFp0H1c=
-Date: Fri, 22 Feb 2008 23:11:07 +0100
+        b=onHVnnuAb16i+mcuPSFueLfTAkBXaj2T1yhIyCS/UVQ/IPS4ei62iFeGHHGVGCbcbFKocg5NtDttOJTPOcQENDvuanf4c5N24VktPYi2JKRG4UPE9ZUvvh9aDmAxbc/YDmcB4jmOy2xRLNUQF4i5An3/LbcIo9pZyavUQlbdobU=
+Date: Fri, 22 Feb 2008 23:11:12 +0100
 From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 To: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
        tglx <tglx@linutronix.de>
 Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH 14/20] x86: Coding Style fixes to
- arch/x86/kernel/cpu/mcheck/mce_32.c
-Message-ID: <20080222231107.4a291fd4@paolo-desktop>
+Subject: [PATCH 15/20] x86: Coding Style fixes to arch/x86/boot/cpucheck.c
+Message-ID: <20080222231112.0fff283b@paolo-desktop>
 X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,96 +29,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-File is now error free.
+File is now error and warning free.
 Compile tested.
 
 
 Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
 ---
- arch/x86/kernel/cpu/mcheck/mce_32.c |   50 +++++++++++++++++-----------------
- 1 files changed, 25 insertions(+), 25 deletions(-)
+ arch/x86/boot/cpucheck.c |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_32.c b/arch/x86/kernel/cpu/mcheck/mce_32.c
-index a5182dc..774d87c 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_32.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_32.c
-@@ -10,20 +10,20 @@
- #include <linux/smp.h>
- #include <linux/thread_info.h>
+diff --git a/arch/x86/boot/cpucheck.c b/arch/x86/boot/cpucheck.c
+index 769065b..2462c88 100644
+--- a/arch/x86/boot/cpucheck.c
++++ b/arch/x86/boot/cpucheck.c
+@@ -56,27 +56,27 @@ static const u32 req_flags[NCAPINTS] =
+ 	REQUIRED_MASK7,
+ };
  
--#include <asm/processor.h> 
-+#include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/mce.h>
+-#define A32(a,b,c,d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
++#define A32(a, b, c, d) (((d) << 24)+((c) << 16)+((b) << 8)+(a))
  
- #include "mce.h"
- 
--int mce_disabled = 0;
-+int mce_disabled;
- int nr_mce_banks;
- 
- EXPORT_SYMBOL_GPL(nr_mce_banks);	/* non-fatal.o */
- 
- /* Handle unconfigured int18 (should never happen) */
--static void unexpected_machine_check(struct pt_regs * regs, long error_code)
--{	
-+static void unexpected_machine_check(struct pt_regs *regs, long error_code)
-+{
- 	printk(KERN_ERR "CPU#%d: Unexpected int18 (Machine Check).\n", smp_processor_id());
- }
- 
-@@ -33,30 +33,30 @@ void (*machine_check_vector)(struct pt_regs *, long error_code) = unexpected_mac
- /* This has to be run for each processor */
- void mcheck_init(struct cpuinfo_x86 *c)
+ static int is_amd(void)
  {
--	if (mce_disabled==1)
-+	if (mce_disabled == 1)
- 		return;
- 
- 	switch (c->x86_vendor) {
--		case X86_VENDOR_AMD:
--			amd_mcheck_init(c);
--			break;
--
--		case X86_VENDOR_INTEL:
--			if (c->x86==5)
--				intel_p5_mcheck_init(c);
--			if (c->x86==6)
--				intel_p6_mcheck_init(c);
--			if (c->x86==15)
--				intel_p4_mcheck_init(c);
--			break;
--
--		case X86_VENDOR_CENTAUR:
--			if (c->x86==5)
--				winchip_mcheck_init(c);
--			break;
--
--		default:
--			break;
-+	case X86_VENDOR_AMD:
-+		amd_mcheck_init(c);
-+		break;
-+
-+	case X86_VENDOR_INTEL:
-+		if (c->x86 == 5)
-+			intel_p5_mcheck_init(c);
-+		if (c->x86 == 6)
-+			intel_p6_mcheck_init(c);
-+		if (c->x86 == 15)
-+			intel_p4_mcheck_init(c);
-+		break;
-+
-+	case X86_VENDOR_CENTAUR:
-+		if (c->x86 == 5)
-+			winchip_mcheck_init(c);
-+		break;
-+
-+	default:
-+		break;
- 	}
+-	return cpu_vendor[0] == A32('A','u','t','h') &&
+-	       cpu_vendor[1] == A32('e','n','t','i') &&
+-	       cpu_vendor[2] == A32('c','A','M','D');
++	return cpu_vendor[0] == A32('A', 'u', 't', 'h') &&
++	       cpu_vendor[1] == A32('e', 'n', 't', 'i') &&
++	       cpu_vendor[2] == A32('c', 'A', 'M', 'D');
  }
  
+ static int is_centaur(void)
+ {
+-	return cpu_vendor[0] == A32('C','e','n','t') &&
+-	       cpu_vendor[1] == A32('a','u','r','H') &&
+-	       cpu_vendor[2] == A32('a','u','l','s');
++	return cpu_vendor[0] == A32('C', 'e', 'n', 't') &&
++	       cpu_vendor[1] == A32('a', 'u', 'r', 'H') &&
++	       cpu_vendor[2] == A32('a', 'u', 'l', 's');
+ }
+ 
+ static int is_transmeta(void)
+ {
+-	return cpu_vendor[0] == A32('G','e','n','u') &&
+-	       cpu_vendor[1] == A32('i','n','e','T') &&
+-	       cpu_vendor[2] == A32('M','x','8','6');
++	return cpu_vendor[0] == A32('G', 'e', 'n', 'u') &&
++	       cpu_vendor[1] == A32('i', 'n', 'e', 'T') &&
++	       cpu_vendor[2] == A32('M', 'x', '8', '6');
+ }
+ 
+ static int has_fpu(void)
 -- 
 1.5.4.GIT
 
