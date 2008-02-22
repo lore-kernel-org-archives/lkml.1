@@ -1,190 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYBVTrV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbYBVTsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759348AbYBVTrV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:47:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764096AbYBVTqn
+	id S1765113AbYBVTsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757913AbYBVTs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:46:43 -0500
-Received: from pasmtpb.tele.dk ([80.160.77.98]:60714 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763754AbYBVTqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:46:40 -0500
-Date: Fri, 22 Feb 2008 20:46:51 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: [PATCH] hpt366: fix section mismatch warnings
-Message-ID: <20080222194651.GA7154@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Feb 2008 14:48:26 -0500
+Received: from nf-out-0910.google.com ([64.233.182.186]:3262 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757123AbYBVTsX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:48:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=T7Zx7vRsrIGoJwZMe9BLtCnbkdMwd05NvqhNB1nz46Z6AUdKeVVVymOMoo8m+piaAHXclgm1t9ni36sAQqhsMMGEP95tQLXqQtIwM+1vGnuCfrBxYTubgaszneGcGiPSDdqiQAigqwWa0wt6mMdXu8nU/eqb7hrX7peBCieU5C8=
+To: "Chris Clayton" <chris2553@googlemail.com>
+Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
+Date: Fri, 22 Feb 2008 20:47:52 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802181911.32128.IvDoorn@gmail.com> <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
+In-Reply-To: <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200802222047.52312.IvDoorn@gmail.com>
+From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hpt366: fix section mismatch warnings
+On Friday 22 February 2008, Chris Clayton wrote:
+> Hi Ivo,
+> 
+> On 18/02/2008, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+> > Hi,
+> >
+> 
+> [...]
+> 
+> > Above traces should be enough, but to determine where rt2x00 broke
+> >  down approximatly I need to have a few test result on specific moments.
+> >  Could you test the kernel with the following versions:
+> >
+> >  rt2x00 2.0.11   2d68de3efa62655d551092f5c787505735d561ad
+> >  rt2x00 2.0.12   a3c7aa58df7df80aa05f166fe3e42482247164cf
+> >  rt2x00 2.0.13   5a6012e105ae1664cd2841c33bf59fbdd8d4dbcc
+> >
+> >  Checking those out is simply a matter of:
+> >  git branch 2.0.11 2d68de3efa62655d551092f5c787505735d561ad
+> >  git checkout 2.0.11
+> >
+> 
+> OK, we seem to be struggling a little, so I've built an installed git
+> and cloned Linus' 2.6 tree. My wireless network dies after a few pings
+> with rt2x00 2.0.11.
+> 
+> >  No further bisecting is needed, but with above tests I can at least
+> >  narrow it down to find the cause of this issue.
+> >
+> 
+> If you need me to bisect, just shout. Please be patient though, I'm
+> exploring new territory here :-)
 
-Fix following warnings:
-WARNING: o-sparc64/vmlinux.o(.data+0x195a38): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370
-WARNING: o-sparc64/vmlinux.o(.data+0x195a40): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370a
-WARNING: o-sparc64/vmlinux.o(.data+0x195a48): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372
-WARNING: o-sparc64/vmlinux.o(.data+0x195a50): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372n
+I don't think bisecting this will help a lot, the rt2x00 2.0.11 release
+introduced software diversity. And that is already something I suspect
+of being broken.
 
-Replace a static array with a small switch resulting in
-more readable code.
-Be consistent in use of __devinitconst for const data
-to avoid section type conflicts.
-Mark the pci table __devinitconst.
+Unfortunately software diversity was a bugfix and fix in one,
+the previous setup was broken for some hardware since the
+lack of software diversity caused problems.
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Could you check if below patch helps in any way?
+
+Ivo
+
 ---
-Only build tested but looks obviously correct.
-I saw this doing a sparc64 build - dunno whit it did not
-surface when I sweeped over an x86 64 bit allyesconfig.
 
-	Sam
-
-diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
-index d0f7bb8..9911584 100644
---- a/drivers/ide/pci/hpt366.c
-+++ b/drivers/ide/pci/hpt366.c
-@@ -513,7 +513,7 @@ static struct hpt_timings hpt37x_timings = {
+diff --git a/drivers/net/wireless/rt2x00/rt2x00config.c b/drivers/net/wireless/rt2x00/rt2x00config.c
+index a1d8e33..6995912 100644
+--- a/drivers/net/wireless/rt2x00/rt2x00config.c
++++ b/drivers/net/wireless/rt2x00/rt2x00config.c
+@@ -122,6 +122,10 @@ void rt2x00lib_config_antenna(struct rt2x00_dev *rt2x00dev,
+ 	libconf.ant.rx = rx;
+ 	libconf.ant.tx = tx;
+ 
++	if (rx == rt2x00dev->link.ant.active.rx &&
++	    tx == rt2x00dev->link.ant.active.tx)
++		return;
++
+ 	/*
+ 	 * Antenna setup changes require the RX to be disabled,
+ 	 * else the changes will be ignored by the device.
+diff --git a/drivers/net/wireless/rt2x00/rt2x00dev.c b/drivers/net/wireless/rt2x00/rt2x00dev.c
+index 65a512f..4325c08 100644
+--- a/drivers/net/wireless/rt2x00/rt2x00dev.c
++++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
+@@ -191,16 +191,16 @@ static void rt2x00lib_evaluate_antenna_sample(struct rt2x00_dev *rt2x00dev)
+ 		return;
+ 
+ 	if (rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) {
+-		if (sample_a > sample_b && rx == ANTENNA_B)
++		if (sample_a > sample_b)
+ 			rx = ANTENNA_A;
+-		else if (rx == ANTENNA_A)
++		else
+ 			rx = ANTENNA_B;
  	}
- };
  
--static const struct hpt_info hpt36x __devinitdata = {
-+static const struct hpt_info hpt36x __devinitconst = {
- 	.chip_name	= "HPT36x",
- 	.chip_type	= HPT36x,
- 	.udma_mask	= HPT366_ALLOW_ATA66_3 ? (HPT366_ALLOW_ATA66_4 ? ATA_UDMA4 : ATA_UDMA3) : ATA_UDMA2,
-@@ -521,7 +521,7 @@ static const struct hpt_info hpt36x __devinitdata = {
- 	.timings	= &hpt36x_timings
- };
+ 	if (rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY) {
+-		if (sample_a > sample_b && tx == ANTENNA_B)
++		if (sample_a > sample_b)
+ 			tx = ANTENNA_A;
+-		else if (tx == ANTENNA_A)
++		else
+ 			tx = ANTENNA_B;
+ 	}
  
--static const struct hpt_info hpt370 __devinitdata = {
-+static const struct hpt_info hpt370 __devinitconst = {
- 	.chip_name	= "HPT370",
- 	.chip_type	= HPT370,
- 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
-@@ -529,7 +529,7 @@ static const struct hpt_info hpt370 __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
+@@ -257,7 +257,7 @@ static void rt2x00lib_evaluate_antenna(struct rt2x00_dev *rt2x00dev)
  
--static const struct hpt_info hpt370a __devinitdata = {
-+static const struct hpt_info hpt370a __devinitconst = {
- 	.chip_name	= "HPT370A",
- 	.chip_type	= HPT370A,
- 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
-@@ -537,7 +537,7 @@ static const struct hpt_info hpt370a __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
+ 	if (!(rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) &&
+ 	    !(rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY)) {
+-		rt2x00dev->link.ant.flags &= ~ANTENNA_MODE_SAMPLE;
++		rt2x00dev->link.ant.flags = 0;
+ 		return;
+ 	}
  
--static const struct hpt_info hpt374 __devinitdata = {
-+static const struct hpt_info hpt374 __devinitconst = {
- 	.chip_name	= "HPT374",
- 	.chip_type	= HPT374,
- 	.udma_mask	= ATA_UDMA5,
-@@ -545,7 +545,7 @@ static const struct hpt_info hpt374 __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt372 __devinitdata = {
-+static const struct hpt_info hpt372 __devinitconst = {
- 	.chip_name	= "HPT372",
- 	.chip_type	= HPT372,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -553,7 +553,7 @@ static const struct hpt_info hpt372 __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt372a __devinitdata = {
-+static const struct hpt_info hpt372a __devinitconst = {
- 	.chip_name	= "HPT372A",
- 	.chip_type	= HPT372A,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -561,7 +561,7 @@ static const struct hpt_info hpt372a __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt302 __devinitdata = {
-+static const struct hpt_info hpt302 __devinitconst = {
- 	.chip_name	= "HPT302",
- 	.chip_type	= HPT302,
- 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -569,7 +569,7 @@ static const struct hpt_info hpt302 __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt371 __devinitdata = {
-+static const struct hpt_info hpt371 __devinitconst = {
- 	.chip_name	= "HPT371",
- 	.chip_type	= HPT371,
- 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -577,7 +577,7 @@ static const struct hpt_info hpt371 __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt372n __devinitdata = {
-+static const struct hpt_info hpt372n __devinitconst = {
- 	.chip_name	= "HPT372N",
- 	.chip_type	= HPT372N,
- 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -585,7 +585,7 @@ static const struct hpt_info hpt372n __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt302n __devinitdata = {
-+static const struct hpt_info hpt302n __devinitconst = {
- 	.chip_name	= "HPT302N",
- 	.chip_type	= HPT302N,
- 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -593,7 +593,7 @@ static const struct hpt_info hpt302n __devinitdata = {
- 	.timings	= &hpt37x_timings
- };
- 
--static const struct hpt_info hpt371n __devinitdata = {
-+static const struct hpt_info hpt371n __devinitconst = {
- 	.chip_name	= "HPT371N",
- 	.chip_type	= HPT371N,
- 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
-@@ -1475,7 +1475,7 @@ static int __devinit hpt36x_init(struct pci_dev *dev, struct pci_dev *dev2)
- 	 IDE_HFLAG_ABUSE_SET_DMA_MODE | \
- 	 IDE_HFLAG_OFF_BOARD)
- 
--static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
-+static const struct ide_port_info hpt366_chipsets[] __devinitconst = {
- 	{	/* 0 */
- 		.name		= "HPT36x",
- 		.init_chipset	= init_chipset_hpt366,
-@@ -1570,11 +1570,13 @@ static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_devic
- 		if (rev < 3)
- 			info = &hpt36x;
- 		else {
--			static const struct hpt_info *hpt37x_info[] =
--				{ &hpt370, &hpt370a, &hpt372, &hpt372n };
--
--			info = hpt37x_info[min_t(u8, rev, 6) - 3];
--			idx++;
-+			switch (min_t(u8, rev, 6) - 3) {
-+			case 0: info = &hpt370;  break;
-+			case 1: info = &hpt370a; break;
-+			case 2: info = &hpt372;  break;
-+			case 3: info = &hpt372n; break;
-+			}
-+		idx++;
- 		}
- 		break;
- 	case 1:
-@@ -1626,7 +1628,7 @@ static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_devic
- 	return ide_setup_pci_device(dev, &d);
- }
- 
--static const struct pci_device_id hpt366_pci_tbl[] = {
-+static const struct pci_device_id hpt366_pci_tbl[] __devinitconst = {
- 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT366),  0 },
- 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT372),  1 },
- 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT302),  2 },
+
