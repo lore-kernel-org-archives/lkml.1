@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765217AbYBVW7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764167AbYBVXGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765217AbYBVW7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYBVW7i
+	id S1764167AbYBVXGq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 18:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYBVXGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:59:38 -0500
-Received: from khc.piap.pl ([195.187.100.11]:38690 "EHLO khc.piap.pl"
+	Fri, 22 Feb 2008 18:06:36 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:57301 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751862AbYBVW7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:59:37 -0500
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: David Newall <davidn@davidnewall.com>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <greg@kroah.com>,
-       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glenn Streiff <gstreiff@neteffect.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Faisal Latif <flatif@neteffect.com>
-Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-	<m3tzk1q3rt.fsf@maximus.localdomain>
-	<47BE2985.6020305@davidnewall.com>
-	<e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
-	<47BEDB3F.4090100@davidnewall.com> <1203693437.6242.40.camel@lappy>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 22 Feb 2008 23:59:35 +0100
-In-Reply-To: <1203693437.6242.40.camel@lappy> (Peter Zijlstra's message of "Fri\, 22 Feb 2008 16\:17\:17 +0100")
-Message-ID: <m3ve4g38dk.fsf@maximus.localdomain>
+	id S1757755AbYBVXGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 18:06:35 -0500
+Date: Fri, 22 Feb 2008 18:06:04 -0500
+From: Dave Jones <davej@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: sam@ravnborg.org, arjan@infradead.org, gregkh@suse.de, stable@kernel.org,
+       stable-commits@vger.kernel.org
+Subject: Re: patch kbuild-allow-fstack-protector-to-take-effect.patch added
+	to 2.6.24-stable tree
+Message-ID: <20080222230604.GA20829@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	linux-kernel@vger.kernel.org, sam@ravnborg.org, arjan@infradead.org,
+	gregkh@suse.de, stable@kernel.org, stable-commits@vger.kernel.org
+References: <200802190005.m1J05SKP017015@hera.kernel.org> <20080222230103.CC4EF14540D0@imap.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080222230103.CC4EF14540D0@imap.suse.de>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
+On Fri, Feb 22, 2008 at 03:00:58PM -0800, gregkh@suse.de wrote:
+ > 
+ > This is a note to let you know that we have just queued up the patch titled
+ > 
+ >      Subject: kbuild: allow -fstack-protector to take effect
+ > 
+ > to the 2.6.24-stable tree.  Its filename is
+ > 
+ >      kbuild-allow-fstack-protector-to-take-effect.patch
+ > 
+ > A git repo of this tree can be found at 
+ >     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
 
-> So, yes, I have the screen estate for very long lines, but I find that
-> long lines require more effort to read (that very much includes leading
-> whitespace). Also, since long lines are rare (and they should be, if you
-> nest too deep you have other issues) accommodating them would waste a
-> lot of screen estate otherwise useful for another column of text.
+Is this wise given this thread..  http://lkml.org/lkml/2008/2/22/101    ?
 
-Either they are rare and you can wrap them and still use 80 columns,
-or it turns out they are not so rare and you may want to use wider
-windows (not necessarily 132 but perhaps 100).
+At least until the problem is understood, not enabling this seems like
+a better option for -stable
 
-I think the question isn't if they are rare or not, or if people have
-3 * 1920 pixels/line or just 1280.
+	Dave
 
-The question is: is the code more readable with hard limit equal to 80
-characters, or maybe is it better to limit code block complexity
-instead, and let the maximum number of those small pictures in a line
-alone? (Limiting at 132 would have technical sense IMHO).
-
-Better code readability = less bugs without any additional
-effort.
-
-> Even with e-mail, I can easily show over 200 characters wide with a
-> large font (say 11pt) but find it harder to read emails that don't
-> nicely wrap at 78.
-
-Sure - because email is not C code.
-
-Actually you don't "read" C code, word by word, as you read books - do
-you?
 -- 
-Krzysztof Halasa
+http://www.codemonkey.org.uk
