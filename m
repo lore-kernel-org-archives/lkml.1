@@ -1,198 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764069AbYBVIvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYBVI7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764069AbYBVIvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 03:51:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbYBVIvn
+	id S1757906AbYBVI7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 03:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYBVI67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 03:51:43 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40020 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 03:58:59 -0500
+Received: from mga03.intel.com ([143.182.124.21]:26994 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752750AbYBVIvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 03:51:42 -0500
-Subject: Re: acpi dsts loading and populate_rootfs
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: =?ISO-8859-1?Q?=C9ric?= Piel <Eric.Piel@tremplin-utc.net>
-Cc: Christoph Hellwig <hch@lst.de>, dsdt@gaugusch.at, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <47BDC705.6090902@tremplin-utc.net>
-References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de>
-	 <47AEE6D1.4070402@tremplin-utc.net> <20080212053730.GA15347@lst.de>
-	 <47BDC705.6090902@tremplin-utc.net>
-Content-Type: text/plain; charset=UTF-8
-Organization: Novell/SUSE
-Date: Fri, 22 Feb 2008 09:51:37 +0100
-Message-Id: <1203670297.4995.12.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 8bit
+	id S1751205AbYBVI65 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 03:58:57 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,390,1199692800"; 
+   d="scan'208";a="382237974"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Subject: RE: [patch 1/2] x86, ptrace: support pebs in ds.c
+Date: Fri, 22 Feb 2008 08:49:49 -0000
+Message-ID: <029E5BE7F699594398CA44E3DDF554440169D67E@swsmsx413.ger.corp.intel.com>
+In-Reply-To: <20080221210026.7B1C62701D5@magilla.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch 1/2] x86, ptrace: support pebs in ds.c
+Thread-Index: Ach0zS9hpqj6FPIvQqyxReVmg9ooywAWiR2Q
+References: <20080213112349.A3283@sedona.ch.intel.com> <20080221210026.7B1C62701D5@magilla.localdomain>
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: "Roland McGrath" <roland@redhat.com>
+Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
+       <mingo@elte.hu>, <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
+       <eranian@googlemail.com>
+X-OriginalArrivalTime: 22 Feb 2008 08:49:47.0311 (UTC) FILETIME=[E0A87BF0:01C8752F]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2008-02-21 at 19:46 +0100, Éric Piel wrote:
-> 12/02/08 06:37, Christoph Hellwig wrote/a écrit:
-> > [skipping the populate_rootfs discussion as it seems you have a better
-> >  handle on that than me]
-> > 
-> > On Sun, Feb 10, 2008 at 12:58:09PM +0100, Eric Piel wrote:
-> >>> And while we're at it the file reading thing in there is utter crap
-> >>> aswell.  You really should be using the firmware loader which works
-> >>> perfectly fine if you initramfs is set up for it.  So please folks,
-> >>> back to the drawing board, do it properly and send it out to lkml
-> >>> for review please.
-> >> Christoph, if you have seen this part of the code, you have probably 
-> >> also read the big fat warning explaining why this cannot be done by 
-> >> firmware loader (ie: userspace cannot be run at this early time, 
-> >> corresponding to acpi_early_init()). However, you probably know the 
-> >> kernel ten times better than me. Could you explain what I misunderstood 
-> >> when writing this warning, and give me some hints about how to use the 
-> >> firmware loader in this case?
-> > 
-> > Sorry, I misparsed the comment.  I took it for the usual I'm too lazy
-> > to put something that could load firmware into initramfs excuse.
-> > 
-> > But thinking about it is there a reason acpi initialization needs to
-> > happen so early that we can't even have userspace in initramfs running?
+>-----Original Message-----
+>From: Roland McGrath [mailto:roland@redhat.com] 
+>Sent: Donnerstag, 21. Februar 2008 22:00
 
-Maybe you do not need to activate ACPI mode yet, but you need to load
-the tables early.
+>Sorry I haven't replied in this thread sooner.
 
-> Hi,
-> I guess in the complete absolute point of view it's possible to run
-> userspace without ACPI, after all that's what happens if you don't
-> activate ACPI in your kernel. However, so far I've taken the init order
-> as a constant. I'd really prefer not to have to mess with a complete
-> init order reorganization ;-)
+Thanks for your comments. I hope we get this resolved quickly.
 
-Which is probably a good idea.
-AFAIK Numa, possibly Apic tables must be available quite early.
 
-   Thomas
+>For the user-level interface, we should not be hasty with cooking up
+>hairy ptrace extensions.  Personally, I'd prefer that we never add a
+>ptrace-based interface for this (ptrace must die).  I think it will
+>fit much better either merged into the interfaces that come from
+>perfmon2 integration, or into what replaces ptrace when that comes.
 
-> > 
-> > But if we can't use real userspace this could should at least be written
-> > like the pseudo-userspace in init/do_mounts*.c, using the sys_ syscall
-> > implementations.
-> Yes, thank you very much for the links. Attached is a patch that does
-> this.
-> 
-> > 
-> > As an additional comment the stat + open approach is racy and not a good
-> > idea.  Please just open the file using sys_open, it will tell you
-> > if the file doesn't exist and then use fstat on it to find the
-> > length.  It would also be useful if this kind of code is not hidden
-> > inside acpi but rather done somewhere close to the early init code
-> > because that's where people would expect this kind of nastiness.
-> The attached patch also fixes the stat + open order.
-> 
-> Concerning the place of the code, I've tried to find a better place.
-> However, as acpi_early_init(), from which this function is called, is
-> placed in driver/acpi/ and the acpi_find_dsdt_initrd() function contains
-> quite a few references to acpi code it really looked strange to move it
-> out from the current file. If you still think it make much more sense to
-> move it somewhere else, could you hint me about which you would think it
-> fit better in?
-> 
-> In the mean time, here is a patch which should get the situation already
-> much cleaner. It has been tested on various configs (with and without
-> DSDT). Let me know if you think it is acceptable.
-> 
-> See you,
-> Eric
-> 
-> ---
-> Use userland-like functions for reading the ACPI table
-> 
-> As recommended by Christoph Hellwig, even if we can't rely on the userspace
-> firmware loader so early at boot, at least use normal syscall (as in
-> init/do_mounts_*.c). Similarly, use kfree() instead of ACPI_FREE().
-> 
-> Also, it's recommended to open the file before stating it, to avoid surprises.
-> ---
->  drivers/acpi/osl.c |   33 +++++++++++++++------------------
->  1 files changed, 15 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/acpi/osl.c b/drivers/acpi/osl.c
-> index 34b3386..b836305 100644
-> --- a/drivers/acpi/osl.c
-> +++ b/drivers/acpi/osl.c
-> @@ -42,6 +42,7 @@
->  #include <acpi/acpi_bus.h>
->  #include <acpi/processor.h>
->  #include <asm/uaccess.h>
-> +#include <linux/syscalls.h>
->  
->  #include <linux/efi.h>
->  #include <linux/ioport.h>
-> @@ -327,8 +328,7 @@ acpi_os_predefined_override(const struct acpi_predefined_names *init_val,
->  #ifdef CONFIG_ACPI_CUSTOM_DSDT_INITRD
->  static struct acpi_table_header *acpi_find_dsdt_initrd(void)
->  {
-> -	struct file *firmware_file;
-> -	mm_segment_t oldfs;
-> +	int fd;
->  	unsigned long len, len2;
->  	struct acpi_table_header *dsdt_buffer, *ret = NULL;
->  	struct kstat stat;
-> @@ -342,20 +342,21 @@ struct acpi_table_header *acpi_find_dsdt_initrd(void)
->  	 * But this code must be run before there is any userspace available.
->  	 * A static/init firmware infrastructure doesn't exist yet...
->  	 */
-> -	if (vfs_stat(ramfs_dsdt_name, &stat) < 0)
-> -		return ret;
-> +	fd = sys_open(ramfs_dsdt_name, O_RDONLY, 0);
-> +	if (fd < 0)
-> +		return ret; /* No need for warning, no DSDT override is normal */
-> +
-> +	/* There exists 3 different sys_fstat's, all are wrapper to vfs_fstat */
-> +	if (vfs_fstat(fd, &stat) < 0) {
-> +		printk(KERN_ERR PREFIX "Failed to stat %s.\n", ramfs_dsdt_name);
-> +		goto err;
-> +	}
->  
->  	len = stat.size;
->  	/* check especially against empty files */
->  	if (len <= 4) {
->  		printk(KERN_ERR PREFIX "Failed: DSDT only %lu bytes.\n", len);
-> -		return ret;
-> -	}
-> -
-> -	firmware_file = filp_open(ramfs_dsdt_name, O_RDONLY, 0);
-> -	if (IS_ERR(firmware_file)) {
-> -		printk(KERN_ERR PREFIX "Failed to open %s.\n", ramfs_dsdt_name);
-> -		return ret;
-> +		goto err;
->  	}
->  
->  	dsdt_buffer = kmalloc(len, GFP_ATOMIC);
-> @@ -364,15 +365,11 @@ struct acpi_table_header *acpi_find_dsdt_initrd(void)
->  		goto err;
->  	}
->  
-> -	oldfs = get_fs();
-> -	set_fs(KERNEL_DS);
-> -	len2 = vfs_read(firmware_file, (char __user *)dsdt_buffer, len,
-> -		&firmware_file->f_pos);
-> -	set_fs(oldfs);
-> +	len2 = sys_read(fd, (char __user *)dsdt_buffer, len);
->  	if (len2 < len) {
->  		printk(KERN_ERR PREFIX "Failed to read %lu bytes from %s.\n",
->  			len, ramfs_dsdt_name);
-> -		ACPI_FREE(dsdt_buffer);
-> +		kfree(dsdt_buffer);
->  		goto err;
->  	}
->  
-> @@ -380,7 +377,7 @@ struct acpi_table_header *acpi_find_dsdt_initrd(void)
->  			len, ramfs_dsdt_name);
->  	ret = dsdt_buffer;
->  err:
-> -	filp_close(firmware_file, NULL);
-> +	sys_close(fd);
->  	return ret;
->  }
->  #endif
-> 
+Ptrace seems the natural choice for a debug feature.
+
+When ptrace goes away, I will be happy to integrate this feature into
+its successor. But as long as ptrace lives, I think it should support
+this.
+
+
+>But I also don't know of anyone desperate and about to burst from lack
+>of BTS functionality.
+
+Intel is waiting for this interface - desperate and about to burst from
+lack of it.
+
+For one, Intel's debugger is ready to support this.
+Second, Intel would like to see all linux debuggers use this hardware
+debugging feature.
+
+
+>The low-level implementation pieces should gel a bit more in -mm or
+>whereever.  They should both get more testing and also get more
+>concrete use from the perfmon2 integration effort to iron out their
+>internal interface kinks.
+
+I see the two parts (ptrace API and ds.c interface) independent from
+each other.
+
+The ptrace API is the user interface for the debugging/BTS aspect of it.
+As such, it will remain stable.
+
+The ds.c interface is the kernel interface to DS (which covers both BTS
+and PEBS). It is currently used by ptrace (the per-thread BTS part) and
+it will be used by perfmon2 (the PEBS part) and by kernel debuggers (the
+per-cpu BTS part). 
+
+If we need to change the ds.c interface to better fit perfmon2's needs,
+we can easily adapt the ptrace layer without affecting the ptrace API.
+
+
+>I would like to see all the BTS and DS work wait until after 2.6.25.
+>We have a lot of x86 churn in 2.6.25 already, and I think we'd do
+>better without adding this wrinkle at the same time.
+
+The ptrace BTS extension has been out for review since 2.6.24 (that is,
+2.6.23 was the stable kernel at that time). The ptrace API has been
+extensively discussed by mostly Ingo and myself until we agreed on its
+usefulness. I have not heard any complaints about the API, since then.
+
+I would suggest that we iron out the ptrace API for 2.6.25. This would
+introduce ds.c and a first user. It would allow application debuggers to
+use that feature.
+
+For 2.6.26 we would make perfmon2 use the ds.c interface. This would add
+a second user to ds.c. It would allow profilers to use that feature.
+
+As soon as a ptrace successor becomes available, we will integrate BTS
+support into it. We might want to introduce another layer between ptrace
+and ds to share some code. This would leave the ptrace layer almost
+empty.
+
+
+What do you think?
+
+
+thanks and regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
