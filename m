@@ -1,209 +1,318 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbYBVVMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759198AbYBVVMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933530AbYBVVMN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbYBVVJj
+	id S1759198AbYBVVMv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:12:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbYBVVJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:09:39 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:52250 "EHLO
+	Fri, 22 Feb 2008 16:09:40 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:47253 "EHLO
 	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756205AbYBVVJd (ORCPT
+	with ESMTP id S1755936AbYBVVJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Feb 2008 16:09:33 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="773385"
+X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="773381"
 From: Max Krasnyansky <maxk@qualcomm.com>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, pj@sgi.com,
        Max Krasnyansky <maxk@qualcomm.com>
-Subject: [PATCH sched-devel 5/7] cpuisol: Documentation updates
-Date: Fri, 22 Feb 2008 13:09:16 -0800
-Message-Id: <1203714558-20904-5-git-send-email-maxk@qualcomm.com>
+Subject: [PATCH sched-devel 1/7] cpuisol: Make cpu isolation configrable and export isolated map
+Date: Fri, 22 Feb 2008 13:09:12 -0800
+Message-Id: <1203714558-20904-1-git-send-email-maxk@qualcomm.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1203714558-20904-4-git-send-email-maxk@qualcomm.com>
-References: <1203714558-20904-1-git-send-email-maxk@qualcomm.com>
- <1203714558-20904-2-git-send-email-maxk@qualcomm.com>
- <1203714558-20904-3-git-send-email-maxk@qualcomm.com>
- <1203714558-20904-4-git-send-email-maxk@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documented sysfs interface as suggested by Andrew Morton.
-Added general documentation that describes how to configure
-and use CPU isolation features.
+This simple patch introduces new config option for CPU isolation.
+The reason I created the separate Kconfig file here is because more
+options will be added by the following patches.
+
+The patch also exports cpu_isolated_map, provides cpu_isolated()
+accessor macro and provides access to the isolation bit via sysfs.
+In other words cpu_isolated_map is exposed to the rest of the kernel
+and the user-space in much the same way cpu_online_map is exposed today.
+
+While at it I also moved cpu_*_map from kernel/sched.c into kernel/cpu.c
+Those maps have very little to do with the scheduler these days and
+therefor seem out of place in the scheduler code.
+
+This patch does not change/affect any existing scheduler functionality.
 
 Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
 ---
- Documentation/ABI/testing/sysfs-devices-system-cpu |   41 +++++++
- Documentation/cpu-isolation.txt                    |  113 ++++++++++++++++++++
- 2 files changed, 154 insertions(+), 0 deletions(-)
+ arch/x86/Kconfig        |    1 +
+ drivers/base/cpu.c      |   48 ++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/cpumask.h |    3 ++
+ kernel/Kconfig.cpuisol  |   15 ++++++++++++++
+ kernel/Makefile         |    4 +-
+ kernel/cpu.c            |   49 +++++++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched.c          |   36 ----------------------------------
+ 7 files changed, 118 insertions(+), 38 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3be2305..d228488 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -526,6 +526,7 @@ config SCHED_MC
+ 	  increased overhead in some places. If unsure say N here.
+ 
+ source "kernel/Kconfig.preempt"
++source "kernel/Kconfig.cpuisol"
+ 
+ config X86_UP_APIC
+ 	bool "Local APIC support on uniprocessors"
+diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+index 499b003..b6c5e0f 100644
+--- a/drivers/base/cpu.c
++++ b/drivers/base/cpu.c
+@@ -55,10 +55,58 @@ static ssize_t store_online(struct sys_device *dev, const char *buf,
+ }
+ static SYSDEV_ATTR(online, 0644, show_online, store_online);
+ 
++#ifdef CONFIG_CPUISOL
++/*
++ * This is under config hotplug because in order to 
++ * dynamically isolate a CPU it needs to be brought off-line first.
++ * In other words the sequence is
++ *   echo 0 > /sys/device/system/cpuN/online
++ *   echo 1 > /sys/device/system/cpuN/isolated
++ *   echo 1 > /sys/device/system/cpuN/online
++ */
++static ssize_t show_isol(struct sys_device *dev, char *buf)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++
++	return sprintf(buf, "%u\n", !!cpu_isolated(cpu->sysdev.id));
++}
++
++static ssize_t store_isol(struct sys_device *dev, const char *buf,
++			    size_t count)
++{
++	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
++	ssize_t ret = 0;
++
++	if (cpu_online(cpu->sysdev.id))
++		return -EBUSY;
++
++	switch (buf[0]) {
++	case '0':
++		cpu_clear(cpu->sysdev.id, cpu_isolated_map);
++		break;
++	case '1':
++		cpu_set(cpu->sysdev.id, cpu_isolated_map);
++		break;
++	default:
++		ret = -EINVAL;
++	}
++
++	if (ret >= 0)
++		ret = count;
++	return ret;
++}
++static SYSDEV_ATTR(isolated, 0600, show_isol, store_isol);
++#endif /* CONFIG_CPUISOL */
++
+ static void __devinit register_cpu_control(struct cpu *cpu)
+ {
+ 	sysdev_create_file(&cpu->sysdev, &attr_online);
++
++#ifdef CONFIG_CPUISOL
++	sysdev_create_file(&cpu->sysdev, &attr_isolated);
++#endif
+ }
++
+ void unregister_cpu(struct cpu *cpu)
+ {
+ 	int logical_cpu = cpu->sysdev.id;
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 7047f58..cde2964 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -380,6 +380,7 @@ static inline void __cpus_remap(cpumask_t *dstp, const cpumask_t *srcp,
+ extern cpumask_t cpu_possible_map;
+ extern cpumask_t cpu_online_map;
+ extern cpumask_t cpu_present_map;
++extern cpumask_t cpu_isolated_map;
+ 
+ #if NR_CPUS > 1
+ #define num_online_cpus()	cpus_weight(cpu_online_map)
+@@ -388,6 +389,7 @@ extern cpumask_t cpu_present_map;
+ #define cpu_online(cpu)		cpu_isset((cpu), cpu_online_map)
+ #define cpu_possible(cpu)	cpu_isset((cpu), cpu_possible_map)
+ #define cpu_present(cpu)	cpu_isset((cpu), cpu_present_map)
++#define cpu_isolated(cpu)	cpu_isset((cpu), cpu_isolated_map)
+ #else
+ #define num_online_cpus()	1
+ #define num_possible_cpus()	1
+@@ -395,6 +397,7 @@ extern cpumask_t cpu_present_map;
+ #define cpu_online(cpu)		((cpu) == 0)
+ #define cpu_possible(cpu)	((cpu) == 0)
+ #define cpu_present(cpu)	((cpu) == 0)
++#define cpu_isolated(cpu)	(0)
+ #endif
+ 
+ #define cpu_is_offline(cpu)	unlikely(!cpu_online(cpu))
+diff --git a/kernel/Kconfig.cpuisol b/kernel/Kconfig.cpuisol
 new file mode 100644
-index 0000000..32dde5b
+index 0000000..e606477
 --- /dev/null
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -0,0 +1,41 @@
-+What:           /sys/devices/system/cpu/...
-+Date:           Feb. 2008
-+KernelVersion:  2.6.24 
-+Contact:        LKML <linux-kernel@vger.kernel.org>
-+Description:
++++ b/kernel/Kconfig.cpuisol
+@@ -0,0 +1,15 @@
++config CPUISOL
++	depends on SMP
++	bool "CPU isolation"
++	help
++	  This option enables support for CPU isolation.
++	  If enabled the kernel will try to avoid kernel activity on the isolated CPUs.
++	  By default user-space threads are not scheduled on the isolated CPUs unless 
++	  they explicitly request it (via sched_ and pthread_ affinity calls). Isolated
++	  CPUs are not subject to the scheduler load-balancing algorithms.
++	  
++	  CPUs can be marked as isolated using 'isolcpus=' command line option or by 
++	  writing '1' into /sys/devices/system/cpu/cpuN/isolated.
++	  
++	  This feature is useful for hard realtime and high performance applications.
++	  If unsure say 'N'.
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 6c584c5..bb8da0a 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -3,7 +3,7 @@
+ #
+ 
+ obj-y     = sched.o fork.o exec_domain.o panic.o printk.o profile.o \
+-	    exit.o itimer.o time.o softirq.o resource.o \
++	    cpu.o exit.o itimer.o time.o softirq.o resource.o \
+ 	    sysctl.o capability.o ptrace.o timer.o user.o \
+ 	    signal.o sys.o kmod.o workqueue.o pid.o \
+ 	    rcupdate.o extable.o params.o posix-timers.o \
+@@ -27,7 +27,7 @@ obj-$(CONFIG_RT_MUTEXES) += rtmutex.o
+ obj-$(CONFIG_DEBUG_RT_MUTEXES) += rtmutex-debug.o
+ obj-$(CONFIG_RT_MUTEX_TESTER) += rtmutex-tester.o
+ obj-$(CONFIG_GENERIC_ISA_DMA) += dma.o
+-obj-$(CONFIG_SMP) += cpu.o spinlock.o
++obj-$(CONFIG_SMP) += spinlock.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
+ obj-$(CONFIG_PROVE_LOCKING) += spinlock.o
+ obj-$(CONFIG_UID16) += uid16.o
+diff --git a/kernel/cpu.c b/kernel/cpu.c
+index 2eff3f6..a0ac386 100644
+--- a/kernel/cpu.c
++++ b/kernel/cpu.c
+@@ -15,6 +15,36 @@
+ #include <linux/stop_machine.h>
+ #include <linux/mutex.h>
+ 
++/*
++ * Represents all cpu's present in the system
++ * In systems capable of hotplug, this map could dynamically grow
++ * as new cpu's are detected in the system via any platform specific
++ * method, such as ACPI for e.g.
++ */
 +
-+The /sys/devices/system/cpu tree provides information about all cpu's
-+known to the running kernel.
++cpumask_t cpu_present_map __read_mostly;
++EXPORT_SYMBOL(cpu_present_map);
 +
-+Following files are created for each cpu. 'N' is the cpu number.
++/*
++ * Represents isolated cpu's.
++ * In general any kernel activity should be avoided as much as possible
++ * on these cpu's. Isolated cpu's are not load balanced by the scheduler. 
++ */
++cpumask_t cpu_isolated_map __read_mostly = CPU_MASK_NONE;
++EXPORT_SYMBOL(cpu_isolated_map);
 +
-+/sys/devices/system/cpu/cpuN/
-+  online     (0644) On-line attribute. Indicates whether the cpu is on-line.
-+                    The cpu can be brought off-line by writing '0' into
-+                    this file.  Similarly it can be brought back on-line
-+                    by writing '1' into this file.  This attribute is
-+                    not available for the cpu's that cannot be brought
-+                    off-line. Typically cpu0.  For more information see
-+                            Documentation/cpu-hotplug.txt
++#ifndef CONFIG_SMP
 +
-+  isolated   (0644) Isolation attribute. Indicates whether the cpu
-+                    is isolated.
-+                    The cpu can be isolated by writing '1' into this
-+                    file.  Similarly it can be un-isolated by writing
-+                    '0' into this file.  In order to isolate the cpu it
-+                    must first be brought off-line.  This attribute is
-+                    not available for the cpu's that cannot be brought
-+                    off-line. Typically cpu0.  
-+                    Note this attribute is present only if "CPU isolation"
-+                    is enabled. For more information see
-+                            Documentation/cpu-isolation.txt
++cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
++EXPORT_SYMBOL(cpu_online_map);
 +
-+  cpufreq    (0755) Frequency scaling state.
-+                    For more info see
-+                            Documentation/cpu-freq/...
++cpumask_t cpu_possible_map __read_mostly = CPU_MASK_ALL;
++EXPORT_SYMBOL(cpu_possible_map);
 +
-+  cache      (0755) Cache information. FIXME
++#endif
 +
-+  cpuidle    (0755) Idle state information. FIXME
++#ifdef CONFIG_SMP
 +
-+  topology   (0755) Topology information. FIXME
-diff --git a/Documentation/cpu-isolation.txt b/Documentation/cpu-isolation.txt
-new file mode 100644
-index 0000000..b9ca425
---- /dev/null
-+++ b/Documentation/cpu-isolation.txt
-@@ -0,0 +1,113 @@
-+CPU isolation support in Linux(tm) Kernel
+ /* Serializes the updates to cpu_online_map, cpu_present_map */
+ static DEFINE_MUTEX(cpu_add_remove_lock);
+ 
+@@ -413,3 +443,22 @@ out:
+ 	cpu_maps_update_done();
+ }
+ #endif /* CONFIG_PM_SLEEP_SMP */
 +
-+Maintainers:
++#ifdef CONFIG_CPUISOL
++/* Setup the mask of isolated cpus */
++static int __init isolated_cpu_setup(char *str)
++{
++	int ints[NR_CPUS], i;
 +
-+Scheduler and scheduler domain bits:
-+	Ingo Molnar <mingo@elte.hu>
++	str = get_options(str, ARRAY_SIZE(ints), ints);
++	cpus_clear(cpu_isolated_map);
++	for (i = 1; i <= ints[0]; i++)
++		if (ints[i] < NR_CPUS)
++			cpu_set(ints[i], cpu_isolated_map);
++	return 1;
++}
 +
-+General framework, irq and workqueue isolation:
-+	Max Krasnyanskiy <maxk@qualcomm.com>
++__setup("isolcpus=", isolated_cpu_setup);
++#endif
 +
-+ChangeLog:
-+- Initial version. Feb 2008, MaxK
-+
-+Introduction
-+------------
-+
-+The primary idea behind CPU isolation is the ability to use some CPU cores
-+as a dedicated engines for running user-space code with minimal kernel
-+overhead/intervention, think of it as an SPE in the Cell processor. For
-+example CPU isolation allows for running CPU intensive(100%) RT task
-+on one of the processors without adversely affecting or being affected
-+by the other system activities.  With the current (as of early 2008)
-+multi-core CPU trend we may see more and more applications that explore
-+this capability: real-time gaming engines, simulators, hard real-time
-+apps, etc.
-+
-+Current CPU isolation support consists of the following features:
-+
-+1. Isolated CPU(s) are excluded from the scheduler load balancing logic.
-+   Applications must explicitly bind threads in order to run on those
-+   CPU(s).
-+
-+2. By default interrupts are not routed to the isolated CPU(s).
-+   Users must route interrupts (if any) to those CPU(s) explicitly.
-+
-+3. Kernel avoids any activity on the isolated CPU(s) as much as possible.
-+   This includes workqueues, per CPU threads, etc.  Please note that
-+   this feature is optional and is disabled by default.
-+
-+Kernel configuration options
-+----------------------------
-+
-+Following options need to be enabled in order to use CPU isolation
-+   CONFIG_CPUISOL		Top-level config option. Enables general
-+                                CPU isolation framework and enables features 
-+                                #1 and #2 described above.
-+
-+   CONFIG_CPUISOL_WORKQUEUE	These options provide deeper isolation
-+   CONFIG_CPUISOL_STOPMACHINE   from various kernel subsystems. They implement 
-+   CONFIG_CPUISOL_...           feature #3 described above.  
-+                                See Kconfig help for more information on each 
-+                                individual option.
-+
-+How to isolate a CPU
-+--------------------
-+
-+There are two ways for isolating a CPU
-+
-+Kernel boot command line:
-+   isolcpus=n0,n1,...
-+
-+   This option enables isolation for all CPU(s) specified in the comma 
-+   separated list.
-+   Example:
-+        isolcpus=1,5
-+
-+Sysfs interface:
-+   In order to isolate a CPU through this mechanism it must first be
-+   brought off-line.  Hence the command sequence looks like:
-+       echo 0 > /sys/devices/system/cpu/cpuN/online
-+       echo 1 > /sys/devices/system/cpu/cpuN/isolated
-+       echo 1 > /sys/devices/system/cpu/cpuN/online
-+
-+
-+Kernel interfaces
-+-----------------
-+
-+cpu_isolated_map  - Bitmap of all isolated CPU(s).
-+		    This bitmap is updated either by isolcpus= command
-+		    line option or by writing to sysfs attributes. In
-+		    the latter case isolation bit can be updated only
-+		    when the corresponding CPU is off-line.
-+
-+cpu_isolated(N)   - Use that function to check whether CPU N is isolated.
-+
-+
-+User-space application interfaces
-+---------------------------------
-+
-+From the user-space application perspective isolated CPU(s) are no
-+different from any other CPU in the system. Once the required CPU(s)
-+have been isolated applications can use standard POSIX apis to bind its
-+threads to those CPU(s):
-+	sched_setaffinity
-+	sched_getaffinity
-+	pthread_getaffinity_np
-+	pthread_setaffinity_np
-+
-+One thing to keep in mind though is that Linux kernel heavily uses per-CPU
-+data structures and mechanisms. For example if a thread running on an
-+isolated CPU makes a system call, that system call will be serviced
-+on the same CPU.  Some system calls trigger timers, softirq and other
-+kernel activities. Those will likely also run on the same CPU where
-+system call was originally serviced.  If this behavior is undesirable
-+threads running on the isolated CPU(s) should avoid using certain system
-+calls and instead delegate that to the threads running on non-isolated
-+CPU(s). For example you probably do not want to write to the filesystem
-+or the console. Generally, time, mutex and pthread related system calls
-+are perfectly safe.
-+
-+If you intend to use CPU isolation for real-time applications please
-+check out rt wiki at
-+	http://rt.wiki.kernel.org/index.php/Main_Page
++#endif /* CONFIG_SMP */
+diff --git a/kernel/sched.c b/kernel/sched.c
+index f28f19e..10a533e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4839,24 +4839,6 @@ asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
+ 	return sched_setaffinity(pid, new_mask);
+ }
+ 
+-/*
+- * Represents all cpu's present in the system
+- * In systems capable of hotplug, this map could dynamically grow
+- * as new cpu's are detected in the system via any platform specific
+- * method, such as ACPI for e.g.
+- */
+-
+-cpumask_t cpu_present_map __read_mostly;
+-EXPORT_SYMBOL(cpu_present_map);
+-
+-#ifndef CONFIG_SMP
+-cpumask_t cpu_online_map __read_mostly = CPU_MASK_ALL;
+-EXPORT_SYMBOL(cpu_online_map);
+-
+-cpumask_t cpu_possible_map __read_mostly = CPU_MASK_ALL;
+-EXPORT_SYMBOL(cpu_possible_map);
+-#endif
+-
+ long sched_getaffinity(pid_t pid, cpumask_t *mask)
+ {
+ 	struct task_struct *p;
+@@ -6212,24 +6194,6 @@ cpu_attach_domain(struct sched_domain *sd, struct root_domain *rd, int cpu)
+ 	rcu_assign_pointer(rq->sd, sd);
+ }
+ 
+-/* cpus with isolated domains */
+-static cpumask_t cpu_isolated_map = CPU_MASK_NONE;
+-
+-/* Setup the mask of cpus configured for isolated domains */
+-static int __init isolated_cpu_setup(char *str)
+-{
+-	int ints[NR_CPUS], i;
+-
+-	str = get_options(str, ARRAY_SIZE(ints), ints);
+-	cpus_clear(cpu_isolated_map);
+-	for (i = 1; i <= ints[0]; i++)
+-		if (ints[i] < NR_CPUS)
+-			cpu_set(ints[i], cpu_isolated_map);
+-	return 1;
+-}
+-
+-__setup("isolcpus=", isolated_cpu_setup);
+-
+ /*
+  * init_sched_build_groups takes the cpumask we wish to span, and a pointer
+  * to a function which identifies what group(along with sched group) a CPU
 -- 
 1.5.4.1
 
