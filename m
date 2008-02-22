@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764167AbYBVXGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933194AbYBVXIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764167AbYBVXGq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 18:06:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbYBVXGg
+	id S933194AbYBVXIu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 18:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758159AbYBVXIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 18:06:36 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:57301 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757755AbYBVXGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 18:06:35 -0500
-Date: Fri, 22 Feb 2008 18:06:04 -0500
-From: Dave Jones <davej@redhat.com>
+	Fri, 22 Feb 2008 18:08:40 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:48888 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757821AbYBVXIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 18:08:37 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=iudWDumlljII084sYrsHMW1s/Uw+CAbIvsmVkVJrGcVQ7wEwh9avW0JfUxlL3KDRxaMufIn/KRar34dQIqX/q8YfBVVazB6brlL4HE9OCIp9nC25zx8BTCGItqDY00ReN0s5gzdnjTUrruT049PSrz8X0OJFrwTW7cswkIt80Dw=
+Message-ID: <8abd1bfd0802221508i373d37e7hd6ad7702bde25330@mail.gmail.com>
+Date: Fri, 22 Feb 2008 18:08:34 -0500
+From: "Stephen Oberholtzer" <oliverklozoff@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: sam@ravnborg.org, arjan@infradead.org, gregkh@suse.de, stable@kernel.org,
-       stable-commits@vger.kernel.org
-Subject: Re: patch kbuild-allow-fstack-protector-to-take-effect.patch added
-	to 2.6.24-stable tree
-Message-ID: <20080222230604.GA20829@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	linux-kernel@vger.kernel.org, sam@ravnborg.org, arjan@infradead.org,
-	gregkh@suse.de, stable@kernel.org, stable-commits@vger.kernel.org
-References: <200802190005.m1J05SKP017015@hera.kernel.org> <20080222230103.CC4EF14540D0@imap.suse.de>
+Subject: How to diagnose a process stuck in D state?
+Cc: oliverklozoff@gmail.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080222230103.CC4EF14540D0@imap.suse.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 03:00:58PM -0800, gregkh@suse.de wrote:
- > 
- > This is a note to let you know that we have just queued up the patch titled
- > 
- >      Subject: kbuild: allow -fstack-protector to take effect
- > 
- > to the 2.6.24-stable tree.  Its filename is
- > 
- >      kbuild-allow-fstack-protector-to-take-effect.patch
- > 
- > A git repo of this tree can be found at 
- >     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+First off: I'm not subscribed to the list (I don't think I could
+handle the volume), so please make sure you CC me if you reply.
 
-Is this wise given this thread..  http://lkml.org/lkml/2008/2/22/101    ?
+I run an application on one of my machines; it often hangs, with the
+process stuck D state.  When this happens, the process sticks around
+until I reboot the machine.
 
-At least until the problem is understood, not enabling this seems like
-a better option for -stable
+I have tried the following to start diagnosing the problem:
 
-	Dave
+* Running 'ps -axl' shows "-" in the wchan column.
+* The contents of /proc/pid/wchan say "_stext".
+* 'strace -p pid' says "Process pid attached - interrupt to quit" and
+stops responding.  Sending SIGINT and SIGTERM have no effect on the
+strace process, although kill -11 (SIGSEGV, my personal favorite) does
+work.
+
+This is very confusing.  I would greatly appreciate it if someone
+could tell me how a process can enter D state without being in a
+syscall, and what I can do to start tracking down the cause.
+
+(By the way: This is on amd64, 2.6.23. I'm updating to 2.6.24.2 right
+now, on the off chance that whatever was causing the problem has been
+fixed.)
 
 -- 
-http://www.codemonkey.org.uk
+-- Stevie-O
+Real programmers use COPY CON PROGRAM.EXE
