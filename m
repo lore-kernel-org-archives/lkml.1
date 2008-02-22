@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762888AbYBVAr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbYBVAsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762888AbYBVAr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756523AbYBVArr
+	id S936302AbYBVAsm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764308AbYBVAs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:47:47 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:45536 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757356AbYBVArq (ORCPT
+	Thu, 21 Feb 2008 19:48:29 -0500
+Received: from el-out-1112.google.com ([209.85.162.180]:5412 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764129AbYBVAs2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:47:46 -0500
-Date: Thu, 21 Feb 2008 16:46:33 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off
- aftersuspend-to-disk. Screen becomes green.
-In-Reply-To: <200802220131.09525.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.00.0802211643140.19896@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211302.27002.jesse.barnes@intel.com> <b6a2187b0802211620q47f6601fuf7e88395d89b90c8@mail.gmail.com> <200802220131.09525.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 21 Feb 2008 19:48:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=P5ntwHkMDgNSLx96xbdoTB4q9fsOJ2lS4GdThUOhAk2VFK2E4nbHXU+62/0tzZPG285sJJNbP2Z8etDTOjW/uJpgI2TRmqmdxaNLdm7KYa/54nKnyQaJryZIRl+lBHll5vtHglkG8vo7zxlHg4GbESAMYObPIN14m2lqTVaScq0=
+Message-ID: <b6a2187b0802211648u2d420861v2cc4d06ba659daf2@mail.gmail.com>
+Date: Fri, 22 Feb 2008 08:48:26 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Dave Airlie" <airlied@linux.ie>,
+       "Greg KH" <gregkh@suse.de>, lkml <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "pm list" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <200802211545.05794.jesse.barnes@intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802211034.22056.jesse.barnes@intel.com>
+	 <200802212311.44319.rjw@sisk.pl>
+	 <200802211545.05794.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Feb 22, 2008 at 7:45 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
+> On Thursday, February 21, 2008 2:11 pm Rafael J. Wysocki wrote:
+>  > Below is a patch that should work around the issue.  Please try it and let
+>  > me know if it helps.
+>
+>  I ended up applying the below patch instead, so it would build, and
+>  unfortunately it still hung at suspend time.
 
+I encountered the same patching problem, but realized that it was due
+to earlier patch that you had wanted me to test, so if you revert your
+patch back to the current git, Rafael's patch will apply and compile
+cleanly.
 
-On Fri, 22 Feb 2008, Rafael J. Wysocki wrote:
->  
-> -	if (state.event == PM_EVENT_SUSPEND) {
-> +	if (state.event == PM_EVENT_SUSPEND && !in_hibernation_power_off()) {
-
-I don't understand why hibernation just doesn't use a PM_EVENT_HIBERNATE, 
-and be done with it?
-
-Why should it be called PM_EVENT_SUSPEND when it isn't?
-
-Adding some external global variables is absolutely the wrong way to fix 
-this.
-
-It's not even like there are very many drivers who actually care about 
-"state.event" anyway: a 'git grep' returns just 35 users in the whole 
-tree, so if this was done this ugly way just to avoid double-chcking the 
-other cases that compare against PM_EVENT_SUSPEND, then it really wasn't 
-worth it.
-
-		Linus
+Thanks,
+Jeff.
