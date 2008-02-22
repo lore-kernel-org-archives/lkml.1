@@ -1,43 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764096AbYBVLoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933666AbYBVLo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764096AbYBVLoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 06:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756728AbYBVLnt
+	id S933666AbYBVLo1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 06:44:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbYBVLnx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 06:43:49 -0500
-Received: from www.tglx.de ([62.245.132.106]:46151 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756455AbYBVLns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 06:43:48 -0500
-Date: Fri, 22 Feb 2008 12:43:00 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Quel Qun <kelk1@comcast.net>, Dave Young <hidave.darkstar@gmail.com>,
-       Marcel Holtmann <marcel@holtmann.org>,
-       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Kernel oops with bluetooth usb dongle
-In-Reply-To: <1203680049.5771.44.camel@shinybook.infradead.org>
-Message-ID: <alpine.LFD.1.00.0802221242400.7583@apollo.tec.linutronix.de>
-References: <022220080240.25836.47BE362900072A1C000064EC2200761394CE05040A05@comcast.net>  <alpine.LFD.1.00.0802220813180.7583@apollo.tec.linutronix.de> <1203680049.5771.44.camel@shinybook.infradead.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Feb 2008 06:43:53 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:40286 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757207AbYBVLnv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 06:43:51 -0500
+Subject: Re: [PATCH sched-devel 0/7] CPU isolation extensions
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Max Krasnyanskiy <maxk@qualcomm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Jackson <pj@sgi.com>
+In-Reply-To: <47BE35B7.2070104@qualcomm.com>
+References: <47BE35B7.2070104@qualcomm.com>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 12:43:20 +0100
+Message-Id: <1203680600.6242.20.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.21.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008, David Woodhouse wrote:
+
+On Thu, 2008-02-21 at 18:38 -0800, Max Krasnyanskiy wrote:
+
+> As you suggested I'm sending CPU isolation patches for review/inclusion into 
+> sched-devel tree. They are against 2.6.25-rc2.
+> You can also pull them from my GIT tree at
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/maxk/cpuisol-2.6.git master
  
-> On Fri, 2008-02-22 at 08:23 +0100, Thomas Gleixner wrote:
-> > 
-> > +       del_timer(&conn->info_timer);
-> > +
-> >         hcon->l2cap_data = NULL;
-> >         kfree(conn);
+Post patches! I can't review a git tree..
+ 
+> Diffstat:
+>  b/Documentation/ABI/testing/sysfs-devices-system-cpu |   41 ++++++
+>  b/Documentation/cpu-isolation.txt                    |  114 ++++++++++++++++++-
+>  b/arch/x86/Kconfig                                   |    1 
+>  b/arch/x86/kernel/genapic_flat_64.c                  |    5 
+>  b/drivers/base/cpu.c                                 |   48 ++++++++
+>  b/include/linux/cpumask.h                            |    3 
+>  b/kernel/Kconfig.cpuisol                             |   15 ++
+>  b/kernel/Makefile                                    |    4 
+>  b/kernel/cpu.c                                       |   49 ++++++++
+>  b/kernel/sched.c                                     |   37 ------
+>  b/kernel/stop_machine.c                              |    9 +
+>  b/kernel/workqueue.c                                 |   31 +++--
+>  kernel/Kconfig.cpuisol                               |   56 ++++++---
+>  kernel/cpu.c                                         |   16 +-
+>  14 files changed, 356 insertions(+), 73 deletions(-)
 > 
-> Shouldn't that be del_timer_sync() ?
+> List of commits
+>    cpuisol: Make cpu isolation configrable and export isolated map
+ 
+cpu_isolated_map was a bad hack when it was introduced, I feel we should
+deprecate it and fully integrate the functionality into cpusets. That would
+give a much more flexible end-result.
 
-Hmm, probably yes.
+CPU-sets can already isolate cpus by either creating a cpu outside of any set,
+or a set with a single cpu not shared by any other sets.
 
-     tglx
+This also allows for isolated groups, there are good reasons to isolate groups,
+esp. now that we have a stronger RT balancer. SMP and hard RT are not
+exclusive. A design that does not take that into account is too rigid.
+
+>    cpuisol: Do not route IRQs to the CPUs isolated at boot
+
+>From the diffstat you're not touching the genirq stuff, but instead hack a
+single architecture to support this feature. Sounds like an ill designed hack.
+
+A better approach would be to add a flag to the cpuset infrastructure that says
+whether its a system set or not. A system set would be one that services the
+general purpose OS and would include things like the IRQ affinity and unbound
+kernel threads (including unbound workqueues - or single workqueues). This flag
+would default to on, and by switching it off for the root set, and a select
+subset you would push the System away from those cpus, thereby isolating them.
+
+>    cpuisol: Do not schedule workqueues on the isolated CPUs
+ 
+(per-cpu workqueues, the single ones are treated in the previous section)
+
+I still strongly disagree with this approach. Workqueues are passive, they
+don't do anything unless work is provided to them. By blindly not starting them
+you handicap the system and services that rely on them.
+
+(you even acknowledged this problem, by saying it breaks oprofile for instance
+- still trying to push a change that knowingly breaks a lot of stuff is bad
+manners on lkml and not acceptable for mainline)
+
+The way to do this is to avoid the generation of work, not the execution of it.
+
+>    cpuisol: Move on-stack array used for boot cmd parsing into __initdata
+>    cpuisol: Documentation updates
+>    cpuisol: Minor updates to the Kconfig options
+ 
+No idea about these patches,... 
+
+>    cpuisol: Do not halt isolated CPUs with Stop Machine
+
+Very strong NACK on this one, it breaks a lot of functionality in non-obvious
+ways, as has been pointed out to you numerous times. Such patches are just not
+acceptable for mainline - full stop.
+
+
+Please, the ideas are not bad and have been suggested in the context of -rt a
+number of times, its just the execution. Design features so that they are
+flexible and can be used in ways you never imagined them. But more
+importantly so that they don't knowingly break tons of stuff.
+
+
