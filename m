@@ -1,169 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936048AbYBVOYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936186AbYBVOZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936048AbYBVOYc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 09:24:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932722AbYBVOXj
+	id S936186AbYBVOZA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 09:25:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762952AbYBVOYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 09:23:39 -0500
-Received: from smtp-out02.alice-dsl.net ([88.44.60.12]:25369 "EHLO
-	smtp-out02.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765164AbYBVOXi (ORCPT
+	Fri, 22 Feb 2008 09:24:44 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:36838 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760228AbYBVOYm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 09:23:38 -0500
-From: Andi Kleen <ak@suse.de>
-References: <20080222323.714291012@suse.de>
-In-Reply-To: <20080222323.714291012@suse.de>
-To: starvik@axis.com, dev-extrax@axis.com, linux-kernel@vger.kernel.org,
-       akpm@osdl.org
-Subject: [PATCH] [2/3] Remove dma_declare_coherent_memory etc. from cris
-Message-Id: <20080222142329.D9DDC1B4178@basil.firstfloor.org>
-Date: Fri, 22 Feb 2008 15:23:29 +0100 (CET)
-X-OriginalArrivalTime: 22 Feb 2008 14:17:04.0774 (UTC) FILETIME=[997F8A60:01C8755D]
+	Fri, 22 Feb 2008 09:24:42 -0500
+Message-ID: <47BEDB3F.4090100@davidnewall.com>
+Date: Sat, 23 Feb 2008 00:55:03 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+MIME-Version: 1.0
+To: Bart Van Assche <bart.vanassche@gmail.com>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Adrian Bunk <bunk@kernel.org>,
+       Greg Kroah-Hartman <greg@kroah.com>, Roland Dreier <rdreier@cisco.com>,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Glenn Streiff <gstreiff@neteffect.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Faisal Latif <flatif@neteffect.com>
+Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>	 <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>	 <20080221154951.GA28328@cs181133002.pp.htv.fi>	 <adahcg2awag.fsf@cisco.com>	 <20080221210124.GD28328@cs181133002.pp.htv.fi>	 <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>	 <m3tzk1q3rt.fsf@maximus.localdomain>	 <47BE2985.6020305@davidnewall.com> <e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
+In-Reply-To: <e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Bart Van Assche wrote:
+> There is a reason to limit line length: scientific research has shown
+> that readability of regular texts is optimal for a line length between
+> 55 and 65 characters.
 
-The DMA implementation seems to be only there for a single PCI driver and the
-driver does not use these interfaces. So remove it.
+Putting aside the point that we're talking code, not regular text, I've
+heard that said before and I don't think it's quite like that.  Perhaps
+the numbers you said might assume various things such as the width of
+the eye's field of view, the distance to the image and the size of each
+character?
 
-I don't have cris cross compilers so uncompiled/untested.
 
-Cc: starvik@axis.com
-Cc: dev-extrax@axis.com
-Signed-off-by: Andi Kleen <ak@suse.de>
+>  My experience is that the readability of source
+> code decreases when the lines are very long (more than 160
+> characters).
 
-Index: linux/arch/cris/arch-v32/drivers/pci/dma.c
-===================================================================
---- linux.orig/arch/cris/arch-v32/drivers/pci/dma.c
-+++ linux/arch/cris/arch-v32/drivers/pci/dma.c
-@@ -27,24 +27,10 @@ void *dma_alloc_coherent(struct device *
- 			   dma_addr_t *dma_handle, gfp_t gfp)
- {
- 	void *ret;
--	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
- 	int order = get_order(size);
- 	/* ignore region specifiers */
- 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
- 
--	if (mem) {
--		int page = bitmap_find_free_region(mem->bitmap, mem->size,
--						     order);
--		if (page >= 0) {
--			*dma_handle = mem->device_base + (page << PAGE_SHIFT);
--			ret = mem->virt_base + (page << PAGE_SHIFT);
--			memset(ret, 0, size);
--			return ret;
--		}
--		if (mem->flags & DMA_MEMORY_EXCLUSIVE)
--			return NULL;
--	}
--
- 	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
- 		gfp |= GFP_DMA;
- 
-@@ -63,87 +49,6 @@ void dma_free_coherent(struct device *de
- 	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
- 	int order = get_order(size);
- 
--	if (mem && vaddr >= mem->virt_base && vaddr < (mem->virt_base + (mem->size << PAGE_SHIFT))) {
--		int page = (vaddr - mem->virt_base) >> PAGE_SHIFT;
--
--		bitmap_release_region(mem->bitmap, page, order);
--	} else
--		free_pages((unsigned long)vaddr, order);
--}
--
--int dma_declare_coherent_memory(struct device *dev, dma_addr_t bus_addr,
--				dma_addr_t device_addr, size_t size, int flags)
--{
--	void __iomem *mem_base;
--	int pages = size >> PAGE_SHIFT;
--	int bitmap_size = BITS_TO_LONGS(pages) * sizeof(long);
--
--	if ((flags & (DMA_MEMORY_MAP | DMA_MEMORY_IO)) == 0)
--		goto out;
--	if (!size)
--		goto out;
--	if (dev->dma_mem)
--		goto out;
--
--	/* FIXME: this routine just ignores DMA_MEMORY_INCLUDES_CHILDREN */
--
--	mem_base = ioremap(bus_addr, size);
--	if (!mem_base)
--		goto out;
--
--	dev->dma_mem = kzalloc(sizeof(struct dma_coherent_mem), GFP_KERNEL);
--	if (!dev->dma_mem)
--		goto iounmap_out;
--	dev->dma_mem->bitmap = kzalloc(bitmap_size, GFP_KERNEL);
--	if (!dev->dma_mem->bitmap)
--		goto free1_out;
--
--	dev->dma_mem->virt_base = mem_base;
--	dev->dma_mem->device_base = device_addr;
--	dev->dma_mem->size = pages;
--	dev->dma_mem->flags = flags;
--
--	if (flags & DMA_MEMORY_MAP)
--		return DMA_MEMORY_MAP;
--
--	return DMA_MEMORY_IO;
--
-- free1_out:
--	kfree(dev->dma_mem);
-- iounmap_out:
--	iounmap(mem_base);
-- out:
--	return 0;
-+	free_pages((unsigned long)vaddr, order);
- }
--EXPORT_SYMBOL(dma_declare_coherent_memory);
- 
--void dma_release_declared_memory(struct device *dev)
--{
--	struct dma_coherent_mem *mem = dev->dma_mem;
--
--	if(!mem)
--		return;
--	dev->dma_mem = NULL;
--	iounmap(mem->virt_base);
--	kfree(mem->bitmap);
--	kfree(mem);
--}
--EXPORT_SYMBOL(dma_release_declared_memory);
--
--void *dma_mark_declared_memory_occupied(struct device *dev,
--					dma_addr_t device_addr, size_t size)
--{
--	struct dma_coherent_mem *mem = dev->dma_mem;
--	int pages = (size + (device_addr & ~PAGE_MASK) + PAGE_SIZE - 1) >> PAGE_SHIFT;
--	int pos, err;
--
--	if (!mem)
--		return ERR_PTR(-EINVAL);
--
--	pos = (device_addr - mem->device_base) >> PAGE_SHIFT;
--	err = bitmap_allocate_region(mem->bitmap, pos, get_order(pages));
--	if (err != 0)
--		return ERR_PTR(err);
--	return mem->virt_base + (pos << PAGE_SHIFT);
--}
--EXPORT_SYMBOL(dma_mark_declared_memory_occupied);
-Index: linux/arch/cris/Kconfig
-===================================================================
---- linux.orig/arch/cris/Kconfig
-+++ linux/arch/cris/Kconfig
-@@ -47,11 +47,6 @@ config GENERIC_CALIBRATE_DELAY
- config NO_IOPORT
- 	def_bool y
- 
--config HAS_DMA_DECLARE_COHERENT
--	# looks weird, but it really depends on that
--	depends on ETRAX_CARDBUS
--	def_bool y
--
- config FORCE_MAX_ZONEORDER
- 	int
- 	default 6
+The point is that the width, excluding leading and trailing white space,
+is what really matters.  Even deeply indented code can be a snap to
+understand if you don't have to fight artificial line breaks.  And we've
+got a much wider -- and taller! -- space available than we had in the
+old 80x24 (and 80x1) days.
