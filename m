@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935517AbYBVKCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbYBVKGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935517AbYBVKCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 05:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYBVKCi
+	id S933144AbYBVKGJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 05:06:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYBVKF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 05:02:38 -0500
-Received: from 1wt.eu ([62.212.114.60]:2076 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935174AbYBVKCh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 05:02:37 -0500
-Date: Fri, 22 Feb 2008 11:02:23 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Newall <davidn@davidnewall.com>
-Cc: Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.24.1
-Message-ID: <20080222100223.GA4711@1wt.eu>
-References: <479A83DE.8020002@davidnewall.com> <20080202074406.GA31516@1wt.eu> <47A46BF8.6030306@davidnewall.com> <47BDDD4E.1080000@davidnewall.com> <20080221203640.GA21764@kroah.com> <20080221210058.GA27541@1wt.eu> <20080221213345.GB24191@kroah.com> <47BE267E.3070508@davidnewall.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BE267E.3070508@davidnewall.com>
-User-Agent: Mutt/1.5.11
+	Fri, 22 Feb 2008 05:05:56 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:37486 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYBVKFz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 05:05:55 -0500
+Message-ID: <47BE9E41.9000100@zytor.com>
+Date: Fri, 22 Feb 2008 02:04:49 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and	running
+ in KVM
+References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com> <20080221203748.GA9031@elte.hu> <47BDFBDE.5040102@zytor.com> <20080222094513.GA6269@elte.hu> <47BE9CB7.5070609@zytor.com> <20080222100044.GA6807@elte.hu>
+In-Reply-To: <20080222100044.GA6807@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 12:03:50PM +1030, David Newall wrote:
-> Greg KH wrote:
-> > On Thu, Feb 21, 2008 at 10:00:58PM +0100, Willy Tarreau wrote:
-> >   
-> >> I too agree to merge, it especially since it fixed several problems
-> >> for David. However, I would like to know first if the same problems
-> >> also happen with the 2.6 driver or if it is OK. The risk is getting
-> >> 2.4 fixed and not 2.6, which could cause regressions for people upgrading
-> >> from 2.4 to 2.6. Of course, a regression on a USB-serial adapter is
-> >> not dramatic, but it's a general principle to keep in mind that 2.6
-> >> should be safe (or at least actively being fixed) when merging driver
-> >> changes in 2.4.
-> >>     
-> >
-> > As far as I can tell, this was a backport of the current 2.6 driver, so
-> > it should not have fixes that are not already in 2.6.
-> >
-> > David, is that true?
-> >   
+Ingo Molnar wrote:
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> That is true.
+>> Ingo Molnar wrote:
+>>> * H. Peter Anvin <hpa@zytor.com> wrote:
+>>>
+>>>>> I'm not sure how we could detect pure Qemu instances - perhaps it should 
+>>>>> define some special MSR or something?
+>>>> Perhaps they should fix the Qemu BIOS to actually simulate working MSRs; 
+>>>> if nothing else, they should set up the default MTRR to be cachable.
+>>> btw., should KVM do the same?
+>> Yes.  Especially since they share a BIOS.
+> 
+> ok. Then i guess we should just leave the warning and the backtrace in 
+> place until they get a fix done?
+> 
 
-OK that's perfect. I will merge it.
+That would be my opinion.
 
-Cheers,
-Willy
+Last I checked, they didn't even clear the cache disable bits in %cr0.
 
+	-hpa
