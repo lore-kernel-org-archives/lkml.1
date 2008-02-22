@@ -1,257 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754491AbYBVOcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbYBVOdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754491AbYBVOcX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 09:32:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbYBVOcQ
+	id S1755828AbYBVOdh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 09:33:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752804AbYBVOdZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 09:32:16 -0500
-Received: from borg.uu3.net ([87.99.63.19]:1168 "EHLO borg.uu3.net"
+	Fri, 22 Feb 2008 09:33:25 -0500
+Received: from zeratul.whoi.edu ([128.128.76.62]:44413 "EHLO mx1.whoi.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752023AbYBVOcO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 09:32:14 -0500
-X-Greylist: delayed 1419 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Feb 2008 09:32:13 EST
-Date: Fri, 22 Feb 2008 15:08:30 +0100 (CET)
-From: Unknown <borg@uu3.net>
-X-X-Sender: borg@cube
-To: linux-kernel@vger.kernel.org
-Subject: PROBLEM: 2.4.36.1 hangs.
-Message-ID: <Pine.LNX.4.64.0802221452350.5082@cube>
+	id S1751750AbYBVOdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 09:33:24 -0500
+Message-ID: <47BED734.5030002@whoi.edu>
+Date: Fri, 22 Feb 2008 09:07:48 -0500
+From: Ned Forrester <nforrester@whoi.edu>
+Organization: Woods Hole Oceanographic Institution
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: David Brownell <david-b@pacbell.net>
+Cc: marc.pignat@hevs.ch, anemo@mba.ocn.ne.jp,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	transfer
+References: <20080221.005432.07645461.anemo@mba.ocn.ne.jp>	<200802201855.02605.marc.pignat@hevs.ch>	<20080221.105233.41199605.nemoto@toshiba-tops.co.jp>	<200802211026.17816.marc.pignat@hevs.ch> <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) 2.4.36.1 hangs (probably during ext2_readdir())
+David Brownell wrote:
+>> David, do you think writing 0 bytes is a valid use of this API?
+>
+> Just a zero byte transfer ... no, though it depends what you mean
+> by "valid".  (I'm not sure I'd expect all controller drivers to
+> reject such requests.)  That has no effect on bits-on-the-wire,
+> and would make trouble for various DMA engines.
 
-2) 2.4.36.1 hangs during compilation of lighttpd-1.4.18.
-    It is probably during ext2_readdir() but I cannot confirm that..
-    Currently it only happens during compilation of lighttpd-1.4.18, always
-    in the same place.
-    Kernel 2.4.36 w/ same options (make oldconfig) works fine.
+FWIW, the pxa2xx_spi driver does not, near as I can tell, reject zero
+length transfers, it will go through the motions, the same as for any
+other transfer.
 
-Last few lines of 'strace -f make' just before hang:
-[pid 12817] open(".", O_RDONLY|O_NONBLOCK|O_LARGEFILE|O_DIRECTORY) = 3
-[pid 12817] fstat64(3, {st_mode=S_IFDIR|0777, st_size=8192, ...}) = 0
-[pid 12817] fcntl64(3, F_SETFD, FD_CLOEXEC) = 0
-[pid 12817] getdents64(3, /* 114 entries */, 4096) = 4088
-[pid 12817] getdents64(3, /* 63 entries */, 4096) = 2424
-[pid 12817] getdents64(3,
+However, if the transfer is by DMA, note that the PXA255 and PXA270
+Developer's Manuals have the following language regarding DMA lengths:
 
-3) ext2fs
+	"LEN = 0 means zero bytes for descriptor-fetch transactions.
+	LEN = 0 is an invalid setting for no-descriptor-fetch
+	transactions. Programming LEN = 0 in the descriptor-fetch mode
+	when DCMD[CmpEn] is clear (normal data transfer mode) causes
+	the channel to immediately discard the descriptor after it is
+	fetched from memory. If the descriptor chain has more
+	descriptors, the channel fetches the next valid descriptor.
+	The channel stops if the descriptor chain has no more
+	descriptors."
 
-4) None.
+Because the pxa2xx_spi driver does not currently use DMA descriptors,
+zero length DMAs are invalid.  I don't know what the DMA controller will
+do if given a zero length.  If it were using using descriptors (as in my
+development code, useful only when chaining transfers that don't need
+any SSP parameters or chip selects changed, nor any time delays), then a
+zero length transfer would only introduce the insignificant delay of
+fetching one 4-word descriptor.
 
-5) None. Kernel just hangs.
+If, on the other hand, DMA is not used, it looks like the zero length
+case is handled gracefully.  The chip select and other SSP registers are
+set, but no bytes are transferred.  It does not look like any particular
+delay would be involved in this, as all transfers within a message are
+handled in interrupt context with an ISR and tasklet.  There is not much
+code being executed to limit the minimum delay, and the maximum would
+depend on interrupt/tasklet latency.
 
-6)
-cd /home/root/src/lighttpd-1.4.18
-N=lighttpd
-AP="/usr/local/$N"
-EP="/usr/local"
-ETC="/etc/$N"
-./configure --prefix=$AP --bindir=$EP/bin --sbindir=$EP/sbin \
---libexecdir=$EP/libexec --mandir=$EP/man --sysconfdir=$ETC --disable-ipv6
-make
+> Passing zero bytes to get an inline delay at an exact spot in the
+> overall protocol message ... I don't see why not.  Better than
+> adding delay fields for every spot it might be needed by various
+> oddball devices, for sure!!
 
-7.1) Slackware-11.0
-Linux darkstar 2.4.36.1 #2 Fri Feb 22 14:13:50 CET 2008 i686 pentium3 i386 
-GNU/Linux
+I agree with Marc: any such delay will be undefined, in the general
+case.  It might work for a specific driver implementation.
 
-Gnu C                  3.4.6
-Gnu make               3.81
-binutils               2.15.92.0.2
-util-linux             2.12r
-mount                  2.12r
-modutils               2.4.27
-e2fsprogs              1.38
-Linux C Library        2.3.6
-Dynamic linker (ldd)   2.3.6
-Procps                 3.2.7
-Net-tools              1.60
-Kbd                    74:
-Sh-utils               5.97
-Modules Loaded
+-- 
+Ned Forrester                                       nforrester@whoi.edu
+Oceanographic Systems Lab                                  508-289-2226
+Applied Ocean Physics and Engineering Dept.
+Woods Hole Oceanographic Institution          Woods Hole, MA 02543, USA
+http://www.whoi.edu/sbl/liteSite.do?litesiteid=7212
+http://www.whoi.edu/hpb/Site.do?id=1532
+http://www.whoi.edu/page.do?pid=10079
 
-7.2)
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 8
-model name      : Pentium III (Coppermine)
-stepping        : 10
-cpu MHz         : 930.329
-cache size      : 256 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 2
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov 
-pat pse36 mmx fxsr sse
-bogomips        : 1854.66
-
-7.3) None
-7.4)
-# cat /proc/ioports:
-0000-001f : dma1
-0020-003f : pic1
-0040-0043 : timer0
-0050-0053 : timer1
-0060-006f : keyboard
-0080-008f : dma page reg
-00a0-00bf : pic2
-00c0-00df : dma2
-00f0-00ff : fpu
-01f0-01f7 : ide0
-03c0-03df : vga+
-03f6-03f6 : ide0
-03f8-03ff : serial(auto)
-0cf8-0cff : PCI conf1
-1000-100f : Intel Corp. 82801AA IDE
-   1000-1007 : ide0
-   1008-100f : ide1
-1400-141f : Intel Corp. 82801AA USB
-1800-180f : Intel Corp. 82801AA SMBus
-2400-243f : Intel Corp. 82557/8/9 [Ethernet Pro 100]
-   2400-243f : eepro100
-f000-f07f : motherboard
-   f000-f003 : PM1a_EVT_BLK
-   f004-f005 : PM1a_CNT_BLK
-   f008-f00b : PM_TMR
-   f028-f02b : GPE0_BLK
-   f02c-f02f : GPE1_BLK
-f100-f10f : motherboard
-f180-f1bf : motherboard
-f800-f81f : motherboard
-f820-f82f : motherboard
-fe00-fe00 : motherboard
-
-# cat /proc/iomem
-00000000-0009ebff : System RAM
-0009ec00-0009ffff : reserved
-000a0000-000bffff : Video RAM area
-000c0000-000c7fff : Video ROM
-000c8000-000c97ff : Extension ROM
-000f0000-000fffff : System ROM
-00100000-1feeffff : System RAM
-   00100000-0027773b : Kernel code
-   0027773c-002c52e3 : Kernel data
-1fef0000-1fefefff : ACPI Tables
-1feff000-1fefffff : ACPI Non-volatile Storage
-1ff00000-1fffffff : reserved
-f4000000-f407ffff : Intel Corp. 82810E DC-133 CGC [Chipset Graphics 
-Controller]
-f4100000-f411ffff : Intel Corp. 82557/8/9 [Ethernet Pro 100]
-f4120000-f4120fff : Intel Corp. 82557/8/9 [Ethernet Pro 100]
-   f4120000-f4120fff : eepro100
-f8000000-fbffffff : Intel Corp. 82810E DC-133 CGC [Chipset Graphics 
-Controller]
-ffb80000-ffbfffff : reserved
-fff00000-ffffffff : reserved
-
-7.5)
-# lspci
-00:00.0 Host bridge: Intel Corporation 82810E DC-133 GMCH [Graphics Memory 
-Controller Hub] (rev 03)
-         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort+ >SERR- <PERR-
-         Latency: 0
-
-00:01.0 VGA compatible controller: Intel Corporation 82810E DC-133 CGC 
-[Chipset Graphics Controller] (rev 03) (prog-if 00 [VGA])
-         Subsystem: Siemens Nixdorf AG Unknown device 004a
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR- FastB2B-
-         Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 0
-         Interrupt: pin A routed to IRQ 11
-         Region 0: Memory at f8000000 (32-bit, prefetchable) [size=64M]
-         Region 1: Memory at f4000000 (32-bit, non-prefetchable) 
-[size=512K]
-         Capabilities: [dc] Power Management version 1
-                 Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA 
-PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-
-00:1e.0 PCI bridge: Intel Corporation 82801AA PCI Bridge (rev 02) (prog-if 
-00 [Normal decode])
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 0
-         Bus: primary=00, secondary=01, subordinate=01, sec-latency=64
-         I/O behind bridge: 00002000-00002fff
-         Memory behind bridge: f4100000-f41fffff
-         Prefetchable memory behind bridge: fff00000-000fffff
-         Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort+ <SERR- <PERR-
-         BridgeCtl: Parity- SERR+ NoISA+ VGA- MAbort- >Reset- FastB2B-
-
-00:1f.0 ISA bridge: Intel Corporation 82801AA ISA Bridge (LPC) (rev 02)
-         Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- 
-ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 0
-
-00:1f.1 IDE interface: Intel Corporation 82801AA IDE (rev 02) (prog-if 80 
-[Master])
-         Subsystem: Intel Corporation 82801AA IDE
-         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR- FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 0
-         Region 4: I/O ports at 1000 [size=16]
-
-00:1f.2 USB Controller: Intel Corporation 82801AA USB (rev 02) (prog-if 00 
-[UHCI])
-         Subsystem: Intel Corporation 82801AA USB
-         Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR- FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 0
-         Interrupt: pin D routed to IRQ 9
-         Region 4: I/O ports at 1400 [size=32]
-
-00:1f.3 SMBus: Intel Corporation 82801AA SMBus (rev 02)
-         Subsystem: Intel Corporation 82801AA SMBus
-         Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- 
-ParErr- Stepping- SERR- FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Interrupt: pin B routed to IRQ 5
-         Region 4: I/O ports at 1800 [size=16]
-
-01:08.0 Ethernet controller: Intel Corporation 82557/8/9 [Ethernet Pro 
-100] (rev 09)
-         Subsystem: Siemens Nixdorf AG Unknown device 004b
-         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV+ VGASnoop- 
-ParErr- Stepping- SERR+ FastB2B-
-         Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- 
-<TAbort- <MAbort- >SERR- <PERR-
-         Latency: 66 (2000ns min, 14000ns max), Cache Line Size: 32 bytes
-         Interrupt: pin A routed to IRQ 9
-         Region 0: Memory at f4120000 (32-bit, non-prefetchable) [size=4K]
-         Region 1: I/O ports at 2400 [size=64]
-         Region 2: Memory at f4100000 (32-bit, non-prefetchable) 
-[size=128K]
-         Expansion ROM at <unassigned> [disabled] [size=1M]
-         Capabilities: [dc] Power Management version 2
-                 Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA 
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                 Status: D0 PME-Enable- DSel=0 DScale=2 PME-
-
-7.6) None
-
-7.7) Box has been tested via memtest86+
-      15 hrs of test running, no errors
