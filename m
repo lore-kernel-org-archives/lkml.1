@@ -1,50 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbYBVFla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbYBVFyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbYBVFla (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 00:41:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751321AbYBVFlU
+	id S1757694AbYBVFyc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 00:54:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751767AbYBVFyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 00:41:20 -0500
-Received: from mx1.suse.de ([195.135.220.2]:49858 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbYBVFlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 00:41:18 -0500
-Message-ID: <47BE606C.104@suse.de>
-Date: Fri, 22 Feb 2008 06:41:00 +0100
-From: Frank Seidel <fseidel@suse.de>
-Organization: SUSE LINUX Products GmbH
-User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
+	Fri, 22 Feb 2008 00:54:23 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:40411 "EHLO
+	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751439AbYBVFyW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 00:54:22 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
+X-WSS-ID: 0JWMLJ8-01-JHM-01
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Andy Whitcroft <apw@shadowen.org>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: first tree
-References: <20080215003537.8911ce35.sfr@canb.auug.org.au>	<20080214160231.GC10713@shadowen.org>	<20080221012332.dc1948ac.sfr@canb.auug.org.au>	<20080220084747.77553451.randy.dunlap@oracle.com>	<47BE1225.7030808@suse.de> <20080222112828.70757880.sfr@canb.auug.org.au>
-In-Reply-To: <20080222112828.70757880.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 03/10] PCI: AMD SATA IDE mode quirk
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 22 Feb 2008 13:49:20 +0800
+Message-ID: <206C6845C72CAE439DC3D9D413C571A49662F8@ssuzexmb3.amd.com>
+In-Reply-To: <20080222041733.GD16995@parisc-linux.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 03/10] PCI: AMD SATA IDE mode quirk
+Thread-Index: Ach1CeJor2nClCJpTZ63edokLvDMNQACWUVQ
+References: <20080221234644.GA7128@kroah.com> <1203637660-7247-3-git-send-email-gregkh@suse.de> <20080222041733.GD16995@parisc-linux.org>
+From: "Cai, Crane" <Crane.Cai@amd.com>
+To: "Matthew Wilcox" <matthew@wil.cx>, "Greg Kroah-Hartman" <gregkh@suse.de>
+Cc: <linux-pci@atrey.karlin.mff.cuni.cz>, <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@osdl.org>, "Andrew Morton" <akpm@osdl.org>
+X-OriginalArrivalTime: 22 Feb 2008 05:49:21.0167 (UTC) FILETIME=[ABC601F0:01C87516]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Stephen,
-
-Stephen Rothwell wrote:
-> On Fri, 22 Feb 2008 01:07:01 +0100 Frank Seidel <fseidel@suse.de> wrote:
->> Hi, i'll provide tars of the current linux-next tree reachable
->> via my http://linux-next.f-seidel.de wiki ("Tar Downloads").
->> Is that what you were looking for?
+> On Thu, Feb 21, 2008 at 03:47:33PM -0800, Greg Kroah-Hartman wrote:
+> > +static void __devinit quirk_amd_ide_mode(struct pci_dev *pdev)
+> >  {
+> > -	/* set sb600 sata to ahci mode */
+> > -	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE) {
+> > -		u8 tmp;
+> > +	/* set sb600/sb700/sb800 sata to ahci mode */
+> > +	u8 tmp;
+> >  
+> > +	pci_read_config_byte(pdev, PCI_CLASS_DEVICE, &tmp);
+> > +	if (tmp == 0x01) {
+> >  		pci_read_config_byte(pdev, 0x40, &tmp);
 > 
-> I was going to start providing tarballs yesterday, but other things
-> happened :-( I will provide a next-YYYYMMDD.tar.gz file on kernel.org
-> starting today.  I will mention it in today's announcement.
+> This seems like a dis-improvement.  Why are we reading a 
+> config byte for something we already have in the pci_dev?  
+> Why are we now checking against 0x01 instead of a symbolic 
+> constant?  Why are we no longer checking that this is 
+> PCI_BASE_CLASS_STORAGE?
+It is a quirk. In pci_ids.h did have PCI_CLASS_STORAGE_IDE 
+and PCI_BASE_CLASS_STORAGE, these can not represent 
+the right situation we want to check. 0x01 represents 
+PCI_CLASS_STORAGE_IDE last 2 bit. Also because it 
+is a quirk, I do not think we need to change pci_ids.h. So 0x01 
+used. 
+> > -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 
+> > PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_sb600_sata); 
+> > -DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 
+> > PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_sb600_sata);
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 
+> > +PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode); 
+> > +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI, 
+> > +PCI_DEVICE_ID_ATI_IXP600_SATA, quirk_amd_ide_mode); 
+> > +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_ATI, 
+> > +PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode); 
+> > +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_ATI, 
+> > +PCI_DEVICE_ID_ATI_IXP700_SATA, quirk_amd_ide_mode);
+> 
+> Nothing in the changelog entry suggests why we now need 
+> FIXUP_RESUME entries when we didn't before.
+> 
+PCI configuration space will be changed by BIOS and then in pci
+init and restore. So resume also needed.
+> --
+> Intel are signing my paycheques ... these opinions are still 
+> mine "Bill, look, we understand that you're interested in 
+> selling us this operating system, but compare it to ours.  We 
+> can't possibly take such a retrograde step."
+> 
+> 
 
-sorry, i didn't knew/considered you could have something prepared for this
-as well, as i couldn't see any feedback from you to this request for quite
-some time.
-So, i just thought i could try to take care of this point. But of course
-its much more handy when you just do it together when releasing a new
-linux-next.
-
-Thanks,
-Frank
