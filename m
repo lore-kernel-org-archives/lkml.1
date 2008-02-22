@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935566AbYBVAgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbYBVAky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935566AbYBVAgo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:36:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbYBVAge
+	id S933618AbYBVAky (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:40:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYBVAkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:36:34 -0500
-Received: from c60.cesmail.net ([216.154.195.49]:41303 "EHLO c60.cesmail.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759237AbYBVAgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:36:33 -0500
-From: Pavel Roskin <proski@gnu.org>
-Subject: [PATCH] kbuild: CONFIG_CC_OPTIMIZE_FOR_SIZE should not be default
-To: linux-kernel@vger.kernel.org
-Date: Thu, 21 Feb 2008 19:36:31 -0500
-Message-ID: <20080222003631.14308.32203.stgit@dv.roinet.com>
-User-Agent: StGIT/0.14.1
+	Thu, 21 Feb 2008 19:40:40 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:58284 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752244AbYBVAkj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:40:39 -0500
+X-Sasl-enc: nnk910wnerehOtm/umqcjgiCbdrIslp3je4yke0DXqIF 1203640838
+Message-ID: <47BE1A03.30300@imap.cc>
+Date: Fri, 22 Feb 2008 01:40:35 +0100
+From: Tilman Schmidt <tilman@imap.cc>
+Organization: me - organized??
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+To: Patrick McHardy <kaber@trash.net>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
+Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc> <47BD6072.4000407@trash.net>
+In-Reply-To: <47BD6072.4000407@trash.net>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigEF1905353D0DD7FA78FC6775"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's an experimental option and it's not generally recommended
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigEF1905353D0DD7FA78FC6775
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Pavel Roskin <proski@gnu.org>
----
+Am 21.02.2008 12:28 schrieb Patrick McHardy:
+>=20
+> Could you test whether this patch fixes the netfilter
+> warnings please?
 
- init/Kconfig |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+> commit 736b33102292be0d75be1e950ca9bcd5361db7dd
+> Author: Patrick McHardy <kaber@trash.net>
+> Date:   Thu Feb 21 12:26:01 2008 +0100
+>=20
+>     [NETFILTER]: nf_conntrack: fix smp_processor_id() in preemptible co=
+de warning
 
-diff --git a/init/Kconfig b/init/Kconfig
-index dcef8b5..a998a13 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -477,7 +477,6 @@ endif
- 
- config CC_OPTIMIZE_FOR_SIZE
- 	bool "Optimize for size (Look out for broken compilers!)"
--	default y
- 	depends on ARM || H8300 || SUPERH || EXPERIMENTAL
- 	help
- 	  Enabling this option will pass "-Os" instead of "-O2" to gcc
+Yes, it does; and the system also survives substantially longer.
+(IOW, it hasn't crashed on me so far.)
+
+Thanks,
+T.
+
+--=20
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigEF1905353D0DD7FA78FC6775
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3rc1 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFHvhoDMdB4Whm86/kRAn4aAJ0RoN1yil24MkFPeoYSoYWM2U8PLQCeLPkR
+qLhSqyWd2ariH9j+tacr9jE=
+=vSmV
+-----END PGP SIGNATURE-----
+
+--------------enigEF1905353D0DD7FA78FC6775--
