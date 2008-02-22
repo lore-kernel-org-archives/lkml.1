@@ -1,71 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932144AbYBVBti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935930AbYBVBuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932144AbYBVBti (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 20:49:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbYBVBtY
+	id S935930AbYBVBuO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 20:50:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760697AbYBVBtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 20:49:24 -0500
-Received: from mga03.intel.com ([143.182.124.21]:42858 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751091AbYBVBtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 20:49:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,388,1199692800"; 
-   d="scan'208";a="382128671"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off aftersuspend-to-disk. Screen becomes green.
-Date: Thu, 21 Feb 2008 17:35:38 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211702.02306.jesse.barnes@intel.com> <alpine.LFD.1.00.0802211723510.19896@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.1.00.0802211723510.19896@woody.linux-foundation.org>
+	Thu, 21 Feb 2008 20:49:53 -0500
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:40785 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932905AbYBVBtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 20:49:51 -0500
+Message-ID: <47BE2A2C.9090603@ak.jp.nec.com>
+Date: Fri, 22 Feb 2008 10:49:32 +0900
+From: Kohei KaiGai <kaigai@ak.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: greg@kroah.com, morgan@kernel.org, serue@us.ibm.com
+CC: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 3/3] exporting capability name/code pairs (final)
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802211735.38769.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 21, 2008 5:28 pm Linus Torvalds wrote:
-> On Thu, 21 Feb 2008, Jesse Barnes wrote:
-> > So the advantage of the kernel suspend/resume hooks for the DRM layer is
-> > that the kernel video drivers can do full state save/restore (which X
-> > usually doesn't do, and isn't really designed to do), so that if your
-> > platform *doesn't* do it all, you'll still end up with a usable machine
-> > in the end.
->
-> Well, I'm also hoping that eventually we could even just not do the VT
-> switch at all, and the kernel can treat X as "just another user process"
-> that it freezes.
+[3/3] A new example to use kobject/kobj_attribute
 
-Hell yes.
+The attached patch can provide a new exmple to use kobject and attribute.
+The _show() and _store() method can refer/store the private data field of
+kobj_attribute structure to know what entries are accessed by users.
+It will make easier to share a single _show()/_store() method with several
+entries.
 
-> At least from a mode setting standpoint.
->
-> We'd still want to make sure that X repaints the screen if the contents
-> were lost, of course. And this is going to depend very intimately on the
-> type of graphics card and whether the video RAM is saved by STR or not -
-> for the Intel integrated graphics kind of situation, the video RAM will be
-> refreshed along with all the other memory, but for other cards we may end
-> up having to do the VT switch not so much for modesetting reasons as just
-> a way to get X to save and restore all the *other* state.
+KaiGai Kohei <kaigai@ak.jp.nec.com>
+--
+ samples/kobject/kobject-example.c |   32 ++++++++++++++++++++++++++++++++
+ 1 files changed, 32 insertions(+), 0 deletions(-)
 
-Drivers supporting kernel modesetting will have to stuff their VRAM somewhere, 
-yeah.  Hopefully X won't have much to do with it though...
+diff --git a/samples/kobject/kobject-example.c b/samples/kobject/kobject-example.c
+index 08d0d3f..f99d734 100644
+--- a/samples/kobject/kobject-example.c
++++ b/samples/kobject/kobject-example.c
+@@ -77,6 +77,35 @@ static struct kobj_attribute baz_attribute =
+ static struct kobj_attribute bar_attribute =
+ 	__ATTR(bar, 0666, b_show, b_store);
 
-> How close is the i915 driver from not having to even signal X? Or is that
-> just a pipedream of mine?
++/*
++ * You can store a private data within 'data' field of kobj_attribute.
++ * It enables to share a single _show() or _store() method with several
++ * entries.
++ */
++static ssize_t integer_show(struct kobject *kobj,
++			    struct kobj_attribute *attr,
++			    char *buf)
++{
++	return scnprintf(buf, PAGE_SIZE, "%d\n", (int) attr->data);
++}
++
++static ssize_t integer_store(struct kobject *kobj,
++			     struct kobj_attribute *attr,
++			     const char *buf, size_t count)
++{
++	int code;
++
++	sscanf(buf, "%du", &code);
++	attr->data = (void *) code;
++	return count;
++}
++
++static struct kobj_attribute hoge_attribute =
++	__ATTR_DATA(hoge, 0666, integer_show, integer_store, 123);
++static struct kobj_attribute piyo_attribute =
++	__ATTR_DATA(piyo, 0666, integer_show, integer_store, 456);
++static struct kobj_attribute fuga_attribute =
++	__ATTR_DATA(fuga, 0444, integer_show, NULL, 789);
 
-It's there in the modesetting tree (though the requisite changes to avoid VT 
-notification aren't done, it should all work fine).
+ /*
+  * Create a group of attributes so that we can create and destory them all
+@@ -86,6 +115,9 @@ static struct attribute *attrs[] = {
+ 	&foo_attribute.attr,
+ 	&baz_attribute.attr,
+ 	&bar_attribute.attr,
++	&hoge_attribute.attr,
++	&piyo_attribute.attr,
++	&fuga_attribute.attr,
+ 	NULL,	/* need to NULL terminate the list of attributes */
+ };
 
-Jesse
+
+-- 
+OSS Platform Development Division, NEC
+KaiGai Kohei <kaigai@ak.jp.nec.com>
