@@ -1,67 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935204AbYBVOAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935549AbYBVOBH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935204AbYBVOAW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 09:00:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760599AbYBVOAK
+	id S935549AbYBVOBH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 09:01:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932190AbYBVOAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 09:00:10 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:47291 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756073AbYBVOAI (ORCPT
+	Fri, 22 Feb 2008 09:00:52 -0500
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:36410 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760599AbYBVOAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 09:00:08 -0500
-Subject: Re: [PATCH sched-devel 0/7] CPU isolation extensions
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: markh@compro.net
-Cc: Max Krasnyanskiy <maxk@qualcomm.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Paul Jackson <pj@sgi.com>
-In-Reply-To: <47BED03A.5070707@compro.net>
-References: <47BE35B7.2070104@qualcomm.com> <1203680600.6242.20.camel@lappy>
-	 <47BED03A.5070707@compro.net>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 14:59:46 +0100
-Message-Id: <1203688786.6242.27.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.21.90 
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Feb 2008 09:00:51 -0500
+From: Rodolfo Giometti <giometti@linux.it>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Rodolfo Giometti <giometti@linux.it>
+Date: Fri, 22 Feb 2008 15:03:29 +0100
+Message-Id: <12036890133944-git-send-email-giometti@linux.it>
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <12036890131940-git-send-email-giometti@linux.it>
+References: <12036890132090-git-send-email-giometti@linux.it>
+ <1203689013811-git-send-email-giometti@linux.it>
+ <12036890131940-git-send-email-giometti@linux.it>
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [PATCH] PPS: documentation programs and examples.
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Here some utilities and examples about the PPS API and the LinuxPPS
+support.
 
-On Fri, 2008-02-22 at 08:38 -0500, Mark Hounschell wrote:
+* ppstest.c implements an useful testing program, while
 
-> >> List of commits
-> >>    cpuisol: Make cpu isolation configrable and export isolated map
-> >  
-> > cpu_isolated_map was a bad hack when it was introduced, I feel we should
-> > deprecate it and fully integrate the functionality into cpusets. That would
-> > give a much more flexible end-result.
-> > 
-> > CPU-sets can already isolate cpus by either creating a cpu outside of any set,
-> > or a set with a single cpu not shared by any other sets.
-> > 
-> 
-> Peter, what about when I am NOT using cpusets and are disabled in my config but
-> I still want to use this?
+* ppsfind tries to help the user into finding a specific PPS source by
+  using its name or path.
 
-Then you enable it?
+Signed-off-by: Rodolfo Giometti <giometti@linux.it>
+---
+ Documentation/pps/Makefile  |   27 ++++++++
+ Documentation/pps/ppsfind   |   17 +++++
+ Documentation/pps/ppstest.c |  151 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 195 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/pps/Makefile
+ create mode 100644 Documentation/pps/ppsfind
+ create mode 100644 Documentation/pps/ppstest.c
 
-> >>    cpuisol: Do not schedule workqueues on the isolated CPUs
-> >  
-> > (per-cpu workqueues, the single ones are treated in the previous section)
-> > 
-> > I still strongly disagree with this approach. Workqueues are passive, they
-> > don't do anything unless work is provided to them. By blindly not starting them
-> > you handicap the system and services that rely on them.
-> > 
-> 
-> Have things changed since since my first bad encounter with Workqueues.
-> I am referring to this thread. 
-> 
-> http://kerneltrap.org/mailarchive/linux-kernel/2007/5/29/97039 
-
-Just means you get to fix those problems. By blindly not starting them
-you introduce others.
+diff --git a/Documentation/pps/Makefile b/Documentation/pps/Makefile
+new file mode 100644
+index 0000000..af4f9b4
+--- /dev/null
++++ b/Documentation/pps/Makefile
+@@ -0,0 +1,27 @@
++TARGETS = ppstest
++
++CFLAGS += -Wall -O2 -D_GNU_SOURCE
++CFLAGS += -I .
++CFLAGS += -ggdb
++
++# -- Actions section --
++
++.PHONY : all depend dep
++
++all : .depend $(TARGETS)
++
++.depend depend dep :
++	$(CC) $(CFLAGS) -M $(TARGETS:=.c) > .depend
++
++ifeq (.depend,$(wildcard .depend))
++include .depend
++endif
++
++
++# -- Clean section --
++
++.PHONY : clean
++
++clean :
++	rm -f *.o *~ core .depend
++	rm -f ${TARGETS}
+diff --git a/Documentation/pps/ppsfind b/Documentation/pps/ppsfind
+new file mode 100644
+index 0000000..93c0e17
+--- /dev/null
++++ b/Documentation/pps/ppsfind
+@@ -0,0 +1,17 @@
++#!/bin/sh
++
++SYS="/sys/class/pps/"
++
++if [ $# -lt 1 ] ; then
++	echo "usage: ppsfind <name>" >&2
++	exit 1
++fi
++
++for d in $(ls $SYS) ; do
++	if grep $1 $SYS/$d/name >& /dev/null || \
++	   grep $1 $SYS/$d/path >& /dev/null ; then
++		echo "$d: name=$(cat $SYS/$d/name) path=$(cat $SYS/$d/path)"
++	fi
++done
++
++exit 0
+diff --git a/Documentation/pps/ppstest.c b/Documentation/pps/ppstest.c
+new file mode 100644
+index 0000000..d125ffa
+--- /dev/null
++++ b/Documentation/pps/ppstest.c
+@@ -0,0 +1,151 @@
++#include <stdio.h>
++#include <stdlib.h>
++#include <unistd.h>
++#include <errno.h>
++#include <string.h>
++#include <sys/types.h>
++#include <sys/stat.h>
++#include <fcntl.h>
++
++#include <timepps.h>
++
++int find_source(char *path, pps_handle_t *handle, int *avail_mode)
++{
++	pps_params_t params;
++	int ret;
++
++	printf("trying PPS source \"%s\"\n", path);
++
++	/* Try to find the source by using the supplied "path" name */
++	ret = open(path, O_RDWR);
++	if (ret < 0) {
++		fprintf(stderr, "unable to open device \"%s\" (%m)\n", path);
++		return ret;
++	}
++
++	/* Open the PPS source (and check the file descriptor) */
++	ret = time_pps_create(ret, handle);
++	if (ret < 0) {
++		fprintf(stderr, "cannot create a PPS source from device "
++				"\"%s\" (%m)\n", path);
++		return -1;
++	}
++	printf("found PPS source \"%s\"\n", path);
++
++	/* Find out what features are supported */
++	ret = time_pps_getcap(*handle, avail_mode);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get capabilities (%m)\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_CAPTUREASSERT) == 0) {
++		fprintf(stderr, "cannot CAPTUREASSERT\n");
++		return -1;
++	}
++	if ((*avail_mode & PPS_OFFSETASSERT) == 0) {
++		fprintf(stderr, "cannot OFFSETASSERT\n");
++		return -1;
++	}
++
++	/* Capture assert timestamps, and compensate for a 675 nsec
++	 * propagation delay */
++	ret = time_pps_getparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot get parameters (%m)\n");
++		return -1;
++	}
++	params.assert_offset.tv_sec = 0;
++	params.assert_offset.tv_nsec = 675;
++	params.mode |= PPS_CAPTUREASSERT | PPS_OFFSETASSERT;
++	ret = time_pps_setparams(*handle, &params);
++	if (ret < 0) {
++		fprintf(stderr, "cannot set parameters (%m)\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++int fetch_source(int i, pps_handle_t *handle, int *avail_mode)
++{
++	struct timespec timeout;
++	pps_info_t infobuf;
++	int ret;
++
++	/* create a zero-valued timeout */
++	timeout.tv_sec = 3;
++	timeout.tv_nsec = 0;
++
++retry:
++	if (*avail_mode & PPS_CANWAIT) /* waits for the next event */
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	else {
++		sleep(1);
++		ret = time_pps_fetch(*handle, PPS_TSFMT_TSPEC, &infobuf,
++				   &timeout);
++	}
++	if (ret < 0) {
++		if (ret == -EINTR) {
++			fprintf(stderr, "time_pps_fetch() got a signal!\n");
++			goto retry;
++		}
++
++		fprintf(stderr, "time_pps_fetch() error %d (%m)\n", ret);
++		return -1;
++	}
++
++	printf("source %d - "
++	       "assert %ld.%09ld, sequence: %ld - "
++	       "clear  %ld.%09ld, sequence: %ld\n",
++	       i,
++	       infobuf.assert_timestamp.tv_sec,
++	       infobuf.assert_timestamp.tv_nsec,
++	       infobuf.assert_sequence,
++	       infobuf.clear_timestamp.tv_sec,
++	       infobuf.clear_timestamp.tv_nsec, infobuf.clear_sequence);
++
++	return 0;
++}
++
++void usage(char *name)
++{
++	fprintf(stderr, "usage: %s <ppsdev> [<ppsdev> ...]\n", name);
++	exit(EXIT_FAILURE);
++}
++
++int main(int argc, char *argv[])
++{
++	int num;
++	pps_handle_t handle[4];
++	int avail_mode[4];
++	int i = 0;
++	int ret;
++
++	/* Check the command line */
++	if (argc < 2)
++		usage(argv[0]);
++
++	for (i = 1; i < argc && i <= 4; i++) {
++		ret = find_source(argv[i], &handle[i - 1], &avail_mode[i - 1]);
++		if (ret < 0)
++			exit(EXIT_FAILURE);
++	}
++
++	num = i - 1;
++	printf("ok, found %d source(s), now start fetching data...\n", num);
++
++	/* loop, printing the most recent timestamp every second or so */
++	while (1) {
++		for (i = 0; i < num; i++) {
++			ret = fetch_source(i, &handle[i], &avail_mode[i]);
++			if (ret < 0 && errno != ETIMEDOUT)
++				exit(EXIT_FAILURE);
++		}
++	}
++
++	for (; i >= 0; i--)
++		time_pps_destroy(handle[i]);
++
++	return 0;
++}
+-- 
+1.5.2.5
 
