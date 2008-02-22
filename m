@@ -1,78 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933618AbYBVAky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935552AbYBVAmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933618AbYBVAky (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:40:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbYBVAkk
+	id S935552AbYBVAmc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYBVAmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:40:40 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:58284 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752244AbYBVAkj (ORCPT
+	Thu, 21 Feb 2008 19:42:21 -0500
+Received: from wr-out-0506.google.com ([64.233.184.231]:58383 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbYBVAmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:40:39 -0500
-X-Sasl-enc: nnk910wnerehOtm/umqcjgiCbdrIslp3je4yke0DXqIF 1203640838
-Message-ID: <47BE1A03.30300@imap.cc>
-Date: Fri, 22 Feb 2008 01:40:35 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Thu, 21 Feb 2008 19:42:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CHnEgP5ice9RYitZUBZpqaIAa3vBncGRZV2k6y9rs39vD0Zau12Zy1Jzmu8OFfe0zjGQlMg92ezgpwBimSdo9zBcoGqtmtNeV63V/Au1/kw+roxakkClkSzKiud7QX09Suhg95AaWQsPYLTVl+yX6RL+knochAwnA5NLBRQ+t68=
+Message-ID: <b6a2187b0802211642i17730ccav6744b614c086df72@mail.gmail.com>
+Date: Fri, 22 Feb 2008 08:42:15 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off aftersuspend-to-disk. Screen becomes green.
+Cc: "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Dave Airlie" <airlied@linux.ie>, "Greg KH" <gregkh@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <200802211623.55450.jesse.barnes@intel.com>
 MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc> <47BD6072.4000407@trash.net>
-In-Reply-To: <47BD6072.4000407@trash.net>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigEF1905353D0DD7FA78FC6775"
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802211302.27002.jesse.barnes@intel.com>
+	 <b6a2187b0802211620q47f6601fuf7e88395d89b90c8@mail.gmail.com>
+	 <200802211623.55450.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigEF1905353D0DD7FA78FC6775
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 22, 2008 at 8:23 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
 
-Am 21.02.2008 12:28 schrieb Patrick McHardy:
->=20
-> Could you test whether this patch fixes the netfilter
-> warnings please?
+>  Your system (either your distro suspend/resume scripts or your platform) must
+>  be running the video BIOS at resume time, otherwise it would probably come
+>  back blank.
 
-> commit 736b33102292be0d75be1e950ca9bcd5361db7dd
-> Author: Patrick McHardy <kaber@trash.net>
-> Date:   Thu Feb 21 12:26:01 2008 +0100
->=20
->     [NETFILTER]: nf_conntrack: fix smp_processor_id() in preemptible co=
-de warning
+But I don't think so, unless acpid is doing just that. In my
+suspend/resume event script, it's just doing a simple s2ram (without
+options), and exit after resume.
 
-Yes, it does; and the system also survives substantially longer.
-(IOW, it hasn't crashed on me so far.)
-
-Thanks,
-T.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigEF1905353D0DD7FA78FC6775
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHvhoDMdB4Whm86/kRAn4aAJ0RoN1yil24MkFPeoYSoYWM2U8PLQCeLPkR
-qLhSqyWd2ariH9j+tacr9jE=
-=vSmV
------END PGP SIGNATURE-----
-
---------------enigEF1905353D0DD7FA78FC6775--
+Jeff.
