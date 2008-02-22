@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbYBVTG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765369AbYBVTGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764895AbYBVTG3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:06:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757049AbYBVTGR
+	id S1765369AbYBVTGu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:06:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758302AbYBVTGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:06:17 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:37535 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757451AbYBVTGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:06:18 -0500
+Received: from gw.goop.org ([64.81.55.164]:36225 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757019AbYBVTGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Feb 2008 14:06:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
-  b=bpNUYdWnIZRc2sdqqYcKmrkb54JP4prkY7Pldh2B84495SK8+lQe+mFF1YXvbJRUmLhIXZ+xO2n9CMuhPLkXcvlfyztBqLi69ClJYhs+wPRNPaCwm/Qy4x2J3hET+d39sRAmGlXJ0Hi1R+BPFNcO5spdedQSRchjidEq5PGmfVI=  ;
-X-YMail-OSG: .NsbU9AVM1lyGFT7lwYsYicU7plI1UwsB4DL1JkUQSB3_Y.U8V4YMmQDZkKw9euXYyFv.N8Ggg--
-X-Yahoo-Newman-Property: ymail-3
-Date: Fri, 22 Feb 2008 11:06:13 -0800
-From: David Brownell <david-b@pacbell.net>
-To: nforrester@whoi.edu, anemo@mba.ocn.ne.jp
-Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	
- transfer
-Cc: spi-devel-general@lists.sourceforge.net, marc.pignat@hevs.ch,
-       linux-kernel@vger.kernel.org
-References: <200802211026.17816.marc.pignat@hevs.ch>
- <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
- <200802221030.32263.marc.pignat@hevs.ch>
- <20080222.231510.56565462.anemo@mba.ocn.ne.jp>
- <47BEDBFB.5040305@whoi.edu>
-In-Reply-To: <47BEDBFB.5040305@whoi.edu>
+Message-ID: <47BF1C96.1060100@goop.org>
+Date: Fri, 22 Feb 2008 11:03:50 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xen: Implement getgeo for Xen virtual block device.
+References: <47BDE731.60801@goop.org> <alpine.LFD.1.00.0802211315190.19896@woody.linux-foundation.org> <47BDEA5E.4070800@goop.org> <alpine.LFD.1.00.0802211337220.19896@woody.linux-foundation.org> <p73lk5d89ra.fsf@bingen.suse.de> <alpine.LFD.1.00.0802220827520.19896@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.1.00.0802220827520.19896@woody.linux-foundation.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080222190613.0043B229B4D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > If the driver could not handle zero length transfer, then the driver
-> > should reject it (just like unsupported transfer mode).  Then the
-> > behavior will be 'assert chip select and wait some time' or 'rejected
-> > by the driver'.
->
-> This would be OK.  It would not be hard to fix pxa2xx_spi, for example,
-> to reject zero-length transfers in DMA mode, as long as it is acceptable
-> to reject the message in mid-message.
+Linus Torvalds wrote:
+> This isn't a problem with things like "Signed-off-by:" etc tags, because 
+> they have no automated meaning and don't really change the commit itself, 
+> but the "From:"/"Date:"/"Subject:" markers at the head of the message 
+> really do have real meaning, and get removed from the commit message and 
+> instead get put into the SCM headers.
+>   
 
-Such "illegal message" rejection is best done early; "fail-fast".
-Mid-message rejection isn't wrong, but it's a rude policy.
+It may be worth having a definitive and unambiguous Author: tag then, 
+which can appear among Signed-off-by:s and is used in preference to 
+anything else.  From: is a useful heuristic which seems to work well in 
+general, but as you say, it gets a bit hairy when you have something 
+which means different things to different parts of the software stack at 
+the same time.
 
-It'd be best to fix pxa2xx_spi to not start zero-length DMAs.
-
-
->	If it were necessary to scan a
-> whole message for zero-length transfers and refuse to queue an offending
-> message, then that adds burden to all messages.
-
-Sanity checking messages as they're submitted is easy; and it's
-also the natural point for setting up DMA mappings (and making
-those cachelines available for better use).
-
-- Dave
-
+    J
