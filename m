@@ -1,203 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbYBVQW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbYBVQXZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbYBVQW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbYBVQWt
+	id S1758310AbYBVQXZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:23:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759034AbYBVQXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:22:49 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56664 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756293AbYBVQWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:22:48 -0500
-Date: Fri, 22 Feb 2008 10:22:03 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Andrew G. Morgan" <morgan@kernel.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Security Modules List 
-	<linux-security-module@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>
-Subject: Re: [PATCH] capabilities: implement per-process securebits
-Message-ID: <20080222162203.GA4223@sergelap.austin.ibm.com>
-References: <47BA3E21.2020303@kernel.org> <20080220174252.GA16304@sergelap.austin.ibm.com> <47BE2C6F.9090504@kernel.org> <47BE6782.2020604@kernel.org>
-MIME-Version: 1.0
+	Fri, 22 Feb 2008 11:23:09 -0500
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:18383 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757887AbYBVQXH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:23:07 -0500
+X-IronPort-AV: E=Sophos;i="4.25,392,1199685600"; 
+   d="scan'208";a="550885675"
+Date: Fri, 22 Feb 2008 10:22:52 -0600
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: akpm@linux-foundation.org, hpa@zytor.com,
+       Tim Gardner <tim.gardner@canonical.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
+Message-ID: <20080222162252.GB32088@auslistsprd01.us.dell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47BE6782.2020604@kernel.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew G. Morgan (morgan@kernel.org):
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
->
-> Andrew G. Morgan wrote:
-> | Serge E. Hallyn wrote:
-> | |> It all looks good to me.
-> | |
-> | |> Since we've confirmed that wireshark uses capabilities it must be 
-> using
-> | |> prctl(PR_SET_KEEPCAPS), so running it might be a good way to verify
-> that
-> | |> your changes to that codepath (with
-> CONFIG_SECURITY_FILE_CAPABILITIES=n)
-> | |> are 100% correct, and might set minds at ease.  Is that something
-> you're
-> | |> set up to be able to do?
-> |
-> | I guess I need someone to offer an existence proof that this particular
-> | wireshark code ever worked? (ldd dumpcap|grep libcap). For reference,
-> | I'm looking at:
->
-> Doh! :*)
->
-> I had mistaken cap_init() for cap_get_proc() in the wireshark code...
->
-> I now see what wireshark is trying to do, and can *confirm* that with
-> the present patch I do maintain the legacy behavior. :-)
+Andrew, please add to -mm and forward during the the 2.6.27 merge window.
 
-Cool, thanks!
+Thanks,
+Matt
 
-> FWIW I've updated capsh in the libcap git tree to add a few more hooks
-> and with the following sequence can now verify that the keep-caps works
-> as before:
->
-> As root:
-> # rm -f tcapsh
-> # cp capsh tcapsh
-> # chown root.root tcapsh
-> # chmod u+s tcapsh
-> # ls -l tcapsh
-> # ./capsh --uid=500 -- -c "./tcapsh --keep=1 \
-> ~  --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 \
-> ~  --caps=\"cap_net_raw,cap_net_admin=pie\" --print"
-> # echo $?
-> 0
->
-> The wireshark problem, that you have been discussing (in the other
-> thread), can also be simulated as follows:
->
-> # ./capsh --uid=500 -- -c "./tcapsh --keep=1 \
-> ~  --caps=\"cap_net_raw,cap_net_admin=ip\" \
-> ~  --uid=500 --forkfor=10 --caps= --print \
-> ~  --killit=9 --print"
->
-> You might like to re-post your fix for that problem as a stand alone
-> patch; I suspect it may be lost in the noise at this point. (You might
-> also like to update the comment in that fix since the old comment looks
-> very stale if you delete the ->euid==0 check. I think it is safe to
-> simply say /* legacy signal behavior requires that a user can kill any
-> process running with their uid */)
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
 
-I did resend it on Wednesday and add the comment that
+>From 5c8fa0705c7f55ec5ae1b7da874029fe2000c595 Mon Sep 17 00:00:00 2001
+From: Tim Gardner <tim.gardner@canonical.com>
+Date: Fri, 22 Feb 2008 06:59:39 -0700
+Subject: [PATCH] add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
 
-'Without this patch wireshark is reported to fail.'
+UBUNTU: Implemented default EDD control
+OriginalAuthor: Tim Gardner <tim.gardner@canonical.com>
 
-I'll resend explicitly to Linus and add your comment change on monday
-if it's not upstream yet.  (Will be offline this weekend).
+Add a kernel parameter option to 'edd' to enable/disable BIOS Enhanced Disk Drive Services.
+CONFIG_EDD_OFF disables EDD while still compiling EDD into the kernel. Default
+behavior can be forced using 'edd=on' or 'edd=off' as  a kernel parameter.
 
-thanks,
--serge
+Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
+Signed-off-by: Matt Domsch <Matt_Domsch@dell.com>
+---
+ Documentation/kernel-parameters.txt |    3 +--
+ arch/x86/boot/edd.c                 |   10 +++++++++-
+ drivers/firmware/Kconfig            |    9 +++++++++
+ 3 files changed, 19 insertions(+), 3 deletions(-)
 
->
-> Cheers
->
-> Andrew
->
-> |
-> | wireshark-0.99.7/dumpcap.c:302
-> |
-> | void
-> | relinquish_privs_except_capture(void)
-> | {
-> | ~    /* CAP_NET_ADMIN: Promiscuous mode and a truckload of other
-> | ~     *                stuff we don't need (and shouldn't have).
-> | ~     * CAP_NET_RAW:   Packet capture (raw sockets).
-> | ~     */
-> | ~    cap_value_t cap_list[2] = { CAP_NET_ADMIN, CAP_NET_RAW };
-> | ~    cap_t caps = cap_init();
-> | ~    int cl_len = sizeof(cap_list) / sizeof(cap_value_t);
-> |
-> | ~    if (started_with_special_privs()) {
-> | ~        print_caps("Pre drop, pre set");
-> | ~        if (prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0) == -1) {
-> | ~            perror("prctl()");
-> | ~        }
-> |
-> | ~        cap_set_flag(caps, CAP_PERMITTED,   cl_len, cap_list, CAP_SET);
-> | ~        cap_set_flag(caps, CAP_INHERITABLE, cl_len, cap_list, CAP_SET);
-> |
-> | [ XXX:AGM since (caps.pE > caps.pP) this next line should fail ]
-> | ~        if (cap_set_proc(caps)) {
-> | ~            perror("capset()");
-> | ~        }
-> | ~        print_caps("Pre drop, post set");
-> | ~    }
-> |
-> | ~    relinquish_special_privs_perm();
-> |
-> | ~    print_caps("Post drop, pre set");
-> | ~    cap_set_flag(caps, CAP_EFFECTIVE,   cl_len, cap_list, CAP_SET);
-> | ~    if (cap_set_proc(caps)) {
-> | ~        perror("capset()");
-> | ~    }
-> | ~    print_caps("Post drop, post set");
-> | ~    cap_free(caps);
-> | }
-> | #endif /* HAVE_LIBCAP */
-> |
-> | My reading of the above code suggests that the application believes that
-> | it can raise/retain effective capabilities that are not in its permitted
-> | set.
-> |
-> | Browsing back in my git tree all the way back to 'v2.6.12-rc2', the
-> | following code (cap_capset_check) correctly requires:
-> |
-> | ~   96  /* verify the _new_Effective_ is a subset of the
-> _new_Permitted_ */
-> | ~   97  if (!cap_issubset (*effective, *permitted)) {
-> | ~   98   return -EPERM;
-> | ~   99  }
-> |
-> | so my question is, why should one expect this wireshark code to work? It
-> | looks wrong to me.
-> |
-> | Thanks
-> |
-> | Andrew
-> |
-> | |
-> | |> -serge
-> | |
-> | | Thanks
-> | |
-> | | Andrew
-> |
-> | ~From 006ddf6903983dd596e360ab1ab8e537b29fab46 Mon Sep 17 00:00:00 2001
-> | From: Andrew G. Morgan <morgan@kernel.org>
-> | Date: Mon, 18 Feb 2008 15:23:28 -0800
-> | Subject: [PATCH] Implement per-process securebits
-> | |>
-> | [This patch represents a no-op unless CONFIG_SECURITY_FILE_CAPABILITIES
-> | ~ is enabled at configure time.]
-> | |>
-> | Filesystem capability support makes it possible to do away with
-> | (set)uid-0 based privilege and use capabilities instead. That is, with
-> | filesystem support for capabilities but without this present patch,
-> | it is (conceptually) possible to manage a system with capabilities
-> | alone and never need to obtain privilege via (set)uid-0.
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.2.6 (GNU/Linux)
->
-> iD8DBQFHvmeB+bHCR3gb8jsRAknmAKCMw0Qe7uDwtuRE+f3YVmnlE5pK4wCgsv0f
-> 5E6+K9Z0Xp1P74iOlnt221o=
-> =+sLL
-> -----END PGP SIGNATURE-----
-> -
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index 9a5b665..3e6f0f5 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -625,8 +625,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	eata=		[HW,SCSI]
+ 
+ 	edd=		[EDD]
+-			Format: {"of[f]" | "sk[ipmbr]"}
+-			See comment in arch/i386/boot/edd.S
++			Format: {"off" | "on" | "sk[ipmbr]"}
+ 
+ 	eisa_irq_edge=	[PARISC,HW]
+ 			See header of drivers/parisc/eisa.c.
+diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
+index 8721dc4..4191805 100644
+--- a/arch/x86/boot/edd.c
++++ b/arch/x86/boot/edd.c
+@@ -128,17 +128,25 @@ void query_edd(void)
+ {
+ 	char eddarg[8];
+ 	int do_mbr = 1;
++#ifdef CONFIG_EDD_OFF
++	int do_edd = 0;
++#else
+ 	int do_edd = 1;
++#endif
+ 	int be_quiet;
+ 	int devno;
+ 	struct edd_info ei, *edp;
+ 	u32 *mbrptr;
+ 
+ 	if (cmdline_find_option("edd", eddarg, sizeof eddarg) > 0) {
+-		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip"))
++		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip")) {
++			do_edd = 1;
+ 			do_mbr = 0;
++		}
+ 		else if (!strcmp(eddarg, "off"))
+ 			do_edd = 0;
++		else if (!strcmp(eddarg, "on"))
++			do_edd = 1;
+ 	}
+ 
+ 	be_quiet = cmdline_find_option_bool("quiet");
+diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
+index 05f02a3..c28e33f 100644
+--- a/drivers/firmware/Kconfig
++++ b/drivers/firmware/Kconfig
+@@ -17,6 +17,15 @@ config EDD
+           obscure configurations. Most disk controller BIOS vendors do
+           not yet implement this feature.
+ 
++config EDD_OFF
++	bool "Sets default behavior for EDD detection to off"
++	depends on EDD
++	default n
++	help
++	  Say Y if you want EDD disabled by default, even though it is compiled into the
++	  kernel. Say N if you want EDD enabled by default. EDD can be dynamically set
++	  using the kernel parameter 'edd={on|skipmbr|off}'.
++
+ config EFI_VARS
+ 	tristate "EFI Variable Support via sysfs"
+ 	depends on EFI
+-- 
+1.5.4.1
+
