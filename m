@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbYBVJgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbYBVJg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbYBVJgU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 04:36:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752237AbYBVJgH
+	id S1762766AbYBVJg6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:36:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbYBVJgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 04:36:07 -0500
-Received: from smtp-3.orange.nl ([193.252.22.243]:36009 "EHLO smtp-3.orange.nl"
+	Fri, 22 Feb 2008 04:36:48 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55118 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751952AbYBVJgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 04:36:04 -0500
-X-ME-UUID: 20080222093601617.96A961C00081@mwinf6208.orange.nl
-Message-ID: <47BE9781.3030304@zonnet.nl>
-Date: Fri, 22 Feb 2008 10:36:01 +0100
-From: belcampo <belcampo@zonnet.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752237AbYBVJgq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 04:36:46 -0500
+Date: Fri, 22 Feb 2008 10:36:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: James Morris <jmorris@namei.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
+Message-ID: <20080222093621.GG327@elte.hu>
+References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Hyperthreading performance oddities
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080222075950.GB2660@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
 
-I would like to be personally CC'ed the answers/comments posted to the 
-list in response to my posting.
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-I have following CPU
-vendor_id       : GenuineIntel
-cpu family      : 15
-model           : 4
-model name      : Intel(R) Pentium(R) 4 CPU 3.00GHz
-stepping        : 1
-cpu MHz         : 3000.000
-cache size      : 1024 KB
+> > This is on an x86_64 system (actually an Intel SDV -- so it might be 
+> > "special").
+>
+> This is a regression. Can you please revert this commit. We can redo 
+> it wehn the -fstack-protector stuff are properly fixed in x86.
 
-on 2.6.17 everything works as I expect. My Mandriva distribution 
-standard has a 2.6.22.9 kernel which performed bad, numbers follow, 
-installed a fresh 2.6.24.2 kernel also performed bad, so I installed 
-2.6.17 and everything works OK.
-I have some benchmarks from mplayer:
-Kernel 2.6.22.9 smp hyperthreading
-BENCHMARKs: VC: 334.042s VO:   0.053s A:   0.000s Sys:   4.049s =  338.143s
-Kernel 2.6.22.9 nonsmp/hyperthreading
-BENCHMARKs: VC: 262.008s VO:   0.031s A:   0.000s Sys:   3.528s =  265.567s
-with 2.6.17 kernel smp/hyperthreading pentium-pro as CPU
-BENCHMARKs: VC: 245.175s VO:   0.050s A:   0.000s Sys:   2.479s =  247.704s
-with 2.6.17 kernel smp/hyperthreading pentium4 optimized kernel
-BENCHMARKs: VC: 227.992s VO:   0.051s A:   0.000s Sys:   2.551s =  230.594s
+No!
 
-The 2.6.24.2 kernel had results as the 2.6.22.9 version
+James, could you please check whether x86.git#testing:
 
-Regards Henk Schoneveld
+   http://people.redhat.com/mingo/x86.git/README
 
+works fine for you? That has all the current stackprotector fixes. I 
+plan to send a separate pull request with just the stackprotector fixes 
+to Linus, they are looking good in testing so far.
+
+	Ingo
