@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935775AbYBVAf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935566AbYBVAgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935775AbYBVAf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:35:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757140AbYBVAfq
+	id S935566AbYBVAgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:36:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbYBVAge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:35:46 -0500
-Received: from mga03.intel.com ([143.182.124.21]:30875 "EHLO mga03.intel.com"
+	Thu, 21 Feb 2008 19:36:34 -0500
+Received: from c60.cesmail.net ([216.154.195.49]:41303 "EHLO c60.cesmail.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754539AbYBVAfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:35:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,388,1199692800"; 
-   d="scan'208";a="382107222"
-From: Jesse Barnes <jesse.barnes@intel.com>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off aftersuspend-to-disk. Screen becomes green.
-Date: Thu, 21 Feb 2008 16:23:55 -0800
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
-       "Dave Airlie" <airlied@linux.ie>, "Greg KH" <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211302.27002.jesse.barnes@intel.com> <b6a2187b0802211620q47f6601fuf7e88395d89b90c8@mail.gmail.com>
-In-Reply-To: <b6a2187b0802211620q47f6601fuf7e88395d89b90c8@mail.gmail.com>
+	id S1759237AbYBVAgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:36:33 -0500
+From: Pavel Roskin <proski@gnu.org>
+Subject: [PATCH] kbuild: CONFIG_CC_OPTIMIZE_FOR_SIZE should not be default
+To: linux-kernel@vger.kernel.org
+Date: Thu, 21 Feb 2008 19:36:31 -0500
+Message-ID: <20080222003631.14308.32203.stgit@dv.roinet.com>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802211623.55450.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 21, 2008 4:20 pm Jeff Chua wrote:
-> On Fri, Feb 22, 2008 at 5:02 AM, Jesse Barnes <jesse.barnes@intel.com> 
-wrote:
-> > On Thursday, February 21, 2008 11:43 am Romano Giannetti wrote:
-> >  > > > Let's try to narrow it down to what the interaction is. Are you
-> >  > > > using something like acpi_sleep=s3_bios or similar?
-> >  > >
-> >  > > No. Not additional command line option except for resume=/dev/sda3
-> >  > > reboot=bios
-> >  >
-> >  > My laptop (a Toshiba satellite U305, intel 945GM chipset, used to need
-> >  > s2ram -f -p -m to STR correctly. In 2.6.25-rc2 I can simply STR with
-> >  > echo mem > /sys/power/state.
-> >
-> >  Cool, glad to hear at least one success report. :)
->
-> STR is always working on my X60s. No green screen, no hang. Both s2ram
-> and "echo mem > /sys/power/state". It's STD that's having problem.
->
-> But strange thing is I could even restore console after STD even
-> without agp and i915 module loaded, so I don't know how the console
-> vga got saved and restored.
+It's an experimental option and it's not generally recommended
 
-Your system (either your distro suspend/resume scripts or your platform) must 
-be running the video BIOS at resume time, otherwise it would probably come 
-back blank.
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+---
 
-Jesse
+ init/Kconfig |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index dcef8b5..a998a13 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -477,7 +477,6 @@ endif
+ 
+ config CC_OPTIMIZE_FOR_SIZE
+ 	bool "Optimize for size (Look out for broken compilers!)"
+-	default y
+ 	depends on ARM || H8300 || SUPERH || EXPERIMENTAL
+ 	help
+ 	  Enabling this option will pass "-Os" instead of "-O2" to gcc
