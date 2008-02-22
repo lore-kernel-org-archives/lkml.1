@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932596AbYBVETk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbYBVEYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932596AbYBVETk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 23:19:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752387AbYBVETc
+	id S1764895AbYBVEYn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 23:24:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYBVEYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 23:19:32 -0500
-Received: from testure.choralone.org ([194.9.77.134]:52043 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752166AbYBVETb (ORCPT
+	Thu, 21 Feb 2008 23:24:34 -0500
+Received: from an-out-0708.google.com ([209.85.132.244]:17731 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754849AbYBVEYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 23:19:31 -0500
-Date: Thu, 21 Feb 2008 23:19:21 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Dave Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gabriel C <crazy@frugalware.org>
-Subject: Re: modular intel-agp does not work on my box
-Message-ID: <20080222041921.GD21061@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Gabriel C <nix.or.die@googlemail.com>,
-	Dave Airlie <airlied@linux.ie>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Gabriel C <crazy@frugalware.org>
-References: <47BE222B.2080500@googlemail.com> <alpine.DEB.0.82.0802220205410.3412@skynet.skynet.ie> <47BE32C7.5060008@googlemail.com> <47BE4125.3080503@googlemail.com>
+	Thu, 21 Feb 2008 23:24:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=xO+dAWHS90YM0uhEB27PffvsR+yUoqiWL8AlHojIOjiqzeTZh05QCrW2j32MQyqAiWa3bi7o1FSx6Y/LP644LChyH6cCdLujoYuVwuVnXASQCkqdFy/qvdSfJHyS//wgWvaZlSdLPBe35XOOa0vFsT4z3wJV9wucUhw+0FFRPA8=
+Message-ID: <97a0a9ac0802212024w62dbfb03ye62c51744e853b36@mail.gmail.com>
+Date: Thu, 21 Feb 2008 21:24:32 -0700
+From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Cc: "Michael Buesch" <mb@bu3sch.de>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it, "Linus Torvalds" <torvalds@osdl.org>,
+       "Andrew Morton" <akpm@osdl.org>, viro@ftp.linux.org.uk
+In-Reply-To: <20080220193709.GD21139@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47BE4125.3080503@googlemail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com>
+	 <200802191141.26952.mb@bu3sch.de>
+	 <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com>
+	 <200802201544.05192.mb@bu3sch.de>
+	 <20080220193709.GD21139@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 04:27:33AM +0100, Gabriel C wrote:
- > Gabriel C wrote:
- > > Dave Airlie wrote:
- > >>> Hi,
- > >>>
- > >>> When building agp* modular ( CONFIG_AGP=y/m and CONFIG_AGP_INTEL=m ) intel-agp does nothing on my box 
- > >>> ( Dell Precision WorkStation 530 MT ) chipset is not being detected.
- > >>>
- > >>> Building both Y fixes that and agpgart works and also detects my chipset.
- > >> Have you got EDAC modules built as well? they might be taking ownership 
- > >> when they shouldn't..
- > >>
- > > 
- > > Yes I have EDAC built modular. I will build latest git without EDAC and agp modular
- > > and let you know if that fixes ( workarounds ;) ) the problem.
- > 
- > You are right without EDAC built , agp modular does work fine. I'm on 2.6.25-rc2-00477-g1a4c6be right now.
- > 
- > So it is an EDAC bug ?
- 
-No, it's a failing of the pci driver model. It currently doesn't
-allow more than one driver to be bound to a single PCI device.
-For multi-function devices like bridges, this means we see problems
-like the one you mention.
+Hi Sam
 
-	Dave
+On Wed, Feb 20, 2008 at 12:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+
+>  Option 1) is the worst of the three as that can cost
+>  of many hours bug-hunting.
+>  Option 3) may seem optimal but I do not like to add more
+>  complexity to this part of the build. And really I do not
+>  know a reliable way to detech when we do cross builds anyway.
+>
+>  Leaving us with option 2) that is simple, strighforward and harmless.
+
+Are you willing to sign off on and commit the patch?
+
+Gordon
 
 -- 
-http://www.codemonkey.org.uk
+Gordon Farquharson
+GnuPG Key ID: 32D6D676
