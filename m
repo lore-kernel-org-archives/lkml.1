@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761468AbYBVTf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbYBVThN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761468AbYBVTf1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:35:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYBVTfN
+	id S1763014AbYBVThN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:37:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYBVTg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:35:13 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:44777 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755454AbYBVTfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:35:11 -0500
-Date: Fri, 22 Feb 2008 11:25:04 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Nish Aravamudan <nish.aravamudan@gmail.com>, Len Brown <lenb@kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: [PATCH] [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
-Message-Id: <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
-In-Reply-To: <20080222185648.GA6843@uranus.ravnborg.org>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	<47B73DD8.4030405@linux.vnet.ibm.com>
-	<200802210208.47487.lenb@kernel.org>
-	<29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com>
-	<20080221222245.GB30976@uranus.ravnborg.org>
-	<29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com>
-	<20080222180815.GB6434@uranus.ravnborg.org>
-	<20080222101344.821ea02a.randy.dunlap@oracle.com>
-	<20080222182737.GC6434@uranus.ravnborg.org>
-	<47BF1492.20901@oracle.com>
-	<20080222185648.GA6843@uranus.ravnborg.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Feb 2008 14:36:57 -0500
+Received: from zeratul.whoi.edu ([128.128.76.62]:35342 "EHLO mx1.whoi.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756704AbYBVTgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:36:55 -0500
+Message-ID: <47BF2455.8030904@whoi.edu>
+Date: Fri, 22 Feb 2008 14:36:53 -0500
+From: Ned Forrester <nforrester@whoi.edu>
+Organization: Woods Hole Oceanographic Institution
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+MIME-Version: 1.0
+To: David Brownell <david-b@pacbell.net>
+Cc: spi-devel-general@lists.sourceforge.net, marc.pignat@hevs.ch,
+       linux-kernel@vger.kernel.org, anemo@mba.ocn.ne.jp
+Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	 transfer
+References: <20080221.005432.07645461.anemo@mba.ocn.ne.jp> <200802201855.02605.marc.pignat@hevs.ch> <20080221.105233.41199605.nemoto@toshiba-tops.co.jp> <200802211026.17816.marc.pignat@hevs.ch> <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <47BED734.5030002@whoi.edu> <20080222190228.2B0CB28E363@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20080222190228.2B0CB28E363@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Let's see what the ACPI people think about this change.
+David Brownell wrote:
+>> However, if the transfer is by DMA, note that the PXA255 and PXA270
+>> Developer's Manuals have the following language regarding DMA lengths:
+>>
+>> 	LEN = 0 means zero bytes for descriptor-fetch transactions.
+>> 	LEN = 0 is an invalid setting for no-descriptor-fetch
+>> 	transactions. ...
+>>
+>> Because the pxa2xx_spi driver does not currently use DMA descriptors,
+>> zero length DMAs are invalid.
+> 
+> In that case the pxa2xx_spi driver should add a special case to
+> avoid starting such transfers in DMA mode.
 
-Thanks, Sam.
----
-From: Randy Dunlap <randy.dunlap@oracle.com>
+So, what I think you said is that it would be better for pxa2xx_spi to
+silently ignore a zero-length message, passing it back with the rest of
+the message when all is complete, than to reject the message.  I see no
+reason why that could not be done, though it may be tricky to set other
+things like SSP modes and chip select and *not* start the DMA.  It would
+have to be tested, so I'm not sure when I could try that.
 
-Make ACPI_CUSTOM_DSDT boolean config symbol a hidden and derived
-value, based on the value of ACPI_CUSTOM_DSDT_FILE (string).
-Only the latter is presented to the user as a config option.
+>> I agree with Marc: any such delay will be undefined, in the general
+>> case.  It might work for a specific driver implementation.
+> 
+> Is that what Marc said?  I couldn't tell.  In any case, I disagree;
+> the semantics of that delay are clearly define.
 
-This fixes problems with "make randconfig" setting ACPI_CUSTOM_DSDT
-but leaving ACPI_CUSTOM_DSDT_FILE empty/blank.
+Maybe I am missing something.  Aren't we talking about a transfer in a
+message, with or without other transfers, who's only unique
+characteristic is that that its length is zero?    What is clearly
+defined about what should happen during that transfer?  I think (maybe
+we are all confused) that Marc and I are talking about the delay, likely
+short, caused by the processing or ignoring of that zero length transfer.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/acpi/Kconfig |   19 +++++++++----------
- 1 file changed, 9 insertions(+), 10 deletions(-)
+Or are you and Atsushi talking about using spi_transfer.delay_usecs
+*with* a zero length transfer to effectively put a delay between the
+assertion of CS and the start of the first clock?  If so, then I guess I
+missed the original point.  Sorry.
 
---- linux-2.6.25-rc2-git5.orig/drivers/acpi/Kconfig
-+++ linux-2.6.25-rc2-git5/drivers/acpi/Kconfig
-@@ -283,24 +283,23 @@ config ACPI_TOSHIBA
- 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
- 	  series), say Y.
- 
--config ACPI_CUSTOM_DSDT
--	bool "Include Custom DSDT"
-+config ACPI_CUSTOM_DSDT_FILE
-+	string "Custom DSDT Table file to include"
-+	default ""
- 	depends on !STANDALONE
--	default n 
- 	help
- 	  This option supports a custom DSDT by linking it into the kernel.
- 	  See Documentation/acpi/dsdt-override.txt
- 
--	  If unsure, say N.
--
--config ACPI_CUSTOM_DSDT_FILE
--	string "Custom DSDT Table file to include"
--	depends on ACPI_CUSTOM_DSDT
--	default ""
--	help
- 	  Enter the full path name to the file which includes the AmlCode
- 	  declaration.
- 
-+	  If unsure, don't enter a file name.
-+
-+config ACPI_CUSTOM_DSDT
-+	bool
-+	default ACPI_CUSTOM_DSDT_FILE != ""
-+
- config ACPI_CUSTOM_DSDT_INITRD
- 	bool "Read Custom DSDT from initramfs"
- 	depends on BLK_DEV_INITRD
+--
+
+By the way, reading spi.h again, it looks like spi_transfer.delay_usecs
+is supposed to be implemented between the last bit movement of a
+transfer and any change of CS at the end of a transfer.  Is that right?
+ I think that pxa2xx_spi is dropping CS, if requested, immediately at
+the end of transfer, and then putting spi_transfer.delay_usecs between
+that transfer and the next.
+
+-- 
+Ned Forrester                                       nforrester@whoi.edu
+Oceanographic Systems Lab                                  508-289-2226
+Applied Ocean Physics and Engineering Dept.
+Woods Hole Oceanographic Institution          Woods Hole, MA 02543, USA
+http://www.whoi.edu/sbl/liteSite.do?litesiteid=7212
+http://www.whoi.edu/hpb/Site.do?id=1532
+http://www.whoi.edu/page.do?pid=10079
+
