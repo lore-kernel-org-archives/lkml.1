@@ -1,59 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934583AbYBVN2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934931AbYBVN3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934583AbYBVN2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:28:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758419AbYBVN2M
+	id S934931AbYBVN3r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:29:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761038AbYBVN3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:28:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58049 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757366AbYBVN2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:28:11 -0500
-Date: Fri, 22 Feb 2008 14:27:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Morris <jmorris@namei.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
-Message-ID: <20080222132743.GA6602@elte.hu>
-References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org> <20080222093621.GG327@elte.hu> <Xine.LNX.4.64.0802222133150.6937@us.intercode.com.au> <20080222121751.GA17889@elte.hu> <Xine.LNX.4.64.0802230000470.14729@us.intercode.com.au>
+	Fri, 22 Feb 2008 08:29:38 -0500
+Received: from py-out-1112.google.com ([64.233.166.179]:40477 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757366AbYBVN3g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 08:29:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=P9NcSHEhYMunIFIeioPdgIgp7Kfw+YLHfrYJR1u7RA2dPi7+4sfnyJJ85sA0fbxL5aQCsxfHdUFcD8+Z4X4RECCT5BVP52gLq5fAXi1KiPGWzqqKMdYEWSG1v7cEEABnjsk1/BjD19nUhuTRopUWlZ8TYQn0oR4eZq8KO3Z4MGk=
+Message-ID: <47BECE30.8030100@gmail.com>
+Date: Fri, 22 Feb 2008 08:29:20 -0500
+From: Gregory Haskins <gregory.haskins.ml@gmail.com>
+Reply-To: gregory.haskins@gmail.com
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Xine.LNX.4.64.0802230000470.14729@us.intercode.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Gregory Haskins <ghaskins@novell.com>
+CC: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
+       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
+       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
+       sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com
+Subject: Re: [PATCH [RT] 05/14] rearrange rt_spin_lock sleep
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152651.4804.4702.stgit@novell1.haskins.net>
+In-Reply-To: <20080221152651.4804.4702.stgit@novell1.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Gregory Haskins wrote:
+> @@ -732,14 +741,15 @@ rt_spin_lock_slowlock(struct rt_mutex *lock)
+>  
+>  		debug_rt_mutex_print_deadlock(&waiter);
+>  
+> -		schedule_rt_mutex(lock);
+> +		update_current(TASK_UNINTERRUPTIBLE, &saved_state);
 
-* James Morris <jmorris@namei.org> wrote:
+I have a question for everyone out there about this particular part of 
+the code. Patch 6/14 adds an optimization that is predicated on the 
+order in which we modify the state==TASK_UNINTERRUPTIBLE vs reading the 
+waiter.task below.
 
-> > Please send me your full .config and the gcc version you used for 
-> > building the failing kernel.
-> 
-> config attached.
+My assumption is that the xchg() (inside update_current()) acts as an 
+effective wmb().  If xchg() does not have this property, then this code 
+is broken and patch 6/14 should also add a:
 
-thanks, i'll try that.
 
-> gcc version 4.1.2 20071124 (Red Hat 4.1.2-36)
++               smp_wmb();
 
-ok, i have a slightly older one:
 
-  gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
+> +		if (waiter.task)
+> +			schedule_rt_mutex(lock);
+> +		else
+> +			update_current(TASK_RUNNING_MUTEX, &saved_state);
+>  
+>  		spin_lock_irqsave(&lock->wait_lock, flags);
+>  		current->flags |= saved_flags;
+>  		current->lock_depth = saved_lock_depth;
+> -		state = xchg(&current->state, TASK_UNINTERRUPTIBLE);
+> -		if (unlikely(state == TASK_RUNNING))
+> -			saved_state = TASK_RUNNING;
 
-i'll try to upgrade to your version to make sure we see the same 
-regression.
 
-	Ingo
+Does anyone know the answer to this?
+
+Regards,
+-Greg
