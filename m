@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933299AbYBVUGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbYBVUHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933299AbYBVUGi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932538AbYBVUAJ
+	id S932897AbYBVUHS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:07:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbYBVUAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:00:09 -0500
-Received: from smtp6.pp.htv.fi ([213.243.153.40]:34246 "EHLO smtp6.pp.htv.fi"
+	Fri, 22 Feb 2008 15:00:48 -0500
+Received: from ns1.suse.de ([195.135.220.2]:50075 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760636AbYBVUAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:00:08 -0500
-Date: Fri, 22 Feb 2008 21:59:20 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] mm/migrate.c should #include <linux/syscalls.h>
-Message-ID: <20080222195920.GN1409@cs181133002.pp.htv.fi>
+	id S932683AbYBVUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 15:00:42 -0500
+Date: Fri, 22 Feb 2008 11:56:52 -0800
+From: Greg KH <gregkh@suse.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+       kay.sievers@vrfy.org, Michael_E_Brown@dell.com, rdreier@cisco.com,
+       htejun@gmail.com
+Subject: Re: [GIT PATCH] driver core fixes against 2.6.25-rc2 git
+Message-ID: <20080222195652.GA6395@suse.de>
+References: <20080221234649.GB7128@kroah.com> <20080222075625.GA2660@uranus.ravnborg.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20080222075625.GA2660@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Every file should include the headers containing the externs for its 
-global functions (in this case for sys_move_pages()).
+On Fri, Feb 22, 2008 at 08:56:25AM +0100, Sam Ravnborg wrote:
+> Hi Greg.
+> 
+> On Thu, Feb 21, 2008 at 03:46:49PM -0800, Greg KH wrote:
+> > Here are a few driver core fixes against your current git tree that fix some
+> > more problems that have cropped up:
+> > 	- shutdown problem due to logic problem with cpufreq usage of
+> > 	  kobjects.
+> > 	- build fix for powerpc due to previous kobject changes.
+> > 	- runtime errors when CONFIG_SYSFS=n
+> > 	- UIO code now works properly from my previous messups
+> > 	- proper encoding of the ja_JP stable_kernel_rules.txt file
+> > 	- updates to the stable_kernel_rules.txt file
+> > 	- mark ide=reverse as obsolete in preparation of 2.6.26 (Bart
+> > 	  wanted this to go in through my tree as I have the .26 patches
+> > 	  pending.)
+> > 	- other minor fixes.
+> 
+> 
+> Do we have any outstanding issues with section mismatch warnings in PCI Core?
+> I am as always optimistic and hope to get down to zero warnings soon.
 
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
+I do not know, I saw your patches earlier and thought that they were
+going in through another tree for some reason.  If you still see any
+remaining, please send me the needed patches again.
 
----
-5624ee2189a0b767e8e474cdd53d8a536dd8f262 diff --git a/mm/migrate.c b/mm/migrate.c
-index a73504f..36e1820 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -30,6 +30,7 @@
- #include <linux/vmalloc.h>
- #include <linux/security.h>
- #include <linux/memcontrol.h>
-+#include <linux/syscalls.h>
- 
- #include "internal.h"
- 
+thanks,
 
+greg k-h
