@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762346AbYBVJmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756424AbYBVJpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762346AbYBVJmU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 04:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbYBVJl5
+	id S1756424AbYBVJpf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:45:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbYBVJp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 04:41:57 -0500
-Received: from web52909.mail.re2.yahoo.com ([206.190.49.19]:31451 "HELO
-	web52909.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752554AbYBVJlz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 04:41:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=fDTFM/QvrLMLZTiMOuZoc2d5Rymt5x9UxjN6AGgAOuLF5GNBfPL/Rm8pguIwSuIgolL9+A3U21SzSecdNCzAJi94/BmVn2Ql1MXC637DjNhoX9nKDgW28c7Q/EcMaiunmSV7I2v5Hx4YaOZhlGDGKPwze+pnvb0YfmH60MHoEzo=;
-X-YMail-OSG: fHaL1qIVM1mx5eGUlIAjU8BdEg2J8Hi.Y0pPJAtg9O.ucyMvAar__1s0BQlYZGp5EUc.9NqbfJB6GDiT6OO7ABvcYuurfVV6dH2g2GcY1BwulKduacFz0lL6X8fR9Q--
-Date: Fri, 22 Feb 2008 09:41:54 +0000 (GMT)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: Linux 2.6.24.1 - kernel does not boot; IRQ trouble?
-To: Kay Sievers <kay.sievers@vrfy.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <3ae72650802220111s11e68f1ft149d7832e9bebbd6@mail.gmail.com>
+	Fri, 22 Feb 2008 04:45:27 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53913 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752878AbYBVJp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 04:45:27 -0500
+Date: Fri, 22 Feb 2008 10:45:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and
+	running in KVM
+Message-ID: <20080222094513.GA6269@elte.hu>
+References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com> <20080221203748.GA9031@elte.hu> <47BDFBDE.5040102@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <769836.91421.qm@web52909.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BDFBDE.5040102@zytor.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Kay Sievers <kay.sievers@vrfy.org> wrote:
-> Greg,
-> it seems that:
->   arch/x86/pci/legacy.c :: pci_legacy_init()
-> 
-> tries to create already created "bridge" symlinks in 2.6.24. So we
-> discover the same devices twice? Can this be a reason for the hang?
 
-No, it can't be because it's *not* hanging in this configuration :-). It hangs when I *don't* add
-the acpi=noirq option, whereas here it's just adding noise to the dmesg log. (I'm guessing Linux
-doesn't call pci_legacy_init() when ACPI takes charge of the IRQs.)
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-Cheers,
-Chris
+>> I'm not sure how we could detect pure Qemu instances - perhaps it 
+>> should define some special MSR or something?
+>
+> Perhaps they should fix the Qemu BIOS to actually simulate working 
+> MSRs; if nothing else, they should set up the default MTRR to be 
+> cachable.
 
+btw., should KVM do the same?
 
-
-      __________________________________________________________
-Sent from Yahoo! Mail.
-A Smarter Inbox. http://uk.docs.yahoo.com/nowyoucan.html
+	Ingo
