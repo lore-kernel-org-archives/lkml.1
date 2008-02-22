@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYBVMEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764015AbYBVMIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbYBVMEg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 07:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYBVME2
+	id S1764015AbYBVMIn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 07:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbYBVMIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 07:04:28 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60713 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753035AbYBVME1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 07:04:27 -0500
-Date: Fri, 22 Feb 2008 13:04:12 +0100
-From: Karsten Keil <kkeil@suse.de>
-To: Simon Richter <sjr@debian.org>
-Cc: Tilman Schmidt <tilman@imap.cc>, Jeff Garzik <jeff@garzik.org>,
-       kkeil@suse.de, Greg KH <greg@kroah.com>,
-       Gregory Nietsky <gregory@networksentry.co.za>,
-       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-       isdn4linux@listserv.isdn4linux.de, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
-Message-ID: <20080222120412.GA11916@pingi.kke.suse.de>
-Mail-Followup-To: Simon Richter <sjr@debian.org>,
-	Tilman Schmidt <tilman@imap.cc>, Jeff Garzik <jeff@garzik.org>,
-	kkeil@suse.de, Greg KH <greg@kroah.com>,
-	Gregory Nietsky <gregory@networksentry.co.za>,
-	linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
-	isdn4linux@listserv.isdn4linux.de, Sam Ravnborg <sam@ravnborg.org>
-References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <47BAA072.9050601@networksentry.co.za> <47BC370F.3000705@imap.cc> <47BD5360.5070706@debian.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Feb 2008 07:08:36 -0500
+Received: from hs-out-0708.google.com ([64.233.178.249]:39926 "EHLO
+	hs-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753938AbYBVMIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 07:08:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RGczHUEu6u8baL8PhwCreJc/FeJQTEBSYiK8cAArx5I99aWr46uL8fTT7s7Q52nsJsj2al7oxvBGjg4zFLvxmjloP/oFfXDEZInU7PIG6TNqppOoSrgC8NYCj7bqYkw4fuN460S6UXqdpooN5Q/HjQF9jEKFzj/ch3ybOiU7280=
+Message-ID: <97a0a9ac0802220408m2c49f59aj81e2d45860bbc7d4@mail.gmail.com>
+Date: Fri, 22 Feb 2008 05:08:33 -0700
+From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
+To: "Sam Ravnborg" <sam@ravnborg.org>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Cc: "Michael Buesch" <mb@bu3sch.de>,
+       "Russell King" <rmk+lkml@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
+       stefano.brivio@polimi.it, "Linus Torvalds" <torvalds@osdl.org>,
+       "Andrew Morton" <akpm@osdl.org>, viro@ftp.linux.org.uk
+In-Reply-To: <97a0a9ac0802212024w62dbfb03ye62c51744e853b36@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47BD5360.5070706@debian.org>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
-User-Agent: Mutt/1.5.9i
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com>
+	 <200802191141.26952.mb@bu3sch.de>
+	 <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com>
+	 <200802201544.05192.mb@bu3sch.de>
+	 <20080220193709.GD21139@uranus.ravnborg.org>
+	 <97a0a9ac0802212024w62dbfb03ye62c51744e853b36@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Feb 21, 2008 at 9:24 PM, Gordon Farquharson
+<gordonfarquharson@gmail.com> wrote:
+> Hi Sam
+>
+>
+>  On Wed, Feb 20, 2008 at 12:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+>
+>  >  Option 1) is the worst of the three as that can cost
+>  >  of many hours bug-hunting.
+>  >  Option 3) may seem optimal but I do not like to add more
+>  >  complexity to this part of the build. And really I do not
+>  >  know a reliable way to detech when we do cross builds anyway.
+>  >
+>  >  Leaving us with option 2) that is simple, strighforward and harmless.
+>
+>  Are you willing to sign off on and commit the patch?
 
-sorry that I step in so late, procmail sorted this thread in the wrong
-box.
-Normally I reserved the complete last week for working on mISDN to get it
-ready to submit it to -mm, but reality did hit me and I had to do some
-other importent stuff :-(
+I realize that I forgot to put
 
-On Thu, Feb 21, 2008 at 11:33:04AM +0100, Simon Richter wrote:
-> Hi,
-> 
-> Tilman Schmidt wrote:
-> 
-> > mISDN has two problems, which are of course interrelated:
-> 
-> mISDN has one problem that is even bigger than these: the kernel oopses 
-> if modules aren't loaded in the right order. misdn-init works around 
-> that, but if it doesn't work for some reason (and I can think of 
-> multiple here), the user is left with a kernel that oopses during 
-> hardware discovery and never gets to a stage where this can be 
-> rectified, as almost all distributions now have hardware discovery 
-> before the first opportunity to get a shell. At least these were my 
-> experiences the last time I tried it on my test box.
-> 
-> This is the reason I've kept mISDN out of the last two Debian stable 
-> releases, despite users' requests.
-> 
-> When a hardware driver module is loaded, it should only do basic 
-> hardware initialisation; it is certainly not necessary to set up the 
-> entire stack (or even decide on a protocol, which currently needs to be 
-> handed in via module parameter -- before userland code is there that 
-> wants to talk to the hardware, there is no reason to have the hardware 
-> active).
-> 
+Signed-off-by: Gordon Farquharson <gordonfarquharson@gmail.com>
 
-These design issues are fixed in the new mISDN socket branch.
-The old mISDN design was too complicated because it allow access to
-every layer and build the ISDN stack dynamically, both feature were never
-needed in practice and contain many race conditions.
-The new design only has one core module and hardware specific modules
-with a very simple interface.
-The interface to the userspace are sockets (one per channel).
+in my original email.
+
+Gordon
 
 -- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Gordon Farquharson
+GnuPG Key ID: 32D6D676
