@@ -1,96 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbYBVEno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933935AbYBVEqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933755AbYBVEno (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 23:43:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759387AbYBVEnf
+	id S933935AbYBVEqS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 23:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759439AbYBVEqK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 23:43:35 -0500
-Received: from relay2.sgi.com ([192.48.171.30]:60144 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759094AbYBVEnf (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 23:43:35 -0500
-Message-ID: <47BE5428.6060609@sgi.com>
-Date: Fri, 22 Feb 2008 15:48:40 +1100
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Thu, 21 Feb 2008 23:46:10 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:35067 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759090AbYBVEqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 23:46:08 -0500
+Message-ID: <47BE527D.2070109@linux.vnet.ibm.com>
+Date: Fri, 22 Feb 2008 10:11:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
 MIME-Version: 1.0
-To: torvalds@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.25-rc3
-References: <20080222044112.9A2C658C4C0F@chook.melbourne.sgi.com>
-In-Reply-To: <20080222044112.9A2C658C4C0F@chook.melbourne.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@osdl.org, torvalds@osdl.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
+ in Kconfig
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <200802211535.38932.nickpiggin@yahoo.com.au> <47BD06C2.5030602@linux.vnet.ibm.com> <47BD55F6.5030203@firstfloor.org>
+In-Reply-To: <47BD55F6.5030203@firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-please ignore this request - sent the wrong file, see next pull request...
+Andi Kleen wrote:
+>> 1. We could create something similar to mem_map, we would need to handle 4
+> 
+> 4? At least x86 mainline only has two ways now. flatmem and vmemmap.
+> 
+>> different ways of creating mem_map.
+> 
+> Well it would be only a single way to create the "aux memory controller
+> map" (or however it will be called). Basically just a call to single
+> function from a few different places.
+> 
+>> 2. On x86 with 64 GB ram, 
+> 
+> First i386 with 64GB just doesn't work, at least not with default 3:1
+> split. Just calculate it yourself how much of the lowmem area is left
+> after the 64GB mem_map is allocated. Typical rule of thumb is that 16GB
+> is the realistic limit for 32bit x86 kernels. Worrying about
+> anything more does not make much sense.
+> 
 
-Lachlan McIlroy wrote:
-> Please pull from the for-linus branch:
->     git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
+I understand what you say Andi, but nothing in the kernel stops us from
+supporting 64GB. Should a framework like memory controller make an assumption
+that not more than 16GB will be configured on an x86 box?
+
+>> if we decided to use vmalloc space, we would need 64
+>> MB of vmalloc'ed memory
 > 
-> This will update the following files:
+> Yes and if you increase mem_map you need exactly the same space
+> in lowmem too. So increasing the vmalloc reservation for this is
+> equivalent. Just make sure you use highmem backed vmalloc.
 > 
->  fs/xfs/Kbuild             |    6 --
->  fs/xfs/Makefile           |  118 ++++++++++++++++++++++++++++++++++++++++++++-
->  fs/xfs/Makefile-linux-2.6 |  117 --------------------------------------------
->  3 files changed, 117 insertions(+), 124 deletions(-)
->  delete mode 100644 fs/xfs/Kbuild
-> 
-> through these commits:
-> 
-> commit 269cdfaf769f5cd831284cc831790c7c5038040f
-> Author: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
-> Date:   Wed Nov 28 18:28:09 2007 +1100
-> 
->     [XFS] Added quota targets and removed dmapi directory
->     
->     Fixes build failures introduced by bad merge to mainline.
-> 
-> commit 794f744b225aaf35742aac9e7b9dda96a9943413
-> Author: Eric Sandeen <sandeen@sandeen.net>
-> Date:   Tue Nov 27 16:59:56 2007 +1100
-> 
->     [XFS] Fix up xfs out-of-tree builds. (a.k.a. external modules)
->     
->     Change -I include directives to find headers in the out-of-tree spot. This
->     allows a directory containing only xfs files to be built as:
->     
->     SGI-PV: 971186
->     SGI-Modid: xfs-linux-melb:xfs-kern:29878a
->     
->     Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
->     Signed-off-by: Donald Douwsma <donaldd@sgi.com>
->     Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-> 
-> commit 58b7983d15a422d9616bdc4e245d5c31dfaefbe2
-> Author: Andi Kleen <ak@suse.de>
-> Date:   Tue Nov 27 16:53:47 2007 +1100
-> 
->     [XFS] Remove Makefile wrappers in XFS
->     
->     Makefile (and Kbuild) would include Makefile-linux-26 I doubt XFS will
->     really still compile on 2.4; so drop that. This moves Makefile-linux-26
->     into Makefile and drops Kbuild. Also having wrappers as both Kbuild and
->     Makefile seemed redundant anyways.
->     
->     The patch is relatively large because it renames a file, but no functional
->     changes.
->     
->     SGI-PV: 971050
->     SGI-Modid: xfs-linux-melb:xfs-kern:29781a
->     
->     Signed-off-by: Andi Kleen <ak@suse.de>
->     Signed-off-by: Donald Douwsma <donaldd@sgi.com>
->     Signed-off-by: Tim Shimmin <tes@sgi.com>
->     Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
+I see two problems with using vmalloc. One, the reservation needs to be done
+across architectures. Two, a big vmalloc chunk is not node aware, if all the
+pages come from the same node, we have a penalty to pay in a NUMA system.
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
