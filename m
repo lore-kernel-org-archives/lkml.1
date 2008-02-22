@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbYBVQM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbYBVQN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbYBVQM6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:12:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756338AbYBVQMr
+	id S1758751AbYBVQN2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:13:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbYBVQNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:12:47 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44339 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754598AbYBVQMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:12:46 -0500
-Date: Fri, 22 Feb 2008 17:12:56 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
-Message-ID: <20080222161256.GA1773@uranus.ravnborg.org>
-References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org> <alpine.LFD.1.00.0802220739430.19896@woody.linux-foundation.org>
+	Fri, 22 Feb 2008 11:13:07 -0500
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:51178 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756441AbYBVQNF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:13:05 -0500
+Subject: Re: [UPDATED v2][PATCH 0/6] regulator: voltage and current
+	regulator framework
+From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+To: eric miao <eric.y.miao@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <f17812d70802211922v49201af2re87629eba34bd9d4@mail.gmail.com>
+References: <1203527326.4071.88.camel@localhost.localdomain>
+	 <20080221084128.GA4931@flint.arm.linux.org.uk>
+	 <1203611191.4071.186.camel@localhost.localdomain>
+	 <f17812d70802211922v49201af2re87629eba34bd9d4@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 12:36:30 +0000
+Message-Id: <1203683790.4071.262.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.1.00.0802220739430.19896@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 07:43:08AM -0800, Linus Torvalds wrote:
+On Fri, 2008-02-22 at 11:22 +0800, eric miao wrote:
 > 
+> I have a rough peek into the git tree on opensource.wolfsonmicro.com,
+> find another PMIC framework, and here instead is a regulator framework,
+> looks like a simplified or dedicated one. What is their relationship?
 > 
-> On Fri, 22 Feb 2008, Sam Ravnborg wrote:
-> >
-> > This is a regression. Can you please revert this commit.
-> 
-> Not really. The thing is, CONFIG_CC_STACKPROTECTOR has never done anything 
-> at all, now it does, and it shows that it never worked.
-And this made a machine non-bootable that could boot before.
 
-> 
-> So the commit that made it do something shouldn't be reverted, but 
-> CONFIG_CC_STACKPROTECTOR should be marked BROKEN, because it obviously is 
-> broken right now.
-> 
-> But keeping the config option, and just not making it do anything is 
-> misleading and wrong.
-> 
-> So just something like this? To make sure normal people don't enable it..
-Whatever is fine with me - I hope Ingo & Co fixes the root cause soon so
-we can get the right fix in.
+This is probably the old version you came across. It was tightly coupled
+to a particular PMIC and SoC CPU and not portable. The new version that
+I posted is portable and not tied to a particular PMIC or CPU
+architecture. The new version is hosted in the audioplus git repository
+(imx31 branch).
 
-	Sam
+> For those PMIC that covers additional features, like
+>   - usb vbus detection (or pull-up/pull-down)
+>   - audio codec
+>   - touch screen
+>   - battery monitor/ fuel gauge
+>   - battery charger
+>   - possible many others
+> 
+> How do you plan to handle them?
+
+The WM8350 and MC13783 are both multi feature PMIC's like above. We
+handle WM8350 PMIC access via a bus manager. This controls IO access to
+the WM8350 so that client driver (including the regulator driver) IO
+does not collide. We also cache non volatile PMIC registers to speed up
+access. Please have a look at drivers/regulator/wm8350/wm8350-bus.c in
+the imx31 branch for details.
+
+Liam
+
+
+
+
