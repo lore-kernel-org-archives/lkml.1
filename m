@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936253AbYBVAuh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936094AbYBVAwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936253AbYBVAuh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:50:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbYBVAu3
+	id S936094AbYBVAwF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:52:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbYBVAvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:50:29 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:55137 "HELO
+	Thu, 21 Feb 2008 19:51:52 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:55143 "HELO
 	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1754408AbYBVAu2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:50:28 -0500
+	id S1756961AbYBVAvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:51:51 -0500
 X-Spam-Check-By: mail.local.tull.net
-Date: Fri, 22 Feb 2008 11:49:56 +1100
-Message-ID: <20080222-114832-init-kconfig-2@tull.net>
+Date: Fri, 22 Feb 2008 11:51:20 +1100
+Message-ID: <20080222-114832-init-kconfig-3@tull.net>
 From: Nick Andrew <nick@nick-andrew.net>
 To: trivial@kernel.org
 Cc: linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
        Serge Hallyn <serue@us.ibm.com>, Randy Dunlap <randy.dunlap@oracle.com>,
        Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
        Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Subject: [PATCH 2.6.25-rc2 2/9] Kconfig: Improve init/Kconfig help descriptions - TASKSTATS
+Subject: [PATCH 2.6.25-rc2 3/9] Kconfig: Improve init/Kconfig help descriptions - NAMESPACES
 References: <20080219140609.GA26619@tull.net>
 X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,84 +29,119 @@ Rewrite the help descriptions for clarity, accuracy and consistency.
 
 Kernel config options affected:
 
-  - TASKSTATS
-  - TASK_DELAY_ACCT
-  - TASK_XACCT
-  - TASK_IO_ACCOUNTING
+  - NAMESPACES
+  - UTS_NS
+  - IPC_NS
+  - USER_NS
+  - PID_NS
 
 Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 ---
 Try #3.
 
 --- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
-+++ b/init/Kconfig	2008-02-20 09:35:28.000000000 +1100
-@@ -177,42 +177,52 @@ config TASKSTATS
- 	depends on NET
++++ b/init/Kconfig	2008-02-22 09:01:09.000000000 +1100
+@@ -414,31 +414,71 @@ config NAMESPACES
+ 	bool "Namespaces support" if EMBEDDED
+ 	default !EMBEDDED
+ 	help
+-	  Provides the way to make tasks work with different objects using
+-	  the same id. For example same IPC id may refer to different objects
+-	  or same user id or pid may refer to different tasks when used in
+-	  different namespaces.
++	  Select various namespace options.
++
++	  Namespaces allow different kernel objects (such as processes
++	  or sockets) to have the same ID in different namespaces.
++	  Identifiers like process IDs, which historically were globally
++	  unique, will now be unique only within each PID namespace.
++	  Each task can refer only to PIDs within the same namespace
++	  as the task itself.
++
++	  Namespaces are used by container systems (i.e. vservers)
++	  to provide isolation between the containers.
++
++	  This option does not affect any kernel code directly; it merely
++	  allows you to select namespace options below.
++
++	  Answer Y if you will be using a container system, and you
++	  will probably want to enable all the namespace options
++	  below.
+ 
+ config UTS_NS
+ 	bool "UTS namespace"
+ 	depends on NAMESPACES
+ 	help
+-	  In this namespace tasks see different info provided with the
+-	  uname() system call
++	  Enable support for multiple UTS system attributes.
++
++	  Each UTS namespace provides an individual view of the
++	  information returned by the uname() system call including
++	  hostname, kernel version and domain name.
++
++	  This is used by container systems (e.g. vservers) so that
++	  each container has its own hostname and other attributes.
++	  Tasks in the container are placed in the UTS namespace
++	  corresponding to the container.
++
++	  Answer Y if you will be using a container system.
+ 
+ config IPC_NS
+ 	bool "IPC namespace"
+ 	depends on NAMESPACES && SYSVIPC
+ 	help
+-	  In this namespace tasks work with IPC ids which correspond to
+-	  different IPC objects in different namespaces
++	  Enable support for namespace-specific IPC IDs.
++
++	  IPC IDs will be unique only within each IPC namespace.
++
++	  This is used by container systems (e.g. vservers).
++	  Tasks in the container are placed in the IPC namespace
++	  corresponding to the container.
++
++	  Answer Y if you will be using a container system.
+ 
+ config USER_NS
+ 	bool "User namespace (EXPERIMENTAL)"
+ 	depends on NAMESPACES && EXPERIMENTAL
+ 	help
+-	  This allows containers, i.e. vservers, to use user namespaces
+-	  to provide different user info for different servers.
++	  Enable experimental support for user namespaces.
++
++	  This is a function used by container-based virtualisation systems
++	  (e.g. vservers). User namespaces are intended to ensure that
++	  processes with the same uid which are in different containers are
++	  isolated from each other.
++
++	  Currently user namespaces provide separate accounting, while
++	  isolation must be provided using SELinux or a custom security
++	  module.
++
+ 	  If unsure, say N.
+ 
+ config PID_NS
+@@ -446,12 +486,16 @@ config PID_NS
  	default n
+ 	depends on NAMESPACES && EXPERIMENTAL
  	help
--	  Export selected statistics for tasks/processes through the
--	  generic netlink interface. Unlike BSD process accounting, the
--	  statistics are available during the lifetime of tasks/processes as
--	  responses to commands. Like BSD accounting, they are sent to user
--	  space on task exit.
-+	  Taskstats is a netlink-based interface for sending per-task
-+	  and per-process statistics from the kernel to userspace.
+-	  Suport process id namespaces.  This allows having multiple
+-	  process with the same pid as long as they are in different
+-	  pid namespaces.  This is a building block of containers.
++	  Enable experimental support for hierarchical process id namespaces.
  
--	  Say N if unsure.
-+	  Unlike BSD process accounting, the statistics are available
-+	  during the lifetime of tasks/processes as responses to
-+	  commands. Like BSD accounting, they are sent to user space on
-+	  task exit.
-+
-+	  Netlink is a type of network socket used to transfer data
-+	  between the kernel and user space. For more information on
-+	  Netlink see <http://qos.ittc.ku.edu/netlink/html/index.html>
-+
-+	  See <file:Documentation/accounting/taskstats.txt> for more
-+	  information on taskstats.
+-	  Unless you want to work with an experimental feature
+-	  say N here.
++	  This is a function used by container-based virtualisation
++	  systems (e.g. vservers).  Each process will have a distinct
++	  Process ID in each PID namespace which the process is in.
++	  Processes in the container are placed in the PID namespace
++	  corresponding to the container, and cannot see or affect
++	  processes in any parent PID namespace.
 +
 +	  If unsure, say N.
  
- config TASK_DELAY_ACCT
- 	bool "Enable per-task delay accounting (EXPERIMENTAL)"
- 	depends on TASKSTATS
- 	help
--	  Collect information on time spent by a task waiting for system
--	  resources like cpu, synchronous block I/O completion and swapping
--	  in pages. Such statistics can help in setting a task's priorities
--	  relative to other tasks for cpu, io, rss limits etc.
-+	  Also collect information on time spent by a task waiting for
-+	  system resources like CPU, synchronous block I/O completion and
-+	  swapping in pages. Such statistics can help in setting a task's
-+	  priorities relative to other tasks for CPU, I/O, RSS limits etc.
- 
--	  Say N if unsure.
-+	  If unsure, say N.
- 
- config TASK_XACCT
- 	bool "Enable extended accounting over taskstats (EXPERIMENTAL)"
- 	depends on TASKSTATS
- 	help
--	  Collect extended task accounting data and send the data
--	  to userland for processing over the taskstats interface.
-+	  Also collect extended task accounting data and send
-+	  the data to userland for processing over the taskstats
-+	  interface.
- 
--	  Say N if unsure.
-+	  If unsure, say N.
- 
- config TASK_IO_ACCOUNTING
- 	bool "Enable per-task storage I/O accounting (EXPERIMENTAL)"
- 	depends on TASK_XACCT
- 	help
--	  Collect information on the number of bytes of storage I/O which this
--	  task has caused.
-+	  Also collect information on the number of bytes of storage
-+	  I/O which this task has caused.
- 
--	  Say N if unsure.
-+	  If unsure, say N.
- 
- config AUDIT
- 	bool "Auditing support"
+ config BLK_DEV_INITRD
+ 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
