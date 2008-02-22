@@ -1,70 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761804AbYBVUg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764700AbYBVUip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761804AbYBVUg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:36:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbYBVUgS
+	id S1764700AbYBVUip (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:38:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbYBVUih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:36:18 -0500
-Received: from victor.provo.novell.com ([137.65.250.26]:37651 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750727AbYBVUgR (ORCPT
+	Fri, 22 Feb 2008 15:38:37 -0500
+Received: from el-out-1112.google.com ([209.85.162.179]:43899 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbYBVUig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:36:17 -0500
-Subject: Re: [PATCH [RT] 08/14] add a loop counter based timeout mechanism
-From: "Peter W. Morreale" <pmorreale@novell.com>
-To: Sven-Thorsten Dietrich <sdietrich@novell.com>
-Cc: paulmck@linux.vnet.ibm.com, "Bill Huey (hui)" <bill.huey@gmail.com>,
-       Andi Kleen <ak@suse.de>, Gregory Haskins <ghaskins@novell.com>,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, gregkh@suse.de, mkohari@novell.com
-In-Reply-To: <1203710145.4772.107.camel@sven.thebigcorporation.com>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-	 <20080221152707.4804.59177.stgit@novell1.haskins.net>
-	 <200802211741.10299.ak@suse.de> <20080222190814.GD11213@linux.vnet.ibm.com>
-	 <9810cff90802221119j23818e74g2721512a693a0a01@mail.gmail.com>
-	 <9810cff90802221121s216f69f4k4a5f39eaaf11dd7f@mail.gmail.com>
-	 <20080222194341.GE11213@linux.vnet.ibm.com>
-	 <1203710145.4772.107.camel@sven.thebigcorporation.com>
-Content-Type: text/plain
-Organization: Linux Solutions Group
-Date: Fri, 22 Feb 2008 13:36:06 -0700
-Message-Id: <1203712566.4147.56.camel@hermosa.morrealenet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Fri, 22 Feb 2008 15:38:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Qf7AQSxviSGFF/au5T5dDMrjWMxCRHLmw/Ak8535FQzISZTt7+gLupIvnOgUI+3/18Se9328g/ShGfE7ZAYNZWwAVHy5+TaryMI9QE++yh56h9latVWUkPF1A0UI0+ZlW4adOVL4gACH4wTBWVk8yRjMEPurOvIJO/CXD6hmuJo=
+Message-ID: <f19298770802221238m569375a9k7c94fbd8382b5538@mail.gmail.com>
+Date: Fri, 22 Feb 2008 23:38:34 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802222112.44317.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <47BEAF3B.3080809@protei.ru> <200802221848.37902.mb@bu3sch.de>
+	 <f19298770802221206j4d56f002mc4c2036842a18f58@mail.gmail.com>
+	 <200802222112.44317.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-22 at 11:55 -0800, Sven-Thorsten Dietrich wrote:
-> 
-> In high-contention, short-hold time situations, it may even make sense
-> to have multiple CPUs with multiple waiters spinning, depending on
-> hold-time vs. time to put a waiter to sleep and wake them up.
-> 
-> The wake-up side could also walk ahead on the queue, and bring up
-> spinners from sleeping, so that they are all ready to go when the lock
-> flips green for them.
-> 
+On Fri, Feb 22, 2008 at 11:12 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Friday 22 February 2008 21:06:00 Alexey Zaytsev wrote:
+>  > >  It is not my problem, if you refuse to use b43.
+>  > >  You also still refuse to tell me details about your card and _what_
+>  > >  does not work. I do own lots of different card and they
+>  > >  all work fine with b43. There's one exception, the 4311 rev 3 (or something,
+>  > >  don't quite remember). But patches are available and will ship in 2.6.25.
+>  > >  bcm43xx won't get removed until that shipped.
+>  >
+>  > Yes, it's a 4311 rev 01, but I'm probably was just too lame to upgrade the
+>  > firmware or something. :E
+>  >
+>  > I really don't get it, what is going on here? You state that the new b32 driver
+>  > has problems on some hardware, where the old bcm43xx driver just works.
+>  > And at the same time, you are surprised that I "refuse" to use the b43 driver
+>  > and push patches for the bcm43xx driver you broke... Oh, really, why?!
+>
+>  So, please find someone who will sign-off your patch. I won't.
+>  What's so hard to understand about that? Do I _have_ to sign off all patches
+>  random people send to me?
+>  I do _not_ want to be made responsible for that patch by signing it off.
+>  It is as simple as that.
+>  And I officially do not care about bcm43xx since a year and a half anymore.
+>  So why should I ACK it or sign it off?
+>
 
-I did try an attempt at this one time.  The logic was merely if the
-pending owner was running, wakeup the next waiter.  The results were
-terrible for the benchmarks used, as compared to the current
-implementation. 
+I thought that there was a rule that if you break something in the kernel, you
+normally would be the one who fixes things up. Sorry, it looks I was wrong.
 
-What this meant was that virtually every unlock performed a wakeup, if
-not for the new pending owner, than the next-in-line waiter. 
-
-My impression at the time was that the contention for the rq lock is
-significant, regardless of even if the task being woken up was already
-running.  
-
-I can generate numbers if that helps.
-
--PWM
-
-
-
+I'll resend the patch directly to Greg KH and Jeff Garzik for -stable and 2.6.25
+inclusion.
