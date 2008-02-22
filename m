@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbYBVT7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932261AbYBVT7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764632AbYBVT7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:59:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbYBVT6w
+	id S932261AbYBVT7m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:59:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759787AbYBVT64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:58:52 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44790 "EHLO smtp4.pp.htv.fi"
+	Fri, 22 Feb 2008 14:58:56 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:34183 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754282AbYBVT6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:58:51 -0500
-Date: Fri, 22 Feb 2008 21:58:02 +0200
+	id S1759549AbYBVT6z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:58:55 -0500
+Date: Fri, 22 Feb 2008 21:58:07 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Thomas Mingarelli <thomas.mingarelli@hp.com>,
-       Wim Van Sebroeck <wim@iguana.be>
+To: Casey Schaufler <casey@schaufler-ca.com>, Paul Moore <paul.moore@hp.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make watchdog/hpwdt.c:asminline_call() static
-Message-ID: <20080222195802.GA1409@cs181133002.pp.htv.fi>
+Subject: [2.6 patch] make smackfs.c:smk_unlbl_ambient() static
+Message-ID: <20080222195807.GB1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -24,40 +23,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch makes the needlessly global asminline_call() static and 
-removes the not required "asmlinkage".
+This patch makes the needlessly global smk_unlbl_ambient() static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- drivers/watchdog/hpwdt.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-83ff67cb18105141ba2f4a9eeb5e63d5ff0818ee diff --git a/drivers/watchdog/hpwdt.c b/drivers/watchdog/hpwdt.c
-index a2e174b..d14cfee 100644
---- a/drivers/watchdog/hpwdt.c
-+++ b/drivers/watchdog/hpwdt.c
-@@ -198,8 +198,8 @@ static int __devinit bios_checksum(const char __iomem *ptr, int len)
- 
- #define HPWDT_ARCH	32
- 
--asmlinkage void asminline_call(struct cmn_registers *pi86Regs,
--			       unsigned long *pRomEntry)
-+static void asminline_call(struct cmn_registers *pi86Regs,
-+			   unsigned long *pRomEntry)
+60c7072cb922cdecdb8a4f08e5710c014e0e8a8c diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index 358c92c..7c6e671 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -371,7 +371,7 @@ void smk_cipso_doi(void)
+ /**
+  * smk_unlbl_ambient - initialize the unlabeled domain
+  */
+-void smk_unlbl_ambient(char *oldambient)
++static void smk_unlbl_ambient(char *oldambient)
  {
- 	asm("pushl       %ebp               \n\t"
- 	    "movl        %esp, %ebp         \n\t"
-@@ -368,8 +368,8 @@ static int __devinit detect_cru_service(void)
- 
- #define HPWDT_ARCH	64
- 
--asmlinkage void asminline_call(struct cmn_registers *pi86Regs,
--			       unsigned long *pRomEntry)
-+static void asminline_call(struct cmn_registers *pi86Regs,
-+			   unsigned long *pRomEntry)
- {
- 	asm("pushq      %rbp            \n\t"
- 	    "movq       %rsp, %rbp      \n\t"
-
+ 	int rc;
+ 	struct netlbl_audit audit_info;
