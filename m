@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbYBVR4w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbYBVSA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbYBVR4w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:56:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751699AbYBVR4o
+	id S1758968AbYBVSA0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 13:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYBVSAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:56:44 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:44275 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751213AbYBVR4n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:56:43 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Fri, 22 Feb 2008 18:56:14 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de> <47BF0BA4.5060503@googlemail.com>
-In-Reply-To: <47BF0BA4.5060503@googlemail.com>
+	Fri, 22 Feb 2008 13:00:07 -0500
+Received: from mx2.compro.net ([216.54.166.4]:63643 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754856AbYBVSAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 13:00:04 -0500
+X-IronPort-AV: E=Sophos;i="4.25,392,1199682000"; 
+   d="scan'208";a="1745709"
+Message-ID: <47BF0CE2.306@compro.net>
+Date: Fri, 22 Feb 2008 12:56:50 -0500
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Mike Christie <michaelc@cs.wisc.edu>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: New 2.6.24.2 SG_IO SCSI problems
+References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu> <47BEFF5F.9020002@cs.wisc.edu>
+In-Reply-To: <47BEFF5F.9020002@cs.wisc.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802221856.14980.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008 18:51:32 Gabriel C wrote:
-> > I'm not going to play these kconfig SELECT tricks anymore.
+Mike Christie wrote:
+> Mike Christie wrote:
+>> Mark Hounschell wrote:
+>>> I seem to have run into some sort of regression in the SG_IO
+>>> interface of 2.6.24.2. I have an application that up until 2.6.24
+>>> worked fine. The 2.6.23.16 kernel works fine.
+>>>
+>>> During reads I get these kernel messages. Writes and other functions
+>>> _seem_ OK. Actually basic
+>>> reads  are working. Its with large BC reads using an io_vec list that
+>>> the problem shows up.
+>>>
+>>
+>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
+>> (/dev/sdX)?
 > 
-> Fix it different then.
+> If you are doing SG_IO to the sg device, then I know of one regression
+> (well not regression exactly, but I fixed a bug but the patch got
+> partially overwritten by another patch and that caused a new bug). Both
+> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
+> SG_IO to the sg device.
+> 
 
-Please do so.
+Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
 
-> Yes it is but that is still not a valid reason to NACK that patch , I'm sorry.
-
-NACK means I (being the maintainer of the modified code) won't
-sign-off this patch. Nothing more or less. If some upstream maintainer
-decides to bypass me and apply the patch nevertheless is not of
-my business. But I will not sign-off or ack this patch.
-
--- 
-Greetings Michael.
+Thanks
+Mark
