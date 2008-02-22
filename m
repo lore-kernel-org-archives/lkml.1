@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYBVNHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbYBVNNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758560AbYBVNHf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:07:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932715AbYBVNHI
+	id S933057AbYBVNNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbYBVNN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:07:08 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:33157 "EHLO mx1.redhat.com"
+	Fri, 22 Feb 2008 08:13:29 -0500
+Received: from main.gmane.org ([80.91.229.2]:34729 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765655AbYBVNHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:07:04 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <55722.57422.qm@web36602.mail.mud.yahoo.com>
-References: <55722.57422.qm@web36602.mail.mud.yahoo.com>
-To: casey@schaufler-ca.com
-Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 09/37] Security: Allow kernel services to override LSM settings for task actions
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 22 Feb 2008 13:06:29 +0000
-Message-ID: <20272.1203685589@redhat.com>
+	id S1754173AbYBVNN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 08:13:28 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <matthieu.castet@parrot.com>
+Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
+Date: Fri, 22 Feb 2008 13:13:19 +0000 (UTC)
+Message-ID: <loom.20080222T130746-405@post.gmane.org>
+References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com> <200802190017.04432.mb@bu3sch.de> <20080218234212.GA25680@uranus.ravnborg.org> <200802190101.27429.mb@bu3sch.de> <20080219053229.GB25680@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 78.115.177.6 (Mozilla/5.0 (X11; U; Linux i686; fr; rv:1.8.1.12) Gecko/20080129 Iceweasel/2.0.0.12 (Debian-2.0.0.12-1))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Casey Schaufler <casey@schaufler-ca.com> wrote:
+Sam Ravnborg <sam <at> ravnborg.org> writes:
 
-> > +static int smack_task_kernel_act_as(struct task_struct *p,
-> > +				    struct task_security *sec, u32 secid)
-> > +{
-> > +	return -ENOTSUPP;
-> > +}
-> ...
-> > +static int smack_task_create_files_as(struct task_struct *p,
-> > +				      struct task_security *sec,
-> > +				      struct inode *inode)
-> > +{
-> > +	return -ENOTSUPP;
-> > +}
 > 
-> Hum. ENOTSUPP is not not very satisfying, is it? I will have to
-> think on this a bit.
+> In at least 99% of the cases this is OK and the check has found
+> several bugs where things would not have worked due to different
+> alignmnet between kernel and userland. Just think about the
+> issues in a mixed 32/64 bit world.
+> 
+I don't see how this check is supposed to work.
+For some arch userspace can have different alignement depending on compilation
+option :
+- x86_64 : 32 or 64 bits mode
+- arm : 32 bits or thumb mode
+- mips : 32 bits or mips16 mode
+[...]
 
-Sorry, I meant to ping you on this directly.  I'm not sure how to effect these
-two functions for Smack.
+The check is done only for one case ?
 
-> Except for the fact that the hooks don't do anything this
-> looks fine. I'm not sure that I would want these hooks to
-> do anything, it requires additional thought to determine if
-> there is a good behavior for them.
 
-Note that you won't be able to use CacheFiles with Smack if either of these
-just returns an error.  This may also affect NFSd in the future too.
+> In this particular case you _could_ be right that it would work
+> on ARM userland. But the only way to be sure is to pad the
+> structure so it become 8 byte in size.
+> Or as was recently done in the m68k case to tell the
+> compiler to specifically align it to 8 byte boundary.
+An easy way to fix this is just to issue a warning but not an error. So it could
+ignored on cross compilation case.
 
-smack_task_create_files_as() is passed the label that new files created by
-CacheFiles should be created with.
+Matthieu
 
-For smack_task_kernel_act_as(), it may be sufficient to set CAP_MAC_OVERRIDE in
-the task_security struct and leave it as that.  It also may not be sufficient,
-as NFSd may end up using this to set the subjective security label supplied by
-the NFS client.  I don't know, though, whether Smack is going to be involved in
-that passing labels over NFS.
-
-David
