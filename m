@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934908AbYBVAFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935787AbYBVAHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934908AbYBVAFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:05:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbYBVAF2
+	id S935787AbYBVAHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758170AbYBVAHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:05:28 -0500
-Received: from khc.piap.pl ([195.187.100.11]:56974 "EHLO khc.piap.pl"
+	Thu, 21 Feb 2008 19:07:21 -0500
+Received: from cantor.suse.de ([195.135.220.2]:47116 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752857AbYBVAF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:05:27 -0500
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
-	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-	<m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 22 Feb 2008 01:05:26 +0100
-In-Reply-To: <47BE0C12.604@garzik.org> (Jeff Garzik's message of "Thu\, 21 Feb 2008 18\:41\:06 -0500")
-Message-ID: <m3k5kxq2ih.fsf@maximus.localdomain>
+	id S1756663AbYBVAHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:07:19 -0500
+Message-ID: <47BE1225.7030808@suse.de>
+Date: Fri, 22 Feb 2008 01:07:01 +0100
+From: Frank Seidel <fseidel@suse.de>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andy Whitcroft <apw@shadowen.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>	<20080214160231.GC10713@shadowen.org>	<20080221012332.dc1948ac.sfr@canb.auug.org.au> <20080220084747.77553451.randy.dunlap@oracle.com>
+In-Reply-To: <20080220084747.77553451.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik <jeff@garzik.org> writes:
+Randy Dunlap wrote:
+> I'd like to see tarballs too, please...
 
-> If a driver is full of lines of length >80, that's a problem.
+Hi, i'll provide tars of the current linux-next tree reachable
+via my http://linux-next.f-seidel.de wiki ("Tar Downloads").
+Is that what you were looking for?
 
-I'm not sure.
-We all have more than 80-chars wide displays for years, don't we? The
-problem is not the number of characters but code which is too
-complex and which may sometimes have too many levels of indentation.
-
-Unfortunately expressing code complexity in terms of line lengths
-doesn't seem to work at all.
-
-The 80-chars limit harms development, it makes the code less readable,
-sometimes far less readable.
-
-I think we should increase length limit to 132 for the whole kernel
-code. Obviously printk() _output_ etc. should stay at 80.
--- 
-Krzysztof Halasa
+Thanks,
+Frank
