@@ -1,81 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933515AbYBVVpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934311AbYBVVqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933515AbYBVVpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933420AbYBVVnK
+	id S934311AbYBVVqM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:46:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762314AbYBVVnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:43:10 -0500
-Received: from mx1.suse.de ([195.135.220.2]:46393 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 16:43:15 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60384 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933322AbYBVVnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:43:08 -0500
-Date: Fri, 22 Feb 2008 13:40:15 -0800
+	id S933322AbYBVVnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:43:12 -0500
+Date: Fri, 22 Feb 2008 13:40:19 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Christoph Lameter <clameter@sgi.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 05/23] quicklists: do not release off node pages early
-Message-ID: <20080222214015.GF8686@suse.de>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 06/23] NFS: Fix a potential file corruption issue when
+	writing
+Message-ID: <20080222214019.GG8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="quicklists-do-not-release-off-node-pages-early.patch"
+Content-Disposition: inline; filename="nfs-fix-a-potential-file-corruption-issue-when-writing.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: Christoph Lameter <clameter@sgi.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-patch ed367fc3a7349b17354c7acef551533337764859 in mainline.
+patch 5d47a35600270e7115061cb1320ee60ae9bcb6b8 in mainline.
 
-quicklists must keep even off node pages on the quicklists until the TLB
-flush has been completed.
+If the inode is flagged as having an invalid mapping, then we can't rely on
+the PageUptodate() flag. Ensure that we don't use the "anti-fragmentation"
+write optimisation in nfs_updatepage(), since that will cause NFS to write
+out areas of the page that are no longer guaranteed to be up to date.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+A potential corruption could occur in the following scenario:
+
+client 1			client 2
+===============			===============
+				fd=open("f",O_CREAT|O_WRONLY,0644);
+				write(fd,"fubar\n",6);	// cache last page
+				close(fd);
+fd=open("f",O_WRONLY|O_APPEND);
+write(fd,"foo\n",4);
+close(fd);
+
+				fd=open("f",O_WRONLY|O_APPEND);
+				write(fd,"bar\n",4);
+				close(fd);
+-----
+The bug may lead to the file "f" reading 'fubar\n\0\0\0\nbar\n' because
+client 2 does not update the cached page after re-opening the file for
+write. Instead it keeps it marked as PageUptodate() until someone calls
+invalidate_inode_pages2() (typically by calling read()).
+
+The bug was introduced by commit 44b11874ff583b6e766a05856b04f3c492c32b84
+"NFS: Separate metadata and page cache revalidation mechanisms"
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- include/linux/quicklist.h |    8 --------
- 1 file changed, 8 deletions(-)
+ fs/nfs/write.c |   20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
 
---- a/include/linux/quicklist.h
-+++ b/include/linux/quicklist.h
-@@ -56,14 +56,6 @@ static inline void __quicklist_free(int 
- 	struct page *page)
- {
- 	struct quicklist *q;
--	int nid = page_to_nid(page);
--
--	if (unlikely(nid != numa_node_id())) {
--		if (dtor)
--			dtor(p);
--		__free_page(page);
--		return;
--	}
+--- a/fs/nfs/write.c
++++ b/fs/nfs/write.c
+@@ -710,6 +710,17 @@ int nfs_flush_incompatible(struct file *
+ }
  
- 	q = &get_cpu_var(quicklist)[nr];
- 	*(void **)p = q->page;
+ /*
++ * If the page cache is marked as unsafe or invalid, then we can't rely on
++ * the PageUptodate() flag. In this case, we will need to turn off
++ * write optimisations that depend on the page contents being correct.
++ */
++static int nfs_write_pageuptodate(struct page *page, struct inode *inode)
++{
++	return PageUptodate(page) &&
++		!(NFS_I(inode)->cache_validity & (NFS_INO_REVAL_PAGECACHE|NFS_INO_INVALID_DATA));
++}
++
++/*
+  * Update and possibly write a cached page of an NFS file.
+  *
+  * XXX: Keep an eye on generic_file_read to make sure it doesn't do bad
+@@ -730,10 +741,13 @@ int nfs_updatepage(struct file *file, st
+ 		(long long)(page_offset(page) +offset));
+ 
+ 	/* If we're not using byte range locks, and we know the page
+-	 * is entirely in cache, it may be more efficient to avoid
+-	 * fragmenting write requests.
++	 * is up to date, it may be more efficient to extend the write
++	 * to cover the entire page in order to avoid fragmentation
++	 * inefficiencies.
+ 	 */
+-	if (PageUptodate(page) && inode->i_flock == NULL && !(file->f_mode & O_SYNC)) {
++	if (nfs_write_pageuptodate(page, inode) &&
++			inode->i_flock == NULL &&
++			!(file->f_mode & O_SYNC)) {
+ 		count = max(count + offset, nfs_page_length(page));
+ 		offset = 0;
+ 	}
 
 -- 
