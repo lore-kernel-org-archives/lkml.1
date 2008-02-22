@@ -1,71 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbYBVGEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765691AbYBVGL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765285AbYBVGEh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 01:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYBVGE3
+	id S1765691AbYBVGL1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 01:11:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbYBVGLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 01:04:29 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:38859 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751721AbYBVGE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 01:04:28 -0500
-Date: Fri, 22 Feb 2008 17:04:21 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for Feb 22
-Message-Id: <20080222170421.9e17d143.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS"
+	Fri, 22 Feb 2008 01:11:17 -0500
+Received: from twinlark.arctic.org ([208.69.40.136]:60488 "EHLO
+	twinlark.arctic.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752997AbYBVGLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 01:11:16 -0500
+Message-ID: <47BE6782.2020604@kernel.org>
+Date: Thu, 21 Feb 2008 22:11:14 -0800
+From: "Andrew G. Morgan" <morgan@kernel.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Security Modules List 
+	<linux-security-module@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>, James Morris <jmorris@namei.org>
+Subject: Re: [PATCH] capabilities: implement per-process securebits
+References: <47BA3E21.2020303@kernel.org> <20080220174252.GA16304@sergelap.austin.ibm.com> <47BE2C6F.9090504@kernel.org>
+In-Reply-To: <47BE2C6F.9090504@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Hi all,
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
+Andrew G. Morgan wrote:
+| Serge E. Hallyn wrote:
+| |> It all looks good to me.
+| |
+| |> Since we've confirmed that wireshark uses capabilities it must be using
+| |> prctl(PR_SET_KEEPCAPS), so running it might be a good way to verify
+that
+| |> your changes to that codepath (with
+CONFIG_SECURITY_FILE_CAPABILITIES=n)
+| |> are 100% correct, and might set minds at ease.  Is that something
+you're
+| |> set up to be able to do?
+|
+| I guess I need someone to offer an existence proof that this particular
+| wireshark code ever worked? (ldd dumpcap|grep libcap). For reference,
+| I'm looking at:
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-allmodconfig for both powerpc and x86_64.
+Doh! :*)
 
-There only one merge problem and no build failures!
+I had mistaken cap_init() for cap_get_proc() in the wireshark code...
 
-We are up to 30 trees, more are welcome (even if they are currently
-empty).  I would encourage architecture maintainers, in particular, to
-set up a git branch or quilt tree now to avoid the rush after RC3 :-)
+I now see what wireshark is trying to do, and can *confirm* that with
+the present patch I do maintain the legacy behavior. :-)
 
-I am now including tarballs in
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/.
+FWIW I've updated capsh in the libcap git tree to add a few more hooks
+and with the following sequence can now verify that the keep-caps works
+as before:
 
-Status of my local build tests is at
-http://kisskb.ellerman.id.au/kisskb/branch/9/.  The sparc builds have
-been mostly disabled while I obtain a working cross compiler.
+As root:
+# rm -f tcapsh
+# cp capsh tcapsh
+# chown root.root tcapsh
+# chmod u+s tcapsh
+# ls -l tcapsh
+# ./capsh --uid=500 -- -c "./tcapsh --keep=1 \
+~  --caps=\"cap_net_raw,cap_net_admin=ip\" --uid=500 \
+~  --caps=\"cap_net_raw,cap_net_admin=pie\" --print"
+# echo $?
+0
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+The wireshark problem, that you have been discussing (in the other
+thread), can also be simulated as follows:
 
---Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS
-Content-Type: application/pgp-signature
+# ./capsh --uid=500 -- -c "./tcapsh --keep=1 \
+~  --caps=\"cap_net_raw,cap_net_admin=ip\" \
+~  --uid=500 --forkfor=10 --caps= --print \
+~  --killit=9 --print"
 
+You might like to re-post your fix for that problem as a stand alone
+patch; I suspect it may be lost in the noise at this point. (You might
+also like to update the comment in that fix since the old comment looks
+very stale if you delete the ->euid==0 check. I think it is safe to
+simply say /* legacy signal behavior requires that a user can kill any
+process running with their uid */)
+
+Cheers
+
+Andrew
+
+|
+| wireshark-0.99.7/dumpcap.c:302
+|
+| void
+| relinquish_privs_except_capture(void)
+| {
+| ~    /* CAP_NET_ADMIN: Promiscuous mode and a truckload of other
+| ~     *                stuff we don't need (and shouldn't have).
+| ~     * CAP_NET_RAW:   Packet capture (raw sockets).
+| ~     */
+| ~    cap_value_t cap_list[2] = { CAP_NET_ADMIN, CAP_NET_RAW };
+| ~    cap_t caps = cap_init();
+| ~    int cl_len = sizeof(cap_list) / sizeof(cap_value_t);
+|
+| ~    if (started_with_special_privs()) {
+| ~        print_caps("Pre drop, pre set");
+| ~        if (prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0) == -1) {
+| ~            perror("prctl()");
+| ~        }
+|
+| ~        cap_set_flag(caps, CAP_PERMITTED,   cl_len, cap_list, CAP_SET);
+| ~        cap_set_flag(caps, CAP_INHERITABLE, cl_len, cap_list, CAP_SET);
+|
+| [ XXX:AGM since (caps.pE > caps.pP) this next line should fail ]
+| ~        if (cap_set_proc(caps)) {
+| ~            perror("capset()");
+| ~        }
+| ~        print_caps("Pre drop, post set");
+| ~    }
+|
+| ~    relinquish_special_privs_perm();
+|
+| ~    print_caps("Post drop, pre set");
+| ~    cap_set_flag(caps, CAP_EFFECTIVE,   cl_len, cap_list, CAP_SET);
+| ~    if (cap_set_proc(caps)) {
+| ~        perror("capset()");
+| ~    }
+| ~    print_caps("Post drop, post set");
+| ~    cap_free(caps);
+| }
+| #endif /* HAVE_LIBCAP */
+|
+| My reading of the above code suggests that the application believes that
+| it can raise/retain effective capabilities that are not in its permitted
+| set.
+|
+| Browsing back in my git tree all the way back to 'v2.6.12-rc2', the
+| following code (cap_capset_check) correctly requires:
+|
+| ~   96  /* verify the _new_Effective_ is a subset of the
+_new_Permitted_ */
+| ~   97  if (!cap_issubset (*effective, *permitted)) {
+| ~   98   return -EPERM;
+| ~   99  }
+|
+| so my question is, why should one expect this wireshark code to work? It
+| looks wrong to me.
+|
+| Thanks
+|
+| Andrew
+|
+| |
+| |> -serge
+| |
+| | Thanks
+| |
+| | Andrew
+|
+| ~From 006ddf6903983dd596e360ab1ab8e537b29fab46 Mon Sep 17 00:00:00 2001
+| From: Andrew G. Morgan <morgan@kernel.org>
+| Date: Mon, 18 Feb 2008 15:23:28 -0800
+| Subject: [PATCH] Implement per-process securebits
+| |>
+| [This patch represents a no-op unless CONFIG_SECURITY_FILE_CAPABILITIES
+| ~ is enabled at configure time.]
+| |>
+| Filesystem capability support makes it possible to do away with
+| (set)uid-0 based privilege and use capabilities instead. That is, with
+| filesystem support for capabilities but without this present patch,
+| it is (conceptually) possible to manage a system with capabilities
+| alone and never need to obtain privilege via (set)uid-0.
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-iD8DBQFHvmXpTgG2atn1QN8RAl/WAKCI+zZjywQiH+GUXZQ4V6V2GvWZjgCdHSEv
-DP6l2rXYQe9nd9T5ddjtUkY=
-=G4Gv
+iD8DBQFHvmeB+bHCR3gb8jsRAknmAKCMw0Qe7uDwtuRE+f3YVmnlE5pK4wCgsv0f
+5E6+K9Z0Xp1P74iOlnt221o=
+=+sLL
 -----END PGP SIGNATURE-----
-
---Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS--
