@@ -1,87 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbYBVSIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762253AbYBVSIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbYBVSIB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 13:08:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbYBVSHw
+	id S1762253AbYBVSIa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 13:08:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760485AbYBVSIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 13:07:52 -0500
-Received: from mail.lang.hm ([64.81.33.126]:33357 "EHLO bifrost.lang.hm"
+	Fri, 22 Feb 2008 13:08:07 -0500
+Received: from pasmtpa.tele.dk ([80.160.77.114]:49986 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752105AbYBVSHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 13:07:51 -0500
-Date: Fri, 22 Feb 2008 11:23:48 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org, Greg KH <gregkh@suse.de>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
- Screen becomes green.
-In-Reply-To: <200802221844.31579.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.00.0802221114350.17357@asgard.lang.hm>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802221802.18640.rjw@sisk.pl> <47BF071C.6040308@rtr.ca> <200802221844.31579.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1759461AbYBVSIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 13:08:05 -0500
+Date: Fri, 22 Feb 2008 19:08:15 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Nish Aravamudan <nish.aravamudan@gmail.com>
+Cc: Len Brown <lenb@kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
+Message-ID: <20080222180815.GB6434@uranus.ravnborg.org>
+References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B73DD8.4030405@linux.vnet.ibm.com> <200802210208.47487.lenb@kernel.org> <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com> <20080221222245.GB30976@uranus.ravnborg.org> <29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008, Rafael J. Wysocki wrote:
+On Thu, Feb 21, 2008 at 05:38:52PM -0800, Nish Aravamudan wrote:
+> On 2/21/08, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > On Thu, Feb 21, 2008 at 10:54:40AM -0800, Nish Aravamudan wrote:
+> >  > On 2/20/08, Len Brown <lenb@kernel.org> wrote:
+> >  > > On Saturday 16 February 2008 14:47, Kamalesh Babulal wrote:
+> >  > >  > Hi Andrew,
+> >  > >  >
+> >  > >  > The 2.6.25-rc2-mm1 kernel with randconfig build option, fails
+> >  > >  > to build on x86_64 machine
+> >  > >  >
+> >  > >  >   CC      drivers/acpi/osl.o
+> >  > >  > drivers/acpi/osl.c:60:38: error: empty filename in #include
+> >  > >  > drivers/acpi/osl.c: In function 'acpi_os_table_override':
+> >  > >  > drivers/acpi/osl.c:399: error: 'AmlCode' undeclared (first use in this function)
+> >  > >  > drivers/acpi/osl.c:399: error: (Each undeclared identifier is reported only once
+> >  > >  > drivers/acpi/osl.c:399: error: for each function it appears in.)
+> >  > >  > make[2]: *** [drivers/acpi/osl.o] Error 1
+> >  > >  > make[1]: *** [drivers/acpi] Error 2
+> >  > >  > make: *** [drivers] Error 2
+> >  > >  >
+> >  > >  > #
+> >  > >  > # Automatically generated make config: don't edit
+> >  > >  > # Linux kernel version: 2.6.25-rc2-mm1
+> >  > >  > # Sun Feb 17 08:07:17 2008
+> >  > >  > #
+> >  > >
+> >  > >
+> >  > > > CONFIG_ACPI_CUSTOM_DSDT=y
+> >  > >  > CONFIG_ACPI_CUSTOM_DSDT_FILE=""
+> >  > >
+> >  > >
+> >  > > garbage in, garbage out.
+> >  >
+> >  > garbage explicitly *allowed* by Kconfig in this case, though.
+> >  >
+> >  > >  If you don't give this build option a file name where AmlCode lives,
+> >  > >  then the build will be unable to find AmlCode[].
+> >  > >
+> >  > >  http://www.lesswatts.org/projects/acpi/overridingDSDT.php
+> >  >
+> >  > So we have a .config option whose sole purpose is to use another
+> >  > .config option? That seems ... less than ideal. Is there not some
+> >  > Kconfig voodoo we can do to only require the one option? Maybe
+> >  > something like how CONFIG_INITRAMFS_SOURCE is done? Adding Sam to the
+> >  > Cc, in case he has any ideas.
+> >
+> >
+> > Make sure STANDALONE is y for your randconfig builds.
+> >  See README for examples.
+> 
+> Hrm, if this is needed for randconfig to work, perhaps randconfig
+> itself should somehow be specifying it?
+> 
+> >  STANALONE is there exactly to prevent the above but we cannot
+> >  control randconfig.
+> 
+> While setting STANDALONE does fix the above, it doesn't answer the
+> more basic question I had -- do we really need both .config options in
+> this case? If it's simply a case of "That's how it is, won't be fixed,
+> there are higher priorities", that's good enough by me. Just seems a
+> shame that we have an option to enable another option, which is
+> required for the first option to be sensible -- seems like we should
+> only need the second option...
 
-> On Friday, 22 of February 2008, Mark Lord wrote:
->> Rafael J. Wysocki wrote:
->>> On Friday, 22 of February 2008, Mark Lord wrote:
->>>> david@lang.hm wrote:
->>>> ..
->>>>> I've been watching for kexec hibernate for a little while now, and the
->>>>> last I saw was that acpi was incompatible with the kexec hibernate (but
->>>>> the suspend folks were still claiming that devices needed to be put in
->>>>> the 'right mode' not just powered off. I've been waiting to see this
->>>>> resolved.
->>>> ..
->>>>
->>>> Yeah, exactly.  What's so special about poweroff on hibernation?
->>>> Why even bother with the special "S4" state there?
->>>
->>> (1) To be able to wake up with the help of devices that can't wake
->>>     the system up from S5 (power off)
->>> (2) To handle some platform devices appropriately over the cycle
->> ..
->>
->> That's the theory.  I've read about it, but have yet to imagine
->> any real-life situation where it applies.
->>
->> But this isn't my speciality, so.. do you have experience with any real examples?
->
-> Yup.  The fan in my notebook behaves incorrectly after a resume from
-> hibernation if S5 is entered instead of S4 during it.
+I really do not see what problem you are trying to address.
 
-so if you power off your laptop the fan doesn't work when you turn it back 
-on?????
+STANDALONE is there as an easy way to turn of the options that requires
+sensible input to make a kernel compile.
 
-> I don't know why exactly it happens, but that's how it goes.
->
-> Also, some machines are reported to behave incorrectly after a "shutdown"
-> mode hibernation, while the same machines work just fine after a "platform"
-> mode hibernation.  So at least for these machines it seems to matter.
+And that makes _perfect_ sense when you do randconfig builds.
 
-given that we don't have a pure "shutdown" option available to try I don't 
-see how this can be said to have been tested.
-
-currently any attempts to do a shutdown type hibernate are tangled in the 
-other code that is there for the suspend modes. this makes it _very_ hard 
-to say that the hardware requires something as opposed to the strong 
-possibility that the software is doing something wrong.
-
-there are also a _lot_ of people who are not able to reliably use the 
-existing "platform" mode hibernation, so it's not a fair statement to say 
-that it's the 'right' thing to do. If you want to make it an option, fine. 
-But please give those of us who don't care about these other wakeup 
-options, and who want to be able to use other OS's while linux is stopped 
-an option as well.
-
-David Lang
+	Sam
