@@ -1,62 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760661AbYBVU0q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761768AbYBVU3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760661AbYBVU0q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:26:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbYBVU0e
+	id S1761768AbYBVU3T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbYBVU3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:26:34 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:47898 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbYBVU0c (ORCPT
+	Fri, 22 Feb 2008 15:29:04 -0500
+Received: from smtp109.sbc.mail.mud.yahoo.com ([68.142.198.208]:44076 "HELO
+	smtp109.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751714AbYBVU3D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:26:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HaRMZsx3avqDdbiTMNQBrztRMg4nKeiacfeEMcXHP8fZtmVo3khHUl6rDCkWoTXXre7OOBYpaBhqn6W2lkFGlRzQZLxVrV7A0VqtQ0fjsii68G/zqvdhWSUfQtGpX7cbtahFGbajV7BzKkms3RG9fagcx8yFnLH7eez+6exy8Zs=
-Message-ID: <6101e8c40802221226t3097a97fjc75fd64e05a708e3@mail.gmail.com>
-Date: Fri, 22 Feb 2008 21:26:31 +0100
-From: "Oliver Pinter" <oliver.pntr@gmail.com>
-To: "Greg KH" <greg@kroah.com>
-Subject: Re: [stable] [2.6.22.y] {13/14} - NFSv2/v3: Fix a memory leak when using -onolock - on top of 2.6.22.17
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, stable@kernel.org,
-       stable-commits@vger.kernel.org
-In-Reply-To: <20080222201413.GA12330@kroah.com>
+	Fri, 22 Feb 2008 15:29:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-Newman-Property:Received:Date:From:To:Subject:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id;
+  b=eSdf4DssMQifSKvcw0vCDHFJUnx6yWae3AgSMmto+AROhivwgs0KPGmADZuxIxsykr4ZQtvhl6FnZFjkifdCdjs6pDXE4vPsW/Jfdt8B9cHchsBaA38rvlIk8DMKGekzcEClAnz1RZi1+r/yDmG9tRCfC7nMOSNZ2VBqacZDrmI=  ;
+X-Yahoo-Newman-Property: ymail-3
+Date: Fri, 22 Feb 2008 12:28:55 -0800
+From: David Brownell <david-b@pacbell.net>
+To: lg@opensource.wolfsonmicro.com, eric.y.miao@gmail.com
+Subject: Re: [UPDATED v2][PATCH 0/6] regulator: voltage and current regulator 
+ framework
+Cc: linux@arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, akpm@linux-foundation.org
+References: <1203527326.4071.88.camel@localhost.localdomain>
+ <20080221084128.GA4931@flint.arm.linux.org.uk>
+ <1203611191.4071.186.camel@localhost.localdomain>
+ <f17812d70802211922v49201af2re87629eba34bd9d4@mail.gmail.com>
+ <1203683790.4071.262.camel@localhost.localdomain>
+In-Reply-To: <1203683790.4071.262.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <6101e8c40802071203o1b32c2c2md53859623228463@mail.gmail.com>
-	 <20080222201413.GA12330@kroah.com>
+Message-Id: <20080222202855.2F1AD229B4D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/08, Greg KH <greg@kroah.com> wrote:
-> On Thu, Feb 07, 2008 at 09:03:52PM +0100, Oliver Pinter wrote:
-> > aka: nfs-unmount-leak.patch
-> >
-> > From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> > Date: Tue Dec 11 11:05:19 2007 -0500
-> > Subject: NFSv2/v3: Fix a memory leak when using -onolock
-> > Patch-mainline: 2.6.24
-> > References: 336253
-> >
-> > mainline: 13ef7b69b54aa8ae4ed264d0bf41339737f8543a
->
-> No, that's the wrong commit id. Please be more careful next time, it's
-> no fun having to verify every id to make sure that I can trust these
-> patches...
+> > For those PMIC that covers additional features, like
+> >   - usb vbus detection (or pull-up/pull-down)
+> >   - audio codec
+> >   - touch screen
+> >   - battery monitor/ fuel gauge
+> >   - battery charger
+> >   - possible many others
 
-sorry, my bad, im future checked i it several time
+Certainly many others ... like MMC transceivers, high speed USB
+transceivers, RTCs, and lots of other analog and "high voltage"
+(more than 1.8V, say) circuits that should be offloaded from 
+SOCs for systems built with 90nm (and smaller) processes.
 
+
+> > How do you plan to handle them?
 >
-> It's 5cef338b30c110daf547fb13d99f0c77f2a79fbc just for future reference.
+> The WM8350 and MC13783 are both multi feature PMIC's like above. We
+> handle WM8350 PMIC access via a bus manager.
+
+I think most such PMIC cases are best modeled as multi-function
+devices, plugging into numerous different frameworks.  That may
+be implied by "bus manager".
+
+There are already at least two PMIC drivers in drivers/i2c/chips
+in the mainstream kernel (tps65010.c and menelaus.c) and I'd think
+one factor to review of this framework is whether those chips
+could reasonbly be used in this framework.
+
+So for example the tps65010 presumes that fuel gauging is done
+by a separate chip (presumptively using HDQ/1-Wire), and in fact
+that may be part of a battery pack.  And the DAC functions, like
+touchscreens and (input) codecs, use other dedicated chips.  As
+time goes by, those PMIC chips integrate lots more functionality..
+
+- Dave
+
+
+>	This controls IO access to
+> the WM8350 so that client driver (including the regulator driver) IO
+> does not collide. We also cache non volatile PMIC registers to speed up
+> access. Please have a look at drivers/regulator/wm8350/wm8350-bus.c in
+> the imx31 branch for details.
 >
-> thanks,
+> Liam
 >
-> greg k-h
->
---
-Thanks,
-Oliver
