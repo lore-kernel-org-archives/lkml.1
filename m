@@ -1,44 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759536AbYBVQdL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760946AbYBVQdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759536AbYBVQdL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:33:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759971AbYBVQc2
+	id S1760946AbYBVQdk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760003AbYBVQcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:32:28 -0500
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59355 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757077AbYBVQcV (ORCPT
+	Fri, 22 Feb 2008 11:32:31 -0500
+Received: from will39.synserver.de ([212.40.172.10]:49236 "EHLO
+	will39.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756450AbYBVQc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:32:21 -0500
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: lockdep warning 
-In-reply-to: <Pine.LNX.4.64.0802221420250.30955@jikos.suse.cz> 
-References: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org> <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz> <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org> <Pine.LNX.4.64.0802221420250.30955@jikos.suse.cz>
-Comments: In-reply-to Jiri Kosina <jkosina@suse.cz>
-   message dated "Fri, 22 Feb 2008 14:20:40 +0100."
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 22 Feb 2008 17:32:13 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080222163213.5BDE293C12F@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-ACL-Warn: Too high rate of unknown addresses received from you
-X-Scan-Result: No virus found in message 1JSaop-0000bz-6P.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JSaop-0000bz-6P f3b9a182e9f928c1ca527b9914a84f27
+	Fri, 22 Feb 2008 11:32:26 -0500
+X-Greylist: delayed 2069 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Feb 2008 11:32:26 EST
+Message-ID: <47BEF0A6.9000405@willies.info>
+Date: Fri, 22 Feb 2008 16:56:22 +0100
+From: Jan Willies <jan@willies.info>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071212)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Subject: Re: 100% C0 with 2.6.25-rc
+References: <47BD600F.9090502@willies.info> <200802211733.54759.rjw@sisk.pl>
+In-Reply-To: <200802211733.54759.rjw@sisk.pl>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> On Thursday, 21 of February 2008, Jan Willies wrote:
+>> Since 2.6.25-rc1 I have a lot of wakeups/s (≈134191,4) and spend 100% in C0.
+>> It worked fine with 2.6.24 and commandline nolapic. Without nolapic I had 80k
+>> wakeups/s after some time, but not right from the start like now.  
+> 
+> We have a regression from 2.6.24, apparently interrupts-related.
 
-jkosina@suse.cz said:
-> > Any chance that
-> > 	git revert 69cc64d8d92
-> > makes this report go away?  
+After a lot of bisecting I've found the bad commit: 
 
-I've tested the patch and I no longer get that lock thing in my syslog.
+9b12e18cdc1553de62d931e73443c806347cd974 is first bad commit
+commit 9b12e18cdc1553de62d931e73443c806347cd974
+Author: venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
+Date:   Thu Jan 31 17:35:05 2008 -0800
 
-/A
+    ACPI: cpuidle: Support C1 idle time accounting
+    
+    Show C1 idle time in /sysfs cpuidle interface. C1 idle time may not
+    be entirely accurate in all cases. It includes the time spent
+    in the interrupt handler after wakeup with "hlt" based C1. But, it will
+    be accurate with "mwait" based C1.
 
+
+Reverting the commit brings my laptop back to C2.
+
+
+HTH
+
+- Jan
