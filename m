@@ -1,118 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763292AbYBVKHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbYBVKLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763292AbYBVKHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 05:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbYBVKH3
+	id S934559AbYBVKLj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 05:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbYBVKLb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 05:07:29 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:37674 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYBVKH0 (ORCPT
+	Fri, 22 Feb 2008 05:11:31 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56391 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751715AbYBVKLa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 05:07:26 -0500
-Message-ID: <47BE9DF7.2090206@cfl.rr.com>
-Date: Fri, 22 Feb 2008 05:03:35 -0500
-From: Mark Hounschell <dmarkh@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
-MIME-Version: 1.0
-To: markh@compro.net
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net> <1203608474.3208.10.camel@localhost.localdomain> <47BDA514.5050800@compro.net>
-In-Reply-To: <47BDA514.5050800@compro.net>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Feb 2008 05:11:30 -0500
+Date: Fri, 22 Feb 2008 10:00:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ian Campbell <ijc@hellion.org.uk>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Joel Becker <Joel.Becker@oracle.com>, Jody Belka <lists-lkml@pimb.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+Message-ID: <20080222100034.1e78d661@core>
+In-Reply-To: <47BE9C18.5060202@firstfloor.org>
+References: <20080212235404.GY7980@pimb.org>
+	<47B2DBA5.6030001@goop.org>
+	<20080214022744.GA4160@mail.oracle.com>
+	<47B3F2DC.8080707@goop.org>
+	<20080215202336.GE26034@mail.oracle.com>
+	<1203274161.27987.6.camel@localhost.localdomain>
+	<20080218104025.GA15899@ca-server1.us.oracle.com>
+	<1203458366.26910.15.camel@cthulhu.hellion.org.uk>
+	<47BBDA20.8030105@zytor.com>
+	<1203497511.26910.39.camel@cthulhu.hellion.org.uk>
+	<47BCA275.7000504@goop.org>
+	<1203546597.26910.74.camel@cthulhu.hellion.org.uk>
+	<47BDEA11.6010302@goop.org>
+	<47BDEB57.5040203@zytor.com>
+	<47BDEF36.8000903@goop.org>
+	<1203631956.28436.4.camel@cthulhu.hellion.org.uk>
+	<47BDF9C7.6040400@zytor.com>
+	<47BE0017.1020205@goop.org>
+	<47BE0228.7020204@zytor.com>
+	<1203665106.28436.19.camel@cthulhu.hellion.org.uk>
+	<20080222092855.6ace8845@core>
+	<47BE9C18.5060202@firstfloor.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Hounschell wrote:
-> James Bottomley wrote:
->> On Thu, 2008-02-21 at 10:15 -0500, Mark Hounschell wrote:
->>> I seem to have run into some sort of regression in the SG_IO interface of 2.6.24.2. 
->>> I have an application that up until 2.6.24 worked fine. The 2.6.23.16 kernel works fine.
->>>
->>> During reads I get these kernel messages. Writes and other functions _seem_ OK. Actually basic
->>> reads  are working. Its with large BC reads using an io_vec list that the problem shows up.
->>>
->>> Feb 21 09:27:51 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
->>> Feb 21 09:27:51 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
->>> Feb 21 09:27:51 harley kernel: sg[0] - Addr 0x06256100 : Length 256
->> Help me a little here.  What was the io_vec and command you sent in to
->> produce this?  The aic debugging information implies a single element sg
->> list for a 256 byte read.
->>
->> James
->>
->>
->>
+> Actually I switched 64bit over to trust e820 completely and not
+> reserve 640k-1MB explicitly some time ago
+> and AFAIK there hasn't been any reports that it causes problems.
 > 
-> Well, I did no 256 byte xfer at all.  My failing io_vec list has 6 elements.
-> The first 5 are for byte counts of 0xfffc and the last 0x6114. See below.
-> 
-> This is some debug info from within my app of the commands leading up the failure:
-> If you need actual values of the io_vec lists I will need to add some additional debug
-> info into the app. I will do if needed.
-> 
-> The disk BTW is formated at 768 byte sector size.
->  
-> The first read has a 2 element io_vec list and reports no error:
-> ScsiDev_thread_7e00: Read CBD = 0x08 0x00 0x00 0x00 0x01 0x00
-> ScsiDev_thread_7e00: Read1(1) bc = 0x0078 addr = 0x000000 Skip 0
-> ScsiDev_thread_7e00: Read(2) bc = 0x0288 addr = 0xb6cea368 Skip 1
-> ScsiDev_thread_7e00: SRead  DC ops = 2 short_bc = 288
-> 
-> The second read has a 4 element io_vec list and reports no error:
-> ScsiDev_thread_7e00: Read CBD = 0x08 0x00 0x00 0x00 0x05 0x00
-> ScsiDev_thread_7e00: Read1(1) bc = 0x0780 addr = 0x000000 Skip 0
-> ScsiDev_thread_7e00: Read1(2) bc = 0x0670 addr = 0x000000 Skip 1
-> ScsiDev_thread_7e00: Read1(3) bc = 0x003c addr = 0x000200 Skip 0
-> ScsiDev_thread_7e00: SRead(4) bc = 0x022c addr = 0xb6cea368 Skip 1
-> ScsiDev_thread_7e00: Read  DC ops = 4 short_bc = 22c
-> 
-> There is a seek here that reports no error:
-> ScsiDev_thread_7e00: Seek address 2752 BPS 768
-> 
-> 
-> This read has a 6 element io_vec list and reports  the error to the app:
-> ScsiDev_thread_7e00: ReadX CBD = 0x28 0x00 0x00 0x00 0x27 0x52 0x00 0x01 0xcb 0x00
-> ScsiDev_thread_7e00: Read1(1) bc = 0xfffc addr = 0x000784 Skip 0
-> ScsiDev_thread_7e00: Read1(2) bc = 0xfffc addr = 0x010780 Skip 0
-> ScsiDev_thread_7e00: Read1(3) bc = 0xfffc addr = 0x02077c Skip 0
-> ScsiDev_thread_7e00: Read1(4) bc = 0xfffc addr = 0x030778 Skip 0
-> ScsiDev_thread_7e00: Read1(5) bc = 0xfffc addr = 0x040774 Skip 0
-> ScsiDev_thread_7e00: Read1(6) bc = 0x6114 addr = 0x050770 Skip 0
-> ScsiDev_thread_7e00: Read  DC ops = 6 short_bc = 0
-> 
-> ScsiDev_thread_7e00: scsi = 0x0 msg 0x0 host = 0x00000007 driver = 0x00000000
-> ScsiDev_thread_7e00: Read error: sns = 0x00 residual = 0x0000
-> ScsiDev_thread_7e00: Posting IPL status 0x00000090 0x000e0000 for Suba 0000 to loc 0x000000
-> ScsiDev_thread_7e00: Sleeping!!
-> 
-> 
-> Below is the complete dump of kernel messages for the above. I assume they are
-> a result of the last failing read but there is an awfull lot there just for that 6 element
-> io_vec list. Sorry to put all this in there but wanted to you to get the idea.
-> 
-> 
-> Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-> Feb 21 10:51:03 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-> Feb 21 10:51:03 harley kernel: sg[0] - Addr 0x03252e100 : Length 256
-.
-. Snip
-.
-> Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): data overrun detected in Data-in phase.  Tag == 0x1.
-> Feb 21 10:51:49 harley kernel: (scsi1:A:2:0): Have seen Data Phase.  Length = 256.  NumSGs = 1.
-> Feb 21 10:51:49 harley kernel: sg[0] - Addr 0x0f156100 : Length 256
-> 
-> Again, sorry for all that.
-> 
+> So presumably trusting e802 is ok on modern systems (2003+)
 
-FWIW, on a different machine doing the same thing I get only a single
-kernel message and NOT the tons shown above.
+Apparently so - at least 64bit capable ones. We do still sort the entries
+to remove zero length records and other suprises.
 
-Regards
-Mark
-
+Alan
