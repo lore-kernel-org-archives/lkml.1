@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbYBVTHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765100AbYBVTIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765453AbYBVTHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbYBVTHf
+	id S1765100AbYBVTIv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbYBVTIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:07:35 -0500
-Received: from wr-out-0506.google.com ([64.233.184.228]:44650 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757287AbYBVTHd (ORCPT
+	Fri, 22 Feb 2008 14:08:39 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37421 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754946AbYBVTIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:07:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sm/wfYDaZrE1p1YOmscIh/aIfn0RtmsRqWvyUtRVPoWlcjr1pe/N/CHORbStHi+nhzJ7/HbBo1tJY8b1f3Bjkz8p1Z6ApDYhEoVox0X7L5cYgYFfSlqsmrWQ463guHSXuKmTRqbq41bIBgMkKS6ukl2wKMuqDXrGKN08cV7c2do=
-Message-ID: <86802c440802221107o713c264aj6ba7e37489df17a@mail.gmail.com>
-Date: Fri, 22 Feb 2008 11:07:31 -0800
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <47BF1D66.20507@firstfloor.org>
+	Fri, 22 Feb 2008 14:08:37 -0500
+Date: Fri, 22 Feb 2008 11:08:14 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
+       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
+       dsaxena@plexity.net, gregkh@suse.de, sdietrich@novell.com,
+       pmorreale@novell.com, mkohari@novell.com
+Subject: Re: [PATCH [RT] 08/14] add a loop counter based timeout mechanism
+Message-ID: <20080222190814.GD11213@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152707.4804.59177.stgit@novell1.haskins.net> <200802211741.10299.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200802210258.45011.yinghai.lu@sun.com>
-	 <p73hcg189g1.fsf@bingen.suse.de>
-	 <200802221102.31019.yinghai.lu@sun.com>
-	 <47BF1BD9.4020808@firstfloor.org>
-	 <86802c440802221104m3db0260cj806eb4fbd2a0db82@mail.gmail.com>
-	 <47BF1D66.20507@firstfloor.org>
+In-Reply-To: <200802211741.10299.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 11:07 AM, Andi Kleen <andi@firstfloor.org> wrote:
->
-> Yinghai Lu wrote:
->  > On Fri, Feb 22, 2008 at 11:00 AM, Andi Kleen <andi@firstfloor.org> wrote:
->  >>  > so for that box [4, 0x23] still could be apic clustered? there is a hole [0,3]..
->  >>
->  >>  I meant holes between the CPUs only, not including the IO-APICs.
->  >>
->  >>
->  >>  > is their box using AMD cpu or not?
->  >>
->  >>  Intel. AMD boxes don't really need clustered mode because they support
->  >>  bigflat mode.
->  >
->  > So DMI or exclude AMD CPU?
->
->  Just check for holes between the cpus as I suggested earlier
+On Thu, Feb 21, 2008 at 05:41:09PM +0100, Andi Kleen wrote:
+> 
+> > +config RTLOCK_DELAY
+> > +	int "Default delay (in loops) for adaptive rtlocks"
+> > +	range 0 1000000000
+> > +	depends on ADAPTIVE_RTLOCK
+> 
+> I must say I'm not a big fan of putting such subtle configurable numbers
+> into Kconfig. Compilation is usually the wrong place to configure
+> such a thing. Just having it as a sysctl only should be good enough.
+> 
+> > +	default "10000"
+> 
+> Perhaps you can expand how you came up with that default number? 
+> It looks suspiciously round and worse the actual spin time depends a lot on the 
+> CPU frequency (so e.g. a 3Ghz CPU will likely behave quite 
+> differently from a 2Ghz CPU) Did you experiment with other spin times? 
+> Should it be scaled with number of CPUs? And at what point is real
+> time behaviour visibly impacted? 
+> 
+> Most likely it would be better to switch to something that is more
+> absolute time, like checking RDTSC every few iteration similar to what
+> udelay does. That would be at least constant time.
 
-how about their system that is not full populated with CPU?
+One approach would be to set the RTLOCK_DELAY parameter to something like
+-1 for default, and to set it to the number of cycles required for about
+10 cache misses at boot time.  This would automatically scale with CPU
+frequency and memory latency.
 
-YH
+							Thanx, Paul
