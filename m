@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765604AbYBVTL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765240AbYBVTOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765604AbYBVTL7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:11:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762999AbYBVTLn
+	id S1765240AbYBVTOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbYBVTOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:11:43 -0500
-Received: from nf-out-0910.google.com ([64.233.182.187]:2253 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755526AbYBVTLl (ORCPT
+	Fri, 22 Feb 2008 14:14:34 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3642 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1758210AbYBVTOc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:11:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=BfBYS0MPXmBPOJCswK1P6AgopfODMUttDEMsDInlDwgakNr1w1xN7b6ROP+oruaAIsmyUAxKcDn3A9/y9rVSpt9nLM8qQY41MZ8Js/V/u2gZouBAa9ygA7jYVyG1OxawJQDbOts88hJ1syzu/PdRj5hkkT4ythckMXxAg7VAWaE=
-To: chris2553@googlemail.com
-Subject: Re: [Rt2400-devel] 2.6.25-rc2 regression in rt61pci wireless driver
-Date: Fri, 22 Feb 2008 20:11:15 +0100
-User-Agent: KMail/1.9.7
-Cc: Chris Vine <chris@cvine.freeserve.co.uk>, Dan Williams <dcbw@redhat.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       rt2400-devel@lists.sourceforge.net
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <1203636027.3186.5.camel@boulder.homenet> <200802220739.15366.chris2553@googlemail.com>
-In-Reply-To: <200802220739.15366.chris2553@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802222011.16225.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
+	Fri, 22 Feb 2008 14:14:32 -0500
+Subject: Re: [PATCH 1/2] char: hide sparse expensive pointer subtraction
+	warning in specialix.c
+From: Joe Perches <joe@perches.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1203705247.5962.17.camel@brick>
+References: <1203705247.5962.17.camel@brick>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 22 Feb 2008 11:13:30 -0800
+Message-Id: <1203707610.19319.73.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008, Chris Clayton wrote:
-> On Thursday 21 February 2008, Chris Vine wrote:
-> > On Thu, 2008-02-21 at 23:04 +0000, Chris Clayton wrote:
-> > > On Thursday 21 February 2008, Ivo van Doorn wrote:
-> > > > On Thursday 21 February 2008, Chris Vine wrote:
-> > [snip]
-> > > > > This probably explains the problem another user reported with rt61.
-> > > > 
-> > > > Perhaps something similar like:
-> > > > http://bugzilla.kernel.org/show_bug.cgi?id=10058
-> > > > in there a reference is made to the following patch:
-> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.25-rc2/2.6.25-rc2-mm1/broken-out/revert-send-a-single-notification-on-device-state-changes.patch
-> > > > 
-> > > > Does applying that help?
-> > > 
-> > > I'm afraid not, Ivo. The test I ran last night was against 2.6.25.-rc2-git4 and
-> > > that already has this patch applied. Furthermore, I have another card that uses
-> > > the rtl8180 driver and that works reliably. I, therefore, suspect that my problem
-> > > lies within the rt61pci driver or the rt2x00 infrastructure.
-> > 
-> > Does the same happen with 2.0.14 under kernel 2.6.24?
+On Fri, 2008-02-22 at 10:34 -0800, Harvey Harrison wrote:
+> Andrew, take it or leave it, I just did this to make it easier to look at the other
+> sparse issues....but without this sparse produces > 100 of these warnings for this
+> file.
 > 
-> Unfortunately, a 2.6.24.2 tree with the drivers/net/wireless/rt2x00 directory replaced with that from 2.6.25-rc2-git4 doesn't build:
-
-You need the mac80211 compat  module from Intel. That allows new mac80211 versions to run
-on older kernels. When you use that you need to grab the rt2x00 cvs tarball from:
-http://rt2x00.serialmonkey.com/wiki/index.php/Downloads
-
-which allows rt2x00 to be compiled outside of the kernel.
-
-> In file included from drivers/net/wireless/rt2x00/rt2x00dev.c:29:
-> drivers/net/wireless/rt2x00/rt2x00.h:942: warning: `struct ieee80211_bss_conf' declared inside parameter list
-> drivers/net/wireless/rt2x00/rt2x00.h:942: warning: its scope is only this definition or declaration, which is probably not what you want
+>  drivers/char/specialix.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
 > 
-> [...]
-> 
-> drivers/net/wireless/rt2x00/rt2x00dev.c: In function `rt2x00lib_configuration_scheduled':
-> drivers/net/wireless/rt2x00/rt2x00dev.c:484: error: storage size of `bss_conf' isn't known
-> drivers/net/wireless/rt2x00/rt2x00dev.c:494: error: `BSS_CHANGED_ERP_PREAMBLE' undeclared (first use in this function)
-> drivers/net/wireless/rt2x00/rt2x00dev.c:494: error: (Each undeclared identifier is reported only once
-> drivers/net/wireless/rt2x00/rt2x00dev.c:494: error: for each function it appears in.)
-> drivers/net/wireless/rt2x00/rt2x00dev.c:484: warning: unused variable `bss_conf'
-> drivers/net/wireless/rt2x00/rt2x00dev.c: In function `rt2x00lib_beacondone_scheduled':
-> drivers/net/wireless/rt2x00/rt2x00dev.c:511: warning: passing arg 2 of `ieee80211_beacon_get' makes integer from pointer without a cast
+> diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
+> index c0e08c7..5487f37 100644
+> --- a/drivers/char/specialix.c
+> +++ b/drivers/char/specialix.c
+> @@ -228,21 +228,21 @@ static inline int sx_paranoia_check(struct specialix_port const * port,
+>  /* Get board number from pointer */
+>  static inline int board_No (struct specialix_board * bp)
+>  {
+> -	return bp - sx_board;
+> +	return ((char *)bp - (char *)sx_board) * sizeof(*bp);
+>  }
 
-Ivo
+You've casted addresses to char then multiplied.
+You need to divide.
+
+Maybe it'd be better to change your sparse settings to
+not print this warning rather than change normally
+readable code to avoid the warning.
+
+I like the control name "ptr-subtraction-blows".
+
+$ make C=1 CHECKFLAGS="-Wno-ptr-subtraction-blows" drivers/char/specialix.o
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  CALL    scripts/checksyscalls.sh
+  CHECK   drivers/char/specialix.c
+drivers/char/specialix.c:2112:3: warning: context imbalance in 'sx_throttle' - unexpected unlock
+  CC      drivers/char/specialix.o
+drivers/char/specialix.c:2488: warning: ‘specialx_pci_tbl’ defined but not used
+
+
