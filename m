@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765545AbYBVTUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765964AbYBVTVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765545AbYBVTUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbYBVTUn
+	id S1765964AbYBVTVf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761813AbYBVTVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:20:43 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:36383 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757185AbYBVTUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:20:42 -0500
-Message-ID: <47BF206C.8040001@garzik.org>
-Date: Fri, 22 Feb 2008 14:20:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+	Fri, 22 Feb 2008 14:21:16 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2975 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759027AbYBVTVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:21:15 -0500
+Date: Fri, 22 Feb 2008 19:40:37 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Linus Torvalds <torvalds@osdl.org>,
        Glenn Streiff <gstreiff@NetEffect.com>,
        Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
        general@lists.openfabrics.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
+       Greg Kroah-Hartman <greg@kroah.com>
 Subject: Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <20080222185359.GA29945@elte.hu>
-In-Reply-To: <20080222185359.GA29945@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-ID: <20080222184036.GA6060@ucw.cz>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <20080221140855.6aea8cc1@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080221140855.6aea8cc1@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->  2) you might know that Deja-Vu moment when you look at a new patch that 
->     has been submitted to lkml and you have a strange, weird "feeling" 
->     that there's something wrong about the patch.
+On Thu 2008-02-21 14:08:55, Arjan van de Ven wrote:
+> On Thu, 21 Feb 2008 23:01:24 +0200
+> Adrian Bunk <bunk@kernel.org> wrote:
 > 
->     It's totally subconscious, and you take a closer look and a few
->     seconds later you find a real bug in the code.
+> > [ Linus Added to the To: since I want to hear his opinion on this
+> > issue. ]
+> > 
+> > On Thu, Feb 21, 2008 at 12:28:55PM -0800, Roland Dreier wrote:
+> > >  > This driver should really have gotten some review before being
+> > >  > included in the kernel.
+> > > 
+> > >  > Even a simple checkpatch run finds more than > 250 stylistic
+> > >  > errors (not code bugs but cases where the driver violates the
+> > >  > standard code formatting rules of kernel code).
+> > > 
+> > > Linus has strongly stated that we should merge hardware drivers
+> > > early, and I agree: although the nes driver clearly needs more
+> > > work, there's no advantage to users with the hardware in forcing
+> > > them to wait for 2.6.26 to merge the driver, since they'll just
+> > > have to patch the grungy code in themselves anyway.  And by merging
+> > > the driver early, we get fixed up for any tree-wide changes and
+> > > allow janitors to help with the cleanup.
+> > 
+> > Is it really intended to merge drivers without _any_ kind of review?
 > 
->     That "feeling" i believe comes from a fundamental property of how 
->     human vision is connected to the human brain: pattern matching. 
->     Really good programmers have built a "library" of patterns of "good" 
->     and "bad" looking coding practices.
+> No of course not.
 > 
->     If a patch or if a file has a clean _style_, bugs and deeper 
->     structural problems often stand out like a sore thumb. But if the 
-[...]
+> I totally agree we should be more agressive in merging drivers earlier.
+> A minimal review needs to happen so for a few things imo
+> 1) That the driver doesn't break the build
+> 2) That the driver has no obvious huge security holes
+>    (this is a big deal for unsuspecting users)
+> 3) that there's not an obscene amount of "uses deprecated api" compiler warnings
+>    (since those are annoying for everyone else)
+> 4) that people who don't have the hardware are not negatively affected
+>    (say crashes without the hw or so)
 
->     The best programmers are the ones who have a good eye for details - 
->     and that subconsciously extends to "style details" too. I've yet to
->     see a _single_ example of a good, experienced kernel programmer who 
->     writes code that looks absolutely careless and sloppy, but which is 
->     top-notch otherwise. (Newbies will make style mistakes a lot more 
->     often - and for them checkpatch is a nice and easy experience at 
->     reading other people's code and trying to learn the style of the 
->     kernel.)
-[...]
-
->  4) there's a psychological effect as well: clean _looking_ code is 
->     more attractive to coders to improve upon. Once the code _looks_ 
->     clean (mechanically), the people with the real structural cleanups 
->     are not far away either. Code that just looks nice is simply more of 
->     a pleasure to work with and to improve, so there's a strong 
->     psychological relationship between the "small, seemingly unimportant 
->     details" cleanups and the real, structural cleanups.
-
-The above deserved to be quoted...  just because I agree with all of it 
-so strongly :)
-
-Bugs really do "hide" in ugly code, in part because my brain has been 
-optimized to review clean code.
-
-Like everything else in life, one must strike a balance between picking 
-style nits with someone's patch, and making honest criticisms of a patch 
-because said patch is too "unclean" to be reviewed by anyone.
-
-	Jeff
-
-
-
+5) does not introduce new and ugly user-kernel we'll have problems
+fixing/removing?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
