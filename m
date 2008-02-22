@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936051AbYBVB33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932783AbYBVBda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936051AbYBVB33 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 20:29:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbYBVB3U
+	id S932783AbYBVBda (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 20:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbYBVBdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 20:29:20 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:42556 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752790AbYBVB3S (ORCPT
+	Thu, 21 Feb 2008 20:33:22 -0500
+Received: from hawking.rebel.net.au ([203.20.69.83]:36749 "EHLO
+	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750918AbYBVBdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 20:29:18 -0500
-Date: Thu, 21 Feb 2008 17:28:53 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off
- aftersuspend-to-disk. Screen becomes green.
-In-Reply-To: <200802211702.02306.jesse.barnes@intel.com>
-Message-ID: <alpine.LFD.1.00.0802211723510.19896@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211646.31603.jesse.barnes@intel.com> <b6a2187b0802211652x304daa2ci36a76a76a2fcb82@mail.gmail.com> <200802211702.02306.jesse.barnes@intel.com>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Thu, 21 Feb 2008 20:33:21 -0500
+Message-ID: <47BE267E.3070508@davidnewall.com>
+Date: Fri, 22 Feb 2008 12:03:50 +1030
+From: David Newall <davidn@davidnewall.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>
+CC: Willy Tarreau <w@1wt.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.24.1
+References: <479A83DE.8020002@davidnewall.com> <20080202074406.GA31516@1wt.eu> <47A46BF8.6030306@davidnewall.com> <47BDDD4E.1080000@davidnewall.com> <20080221203640.GA21764@kroah.com> <20080221210058.GA27541@1wt.eu> <20080221213345.GB24191@kroah.com>
+In-Reply-To: <20080221213345.GB24191@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Thu, Feb 21, 2008 at 10:00:58PM +0100, Willy Tarreau wrote:
+>   
+>> I too agree to merge, it especially since it fixed several problems
+>> for David. However, I would like to know first if the same problems
+>> also happen with the 2.6 driver or if it is OK. The risk is getting
+>> 2.4 fixed and not 2.6, which could cause regressions for people upgrading
+>> from 2.4 to 2.6. Of course, a regression on a USB-serial adapter is
+>> not dramatic, but it's a general principle to keep in mind that 2.6
+>> should be safe (or at least actively being fixed) when merging driver
+>> changes in 2.4.
+>>     
+>
+> As far as I can tell, this was a backport of the current 2.6 driver, so
+> it should not have fixes that are not already in 2.6.
+>
+> David, is that true?
+>   
 
-
-On Thu, 21 Feb 2008, Jesse Barnes wrote:
-> 
-> So the advantage of the kernel suspend/resume hooks for the DRM layer is that 
-> the kernel video drivers can do full state save/restore (which X usually 
-> doesn't do, and isn't really designed to do), so that if your platform 
-> *doesn't* do it all, you'll still end up with a usable machine in the end.
-
-Well, I'm also hoping that eventually we could even just not do the VT 
-switch at all, and the kernel can treat X as "just another user process" 
-that it freezes.
-
-At least from a mode setting standpoint.
-
-We'd still want to make sure that X repaints the screen if the contents 
-were lost, of course. And this is going to depend very intimately on the 
-type of graphics card and whether the video RAM is saved by STR or not - 
-for the Intel integrated graphics kind of situation, the video RAM will be 
-refreshed along with all the other memory, but for other cards we may end 
-up having to do the VT switch not so much for modesetting reasons as just 
-a way to get X to save and restore all the *other* state.
-
-How close is the i915 driver from not having to even signal X? Or is that 
-just a pipedream of mine?
-
-			Linus
+That is true.
