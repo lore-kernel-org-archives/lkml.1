@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYBVRfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762307AbYBVRgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762103AbYBVRfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761962AbYBVRf1
+	id S1762307AbYBVRgW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:36:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759766AbYBVRf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:35:27 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56282 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:35:58 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56354 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761952AbYBVRfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:35:24 -0500
-Date: Fri, 22 Feb 2008 18:35:22 +0100
-Message-ID: <s5hir0gyjvp.wl%tiwai@suse.de>
+	id S1759657AbYBVRf5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:35:57 -0500
+Date: Fri, 22 Feb 2008 18:35:56 +0100
+Message-ID: <s5hhcg0yjur.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 03/16] [ALSA] oxygen - Fix section mismatch
+Subject: [PATCH 04/16] [ALSA] hdsp - Fix section mismatch
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,70 +26,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Removed invalid __devinit and __devexit that are remaining after
-split to a helper module.
+Removed invalid __devinit from hdsp_request_fw_loader() and
+snd_hwdep_create_hwdep() that aren't always init functions.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/oxygen/oxygen_lib.c |   10 +++++-----
- sound/pci/oxygen/oxygen_pcm.c |    2 +-
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ sound/pci/rme9652/hdsp.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/sound/pci/oxygen/oxygen_lib.c b/sound/pci/oxygen/oxygen_lib.c
-index 6eb36dd..78c2115 100644
---- a/sound/pci/oxygen/oxygen_lib.c
-+++ b/sound/pci/oxygen/oxygen_lib.c
-@@ -204,7 +204,7 @@ static void oxygen_proc_read(struct snd_info_entry *entry,
- 	mutex_unlock(&chip->mutex);
- }
+diff --git a/sound/pci/rme9652/hdsp.c b/sound/pci/rme9652/hdsp.c
+index c2bd438..1be84f2 100644
+--- a/sound/pci/rme9652/hdsp.c
++++ b/sound/pci/rme9652/hdsp.c
+@@ -745,7 +745,7 @@ static int hdsp_get_iobox_version (struct hdsp *hdsp)
  
--static void __devinit oxygen_proc_init(struct oxygen *chip)
-+static void oxygen_proc_init(struct oxygen *chip)
- {
- 	struct snd_info_entry *entry;
  
-@@ -215,7 +215,7 @@ static void __devinit oxygen_proc_init(struct oxygen *chip)
- #define oxygen_proc_init(chip)
+ #ifdef HDSP_FW_LOADER
+-static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp);
++static int hdsp_request_fw_loader(struct hdsp *hdsp);
  #endif
  
--static void __devinit oxygen_init(struct oxygen *chip)
-+static void oxygen_init(struct oxygen *chip)
- {
- 	unsigned int i;
+ static int hdsp_check_for_firmware (struct hdsp *hdsp, int load_on_demand)
+@@ -4688,8 +4688,7 @@ static struct snd_pcm_ops snd_hdsp_capture_ops = {
+ 	.copy =		snd_hdsp_capture_copy,
+ };
  
-@@ -399,8 +399,8 @@ static void oxygen_card_free(struct snd_card *card)
- 	pci_disable_device(chip->pci);
- }
- 
--int __devinit oxygen_pci_probe(struct pci_dev *pci, int index, char *id,
--			       int midi, const struct oxygen_model *model)
-+int oxygen_pci_probe(struct pci_dev *pci, int index, char *id,
-+		     int midi, const struct oxygen_model *model)
+-static int __devinit snd_hdsp_create_hwdep(struct snd_card *card,
+-					   struct hdsp *hdsp)
++static int snd_hdsp_create_hwdep(struct snd_card *card, struct hdsp *hdsp)
  {
- 	struct snd_card *card;
- 	struct oxygen *chip;
-@@ -507,7 +507,7 @@ err_card:
- }
- EXPORT_SYMBOL(oxygen_pci_probe);
+ 	struct snd_hwdep *hw;
+ 	int err;
+@@ -4857,7 +4856,7 @@ static int snd_hdsp_create_alsa_devices(struct snd_card *card, struct hdsp *hdsp
  
--void __devexit oxygen_pci_remove(struct pci_dev *pci)
-+void oxygen_pci_remove(struct pci_dev *pci)
+ #ifdef HDSP_FW_LOADER
+ /* load firmware via hotplug fw loader */
+-static int __devinit hdsp_request_fw_loader(struct hdsp *hdsp)
++static int hdsp_request_fw_loader(struct hdsp *hdsp)
  {
- 	snd_card_free(pci_get_drvdata(pci));
- 	pci_set_drvdata(pci, NULL);
-diff --git a/sound/pci/oxygen/oxygen_pcm.c b/sound/pci/oxygen/oxygen_pcm.c
-index dfad3db..b70046a 100644
---- a/sound/pci/oxygen/oxygen_pcm.c
-+++ b/sound/pci/oxygen/oxygen_pcm.c
-@@ -634,7 +634,7 @@ static void oxygen_pcm_free(struct snd_pcm *pcm)
- 	snd_pcm_lib_preallocate_free_for_all(pcm);
- }
- 
--int __devinit oxygen_pcm_init(struct oxygen *chip)
-+int oxygen_pcm_init(struct oxygen *chip)
- {
- 	struct snd_pcm *pcm;
- 	int outs, ins;
+ 	const char *fwfile;
+ 	const struct firmware *fw;
 -- 
 1.5.3.8
 
