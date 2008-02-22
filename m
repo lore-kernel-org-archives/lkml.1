@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935668AbYBVVy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964899AbYBVVzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935668AbYBVVy3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:54:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbYBVVoN
+	id S964899AbYBVVzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:55:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbYBVVoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:44:13 -0500
-Received: from ns2.suse.de ([195.135.220.15]:60624 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 16:44:21 -0500
+Received: from mx1.suse.de ([195.135.220.2]:46690 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933996AbYBVVoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:44:10 -0500
-Date: Fri, 22 Feb 2008 13:40:57 -0800
+	id S933996AbYBVVoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:44:17 -0500
+Date: Fri, 22 Feb 2008 13:40:59 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jonathan Corbet <corbet@lwn.net>, Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 21/23] Be more robust about bad arguments in
-	get_user_pages()
-Message-ID: <20080222214057.GV8686@suse.de>
+       Tony Battersby <tonyb@cybernetics.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 22/23] SCSI: sd: handle bad lba in sense information
+Message-ID: <20080222214059.GW8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="be-more-robust-about-bad-arguments-in-get_user_pages.patch"
+Content-Disposition: inline; filename="scsi-sd-handle-bad-lba-in-sense-information.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,49 +39,76 @@ know.
 
 ------------------
 
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-From: Jonathan Corbet <corbet@lwn.net>
+patch 366c246de9cec909c5eba4f784c92d1e75b4dc38 in mainline.
 
-MAINLINE: 900cf086fd2fbad07f72f4575449e0d0958f860f
+Some devices report medium error locations incorrectly.  Add guards to
+make sure the reported bad lba is actually in the request that caused
+it.  Additionally remove the large case statment for sector sizes and
+replace it with the proper u64 divisions.
 
-So I spent a while pounding my head against my monitor trying to figure
-out the vmsplice() vulnerability - how could a failure to check for
-*read* access turn into a root exploit? It turns out that it's a buffer
-overflow problem which is made easy by the way get_user_pages() is
-coded.
-
-In particular, "len" is a signed int, and it is only checked at the
-*end* of a do {} while() loop.  So, if it is passed in as zero, the loop
-will execute once and decrement len to -1.  At that point, the loop will
-proceed until the next invalid address is found; in the process, it will
-likely overflow the pages array passed in to get_user_pages().
-
-I think that, if get_user_pages() has been asked to grab zero pages,
-that's what it should do.  Thus this patch; it is, among other things,
-enough to block the (already fixed) root exploit and any others which
-might be lurking in similar code.  I also think that the number of pages
-should be unsigned, but changing the prototype of this function probably
-requires some more careful review.
-
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Oliver Pinter <oliver.pntr@gmail.com>
+Tested-by: Mike Snitzer <snitzer@gmail.com>
+Cc: Stable Tree <stable@kernel.org>
+Cc: Tony Battersby <tonyb@cybernetics.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memory.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/scsi/sd.c |   34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
 
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -983,6 +983,8 @@ int get_user_pages(struct task_struct *t
- 	int i;
- 	unsigned int vm_flags;
- 
-+	if (len <= 0)
-+		return 0;
- 	/* 
- 	 * Require read or write permissions.
- 	 * If 'force' is set, we only require the "MAY" flags.
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -895,6 +895,7 @@ static void sd_rw_intr(struct scsi_cmnd 
+  	unsigned int xfer_size = SCpnt->request_bufflen;
+  	unsigned int good_bytes = result ? 0 : xfer_size;
+  	u64 start_lba = SCpnt->request->sector;
++	u64 end_lba = SCpnt->request->sector + (xfer_size / 512);
+  	u64 bad_lba;
+ 	struct scsi_sense_hdr sshdr;
+ 	int sense_valid = 0;
+@@ -933,26 +934,23 @@ static void sd_rw_intr(struct scsi_cmnd 
+ 			goto out;
+ 		if (xfer_size <= SCpnt->device->sector_size)
+ 			goto out;
+-		switch (SCpnt->device->sector_size) {
+-		case 256:
++		if (SCpnt->device->sector_size < 512) {
++			/* only legitimate sector_size here is 256 */
+ 			start_lba <<= 1;
+-			break;
+-		case 512:
+-			break;
+-		case 1024:
+-			start_lba >>= 1;
+-			break;
+-		case 2048:
+-			start_lba >>= 2;
+-			break;
+-		case 4096:
+-			start_lba >>= 3;
+-			break;
+-		default:
+-			/* Print something here with limiting frequency. */
+-			goto out;
+-			break;
++			end_lba <<= 1;
++		} else {
++			/* be careful ... don't want any overflows */
++			u64 factor = SCpnt->device->sector_size / 512;
++			do_div(start_lba, factor);
++			do_div(end_lba, factor);
+ 		}
++
++		if (bad_lba < start_lba  || bad_lba >= end_lba)
++			/* the bad lba was reported incorrectly, we have
++			 * no idea where the error is
++			 */
++			goto out;
++
+ 		/* This computation should always be done in terms of
+ 		 * the resolution of the device's medium.
+ 		 */
 
 -- 
