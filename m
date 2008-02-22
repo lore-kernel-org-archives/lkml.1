@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbYBVUph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765948AbYBVUqo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761443AbYBVUph (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:45:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYBVUp2
+	id S1765948AbYBVUqo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:46:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbYBVUqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:45:28 -0500
-Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:22430 "EHLO
-	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753232AbYBVUp1 (ORCPT
+	Fri, 22 Feb 2008 15:46:33 -0500
+Received: from ug-out-1314.google.com ([66.249.92.168]:28490 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751812AbYBVUqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:45:27 -0500
-From: Ian Campbell <ijc@hellion.org.uk>
-To: Adrian Bunk <bunk@kernel.org>
-Cc: Jeremy Fitzhardinge <jeremy@xensource.com>, chrisw@sous-sol.org,
-       xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org
-In-Reply-To: <20080222195829.GH1409@cs181133002.pp.htv.fi>
-References: <20080222195829.GH1409@cs181133002.pp.htv.fi>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 20:44:59 +0000
-Message-Id: <1203713099.28436.20.camel@cthulhu.hellion.org.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 
+	Fri, 22 Feb 2008 15:46:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Cu78HlxS5CPI9skEscOJ8z4NuWls2SBS+4sTbtPDIwMyS5hy98Hjojp9UWXUYfCJ396eREIWCSJV22aPWFAhC+bTJJGvYNgmfm1KUovBfqFmutYkGtJUobwB6PQFiq8/fdGFoKQN6OXVT9HQBUZqHdGELOGdmFdFtNMfpAUNlo4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] hpt366: fix section mismatch warnings
+Date: Fri, 22 Feb 2008 21:57:15 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+References: <20080222194651.GA7154@uranus.ravnborg.org> <47BF2846.1030604@ru.mvista.com>
+In-Reply-To: <47BF2846.1030604@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.223
-X-SA-Exim-Mail-From: ijc@hellion.org.uk
-Subject: Re: [2.6 patch] make xen-blkfront.c:blkif_getgeo() static
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
-X-Cloudmark-Analysis: v=1.0 c=1 a=cExetjfr-RMA:10 a=qcrRp5rlbqkS0d6TfuPTVw==:17 a=ArjF5IA-KiUmphTZQnYA:9 a=a0yYay3rOJD7XIhjB6gA:7 a=_fmPZyw25pn0lamX99NbMGRIM_AA:4 a=LI9Vle30uBYA:10 a=WuK_CZDBSqoA:10
+Content-Disposition: inline
+Message-Id: <200802222157.15480.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 2008-02-22 at 21:58 +0200, Adrian Bunk wrote:
-> This patch makes the needlessly global blkif_getgeo() static.
+On Friday 22 February 2008, Sergei Shtylyov wrote:
+> Sam Ravnborg wrote:
 > 
-> Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
-Acked-by: Ian Campbell <ijc@hellion.org.uk>
-
+> > hpt366: fix section mismatch warnings
 > 
-> ---
-> 6f34bfdbb8c24e06d982ccaccd24c25dba5b1956 diff --git a/drivers/block/xen-blkfront.c b/drivers/block/xen-blkfront.c
-> index 9c6f3f9..ae7ee16 100644
-> --- a/drivers/block/xen-blkfront.c
-> +++ b/drivers/block/xen-blkfront.c
-> @@ -136,7 +136,7 @@ static void blkif_restart_queue_callback(void *arg)
->  	schedule_work(&info->work);
->  }
->  
-> -int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
-> +static int blkif_getgeo(struct block_device *bd, struct hd_geometry *hg)
->  {
->  	/* We don't have real geometry info, but let's at least return
->  	   values consistent with the size of the device */
+> > Fix following warnings:
+> > WARNING: o-sparc64/vmlinux.o(.data+0x195a38): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370
+> > WARNING: o-sparc64/vmlinux.o(.data+0x195a40): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370a
+> > WARNING: o-sparc64/vmlinux.o(.data+0x195a48): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372
+> > WARNING: o-sparc64/vmlinux.o(.data+0x195a50): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372n
 > 
+> > Replace a static array with a small switch resulting in
+> > more readable code.
+> > Be consistent in use of __devinitconst for const data
+> > to avoid section type conflicts.
+> > Mark the pci table __devinitconst.
 > 
--- 
-Ian Campbell
+> > Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> 
+> Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-WHERE CAN THE MATTER BE
-	Oh, dear, where can the matter be
-	When it's converted to energy?
-	There is a slight loss of parity.
-	Johnny's so long at the fair.
-
+applied
