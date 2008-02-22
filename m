@@ -1,59 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932789AbYBVG7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932241AbYBVHAn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932789AbYBVG7e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 01:59:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbYBVG66
+	id S932241AbYBVHAn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 02:00:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYBVHAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 01:58:58 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:58975 "EHLO smtps.tip.net.au"
+	Fri, 22 Feb 2008 02:00:35 -0500
+Received: from nn7.de ([85.214.94.156]:58200 "EHLO nn7.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbYBVG64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 01:58:56 -0500
-Date: Fri, 22 Feb 2008 17:58:52 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 22
-Message-Id: <20080222175852.92c6497c.sfr@canb.auug.org.au>
-In-Reply-To: <47BE6C9A.6020103@suse.de>
-References: <20080222170421.9e17d143.sfr@canb.auug.org.au>
-	<47BE6C9A.6020103@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+	id S1753538AbYBVHAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 02:00:32 -0500
+Subject: Re: 2.6.25-rc2 regression - hang on suspend
+From: Soeren Sonnenburg <kernel@nn7.de>
+To: "Rafael J\. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <200802220006.39130.rjw@sisk.pl>
+References: <1203422386.10992.2.camel@localhost>
+	 <200802210131.54272.rjw@sisk.pl> <1203588294.3882.6.camel@localhost>
+	 <200802220006.39130.rjw@sisk.pl>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 22 Feb 2008 08:00:28 +0100
+Message-Id: <1203663628.8422.2.camel@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_Feb_2008_17_58_52_+1100_5.29vKYCXpQc30LK"
+X-Mailer: Evolution 2.12.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_Feb_2008_17_58_52_+1100_5.29vKYCXpQc30LK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2008-02-22 at 00:06 +0100, Rafael J. Wysocki wrote: 
+> On Thursday, 21 of February 2008, Soeren Sonnenburg wrote:
+> > On Thu, 2008-02-21 at 01:31 +0100, Rafael J. Wysocki wrote:
+> > > On Wednesday, 20 of February 2008, Soeren Sonnenburg wrote:
+> > > > On Wed, 2008-02-20 at 00:50 +0100, Rafael J. Wysocki wrote:
+[...] 
+> > Using echo none >/sys/power/pm_test and then
+> > echo mem >/sys/power/state I see it hang on ata1 errors again. Waiting
+> > about 10-30 seconds it progresses further and finally arrives at 
+> > 
+> > CPU0 attaching NULL sched-domain
+> > CPU1 attaching NULL sched-domain
+> > 
+> > then hangs.
+> 
+> Please see if compiling the kernel with CONFIG_SMP unset makes suspend
+> work.
 
-Hi Frank,
+*Argh*, this bug is not behaving nicely :( Whatever happened,
+git-current now suspends correctly with and without CONFIG_SMP  and all
+may CONFIG_PREEMPT_RCU=y and CONFIG_CLASSIC_RCU=y attempts. Also no sata
+errors anymore.
 
-On Fri, 22 Feb 2008 07:32:58 +0100 Frank Seidel <fseidel@suse.de> wrote:
->
-> Looks great :-) Of course i also just put a ref to it on the
-> wiki.
+However it is not reliably waking up (at least when all of the above
+except CLASSIC_RCU is on). Sometimes the display remains black on the
+console, but X still works and sometimes it hangs completely on resume.
 
-Thanks.
+Also when compiling these many kernels via make -j4 I noted that I could
+hardly move the mouse / use the keyboard, but saw random jumps and
+key-repetitions...
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__22_Feb_2008_17_58_52_+1100_5.29vKYCXpQc30LK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHvnKwTgG2atn1QN8RAgHDAKCKV2d8kH4ffTVGQfPgJN/E/xUFzgCeK929
-UDS6m2S8daArDquypxZ4lVI=
-=513p
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_Feb_2008_17_58_52_+1100_5.29vKYCXpQc30LK--
+Soeren
