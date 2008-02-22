@@ -1,86 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933217AbYBVVLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbYBVVMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933217AbYBVVLn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:11:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbYBVVJi
+	id S933530AbYBVVMN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbYBVVJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:09:38 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:41952 "EHLO
+	Fri, 22 Feb 2008 16:09:39 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:52250 "EHLO
 	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756486AbYBVVJd (ORCPT
+	with ESMTP id S1756205AbYBVVJd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Feb 2008 16:09:33 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="773386"
+X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="773385"
 From: Max Krasnyansky <maxk@qualcomm.com>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, pj@sgi.com,
        Max Krasnyansky <maxk@qualcomm.com>
-Subject: [PATCH sched-devel 6/7] cpuisol: Minor updates to the Kconfig options
-Date: Fri, 22 Feb 2008 13:09:17 -0800
-Message-Id: <1203714558-20904-6-git-send-email-maxk@qualcomm.com>
+Subject: [PATCH sched-devel 5/7] cpuisol: Documentation updates
+Date: Fri, 22 Feb 2008 13:09:16 -0800
+Message-Id: <1203714558-20904-5-git-send-email-maxk@qualcomm.com>
 X-Mailer: git-send-email 1.5.4.1
-In-Reply-To: <1203714558-20904-5-git-send-email-maxk@qualcomm.com>
+In-Reply-To: <1203714558-20904-4-git-send-email-maxk@qualcomm.com>
 References: <1203714558-20904-1-git-send-email-maxk@qualcomm.com>
  <1203714558-20904-2-git-send-email-maxk@qualcomm.com>
  <1203714558-20904-3-git-send-email-maxk@qualcomm.com>
  <1203714558-20904-4-git-send-email-maxk@qualcomm.com>
- <1203714558-20904-5-git-send-email-maxk@qualcomm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed a couple of typos, long lines and referred to the documentation file.
+Documented sysfs interface as suggested by Andrew Morton.
+Added general documentation that describes how to configure
+and use CPU isolation features.
 
 Signed-off-by: Max Krasnyansky <maxk@qualcomm.com>
 ---
- kernel/Kconfig.cpuisol |   31 +++++++++++++++++--------------
- 1 files changed, 17 insertions(+), 14 deletions(-)
+ Documentation/ABI/testing/sysfs-devices-system-cpu |   41 +++++++
+ Documentation/cpu-isolation.txt                    |  113 ++++++++++++++++++++
+ 2 files changed, 154 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/Kconfig.cpuisol b/kernel/Kconfig.cpuisol
-index 81f1972..e681b02 100644
---- a/kernel/Kconfig.cpuisol
-+++ b/kernel/Kconfig.cpuisol
-@@ -2,23 +2,26 @@ config CPUISOL
- 	depends on SMP
- 	bool "CPU isolation"
- 	help
--	  This option enables support for CPU isolation.
--	  If enabled the kernel will try to avoid kernel activity on the isolated CPUs.
--	  By default user-space threads are not scheduled on the isolated CPUs unless 
--	  they explicitly request it (via sched_ and pthread_ affinity calls). Isolated
--	  CPUs are not subject to the scheduler load-balancing algorithms.
--	  
--	  CPUs can be marked as isolated using 'isolcpus=' command line option or by 
--	  writing '1' into /sys/devices/system/cpu/cpuN/isolated.
--	  
--	  This feature is useful for hard realtime and high performance applications.
-+	  This option enables support for CPU isolation. If enabled the
-+	  kernel will try to avoid kernel activity on the isolated CPUs.
-+	  By default user-space threads are not scheduled on the isolated
-+	  CPUs unless they explicitly request it via sched_setaffinity()
-+	  and pthread_setaffinity_np() calls. Isolated CPUs are not
-+	  subject to the scheduler load-balancing algorithms.
+diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
+new file mode 100644
+index 0000000..32dde5b
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
+@@ -0,0 +1,41 @@
++What:           /sys/devices/system/cpu/...
++Date:           Feb. 2008
++KernelVersion:  2.6.24 
++Contact:        LKML <linux-kernel@vger.kernel.org>
++Description:
 +
-+	  This feature is useful for hard realtime and high performance
-+	  applications.
-+	  See Documentation/cpu-isolation.txt for more details.
++The /sys/devices/system/cpu tree provides information about all cpu's
++known to the running kernel.
 +
- 	  If unsure say 'N'.
- 
- config CPUISOL_WORKQUEUE
- 	bool "Do not schedule workqueues on the isolated CPUs (EXPERIMENTAL)"
- 	depends on CPUISOL && EXPERIMENTAL
- 	help
--	  In this option is enabled kernel will not schedule workqueues on the 
--	  isolated CPUs.
--	  Please note that at this point this feature is experimental. It brakes 
--	  certain things like OProfile that heavily rely on per cpu workqueues.
-+	  If this option is enabled kernel will not schedule workqueues on
-+	  the isolated CPUs.  Please note that at this point this feature
-+	  is experimental. It breaks certain things like OProfile that
-+	  heavily rely on per cpu workqueues.
++Following files are created for each cpu. 'N' is the cpu number.
 +
-+	  Say 'Y' to enable workqueue isolation.  If unsure say 'N'.
++/sys/devices/system/cpu/cpuN/
++  online     (0644) On-line attribute. Indicates whether the cpu is on-line.
++                    The cpu can be brought off-line by writing '0' into
++                    this file.  Similarly it can be brought back on-line
++                    by writing '1' into this file.  This attribute is
++                    not available for the cpu's that cannot be brought
++                    off-line. Typically cpu0.  For more information see
++                            Documentation/cpu-hotplug.txt
++
++  isolated   (0644) Isolation attribute. Indicates whether the cpu
++                    is isolated.
++                    The cpu can be isolated by writing '1' into this
++                    file.  Similarly it can be un-isolated by writing
++                    '0' into this file.  In order to isolate the cpu it
++                    must first be brought off-line.  This attribute is
++                    not available for the cpu's that cannot be brought
++                    off-line. Typically cpu0.  
++                    Note this attribute is present only if "CPU isolation"
++                    is enabled. For more information see
++                            Documentation/cpu-isolation.txt
++
++  cpufreq    (0755) Frequency scaling state.
++                    For more info see
++                            Documentation/cpu-freq/...
++
++  cache      (0755) Cache information. FIXME
++
++  cpuidle    (0755) Idle state information. FIXME
++
++  topology   (0755) Topology information. FIXME
+diff --git a/Documentation/cpu-isolation.txt b/Documentation/cpu-isolation.txt
+new file mode 100644
+index 0000000..b9ca425
+--- /dev/null
++++ b/Documentation/cpu-isolation.txt
+@@ -0,0 +1,113 @@
++CPU isolation support in Linux(tm) Kernel
++
++Maintainers:
++
++Scheduler and scheduler domain bits:
++	Ingo Molnar <mingo@elte.hu>
++
++General framework, irq and workqueue isolation:
++	Max Krasnyanskiy <maxk@qualcomm.com>
++
++ChangeLog:
++- Initial version. Feb 2008, MaxK
++
++Introduction
++------------
++
++The primary idea behind CPU isolation is the ability to use some CPU cores
++as a dedicated engines for running user-space code with minimal kernel
++overhead/intervention, think of it as an SPE in the Cell processor. For
++example CPU isolation allows for running CPU intensive(100%) RT task
++on one of the processors without adversely affecting or being affected
++by the other system activities.  With the current (as of early 2008)
++multi-core CPU trend we may see more and more applications that explore
++this capability: real-time gaming engines, simulators, hard real-time
++apps, etc.
++
++Current CPU isolation support consists of the following features:
++
++1. Isolated CPU(s) are excluded from the scheduler load balancing logic.
++   Applications must explicitly bind threads in order to run on those
++   CPU(s).
++
++2. By default interrupts are not routed to the isolated CPU(s).
++   Users must route interrupts (if any) to those CPU(s) explicitly.
++
++3. Kernel avoids any activity on the isolated CPU(s) as much as possible.
++   This includes workqueues, per CPU threads, etc.  Please note that
++   this feature is optional and is disabled by default.
++
++Kernel configuration options
++----------------------------
++
++Following options need to be enabled in order to use CPU isolation
++   CONFIG_CPUISOL		Top-level config option. Enables general
++                                CPU isolation framework and enables features 
++                                #1 and #2 described above.
++
++   CONFIG_CPUISOL_WORKQUEUE	These options provide deeper isolation
++   CONFIG_CPUISOL_STOPMACHINE   from various kernel subsystems. They implement 
++   CONFIG_CPUISOL_...           feature #3 described above.  
++                                See Kconfig help for more information on each 
++                                individual option.
++
++How to isolate a CPU
++--------------------
++
++There are two ways for isolating a CPU
++
++Kernel boot command line:
++   isolcpus=n0,n1,...
++
++   This option enables isolation for all CPU(s) specified in the comma 
++   separated list.
++   Example:
++        isolcpus=1,5
++
++Sysfs interface:
++   In order to isolate a CPU through this mechanism it must first be
++   brought off-line.  Hence the command sequence looks like:
++       echo 0 > /sys/devices/system/cpu/cpuN/online
++       echo 1 > /sys/devices/system/cpu/cpuN/isolated
++       echo 1 > /sys/devices/system/cpu/cpuN/online
++
++
++Kernel interfaces
++-----------------
++
++cpu_isolated_map  - Bitmap of all isolated CPU(s).
++		    This bitmap is updated either by isolcpus= command
++		    line option or by writing to sysfs attributes. In
++		    the latter case isolation bit can be updated only
++		    when the corresponding CPU is off-line.
++
++cpu_isolated(N)   - Use that function to check whether CPU N is isolated.
++
++
++User-space application interfaces
++---------------------------------
++
++From the user-space application perspective isolated CPU(s) are no
++different from any other CPU in the system. Once the required CPU(s)
++have been isolated applications can use standard POSIX apis to bind its
++threads to those CPU(s):
++	sched_setaffinity
++	sched_getaffinity
++	pthread_getaffinity_np
++	pthread_setaffinity_np
++
++One thing to keep in mind though is that Linux kernel heavily uses per-CPU
++data structures and mechanisms. For example if a thread running on an
++isolated CPU makes a system call, that system call will be serviced
++on the same CPU.  Some system calls trigger timers, softirq and other
++kernel activities. Those will likely also run on the same CPU where
++system call was originally serviced.  If this behavior is undesirable
++threads running on the isolated CPU(s) should avoid using certain system
++calls and instead delegate that to the threads running on non-isolated
++CPU(s). For example you probably do not want to write to the filesystem
++or the console. Generally, time, mutex and pthread related system calls
++are perfectly safe.
++
++If you intend to use CPU isolation for real-time applications please
++check out rt wiki at
++	http://rt.wiki.kernel.org/index.php/Main_Page
 -- 
 1.5.4.1
 
