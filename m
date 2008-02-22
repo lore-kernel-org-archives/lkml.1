@@ -1,83 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbYBVNUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933363AbYBVN00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934186AbYBVNUx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:20:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbYBVNUm
+	id S933363AbYBVN00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:26:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758419AbYBVN0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:20:42 -0500
-Received: from styx.suse.cz ([82.119.242.94]:45800 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758658AbYBVNUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:20:41 -0500
-Date: Fri, 22 Feb 2008 14:20:40 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: lockdep warning 
-In-Reply-To: <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org>
-Message-ID: <Pine.LNX.4.64.0802221420250.30955@jikos.suse.cz>
-References: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org>
- <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz>
- <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org>
+	Fri, 22 Feb 2008 08:26:17 -0500
+Received: from smtp-out03.alice-dsl.net ([88.44.63.5]:59670 "EHLO
+	smtp-out03.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757366AbYBVN0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 08:26:16 -0500
+Date: Fri, 22 Feb 2008 14:26:12 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: [RFC/PATCH] Update coding standard to avoid ungrepable printk format strings
+Message-ID: <20080222132612.GA11717@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 22 Feb 2008 13:19:48.0439 (UTC) FILETIME=[99486E70:01C87555]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008, Anders Eriksson wrote:
+RFC: Update coding standard to avoid split up printk format strings
 
-> > This needs to be CCed to netdev.
-> > Any chance that
-> > 	git revert 69cc64d8d92
-> > makes this report go away? 
-> I'll have to install a git repo to check, or maybe you can send me the diff to 
-> reverse vs. 2.6.25-rc2?
+Common occurrence: You see some error message in the kernel log you don't
+understand, Standard way to handle this is to grep the kernel source code 
+for that error message and then look at the code and figure out what
+is wrong from that.
 
-diff --git a/net/core/neighbour.c b/net/core/neighbour.c
-index 7bb6a9a..a16cf1e 100644
---- a/net/core/neighbour.c
-+++ b/net/core/neighbour.c
-@@ -834,12 +834,18 @@ static void neigh_timer_handler(unsigned long arg)
- 	}
- 	if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE)) {
- 		struct sk_buff *skb = skb_peek(&neigh->arp_queue);
--
-+		/* keep skb alive even if arp_queue overflows */
-+		if (skb)
-+			skb_get(skb);
-+		write_unlock(&neigh->lock);
- 		neigh->ops->solicit(neigh, skb);
- 		atomic_inc(&neigh->probes);
--	}
-+		if (skb)
-+			kfree_skb(skb);
-+	} else {
- out:
--	write_unlock(&neigh->lock);
-+		write_unlock(&neigh->lock);
+Unfortunately that is often far more difficult than needed because 
+with the strict 80 character limit printk format strings are often split up
+over multiple lines. One example for this would be
+
+	  printk(KERN_CRIT "protocol %04x is "
+                          "buggy, dev %s\n",
+                          skb2->protocol, dev->name);
+
+from net/core/dev.c. If you see this obscure message what would you grep
+for? "protocol.*is buggy" will not find it and "is buggy" neither and "buggy"
+or "protocol" gives you a zillion of hits that you have review all
+by hand. All quite unsatisfactory.
+
+Worse the coding standard actually recommends to split up printks like
+this, but I think it is one of the most counter0productive suggestions it
+has.
+
+There are two reasonable ways to handle this. Either put the format 
+string on an own line with backwards indentation or ignore the column 80
+limitation. I think both are better actually than having ungreppable
+error messages.
+
+This patch updates the coding standard for to allow this.
+
+Of course it only applies to the printk format string, any other 
+printk arguments should be still split up over multiple lines as before.
+That is fine because they rarely need to be grepped for.
+
+I expect this proposal will likely be somewhat controversal and I don't expect
+universal agreement (and it's likely a bike shed paint topic like
+all coding standard issues); but let's see what happens.
+
+I think it would be a valuable improvement of the coding standard.
+
+At some point checkpatch.pl would need to be updated to know about this
+exception too, that would be the next step.
+
+Signed-off-by: Andi Kleen <ak@suse.de>
+
+Index: linux/Documentation/CodingStyle
+===================================================================
+--- linux.orig/Documentation/CodingStyle
++++ linux/Documentation/CodingStyle
+@@ -83,20 +83,32 @@ preferred limit.
+ Statements longer than 80 columns will be broken into sensible chunks.
+ Descendants are always substantially shorter than the parent and are placed
+ substantially to the right. The same applies to function headers with a long
+-argument list. Long strings are as well broken into shorter strings. The
+-only exception to this is where exceeding 80 columns significantly increases
+-readability and does not hide information.
++argument list.
+ 
+-void fun(int a, int b, int c)
+-{
+-	if (condition)
+-		printk(KERN_WARNING "Warning this is a long printk with "
+-						"3 parameters a: %u b: %u "
+-						"c: %u \n", a, b, c);
+-	else
+-		next_statement;
++It is not recommended to break printk format strings into smaller strings.
++The problem with doing this is that it makes it much harder to grep
++for the error messages in the source if they are split up over multiple
++lines. And grepping for error messages is fairly important for debugging.
++So for the special case of printk format strings (or formatting any other
++user visible error message) the normal 80 character column rule
++does not apply. Or alternatively it is ok to violate the indentation
++rule for the format string only if that makes the end not exceed
++80 characters. For example
++
++void function(void)
++{
++	if (...) {
++		if (...) {
++			printk(
++ "very very long formatting string with argument %d and argument %d\n",
++				a, b);
++		}
 +	}
- 
- 	if (notify)
- 		neigh_update_notify(neigh);
-diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
-index c663fa5..8e17f65 100644
---- a/net/ipv4/arp.c
-+++ b/net/ipv4/arp.c
-@@ -368,6 +368,7 @@ static void arp_solicit(struct neighbour *neigh, struct sk_buff *skb)
- 		if (!(neigh->nud_state&NUD_VALID))
- 			printk(KERN_DEBUG "trying to ucast probe in NUD_INVALID\n");
- 		dst_ha = neigh->ha;
-+		read_lock_bh(&neigh->lock);
- 	} else if ((probes -= neigh->parms->app_probes) < 0) {
- #ifdef CONFIG_ARPD
- 		neigh_app_ns(neigh);
-@@ -377,6 +378,8 @@ static void arp_solicit(struct neighbour *neigh, struct sk_buff *skb)
- 
- 	arp_send(ARPOP_REQUEST, ETH_P_ARP, target, dev, saddr,
- 		 dst_ha, dev->dev_addr, NULL);
-+	if (dst_ha)
-+		read_unlock_bh(&neigh->lock);
  }
  
- static int arp_ignore(struct in_device *in_dev, __be32 sip, __be32 tip)
++You should still break up the further printk arguments if they exceed 80
++characters though.
++
+ 		Chapter 3: Placing Braces and Spaces
+ 
+ The other issue that always comes up in C styling is the placement of
