@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbYBVJwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763462AbYBVJxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932321AbYBVJwf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 04:52:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbYBVJw0
+	id S1763462AbYBVJxA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934714AbYBVJwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 04:52:26 -0500
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33092 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753546AbYBVJwZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 04:52:25 -0500
-Date: Fri, 22 Feb 2008 09:42:14 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Roskin <proski@gnu.org>
-Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Giridhar Pemmasani <pgiri@yahoo.com>
-Subject: Re: ndiswrapper tainting
-Message-ID: <20080222094214.4a9a1da7@core>
-In-Reply-To: <1203642175.14339.17.camel@dv>
-References: <1203642175.14339.17.camel@dv>
-X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 22 Feb 2008 04:52:36 -0500
+Received: from aun.it.uu.se ([130.238.12.36]:35536 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934667AbYBVJwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 04:52:35 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18366.39762.445478.210383@alkaid.it.uu.se>
+Date: Fri, 22 Feb 2008 10:52:18 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, Andi Kleen <andi@firstfloor.org>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@openvz.org>
+Subject: Re: [PATCH] Make sysctl a separate filesystem
+In-Reply-To: <20080222012530.GD27894@ZenIV.linux.org.uk>
+References: <47B56BF2.4020600@openvz.org>
+	<p73ejbe1ook.fsf@bingen.suse.de>
+	<18357.30971.334517.722985@harpo.it.uu.se>
+	<20080222012530.GD27894@ZenIV.linux.org.uk>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Feb 2008 20:02:55 -0500
-Pavel Roskin <proski@gnu.org> wrote:
+Al Viro writes:
+ > On Fri, Feb 15, 2008 at 12:35:23PM +0100, Mikael Pettersson wrote:
+ > > Andi Kleen writes:
+ > >  > Pavel Emelyanov <xemul@openvz.org> writes:
+ > >  > >    this subdir;
+ > >  > > 3. sysctl inodes are now smaller than the procfs ones.
+ > >  > 
+ > >  > That's always a good thing.
+ > >  > 
+ > >  > > Note: update your initscripts to mount sysctl filesystem 
+ > >  > > right after the proc is mounted in order not to lose your
+ > >  > > /etc/sysctl.conf configuration (and optionally fstab).
+ > >  > 
+ > >  > That will break about everybody's init scripts I suspect.
+ > >  > 
+ > >  > I think you would need to go through some deprecation
+ > >  > period for this at least, with printks warning people
+ > >  > to fix their init scripts.
+ > >  > 
+ > >  > Or better find some way to do the mount automatically.
+ > > 
+ > > Doing it automatically is the only acceptable way, IMO.
+ > 
+ > When and where?
 
-> Hello!
-> 
-> What are the chances that incorrect tainting of ndiswrapper will be
-> fixed in 2.6.25?  I'm worried that it still hasn't happened in the
-> mainline repository.  It's unfortunate to see that a long discussion
-> didn't result in a simple fix.  If anyone is waiting for my patch,
-> please let me know what kind of patch I'm supposed to submit and to
-> which address.
-
-One to Linus and l/k which takes the current tree and fixes it.
-
-Alan
+I don't really care, as long as existing user-space doesn't get broken.
