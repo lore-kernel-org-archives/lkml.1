@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935543AbYBVJyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934263AbYBVJ6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935543AbYBVJyh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 04:54:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935300AbYBVJyL
+	id S934263AbYBVJ6f (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbYBVJ61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 04:54:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35577 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762672AbYBVJyJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 04:54:09 -0500
-Date: Fri, 22 Feb 2008 10:53:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: Roland McGrath <roland@redhat.com>, ak@suse.de, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       markus.t.metzger@gmail.com,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       akpm@linux-foundation.org, mtk.manpages@gmail.com,
-       eranian@googlemail.com
-Subject: Re: [patch 1/2] x86, ptrace: support pebs in ds.c
-Message-ID: <20080222095322.GD6269@elte.hu>
-References: <20080213112349.A3283@sedona.ch.intel.com> <20080221210026.7B1C62701D5@magilla.localdomain> <029E5BE7F699594398CA44E3DDF554440169D67E@swsmsx413.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <029E5BE7F699594398CA44E3DDF554440169D67E@swsmsx413.ger.corp.intel.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 22 Feb 2008 04:58:27 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59837 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750699AbYBVJ60 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 04:58:26 -0500
+Date: Fri, 22 Feb 2008 09:48:28 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: torvalds@osdl.org, jeff@garzik.org
+Subject: GAK!!!! Re: PCI: AMD SATA IDE mode quirk
+Message-ID: <20080222094828.2a0124ca@core>
+In-Reply-To: <200802220059.m1M0xgjZ022717@hera.kernel.org>
+References: <200802220059.m1M0xgjZ022717@hera.kernel.org>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>     Signed-off-by: Crane Cai <crane.cai@amd.com>
+>     Acked-by: Jeff Garzik <jeff@garzik.org>
+>     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-* Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+Vomitted-upon-by: Alan Cox <alan@redhat.com>
 
-> The ptrace API is the user interface for the debugging/BTS aspect of 
-> it. As such, it will remain stable.
+> -	if ((pdev->class >> 8) == PCI_CLASS_STORAGE_IDE) {
+> -		u8 tmp;
+> +	/* set sb600/sb700/sb800 sata to ahci mode */
+> +	u8 tmp;
+>  
+> +	pci_read_config_byte(pdev, PCI_CLASS_DEVICE, &tmp);
+> +	if (tmp == 0x01) {
 
-your last patch does this to arch/x86/kernel/ptrace.c:
+CLASS_DEVICE is cached in pdev->class so why not simply do:
 
-  266 insertions(+), 174 deletions(-)
+	if (pdev->class & (1 << 8))
 
-doesnt that change the ptrace bits and the ptrace API semantics?
 
-	Ingo
