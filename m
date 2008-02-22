@@ -1,44 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933702AbYBVNSx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934186AbYBVNUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933702AbYBVNSx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:18:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758658AbYBVNSq
+	id S934186AbYBVNUx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:20:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758945AbYBVNUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:18:46 -0500
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:54340 "EHLO
-	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758049AbYBVNSp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:18:45 -0500
-X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Anders Eriksson <aeriksson@fastmail.fm>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
+	Fri, 22 Feb 2008 08:20:42 -0500
+Received: from styx.suse.cz ([82.119.242.94]:45800 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758658AbYBVNUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 08:20:41 -0500
+Date: Fri, 22 Feb 2008 14:20:40 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Anders Eriksson <aeriksson@fastmail.fm>
+cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Subject: Re: lockdep warning 
-In-reply-to: <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz> 
-References: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org> <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz>
-Comments: In-reply-to Jiri Kosina <jkosina@suse.cz>
-   message dated "Fri, 22 Feb 2008 12:16:02 +0100."
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 22 Feb 2008 14:16:08 +0100
-From: Anders Eriksson <aeriksson@fastmail.fm>
-Message-Id: <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org>
-X-Originating-IP: 83.252.237.4
-X-Scan-Result: No virus found in message 1JSXnU-0005nX-4u.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1JSXnU-0005nX-4u ac036325e91a96607a8b419063bec3aa
+In-Reply-To: <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org>
+Message-ID: <Pine.LNX.4.64.0802221420250.30955@jikos.suse.cz>
+References: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org>
+ <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz>
+ <20080222131608.7FC1E93C12F@tippex.mynet.homeunix.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 22 Feb 2008, Anders Eriksson wrote:
 
+> > This needs to be CCed to netdev.
+> > Any chance that
+> > 	git revert 69cc64d8d92
+> > makes this report go away? 
+> I'll have to install a git repo to check, or maybe you can send me the diff to 
+> reverse vs. 2.6.25-rc2?
 
-jkosina@suse.cz said:
-> This needs to be CCed to netdev.
-> Any chance that
-> 	git revert 69cc64d8d92
-> makes this report go away? 
-
-I'll have to install a git repo to check, or maybe you can send me the diff to 
-reverse vs. 2.6.25-rc2?
-
+diff --git a/net/core/neighbour.c b/net/core/neighbour.c
+index 7bb6a9a..a16cf1e 100644
+--- a/net/core/neighbour.c
++++ b/net/core/neighbour.c
+@@ -834,12 +834,18 @@ static void neigh_timer_handler(unsigned long arg)
+ 	}
+ 	if (neigh->nud_state & (NUD_INCOMPLETE | NUD_PROBE)) {
+ 		struct sk_buff *skb = skb_peek(&neigh->arp_queue);
+-
++		/* keep skb alive even if arp_queue overflows */
++		if (skb)
++			skb_get(skb);
++		write_unlock(&neigh->lock);
+ 		neigh->ops->solicit(neigh, skb);
+ 		atomic_inc(&neigh->probes);
+-	}
++		if (skb)
++			kfree_skb(skb);
++	} else {
+ out:
+-	write_unlock(&neigh->lock);
++		write_unlock(&neigh->lock);
++	}
+ 
+ 	if (notify)
+ 		neigh_update_notify(neigh);
+diff --git a/net/ipv4/arp.c b/net/ipv4/arp.c
+index c663fa5..8e17f65 100644
+--- a/net/ipv4/arp.c
++++ b/net/ipv4/arp.c
+@@ -368,6 +368,7 @@ static void arp_solicit(struct neighbour *neigh, struct sk_buff *skb)
+ 		if (!(neigh->nud_state&NUD_VALID))
+ 			printk(KERN_DEBUG "trying to ucast probe in NUD_INVALID\n");
+ 		dst_ha = neigh->ha;
++		read_lock_bh(&neigh->lock);
+ 	} else if ((probes -= neigh->parms->app_probes) < 0) {
+ #ifdef CONFIG_ARPD
+ 		neigh_app_ns(neigh);
+@@ -377,6 +378,8 @@ static void arp_solicit(struct neighbour *neigh, struct sk_buff *skb)
+ 
+ 	arp_send(ARPOP_REQUEST, ETH_P_ARP, target, dev, saddr,
+ 		 dst_ha, dev->dev_addr, NULL);
++	if (dst_ha)
++		read_unlock_bh(&neigh->lock);
+ }
+ 
+ static int arp_ignore(struct in_device *in_dev, __be32 sip, __be32 tip)
