@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbYBVRfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762103AbYBVRfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757170AbYBVRfQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:35:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761451AbYBVRer
+	id S1762103AbYBVRfv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761962AbYBVRf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:34:47 -0500
-Received: from mx2.suse.de ([195.135.220.15]:47656 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 12:35:27 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56282 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761379AbYBVRep (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:34:45 -0500
-Date: Fri, 22 Feb 2008 18:34:44 +0100
-Message-ID: <s5hk5kwyjwr.wl%tiwai@suse.de>
+	id S1761952AbYBVRfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:35:24 -0500
+Date: Fri, 22 Feb 2008 18:35:22 +0100
+Message-ID: <s5hir0gyjvp.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 02/16] [ALSA] race between disconnect and error handling in usbmidi
+Subject: [PATCH 03/16] [ALSA] oxygen - Fix section mismatch
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,88 +26,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver resubmits URBs from an error handler and schedules the error
-handler from the URBs' completion handlers. To reliably kill the cycle
-a flag must be used.
+Removed invalid __devinit and __devexit that are remaining after
+split to a helper module.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/usb/usbmidi.c |   19 ++++++++++++++++++-
- 1 files changed, 18 insertions(+), 1 deletions(-)
+ sound/pci/oxygen/oxygen_lib.c |   10 +++++-----
+ sound/pci/oxygen/oxygen_pcm.c |    2 +-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/sound/usb/usbmidi.c b/sound/usb/usbmidi.c
-index 750e929..6676a17 100644
---- a/sound/usb/usbmidi.c
-+++ b/sound/usb/usbmidi.c
-@@ -104,12 +104,14 @@ struct snd_usb_midi {
- 	struct usb_protocol_ops* usb_protocol_ops;
- 	struct list_head list;
- 	struct timer_list error_timer;
-+	spinlock_t disc_lock;
- 
- 	struct snd_usb_midi_endpoint {
- 		struct snd_usb_midi_out_endpoint *out;
- 		struct snd_usb_midi_in_endpoint *in;
- 	} endpoints[MIDI_MAX_ENDPOINTS];
- 	unsigned long input_triggered;
-+	unsigned char disconnected;
- };
- 
- struct snd_usb_midi_out_endpoint {
-@@ -306,6 +308,11 @@ static void snd_usbmidi_error_timer(unsigned long data)
- 	struct snd_usb_midi *umidi = (struct snd_usb_midi *)data;
- 	int i;
- 
-+	spin_lock(&umidi->disc_lock);
-+	if (umidi->disconnected) {
-+		spin_unlock(&umidi->disc_lock);
-+		return;
-+	}
- 	for (i = 0; i < MIDI_MAX_ENDPOINTS; ++i) {
- 		struct snd_usb_midi_in_endpoint *in = umidi->endpoints[i].in;
- 		if (in && in->error_resubmit) {
-@@ -316,6 +323,7 @@ static void snd_usbmidi_error_timer(unsigned long data)
- 		if (umidi->endpoints[i].out)
- 			snd_usbmidi_do_output(umidi->endpoints[i].out);
- 	}
-+	spin_unlock(&umidi->disc_lock);
+diff --git a/sound/pci/oxygen/oxygen_lib.c b/sound/pci/oxygen/oxygen_lib.c
+index 6eb36dd..78c2115 100644
+--- a/sound/pci/oxygen/oxygen_lib.c
++++ b/sound/pci/oxygen/oxygen_lib.c
+@@ -204,7 +204,7 @@ static void oxygen_proc_read(struct snd_info_entry *entry,
+ 	mutex_unlock(&chip->mutex);
  }
  
- /* helper function to send static data that may not DMA-able */
-@@ -1049,7 +1057,14 @@ void snd_usbmidi_disconnect(struct list_head* p)
- 	int i;
+-static void __devinit oxygen_proc_init(struct oxygen *chip)
++static void oxygen_proc_init(struct oxygen *chip)
+ {
+ 	struct snd_info_entry *entry;
  
- 	umidi = list_entry(p, struct snd_usb_midi, list);
--	del_timer_sync(&umidi->error_timer);
-+	/*
-+	 * an URB's completion handler may start the timer and
-+	 * a timer may submit an URB. To reliably break the cycle
-+	 * a flag under lock must be used
-+	 */
-+	spin_lock_irq(&umidi->disc_lock);
-+	umidi->disconnected = 1;
-+	spin_unlock_irq(&umidi->disc_lock);
- 	for (i = 0; i < MIDI_MAX_ENDPOINTS; ++i) {
- 		struct snd_usb_midi_endpoint* ep = &umidi->endpoints[i];
- 		if (ep->out)
-@@ -1062,6 +1077,7 @@ void snd_usbmidi_disconnect(struct list_head* p)
- 		if (ep->in)
- 			usb_kill_urb(ep->in->urb);
- 	}
-+	del_timer_sync(&umidi->error_timer);
+@@ -215,7 +215,7 @@ static void __devinit oxygen_proc_init(struct oxygen *chip)
+ #define oxygen_proc_init(chip)
+ #endif
+ 
+-static void __devinit oxygen_init(struct oxygen *chip)
++static void oxygen_init(struct oxygen *chip)
+ {
+ 	unsigned int i;
+ 
+@@ -399,8 +399,8 @@ static void oxygen_card_free(struct snd_card *card)
+ 	pci_disable_device(chip->pci);
  }
  
- static void snd_usbmidi_rawmidi_free(struct snd_rawmidi *rmidi)
-@@ -1685,6 +1701,7 @@ int snd_usb_create_midi_interface(struct snd_usb_audio* chip,
- 	umidi->quirk = quirk;
- 	umidi->usb_protocol_ops = &snd_usbmidi_standard_ops;
- 	init_timer(&umidi->error_timer);
-+	spin_lock_init(&umidi->disc_lock);
- 	umidi->error_timer.function = snd_usbmidi_error_timer;
- 	umidi->error_timer.data = (unsigned long)umidi;
+-int __devinit oxygen_pci_probe(struct pci_dev *pci, int index, char *id,
+-			       int midi, const struct oxygen_model *model)
++int oxygen_pci_probe(struct pci_dev *pci, int index, char *id,
++		     int midi, const struct oxygen_model *model)
+ {
+ 	struct snd_card *card;
+ 	struct oxygen *chip;
+@@ -507,7 +507,7 @@ err_card:
+ }
+ EXPORT_SYMBOL(oxygen_pci_probe);
  
+-void __devexit oxygen_pci_remove(struct pci_dev *pci)
++void oxygen_pci_remove(struct pci_dev *pci)
+ {
+ 	snd_card_free(pci_get_drvdata(pci));
+ 	pci_set_drvdata(pci, NULL);
+diff --git a/sound/pci/oxygen/oxygen_pcm.c b/sound/pci/oxygen/oxygen_pcm.c
+index dfad3db..b70046a 100644
+--- a/sound/pci/oxygen/oxygen_pcm.c
++++ b/sound/pci/oxygen/oxygen_pcm.c
+@@ -634,7 +634,7 @@ static void oxygen_pcm_free(struct snd_pcm *pcm)
+ 	snd_pcm_lib_preallocate_free_for_all(pcm);
+ }
+ 
+-int __devinit oxygen_pcm_init(struct oxygen *chip)
++int oxygen_pcm_init(struct oxygen *chip)
+ {
+ 	struct snd_pcm *pcm;
+ 	int outs, ins;
 -- 
 1.5.3.8
 
