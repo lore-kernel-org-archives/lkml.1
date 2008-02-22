@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751868AbYBVFBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbYBVFD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751868AbYBVFBf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 00:01:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750762AbYBVFB1
+	id S1753062AbYBVFD7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 00:03:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbYBVFDv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 00:01:27 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:53388 "EHLO mail.dvmed.net"
+	Fri, 22 Feb 2008 00:03:51 -0500
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:33296 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750757AbYBVFB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 00:01:26 -0500
-Message-ID: <47BE571E.4000802@garzik.org>
-Date: Fri, 22 Feb 2008 00:01:18 -0500
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750746AbYBVFDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 00:03:50 -0500
+Date: Fri, 22 Feb 2008 10:33:39 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, ak@suse.de,
+       arjan@linux.intel.com, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org
+Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel
+	tests
+Message-ID: <20080222050339.GB6716@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org> <20080219192153.GA11948@uranus.ravnborg.org> <20080222034231.GA6716@in.ibm.com> <20080222155713.0304dd19.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-To: Lachlan McIlroy <lachlan@sgi.com>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.25-rc3
-References: <20080222044209.AD5C558C4C0F@chook.melbourne.sgi.com>
-In-Reply-To: <20080222044209.AD5C558C4C0F@chook.melbourne.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080222155713.0304dd19.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lachlan McIlroy wrote:
->     Remove empty file fs/xfs/Makefile-linux-2.6.
-
-Already in the upstream kernel...
-
-
-> commit 1803f3389b7ac9ed33ea561b3b94e22e2864a95d
-> Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
-> Date:   Wed Feb 20 19:55:09 2008 -0800
+On Fri, Feb 22, 2008 at 03:57:13PM +1100, Stephen Rothwell wrote:
+> Hi Ananth,
 > 
->     Remove empty file remnants that were left in the tree by mistake
->     
->     Noted by various people (Sam, Jeff, Roland..)
->     
->     Commit 58b7983d15a422d9616bdc4e245d5c31dfaefbe2 intended to remove the
->     xfs "Makefile-linux-2.6" file, but it was mistakenly still left in the
->     tree as a empty file, and would cause git to correctly complain about a
->     tracked file being removed after a "make distclean" (which removes empty
->     files as garbage).
->     
->     And the asm-x86/desc_64.h file was supposed to be removed by commit
->     c81c6ca45a69478c7877b729af1942d2b80ef582, but instead stayed around
->     containing just a single newline.
->     
->     Get rid of them both properly.
->     
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> On Fri, 22 Feb 2008 09:12:31 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> >
+> > The patchset in question is just a major code movement - basically to
+> > move all in-kernel tests to live under a toplevel tests/ directory. As
+> > such, all the stakeholders have acked the patchset, but it does look
+> > like this is a big enough change to be deferred to the next merge
+> > window.
+> > 
+> > Given that there is general agreement about the patchset, could you
+> > please pull in the changes into the linux-next tree?
+> > 
+> > Sam has setup a git tree for this and you can pull from:
+> > ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+> >  
+> > Link to the thread: http://lkml.org/lkml/2008/2/11/97
+> 
+> I will include this in the next linux-tree.  It looks like it should not
+> cause to many problems (it merges OK on top of the about to be announce
+> next-20080222), but if I get a hard to resolve merge problem with it, I
+> will drop it first, OK.
+> 
+> I have noted you as the contact.
+
+Sure! Thanks Stephen.
+
+Ananth
