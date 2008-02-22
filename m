@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbYBVGA5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765285AbYBVGEh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763346AbYBVGA5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 01:00:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbYBVGAt
+	id S1765285AbYBVGEh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 01:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbYBVGE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 01:00:49 -0500
-Received: from pythia.bakeyournoodle.com ([203.82.209.197]:52822 "EHLO
-	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752339AbYBVGAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 01:00:48 -0500
-Date: Fri, 22 Feb 2008 16:58:02 +1100
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>, lguest@ozlabs.org
-Subject: Re: [PATCH] Fix building lguest as module.
-Message-ID: <20080222055802.GQ6887@bakeyournoodle.com>
-References: <20080201124520.GA29900@elte.hu> <20080201170551.GA3825@elte.hu> <200802040711.11280.rusty@rustcorp.com.au> <20080219034404.GT6887@bakeyournoodle.com> <20080219073205.GA12375@elte.hu> <20080219135401.GA9192@elte.hu> <20080219233520.GB6887@bakeyournoodle.com> <20080220100139.GB3881@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20080220100139.GB3881@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: tony@bakeyournoodle.com (Tony Breeds)
+	Fri, 22 Feb 2008 01:04:29 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:38859 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721AbYBVGE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 01:04:28 -0500
+Date: Fri, 22 Feb 2008 17:04:21 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for Feb 22
+Message-Id: <20080222170421.9e17d143.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 11:01:40AM +0100, Ingo Molnar wrote:
-> 
-> * Tony Breeds <tony@bakeyournoodle.com> wrote:
-> 
-> > I've attached the .config FWIW
-> 
-> indeed you are right...
-> 
-> I fixed this build failure too - could you check whether x86.git#test 
-> (which has all these lguest build fixes) works fine for you:
-> 
->    http://people.redhat.com/mingo/x86.git/README
-> 
-> ? Thanks,
+--Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sure that works.  I'm not conviniced that your patch is right as it
-treats gust and host support as the same thing.  Having said that we're
-only talkign about a few constants, so I don't think it's worth anymore
-time.  If it's not right it can be fixed later by those that know
-better.
+Hi all,
 
-Yours Tony
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git.
 
-  linux.conf.au    http://www.marchsouth.org/
-  Jan 19 - 24 2009 The Australian Linux Technical Conference!
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+allmodconfig for both powerpc and x86_64.
 
+There only one merge problem and no build failures!
+
+We are up to 30 trees, more are welcome (even if they are currently
+empty).  I would encourage architecture maintainers, in particular, to
+set up a git branch or quilt tree now to avoid the rush after RC3 :-)
+
+I am now including tarballs in
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/.
+
+Status of my local build tests is at
+http://kisskb.ellerman.id.au/kisskb/branch/9/.  The sparc builds have
+been mostly disabled while I obtain a working cross compiler.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFHvmXpTgG2atn1QN8RAl/WAKCI+zZjywQiH+GUXZQ4V6V2GvWZjgCdHSEv
+DP6l2rXYQe9nd9T5ddjtUkY=
+=G4Gv
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__22_Feb_2008_17_04_21_+1100_/SGd_qXwIt2rWwvS--
