@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762203AbYBVRoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbYBVRof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762203AbYBVRoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:44:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYBVRnw
+	id S1757061AbYBVRof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:44:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYBVRoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:43:52 -0500
-Received: from mx1.suse.de ([195.135.220.2]:57464 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:44:23 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:48919 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756132AbYBVRnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:43:51 -0500
-Date: Fri, 22 Feb 2008 18:43:50 +0100
-Message-ID: <s5h8x1cyjhl.wl%tiwai@suse.de>
+	id S1753954AbYBVRoW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:44:22 -0500
+Date: Fri, 22 Feb 2008 18:44:21 +0100
+Message-ID: <s5h7igwyjgq.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 10/16] [ALSA] hda-codec - Don't create vmaster if no slaves found
+Subject: [PATCH 11/16] [ALSA] hda-codec - Fix wrong capture source selection for ALC883 codec
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,31 +26,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't create vmaster controls if no slaves are found in the given list.
-This prevents the error due to an empty vmaster control.
+The widget list of capture source selection for ALC883 contains the
+wrong NIDs.
 
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/hda/hda_codec.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ sound/pci/hda/patch_realtek.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/pci/hda/hda_codec.c b/sound/pci/hda/hda_codec.c
-index 5c6419e..37c4139 100644
---- a/sound/pci/hda/hda_codec.c
-+++ b/sound/pci/hda/hda_codec.c
-@@ -1055,6 +1055,12 @@ int snd_hda_add_vmaster(struct hda_codec *codec, char *name,
- 	const char **s;
- 	int err;
- 
-+	for (s = slaves; *s && !snd_hda_find_mixer_ctl(codec, *s); s++)
-+		;
-+	if (!*s) {
-+		snd_printdd("No slave found for %s\n", name);
-+		return 0;
-+	}
- 	kctl = snd_ctl_make_virtual_master(name, tlv);
- 	if (!kctl)
- 		return -ENOMEM;
+diff --git a/sound/pci/hda/patch_realtek.c b/sound/pci/hda/patch_realtek.c
+index 586d98f..2a463c9 100644
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -6457,7 +6457,7 @@ static int alc883_mux_enum_put(struct snd_kcontrol *kcontrol,
+ 	struct alc_spec *spec = codec->spec;
+ 	const struct hda_input_mux *imux = spec->input_mux;
+ 	unsigned int adc_idx = snd_ctl_get_ioffidx(kcontrol, &ucontrol->id);
+-	static hda_nid_t capture_mixers[3] = { 0x24, 0x23, 0x22 };
++	static hda_nid_t capture_mixers[2] = { 0x23, 0x22 };
+ 	hda_nid_t nid = capture_mixers[adc_idx];
+ 	unsigned int *cur_val = &spec->cur_mux[adc_idx];
+ 	unsigned int i, idx;
 -- 
 1.5.3.8
 
