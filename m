@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933429AbYBVVnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbYBVVnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933429AbYBVVnK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:43:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932521AbYBVVmq
+	id S933699AbYBVVnr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbYBVVm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:42:46 -0500
-Received: from mx2.suse.de ([195.135.220.15]:60243 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 16:42:56 -0500
+Received: from ns1.suse.de ([195.135.220.2]:46332 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932425AbYBVVmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:42:44 -0500
-Date: Fri, 22 Feb 2008 13:39:54 -0800
+	id S1761423AbYBVVmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:42:53 -0500
+Date: Fri, 22 Feb 2008 13:40:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,65 +20,61 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jesper Juhl <jesper.juhl@gmail.com>, Mike Miller <mike.miller@hp.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 01/23] cciss: fix memory leak
-Message-ID: <20080222213954.GB8686@suse.de>
+       Jeff Garzik <jeff@garzik.org>, Mikael Pettersson <mikpe@it.uu.se>
+Subject: [patch 02/23] sata_promise: FastTrack TX4200 is a
+	second-generation chip
+Message-ID: <20080222214006.GC8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cciss-fix-memory-leak.patch"
+Content-Disposition: inline; filename="sata_promise-fasttrack-tx4200-is-a-second-generation-chip.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.22-stable review patch.  If anyone has any objections, please let us know.
+2.6.22-stable review patch.  If anyone has any objections, please let us
+know.
 
 ------------------
 
-From: Jesper Juhl <jesper.juhl@gmail.com>
+From: Mikael Pettersson <mikpe@it.uu.se>
 
-mainline: f2912a1223c0917a7b4e054f18086209137891ea
+patch 7f9992a23190418592f0810900e4f91546ec41da in mainline.
 
-There's a memory leak in the cciss driver.
+This patch corrects sata_promise to classify FastTrack TX4200
+(DID 3515/3519) as a second-generation chip. Promise's partial-
+source FT TX4200 driver confirms this classification.
 
-in alloc_cciss_hba() we may leak sizeof(ctlr_info_t) bytes if a
-call to alloc_disk(1 << NWD_SHIFT) fails.
-This patch should fix the issue.
+Treating it as a first-generation chip causes several problems:
+1. Detection failures. This is a recent regression triggered by
+   the hotplug-enabling changes in 2.6.23-rc1.
+2. Various "failed to resume link for reset" warnings.
 
-Spotted by the Coverity checker.
+This patch fixes <http://bugzilla.kernel.org/show_bug.cgi?id=8936>.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-Acked-by: Mike Miller <mike.miller@hp.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Oliver Pinter <oliver.pntr@gmail.com>
+Thanks to Stephen Ziemba for reporting the bug and for testing the fix.
+
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/block/cciss.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/ata/sata_promise.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3225,12 +3225,15 @@ static int alloc_cciss_hba(void)
- 	for (i = 0; i < MAX_CTLR; i++) {
- 		if (!hba[i]) {
- 			ctlr_info_t *p;
-+
- 			p = kzalloc(sizeof(ctlr_info_t), GFP_KERNEL);
- 			if (!p)
- 				goto Enomem;
- 			p->gendisk[0] = alloc_disk(1 << NWD_SHIFT);
--			if (!p->gendisk[0])
-+			if (!p->gendisk[0]) {
-+				kfree(p);
- 				goto Enomem;
-+			}
- 			hba[i] = p;
- 			return i;
- 		}
+--- a/drivers/ata/sata_promise.c
++++ b/drivers/ata/sata_promise.c
+@@ -330,8 +330,8 @@ static const struct pci_device_id pdc_at
+ 
+ 	{ PCI_VDEVICE(PROMISE, 0x3318), board_20319 },
+ 	{ PCI_VDEVICE(PROMISE, 0x3319), board_20319 },
+-	{ PCI_VDEVICE(PROMISE, 0x3515), board_20319 },
+-	{ PCI_VDEVICE(PROMISE, 0x3519), board_20319 },
++	{ PCI_VDEVICE(PROMISE, 0x3515), board_40518 },
++	{ PCI_VDEVICE(PROMISE, 0x3519), board_40518 },
+ 	{ PCI_VDEVICE(PROMISE, 0x3d17), board_40518 },
+ 	{ PCI_VDEVICE(PROMISE, 0x3d18), board_40518 },
+ 
 
 -- 
