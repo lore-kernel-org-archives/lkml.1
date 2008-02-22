@@ -1,137 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbYBVI7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbYBVJDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbYBVI7Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 03:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbYBVI67
+	id S1759580AbYBVJDk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:03:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751307AbYBVJDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 03:58:59 -0500
-Received: from mga03.intel.com ([143.182.124.21]:26994 "EHLO mga03.intel.com"
+	Fri, 22 Feb 2008 04:03:22 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:51540 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbYBVI65 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 03:58:57 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.25,390,1199692800"; 
-   d="scan'208";a="382237974"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S1751272AbYBVJDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 04:03:15 -0500
+Date: Fri, 22 Feb 2008 11:02:28 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Junio C Hamano <junio@pobox.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Al Viro <viro@ZenIV.linux.org.uk>, Greg Kroah-Hartman <greg@kroah.com>,
+       David Newall <davidn@davidnewall.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Roland Dreier <rdreier@cisco.com>, Faisal Latif <flatif@NetEffect.com>
+Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
+Message-ID: <20080222090228.GH28328@cs181133002.pp.htv.fi>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <m3tzk1q3rt.fsf@maximus.localdomain> <47BE2985.6020305@davidnewall.com> <20080222020615.GE27894@ZenIV.linux.org.uk> <alpine.LFD.1.00.0802211858140.19896@woody.linux-foundation.org> <7vbq69pkqy.fsf@gitster.siamese.dyndns.org>
 MIME-Version: 1.0
-Subject: RE: [patch 1/2] x86, ptrace: support pebs in ds.c
-Date: Fri, 22 Feb 2008 08:49:49 -0000
-Message-ID: <029E5BE7F699594398CA44E3DDF554440169D67E@swsmsx413.ger.corp.intel.com>
-In-Reply-To: <20080221210026.7B1C62701D5@magilla.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch 1/2] x86, ptrace: support pebs in ds.c
-Thread-Index: Ach0zS9hpqj6FPIvQqyxReVmg9ooywAWiR2Q
-References: <20080213112349.A3283@sedona.ch.intel.com> <20080221210026.7B1C62701D5@magilla.localdomain>
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: "Roland McGrath" <roland@redhat.com>
-Cc: <ak@suse.de>, <hpa@zytor.com>, <linux-kernel@vger.kernel.org>,
-       <mingo@elte.hu>, <tglx@linutronix.de>, <markus.t.metzger@gmail.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       <akpm@linux-foundation.org>, <mtk.manpages@gmail.com>,
-       <eranian@googlemail.com>
-X-OriginalArrivalTime: 22 Feb 2008 08:49:47.0311 (UTC) FILETIME=[E0A87BF0:01C8752F]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <7vbq69pkqy.fsf@gitster.siamese.dyndns.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Roland McGrath [mailto:roland@redhat.com] 
->Sent: Donnerstag, 21. Februar 2008 22:00
+On Thu, Feb 21, 2008 at 10:29:09PM -0800, Junio C Hamano wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> writes:
+> 
+> > So I'd be happier with warnings about deep indentation (but how do you 
+> > count it? Will people then try to fake things out by using 4-space indents 
+> > and then "deep" indentations will look like just a couple of tabs?) and 
+> > against complex expressions (ie "if ((a = xyz()) == NULL) .." should just 
+> > be split up into "a = xyz(); if (!a) ..", but there are sometimes reasons 
+> > for those things too!
+> 
+> Deep indentation should be fairly easy, given that you
+> already have rules in place that says "Tabs are 8 characters".
+> So if you find a line that begins with more than say 4 SP, you
+> can flag that as already bogus (i.e. "does not indent with HT"),
+> more than 8 SP definitely so.
+>...
 
->Sorry I haven't replied in this thread sooner.
+Checkpatch already has an error "use tabs not spaces".
 
-Thanks for your comments. I hope we get this resolved quickly.
+And people should realize that checkpatch is not a tool for janitors but 
+for authors and maintainers to easily spot some of the possible problems 
+in a driver and thereby automate some part of patch review.
 
+E.g. in this driver we are talking about checkpatch warns about the
+> 2000 lines over 80 characters.
 
->For the user-level interface, we should not be hasty with cooking up
->hairy ptrace extensions.  Personally, I'd prefer that we never add a
->ptrace-based interface for this (ptrace must die).  I think it will
->fit much better either merged into the interfaces that come from
->perfmon2 integration, or into what replaces ptrace when that comes.
+And that's not a surprise and a symptom when code is 6 tabs indented.
 
-Ptrace seems the natural choice for a debug feature.
+If someone said fixing that should not delay the merge of a 16.500 lines
+driver I would agree with that since fixing that would require a huge 
+amount of work for a not that big gain.
 
-When ptrace goes away, I will be happy to integrate this feature into
-its successor. But as long as ptrace lives, I think it should support
-this.
+But that a merged driver contains > 250 checkpatch errors is really not 
+nice. Most of them are easy to fix stylistic errors that simply make the 
+driver easier to read and whose fixing would only take a few hours 
+altogether. [1]
 
+And the 13 checkpatch errors about volatile usage are not stuff for 
+janitors (unless you count our number one cleanup person Al as janitor) 
+but indicate really fishy code.
 
->But I also don't know of anyone desperate and about to burst from lack
->of BTS functionality.
+cu
+Adrian
 
-Intel is waiting for this interface - desperate and about to burst from
-lack of it.
+[1] one might argue whether "easier to read" really applies when 
+    checkpatch gives errors for e.g. the usage of C99 comments, but
+    different from overly long lines that's at least stuff that can
+    be fixed very quickly and in a quite automatic way
 
-For one, Intel's debugger is ready to support this.
-Second, Intel would like to see all linux debuggers use this hardware
-debugging feature.
+-- 
 
-
->The low-level implementation pieces should gel a bit more in -mm or
->whereever.  They should both get more testing and also get more
->concrete use from the perfmon2 integration effort to iron out their
->internal interface kinks.
-
-I see the two parts (ptrace API and ds.c interface) independent from
-each other.
-
-The ptrace API is the user interface for the debugging/BTS aspect of it.
-As such, it will remain stable.
-
-The ds.c interface is the kernel interface to DS (which covers both BTS
-and PEBS). It is currently used by ptrace (the per-thread BTS part) and
-it will be used by perfmon2 (the PEBS part) and by kernel debuggers (the
-per-cpu BTS part). 
-
-If we need to change the ds.c interface to better fit perfmon2's needs,
-we can easily adapt the ptrace layer without affecting the ptrace API.
-
-
->I would like to see all the BTS and DS work wait until after 2.6.25.
->We have a lot of x86 churn in 2.6.25 already, and I think we'd do
->better without adding this wrinkle at the same time.
-
-The ptrace BTS extension has been out for review since 2.6.24 (that is,
-2.6.23 was the stable kernel at that time). The ptrace API has been
-extensively discussed by mostly Ingo and myself until we agreed on its
-usefulness. I have not heard any complaints about the API, since then.
-
-I would suggest that we iron out the ptrace API for 2.6.25. This would
-introduce ds.c and a first user. It would allow application debuggers to
-use that feature.
-
-For 2.6.26 we would make perfmon2 use the ds.c interface. This would add
-a second user to ds.c. It would allow profilers to use that feature.
-
-As soon as a ptrace successor becomes available, we will integrate BTS
-support into it. We might want to introduce another layer between ptrace
-and ds to share some code. This would leave the ptrace layer almost
-empty.
-
-
-What do you think?
-
-
-thanks and regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
