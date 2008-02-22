@@ -1,126 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936996AbYBVW1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935890AbYBVW3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936996AbYBVW1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:27:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936939AbYBVW0p
+	id S935890AbYBVW3V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:29:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbYBVW3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:26:45 -0500
-Received: from phunq.net ([64.81.85.152]:39637 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936744AbYBVW0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:26:39 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-Date: Fri, 22 Feb 2008 14:25:47 -0800
-User-Agent: KMail/1.9.5
-Cc: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org, Trond.Myklebust@netapp.com
-References: <200802211657.01704.phillips@phunq.net> <18063.1203638861@redhat.com> <20089.1203684531@redhat.com>
-In-Reply-To: <20089.1203684531@redhat.com>
+	Fri, 22 Feb 2008 17:29:06 -0500
+Received: from khc.piap.pl ([195.187.100.11]:53696 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755722AbYBVW3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 17:29:03 -0500
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: David Newall <davidn@davidnewall.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	<m3tzk1q3rt.fsf@maximus.localdomain>
+	<47BE2985.6020305@davidnewall.com>
+	<20080222020615.GE27894@ZenIV.linux.org.uk>
+	<m3myptsp8u.fsf@maximus.localdomain>
+	<20080222031315.GF27894@ZenIV.linux.org.uk>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 22 Feb 2008 23:28:58 +0100
+In-Reply-To: <20080222031315.GF27894@ZenIV.linux.org.uk> (Al Viro's message of "Fri\, 22 Feb 2008 03\:13\:15 +0000")
+Message-ID: <m38x1c4od1.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802221425.48535.phillips@phunq.net>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008 04:48, David Howells wrote:
-> > But looking up the object in the cache should be nearly free - much less
-> > than a microsecond per block.
-> 
-> The problem is that you have to do a database lookup of some sort, possibly
-> involving several synchronous disk operations.
+Al Viro <viro@ZenIV.linux.org.uk> writes:
 
-Right, so the obvious optimization strategy for this corner of it is to
-decimate the synchronous disk ops for the average case, for which there
-are a variety of options, one of which you already suggested.
+> IMO the line length overruns make good warnings.  Not as in "here's a cheap
+> way to get more changesets", but as in "that code might have other problems
+> nearby" kind of heuristics.
 
-> CacheFiles does a disk lookup by taking the key given to it by NFS, turning it
-> into a set of file or directory names, and doing a short pathwalk to the target
-> cache file.  Throwing in extra indices won't necessarily help.  What matters is
-> how quick the backing filesystem is at doing lookups.  As it turns out, Ext3 is
-> a fair bit better then BTRFS when the disk cache is cold.
+Sure, it does. However the human looking at the code is far better at
+spotting such problems. Machine-generated warnings are great when the
+machine is actually better than human.
 
-All understood.  I am eventually going to suggest cutting the backing
-filesystem entirely out of the picture, with a view to improving both
-efficiency and transparency, hopefully with a code size reduction as
-well.  But you are up and running with the filesystem approach, enough
-to tackle the basic algorithm questions, which is worth a lot.
-
-I really do not like idea of force fitting this cache into a generic
-vfs model.  Sun was collectively smoking some serious crack when they
-cooked that one up.  But there is also the ageless principle "isness is
-more important than niceness".
-
-> > > The metadata problem is quite a tricky one since it increases with the
-> > > number of files you're dealing with.  As things stand in my patches, when
-> > > NFS, for example, wants to access a new inode, it first has to go to the
-> > > server to lookup the NFS file handle, and only then can it go to the cache
-> > > to find out if there's a matching object in the case.
-> > 
-> > So without the persistent cache it can omit the LOOKUP and just send the
-> > filehandle as part of the READ?
-> 
-> What 'it'?  Note that the get the filehandle, you have to do a LOOKUP op.  With
-> the cache, we could actually cache the results of lookups that we've done,
-> however, we don't know that the results are still valid without going to the
-> server:-/
-
-What I was trying to say.  It => the cache logic.
-
-> AFS has a way around that - it versions its vnode (inode) IDs.
-
-Which would require a change to NFS, not an option because you hope to
-work with standard servers?  Of course with years to think about this,
-the required protocol changes were put into v4.  Not.
-
-/me hopes for an NFS hack to show up and explain the thinking there
-
-Actually, there are many situations where changing both the client (you
-must do that anyway) and the server is logistically practical.  In fact
-that is true for all actual use cases I know of for this cache model.
-So elaborating the protocol is not an option to reject out of hand.  A
-hack along those lines could (should?) be provided as an opportunistic
-option.
-
-Have you completely exhausted optimization ideas for the file handle
-lookup?
-
-> > > The reason my client going to my server is so quick is that the server has
-> > > the dcache and the pagecache preloaded, so that across-network lookup
-> > > operations are really, really quick, as compared to the synchronous
-> > > slogging of the local disk to find the cache object.
-> > 
-> > Doesn't that just mean you have to preload the lookup table for the
-> > persistent cache so you can determine whether you are caching the data
-> > for a filehandle without going to disk?
-> 
-> Where "lookup table" == "dcache".  That would be good yes.  cachefilesd
-> prescans all the files in the cache, which ought to do just that, but it
-> doesn't seem to be very effective.  I'm not sure why.
-
-RCU?  Anyway, it is something to be tracked down and put right.
-
-> > Your big can-t-get-there-from-here is the round trip to the server to
-> > determine whether you should read from the local cache.  Got any ideas?
-> 
-> I'm not sure what you mean.  Your statement should probably read "... to
-> determine _what_ you should read from the local cache".
-
-What I tried to say.  So still... got any ideas?  That extra synchronous
-network round trip is a killer.  Can it be made streaming/async to keep
-throughput healthy?
-
-> > And where is the Trond-meister in all of this?
-> 
-> Keeping quiet as far as I can tell.
-
-/me does the Trond summoning dance
-
-Daniel
+Anyway, warnings are one thing and line limit is another. We may raise
+the limit leaving the 80-chars warning in place. Unless there are too
+many false positives, of course.
+-- 
+Krzysztof Halasa
