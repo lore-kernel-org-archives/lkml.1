@@ -1,40 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933730AbYBVJvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbYBVJwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933730AbYBVJvd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 04:51:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbYBVJvZ
+	id S932321AbYBVJwf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 04:52:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbYBVJw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 04:51:25 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:41192 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753139AbYBVJvX (ORCPT
+	Fri, 22 Feb 2008 04:52:26 -0500
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33092 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753546AbYBVJwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 04:51:23 -0500
-Message-ID: <47BE9B80.2090808@firstfloor.org>
-Date: Fri, 22 Feb 2008 10:53:04 +0100
-From: Andi Kleen <andi@firstfloor.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: trenn@suse.de
-CC: =?UTF-8?B?w4lyaWMgUGllbA==?= <Eric.Piel@tremplin-utc.net>,
-       Christoph Hellwig <hch@lst.de>, dsdt@gaugusch.at, len.brown@intel.com,
-       linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: acpi dsts loading and populate_rootfs
-References: <20080210071226.GA23360@lst.de> <20080210071454.GA23428@lst.de>	 <47AEE6D1.4070402@tremplin-utc.net> <20080212053730.GA15347@lst.de>	 <47BDC705.6090902@tremplin-utc.net> <1203670297.4995.12.camel@queen.suse.de>
-In-Reply-To: <1203670297.4995.12.camel@queen.suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Fri, 22 Feb 2008 04:52:25 -0500
+Date: Fri, 22 Feb 2008 09:42:14 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Roskin <proski@gnu.org>
+Cc: linux-kernel@vger.kernel.org, Jon Masters <jonathan@jonmasters.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Giridhar Pemmasani <pgiri@yahoo.com>
+Subject: Re: ndiswrapper tainting
+Message-ID: <20080222094214.4a9a1da7@core>
+In-Reply-To: <1203642175.14339.17.camel@dv>
+References: <1203642175.14339.17.camel@dv>
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Feb 2008 20:02:55 -0500
+Pavel Roskin <proski@gnu.org> wrote:
 
-> Which is probably a good idea.
-> AFAIK Numa, possibly Apic tables must be available quite early.
+> Hello!
+> 
+> What are the chances that incorrect tainting of ndiswrapper will be
+> fixed in 2.6.25?  I'm worried that it still hasn't happened in the
+> mainline repository.  It's unfortunate to see that a long discussion
+> didn't result in a simple fix.  If anyone is waiting for my patch,
+> please let me know what kind of patch I'm supposed to submit and to
+> which address.
 
-NUMA setup does not use the DSDT, but separate special tables
-(SRAT/SLIT). It also doesn't require the ACPI interpreter, these
-are all simple static tables.
+One to Linus and l/k which takes the current tree and fixes it.
 
--Andi
-
+Alan
