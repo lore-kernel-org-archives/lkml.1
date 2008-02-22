@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764843AbYBVRu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764334AbYBVRv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764843AbYBVRu6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:50:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761839AbYBVRtU
+	id S1764334AbYBVRv7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:51:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbYBVRvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:49:20 -0500
-Received: from vs166246.vserver.de ([62.75.166.246]:43410 "EHLO
-	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764606AbYBVRtR (ORCPT
+	Fri, 22 Feb 2008 12:51:40 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:56898 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756761AbYBVRvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:49:17 -0500
-From: Michael Buesch <mb@bu3sch.de>
-To: Alexey Zaytsev <zaytsev.a@protei.ru>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Date: Fri, 22 Feb 2008 18:48:37 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de> <47BF101F.30301@protei.ru>
-In-Reply-To: <47BF101F.30301@protei.ru>
+	Fri, 22 Feb 2008 12:51:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=WFkgWaxkkCf5/An1TiGEvM0ArNkWTPbJwFB/nJ1SNWNeudpxGDyf3Fn2XKrHlxkSVUmw5+Mr9lUctu3tHVfX2vLvKeZZpbYVjEPoeQsY5kT9fs/CQZB+RIurC3FjILEROUFzk5LniZUa/evh+KMI/6xZa7JVMPezV2I7Yeg1BIo=
+Message-ID: <47BF0BA4.5060503@googlemail.com>
+Date: Fri, 22 Feb 2008 18:51:32 +0100
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Michael Buesch <mb@bu3sch.de>
+CC: Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de>
+In-Reply-To: <200802221513.58608.mb@bu3sch.de>
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802221848.37902.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008 19:10:39 Alexey Zaytsev wrote:
-> Sorry, I don't get it. You are going to remove the (somehow)
-> working driver, while there are known problems with the new
-> one? Why?
-
-Because the new driver works, if you just set it up right.
-Until now every "breakage" was just a usage error.
-
-> And please look at the problem from a user's view point. I'm
-> happily using the 2.6.23 kernel. The bcm43xx driver is the
-> only one available. And it works somehow (well, no s2ram).
-
-b43 supports s2ram and s2disk.
-
-> If this is not a repgession, than I don't know what is.
-> And if it is a regression, it should be fixed at least in the
-> 2.6.24.y series, do you agree?
-
-No. Playing with kconfig SELECT is really _nothing_ for a -stable
-series. I am _not_ going to be responsible for any
-breakages. And using SELECT _does_ break things. We had dozens of bugs
-until all the damn dependencies were right. Even "Obviously Correct (tm)"
-changes to SELECT _do_ break on weird configurations.
-See the bcm43xx mail archives for examples.
-
-If you need that patch for some reason, please apply it locally.
-The problem will automatically get fixed when bcm43xx goes away, soon.
-
-> I have provided a patch that I believe is trivial, that I have
-> tested with all possible config option combinations I thought
-> were possible, and that fixes the regression. If you have a
-> reason to believe it is wrong, please say it, I won't be
-> offended. If there is a problem with the patch, I'll gladly
-> fix and resend it. 
+Michael Buesch wrote:
+> On Friday 22 February 2008 12:17:15 Alexey Zaytsev wrote:
+>> Hello.
+>>
+>> The bcm43xx driver won't work any more, if the b44 Ethernet
+>> driver is enabled. This happens because the b44 driver
+>> needlessly enables the b43_pci_bridge code, which claims
+>> the same pci ids as the bcm43xx driver. The b43_pci_bridge
+>> code is needed for the b43{legacy} drivers, but for the
+>> b44, only the "ssb pci core" is needed.
+>>
+>> This patch separates the ssb b43 pci bridge and the ssb pci
+>> core config options and enables only the needed ones.
 > 
-> This Nack leaves me with one option - to switch back to 2.6.23.
-> Sorry, no testing, probably more bugs not found in 2.6.24. ;(
+> Nack. Switch to b43. bcm43xx is going to be removed anyway.
 
-It is not my problem, if you refuse to use b43.
-You also still refuse to tell me details about your card and _what_
-does not work. I do own lots of different card and they
-all work fine with b43. There's one exception, the 4311 rev 3 (or something,
-don't quite remember). But patches are available and will ship in 2.6.25.
-bcm43xx won't get removed until that shipped.
+Since when this is a valid reason to NACK a patch which fixes 
+a regression in the 'stable' kernel ? 
 
--- 
-Greetings Michael.
+Probably you may want to ask first whatever 'b43' works for Alexey ?
+and most probably the answer will be 'no' because that is the only reason 
+one would want to fix the *old* one when *both* drivers are enabled.
+
+Really 'Switch to foo' and 'foo_old will be removed sometimes' 
+is not a 'valid' reason to NACK anything as long you 'have foo and foo_old' 
+*supported* in that kernel.
+
+> I'm not going to play these kconfig SELECT tricks anymore.
+
+Fix it different then.
+
+> We had _lots_ of bugs there. People submitted patches that
+> obviously looked OK and still they turned out to break
+> some dependencies. KConfig SELECT is a feature from hell.
+> 
+
+Yes it is but that is still not a valid reason to NACK that patch , I'm sorry.
+
+Regards,
+
+Gabriel
+
+
+
