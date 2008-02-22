@@ -1,114 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935851AbYBVW0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936996AbYBVW1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935851AbYBVW0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:26:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935969AbYBVWZg
+	id S936996AbYBVW1c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936939AbYBVW0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:25:36 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:60628 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935751AbYBVWZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:25:33 -0500
-Message-ID: <47BF4BD0.7080008@cs.wisc.edu>
-Date: Fri, 22 Feb 2008 16:25:20 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 22 Feb 2008 17:26:45 -0500
+Received: from phunq.net ([64.81.85.152]:39637 "EHLO moonbase.phunq.net"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936744AbYBVW0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 17:26:39 -0500
+From: Daniel Phillips <phillips@phunq.net>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 00/37] Permit filesystem local caching
+Date: Fri, 22 Feb 2008 14:25:47 -0800
+User-Agent: KMail/1.9.5
+Cc: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org, Trond.Myklebust@netapp.com
+References: <200802211657.01704.phillips@phunq.net> <18063.1203638861@redhat.com> <20089.1203684531@redhat.com>
+In-Reply-To: <20089.1203684531@redhat.com>
 MIME-Version: 1.0
-To: markh@compro.net
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tony Battersby <tonyb@cybernetics.com>
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu> <47BEFF5F.9020002@cs.wisc.edu> <47BF0CE2.306@compro.net> <47BF40D7.5050301@compro.net>
-In-Reply-To: <47BF40D7.5050301@compro.net>
-Content-Type: multipart/mixed;
- boundary="------------030405060806000504040204"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802221425.48535.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030405060806000504040204
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Mark Hounschell wrote:
-> Mark Hounschell wrote:
->> Mike Christie wrote:
->>> Mike Christie wrote:
->>>> Mark Hounschell wrote:
->>>>> I seem to have run into some sort of regression in the SG_IO
->>>>> interface of 2.6.24.2. I have an application that up until 2.6.24
->>>>> worked fine. The 2.6.23.16 kernel works fine.
->>>>>
->>>>> During reads I get these kernel messages. Writes and other functions
->>>>> _seem_ OK. Actually basic
->>>>> reads  are working. Its with large BC reads using an io_vec list that
->>>>> the problem shows up.
->>>>>
->>>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
->>>> (/dev/sdX)?
->>> If you are doing SG_IO to the sg device, then I know of one regression
->>> (well not regression exactly, but I fixed a bug but the patch got
->>> partially overwritten by another patch and that caused a new bug). Both
->>> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
->>> SG_IO to the sg device.
->>>
->> Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
->>
->> Thanks
->> Mark
->> -
->  
-> 2.6.25-rc2 does fix the problem I'm having. I don't suppose there is a patch
-> lying around for 2.6.24.2??
+On Friday 22 February 2008 04:48, David Howells wrote:
+> > But looking up the object in the cache should be nearly free - much less
+> > than a microsecond per block.
 > 
+> The problem is that you have to do a database lookup of some sort, possibly
+> involving several synchronous disk operations.
 
-I attached a backport of the patch from Tony (added as cc) that is in 
-2.6.25-rc2. Could you try it out against 2.6.24.2 just to make sure it 
-was this patch, then we can send it to stable.
+Right, so the obvious optimization strategy for this corner of it is to
+decimate the synchronous disk ops for the average case, for which there
+are a variety of options, one of which you already suggested.
 
---------------030405060806000504040204
-Content-Type: text/x-patch;
- name="fix-passthrough-bufflen.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="fix-passthrough-bufflen.patch"
+> CacheFiles does a disk lookup by taking the key given to it by NFS, turning it
+> into a set of file or directory names, and doing a short pathwalk to the target
+> cache file.  Throwing in extra indices won't necessarily help.  What matters is
+> how quick the backing filesystem is at doing lookups.  As it turns out, Ext3 is
+> a fair bit better then BTRFS when the disk cache is cold.
 
-Backport
-76d78300a6eb8b7f08e47703b7e68a659ffc2053
-to 2.6.24
+All understood.  I am eventually going to suggest cutting the backing
+filesystem entirely out of the picture, with a view to improving both
+efficiency and transparency, hopefully with a code size reduction as
+well.  But you are up and running with the filesystem approach, enough
+to tackle the basic algorithm questions, which is worth a lot.
 
->From Tony Battersby:
+I really do not like idea of force fitting this cache into a generic
+vfs model.  Sun was collectively smoking some serious crack when they
+cooked that one up.  But there is also the ageless principle "isness is
+more important than niceness".
 
-When sending a SCSI command to a tape drive via the SCSI Generic (sg)
-driver, if the command has a data transfer length more than
-scatter_elem_sz (32 KB default) and not a multiple of 512, then I either
-hit BUG_ON(!valid_dma_direction(direction)) in dma_unmap_sg() or else
-the command never completes (depending on the LLDD).
+> > > The metadata problem is quite a tricky one since it increases with the
+> > > number of files you're dealing with.  As things stand in my patches, when
+> > > NFS, for example, wants to access a new inode, it first has to go to the
+> > > server to lookup the NFS file handle, and only then can it go to the cache
+> > > to find out if there's a matching object in the case.
+> > 
+> > So without the persistent cache it can omit the LOOKUP and just send the
+> > filehandle as part of the READ?
+> 
+> What 'it'?  Note that the get the filehandle, you have to do a LOOKUP op.  With
+> the cache, we could actually cache the results of lookups that we've done,
+> however, we don't know that the results are still valid without going to the
+> server:-/
 
-When constructing scatterlists, the sg driver rounds up the scatterlist
-element sizes to be a multiple of 512.  This can result in
-sum(scatterlist lengths) > bufflen.  In this case, scsi_req_map_sg()
-incorrectly sets bio->bi_size to sum(scatterlist lengths) rather than to
-bufflen.  When the command completes, req_bio_endio() detects that
-bio->bi_size != 0, and so it doesn't call bio_endio().  This causes the
-command to be resubmitted, resulting in BUG_ON or the command never
-completing.
+What I was trying to say.  It => the cache logic.
 
-This patch makes scsi_req_map_sg() set bio->bi_size to bufflen rather
-than to sum(scatterlist lengths), which fixes the problem.
+> AFS has a way around that - it versions its vnode (inode) IDs.
 
-Signed-off-by: Mike Christie <michaelc@cs.wisc.edu>
+Which would require a change to NFS, not an option because you hope to
+work with standard servers?  Of course with years to think about this,
+the required protocol changes were put into v4.  Not.
 
---- linux-2.6.24.2/drivers/scsi/scsi_lib.c	2008-02-10 23:51:11.000000000 -0600
-+++ linux-2.6.24.2.work/drivers/scsi/scsi_lib.c	2008-02-22 16:20:09.000000000 -0600
-@@ -298,7 +298,6 @@ static int scsi_req_map_sg(struct reques
- 		page = sg_page(sg);
- 		off = sg->offset;
- 		len = sg->length;
-- 		data_len += len;
- 
- 		while (len > 0 && data_len > 0) {
- 			/*
+/me hopes for an NFS hack to show up and explain the thinking there
 
---------------030405060806000504040204--
+Actually, there are many situations where changing both the client (you
+must do that anyway) and the server is logistically practical.  In fact
+that is true for all actual use cases I know of for this cache model.
+So elaborating the protocol is not an option to reject out of hand.  A
+hack along those lines could (should?) be provided as an opportunistic
+option.
+
+Have you completely exhausted optimization ideas for the file handle
+lookup?
+
+> > > The reason my client going to my server is so quick is that the server has
+> > > the dcache and the pagecache preloaded, so that across-network lookup
+> > > operations are really, really quick, as compared to the synchronous
+> > > slogging of the local disk to find the cache object.
+> > 
+> > Doesn't that just mean you have to preload the lookup table for the
+> > persistent cache so you can determine whether you are caching the data
+> > for a filehandle without going to disk?
+> 
+> Where "lookup table" == "dcache".  That would be good yes.  cachefilesd
+> prescans all the files in the cache, which ought to do just that, but it
+> doesn't seem to be very effective.  I'm not sure why.
+
+RCU?  Anyway, it is something to be tracked down and put right.
+
+> > Your big can-t-get-there-from-here is the round trip to the server to
+> > determine whether you should read from the local cache.  Got any ideas?
+> 
+> I'm not sure what you mean.  Your statement should probably read "... to
+> determine _what_ you should read from the local cache".
+
+What I tried to say.  So still... got any ideas?  That extra synchronous
+network round trip is a killer.  Can it be made streaming/async to keep
+throughput healthy?
+
+> > And where is the Trond-meister in all of this?
+> 
+> Keeping quiet as far as I can tell.
+
+/me does the Trond summoning dance
+
+Daniel
