@@ -1,172 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbYBVDm2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764948AbYBVDru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764265AbYBVDm2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 22:42:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYBVDmS
+	id S1764948AbYBVDru (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 22:47:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbYBVDrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 22:42:18 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:41917 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753784AbYBVDmR (ORCPT
+	Thu, 21 Feb 2008 22:47:41 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:53817 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757263AbYBVDrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 22:42:17 -0500
-Date: Fri, 22 Feb 2008 09:12:31 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: sfr@canb.auug.org.au
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, ak@suse.de, arjan@linux.intel.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org
-Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel
-	tests
-Message-ID: <20080222034231.GA6716@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org> <20080219192153.GA11948@uranus.ravnborg.org>
-MIME-Version: 1.0
+	Thu, 21 Feb 2008 22:47:39 -0500
+Date: Fri, 22 Feb 2008 12:47:38 +0900
+From: Isaku Yamahata <yamahata@valinux.co.jp>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       xen-devel@lists.xensource.com, linux-ia64@vger.kernel.org,
+       xen-ia64-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>,
+       "Stephen C. Tweedie" <sct@redhat.com>
+Subject: Re: [PATCH 06/11] xen: move arch/x86/xen/events.c undedr drivers/xen and split out arch specific part.
+Message-ID: <20080222034738.GA2406%yamahata@valinux.co.jp>
+References: <20080221084530.470680000@ls.local.valinux.co.jp> <20080221091002.222498000@ls.local.valinux.co.jp> <47BDD32A.6030201@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080219192153.GA11948@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <47BDD32A.6030201@goop.org>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 19, 2008 at 08:21:53PM +0100, Sam Ravnborg wrote:
-> Hi Anath.
+On Thu, Feb 21, 2008 at 11:38:18AM -0800, Jeremy Fitzhardinge wrote:
+> yamahata@valinux.co.jp wrote:
+> >diff --git a/arch/x86/xen/events.c b/drivers/xen/events.c
+> >similarity index 95%
+> >rename from arch/x86/xen/events.c
+> >rename to drivers/xen/events.c
+> >index dcf613e..7474739 100644
+> >--- a/arch/x86/xen/events.c
+> >+++ b/drivers/xen/events.c
+> >@@ -37,7 +37,9 @@
+> > #include <xen/interface/xen.h>
+> > #include <xen/interface/event_channel.h>
+> > 
+> >-#include "xen-ops.h"
+> >+#ifdef CONFIG_X86
+> >+# include "../arch/x86/xen/xen-ops.h"
+> >+#endif
 > 
-> Linus did not pull this in the -rc1 to -rc2 timeframe
-> so please resubmit the patch serie one week into the
-> next merge window (when most of the trees has hit linus' tree
-> and Andrew has made his first merge).
-> 
-> IF you need an extra eye balling then you can submit
-> a few weeks before the merge window opens.
-> Thats typical after an -rc with only a few patches.
+> Hm.  Perhaps it would be better to move whatever definition you need 
+> into a header in a common place (or move xen-ops.h entirely).
 
-Stephen,
+Thank you for review. The updated version.
+changes
+- move the xen_vcpu declaration from arch/x86/xen/xen-ops.h to
+  include/xen/xen-ops.h which is newly created.
 
-The patchset in question is just a major code movement - basically to
-move all in-kernel tests to live under a toplevel tests/ directory. As
-such, all the stakeholders have acked the patchset, but it does look
-like this is a big enough change to be deferred to the next merge
-window.
 
-Given that there is general agreement about the patchset, could you
-please pull in the changes into the linux-next tree?
+xen: move arch/x86/xen/events.c undedr drivers/xen and split out arch specific part.
 
-Sam has setup a git tree for this and you can pull from:
-ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+ia64/xen also uses events.c. clean it up so that ia64/xen can use.
+make ipi_to_irq globly visible. ia64/xen nees to reference it from other file.
+introduce resend_irq_on_evtchn() which ia64 needs.
+introduce xen_do_IRQ() to split out arch specific code.
+
+Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+---
+ arch/x86/xen/Makefile              |    2 +-
+ arch/x86/xen/xen-ops.h             |    2 +-
+ drivers/xen/Makefile               |    2 +-
+ {arch/x86 => drivers}/xen/events.c |   33 ++++++++++++++++++++++++---------
+ include/asm-x86/xen/hypervisor.h   |    7 +++++++
+ include/xen/events.h               |    1 +
+ include/xen/xen-ops.h              |    6 ++++++
+ 7 files changed, 41 insertions(+), 12 deletions(-)
+ rename {arch/x86 => drivers}/xen/events.c (95%)
+ create mode 100644 include/xen/xen-ops.h
+
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+index c5e9aa4..95c5926 100644
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -1,4 +1,4 @@
+ obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
+-			events.o time.o manage.o xen-asm.o
++			time.o manage.o xen-asm.o
  
-Link to the thread: http://lkml.org/lkml/2008/2/11/97
+ obj-$(CONFIG_SMP)	+= smp.o
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index b02a909..caaabf3 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -2,6 +2,7 @@
+ #define XEN_OPS_H
+ 
+ #include <linux/init.h>
++#include <xen/xen-ops.h>
+ 
+ /* These are code, but not functions.  Defined in entry.S */
+ extern const char xen_hypervisor_callback[];
+@@ -9,7 +10,6 @@ extern const char xen_failsafe_callback[];
+ 
+ void xen_copy_trap_info(struct trap_info *traps);
+ 
+-DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
+ DECLARE_PER_CPU(unsigned long, xen_cr3);
+ DECLARE_PER_CPU(unsigned long, xen_current_cr3);
+ 
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index 609fdda..823ce78 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -1,2 +1,2 @@
+-obj-y	+= grant-table.o features.o
++obj-y	+= grant-table.o features.o events.o
+ obj-y	+= xenbus/
+diff --git a/arch/x86/xen/events.c b/drivers/xen/events.c
+similarity index 95%
+rename from arch/x86/xen/events.c
+rename to drivers/xen/events.c
+index dcf613e..dce2dfc 100644
+--- a/arch/x86/xen/events.c
++++ b/drivers/xen/events.c
+@@ -33,12 +33,11 @@
+ #include <asm/xen/hypercall.h>
+ #include <asm/xen/hypervisor.h>
+ 
++#include <xen/xen-ops.h>
+ #include <xen/events.h>
+ #include <xen/interface/xen.h>
+ #include <xen/interface/event_channel.h>
+ 
+-#include "xen-ops.h"
+-
+ /*
+  * This lock protects updates to the following mapping and reference-count
+  * arrays. The lock does not need to be acquired to read the mapping tables.
+@@ -49,7 +48,7 @@ static DEFINE_SPINLOCK(irq_mapping_update_lock);
+ static DEFINE_PER_CPU(int, virq_to_irq[NR_VIRQS]) = {[0 ... NR_VIRQS-1] = -1};
+ 
+ /* IRQ <-> IPI mapping */
+-static DEFINE_PER_CPU(int, ipi_to_irq[XEN_NR_IPIS]) = {[0 ... XEN_NR_IPIS-1] = -1};
++DEFINE_PER_CPU(int, ipi_to_irq[XEN_NR_IPIS]) = {[0 ... XEN_NR_IPIS-1] = -1};
+ 
+ /* Packed IRQ information: binding type, sub-type index, and event channel. */
+ struct packed_irq
+@@ -455,7 +454,6 @@ void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector)
+ 	notify_remote_via_irq(irq);
+ }
+ 
+-
+ /*
+  * Search the CPUs pending events bitmasks.  For each one found, map
+  * the event number to an irq, and feed it into do_IRQ() for
+@@ -474,7 +472,10 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 
+ 	vcpu_info->evtchn_upcall_pending = 0;
+ 
+-	/* NB. No need for a barrier here -- XCHG is a barrier on x86. */
++#ifndef CONFIG_X86 /* No need for a barrier -- XCHG is a barrier on x86. */
++	/* Clear master flag /before/ clearing selector flag. */
++	rmb();
++#endif
+ 	pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
+ 	while (pending_words != 0) {
+ 		unsigned long pending_bits;
+@@ -486,10 +487,8 @@ void xen_evtchn_do_upcall(struct pt_regs *regs)
+ 			int port = (word_idx * BITS_PER_LONG) + bit_idx;
+ 			int irq = evtchn_to_irq[port];
+ 
+-			if (irq != -1) {
+-				regs->orig_ax = ~irq;
+-				do_IRQ(regs);
+-			}
++			if (irq != -1)
++				xen_do_IRQ(irq, regs);
+ 		}
+ 	}
+ 
+@@ -525,6 +524,22 @@ static void set_affinity_irq(unsigned irq, cpumask_t dest)
+ 	rebind_irq_to_cpu(irq, tcpu);
+ }
+ 
++int resend_irq_on_evtchn(unsigned int irq)
++{
++	int masked, evtchn = evtchn_from_irq(irq);
++	struct shared_info *s = HYPERVISOR_shared_info;
++
++	if (!VALID_EVTCHN(evtchn))
++		return 1;
++
++	masked = sync_test_and_set_bit(evtchn, s->evtchn_mask);
++	sync_set_bit(evtchn, s->evtchn_pending);
++	if (!masked)
++		unmask_evtchn(evtchn);
++
++	return 1;
++}
++
+ static void enable_dynirq(unsigned int irq)
+ {
+ 	int evtchn = evtchn_from_irq(irq);
+diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
+index 8e15dd2..138ee8a 100644
+--- a/include/asm-x86/xen/hypervisor.h
++++ b/include/asm-x86/xen/hypervisor.h
+@@ -61,6 +61,13 @@ extern struct start_info *xen_start_info;
+ /* Force a proper event-channel callback from Xen. */
+ extern void force_evtchn_callback(void);
+ 
++/* macro to avoid header inclusion dependncy hell */
++#define xen_do_IRQ(irq, regs)			\
++	do {					\
++		(regs)->orig_ax = ~(irq);	\
++		do_IRQ(regs);			\
++	} while (0)
++
+ /* Turn jiffies into Xen system time. */
+ u64 jiffies_to_st(unsigned long jiffies);
+ 
+diff --git a/include/xen/events.h b/include/xen/events.h
+index 2bde54d..574cfa4 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -37,6 +37,7 @@ int bind_ipi_to_irqhandler(enum ipi_vector ipi,
+ void unbind_from_irqhandler(unsigned int irq, void *dev_id);
+ 
+ void xen_send_IPI_one(unsigned int cpu, enum ipi_vector vector);
++int resend_irq_on_evtchn(unsigned int irq);
+ 
+ static inline void notify_remote_via_evtchn(int port)
+ {
+diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
+new file mode 100644
+index 0000000..003a7c9
+--- /dev/null
++++ b/include/xen/xen-ops.h
+@@ -0,0 +1,6 @@
++#ifndef INCLUDE_XEN_OPS_H
++#define INCLUDE_XEN_OPS_H
++
++DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
++
++#endif /* INCLUDE_XEN_OPS_H */
+-- 
+1.5.3
 
-Thanks,
-Ananth
 
-> Thanks,
-> 	Sam
-> 
-> On Tue, Feb 12, 2008 at 11:39:18PM +0100, Sam Ravnborg wrote:
-> > Hi Linus.
-> > 
-> > Will you consider such a primary code-movement for -rc1
-> > or shall we wait until next merge window?
-> > 
-> > Had we hit -rc2 I would not have sent this pull req and
-> > feel free to flame me anyway.
-> > 
-> > The rationale to get it merged is obviously to avoid
-> > merge conflicts and the only reason I ask is that I consider
-> > it a low risk patch.
-> > 
-> > I have not included 8/8 since it was questioned and it
-> > will wait until next merge window. But the first 7 was
-> > straightforward.
-> > 
-> > You can pull from:
-> > ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
-> > 
-> > diffstat and shortlog below.
-> > I also included mail last with a few of the merge related comments.
-> > 
-> > 	Sam
-> > 
-> >  Makefile                                        |    1 +
-> >  drivers/misc/Makefile                           |    1 -
-> >  kernel/Makefile                                 |    4 -
-> >  lib/Kconfig.debug                               |   71 +--------------------
-> >  lib/Makefile                                    |    1 -
-> >  tests/Kconfig                                   |   79 +++++++++++++++++++++++
-> >  tests/Makefile                                  |   10 +++
-> >  {kernel => tests}/backtracetest.c               |    0 
-> >  {drivers/misc => tests}/lkdtm.c                 |   12 ++--
-> >  {lib => tests}/locking-selftest-hardirq.h       |    0 
-> >  {lib => tests}/locking-selftest-mutex.h         |    0 
-> >  {lib => tests}/locking-selftest-rlock-hardirq.h |    0 
-> >  {lib => tests}/locking-selftest-rlock-softirq.h |    0 
-> >  {lib => tests}/locking-selftest-rlock.h         |    0 
-> >  {lib => tests}/locking-selftest-rsem.h          |    0 
-> >  {lib => tests}/locking-selftest-softirq.h       |    0 
-> >  {lib => tests}/locking-selftest-spin-hardirq.h  |    0 
-> >  {lib => tests}/locking-selftest-spin-softirq.h  |    0 
-> >  {lib => tests}/locking-selftest-spin.h          |    0 
-> >  {lib => tests}/locking-selftest-wlock-hardirq.h |    0 
-> >  {lib => tests}/locking-selftest-wlock-softirq.h |    0 
-> >  {lib => tests}/locking-selftest-wlock.h         |    0 
-> >  {lib => tests}/locking-selftest-wsem.h          |    0 
-> >  {lib => tests}/locking-selftest.c               |    0 
-> >  {kernel => tests}/rcutorture.c                  |    0 
-> >  {kernel => tests}/rtmutex-tester.c              |    2 +-
-> >  {kernel => tests}/test_kprobes.c                |    0 
-> >  27 files changed, 99 insertions(+), 82 deletions(-)
-> > 
-> > Ananth N Mavinakayanahalli (7):
-> >       Create tests/ directory
-> >       Move locking selftests to tests/
-> >       Move rcutorture to tests/
-> >       Move rtmutex-tests to tests/
-> >       Move lkdtm to tests/
-> >       Move kprobes smoke tests to tests/
-> >       Move backtrace tests to tests/
-> > 
-> > 
-> > 
-> > On Tue, Feb 12, 2008 at 01:22:46PM -0800, Andrew Morton wrote:
-> > > On Tue, 12 Feb 2008 11:44:52 -0500
-> > > Christoph Hellwig <hch@infradead.org> wrote:
-> > > 
-> > > > On Mon, Feb 11, 2008 at 04:14:52PM +0530, Ananth N Mavinakayanahalli wrote:
-> > > > > The following series of patches create and populate the toplevel tests/
-> > > > > directory. This will henceforth be the place where all in-kernel tests
-> > > > > live.
-> > > > > 
-> > > > > All patches against 2.6.25-rc1 and are just code movement without any
-> > > > > change in functionality.
-> > > > 
-> > > > ACK to patches 1-7, and I agree with Ingo that the x86-specific test
-> > > > should stay under arch/x86.
-> > > 
-> > > OK.  But now is basically the worst time for me (or anyone else) to merge
-> > > large code-motion changes like this, because they need to be carried for
-> > > two months or more.
-> > > 
-> > > And even though git can track renames, putting them into a git tree (say,
-> > > git-kbuild) won't help, because if some other git tree tries to modify a
-> > > file in its original place, I get to fix up the fallout.
-> > > 
-> > > Which I _could_ do, and would do if the patches were particularly risky or
-> > > added/changed functionality or whatever.  But they don't do that, and there
-> > > is little advantage in maintaining them for the >2 months.
-> > > 
-> > > So.  Please redo and resend the patches when we hit 2.6.25-rc6 or so?
-> > > 
-> > > Thanks.
-> > > 
-> > > (linux-next will largely fix all this: git will take care of the renames
-> > > and I'll just base the -mm queue on the consolidated linux-next.  But we
-> > > aren't there yet).
-> > > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+yamahata
