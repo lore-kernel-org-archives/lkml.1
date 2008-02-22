@@ -1,40 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYBVQ6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbYBVQ7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759773AbYBVQ6a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYBVQ6V
+	id S1761406AbYBVQ7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbYBVQ64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:58:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58423 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbYBVQ6U (ORCPT
+	Fri, 22 Feb 2008 11:58:56 -0500
+Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3529 "EHLO
+	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753981AbYBVQ6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:58:20 -0500
-Message-ID: <47BEFEC8.6020301@zytor.com>
-Date: Fri, 22 Feb 2008 08:56:40 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: Matt Domsch <Matt_Domsch@dell.com>, akpm@linux-foundation.org,
-       Tim Gardner <tim.gardner@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
-References: <20080222162252.GB32088@auslistsprd01.us.dell.com> <20080222085307.e04af07f.randy.dunlap@oracle.com>
-In-Reply-To: <20080222085307.e04af07f.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Feb 2008 11:58:55 -0500
+Subject: Re: [RFC/PATCH] Update coding standard to avoid ungrepable printk
+	format strings
+From: Joe Perches <joe@perches.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, git <git@vger.kernel.org>
+In-Reply-To: <20080222132612.GA11717@basil.nowhere.org>
+References: <20080222132612.GA11717@basil.nowhere.org>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 08:58:30 -0800
+Message-Id: <1203699510.19319.56.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0-2mdv2008.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> 
-> Where is "sk" valid (parsed) as a value for "edd="?
-> I see "skip" or "skipmbr"....
-> or is that just a typo, should be "skip[mbr]"?
-> 
+On Fri, 2008-02-22 at 14:26 +0100, Andi Kleen wrote:
+> RFC: Update coding standard to avoid split up printk format strings
 
-It used to only parse the first two letters; we now have a proper 
-command-line parser.
+Perhaps it's more useful to have git become more content aware.
 
-	-hpa
+If git could track user specified file glob pattern ("*.[ch]$")
+changes by statement terminator (";") and git could format
+output by a user specified pass (lindent), many of the bike shed
+paint discussions and a lot of commits would never occur.
+
+
