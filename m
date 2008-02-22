@@ -1,64 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbYBVSe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763357AbYBVSes@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762845AbYBVSe3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 13:34:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbYBVSdv
+	id S1763357AbYBVSes (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 13:34:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756528AbYBVSe3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 13:33:51 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:15406 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbYBVSds (ORCPT
+	Fri, 22 Feb 2008 13:34:29 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:31277 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762845AbYBVSe1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 13:33:48 -0500
-Message-ID: <47BF1492.20901@oracle.com>
-Date: Fri, 22 Feb 2008 10:29:38 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Nish Aravamudan <nish.aravamudan@gmail.com>, Len Brown <lenb@kernel.org>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47B73DD8.4030405@linux.vnet.ibm.com> <200802210208.47487.lenb@kernel.org> <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com> <20080221222245.GB30976@uranus.ravnborg.org> <29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com> <20080222180815.GB6434@uranus.ravnborg.org> <20080222101344.821ea02a.randy.dunlap@oracle.com> <20080222182737.GC6434@uranus.ravnborg.org>
-In-Reply-To: <20080222182737.GC6434@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 22 Feb 2008 13:34:27 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Lb9yY2M9g/QKRAYKQn8XnHDlLr1HQXL7qyq1XVfm7T8y6/SHvA1INPFXUc4+ePJzy0CdurftstQDmTm3InPdo2Be2/lM3LH6NB5TAUHxG0uQGrAUhWAXf2nwk+43fJeB+OXmh0K2t7lGVQX3ik0LJ2tYZmb3BVqSGOch0bDG3cI=
+Subject: [PATCH 2/2] char: fix possible double-unlock in specialix.c
+From: Harvey Harrison <harvey.harrison@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 10:34:44 -0800
+Message-Id: <1203705284.5962.19.camel@brick>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.1 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> Is there a way to generate (in Kconfig language) the boolean
->> CONFIG_ACPI_CUSTOM_DSDT based on whether CONFIG_ACPI_CUSTOM_DSDT_FILE
->> == "" or != "" ?  I tried to muck around with that last night but
->> couldn't get it to work.  I.e., just present the ACPI_CUSTOM_DSDT_FILE
->> config symbol to the user and then generate the ACPI_CUSTOM_DSDT bool
->> based on the string value.
-> 
-> Something following this example?
-> 
-> config STRING
->         string
->         prompt "What string"
->         default ""
-> 
-> config STRING_IS_NOT_EMPTY
->         bool
->         default STRING != ""
-> 
-> 
-> But that seems too easy - were you trying to do something
-> more complex than this?
+Noticed by sparse, trivial to see:
+drivers/char/specialix.c:2112:3: warning: context imbalance in 'sx_throttle' - unexpected unlock
 
-Yes, that's almost what I had.  I used def_bool n on the second config symbol,
-but the bool value never changed when I changed the string value.
-I'll be glad to look at it again though.
+Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
+---
+And with the torrent of warnings fixed, here we find a double-unlock.
 
+ drivers/char/specialix.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/char/specialix.c b/drivers/char/specialix.c
+index 5487f37..b508e2c 100644
+--- a/drivers/char/specialix.c
++++ b/drivers/char/specialix.c
+@@ -2109,7 +2109,6 @@ static void sx_throttle(struct tty_struct * tty)
+ 	sx_out(bp, CD186x_CAR, port_No(port));
+ 	spin_unlock_irqrestore(&bp->lock, flags);
+ 	if (I_IXOFF(tty)) {
+-		spin_unlock_irqrestore(&bp->lock, flags);
+ 		sx_wait_CCR(bp);
+ 		spin_lock_irqsave(&bp->lock, flags);
+ 		sx_out(bp, CD186x_CCR, CCR_SSCH2);
 -- 
-~Randy
+1.5.4.2.200.g99e75
+
