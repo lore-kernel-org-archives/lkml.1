@@ -1,37 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbYBVQuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbYBVQvK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759469AbYBVQuq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:50:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYBVQuc
+	id S1760161AbYBVQvK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:51:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758793AbYBVQuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:50:32 -0500
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:59828 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755858AbYBVQua (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:50:30 -0500
-Message-ID: <47BEFD4B.9060803@cs.wisc.edu>
-Date: Fri, 22 Feb 2008 10:50:19 -0600
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: markh@compro.net
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net>
-In-Reply-To: <47BD9588.9080803@compro.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 22 Feb 2008 11:50:52 -0500
+Received: from de01egw02.freescale.net ([192.88.165.103]:50238 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbYBVQuv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:50:51 -0500
+Date: Fri, 22 Feb 2008 10:50:01 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: mahendra varman <mahendravarman15@gmail.com>
+Cc: linuxppc-embedded@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: Doubt in Device tree entry for USB on Powerpc based board
+Message-ID: <20080222165001.GA19953@ld0162-tx32.am.freescale.net>
+References: <4ac2955e0802220533o3eba0e58ybb72326ab0e1a376@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4ac2955e0802220533o3eba0e58ybb72326ab0e1a376@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Hounschell wrote:
-> I seem to have run into some sort of regression in the SG_IO interface of 2.6.24.2. 
-> I have an application that up until 2.6.24 worked fine. The 2.6.23.16 kernel works fine.
-> 
-> During reads I get these kernel messages. Writes and other functions _seem_ OK. Actually basic
-> reads  are working. Its with large BC reads using an io_vec list that the problem shows up.
-> 
+On Fri, Feb 22, 2008 at 07:03:07PM +0530, mahendra varman wrote:
+> Please help me in the device tree where to give the device type
+> compatibility address_cells size cells for the USB (since usb controller is
+> in pci bridge i have some confusion in where to give the entry for usb)
 
-Are you doing SG_IO to the sg device (/dev/sg*) or to the block device 
-(/dev/sdX)?
+You don't need to describe PCI devices in the device tree; they are
+probed at runtime.
+
+-Scott
