@@ -1,224 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935400AbYBVFO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935093AbYBVFPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935400AbYBVFO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 00:14:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754681AbYBVFIM
+	id S935093AbYBVFPs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 00:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934588AbYBVFLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 00:08:12 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35785 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751089AbYBVFHv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 00:07:51 -0500
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, yamahata@valinux.co.jp
-Subject: [PATCH 09/11] xen: make grant table arch portable.
-Date: Fri, 22 Feb 2008 14:07:46 +0900
-Message-Id: <1203656869264-git-send-email-yamahata@valinux.co.jp>
-X-Mailer: git-send-email 1.5.3
-In-Reply-To: <12036568683779-git-send-email-yamahata@valinux.co.jp>
-References: <12036568683779-git-send-email-yamahata@valinux.co.jp>
+	Fri, 22 Feb 2008 00:11:38 -0500
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56728 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755744AbYBVFL2 (ORCPT
+	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 00:11:28 -0500
+Message-ID: <47BE5AB0.7060206@sgi.com>
+Date: Fri, 22 Feb 2008 16:16:32 +1100
+From: Lachlan McIlroy <lachlan@sgi.com>
+Reply-To: lachlan@sgi.com
+User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>
+CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       xfs@oss.sgi.com, akpm@linux-foundation.org
+Subject: Re: [GIT PULL] XFS update for 2.6.25-rc3
+References: <20080222044209.AD5C558C4C0F@chook.melbourne.sgi.com> <47BE571E.4000802@garzik.org>
+In-Reply-To: <47BE571E.4000802@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-split out x86 specific part from grant-table.c
+Jeff Garzik wrote:
+> Lachlan McIlroy wrote:
+>>     Remove empty file fs/xfs/Makefile-linux-2.6.
+> 
+> Already in the upstream kernel...
+That's funny - I didn't see this change come through.  Oh well... thanks.
 
-Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
----
- arch/x86/xen/Makefile      |    2 +-
- arch/x86/xen/grant-table.c |   91 ++++++++++++++++++++++++++++++++++++++++++++
- drivers/xen/grant-table.c  |   35 +---------------
- include/xen/grant_table.h  |    6 +++
- 4 files changed, 101 insertions(+), 33 deletions(-)
- create mode 100644 arch/x86/xen/grant-table.c
-
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 95c5926..3d8df98 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -1,4 +1,4 @@
- obj-y		:= enlighten.o setup.o multicalls.o mmu.o \
--			time.o manage.o xen-asm.o
-+			time.o manage.o xen-asm.o grant-table.o
- 
- obj-$(CONFIG_SMP)	+= smp.o
-diff --git a/arch/x86/xen/grant-table.c b/arch/x86/xen/grant-table.c
-new file mode 100644
-index 0000000..49ba9b5
---- /dev/null
-+++ b/arch/x86/xen/grant-table.c
-@@ -0,0 +1,91 @@
-+/******************************************************************************
-+ * grant_table.c
-+ * x86 specific part
-+ *
-+ * Granting foreign access to our memory reservation.
-+ *
-+ * Copyright (c) 2005-2006, Christopher Clark
-+ * Copyright (c) 2004-2005, K A Fraser
-+ * Copyright (c) 2008 Isaku Yamahata <yamahata at valinux co jp>
-+ *                    VA Linux Systems Japan. Split out x86 specific part.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+
-+#include <xen/interface/xen.h>
-+#include <xen/page.h>
-+#include <xen/grant_table.h>
-+
-+#include <asm/pgtable.h>
-+
-+static int map_pte_fn(pte_t *pte, struct page *pmd_page,
-+		      unsigned long addr, void *data)
-+{
-+	unsigned long **frames = (unsigned long **)data;
-+
-+	set_pte_at(&init_mm, addr, pte, mfn_pte((*frames)[0], PAGE_KERNEL));
-+	(*frames)++;
-+	return 0;
-+}
-+
-+static int unmap_pte_fn(pte_t *pte, struct page *pmd_page,
-+			unsigned long addr, void *data)
-+{
-+
-+	set_pte_at(&init_mm, addr, pte, __pte(0));
-+	return 0;
-+}
-+
-+int arch_gnttab_map_shared(unsigned long *frames, unsigned long nr_gframes,
-+			   unsigned long max_nr_gframes,
-+			   struct grant_entry **__shared)
-+{
-+	int rc;
-+	struct grant_entry *shared = *__shared;
-+
-+	if (shared == NULL) {
-+		struct vm_struct *area =
-+			xen_alloc_vm_area(PAGE_SIZE * max_nr_gframes);
-+		BUG_ON(area == NULL);
-+		shared = area->addr;
-+		*__shared = shared;
-+	}
-+
-+	rc = apply_to_page_range(&init_mm, (unsigned long)shared,
-+				 PAGE_SIZE * nr_gframes,
-+				 map_pte_fn, &frames);
-+	return rc;
-+}
-+
-+void arch_gnttab_unmap_shared(struct grant_entry *shared,
-+			      unsigned long nr_gframes)
-+{
-+	apply_to_page_range(&init_mm, (unsigned long)shared,
-+			    PAGE_SIZE * nr_gframes, unmap_pte_fn, NULL);
-+}
-diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
-index 9fcde20..22f5104 100644
---- a/drivers/xen/grant-table.c
-+++ b/drivers/xen/grant-table.c
-@@ -435,24 +435,6 @@ static inline unsigned int max_nr_grant_frames(void)
- 	return xen_max;
- }
- 
--static int map_pte_fn(pte_t *pte, struct page *pmd_page,
--		      unsigned long addr, void *data)
--{
--	unsigned long **frames = (unsigned long **)data;
--
--	set_pte_at(&init_mm, addr, pte, mfn_pte((*frames)[0], PAGE_KERNEL));
--	(*frames)++;
--	return 0;
--}
--
--static int unmap_pte_fn(pte_t *pte, struct page *pmd_page,
--			unsigned long addr, void *data)
--{
--
--	set_pte_at(&init_mm, addr, pte, __pte(0));
--	return 0;
--}
--
- static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
- {
- 	struct gnttab_setup_table setup;
-@@ -476,17 +458,9 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
- 
- 	BUG_ON(rc || setup.status);
- 
--	if (shared == NULL) {
--		struct vm_struct *area;
--		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
--		BUG_ON(area == NULL);
--		shared = area->addr;
--	}
--	rc = apply_to_page_range(&init_mm, (unsigned long)shared,
--				 PAGE_SIZE * nr_gframes,
--				 map_pte_fn, &frames);
-+	rc = arch_gnttab_map_shared(frames, nr_gframes, max_nr_grant_frames(),
-+				    &shared);
- 	BUG_ON(rc);
--	frames -= nr_gframes; /* adjust after map_pte_fn() */
- 
- 	kfree(frames);
- 
-@@ -502,10 +476,7 @@ static int gnttab_resume(void)
- 
- static int gnttab_suspend(void)
- {
--	apply_to_page_range(&init_mm, (unsigned long)shared,
--			    PAGE_SIZE * nr_grant_frames,
--			    unmap_pte_fn, NULL);
--
-+	arch_gnttab_unmap_shared(shared, nr_grant_frames);
- 	return 0;
- }
- 
-diff --git a/include/xen/grant_table.h b/include/xen/grant_table.h
-index 761c834..50ca16e 100644
---- a/include/xen/grant_table.h
-+++ b/include/xen/grant_table.h
-@@ -102,6 +102,12 @@ void gnttab_grant_foreign_access_ref(grant_ref_t ref, domid_t domid,
- void gnttab_grant_foreign_transfer_ref(grant_ref_t, domid_t domid,
- 				       unsigned long pfn);
- 
-+int arch_gnttab_map_shared(unsigned long *frames, unsigned long nr_gframes,
-+			   unsigned long max_nr_gframes,
-+			   struct grant_entry **__shared);
-+void arch_gnttab_unmap_shared(struct grant_entry *shared,
-+			      unsigned long nr_gframes);
-+
- #define gnttab_map_vaddr(map) ((void *)(map.host_virt_addr))
- 
- #endif /* __ASM_GNTTAB_H__ */
--- 
-1.5.3
-
+> 
+> 
+>> commit 1803f3389b7ac9ed33ea561b3b94e22e2864a95d
+>> Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
+>> Date:   Wed Feb 20 19:55:09 2008 -0800
+>>
+>>     Remove empty file remnants that were left in the tree by mistake
+>>         Noted by various people (Sam, Jeff, Roland..)
+>>         Commit 58b7983d15a422d9616bdc4e245d5c31dfaefbe2 intended to 
+>> remove the
+>>     xfs "Makefile-linux-2.6" file, but it was mistakenly still left in 
+>> the
+>>     tree as a empty file, and would cause git to correctly complain 
+>> about a
+>>     tracked file being removed after a "make distclean" (which removes 
+>> empty
+>>     files as garbage).
+>>         And the asm-x86/desc_64.h file was supposed to be removed by 
+>> commit
+>>     c81c6ca45a69478c7877b729af1942d2b80ef582, but instead stayed around
+>>     containing just a single newline.
+>>         Get rid of them both properly.
+>>         Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
