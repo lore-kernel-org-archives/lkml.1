@@ -1,120 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763139AbYBVTpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764080AbYBVTqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763139AbYBVTpm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbYBVTpd
+	id S1764080AbYBVTqm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:46:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbYBVTqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:45:33 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:64694 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753207AbYBVTpb (ORCPT
+	Fri, 22 Feb 2008 14:46:33 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:42807 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbYBVTqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:45:31 -0500
-Date: Fri, 22 Feb 2008 20:45:51 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Subject: Re: [Xen-devel] [PATCH] let XEN depend on PAE
-In-reply-to: <47BF1B8F.5090701@goop.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>
-Message-id: <47BF266F.5020806@nets.rwth-aachen.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Content-transfer-encoding: 7BIT
-X-IronPort-AV: E=Sophos;i="4.25,392,1199660400";   d="scan'208";a="51697921"
-References: <47BEAB48.7050900@nets.rwth-aachen.de> <47BEFA4C.6030400@goop.org>
- <47BEFE55.7020703@nets.rwth-aachen.de> <47BF1B8F.5090701@goop.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 22 Feb 2008 14:46:31 -0500
+Date: Fri, 22 Feb 2008 11:44:59 -0800
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: Merging of completely unreviewed drivers
+Message-ID: <20080222194459.GA21250@kroah.com>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <20080222185359.GA29945@elte.hu> <47BF206C.8040001@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BF206C.8040001@garzik.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Arnd Hannemann wrote:
->> This is with 2.6.24.2, but latest-git looks the same:
->> I also tried with 2.6.23 which crashes instantly, without any output
->> of the guest.
->>   
-> 
-> I'm not too surprised.  Non-PAE Xen is a bit of a rarity, and it only
-> gets tested rarely.  Chris Wright did spend some time on it a while ago,
-> but I don't know that its had any real attention since.  I've been
-> making sure non-PAE compiles, but I've been lax about testing it.
-> This is the first usermode exec, I guess?  The backtrace is a bit odd;
-> I've never seen a problem in move_page_tables before.
+On Fri, Feb 22, 2008 at 02:20:12PM -0500, Jeff Garzik wrote:
+> Ingo Molnar wrote:
+>>  2) you might know that Deja-Vu moment when you look at a new patch that   
+>>   has been submitted to lkml and you have a strange, weird "feeling"     
+>> that there's something wrong about the patch.
+>>     It's totally subconscious, and you take a closer look and a few
+>>     seconds later you find a real bug in the code.
+>>     That "feeling" i believe comes from a fundamental property of how     
+>> human vision is connected to the human brain: pattern matching.     Really 
+>> good programmers have built a "library" of patterns of "good"     and 
+>> "bad" looking coding practices.
+>>     If a patch or if a file has a clean _style_, bugs and deeper     
+>> structural problems often stand out like a sore thumb. But if the 
+> [...]
+>
+>>     The best programmers are the ones who have a good eye for details -    
+>>  and that subconsciously extends to "style details" too. I've yet to
+>>     see a _single_ example of a good, experienced kernel programmer who    
+>>  writes code that looks absolutely careless and sloppy, but which is     
+>> top-notch otherwise. (Newbies will make style mistakes a lot more     
+>> often - and for them checkpatch is a nice and easy experience at     
+>> reading other people's code and trying to learn the style of the     
+>> kernel.)
+> [...]
+>
+>>  4) there's a psychological effect as well: clean _looking_ code is     
+>> more attractive to coders to improve upon. Once the code _looks_     clean 
+>> (mechanically), the people with the real structural cleanups     are not 
+>> far away either. Code that just looks nice is simply more of     a 
+>> pleasure to work with and to improve, so there's a strong     
+>> psychological relationship between the "small, seemingly unimportant     
+>> details" cleanups and the real, structural cleanups.
+>
+> The above deserved to be quoted...  just because I agree with all of it so 
+> strongly :)
+>
+> Bugs really do "hide" in ugly code, in part because my brain has been 
+> optimized to review clean code.
+>
+> Like everything else in life, one must strike a balance between picking 
+> style nits with someone's patch, and making honest criticisms of a patch 
+> because said patch is too "unclean" to be reviewed by anyone.
 
-Yes its trying to execute the first script in initramfs, I also tried with initramdisk
-and got a similar error. (move_page_tables also involved)
+I totally agree with all of this.  checkpatch.pl is a useful tool to
+use, and is quite handy for helping the kernel code for all of the above
+reasons.
 
-> 
-> Does "xm dmesg" tell you what Xen is complaining about?  You may need to
-> compile with debug=y in Config.mk.
+</aol>
 
-(XEN) mm.c:645:d44 Non-privileged (44) attempt to map I/O space 00000000
+thanks,
 
-I will recompile with debug=y and post the output.
-If I reduce the dom0 memory with dom0_mem=200000 I see something like
-00000080 with dom0_mem=800000 I always see 00000000.
-
-> 
->> [    0.599806] 1 multicall(s) failed: cpu 0
->> [    0.599816]   call  1/2: op=26 arg=[c1051860] result=0
->> [    0.599825]   call  2/2: op=14 arg=[bf9c7000] result=-22
->> [    0.599841] ------------[ cut here ]------------
->> [    0.599851] kernel BUG at arch/x86/xen/multicalls.c:103!
->> [    0.599861] invalid opcode: 0000 [#1] SMP
->> [    0.599871] Modules linked in:
->> [    0.599879]
->> [    0.599885] Pid: 1, comm: init Not tainted (2.6.24.2 #6)
->> [    0.599895] EIP: 0061:[<c0101b7c>] EFLAGS: 00010202 CPU: 0
->> [    0.599910] EIP is at xen_mc_flush+0x19c/0x1b0
->> [    0.599919] EAX: 00000000 EBX: c10510a0 ECX: c1051060 EDX: c1051060
->> [    0.599930] ESI: 00000002 EDI: 00000001 EBP: c2417c10 ESP: c2417be4
->> [    0.599940]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: e021
->> [    0.599951] Process init (pid: 1, ti=c2417000 task=c2416ab0
->> task.ti=c2417000)
->> [    0.599960] Stack: c0443c98 00000002 00000002 0000000e bf9c7000
->> ffffffea c1051060 00000200
->> [    0.599984]        00000067 c193fffc bf9c7000 c2417c18 c0101112
->> c2417c5c c0166dfc c193ce40
->> [    0.600006]        c193e5c0 c0000000 c193e5c0 00001000 c0000000
->> c193ce40 c198e71c c10331cc
->> [    0.600029] Call Trace:
->> [    0.600036]  [<c0107a6a>] show_trace_log_lvl+0x1a/0x30
->> [    0.600050]  [<c0107b29>] show_stack_log_lvl+0xa9/0xd0
->> [    0.600062]  [<c0107c1a>] show_registers+0xca/0x1e0
->> [    0.600074]  [<c0107e4a>] die+0x11a/0x250
->> [    0.600085]  [<c0108003>] do_trap+0x83/0xb0
->> [    0.600096]  [<c0108318>] do_invalid_op+0x88/0xa0
->> [    0.600108]  [<c03e89d2>] error_code+0x72/0x80
->> [    0.600121]  [<c0101112>] xen_leave_lazy+0x12/0x20
->> [    0.600134]  [<c0166dfc>] move_page_tables+0x27c/0x300
->> [    0.600149]  [<c0174762>] setup_arg_pages+0x162/0x2a0
->> [    0.600162]  [<c019cad3>] load_elf_binary+0x3d3/0x1bd0
->> [    0.600175]  [<c0173f92>] search_binary_handler+0x92/0x200
->> [    0.600190]  [<c019b1ef>] load_script+0x1bf/0x200
->> [    0.600202]  [<c0173f92>] search_binary_handler+0x92/0x200
->> [    0.600215]  [<c0175bab>] do_execve+0x15b/0x180
->> [    0.600227]  [<c0104a2e>] sys_execve+0x2e/0x80
->> [    0.600241]  [<c0106342>] syscall_call+0x7/0xb
->> [    0.600253]  =======================
->> [    0.600259] Code: 24 08 89 44 24 0c 89 74 24 04 c7 04 24 98 3c 44
->> c0 e8 c9 36 02 00 8b 45 ec 83 c3 20 8b 90 00 0b 00 00 39 d6 72 c0 e9
->> 04 ff ff ff <0f> 0b eb fe 0f 0b eb fe 8d b6 00 00 00 00 8d bf 00 00 00
->> 00 55
->> [    0.600370] EIP: [<c0101b7c>] xen_mc_flush+0x19c/0x1b0 SS:ESP
->> e021:c2417be4
->> [    0.600393] ---[ end trace a686db401f06e173 ]---
->> [    0.600403] Kernel panic - not syncing: Attempted to kill init!
->>
->> full dmesg, config here:
->> http://lists.xensource.com/archives/html/xen-devel/2008-02/msg00716.html
->>
->> Best regards,
->> Arnd Hannemann
->>
->>   
-> 
->    J
-> 
-
+greg k-h
