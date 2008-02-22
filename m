@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933119AbYBVTYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932519AbYBVTZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933119AbYBVTYp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:24:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761468AbYBVTVd
+	id S932519AbYBVTZv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:25:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757750AbYBVTZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:21:33 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3019 "EHLO spitz.ucw.cz"
+	Fri, 22 Feb 2008 14:25:41 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3031 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760267AbYBVTVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:21:31 -0500
-Date: Fri, 22 Feb 2008 20:09:50 +0100
+	id S1758299AbYBVTZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:25:38 -0500
+Date: Fri, 22 Feb 2008 20:25:26 +0100
 From: Pavel Machek <pavel@ucw.cz>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bill.huey@gmail.com, kevin@hilman.org,
-       cminyard@mvista.com, dsingleton@mvista.com, dwalker@mvista.com,
-       npiggin@suse.de, dsaxena@plexity.net, ak@suse.de, gregkh@suse.de,
-       sdietrich@novell.com, pmorreale@novell.com, mkohari@novell.com
-Subject: Re: [PATCH [RT] 02/14] spinlock: make preemptible-waiter feature a specific config option
-Message-ID: <20080222190950.GC6060@ucw.cz>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152635.4804.52393.stgit@novell1.haskins.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Ian Campbell <ijc@hellion.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Joel Becker <Joel.Becker@oracle.com>, Jody Belka <lists-lkml@pimb.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Mika Penttila <mika.penttila@kolumbus.fi>
+Subject: Re: 2.6.25-rc1 xen pvops regression
+Message-ID: <20080222192526.GF6060@ucw.cz>
+References: <47BDEF36.8000903@goop.org> <1203631956.28436.4.camel@cthulhu.hellion.org.uk> <47BDF9C7.6040400@zytor.com> <47BE0017.1020205@goop.org> <47BE0228.7020204@zytor.com> <1203665106.28436.19.camel@cthulhu.hellion.org.uk> <20080222092855.6ace8845@core> <47BE9C18.5060202@firstfloor.org> <20080222100034.1e78d661@core> <47BEA0DF.9070800@firstfloor.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080221152635.4804.52393.stgit@novell1.haskins.net>
+In-Reply-To: <47BEA0DF.9070800@firstfloor.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri 2008-02-22 11:15:59, Andi Kleen wrote:
+> Alan Cox wrote:
+> >> Actually I switched 64bit over to trust e820 completely and not
+> >> reserve 640k-1MB explicitly some time ago
+> >> and AFAIK there hasn't been any reports that it causes problems.
+> >>
+> >> So presumably trusting e802 is ok on modern systems (2003+)
+> > 
+> > Apparently so - at least 64bit capable ones. 
+> 
+> They should all use the same BIOS code bases, except perhaps
 
-> We introduce a configuration variable for the feature to make it easier for
-> various architectures and/or configs to enable or disable it based on their
-> requirements.  
-> 
-> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
-> ---
-> 
->  kernel/Kconfig.preempt |    9 +++++++++
->  kernel/spinlock.c      |    7 +++----
->  lib/Kconfig.debug      |    1 +
->  3 files changed, 13 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/Kconfig.preempt b/kernel/Kconfig.preempt
-> index 41a0d88..5b45213 100644
-> --- a/kernel/Kconfig.preempt
-> +++ b/kernel/Kconfig.preempt
-> @@ -86,6 +86,15 @@ config PREEMPT
->  	default y
->  	depends on PREEMPT_DESKTOP || PREEMPT_RT
->  
-> +config DISABLE_PREEMPT_SPINLOCK_WAITERS
-> +        bool
-> +	default n
-> +
-> +config PREEMPT_SPINLOCK_WAITERS
-> +        bool
-> +	default y
-> +	depends on PREEMPT && SMP && !DISABLE_PREEMPT_SPINLOCK_WAITERS
-
-tabs vs. spaces problems?
+At least kohjinsha subnotebook has very 'interesting' bios. Very new,
+but geode -> not 64bit.
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
