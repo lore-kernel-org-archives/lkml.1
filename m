@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935578AbYBVCAL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933849AbYBVCCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935578AbYBVCAL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 21:00:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761513AbYBVB7f
+	id S933849AbYBVCCc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 21:02:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758501AbYBVCCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 20:59:35 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:57613 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756921AbYBVB7c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 20:59:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=Zgkp+ZOjQ7RghlirRWj4jAs9CLdI0+GwMMewF7oWqfxoeqkzZ+MNkw9ATCWZm0jSS/TX3cLQ+XGA9JqQmbSLVxh4ubwS3510HfwSPKK6ZzI5lNe+zmvoBVCE/TGyIT4fCqpjeGSRhKVZPb37LuhIag9bSuQ52kr0APV2Zxc6pDk=
-Message-ID: <47BE2C7B.4000507@gmail.com>
-Date: Fri, 22 Feb 2008 10:59:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Thu, 21 Feb 2008 21:02:23 -0500
+Received: from khc.piap.pl ([195.187.100.11]:49985 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758124AbYBVCCX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 21:02:23 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	<m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org>
+	<m3k5kxq2ih.fsf@maximus.localdomain> <47BE1AD8.4060600@garzik.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 22 Feb 2008 03:02:21 +0100
+In-Reply-To: <47BE1AD8.4060600@garzik.org> (Jeff Garzik's message of "Thu\, 21 Feb 2008 19\:44\:08 -0500")
+Message-ID: <m3y79dsq8i.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Max Krasnyanskiy <maxk@qualcomm.com>
-CC: rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Module loading/unloading and "The Stop Machine"
-References: <47ABC08C.8010101@qualcomm.com> <47B3BD51.1080706@gmail.com> <47BE245F.3030809@qualcomm.com> <47BE27AE.8050009@gmail.com> <47BE29A0.6040409@qualcomm.com>
-In-Reply-To: <47BE29A0.6040409@qualcomm.com>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Max Krasnyanskiy wrote:
-> Tejun Heo wrote:
->> Max Krasnyanskiy wrote:
->>> Thanks for the info. I guess I missed that from the code. In any case
->>> that seems like a pretty heavy refcounting mechanism. In a sense that
->>> every time something is loaded or unloaded entire machine freezes,
->>> potentially for several milliseconds. Normally it's not a big deal. But
->>> once you get more and more CPUs and/or start using realtime apps this
->>> becomes a big deal.
->>
->> Module loading doesn't involve stop_machine last time I checked.  It's a
->> big deal when unloading a module but it's actually a very good trade off
->> because it makes much hotter path (module_get/put) much cheaper.  If
->> your application can't stand stop_machine, simply don't unload a module.
-> 
-> static struct module *load_module(void __user *umod,
->                                  unsigned long len,
->                                  const char __user *uargs)
-> {
->      ...
-> 
->      /* Now sew it into the lists so we can get lockdep and oops
->         * info during argument parsing.  Noone should access us, since
->         * strong_try_module_get() will fail. */
->        stop_machine_run(__link_module, mod, NR_CPUS);
->      ...
-> }
+Jeff Garzik <jeff@garzik.org> writes:
 
-Ah... right.  That part doesn't have anything to do with module
-reference counting as the comment suggests and can probably be removed
-by updating how kallsyms synchronize against module load/unload.
+> Every time this discussion comes up, people point out that it remains
+> highly common to open multiple 80-column terminal windows, making the
+> 80-column limit still highly relevant in modern times.
 
-> I actually rarely unload modules. The way I notice the problem in first
-> place is when things started hanging when tun driver was autoloaded or
-> when fs automounts triggered some auto loading.
-> These days it's kind hard to have a semi-general purpose machine without
-> module loading :).
-
-Yeap, agreed.
-
+I guess only because of the limit :-)
+Raise the limit, terminal windows will follow.
+I'm using 80-column windows, too.
 -- 
-tejun
+Krzysztof Halasa
