@@ -1,88 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933895AbYBVNxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761586AbYBVN6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933895AbYBVNxW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:53:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759178AbYBVNxN
+	id S1761586AbYBVN6Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:58:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763103AbYBVN56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:53:13 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56222 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756993AbYBVNxM (ORCPT
+	Fri, 22 Feb 2008 08:57:58 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:54053 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762599AbYBVN55 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:53:12 -0500
-Message-ID: <47BED3C3.5020500@s5r6.in-berlin.de>
-Date: Fri, 22 Feb 2008 14:53:07 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
+	Fri, 22 Feb 2008 08:57:57 -0500
+From: Chris Mason <chris.mason@oracle.com>
+To: David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 00/37] Permit filesystem local caching
+Date: Fri, 22 Feb 2008 08:52:26 -0500
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Daniel Phillips <phillips@phunq.net>, Trond.Myklebust@netapp.com,
+       chuck.lever@oracle.com, casey@schaufler-ca.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+References: <28196.1203605703@redhat.com> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk> <17916.1203636833@redhat.com>
+In-Reply-To: <17916.1203636833@redhat.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: [RFC/PATCH] Update coding standard to avoid ungrepable printk
- format strings
-References: <20080222132612.GA11717@basil.nowhere.org>
-In-Reply-To: <20080222132612.GA11717@basil.nowhere.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802220852.26584.chris.mason@oracle.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> --- linux.orig/Documentation/CodingStyle
-> +++ linux/Documentation/CodingStyle
-> @@ -83,20 +83,32 @@ preferred limit.
->  Statements longer than 80 columns will be broken into sensible chunks.
->  Descendants are always substantially shorter than the parent and are placed
->  substantially to the right. The same applies to function headers with a long
-> -argument list. Long strings are as well broken into shorter strings. The
-> -only exception to this is where exceeding 80 columns significantly increases
-> -readability and does not hide information.
-> +argument list.
->  
-> -void fun(int a, int b, int c)
-> -{
-> -	if (condition)
-> -		printk(KERN_WARNING "Warning this is a long printk with "
-> -						"3 parameters a: %u b: %u "
-> -						"c: %u \n", a, b, c);
-> -	else
-> -		next_statement;
-> +It is not recommended to break printk format strings into smaller strings.
+On Thursday 21 February 2008, David Howells wrote:
+> David Howells <dhowells@redhat.com> wrote:
+> > > Have you got before/after benchmark results?
+> >
+> > See attached.
+>
+> Attached here are results using BTRFS (patched so that it'll work at all)
+> rather than Ext3 on the client on the partition backing the cache.
 
-Instead of a new recommendation (from now on we recommend something
-contrary to what we required up until yesterday --- let's go unwrap
-strings everywhere in the kernel now), how about simply saying that
-printk format strings are not subject to the 80 column rule?
-Or keep the old text and insert after "increases readability":  "or
-helps full-text searching".  And delete the example code.
+Thanks for trying this, of course I'll ask you to try again with the latest 
+v0.13 code, it has a number of optimizations especially for CPU usage.
 
-> +The problem with doing this is that it makes it much harder to grep
-> +for the error messages in the source if they are split up over multiple
-> +lines. And grepping for error messages is fairly important for debugging.
-> +So for the special case of printk format strings (or formatting any other
-> +user visible error message) the normal 80 character column rule
-> +does not apply. Or alternatively it is ok to violate the indentation
-> +rule for the format string only if that makes the end not exceed
-> +80 characters. For example
-> +
-> +void function(void)
-> +{
-> +	if (...) {
-> +		if (...) {
-> +			printk(
-> + "very very long formatting string with argument %d and argument %d\n",
-> +				a, b);
-> +		}
-> +	}
->  }
+>
+> Note that I didn't bother redoing the tests that didn't involve a cache as
+> the choice of filesystem backing the cache should have no bearing on the
+> result.
+>
+> Generally, completely cold caches shouldn't show much variation as all the
+> writing can be done completely asynchronously, provided the client doesn't
+> fill its RAM.
+>
+> The interesting case is where the disk cache is warm, but the pagecache is
+> cold (ie: just after a reboot after filling the caches).  Here, for the two
+> big files case, BTRFS appears quite a bit better than Ext3, showing a 21%
+> reduction in time for the smaller case and a 13% reduction for the larger
+> case.
 
-Here is one vote against this indentation exception.
+I'm afraid I don't have a good handle on the filesystem operations that result 
+from this workload.  Are we reading from the FS to fill the NFS page cache?
 
-PS:  Could someone implement this for checkpatch.pl:
+>
+> For the many small/medium files case, BTRFS performed significantly better
+> (15% reduction in time) in the case where the caches were completely cold.
+> I'm not sure why, though - perhaps because it doesn't execute a
+> write_begin() stage during the write_one_page() call and thus doesn't go
+> allocating disk blocks to back the data, but instead allocates them later.
 
-	WARN_ON(hunk_is_in("Documentation/CodingStyle") &&
-		lines_added > lines_removed);
--- 
-Stefan Richter
--=====-==--- --=- =-==-
-http://arcgraph.de/sr/
+If your write_one_page call does parts of btrfs_file_write, you'll get delayed 
+allocation for anything bigger than 8k by default.  <= 8k will get packed 
+into the btree leaves.
+
+>
+> More surprising is that BTRFS performed significantly worse (15% increase
+> in time) in the case where the cache on disk was fully populated and then
+> the machine had been rebooted to clear the pagecaches.
+
+Which FS operations are included here?  Finding all the files or just an 
+unmount?  Btrfs defrags metadata in the background, and unmount has to wait 
+for that defrag to finish.
+
+Thanks again,
+Chris
