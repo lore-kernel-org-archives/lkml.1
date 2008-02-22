@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764620AbYBVNHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbYBVNHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764620AbYBVNHB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbYBVNGw
+	id S1758560AbYBVNHf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:07:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932715AbYBVNHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:06:52 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44146 "EHLO mx2.mail.elte.hu"
+	Fri, 22 Feb 2008 08:07:08 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:33157 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752671AbYBVNGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:06:51 -0500
-Date: Fri, 22 Feb 2008 14:06:15 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off
-	aftersuspend-to-disk. Screen becomes green.
-Message-ID: <20080222130615.GA29123@elte.hu>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211302.27002.jesse.barnes@intel.com> <b6a2187b0802211620q47f6601fuf7e88395d89b90c8@mail.gmail.com> <200802211623.55450.jesse.barnes@intel.com> <b6a2187b0802211642i17730ccav6744b614c086df72@mail.gmail.com> <20080222103727.GA25781@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080222103727.GA25781@srcf.ucam.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1765655AbYBVNHE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 08:07:04 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <55722.57422.qm@web36602.mail.mud.yahoo.com>
+References: <55722.57422.qm@web36602.mail.mud.yahoo.com>
+To: casey@schaufler-ca.com
+Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 09/37] Security: Allow kernel services to override LSM settings for task actions
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 22 Feb 2008 13:06:29 +0000
+Message-ID: <20272.1203685589@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Casey Schaufler <casey@schaufler-ca.com> wrote:
 
-* Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> The s2ram command has a built-in whitelist used to set up video 
-> rePOSTing. If you want to test, reboot and do
+> > +static int smack_task_kernel_act_as(struct task_struct *p,
+> > +				    struct task_security *sec, u32 secid)
+> > +{
+> > +	return -ENOTSUPP;
+> > +}
+> ...
+> > +static int smack_task_create_files_as(struct task_struct *p,
+> > +				      struct task_security *sec,
+> > +				      struct inode *inode)
+> > +{
+> > +	return -ENOTSUPP;
+> > +}
 > 
-> echo mem >/sys/power/state
-> 
-> without i915 being loaded. If you get a console back on resume then 
-> the platform is reinitialising video for you, but otherwise it's your 
-> userspace.
+> Hum. ENOTSUPP is not not very satisfying, is it? I will have to
+> think on this a bit.
 
-btw., why isnt there an in-kernel whitelist, with perhaps a dynamic, 
-convenient /debug/s2r/whitelist append-API for distros (and testers) to 
-add more entries to the whitelist/blacklist? (for cases where the kernel 
-whitelist has not caught up yet) Which would eventually converge to 
-Utopia: s2ram that just works out of box.
- 
-This would be a lot more flexible (people could even temporarily extend 
-the whitelist via rc.local if need to be, etc.), a lot more robust and a 
-lot more user friendly than the "dont use /sys/power/state, rely on some 
-user-space tool to work around bugs" approach.
+Sorry, I meant to ping you on this directly.  I'm not sure how to effect these
+two functions for Smack.
 
-Really, i couldnt make the s2ram API/quirks situation much worse even if 
-i deliberately tried to design the whole code to be as hard to use and 
-as confusing as possible :-/ These types of half-kernel half-userspace 
-solutions usually result in constant finger-pointing and constant lag, 
-and they result in about the crappiest user experience that is possible 
-to achieve physically.
+> Except for the fact that the hooks don't do anything this
+> looks fine. I'm not sure that I would want these hooks to
+> do anything, it requires additional thought to determine if
+> there is a good behavior for them.
 
-( Sorry about the strong words, while there's lots of good and positive
-  development lately i havent seen much change in this particular area
-  of s2ram in the past 1-2 years, and the whole chain is only as strong
-  as the weakest link - so someone finally has to deliver this message
-  to the cozy fire of s2r hackers while our testers and users are 
-  standing out in the cold rain ... )
+Note that you won't be able to use CacheFiles with Smack if either of these
+just returns an error.  This may also affect NFSd in the future too.
 
-	Ingo
+smack_task_create_files_as() is passed the label that new files created by
+CacheFiles should be created with.
+
+For smack_task_kernel_act_as(), it may be sufficient to set CAP_MAC_OVERRIDE in
+the task_security struct and leave it as that.  It also may not be sufficient,
+as NFSd may end up using this to set the subjective security label supplied by
+the NFS client.  I don't know, though, whether Smack is going to be involved in
+that passing labels over NFS.
+
+David
