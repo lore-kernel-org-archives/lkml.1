@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936186AbYBVOZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755269AbYBVO2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936186AbYBVOZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 09:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762952AbYBVOYo
+	id S1755269AbYBVO2Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 09:28:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbYBVO2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 09:24:44 -0500
-Received: from hawking.rebel.net.au ([203.20.69.83]:36838 "EHLO
-	hawking.rebel.net.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760228AbYBVOYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 09:24:42 -0500
-Message-ID: <47BEDB3F.4090100@davidnewall.com>
-Date: Sat, 23 Feb 2008 00:55:03 +1030
-From: David Newall <davidn@davidnewall.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 22 Feb 2008 09:28:16 -0500
+Received: from zeratul.whoi.edu ([128.128.76.62]:44078 "EHLO mx1.whoi.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751584AbYBVO2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 09:28:15 -0500
+X-Greylist: delayed 1220 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Feb 2008 09:28:15 EST
+Message-ID: <47BEDBFB.5040305@whoi.edu>
+Date: Fri, 22 Feb 2008 09:28:11 -0500
+From: Ned Forrester <nforrester@whoi.edu>
+Organization: Woods Hole Oceanographic Institution
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Bart Van Assche <bart.vanassche@gmail.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Adrian Bunk <bunk@kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>, Roland Dreier <rdreier@cisco.com>,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Glenn Streiff <gstreiff@neteffect.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Faisal Latif <flatif@neteffect.com>
-Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>	 <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>	 <20080221154951.GA28328@cs181133002.pp.htv.fi>	 <adahcg2awag.fsf@cisco.com>	 <20080221210124.GD28328@cs181133002.pp.htv.fi>	 <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>	 <m3tzk1q3rt.fsf@maximus.localdomain>	 <47BE2985.6020305@davidnewall.com> <e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
-In-Reply-To: <e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: marc.pignat@hevs.ch, david-b@pacbell.net,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	transfer
+References: <200802211026.17816.marc.pignat@hevs.ch>	<20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net>	<200802221030.32263.marc.pignat@hevs.ch> <20080222.231510.56565462.anemo@mba.ocn.ne.jp>
+In-Reply-To: <20080222.231510.56565462.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bart Van Assche wrote:
-> There is a reason to limit line length: scientific research has shown
-> that readability of regular texts is optimal for a line length between
-> 55 and 65 characters.
+Atsushi Nemoto wrote:
 
-Putting aside the point that we're talking code, not regular text, I've
-heard that said before and I don't think it's quite like that.  Perhaps
-the numbers you said might assume various things such as the width of
-the eye's field of view, the distance to the image and the size of each
-character?
+> If the driver could not handle zero length transfer, then the driver
+> should reject it (just like unsupported transfer mode).  Then the
+> behavior will be 'assert chip select and wait some time' or 'rejected
+> by the driver'.
 
+This would be OK.  It would not be hard to fix pxa2xx_spi, for example,
+to reject zero-length transfers in DMA mode, as long as it is acceptable
+to reject the message in mid-message.  If it were necessary to scan a
+whole message for zero-length transfers and refuse to queue an offending
+message, then that adds burden to all messages.
 
->  My experience is that the readability of source
-> code decreases when the lines are very long (more than 160
-> characters).
+-- 
+Ned Forrester                                       nforrester@whoi.edu
+Oceanographic Systems Lab                                  508-289-2226
+Applied Ocean Physics and Engineering Dept.
+Woods Hole Oceanographic Institution          Woods Hole, MA 02543, USA
+http://www.whoi.edu/sbl/liteSite.do?litesiteid=7212
+http://www.whoi.edu/hpb/Site.do?id=1532
+http://www.whoi.edu/page.do?pid=10079
 
-The point is that the width, excluding leading and trailing white space,
-is what really matters.  Even deeply indented code can be a snap to
-understand if you don't have to fight artificial line breaks.  And we've
-got a much wider -- and taller! -- space available than we had in the
-old 80x24 (and 80x1) days.
