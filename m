@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbYBVW5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765217AbYBVW7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbYBVW5e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:57:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754674AbYBVW5Z
+	id S1765217AbYBVW7r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754255AbYBVW7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:57:25 -0500
-Received: from wx-out-0506.google.com ([66.249.82.228]:4251 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbYBVW5Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:57:24 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=shwKrfN2chDG6JsXvsTwExgqY0uaBDDC/TjgoXZjj60jJFNIOsn+wJVOOt692K4VM3A7inXJ0RyrJJBrGiB8BavU39c9sEPXv1VevBO+YStTyAqZNZT/cCo0W/F1VKf605Pa4BtTWcXZPfeDR001VD877wuEZpHbSB3Ofoqk+Aw=
-Message-ID: <998d0e4a0802221457g5aee11feo1da2f140a02478b8@mail.gmail.com>
-Date: Fri, 22 Feb 2008 23:57:22 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Improved idea, to use NR_CPUS task_migrators for SMPs.
+	Fri, 22 Feb 2008 17:59:38 -0500
+Received: from khc.piap.pl ([195.187.100.11]:38690 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751862AbYBVW7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 17:59:37 -0500
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: David Newall <davidn@davidnewall.com>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Adrian Bunk <bunk@kernel.org>, Greg Kroah-Hartman <greg@kroah.com>,
+       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Glenn Streiff <gstreiff@neteffect.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Faisal Latif <flatif@neteffect.com>
+Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	<m3tzk1q3rt.fsf@maximus.localdomain>
+	<47BE2985.6020305@davidnewall.com>
+	<e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
+	<47BEDB3F.4090100@davidnewall.com> <1203693437.6242.40.camel@lappy>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 22 Feb 2008 23:59:35 +0100
+In-Reply-To: <1203693437.6242.40.camel@lappy> (Peter Zijlstra's message of "Fri\, 22 Feb 2008 16\:17\:17 +0100")
+Message-ID: <m3ve4g38dk.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In kernel/sched.c appears:
+Peter Zijlstra <a.p.zijlstra@chello.nl> writes:
 
-static void sched_migrate_task(struct task_struct *p, int dest_cpu)
-{
-	struct migration_req req;
-	unsigned long flags;
-	struct rq *rq;
+> So, yes, I have the screen estate for very long lines, but I find that
+> long lines require more effort to read (that very much includes leading
+> whitespace). Also, since long lines are rare (and they should be, if you
+> nest too deep you have other issues) accommodating them would waste a
+> lot of screen estate otherwise useful for another column of text.
 
-	rq = task_rq_lock(p, &flags);
-	if (!cpu_isset(dest_cpu, p->cpus_allowed)
-	    || unlikely(cpu_is_offline(dest_cpu)))
-		goto out;
+Either they are rare and you can wrap them and still use 80 columns,
+or it turns out they are not so rare and you may want to use wider
+windows (not necessarily 132 but perhaps 100).
 
-	/* force the process onto the specified CPU */
-	if (migrate_task(p, dest_cpu, &req)) {
-		/* Need to wait for migration thread (might exit: take ref). */
-		struct task_struct *mt = rq->migration_thread;
+I think the question isn't if they are rare or not, or if people have
+3 * 1920 pixels/line or just 1280.
 
-		get_task_struct(mt);
-		task_rq_unlock(rq, &flags);  <---- comment #1
-		wake_up_process(mt); <---- comment #2
-		put_task_struct(mt);
-		wait_for_completion(&req.done); <---- comment #3
-                                              <---- comment #4
-		return;
-	}
-out:
-	task_rq_unlock(rq, &flags);
-}
+The question is: is the code more readable with hard limit equal to 80
+characters, or maybe is it better to limit code block complexity
+instead, and let the maximum number of those small pictures in a line
+alone? (Limiting at 132 would have technical sense IMHO).
 
---------------------
+Better code readability = less bugs without any additional
+effort.
 
-* comment #1: why unlock soon this insecure task when it's still incomplete
-and preemptible? IMHO, one of the reasons is that this task needs be unlocked
-to be manipulated by this code, otherwise it could be deadlocked. But it's not
-a good silver bullet.
+> Even with e-mail, I can easily show over 200 characters wide with a
+> large font (say 11pt) but find it harder to read emails that don't
+> nicely wrap at 78.
 
-* comment #2: why wake slowing its migration thread? what is the matter
-if the picked task is SUSPENDED, BLOCKED, SIGSTOPed, KILLED or ZOMBIED?
-It can ocurr "not running as expected". It's not a good decision.
+Sure - because email is not C code.
 
-* comment #3: what ocurrs it if the waiting is eternal as said comment #2
-or as be deadlocked preemptibly? Arggghhhh!
-
-I thought that it's better to implement NR_CPUS task_migrators as kernel's
-threads-daemons with lockers's mechanisms. For comprension, unlocking
-some lockers of the task_migrators and inmediately switching CPU to
-migrators is similar to quick awakening of migration_thread.
-
-The being-migrated task "doesn't must know the #cpu that this task is
-being runned", and IMHO it's little complicated when the task has
-lockers, signals, etc
-that depends from #cpu (lockers and more things need be altered when they
-are migrated, overall their identifiers).
-
-* comment #4: when sleep the migration thread?
-
-   ;)
+Actually you don't "read" C code, word by word, as you read books - do
+you?
+-- 
+Krzysztof Halasa
