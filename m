@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964899AbYBVVzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964971AbYBVVzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964899AbYBVVzA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbYBVVoV
+	id S964971AbYBVVzz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:55:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761827AbYBVVo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:44:21 -0500
-Received: from mx1.suse.de ([195.135.220.2]:46690 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 16:44:28 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:60656 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933996AbYBVVoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:44:17 -0500
-Date: Fri, 22 Feb 2008 13:40:59 -0800
+	id S1752595AbYBVVoV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:44:21 -0500
+Date: Fri, 22 Feb 2008 13:41:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,14 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tony Battersby <tonyb@cybernetics.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 22/23] SCSI: sd: handle bad lba in sense information
-Message-ID: <20080222214059.GW8686@suse.de>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 23/23] NETFILTER: nf_conntrack_tcp: conntrack reopening fix
+Message-ID: <20080222214102.GX8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="scsi-sd-handle-bad-lba-in-sense-information.patch"
+Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-conntrack-reopening-fix.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,76 +42,107 @@ know.
 
 ------------------
 
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
+From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
 
-patch 366c246de9cec909c5eba4f784c92d1e75b4dc38 in mainline.
+[NETFILTER]: nf_conntrack_tcp: conntrack reopening fix
 
-Some devices report medium error locations incorrectly.  Add guards to
-make sure the reported bad lba is actually in the request that caused
-it.  Additionally remove the large case statment for sector sizes and
-replace it with the proper u64 divisions.
+[Upstream commits b2155e7f + d0c1fd7a]
 
-Tested-by: Mike Snitzer <snitzer@gmail.com>
-Cc: Stable Tree <stable@kernel.org>
-Cc: Tony Battersby <tonyb@cybernetics.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+TCP connection tracking in netfilter did not handle TCP reopening
+properly: active close was taken into account for one side only and
+not for any side, which is fixed now. The patch includes more comments
+to explain the logic how the different cases are handled.
+The bug was discovered by Jeff Chua.
+
+Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/sd.c |   34 ++++++++++++++++------------------
- 1 file changed, 16 insertions(+), 18 deletions(-)
+ net/netfilter/nf_conntrack_proto_tcp.c |   35 +++++++++++++++++++++++++--------
+ 1 file changed, 27 insertions(+), 8 deletions(-)
 
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -895,6 +895,7 @@ static void sd_rw_intr(struct scsi_cmnd 
-  	unsigned int xfer_size = SCpnt->request_bufflen;
-  	unsigned int good_bytes = result ? 0 : xfer_size;
-  	u64 start_lba = SCpnt->request->sector;
-+	u64 end_lba = SCpnt->request->sector + (xfer_size / 512);
-  	u64 bad_lba;
- 	struct scsi_sense_hdr sshdr;
- 	int sense_valid = 0;
-@@ -933,26 +934,23 @@ static void sd_rw_intr(struct scsi_cmnd 
- 			goto out;
- 		if (xfer_size <= SCpnt->device->sector_size)
- 			goto out;
--		switch (SCpnt->device->sector_size) {
--		case 256:
-+		if (SCpnt->device->sector_size < 512) {
-+			/* only legitimate sector_size here is 256 */
- 			start_lba <<= 1;
--			break;
--		case 512:
--			break;
--		case 1024:
--			start_lba >>= 1;
--			break;
--		case 2048:
--			start_lba >>= 2;
--			break;
--		case 4096:
--			start_lba >>= 3;
--			break;
--		default:
--			/* Print something here with limiting frequency. */
--			goto out;
--			break;
-+			end_lba <<= 1;
-+		} else {
-+			/* be careful ... don't want any overflows */
-+			u64 factor = SCpnt->device->sector_size / 512;
-+			do_div(start_lba, factor);
-+			do_div(end_lba, factor);
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -143,7 +143,7 @@ enum tcp_bit_set {
+  * CLOSE_WAIT:	ACK seen (after FIN)
+  * LAST_ACK:	FIN seen (after FIN)
+  * TIME_WAIT:	last ACK seen
+- * CLOSE:	closed connection
++ * CLOSE:	closed connection (RST)
+  *
+  * LISTEN state is not used.
+  *
+@@ -842,8 +842,21 @@ static int tcp_packet(struct nf_conn *co
+ 	case TCP_CONNTRACK_SYN_SENT:
+ 		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+ 			break;
+-		if ((conntrack->proto.tcp.seen[!dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
++		/* RFC 1122: "When a connection is closed actively,
++		 * it MUST linger in TIME-WAIT state for a time 2xMSL
++		 * (Maximum Segment Lifetime). However, it MAY accept
++		 * a new SYN from the remote TCP to reopen the connection
++		 * directly from TIME-WAIT state, if..."
++		 * We ignore the conditions because we are in the
++		 * TIME-WAIT state anyway.
++		 *
++		 * Handle aborted connections: we and the server
++		 * think there is an existing connection but the client
++		 * aborts it and starts a new one.
++		 */
++		if (((conntrack->proto.tcp.seen[dir].flags
++		      | conntrack->proto.tcp.seen[!dir].flags)
++		     & IP_CT_TCP_FLAG_CLOSE_INIT)
+ 		    || (conntrack->proto.tcp.last_dir == dir
+ 		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
+ 			/* Attempt to reopen a closed/aborted connection.
+@@ -856,18 +869,25 @@ static int tcp_packet(struct nf_conn *co
  		}
-+
-+		if (bad_lba < start_lba  || bad_lba >= end_lba)
-+			/* the bad lba was reported incorrectly, we have
-+			 * no idea where the error is
-+			 */
-+			goto out;
-+
- 		/* This computation should always be done in terms of
- 		 * the resolution of the device's medium.
+ 		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
+-		/* Ignored packets:
++		/* Ignored packets:
++		 *
++		 * Our connection entry may be out of sync, so ignore
++		 * packets which may signal the real connection between
++		 * the client and the server.
+ 		 *
+ 		 * a) SYN in ORIGINAL
+ 		 * b) SYN/ACK in REPLY
+ 		 * c) ACK in reply direction after initial SYN in original.
++		 *
++		 * If the ignored packet is invalid, the receiver will send
++		 * a RST we'll catch below.
  		 */
+ 		if (index == TCP_SYNACK_SET
+ 		    && conntrack->proto.tcp.last_index == TCP_SYN_SET
+ 		    && conntrack->proto.tcp.last_dir != dir
+ 		    && ntohl(th->ack_seq) ==
+ 			     conntrack->proto.tcp.last_end) {
+-			/* This SYN/ACK acknowledges a SYN that we earlier
++			/* b) This SYN/ACK acknowledges a SYN that we earlier
+ 			 * ignored as invalid. This means that the client and
+ 			 * the server are both in sync, while the firewall is
+ 			 * not. We kill this session and block the SYN/ACK so
+@@ -892,7 +912,7 @@ static int tcp_packet(struct nf_conn *co
+ 		write_unlock_bh(&tcp_lock);
+ 		if (LOG_INVALID(IPPROTO_TCP))
+ 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
+-				  "nf_ct_tcp: invalid packed ignored ");
++				  "nf_ct_tcp: invalid packet ignored ");
+ 		return NF_ACCEPT;
+ 	case TCP_CONNTRACK_MAX:
+ 		/* Invalid packet */
+@@ -948,8 +968,7 @@ static int tcp_packet(struct nf_conn *co
+ 
+ 	conntrack->proto.tcp.state = new_state;
+ 	if (old_state != new_state
+-	    && (new_state == TCP_CONNTRACK_FIN_WAIT
+-		|| new_state == TCP_CONNTRACK_CLOSE))
++	    && new_state == TCP_CONNTRACK_FIN_WAIT)
+ 		conntrack->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
+ 	timeout = conntrack->proto.tcp.retrans >= nf_ct_tcp_max_retrans
+ 		  && *tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
 
 -- 
