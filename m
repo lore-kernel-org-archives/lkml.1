@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933144AbYBVKGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935355AbYBVKHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933144AbYBVKGJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 05:06:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbYBVKF4
+	id S935355AbYBVKHB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 05:07:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbYBVKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 05:05:56 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:37486 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbYBVKFz (ORCPT
+	Fri, 22 Feb 2008 05:06:53 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:59594 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751003AbYBVKGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 05:05:55 -0500
-Message-ID: <47BE9E41.9000100@zytor.com>
-Date: Fri, 22 Feb 2008 02:04:49 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Fri, 22 Feb 2008 05:06:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=TU8HORfYzaFV/NsumgnQQWKU1mF3Yo64kyEFwQs3BARHglWufa1Rr5AQAggcA9AqzgefLCU2T3zKjZlfuZilGFUY+4V4F0C7r8B+JU7kv6gC7Ycr/RpdMqfWJDCQ9F0ri78lWDIOlZF70LUZ1Ala6MTXZMD9vDswqriRQPDV+BU=
+Date: Fri, 22 Feb 2008 11:06:30 +0100
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: belcampo <belcampo@zonnet.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Hyperthreading performance oddities
+Message-ID: <20080222100630.GE5906@slug>
+References: <47BE9781.3030304@zonnet.nl>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Joerg Roedel <joerg.roedel@amd.com>, tglx@linutronix.de, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and	running
- in KVM
-References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com> <20080221203748.GA9031@elte.hu> <47BDFBDE.5040102@zytor.com> <20080222094513.GA6269@elte.hu> <47BE9CB7.5070609@zytor.com> <20080222100044.GA6807@elte.hu>
-In-Reply-To: <20080222100044.GA6807@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <47BE9781.3030304@zonnet.nl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * H. Peter Anvin <hpa@zytor.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * H. Peter Anvin <hpa@zytor.com> wrote:
->>>
->>>>> I'm not sure how we could detect pure Qemu instances - perhaps it should 
->>>>> define some special MSR or something?
->>>> Perhaps they should fix the Qemu BIOS to actually simulate working MSRs; 
->>>> if nothing else, they should set up the default MTRR to be cachable.
->>> btw., should KVM do the same?
->> Yes.  Especially since they share a BIOS.
-> 
-> ok. Then i guess we should just leave the warning and the backtrace in 
-> place until they get a fix done?
-> 
+Hello Henk,
 
-That would be my opinion.
+On Fri, Feb 22, 2008 at 10:36:01AM +0100, belcampo wrote:
+> Kernel 2.6.22.9 smp hyperthreading
+> BENCHMARKs: VC: 334.042s VO:   0.053s A:   0.000s Sys:   4.049s =  338.143s
+> Kernel 2.6.22.9 nonsmp/hyperthreading
+> BENCHMARKs: VC: 262.008s VO:   0.031s A:   0.000s Sys:   3.528s =  265.567s
+> with 2.6.17 kernel smp/hyperthreading pentium-pro as CPU
+> BENCHMARKs: VC: 245.175s VO:   0.050s A:   0.000s Sys:   2.479s =  247.704s
+> with 2.6.17 kernel smp/hyperthreading pentium4 optimized kernel
+> BENCHMARKs: VC: 227.992s VO:   0.051s A:   0.000s Sys:   2.551s =  230.594s
+I'm not familiar with mplayer benchmarks, what do they actually
+measure?
 
-Last I checked, they didn't even clear the cache disable bits in %cr0.
-
-	-hpa
+Regards,
+Frederik
