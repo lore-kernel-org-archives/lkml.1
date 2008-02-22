@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762655AbYBVRgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756493AbYBVRhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762655AbYBVRgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:36:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760816AbYBVRgY
+	id S1756493AbYBVRhW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:37:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759812AbYBVRgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:36:24 -0500
-Received: from cantor.suse.de ([195.135.220.2]:56441 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:36:50 -0500
+Received: from cantor.suse.de ([195.135.220.2]:56478 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760529AbYBVRgX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:36:23 -0500
-Date: Fri, 22 Feb 2008 18:36:22 +0100
-Message-ID: <s5hfxvkyju1.wl%tiwai@suse.de>
+	id S1759571AbYBVRgs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:36:48 -0500
+Date: Fri, 22 Feb 2008 18:36:46 +0100
+Message-ID: <s5hejb4yjtd.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 05/16] [ALSA] HDA - enable snoop on SCH
+Subject: [PATCH 06/16] [ALSA] hda-codec - Fix SPDIF output on Conexant 5045 codec
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,68 +26,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables snoop on Intel SCH chipset, eliminating static during
-playback.
+Fixed the SPDIF output on Conexant Cx5045 codec.  Added the missing
+pin output setting and fixed the wrong NID for digital audio-out widget.
 
-Signed-off-by: Tobin Davis <tdavis@dsl-only.net>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/hda/hda_intel.c |   21 +++++++++++++++++++++
- 1 files changed, 21 insertions(+), 0 deletions(-)
+ sound/pci/hda/patch_conexant.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index 56f8a30..a1098bb 100644
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -275,6 +275,11 @@ enum {
- #define NVIDIA_HDA_TRANSREG_ADDR      0x4e
- #define NVIDIA_HDA_ENABLE_COHBITS     0x0f
+diff --git a/sound/pci/hda/patch_conexant.c b/sound/pci/hda/patch_conexant.c
+index f6dd51c..f7cd3a8 100644
+--- a/sound/pci/hda/patch_conexant.c
++++ b/sound/pci/hda/patch_conexant.c
+@@ -488,7 +488,7 @@ static int conexant_ch_mode_put(struct snd_kcontrol *kcontrol,
+ static hda_nid_t cxt5045_dac_nids[1] = { 0x19 };
+ static hda_nid_t cxt5045_adc_nids[1] = { 0x1a };
+ static hda_nid_t cxt5045_capsrc_nids[1] = { 0x1a };
+-#define CXT5045_SPDIF_OUT	0x13
++#define CXT5045_SPDIF_OUT	0x18
  
-+/* Defines for Intel SCH HDA snoop control */
-+#define INTEL_SCH_HDA_DEVC      0x78
-+#define INTEL_SCH_HDA_DEVC_NOSNOOP       (0x1<<11)
-+
-+
- /*
-  */
+ static struct hda_channel_mode cxt5045_modes[1] = {
+ 	{ 2, NULL },
+@@ -658,6 +658,7 @@ static struct hda_verb cxt5045_init_verbs[] = {
+ 	{0x1a, AC_VERB_SET_AMP_GAIN_MUTE,
+ 	 AC_AMP_SET_INPUT|AC_AMP_SET_RIGHT|AC_AMP_SET_LEFT|0x17},
+ 	/* SPDIF route: PCM */
++	{0x13, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
+ 	{ 0x13, AC_VERB_SET_CONNECT_SEL, 0x0 },
+ 	/* EAPD */
+ 	{0x10, AC_VERB_SET_EAPD_BTLENABLE, 0x2 }, /* default on */ 
+@@ -683,6 +684,7 @@ static struct hda_verb cxt5045_benq_init_verbs[] = {
+ 	{0x1a, AC_VERB_SET_AMP_GAIN_MUTE,
+ 	 AC_AMP_SET_INPUT|AC_AMP_SET_RIGHT|AC_AMP_SET_LEFT|0x17},
+ 	/* SPDIF route: PCM */
++	{0x13, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
+ 	{0x13, AC_VERB_SET_CONNECT_SEL, 0x0},
+ 	/* EAPD */
+ 	{0x10, AC_VERB_SET_EAPD_BTLENABLE, 0x2}, /* default on */
+@@ -781,7 +783,8 @@ static struct hda_verb cxt5045_test_init_verbs[] = {
+ 	 * PCM format, copyright asserted, no pre-emphasis and no validity
+ 	 * control.
+ 	 */
+-	{0x13, AC_VERB_SET_DIGI_CONVERT_1, 0},
++	{0x13, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
++	{0x18, AC_VERB_SET_DIGI_CONVERT_1, 0},
  
-@@ -868,6 +873,8 @@ static void update_pci_byte(struct pci_dev *pci, unsigned int reg,
- 
- static void azx_init_pci(struct azx *chip)
- {
-+	unsigned short snoop;
-+
- 	/* Clear bits 0-2 of PCI register TCSEL (at offset 0x44)
- 	 * TCSEL == Traffic Class Select Register, which sets PCI express QOS
- 	 * Ensuring these bits are 0 clears playback static on some HD Audio
-@@ -888,6 +895,19 @@ static void azx_init_pci(struct azx *chip)
- 				NVIDIA_HDA_TRANSREG_ADDR,
- 				0x0f, NVIDIA_HDA_ENABLE_COHBITS);
- 		break;
-+	case AZX_DRIVER_SCH:
-+		pci_read_config_word(chip->pci, INTEL_SCH_HDA_DEVC, &snoop);
-+		if (snoop & INTEL_SCH_HDA_DEVC_NOSNOOP) {
-+			pci_write_config_word(chip->pci, INTEL_SCH_HDA_DEVC, \
-+				snoop & (~INTEL_SCH_HDA_DEVC_NOSNOOP));
-+			pci_read_config_word(chip->pci,
-+				INTEL_SCH_HDA_DEVC, &snoop);
-+			snd_printdd("HDA snoop disabled, enabling ... %s\n",\
-+				(snoop & INTEL_SCH_HDA_DEVC_NOSNOOP) \
-+				? "Failed" : "OK");
-+		}
-+		break;
-+
-         }
- }
- 
-@@ -1040,6 +1060,7 @@ static int azx_setup_controller(struct azx *chip, struct azx_dev *azx_dev)
- 
- static unsigned int azx_max_codecs[] __devinitdata = {
- 	[AZX_DRIVER_ICH] = 3,
-+	[AZX_DRIVER_SCH] = 3,
- 	[AZX_DRIVER_ATI] = 4,
- 	[AZX_DRIVER_ATIHDMI] = 4,
- 	[AZX_DRIVER_VIA] = 3,		/* FIXME: correct? */
+ 	/* Start with output sum widgets muted and their output gains at min */
+ 	{0x17, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(0)},
 -- 
 1.5.3.8
 
