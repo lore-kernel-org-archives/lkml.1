@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935272AbYBVULp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933491AbYBVUMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935272AbYBVULp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934979AbYBVUKJ
+	id S933491AbYBVUMc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933138AbYBVUKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:10:09 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:53191 "EHLO smtp5.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932880AbYBVUKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:10:05 -0500
-Date: Fri, 22 Feb 2008 22:09:16 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: chris@zankel.net
-Cc: linux-kernel@vger.kernel.org
-Subject: xtansa common_defconfig compile error
-Message-ID: <20080222200916.GO1409@cs181133002.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Fri, 22 Feb 2008 15:10:22 -0500
+Received: from general-networks3.cust.sloane.cz ([88.146.176.14]:44571 "EHLO
+	server.generalnetworks.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761465AbYBVUKT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 15:10:19 -0500
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Oyvind Aabling <Oyvind.Aabling@uni-c.dk>
+Subject: [PATCH 21/21] Char: moxa, add firmware loading fix
+Date: Fri, 22 Feb 2008 21:09:35 +0100
+Message-Id: <1203710975-24675-2-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.5.4.1
+In-Reply-To: <1203691606-9310-1-git-send-email-jirislaby@gmail.com>
+References: <1203691606-9310-1-git-send-email-jirislaby@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trying to compile common_defconfig fails with the following error:
+Be more verbose on fw load fail as noted by Oyvind.
 
-<--  snip  -->
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Oyvind Aabling <Oyvind.Aabling@uni-c.dk>
+---
+ drivers/char/moxa.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-...
-  CC      init/main.o
-In file included from include2/asm/hardirq.h:15,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/hardirq.h:7,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/asm-generic/local.h:5,
-                 from include2/asm/local.h:14,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/include/linux/module.h:19,
-                 from /home/bunk/linux/kernel-2.6/git/linux-2.6/init/main.c:13:
-include2/asm/irq.h:14:35: error: asm/platform/hardware.h: No such file or directory
-make[2]: *** [init/main.o] Error 1
-
-<--  snip  -->
-
-cu
-Adrian
-
+diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+index 3c248bb..57616c1 100644
+--- a/drivers/char/moxa.c
++++ b/drivers/char/moxa.c
+@@ -846,7 +846,10 @@ static int moxa_init_board(struct moxa_board_conf *brd, struct device *dev)
+ 
+ 	ret = request_firmware(&fw, file, dev);
+ 	if (ret) {
+-		printk(KERN_ERR "request_firmware failed\n");
++		printk(KERN_ERR "MOXA: request_firmware failed. Make sure "
++				"you've placed '%s' file into your firmware "
++				"loader directory (e.g. /lib/firmware)\n",
++				file);
+ 		goto err_free;
+ 	}
+ 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+1.5.4.1
 
