@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbYBVUHS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbYBVUIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932897AbYBVUHS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:07:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932481AbYBVUAs
+	id S934501AbYBVUIB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765992AbYBVUFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:00:48 -0500
-Received: from ns1.suse.de ([195.135.220.2]:50075 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932683AbYBVUAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:00:42 -0500
-Date: Fri, 22 Feb 2008 11:56:52 -0800
-From: Greg KH <gregkh@suse.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
-       kay.sievers@vrfy.org, Michael_E_Brown@dell.com, rdreier@cisco.com,
-       htejun@gmail.com
-Subject: Re: [GIT PATCH] driver core fixes against 2.6.25-rc2 git
-Message-ID: <20080222195652.GA6395@suse.de>
-References: <20080221234649.GB7128@kroah.com> <20080222075625.GA2660@uranus.ravnborg.org>
+	Fri, 22 Feb 2008 15:05:13 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:38218 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932890AbYBVUFK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 15:05:10 -0500
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Adrian Bunk <bunk@kernel.org>
+Subject: Re: [2.6 patch] make smackfs.c:smk_unlbl_ambient() static
+Date: Fri, 22 Feb 2008 15:05:04 -0500
+User-Agent: KMail/1.9.7
+Cc: Casey Schaufler <casey@schaufler-ca.com>, linux-kernel@vger.kernel.org
+References: <20080222195807.GB1409@cs181133002.pp.htv.fi>
+In-Reply-To: <20080222195807.GB1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080222075625.GA2660@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802221505.04913.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 08:56:25AM +0100, Sam Ravnborg wrote:
-> Hi Greg.
-> 
-> On Thu, Feb 21, 2008 at 03:46:49PM -0800, Greg KH wrote:
-> > Here are a few driver core fixes against your current git tree that fix some
-> > more problems that have cropped up:
-> > 	- shutdown problem due to logic problem with cpufreq usage of
-> > 	  kobjects.
-> > 	- build fix for powerpc due to previous kobject changes.
-> > 	- runtime errors when CONFIG_SYSFS=n
-> > 	- UIO code now works properly from my previous messups
-> > 	- proper encoding of the ja_JP stable_kernel_rules.txt file
-> > 	- updates to the stable_kernel_rules.txt file
-> > 	- mark ide=reverse as obsolete in preparation of 2.6.26 (Bart
-> > 	  wanted this to go in through my tree as I have the .26 patches
-> > 	  pending.)
-> > 	- other minor fixes.
-> 
-> 
-> Do we have any outstanding issues with section mismatch warnings in PCI Core?
-> I am as always optimistic and hope to get down to zero warnings soon.
+On Friday 22 February 2008 2:58:07 pm Adrian Bunk wrote:
+> This patch makes the needlessly global smk_unlbl_ambient() static.
+>
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
-I do not know, I saw your patches earlier and thought that they were
-going in through another tree for some reason.  If you still see any
-remaining, please send me the needed patches again.
+Fine with me.
 
-thanks,
+Acked-by: Paul Moore <paul.moore@hp.com>
 
-greg k-h
+> ---
+> 60c7072cb922cdecdb8a4f08e5710c014e0e8a8c diff --git
+> a/security/smack/smackfs.c b/security/smack/smackfs.c index
+> 358c92c..7c6e671 100644
+> --- a/security/smack/smackfs.c
+> +++ b/security/smack/smackfs.c
+> @@ -371,7 +371,7 @@ void smk_cipso_doi(void)
+>  /**
+>   * smk_unlbl_ambient - initialize the unlabeled domain
+>   */
+> -void smk_unlbl_ambient(char *oldambient)
+> +static void smk_unlbl_ambient(char *oldambient)
+>  {
+>  	int rc;
+>  	struct netlbl_audit audit_info;
+
+
+
+-- 
+paul moore
+linux security @ hp
