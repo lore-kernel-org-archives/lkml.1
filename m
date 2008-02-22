@@ -1,128 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbYBVSMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762022AbYBVSMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758103AbYBVSMb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 13:12:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752172AbYBVSMT
+	id S1762022AbYBVSMp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 13:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbYBVSMY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 13:12:19 -0500
-Received: from fk-out-0910.google.com ([209.85.128.188]:45536 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbYBVSMR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 13:12:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GXXCGxJ8TJ9nzeAcUtc64PQ5FiDbFQ7VaSNaYPfq4DPxO7m1AzTNH2l3LoK8k5onei+lOQvqHaLxTkyjj/fVOCvQqh3reZcB0iRd3/zVFKWzgYg/2OYBdToIzhXYgdNnc3MklssutMlWayyo3VPJYqPs4vFm4mnkqvqJZwHxy7M=
-Message-ID: <29495f1d0802221012o72fc01beq86affe4b15c20eaf@mail.gmail.com>
-Date: Fri, 22 Feb 2008 10:12:15 -0800
-From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
-Cc: "Len Brown" <lenb@kernel.org>,
-       "Kamalesh Babulal" <kamalesh@linux.vnet.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       "Andy Whitcroft" <apw@shadowen.org>
-In-Reply-To: <20080222180815.GB6434@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Feb 2008 13:12:24 -0500
+Received: from mga11.intel.com ([192.55.52.93]:41945 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751989AbYBVSMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 13:12:21 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,392,1199692800"; 
+   d="scan'208";a="300901320"
+Date: Fri, 22 Feb 2008 10:10:00 -0800
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Martin <pm@debian.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: 2.6.25-rc2 Thinkpad T30 docking fails with oops.
+Message-ID: <20080222101000.56c9d783@appleyard>
+In-Reply-To: <20080222003417.0e43860d.akpm@linux-foundation.org>
+References: <20080219204708.GA8059@nowster.org.uk>
+	<20080222003417.0e43860d.akpm@linux-foundation.org>
+Reply-To: kristen.c.accardi@intel.com
+X-Mailer: Claws Mail 3.3.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org>
-	 <47B73DD8.4030405@linux.vnet.ibm.com>
-	 <200802210208.47487.lenb@kernel.org>
-	 <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com>
-	 <20080221222245.GB30976@uranus.ravnborg.org>
-	 <29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com>
-	 <20080222180815.GB6434@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2/22/08, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Thu, Feb 21, 2008 at 05:38:52PM -0800, Nish Aravamudan wrote:
->  > On 2/21/08, Sam Ravnborg <sam@ravnborg.org> wrote:
->  > > On Thu, Feb 21, 2008 at 10:54:40AM -0800, Nish Aravamudan wrote:
->  > >  > On 2/20/08, Len Brown <lenb@kernel.org> wrote:
->  > >  > > On Saturday 16 February 2008 14:47, Kamalesh Babulal wrote:
->  > >  > >  > Hi Andrew,
->  > >  > >  >
->  > >  > >  > The 2.6.25-rc2-mm1 kernel with randconfig build option, fails
->  > >  > >  > to build on x86_64 machine
->  > >  > >  >
->  > >  > >  >   CC      drivers/acpi/osl.o
->  > >  > >  > drivers/acpi/osl.c:60:38: error: empty filename in #include
->  > >  > >  > drivers/acpi/osl.c: In function 'acpi_os_table_override':
->  > >  > >  > drivers/acpi/osl.c:399: error: 'AmlCode' undeclared (first use in this function)
->  > >  > >  > drivers/acpi/osl.c:399: error: (Each undeclared identifier is reported only once
->  > >  > >  > drivers/acpi/osl.c:399: error: for each function it appears in.)
->  > >  > >  > make[2]: *** [drivers/acpi/osl.o] Error 1
->  > >  > >  > make[1]: *** [drivers/acpi] Error 2
->  > >  > >  > make: *** [drivers] Error 2
->  > >  > >  >
->  > >  > >  > #
->  > >  > >  > # Automatically generated make config: don't edit
->  > >  > >  > # Linux kernel version: 2.6.25-rc2-mm1
->  > >  > >  > # Sun Feb 17 08:07:17 2008
->  > >  > >  > #
->  > >  > >
->  > >  > >
->  > >  > > > CONFIG_ACPI_CUSTOM_DSDT=y
->  > >  > >  > CONFIG_ACPI_CUSTOM_DSDT_FILE=""
->  > >  > >
->  > >  > >
->  > >  > > garbage in, garbage out.
->  > >  >
->  > >  > garbage explicitly *allowed* by Kconfig in this case, though.
->  > >  >
->  > >  > >  If you don't give this build option a file name where AmlCode lives,
->  > >  > >  then the build will be unable to find AmlCode[].
->  > >  > >
->  > >  > >  http://www.lesswatts.org/projects/acpi/overridingDSDT.php
->  > >  >
->  > >  > So we have a .config option whose sole purpose is to use another
->  > >  > .config option? That seems ... less than ideal. Is there not some
->  > >  > Kconfig voodoo we can do to only require the one option? Maybe
->  > >  > something like how CONFIG_INITRAMFS_SOURCE is done? Adding Sam to the
->  > >  > Cc, in case he has any ideas.
->  > >
->  > >
->  > > Make sure STANDALONE is y for your randconfig builds.
->  > >  See README for examples.
->  >
->  > Hrm, if this is needed for randconfig to work, perhaps randconfig
->  > itself should somehow be specifying it?
->  >
->  > >  STANALONE is there exactly to prevent the above but we cannot
->  > >  control randconfig.
->  >
->  > While setting STANDALONE does fix the above, it doesn't answer the
->  > more basic question I had -- do we really need both .config options in
->  > this case? If it's simply a case of "That's how it is, won't be fixed,
->  > there are higher priorities", that's good enough by me. Just seems a
->  > shame that we have an option to enable another option, which is
->  > required for the first option to be sensible -- seems like we should
->  > only need the second option...
->
->
-> I really do not see what problem you are trying to address.
->
->  STANDALONE is there as an easy way to turn of the options that requires
->  sensible input to make a kernel compile.
->
->  And that makes _perfect_ sense when you do randconfig builds.
+On Fri, 22 Feb 2008 00:34:17 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Yes it does. As I said above I'm *not* arguing about using STANDALONE
-for randconfig builds.
+> On Tue, 19 Feb 2008 20:47:08 +0000 Paul Martin <pm@debian.org> wrote:
+> 
+> > Now, this was working in 2.6.23, but is not in any later kernel.
+> > Previously reported, but I guess that the previous report was
+> > ignored due to the kernel being tainted.
+> 
+> Not really.  A lot of acpi-related bug reports get the
+> crickets-chirping treatment.
+> 
+> The usual response with acpi is "please raise a bugzilla report", and
+> the acpi developers do respond well to bugzilla reports.  But really,
+> a recent and oops-causing regression shouldn't require such actions -
+> developers should be running around with their hair on fire.
+> 
+> > Well, there's nothing other than pure Linus here.
+> > 
+> > When booted up docked, there is no oops until you try to undock.
+> > 
+> > Whilst I will be looking for replies in the list, I'd appreciate
+> > being CC'd on any replies.
+> > 
+> > ACPI: \_SB_.PCI0.PCI1.DOCK - docking
+> > PCI: Transparent bridge - 0000:02:03.0
+> > ACPI: PCI Interrupt Routing Table [\_SB_.PCI0.PCI1.DOCK._PRT]
+> > BUG: unable to handle kernel NULL pointer dereference at 00000000
+> > IP: [<c01dd6f2>] pdev_sort_resources+0x8a/0x116
+> > *pde = 00000000 
+> > Oops: 0000 [#1] PREEMPT SMP 
+> > Modules linked in: radeon drm rfcomm l2cap bluetooth ppdev lp ipv6
+> > ext3 jbd mbcache fuse dm_crypt crypto_blkcipher dm_mod
+> > cpufreq_stats speedstep_ich speedstep_lib thinkpad_acpi nvram
+> > acpiphp bay dock pcmcia firmware_class joydev yenta_socket
+> > rsrc_nonstatic pcmcia_core battery irtty_sir ac sir_dev
+> > snd_intel8x0 snd_ac97_codec nsc_ircc ac97_bus snd_pcm_oss
+> > snd_mixer_oss snd_pcm snd_timer irda parport_pc i2c_i801 button
+> > shpchp pci_hotplug crc_ccitt parport snd psmouse intel_agp agpgart
+> > iTCO_wdt evdev serio_raw soundcore snd_page_alloc rtc pcspkr xfs
+> > floppy e100 mii uhci_hcd usbcore sg sr_mod cdrom sd_mod thermal
+> > processor fan ata_piix libata scsi_mod radeonfb fb_ddc i2c_algo_bit
+> > i2c_core
+> > 
+> > Pid: 39, comm: kacpi_notify Not tainted (2.6.25-rc2 #1)
+> > EIP: 0060:[<c01dd6f2>] EFLAGS: 00010246 CPU: 0
+> > EIP is at pdev_sort_resources+0x8a/0x116
+> > EAX: 00000000 EBX: 00000000 ECX: 00000000 EDX: 00000fff
+> > ESI: f5e30cc4 EDI: f74f1e80 EBP: f74f1e68 ESP: f74f1e48
+> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> > Process kacpi_notify (pid: 39, ti=f74f0000 task=f74cf120
+> > task.ti=f74f0000) Stack: 00000000 f5e30cf0 f74f1e80 f5e30c00
+> > 00000007 f5e30c00 f74cb414 f74cb400 f74f1e9c c02a9cce f5e30c08
+> > f7431f90 f7431978 f5420c00 00000000 f7d6d408 f7d6d3c0 f74f1e9c
+> > 00000000 f7d6d3c8 f7d6d3c0 f74f1ed8 f9b278ca f74cb40c Call Trace:
+> >  [<c02a9cce>] ? pci_bus_assign_resources+0x59/0x341
+> >  [<f9b278ca>] ? acpiphp_enable_slot+0x2a1/0x3a3 [acpiphp]
+> >  [<f9b27ad9>] ? handle_hotplug_event_func+0x63/0x101 [acpiphp]
+> >  [<f9b27167>] ? post_dock_fixups+0x6c/0x79 [acpiphp]
+> >  [<c013506e>] ? notifier_call_chain+0x2b/0x4a
+> >  [<f9b27a76>] ? handle_hotplug_event_func+0x0/0x101 [acpiphp]
+> >  [<f9b22168>] ? hotplug_dock_devices+0x39/0xe1 [dock]
+> >  [<f9b22441>] ? dock_notify+0x75/0xc0 [dock]
+> >  [<c01f83c9>] ? acpi_ev_notify_dispatch+0x4f/0x5a
+> >  [<c01f32c0>] ? acpi_os_execute_deferred+0x20/0x2c
+> >  [<c012ef41>] ? run_workqueue+0x78/0xfb
+> >  [<c01f32a0>] ? acpi_os_execute_deferred+0x0/0x2c
+> >  [<c012f79d>] ? worker_thread+0xb6/0xc2
+> >  [<c0131b25>] ? autoremove_wake_function+0x0/0x30
+> >  [<c012f6e7>] ? worker_thread+0x0/0xc2
+> >  [<c0131a52>] ? kthread+0x3b/0x61
+> >  [<c0131a17>] ? kthread+0x0/0x61
+> >  [<c010568f>] ? kernel_thread_helper+0x7/0x10
+> >  =======================
+> > Code: 50 52 51 ff 75 f0 68 a0 af 34 c0 e8 ce 4e f4 ff 83 c4 1c e9
+> > 87 00 00 00 8b 7d e8 8d 42 01 83 7d f0 06 89 7d e0 0f 4e c8 8b 45
+> > e0 <8b> 18 31 c0 85 db 74 29 8b 53 04 8b 43 08 89 d7 05 8c 01 00 00
+> > EIP: [<c01dd6f2>] pdev_sort_resources+0x8a/0x116 SS:ESP
+> > 0068:f74f1e48 ---[ end trace 623ea8d57da4defe ]---
+> 
+> I suppose that if you're feeling keen, a bisection search as per
+> http://www.kernel.org/doc/local/git-quick.html would help things
+> along, thanks.
+> 
 
-What I was doing, perhaps unclearly, was asking if there was a real
-Kconfig need to have both CONFIG_ACPI_CUSTOM_DSDT and
-CONFIG_ACPI_CUSTOM_DSDT_FILE, when the latter *only* is visible with
-the former and the former *only* makes sense with the latter. Couldn't
-we just have CONFIG_ACPI_CUSTOM_DSDT_FILE and check that in the code?
-Why do we need a boolean option to make another string option
-available?
+Hi Paul,
+I'll try to take a look at this today - I've got a T30 around here
+somewhere I can try to duplicate.
 
-Thanks,
-Nish
+Kristen
