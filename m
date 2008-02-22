@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936110AbYBVVxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935668AbYBVVy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936110AbYBVVxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933002AbYBVVoJ
+	id S935668AbYBVVy3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:54:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbYBVVoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:44:09 -0500
-Received: from mx1.suse.de ([195.135.220.2]:46660 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 16:44:13 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60624 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759132AbYBVVoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:44:06 -0500
-Date: Fri, 22 Feb 2008 13:40:54 -0800
+	id S933996AbYBVVoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:44:10 -0500
+Date: Fri, 22 Feb 2008 13:40:57 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,70 +20,68 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Christoph Lameter <clameter@sgi.com>,
-       Oliver Pinter <oliver.pntr@gmail.com>
-Subject: [patch 20/23] quicklists: Only consider memory that can be used
-	with GFP_KERNEL
-Message-ID: <20080222214054.GU8686@suse.de>
+       Jonathan Corbet <corbet@lwn.net>, Oliver Pinter <oliver.pntr@gmail.com>
+Subject: [patch 21/23] Be more robust about bad arguments in
+	get_user_pages()
+Message-ID: <20080222214057.GV8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="quicklists-only-consider-memory-that-can-be-used-with-gfp_kernel.patch"
+Content-Disposition: inline; filename="be-more-robust-about-bad-arguments-in-get_user_pages.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.22-stable review patch.  If anyone has any objections, please let us
 know.
 
 ------------------
 
-From: Christoph Lameter <clameter@sgi.com>
 
-Subject: [patch 20/23] quicklists: Only consider memory that can be used with GFP_KERNEL
+From: Jonathan Corbet <corbet@lwn.net>
 
-patch 96990a4ae979df9e235d01097d6175759331e88c in mainline.
+MAINLINE: 900cf086fd2fbad07f72f4575449e0d0958f860f
 
-Quicklists calculates the size of the quicklists based on the number of
-free pages.  This must be the number of free pages that can be allocated
-with GFP_KERNEL.  node_page_state() includes the pages in ZONE_HIGHMEM and
-ZONE_MOVABLE which may lead the quicklists to become too large causing OOM.
+So I spent a while pounding my head against my monitor trying to figure
+out the vmsplice() vulnerability - how could a failure to check for
+*read* access turn into a root exploit? It turns out that it's a buffer
+overflow problem which is made easy by the way get_user_pages() is
+coded.
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-Tested-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+In particular, "len" is a signed int, and it is only checked at the
+*end* of a do {} while() loop.  So, if it is passed in as zero, the loop
+will execute once and decrement len to -1.  At that point, the loop will
+proceed until the next invalid address is found; in the process, it will
+likely overflow the pages array passed in to get_user_pages().
+
+I think that, if get_user_pages() has been asked to grab zero pages,
+that's what it should do.  Thus this patch; it is, among other things,
+enough to block the (already fixed) root exploit and any others which
+might be lurking in similar code.  I also think that the number of pages
+should be unsigned, but changing the prototype of this function probably
+requires some more careful review.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Oliver Pinter <oliver.pntr@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Signed-off-by: Oliver Pinter <oliver.pntr@gmail.com>
 
 ---
- mm/quicklist.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ mm/memory.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/mm/quicklist.c
-+++ b/mm/quicklist.c
-@@ -26,9 +26,17 @@ DEFINE_PER_CPU(struct quicklist, quickli
- static unsigned long max_pages(unsigned long min_pages)
- {
- 	unsigned long node_free_pages, max;
-+	struct zone *zones = NODE_DATA(numa_node_id())->node_zones;
-+
-+	node_free_pages =
-+#ifdef CONFIG_ZONE_DMA
-+		zone_page_state(&zones[ZONE_DMA], NR_FREE_PAGES) +
-+#endif
-+#ifdef CONFIG_ZONE_DMA32
-+		zone_page_state(&zones[ZONE_DMA32], NR_FREE_PAGES) +
-+#endif
-+		zone_page_state(&zones[ZONE_NORMAL], NR_FREE_PAGES);
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -983,6 +983,8 @@ int get_user_pages(struct task_struct *t
+ 	int i;
+ 	unsigned int vm_flags;
  
--	node_free_pages = node_page_state(numa_node_id(),
--			NR_FREE_PAGES);
- 	max = node_free_pages / FRACTION_OF_NODE_MEM;
- 	return max(max, min_pages);
- }
++	if (len <= 0)
++		return 0;
+ 	/* 
+ 	 * Require read or write permissions.
+ 	 * If 'force' is set, we only require the "MAY" flags.
 
 -- 
