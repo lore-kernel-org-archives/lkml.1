@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbYBVH7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbYBVIAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932440AbYBVH7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 02:59:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbYBVH7l
+	id S933570AbYBVIAl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 03:00:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbYBVIAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 02:59:41 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54203 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbYBVH7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 02:59:41 -0500
-Date: Fri, 22 Feb 2008 08:59:50 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: James Morris <jmorris@namei.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Regression [Was: Boot hang with stack protector on x86_64]
-Message-ID: <20080222075950.GB2660@uranus.ravnborg.org>
-References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 22 Feb 2008 03:00:32 -0500
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:40970 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754163AbYBVIAb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 03:00:31 -0500
+Date: Fri, 22 Feb 2008 13:25:53 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peter@programming.kicks-ass.net>
+Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Remove duplicate code from sched_fair.c
+Message-ID: <20080222075553.GA3691@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Mail-Followup-To: Ingo Molnar <mingo@elte.hu>,
+	Peter Zijlstra <peter@programming.kicks-ass.net>,
+	Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+	Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+	linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
-On Fri, Feb 22, 2008 at 11:29:37AM +1100, James Morris wrote:
-> I've been getting an immediate hang on boot since:
-> 
-> e06b8b98da071f7dd78fb7822991694288047df0 kbuild: allow -fstack-protector to take effect
-> 
-> This is on an x86_64 system (actually an Intel SDV -- so it might be 
-> "special").
-This is a regression. Can you please revert this commit.
-We can redo it wehn the -fstack-protector stuff are properly fixed in x86.
+yield_task_fair has some duplicate code, that can be replaced with
+rb_last(). This code reuses rb_next and removes the duplicate code.
+As a side effect, we don't do an rb_entry for each node as we walk
+along the path.
 
-	Sam
+Comments, flames?
 
-[Kept rest of the mail for reference]
+Description
+-----------
 
-> 
-> My .config has the following:
-> 
-> CONFIG_CC_STACKPROTECTOR=y
-> CONFIG_CC_STACKPROTECTOR_ALL=y
-> 
-> Let me know if you need more information.
-> 
-> 
-> Interestingly, git-bisect was unable to identify the changeset, and 
-> reliably mis-identified this as the problem:
-> 
-> 71c044752cdae89136862495f244d37073e2cf66 V4L/DVB (7080): zr364xx: add support for Pentax Optio 50
-> 
-> (which I don't even build).
-> 
-> 
-> - James
-> -- 
-> James Morris
-> <jmorris@namei.org>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+pick_task_entity() duplicates existing code. This functionality can be easily
+obtained using rb_last(). Avoid code duplication by using rb_last()
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ kernel/sched_fair.c |   15 ++++++---------
+ 1 file changed, 6 insertions(+), 9 deletions(-)
+
+diff -puN kernel/sched_fair.c~use-existing-code-in-sched-yield kernel/sched_fair.c
+--- linux-2.6.25-rc2/kernel/sched_fair.c~use-existing-code-in-sched-yield	2008-02-22 11:35:35.000000000 +0530
++++ linux-2.6.25-rc2-balbir/kernel/sched_fair.c	2008-02-22 11:50:03.000000000 +0530
+@@ -301,16 +301,13 @@ static struct sched_entity *__pick_next_
+ 
+ static inline struct sched_entity *__pick_last_entity(struct cfs_rq *cfs_rq)
+ {
+-	struct rb_node **link = &cfs_rq->tasks_timeline.rb_node;
+-	struct sched_entity *se = NULL;
+-	struct rb_node *parent;
+-
+-	while (*link) {
+-		parent = *link;
+-		se = rb_entry(parent, struct sched_entity, run_node);
+-		link = &parent->rb_right;
+-	}
++	struct rb_node *last;
++	struct sched_entity *se;
+ 
++	last = rb_last(&cfs_rq->tasks_timeline);
++	if (!last)
++		return NULL;
++	se = rb_entry(last, struct sched_entity, run_node);
+ 	return se;
+ }
+ 
+_
+
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
