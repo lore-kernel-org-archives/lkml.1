@@ -1,93 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbYBVDcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbYBVDm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765462AbYBVDcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 22:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756285AbYBVDcA
+	id S1764265AbYBVDm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 22:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbYBVDmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 22:32:00 -0500
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:53258 "EHLO
-	e28esmtp03.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754993AbYBVDb7 (ORCPT
+	Thu, 21 Feb 2008 22:42:18 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41917 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbYBVDmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 22:31:59 -0500
-Message-ID: <47BE411B.8090904@linux.vnet.ibm.com>
-Date: Fri, 22 Feb 2008 08:57:23 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
+	Thu, 21 Feb 2008 22:42:17 -0500
+Date: Fri, 22 Feb 2008 09:12:31 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: sfr@canb.auug.org.au
+Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, ak@suse.de, arjan@linux.intel.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, sam@ravnborg.org
+Subject: Re: [GIT PULL?] Create and populate toplevel tests/ for kernel
+	tests
+Message-ID: <20080222034231.GA6716@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20080211104452.GB7944@in.ibm.com> <20080212164452.GA31096@infradead.org> <20080212132246.aac67ed1.akpm@linux-foundation.org> <20080212223918.GA3927@uranus.ravnborg.org> <20080219192153.GA11948@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Make yield_task_fair more efficient
-References: <1203583439.6243.119.camel@lappy> <47BD3B56.3090404@linux.vnet.ibm.com> <20080221090430.GA20055@elte.hu> <47BD44FF.7070104@linux.vnet.ibm.com> <1203586980.6243.124.camel@lappy> <47BD479F.6070901@linux.vnet.ibm.com> <1203588090.6243.128.camel@lappy> <47BD4D48.4080606@linux.vnet.ibm.com> <1203592374.6243.138.camel@lappy> <20080221203849.GU23197@kernel.dk> <20080221205544.GV23197@kernel.dk>
-In-Reply-To: <20080221205544.GV23197@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080219192153.GA11948@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Feb 21 2008, Jens Axboe wrote:
->> On Thu, Feb 21 2008, Peter Zijlstra wrote:
->>> On Thu, 2008-02-21 at 15:37 +0530, Balbir Singh wrote:
->>>
->>>> You use the empty pointer (missing right child), so why do we need a list. May
->>>> be I am missing something.
->>> A fully threaded tree also has back-pointer to traverse backwards
->>> through the ordered elements.
->>>
->>> That said, overloading the right child pointer might not be the best
->>> thing for the linux kernel, as it will impact all the rb-tree lookups
->>> which are open-coded and often performance critical (this is the reason
->>> the colour isn't bit encoded in either of the child pointers either).
->>>
->>> But if you only want a uni directional thread, I guess we can stick it
->>> in the unsigned long we use for the node colour.
->>>
->>> Still, perhaps it's worth it to grow rb_node to 4 words and do the fully
->>> threaded thing as there are also a lot of rb_prev() users in the kernel.
->>> Who knows..
->>>
->>> Anyway, I agree that improving rb_next() is worth looking into for the
->>> scheduler.
->> For the IO scheduler as well, it's used quite extensively! So speeding
->> up rb_next() would definitely help, as it's typically invoked for every
->> bio queued (attempting to back merge with the next request). CFQ and AS
->> additionally does an rb_next() and rb_prev() when trying to decide which
->> request to do next.
+On Tue, Feb 19, 2008 at 08:21:53PM +0100, Sam Ravnborg wrote:
+> Hi Anath.
 > 
-> One possible course of action to implement this without eating extra
-> space in the rb_node would be:
+> Linus did not pull this in the -rc1 to -rc2 timeframe
+> so please resubmit the patch serie one week into the
+> next merge window (when most of the trees has hit linus' tree
+> and Andrew has made his first merge).
 > 
-> - Add rb_right() and rb_set_right() (plus ditto _left variants) to
->   rbtree.h
-> - Convert all in-kernel users to use these. Quite extensive, as the
->   rbtree code search/insert functions are coded in situ and not in
->   rbtree.[ch]
-> - Now we can overload bit 0 of ->rb_right and ->rb_left to indicate
->   whether this is a node or thread pointer and modify rbtree.c to tag
->   and add the thread links when appropriate.
+> IF you need an extra eye balling then you can submit
+> a few weeks before the merge window opens.
+> Thats typical after an -rc with only a few patches.
+
+Stephen,
+
+The patchset in question is just a major code movement - basically to
+move all in-kernel tests to live under a toplevel tests/ directory. As
+such, all the stakeholders have acked the patchset, but it does look
+like this is a big enough change to be deferred to the next merge
+window.
+
+Given that there is general agreement about the patchset, could you
+please pull in the changes into the linux-next tree?
+
+Sam has setup a git tree for this and you can pull from:
+ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+ 
+Link to the thread: http://lkml.org/lkml/2008/2/11/97
+
+Thanks,
+Ananth
+
+> Thanks,
+> 	Sam
 > 
-
-Exactly along the lines I was thinking of.and discussing with David.
-
-> So we can definitely do this in a compatible fashion. Given that I have
-> a flight coming up in a few days time, I may give it a got if no one
-> beats me to it :-)
-> 
-
-Feel free to do so, please do keep me on the cc. I am very interested in getting
-rb threaded trees done, but my bandwidth is a little limited this month.
-
-
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+> On Tue, Feb 12, 2008 at 11:39:18PM +0100, Sam Ravnborg wrote:
+> > Hi Linus.
+> > 
+> > Will you consider such a primary code-movement for -rc1
+> > or shall we wait until next merge window?
+> > 
+> > Had we hit -rc2 I would not have sent this pull req and
+> > feel free to flame me anyway.
+> > 
+> > The rationale to get it merged is obviously to avoid
+> > merge conflicts and the only reason I ask is that I consider
+> > it a low risk patch.
+> > 
+> > I have not included 8/8 since it was questioned and it
+> > will wait until next merge window. But the first 7 was
+> > straightforward.
+> > 
+> > You can pull from:
+> > ssh://master.kernel.org/pub/scm/linux/kernel/git/sam/tests.git
+> > 
+> > diffstat and shortlog below.
+> > I also included mail last with a few of the merge related comments.
+> > 
+> > 	Sam
+> > 
+> >  Makefile                                        |    1 +
+> >  drivers/misc/Makefile                           |    1 -
+> >  kernel/Makefile                                 |    4 -
+> >  lib/Kconfig.debug                               |   71 +--------------------
+> >  lib/Makefile                                    |    1 -
+> >  tests/Kconfig                                   |   79 +++++++++++++++++++++++
+> >  tests/Makefile                                  |   10 +++
+> >  {kernel => tests}/backtracetest.c               |    0 
+> >  {drivers/misc => tests}/lkdtm.c                 |   12 ++--
+> >  {lib => tests}/locking-selftest-hardirq.h       |    0 
+> >  {lib => tests}/locking-selftest-mutex.h         |    0 
+> >  {lib => tests}/locking-selftest-rlock-hardirq.h |    0 
+> >  {lib => tests}/locking-selftest-rlock-softirq.h |    0 
+> >  {lib => tests}/locking-selftest-rlock.h         |    0 
+> >  {lib => tests}/locking-selftest-rsem.h          |    0 
+> >  {lib => tests}/locking-selftest-softirq.h       |    0 
+> >  {lib => tests}/locking-selftest-spin-hardirq.h  |    0 
+> >  {lib => tests}/locking-selftest-spin-softirq.h  |    0 
+> >  {lib => tests}/locking-selftest-spin.h          |    0 
+> >  {lib => tests}/locking-selftest-wlock-hardirq.h |    0 
+> >  {lib => tests}/locking-selftest-wlock-softirq.h |    0 
+> >  {lib => tests}/locking-selftest-wlock.h         |    0 
+> >  {lib => tests}/locking-selftest-wsem.h          |    0 
+> >  {lib => tests}/locking-selftest.c               |    0 
+> >  {kernel => tests}/rcutorture.c                  |    0 
+> >  {kernel => tests}/rtmutex-tester.c              |    2 +-
+> >  {kernel => tests}/test_kprobes.c                |    0 
+> >  27 files changed, 99 insertions(+), 82 deletions(-)
+> > 
+> > Ananth N Mavinakayanahalli (7):
+> >       Create tests/ directory
+> >       Move locking selftests to tests/
+> >       Move rcutorture to tests/
+> >       Move rtmutex-tests to tests/
+> >       Move lkdtm to tests/
+> >       Move kprobes smoke tests to tests/
+> >       Move backtrace tests to tests/
+> > 
+> > 
+> > 
+> > On Tue, Feb 12, 2008 at 01:22:46PM -0800, Andrew Morton wrote:
+> > > On Tue, 12 Feb 2008 11:44:52 -0500
+> > > Christoph Hellwig <hch@infradead.org> wrote:
+> > > 
+> > > > On Mon, Feb 11, 2008 at 04:14:52PM +0530, Ananth N Mavinakayanahalli wrote:
+> > > > > The following series of patches create and populate the toplevel tests/
+> > > > > directory. This will henceforth be the place where all in-kernel tests
+> > > > > live.
+> > > > > 
+> > > > > All patches against 2.6.25-rc1 and are just code movement without any
+> > > > > change in functionality.
+> > > > 
+> > > > ACK to patches 1-7, and I agree with Ingo that the x86-specific test
+> > > > should stay under arch/x86.
+> > > 
+> > > OK.  But now is basically the worst time for me (or anyone else) to merge
+> > > large code-motion changes like this, because they need to be carried for
+> > > two months or more.
+> > > 
+> > > And even though git can track renames, putting them into a git tree (say,
+> > > git-kbuild) won't help, because if some other git tree tries to modify a
+> > > file in its original place, I get to fix up the fallout.
+> > > 
+> > > Which I _could_ do, and would do if the patches were particularly risky or
+> > > added/changed functionality or whatever.  But they don't do that, and there
+> > > is little advantage in maintaining them for the >2 months.
+> > > 
+> > > So.  Please redo and resend the patches when we hit 2.6.25-rc6 or so?
+> > > 
+> > > Thanks.
+> > > 
+> > > (linux-next will largely fix all this: git will take care of the renames
+> > > and I'll just base the -mm queue on the consolidated linux-next.  But we
+> > > aren't there yet).
+> > > 
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
