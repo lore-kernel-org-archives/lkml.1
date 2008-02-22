@@ -1,131 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765113AbYBVTsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763910AbYBVTwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765113AbYBVTsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757913AbYBVTs0
+	id S1763910AbYBVTwi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:52:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755667AbYBVTwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:48:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.186]:3262 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757123AbYBVTsX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:48:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=T7Zx7vRsrIGoJwZMe9BLtCnbkdMwd05NvqhNB1nz46Z6AUdKeVVVymOMoo8m+piaAHXclgm1t9ni36sAQqhsMMGEP95tQLXqQtIwM+1vGnuCfrBxYTubgaszneGcGiPSDdqiQAigqwWa0wt6mMdXu8nU/eqb7hrX7peBCieU5C8=
-To: "Chris Clayton" <chris2553@googlemail.com>
-Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
-Date: Fri, 22 Feb 2008 20:47:52 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
-References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com> <200802181911.32128.IvDoorn@gmail.com> <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
-In-Reply-To: <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
+	Fri, 22 Feb 2008 14:52:31 -0500
+Received: from zeratul.whoi.edu ([128.128.76.62]:36260 "EHLO mx1.whoi.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755389AbYBVTw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:52:29 -0500
+Message-ID: <47BF27E6.3010502@whoi.edu>
+Date: Fri, 22 Feb 2008 14:52:06 -0500
+From: Ned Forrester <nforrester@whoi.edu>
+Organization: Woods Hole Oceanographic Institution
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: David Brownell <david-b@pacbell.net>
+Cc: anemo@mba.ocn.ne.jp, spi-devel-general@lists.sourceforge.net,
+       marc.pignat@hevs.ch, linux-kernel@vger.kernel.org
+Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	 transfer
+References: <200802211026.17816.marc.pignat@hevs.ch> <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <200802221030.32263.marc.pignat@hevs.ch> <20080222.231510.56565462.anemo@mba.ocn.ne.jp> <47BEDBFB.5040305@whoi.edu> <20080222190613.0043B229B4D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+In-Reply-To: <20080222190613.0043B229B4D@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802222047.52312.IvDoorn@gmail.com>
-From: Ivo van Doorn <ivdoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008, Chris Clayton wrote:
-> Hi Ivo,
+David Brownell wrote:
+>> This would be OK.  It would not be hard to fix pxa2xx_spi, for example,
+>> to reject zero-length transfers in DMA mode, as long as it is acceptable
+>> to reject the message in mid-message.
 > 
-> On 18/02/2008, Ivo van Doorn <ivdoorn@gmail.com> wrote:
-> > Hi,
-> >
+> Such "illegal message" rejection is best done early; "fail-fast".
+> Mid-message rejection isn't wrong, but it's a rude policy.
 > 
-> [...]
+> It'd be best to fix pxa2xx_spi to not start zero-length DMAs.
+
+So again, same as my last reply, it would be best to handle a zero
+length transfer silently, as if it were non-zero, but just skipping over
+any invalid hardware operations due to the zero length.
+
+>> 	If it were necessary to scan a
+>> whole message for zero-length transfers and refuse to queue an offending
+>> message, then that adds burden to all messages.
 > 
-> > Above traces should be enough, but to determine where rt2x00 broke
-> >  down approximatly I need to have a few test result on specific moments.
-> >  Could you test the kernel with the following versions:
-> >
-> >  rt2x00 2.0.11   2d68de3efa62655d551092f5c787505735d561ad
-> >  rt2x00 2.0.12   a3c7aa58df7df80aa05f166fe3e42482247164cf
-> >  rt2x00 2.0.13   5a6012e105ae1664cd2841c33bf59fbdd8d4dbcc
-> >
-> >  Checking those out is simply a matter of:
-> >  git branch 2.0.11 2d68de3efa62655d551092f5c787505735d561ad
-> >  git checkout 2.0.11
-> >
-> 
-> OK, we seem to be struggling a little, so I've built an installed git
-> and cloned Linus' 2.6 tree. My wireless network dies after a few pings
-> with rt2x00 2.0.11.
-> 
-> >  No further bisecting is needed, but with above tests I can at least
-> >  narrow it down to find the cause of this issue.
-> >
-> 
-> If you need me to bisect, just shout. Please be patient though, I'm
-> exploring new territory here :-)
+> Sanity checking messages as they're submitted is easy; and it's
+> also the natural point for setting up DMA mappings (and making
+> those cachelines available for better use).
 
-I don't think bisecting this will help a lot, the rt2x00 2.0.11 release
-introduced software diversity. And that is already something I suspect
-of being broken.
+Hmmm.... Obviously I have much to learn about modern computers.  It had
+not occurred to me, even after reading "Linux Device Drivers", Corbet,
+et.al, that by DMA mapping, one frees the cache for other uses.  It
+makes sense.  In my application I pass many large buffers to the master
+driver, and I map them in the protocol driver.  I did that without good
+reason, but now I see it was the proper choice.
 
-Unfortunately software diversity was a bugfix and fix in one,
-the previous setup was broken for some hardware since the
-lack of software diversity caused problems.
+Unfortunately, pxa2xx_spi does any DMA mapping not done by the protocol
+driver in pump_transfers, as each transfer is submitted to the hardware.
+ There is not currently any message checking done in transfer(), the
+only error return from that is if the master driver is shutdown (queue
+stopped).  The current scheme is to return the message with non-zero
+spi_message.status if it has failed *after* execution has been
+attempted.  I don't look forward to making major changes, if we really
+want all DMA mapping and error checking to be in transfer(), though I
+see no reason why it could not be done.
 
-Could you check if below patch helps in any way?
-
-Ivo
-
----
-
-diff --git a/drivers/net/wireless/rt2x00/rt2x00config.c b/drivers/net/wireless/rt2x00/rt2x00config.c
-index a1d8e33..6995912 100644
---- a/drivers/net/wireless/rt2x00/rt2x00config.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00config.c
-@@ -122,6 +122,10 @@ void rt2x00lib_config_antenna(struct rt2x00_dev *rt2x00dev,
- 	libconf.ant.rx = rx;
- 	libconf.ant.tx = tx;
- 
-+	if (rx == rt2x00dev->link.ant.active.rx &&
-+	    tx == rt2x00dev->link.ant.active.tx)
-+		return;
-+
- 	/*
- 	 * Antenna setup changes require the RX to be disabled,
- 	 * else the changes will be ignored by the device.
-diff --git a/drivers/net/wireless/rt2x00/rt2x00dev.c b/drivers/net/wireless/rt2x00/rt2x00dev.c
-index 65a512f..4325c08 100644
---- a/drivers/net/wireless/rt2x00/rt2x00dev.c
-+++ b/drivers/net/wireless/rt2x00/rt2x00dev.c
-@@ -191,16 +191,16 @@ static void rt2x00lib_evaluate_antenna_sample(struct rt2x00_dev *rt2x00dev)
- 		return;
- 
- 	if (rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) {
--		if (sample_a > sample_b && rx == ANTENNA_B)
-+		if (sample_a > sample_b)
- 			rx = ANTENNA_A;
--		else if (rx == ANTENNA_A)
-+		else
- 			rx = ANTENNA_B;
- 	}
- 
- 	if (rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY) {
--		if (sample_a > sample_b && tx == ANTENNA_B)
-+		if (sample_a > sample_b)
- 			tx = ANTENNA_A;
--		else if (tx == ANTENNA_A)
-+		else
- 			tx = ANTENNA_B;
- 	}
- 
-@@ -257,7 +257,7 @@ static void rt2x00lib_evaluate_antenna(struct rt2x00_dev *rt2x00dev)
- 
- 	if (!(rt2x00dev->link.ant.flags & ANTENNA_RX_DIVERSITY) &&
- 	    !(rt2x00dev->link.ant.flags & ANTENNA_TX_DIVERSITY)) {
--		rt2x00dev->link.ant.flags &= ~ANTENNA_MODE_SAMPLE;
-+		rt2x00dev->link.ant.flags = 0;
- 		return;
- 	}
- 
+-- 
+Ned Forrester                                       nforrester@whoi.edu
+Oceanographic Systems Lab                                  508-289-2226
+Applied Ocean Physics and Engineering Dept.
+Woods Hole Oceanographic Institution          Woods Hole, MA 02543, USA
+http://www.whoi.edu/sbl/liteSite.do?litesiteid=7212
+http://www.whoi.edu/hpb/Site.do?id=1532
+http://www.whoi.edu/page.do?pid=10079
 
