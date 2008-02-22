@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933863AbYBVCbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbYBVCho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933863AbYBVCbh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 21:31:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757881AbYBVCb3
+	id S1761458AbYBVCho (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 21:37:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbYBVChg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 21:31:29 -0500
-Received: from web53803.mail.re2.yahoo.com ([206.190.36.198]:47017 "HELO
-	web53803.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757605AbYBVCb3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 21:31:29 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 21 Feb 2008 21:31:28 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=XIqw6v2bCCiMXEpyutI3TQKwOUgMqg0zLq4HQ2K9FP8qwhG2aoSXCmDDtaG8vSjLvu3WUXJpzJRSMRyjGyuzuAWaPiZReWrzTGn2Qk4n4TF3hJAoLGfzrEKwutMjKxGpac34G7BC9pv4radRlORTJB/K5aLHh9KaRJCT2DEd1pc=;
-X-YMail-OSG: m_6MNDgVM1k4Knr11bs8RKuUk6d5zR5LOXPk.KrWm6MXjaIezP.RspOc_0zm2XnyDv51aNstl.nY7_i_iJdkgvkrXEg9c9NASBkLv.MexGwpVB3nskH.N90S_JfMmZ90c1b0Jw7sRTrRFz8-
-X-Mailer: YahooMailRC/818.31 YahooMailWebService/0.7.162
-Date: Thu, 21 Feb 2008 18:24:47 -0800 (PST)
-From: <caiying@yahoo.com>
-Subject: Configure MSI-X vectors to target different CPUs
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <852306.69189.qm@web53803.mail.re2.yahoo.com>
+	Thu, 21 Feb 2008 21:37:36 -0500
+Received: from mga11.intel.com ([192.55.52.93]:7313 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751132AbYBVChf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 21:37:35 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.25,388,1199692800"; 
+   d="scan'208";a="300722692"
+Subject: Re: [PATCH 2/2] x86 : relocate uninitialized variable in init DATA
+	section into init BSS section
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
+       Ian Campbell <ijc@hellion.org.uk>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20080221095301.GA29361@elte.hu>
+References: <1203581723.4707.20.camel@caritas-dev.intel.com>
+	 <20080221090557.GB20055@elte.hu>
+	 <1203586106.4707.25.camel@caritas-dev.intel.com>
+	 <20080221095301.GA29361@elte.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 22 Feb 2008 10:38:00 +0800
+Message-Id: <1203647880.4707.39.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
+X-OriginalArrivalTime: 22 Feb 2008 02:36:38.0410 (UTC) FILETIME=[BFD54EA0:01C874FB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2008-02-21 at 10:53 +0100, Ingo Molnar wrote:
+> * Huang, Ying <ying.huang@intel.com> wrote:
+> 
+> > > > -int __initdata early_ioremap_debug;
+> > > > +int __initbss early_ioremap_debug;
+> > > 
+> > > will we get some sort of build error if we accidentally do:
+> > > 
+> > >    int __initbss early_ioremap_debug = 1;
+> > > 
+> > > ?
+> > 
+> > I tested it just now, and there is no build error.
+> 
+> well, that's bad. We'd silently ignore the " = 1" and boot up with that 
+> value at 0, right? At minimum we need some really prominent build-time 
+> _errors_ (i.e. aborted builds) if this ever happens. But ideally, 
+> shouldnt this whole thing be done at link time? Couldnt the linker sort 
+> the variables that are zero initialized into the right section, and move 
+> this constant maintenance pressure off the programmer's shoulder?
 
-In MSI-HOWTO, it's said:
+I think another method is to add a new attribute into GCC to prepend or
+append something to section name instead of just to replace it, like the
+example as follow:
 
-"Using MSI enables the device functions to support two or more vectors, which can be configured to target different CPUs to increase scalability."
+#define __initdata  __attribute__((section_append(".init")))
 
-So how can I set up MSI-X vectors to target different CPUs? I want to allocate the same number of MSI-X vectors as CPUs, and equally distribute them to every CPU.
+int __initdata early_ioremap_debug_data = 1;
+int __initdata early_ioremap_debug_bss;
 
-Is it automatically done by Linux when I call pci_enable_msix()? If yes, how? If not, what should I do? My guess is to set the affinity of the interrupts manually. Am I right?
+The GCC can deduce the section (.data or .bss) of global variable based
+on whether it is initialized. That is, without attribute,
+early_ioremap_debug_data will be in ".data", early_ioremap_debug_bss
+will be in ".bss". And with section_append attribute,
+early_ioremap_debug_data will be in ".data.init" and
+early_ioremap_debug_bss will be in ".bss.init".
 
-Please CC'ed me (caiying@yahoo.com) answers/comments  in response to this posting. 
-
-Thanks,
-Ying
-
+Best Regards,
+Huang Ying
 
