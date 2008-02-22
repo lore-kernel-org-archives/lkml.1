@@ -1,73 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935952AbYBVAKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934566AbYBVAOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935952AbYBVAKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:10:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756476AbYBVAKb
+	id S934566AbYBVAOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759537AbYBVAOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:10:31 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:49111 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755333AbYBVAK3 (ORCPT
+	Thu, 21 Feb 2008 19:14:12 -0500
+Received: from rgminet01.oracle.com ([148.87.113.118]:59906 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754625AbYBVAOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:10:29 -0500
-X-Sasl-enc: vl6SVX80wAsAD9QXT7DGc7G/CvJK+OFxiZmvZY8oPUeu 1203639027
-Message-ID: <47BE12F1.4040201@imap.cc>
-Date: Fri, 22 Feb 2008 01:10:25 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
+	Thu, 21 Feb 2008 19:14:11 -0500
+Message-ID: <47BE137F.3030704@oracle.com>
+Date: Thu, 21 Feb 2008 16:12:47 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Dave Hansen <haveblue@us.ibm.com>
-Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc> <20080221043828.bcd5cbce.akpm@linux-foundation.org> <20080221164632.GA31784@lst.de>
-In-Reply-To: <20080221164632.GA31784@lst.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig80681417681A066A35A0EC8D"
+To: Frank Seidel <fseidel@suse.de>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, Andy Whitcroft <apw@shadowen.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>	<20080214160231.GC10713@shadowen.org>	<20080221012332.dc1948ac.sfr@canb.auug.org.au> <20080220084747.77553451.randy.dunlap@oracle.com> <47BE1225.7030808@suse.de>
+In-Reply-To: <47BE1225.7030808@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig80681417681A066A35A0EC8D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Frank Seidel wrote:
+> Randy Dunlap wrote:
+>> I'd like to see tarballs too, please...
+> 
+> Hi, i'll provide tars of the current linux-next tree reachable
+> via my http://linux-next.f-seidel.de wiki ("Tar Downloads").
+> Is that what you were looking for?
 
-Am 21.02.2008 17:46 schrieb Christoph Hellwig:
-> On Thu, Feb 21, 2008 at 04:38:28AM -0800, Andrew Morton wrote:
->> (net-related cc's removed)
->>
->> This look like a startup ordering bug in mnt_want_write().
->=20
-> Do you have CONFIG_ACPI_CUSTOM_DSDT_INITRD set?
+Looks close.  It needs to be scriptable (not just a dynamically generated
+link) and have predictable names.  As long as those are true, then it
+should be great.
 
-Negative.
-
-HTH
-T.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig80681417681A066A35A0EC8D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHvhLxMdB4Whm86/kRAqMzAJ4yZfR1tO0W+XHeTlatuoz5VA80oQCfXFkw
-iSidJK/r2N47bDH/+zH+n0Y=
-=80jo
------END PGP SIGNATURE-----
-
---------------enig80681417681A066A35A0EC8D--
+Thanks.
+-- 
+~Randy
