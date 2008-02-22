@@ -1,88 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764080AbYBVTqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbYBVTrV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764080AbYBVTqm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756194AbYBVTqd
+	id S1759348AbYBVTrV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:47:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764096AbYBVTqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:46:33 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:42807 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbYBVTqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:46:31 -0500
-Date: Fri, 22 Feb 2008 11:44:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Merging of completely unreviewed drivers
-Message-ID: <20080222194459.GA21250@kroah.com>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <20080222185359.GA29945@elte.hu> <47BF206C.8040001@garzik.org>
-MIME-Version: 1.0
+	Fri, 22 Feb 2008 14:46:43 -0500
+Received: from pasmtpb.tele.dk ([80.160.77.98]:60714 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763754AbYBVTqk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:46:40 -0500
+Date: Fri, 22 Feb 2008 20:46:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
+Subject: [PATCH] hpt366: fix section mismatch warnings
+Message-ID: <20080222194651.GA7154@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <47BF206C.8040001@garzik.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 02:20:12PM -0500, Jeff Garzik wrote:
-> Ingo Molnar wrote:
->>  2) you might know that Deja-Vu moment when you look at a new patch that   
->>   has been submitted to lkml and you have a strange, weird "feeling"     
->> that there's something wrong about the patch.
->>     It's totally subconscious, and you take a closer look and a few
->>     seconds later you find a real bug in the code.
->>     That "feeling" i believe comes from a fundamental property of how     
->> human vision is connected to the human brain: pattern matching.     Really 
->> good programmers have built a "library" of patterns of "good"     and 
->> "bad" looking coding practices.
->>     If a patch or if a file has a clean _style_, bugs and deeper     
->> structural problems often stand out like a sore thumb. But if the 
-> [...]
->
->>     The best programmers are the ones who have a good eye for details -    
->>  and that subconsciously extends to "style details" too. I've yet to
->>     see a _single_ example of a good, experienced kernel programmer who    
->>  writes code that looks absolutely careless and sloppy, but which is     
->> top-notch otherwise. (Newbies will make style mistakes a lot more     
->> often - and for them checkpatch is a nice and easy experience at     
->> reading other people's code and trying to learn the style of the     
->> kernel.)
-> [...]
->
->>  4) there's a psychological effect as well: clean _looking_ code is     
->> more attractive to coders to improve upon. Once the code _looks_     clean 
->> (mechanically), the people with the real structural cleanups     are not 
->> far away either. Code that just looks nice is simply more of     a 
->> pleasure to work with and to improve, so there's a strong     
->> psychological relationship between the "small, seemingly unimportant     
->> details" cleanups and the real, structural cleanups.
->
-> The above deserved to be quoted...  just because I agree with all of it so 
-> strongly :)
->
-> Bugs really do "hide" in ugly code, in part because my brain has been 
-> optimized to review clean code.
->
-> Like everything else in life, one must strike a balance between picking 
-> style nits with someone's patch, and making honest criticisms of a patch 
-> because said patch is too "unclean" to be reviewed by anyone.
+hpt366: fix section mismatch warnings
 
-I totally agree with all of this.  checkpatch.pl is a useful tool to
-use, and is quite handy for helping the kernel code for all of the above
-reasons.
+Fix following warnings:
+WARNING: o-sparc64/vmlinux.o(.data+0x195a38): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370
+WARNING: o-sparc64/vmlinux.o(.data+0x195a40): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt370a
+WARNING: o-sparc64/vmlinux.o(.data+0x195a48): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372
+WARNING: o-sparc64/vmlinux.o(.data+0x195a50): Section mismatch in reference from the variable hpt37x_info.0 to the variable .devinit.data:hpt372n
 
-</aol>
+Replace a static array with a small switch resulting in
+more readable code.
+Be consistent in use of __devinitconst for const data
+to avoid section type conflicts.
+Mark the pci table __devinitconst.
 
-thanks,
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+---
+Only build tested but looks obviously correct.
+I saw this doing a sparc64 build - dunno whit it did not
+surface when I sweeped over an x86 64 bit allyesconfig.
 
-greg k-h
+	Sam
+
+diff --git a/drivers/ide/pci/hpt366.c b/drivers/ide/pci/hpt366.c
+index d0f7bb8..9911584 100644
+--- a/drivers/ide/pci/hpt366.c
++++ b/drivers/ide/pci/hpt366.c
+@@ -513,7 +513,7 @@ static struct hpt_timings hpt37x_timings = {
+ 	}
+ };
+ 
+-static const struct hpt_info hpt36x __devinitdata = {
++static const struct hpt_info hpt36x __devinitconst = {
+ 	.chip_name	= "HPT36x",
+ 	.chip_type	= HPT36x,
+ 	.udma_mask	= HPT366_ALLOW_ATA66_3 ? (HPT366_ALLOW_ATA66_4 ? ATA_UDMA4 : ATA_UDMA3) : ATA_UDMA2,
+@@ -521,7 +521,7 @@ static const struct hpt_info hpt36x __devinitdata = {
+ 	.timings	= &hpt36x_timings
+ };
+ 
+-static const struct hpt_info hpt370 __devinitdata = {
++static const struct hpt_info hpt370 __devinitconst = {
+ 	.chip_name	= "HPT370",
+ 	.chip_type	= HPT370,
+ 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
+@@ -529,7 +529,7 @@ static const struct hpt_info hpt370 __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt370a __devinitdata = {
++static const struct hpt_info hpt370a __devinitconst = {
+ 	.chip_name	= "HPT370A",
+ 	.chip_type	= HPT370A,
+ 	.udma_mask	= HPT370_ALLOW_ATA100_5 ? ATA_UDMA5 : ATA_UDMA4,
+@@ -537,7 +537,7 @@ static const struct hpt_info hpt370a __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt374 __devinitdata = {
++static const struct hpt_info hpt374 __devinitconst = {
+ 	.chip_name	= "HPT374",
+ 	.chip_type	= HPT374,
+ 	.udma_mask	= ATA_UDMA5,
+@@ -545,7 +545,7 @@ static const struct hpt_info hpt374 __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt372 __devinitdata = {
++static const struct hpt_info hpt372 __devinitconst = {
+ 	.chip_name	= "HPT372",
+ 	.chip_type	= HPT372,
+ 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -553,7 +553,7 @@ static const struct hpt_info hpt372 __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt372a __devinitdata = {
++static const struct hpt_info hpt372a __devinitconst = {
+ 	.chip_name	= "HPT372A",
+ 	.chip_type	= HPT372A,
+ 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -561,7 +561,7 @@ static const struct hpt_info hpt372a __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt302 __devinitdata = {
++static const struct hpt_info hpt302 __devinitconst = {
+ 	.chip_name	= "HPT302",
+ 	.chip_type	= HPT302,
+ 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -569,7 +569,7 @@ static const struct hpt_info hpt302 __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt371 __devinitdata = {
++static const struct hpt_info hpt371 __devinitconst = {
+ 	.chip_name	= "HPT371",
+ 	.chip_type	= HPT371,
+ 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -577,7 +577,7 @@ static const struct hpt_info hpt371 __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt372n __devinitdata = {
++static const struct hpt_info hpt372n __devinitconst = {
+ 	.chip_name	= "HPT372N",
+ 	.chip_type	= HPT372N,
+ 	.udma_mask	= HPT372_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -585,7 +585,7 @@ static const struct hpt_info hpt372n __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt302n __devinitdata = {
++static const struct hpt_info hpt302n __devinitconst = {
+ 	.chip_name	= "HPT302N",
+ 	.chip_type	= HPT302N,
+ 	.udma_mask	= HPT302_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -593,7 +593,7 @@ static const struct hpt_info hpt302n __devinitdata = {
+ 	.timings	= &hpt37x_timings
+ };
+ 
+-static const struct hpt_info hpt371n __devinitdata = {
++static const struct hpt_info hpt371n __devinitconst = {
+ 	.chip_name	= "HPT371N",
+ 	.chip_type	= HPT371N,
+ 	.udma_mask	= HPT371_ALLOW_ATA133_6 ? ATA_UDMA6 : ATA_UDMA5,
+@@ -1475,7 +1475,7 @@ static int __devinit hpt36x_init(struct pci_dev *dev, struct pci_dev *dev2)
+ 	 IDE_HFLAG_ABUSE_SET_DMA_MODE | \
+ 	 IDE_HFLAG_OFF_BOARD)
+ 
+-static const struct ide_port_info hpt366_chipsets[] __devinitdata = {
++static const struct ide_port_info hpt366_chipsets[] __devinitconst = {
+ 	{	/* 0 */
+ 		.name		= "HPT36x",
+ 		.init_chipset	= init_chipset_hpt366,
+@@ -1570,11 +1570,13 @@ static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_devic
+ 		if (rev < 3)
+ 			info = &hpt36x;
+ 		else {
+-			static const struct hpt_info *hpt37x_info[] =
+-				{ &hpt370, &hpt370a, &hpt372, &hpt372n };
+-
+-			info = hpt37x_info[min_t(u8, rev, 6) - 3];
+-			idx++;
++			switch (min_t(u8, rev, 6) - 3) {
++			case 0: info = &hpt370;  break;
++			case 1: info = &hpt370a; break;
++			case 2: info = &hpt372;  break;
++			case 3: info = &hpt372n; break;
++			}
++		idx++;
+ 		}
+ 		break;
+ 	case 1:
+@@ -1626,7 +1628,7 @@ static int __devinit hpt366_init_one(struct pci_dev *dev, const struct pci_devic
+ 	return ide_setup_pci_device(dev, &d);
+ }
+ 
+-static const struct pci_device_id hpt366_pci_tbl[] = {
++static const struct pci_device_id hpt366_pci_tbl[] __devinitconst = {
+ 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT366),  0 },
+ 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT372),  1 },
+ 	{ PCI_VDEVICE(TTI, PCI_DEVICE_ID_TTI_HPT302),  2 },
