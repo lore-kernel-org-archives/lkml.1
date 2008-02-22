@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbYBVRuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764843AbYBVRu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763552AbYBVRuU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:50:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761856AbYBVRsI
+	id S1764843AbYBVRu6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:50:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761839AbYBVRtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:48:08 -0500
-Received: from vms173001pub.verizon.net ([206.46.173.1]:64171 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760397AbYBVRsD (ORCPT
+	Fri, 22 Feb 2008 12:49:20 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:43410 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764606AbYBVRtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:48:03 -0500
-Date: Fri, 22 Feb 2008 12:47:47 -0500
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] 2.4: Back-port of pl2303.c from 2.6.24.1
-In-reply-to: <20080222100223.GA4711@1wt.eu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Newall <davidn@davidnewall.com>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200802221247.48178.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <479A83DE.8020002@davidnewall.com>
- <47BE267E.3070508@davidnewall.com> <20080222100223.GA4711@1wt.eu>
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+	Fri, 22 Feb 2008 12:49:17 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Alexey Zaytsev <zaytsev.a@protei.ru>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Fri, 22 Feb 2008 18:48:37 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de> <47BF101F.30301@protei.ru>
+In-Reply-To: <47BF101F.30301@protei.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802221848.37902.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008, Willy Tarreau wrote:
->On Fri, Feb 22, 2008 at 12:03:50PM +1030, David Newall wrote:
->> Greg KH wrote:
->> > On Thu, Feb 21, 2008 at 10:00:58PM +0100, Willy Tarreau wrote:
->> >> I too agree to merge, it especially since it fixed several problems
->> >> for David. However, I would like to know first if the same problems
->> >> also happen with the 2.6 driver or if it is OK. The risk is getting
->> >> 2.4 fixed and not 2.6, which could cause regressions for people
->> >> upgrading from 2.4 to 2.6. Of course, a regression on a USB-serial
->> >> adapter is not dramatic, but it's a general principle to keep in mind
->> >> that 2.6 should be safe (or at least actively being fixed) when merging
->> >> driver changes in 2.4.
->> >
->> > As far as I can tell, this was a backport of the current 2.6 driver, so
->> > it should not have fixes that are not already in 2.6.
->> >
->> > David, is that true?
->>
->> That is true.
->
->OK that's perfect. I will merge it.
->
->Cheers,
->Willy
+On Friday 22 February 2008 19:10:39 Alexey Zaytsev wrote:
+> Sorry, I don't get it. You are going to remove the (somehow)
+> working driver, while there are known problems with the new
+> one? Why?
 
-I was not successfull at testing it last night, even locally built versions of 
-roadnav are segfaulting for me now.  Something still missing from the wxGTK 
-camp I believe.
+Because the new driver works, if you just set it up right.
+Until now every "breakage" was just a usage error.
 
-Feb 21 21:05:49 coyote kernel: [799800.925900] roadnav[30556]: segfault at 
-00000041 eip 494b9d2f esp bf9d8570 error 4
+> And please look at the problem from a user's view point. I'm
+> happily using the 2.6.23 kernel. The bcm43xx driver is the
+> only one available. And it works somehow (well, no s2ram).
 
-But that may was well be swahili to me.  And it may run half an hour before it 
-does it.  It seems to be related to trying to pull missing TIGER-line maps.  
-Its also a serious cpu hog when its running.
+b43 supports s2ram and s2disk.
+
+> If this is not a repgession, than I don't know what is.
+> And if it is a regression, it should be fixed at least in the
+> 2.6.24.y series, do you agree?
+
+No. Playing with kconfig SELECT is really _nothing_ for a -stable
+series. I am _not_ going to be responsible for any
+breakages. And using SELECT _does_ break things. We had dozens of bugs
+until all the damn dependencies were right. Even "Obviously Correct (tm)"
+changes to SELECT _do_ break on weird configurations.
+See the bcm43xx mail archives for examples.
+
+If you need that patch for some reason, please apply it locally.
+The problem will automatically get fixed when bcm43xx goes away, soon.
+
+> I have provided a patch that I believe is trivial, that I have
+> tested with all possible config option combinations I thought
+> were possible, and that fixes the regression. If you have a
+> reason to believe it is wrong, please say it, I won't be
+> offended. If there is a problem with the patch, I'll gladly
+> fix and resend it. 
+> 
+> This Nack leaves me with one option - to switch back to 2.6.23.
+> Sorry, no testing, probably more bugs not found in 2.6.24. ;(
+
+It is not my problem, if you refuse to use b43.
+You also still refuse to tell me details about your card and _what_
+does not work. I do own lots of different card and they
+all work fine with b43. There's one exception, the 4311 rev 3 (or something,
+don't quite remember). But patches are available and will ship in 2.6.25.
+bcm43xx won't get removed until that shipped.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-If the rich could pay the poor to die for them, what a living the poor
-could make!
+Greetings Michael.
