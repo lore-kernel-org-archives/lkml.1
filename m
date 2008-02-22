@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbYBVVoZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933530AbYBVVox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbYBVVoZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 16:44:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933364AbYBVVnF
+	id S933530AbYBVVox (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 16:44:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933382AbYBVVnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 16:43:05 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:60295 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 16:43:07 -0500
+Received: from mx2.suse.de ([195.135.220.15]:60350 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933265AbYBVVnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 16:43:00 -0500
-Date: Fri, 22 Feb 2008 13:40:09 -0800
+	id S933322AbYBVVnE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 16:43:04 -0500
+Date: Fri, 22 Feb 2008 13:40:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jeff Garzik <jeff@garzik.org>, Mikael Pettersson <mikpe@it.uu.se>
-Subject: [patch 03/23] sata_promise: ASIC PRD table bug workaround
-Message-ID: <20080222214009.GD8686@suse.de>
+       Ian Abbott <abbotti@mev.co.uk>
+Subject: [patch 04/23] PCI: Fix fakephp deadlock
+Message-ID: <20080222214012.GE8686@suse.de>
 References: <20080222213114.583282464@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_promise-asic-prd-table-bug-workaround.patch"
+Content-Disposition: inline; filename="pci-fix-fakephp-deadlock.patch"
 In-Reply-To: <20080222213927.GA8686@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,160 +38,135 @@ know.
 
 ------------------
 
-From: Mikael Pettersson <mikpe@it.uu.se>
+From: Ian Abbott <abbotti@mev.co.uk>
 
-patch b9ccd4a90bbb964506f01b4bdcff4f50f8d5d334 in mainline.
+This patch works around a problem in the fakephp driver when a process
+writing "0" to a "power" sysfs file to fake removal of a PCI device ends
+up deadlocking itself in the sysfs code.
 
-Second-generation Promise SATA controllers have an ASIC bug
-which can trigger if the last PRD entry is larger than 164 bytes,
-resulting in intermittent errors and possible data corruption.
+The patch is functionally identical to the one in Linus' tree post 2.6.24:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=5c796ae7a7ebe56967ed9b9963d7c16d733635ff
 
-Work around this by replacing calls to ata_qc_prep() with a
-private version that fills the PRD, checks the size of the
-last entry, and if necessary splits it to avoid the bug.
-Also reduce sg_tablesize by 1 to accommodate the new entry.
+I have tested it on a 2.6.22 kernel.
 
-Tested on the second-generation SATA300 TX4 and SATA300 TX2plus,
-and the first-generation PDC20378.
-
-Thanks to Alexander Sabourenkov for verifying the bug by
-studying the vendor driver, and for writing the initial patch
-upon which this one is based.
-
-Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Ian Abbott <abbotti@mev.co.uk>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_promise.c |   87 ++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 83 insertions(+), 4 deletions(-)
+ drivers/pci/hotplug/fakephp.c |   39 +++++++++++++++++++++++++++++++++++----
+ 1 file changed, 35 insertions(+), 4 deletions(-)
 
---- a/drivers/ata/sata_promise.c
-+++ b/drivers/ata/sata_promise.c
-@@ -51,6 +51,7 @@
- enum {
- 	PDC_MAX_PORTS		= 4,
- 	PDC_MMIO_BAR		= 3,
-+	PDC_MAX_PRD		= LIBATA_MAX_PRD - 1, /* -1 for ASIC PRD bug workaround */
+--- a/drivers/pci/hotplug/fakephp.c
++++ b/drivers/pci/hotplug/fakephp.c
+@@ -39,6 +39,7 @@
+ #include <linux/init.h>
+ #include <linux/string.h>
+ #include <linux/slab.h>
++#include <linux/workqueue.h>
+ #include "../pci.h"
  
- 	/* register offsets */
- 	PDC_FEATURE		= 0x04, /* Feature/Error reg (per port) */
-@@ -157,7 +158,7 @@ static struct scsi_host_template pdc_ata
- 	.queuecommand		= ata_scsi_queuecmd,
- 	.can_queue		= ATA_DEF_QUEUE,
- 	.this_id		= ATA_SHT_THIS_ID,
--	.sg_tablesize		= LIBATA_MAX_PRD,
-+	.sg_tablesize		= PDC_MAX_PRD,
- 	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
- 	.emulated		= ATA_SHT_EMULATED,
- 	.use_clustering		= ATA_SHT_USE_CLUSTERING,
-@@ -531,6 +532,84 @@ static void pdc_atapi_pkt(struct ata_que
- 	memcpy(buf+31, cdb, cdb_len);
+ #if !defined(MODULE)
+@@ -63,10 +64,16 @@ struct dummy_slot {
+ 	struct list_head node;
+ 	struct hotplug_slot *slot;
+ 	struct pci_dev *dev;
++	struct work_struct remove_work;
++	unsigned long removed;
+ };
+ 
+ static int debug;
+ static LIST_HEAD(slot_list);
++static struct workqueue_struct *dummyphp_wq;
++
++static void pci_rescan_worker(struct work_struct *work);
++static DECLARE_WORK(pci_rescan_work, pci_rescan_worker);
+ 
+ static int enable_slot (struct hotplug_slot *slot);
+ static int disable_slot (struct hotplug_slot *slot);
+@@ -109,7 +116,7 @@ static int add_slot(struct pci_dev *dev)
+ 	slot->name = &dev->dev.bus_id[0];
+ 	dbg("slot->name = %s\n", slot->name);
+ 
+-	dslot = kmalloc(sizeof(struct dummy_slot), GFP_KERNEL);
++	dslot = kzalloc(sizeof(struct dummy_slot), GFP_KERNEL);
+ 	if (!dslot)
+ 		goto error_info;
+ 
+@@ -164,6 +171,14 @@ static void remove_slot(struct dummy_slo
+ 		err("Problem unregistering a slot %s\n", dslot->slot->name);
  }
  
-+/**
-+ *	pdc_fill_sg - Fill PCI IDE PRD table
-+ *	@qc: Metadata associated with taskfile to be transferred
-+ *
-+ *	Fill PCI IDE PRD (scatter-gather) table with segments
-+ *	associated with the current disk command.
-+ *	Make sure hardware does not choke on it.
-+ *
-+ *	LOCKING:
-+ *	spin_lock_irqsave(host lock)
-+ *
-+ */
-+static void pdc_fill_sg(struct ata_queued_cmd *qc)
++/* called from the single-threaded workqueue handler to remove a slot */
++static void remove_slot_worker(struct work_struct *work)
 +{
-+	struct ata_port *ap = qc->ap;
-+	struct scatterlist *sg;
-+	unsigned int idx;
-+	const u32 SG_COUNT_ASIC_BUG = 41*4;
-+
-+	if (!(qc->flags & ATA_QCFLAG_DMAMAP))
-+		return;
-+
-+	WARN_ON(qc->__sg == NULL);
-+	WARN_ON(qc->n_elem == 0 && qc->pad_len == 0);
-+
-+	idx = 0;
-+	ata_for_each_sg(sg, qc) {
-+		u32 addr, offset;
-+		u32 sg_len, len;
-+
-+		/* determine if physical DMA addr spans 64K boundary.
-+		 * Note h/w doesn't support 64-bit, so we unconditionally
-+		 * truncate dma_addr_t to u32.
-+		 */
-+		addr = (u32) sg_dma_address(sg);
-+		sg_len = sg_dma_len(sg);
-+
-+		while (sg_len) {
-+			offset = addr & 0xffff;
-+			len = sg_len;
-+			if ((offset + sg_len) > 0x10000)
-+				len = 0x10000 - offset;
-+
-+			ap->prd[idx].addr = cpu_to_le32(addr);
-+			ap->prd[idx].flags_len = cpu_to_le32(len & 0xffff);
-+			VPRINTK("PRD[%u] = (0x%X, 0x%X)\n", idx, addr, len);
-+
-+			idx++;
-+			sg_len -= len;
-+			addr += len;
-+		}
-+	}
-+
-+	if (idx) {
-+		u32 len = le32_to_cpu(ap->prd[idx - 1].flags_len);
-+
-+		if (len > SG_COUNT_ASIC_BUG) {
-+			u32 addr;
-+
-+			VPRINTK("Splitting last PRD.\n");
-+
-+			addr = le32_to_cpu(ap->prd[idx - 1].addr);
-+			ap->prd[idx - 1].flags_len = cpu_to_le32(len - SG_COUNT_ASIC_BUG);
-+			VPRINTK("PRD[%u] = (0x%X, 0x%X)\n", idx - 1, addr, SG_COUNT_ASIC_BUG);
-+
-+			addr = addr + len - SG_COUNT_ASIC_BUG;
-+			len = SG_COUNT_ASIC_BUG;
-+			ap->prd[idx].addr = cpu_to_le32(addr);
-+			ap->prd[idx].flags_len = cpu_to_le32(len);
-+			VPRINTK("PRD[%u] = (0x%X, 0x%X)\n", idx, addr, len);
-+
-+			idx++;
-+		}
-+
-+		ap->prd[idx - 1].flags_len |= cpu_to_le32(ATA_PRD_EOT);
-+	}
++	struct dummy_slot *dslot =
++		container_of(work, struct dummy_slot, remove_work);
++	remove_slot(dslot);
 +}
 +
- static void pdc_qc_prep(struct ata_queued_cmd *qc)
+ /**
+  * Rescan slot.
+  * Tries hard not to re-enable already existing devices
+@@ -267,11 +282,17 @@ static inline void pci_rescan(void) {
+ 	pci_rescan_buses(&pci_root_buses);
+ }
+ 
++/* called from the single-threaded workqueue handler to rescan all pci buses */
++static void pci_rescan_worker(struct work_struct *work)
++{
++	pci_rescan();
++}
+ 
+ static int enable_slot(struct hotplug_slot *hotplug_slot)
  {
- 	struct pdc_port_priv *pp = qc->ap->private_data;
-@@ -540,7 +619,7 @@ static void pdc_qc_prep(struct ata_queue
+ 	/* mis-use enable_slot for rescanning of the pci bus */
+-	pci_rescan();
++	cancel_work_sync(&pci_rescan_work);
++	queue_work(dummyphp_wq, &pci_rescan_work);
+ 	return -ENODEV;
+ }
  
- 	switch (qc->tf.protocol) {
- 	case ATA_PROT_DMA:
--		ata_qc_prep(qc);
-+		pdc_fill_sg(qc);
- 		/* fall through */
+@@ -306,6 +327,10 @@ static int disable_slot(struct hotplug_s
+ 		err("Can't remove PCI devices with other PCI devices behind it yet.\n");
+ 		return -ENODEV;
+ 	}
++	if (test_and_set_bit(0, &dslot->removed)) {
++		dbg("Slot already scheduled for removal\n");
++		return -ENODEV;
++	}
+ 	/* search for subfunctions and disable them first */
+ 	if (!(dslot->dev->devfn & 7)) {
+ 		for (func = 1; func < 8; func++) {
+@@ -328,8 +353,9 @@ static int disable_slot(struct hotplug_s
+ 	/* remove the device from the pci core */
+ 	pci_remove_bus_device(dslot->dev);
  
- 	case ATA_PROT_NODATA:
-@@ -556,11 +635,11 @@ static void pdc_qc_prep(struct ata_queue
- 		break;
+-	/* blow away this sysfs entry and other parts. */
+-	remove_slot(dslot);
++	/* queue work item to blow away this sysfs entry and other parts. */
++	INIT_WORK(&dslot->remove_work, remove_slot_worker);
++	queue_work(dummyphp_wq, &dslot->remove_work);
  
- 	case ATA_PROT_ATAPI:
--		ata_qc_prep(qc);
-+		pdc_fill_sg(qc);
- 		break;
+ 	return 0;
+ }
+@@ -340,6 +366,7 @@ static void cleanup_slots (void)
+ 	struct list_head *next;
+ 	struct dummy_slot *dslot;
  
- 	case ATA_PROT_ATAPI_DMA:
--		ata_qc_prep(qc);
-+		pdc_fill_sg(qc);
- 		/*FALLTHROUGH*/
- 	case ATA_PROT_ATAPI_NODATA:
- 		pdc_atapi_pkt(qc);
++	destroy_workqueue(dummyphp_wq);
+ 	list_for_each_safe (tmp, next, &slot_list) {
+ 		dslot = list_entry (tmp, struct dummy_slot, node);
+ 		remove_slot(dslot);
+@@ -351,6 +378,10 @@ static int __init dummyphp_init(void)
+ {
+ 	info(DRIVER_DESC "\n");
+ 
++	dummyphp_wq = create_singlethread_workqueue(MY_NAME);
++	if (!dummyphp_wq)
++		return -ENOMEM;
++
+ 	return pci_scan_buses();
+ }
+ 
 
 -- 
