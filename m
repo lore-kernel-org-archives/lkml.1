@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbYBVRlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbYBVRn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761451AbYBVRlx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:41:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYBVRln
+	id S1760283AbYBVRn0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbYBVRnT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:41:43 -0500
-Received: from mx1.suse.de ([195.135.220.2]:57086 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:43:19 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48806 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755385AbYBVRlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:41:42 -0500
-Date: Fri, 22 Feb 2008 18:41:41 +0100
-Message-ID: <s5hbq68yjl6.wl%tiwai@suse.de>
+	id S1753821AbYBVRnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:43:17 -0500
+Date: Fri, 22 Feb 2008 18:43:16 +0100
+Message-ID: <s5hablsyjij.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 08/16] [ALSA] soc - duplicate strcasecmp test for "rj-master" in mpc8610_hpcd_probe()
+Subject: [PATCH 09/16] [ALSA] hda-codec - Fix race condition in generic bound volume/swtich controls
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,31 +26,119 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In linus' git tree I found this problem. Is it also in the alsa tree?
-please confirm it's the right fix. The patch was not yet tested.
+Attached patch fix race condition in hd_codec generic bound volume/swtich
+controls
 
-From: Roel Kluin <12o3l@tiscali.nl>
-Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
-Acked-by: Timur Tabi <timur@freescale.com>
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+oops on this bug can be easy reproduced by two mixer apps on SMP system with
+PREEMPT kernel
+
+dmesg:
+
+ ALSA /home/ss/ALSA/alsa-driver-1.0.16/pci/hda/../../alsa-kernel/pci/hda/hda_intel.c:596:
+ hda_intel: azx_get_response timeout, switching to polling mode: las
+ t cmd=0x014f0900
+ BUG: unable to handle kernel paging request at virtual address 00070006
+ printing eip: f8f43e95 *pde = 00000000
+ Oops: 0000 [#1] PREEMPT SMP
+ Modules linked in: i915 drm snd_seq_dummy snd_seq_oss snd_seq_midi_event
+ snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss bnep rfcomm hidp l2cap
+ bluetooth w
+ lan_wep acpi_cpufreq coretemp hwmon mmc_block pcspkr psmouse wlan_scan_sta
+ ath_rate_sample snd_hda_intel ath_pci serio_raw wlan tg3 sdhci snd_pcm
+ firewire_o
+ hci mmc_core i2c_i801 snd_timer firewire_core snd_page_alloc ath_hal(P)
+ snd_hwdep snd iTCO_wdt crc_itu_t iTCO_vendor_support shpchp video output
+ acer_acpi b
+ acklight led_class wmi_acer
+
+ Pid: 3969, comm: gkrellm Tainted: P        (2.6.24-jm #4)
+ EIP: 0060:[<f8f43e95>] EFLAGS: 00010292 CPU: 0
+ EIP is at snd_hda_mixer_bind_ctls_info+0x20/0x43 [snd_hda_intel]
+ EAX: 00000000 EBX: f7478e00 ECX: f763e000 EDX: f764f788
+ ESI: 00070002 EDI: edce5e00 EBP: edc3fe64 ESP: edc3fe54
+  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+ Process gkrellm (pid: 3969, ti=edc3e000 task=f1e4e000 task.ti=edc3e000)
+ Stack: f764f77c f7478e00 edce5e00 f6dd6000 edc3fe84 f8e590e8 edc7a239 f6d14034
+       f764f34c f6c0f7e0 edc3ff30 f6d14034 edc3fea8 f8e591b7 edc3ff30 edc3ff2c
+       00000000 f70aa668 f6d14034 f8e59165 bfbfadb0 edc3ff40 f8e587aa edc3ff2c
+ Call Trace:
+ [<c0104fbb>] show_trace_log_lvl+0x1a/0x2f
+ [<c010506d>] show_stack_log_lvl+0x9d/0xa5
+ [<c0105119>] show_registers+0xa4/0x1bd
+ [<c0105354>] die+0x122/0x206
+ [<c03daccc>] do_page_fault+0x535/0x623
+ [<c03d940a>] error_code+0x72/0x78
+ [<f8e590e8>] snd_mixer_oss_get_volume1_vol+0x74/0xf1 [snd_mixer_oss]
+ [<f8e591b7>] snd_mixer_oss_get_volume1+0x52/0xa5 [snd_mixer_oss]
+ [<f8e587aa>] snd_mixer_oss_ioctl1+0x673/0x71e [snd_mixer_oss]
+ [<f8e588af>] snd_mixer_oss_ioctl+0xb/0xd [snd_mixer_oss]
+ [<c017af0a>] do_ioctl+0x22/0x67
+ [<c017b186>] vfs_ioctl+0x237/0x24a
+ [<c017b1ca>] sys_ioctl+0x31/0x4b
+ [<c010402e>] syscall_call+0x7/0xb
+ =======================
+ Code: 3f 49 c7 89 f8 59 5b 5e 5f 5d c3 55 89 e5 57 89 d7 56 53 89 c3 83 ec 04
+ 8b 70 5c 8b 40 60 05 7c 01 00 00 89 45 f0 e8 c0 3f 49 c7 <8b> 46 04 89 fa 89
+ 4
+ 3 5c 89 d8 8b 0e ff 11 89 73 5c 89 c7 8b 45
+ EIP: [<f8f43e95>] snd_hda_mixer_bind_ctls_info+0x20/0x43 [snd_hda_intel]
+ SS:ESP 0068:edc3fe54
+ ---[ end trace 0a20bc209e9397cc ]---
+
+similar issue report present in ALSA bugtracking system
+https://bugtrack.alsa-project.org/alsa-bug/view.php?id=3652
+
+From: Serge A. Suchkov <Serge.A.S@tochka.ru>
+Signed-off-by: Serge A. Suchkov <Serge.A.S@tochka.ru>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/soc/fsl/mpc8610_hpcd.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ sound/pci/hda/hda_codec.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
-index f26c4b2..a00aac7 100644
---- a/sound/soc/fsl/mpc8610_hpcd.c
-+++ b/sound/soc/fsl/mpc8610_hpcd.c
-@@ -315,7 +315,7 @@ static int mpc8610_hpcd_probe(struct of_device *ofdev,
- 		machine_data->dai_format = SND_SOC_DAIFMT_LEFT_J;
- 		machine_data->codec_clk_direction = SND_SOC_CLOCK_IN;
- 		machine_data->cpu_clk_direction = SND_SOC_CLOCK_OUT;
--	} else if (strcasecmp(sprop, "rj-master") == 0) {
-+	} else if (strcasecmp(sprop, "rj-slave") == 0) {
- 		machine_data->dai_format = SND_SOC_DAIFMT_RIGHT_J;
- 		machine_data->codec_clk_direction = SND_SOC_CLOCK_OUT;
- 		machine_data->cpu_clk_direction = SND_SOC_CLOCK_IN;
+diff --git a/sound/pci/hda/hda_codec.c b/sound/pci/hda/hda_codec.c
+index 26812dc..5c6419e 100644
+--- a/sound/pci/hda/hda_codec.c
++++ b/sound/pci/hda/hda_codec.c
+@@ -1197,8 +1197,8 @@ int snd_hda_mixer_bind_ctls_info(struct snd_kcontrol *kcontrol,
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->info(kcontrol, uinfo);
+ 	kcontrol->private_value = (long)c;
+@@ -1213,8 +1213,8 @@ int snd_hda_mixer_bind_ctls_get(struct snd_kcontrol *kcontrol,
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->get(kcontrol, ucontrol);
+ 	kcontrol->private_value = (long)c;
+@@ -1230,8 +1230,8 @@ int snd_hda_mixer_bind_ctls_put(struct snd_kcontrol *kcontrol,
+ 	unsigned long *vals;
+ 	int err = 0, change = 0;
+ 
+-	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	for (vals = c->values; *vals; vals++) {
+ 		kcontrol->private_value = *vals;
+ 		err = c->ops->put(kcontrol, ucontrol);
+@@ -1251,8 +1251,8 @@ int snd_hda_mixer_bind_tlv(struct snd_kcontrol *kcontrol, int op_flag,
+ 	struct hda_bind_ctls *c;
+ 	int err;
+ 
+-	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	mutex_lock(&codec->spdif_mutex); /* reuse spdif_mutex */
++	c = (struct hda_bind_ctls *)kcontrol->private_value;
+ 	kcontrol->private_value = *c->values;
+ 	err = c->ops->tlv(kcontrol, op_flag, size, tlv);
+ 	kcontrol->private_value = (long)c;
 -- 
 1.5.3.8
 
