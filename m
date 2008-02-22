@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762341AbYBVMCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbYBVMEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762341AbYBVMCx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 07:02:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbYBVMCp
+	id S932186AbYBVMEg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 07:04:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753938AbYBVME2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 07:02:45 -0500
-Received: from wr-out-0506.google.com ([64.233.184.225]:5382 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751542AbYBVMCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 07:02:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent:from;
-        b=QAeCJVOuI0Z9U3tmz9WQGoTGGxuqGihDV9wqb3AnRa9dTHI0JbnaCC6WCIc3TcBDx9YDNAFt/M4CycoYCA7OW1Y/Q4Zy1StFDwc4h/F0dd18bIfvr99Od++TuSA9sGJZwCwGltXoOeRuQYe59XSrGd9AAJ4Nkx67voJuuHv/Gbc=
-Date: Fri, 22 Feb 2008 15:02:33 +0300
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] tags: add menuconfig symbols as well
-Message-ID: <20080222120233.GA2262@martell.zuzino.mipt.ru>
-MIME-Version: 1.0
+	Fri, 22 Feb 2008 07:04:28 -0500
+Received: from ns2.suse.de ([195.135.220.15]:60713 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753035AbYBVME1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 07:04:27 -0500
+Date: Fri, 22 Feb 2008 13:04:12 +0100
+From: Karsten Keil <kkeil@suse.de>
+To: Simon Richter <sjr@debian.org>
+Cc: Tilman Schmidt <tilman@imap.cc>, Jeff Garzik <jeff@garzik.org>,
+       kkeil@suse.de, Greg KH <greg@kroah.com>,
+       Gregory Nietsky <gregory@networksentry.co.za>,
+       linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+       isdn4linux@listserv.isdn4linux.de, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: Plans for mISDN? Was: [PATCH 00/14] [ISDN] ...
+Message-ID: <20080222120412.GA11916@pingi.kke.suse.de>
+Mail-Followup-To: Simon Richter <sjr@debian.org>,
+	Tilman Schmidt <tilman@imap.cc>, Jeff Garzik <jeff@garzik.org>,
+	kkeil@suse.de, Greg KH <greg@kroah.com>,
+	Gregory Nietsky <gregory@networksentry.co.za>,
+	linux-kernel@vger.kernel.org, Andi Kleen <andi@firstfloor.org>,
+	isdn4linux@listserv.isdn4linux.de, Sam Ravnborg <sam@ravnborg.org>
+References: <098123kjff90231nv098233rnvd908u234@garzik.org> <20080217195235.GN14588@uranus.ravnborg.org> <20080218045209.GA15141@kroah.com> <p73zltyxy9q.fsf@bingen.suse.de> <20080219085033.GA1775@uranus.ravnborg.org> <47BAA072.9050601@networksentry.co.za> <47BC370F.3000705@imap.cc> <47BD5360.5070706@debian.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <47BD5360.5070706@debian.org>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.53-0.16-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steps to reproduce:
+Hi,
 
-	vi -t NETFILTER
+sorry that I step in so late, procmail sorted this thread in the wrong
+box.
+Normally I reserved the complete last week for working on mISDN to get it
+ready to submit it to -mm, but reality did hit me and I had to do some
+other importent stuff :-(
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+On Thu, Feb 21, 2008 at 11:33:04AM +0100, Simon Richter wrote:
+> Hi,
+> 
+> Tilman Schmidt wrote:
+> 
+> > mISDN has two problems, which are of course interrelated:
+> 
+> mISDN has one problem that is even bigger than these: the kernel oopses 
+> if modules aren't loaded in the right order. misdn-init works around 
+> that, but if it doesn't work for some reason (and I can think of 
+> multiple here), the user is left with a kernel that oopses during 
+> hardware discovery and never gets to a stage where this can be 
+> rectified, as almost all distributions now have hardware discovery 
+> before the first opportunity to get a shell. At least these were my 
+> experiences the last time I tried it on my test box.
+> 
+> This is the reason I've kept mISDN out of the last two Debian stable 
+> releases, despite users' requests.
+> 
+> When a hardware driver module is loaded, it should only do basic 
+> hardware initialisation; it is certainly not necessary to set up the 
+> entire stack (or even decide on a protocol, which currently needs to be 
+> handed in via module parameter -- before userland code is there that 
+> wants to talk to the hardware, there is no reason to have the hardware 
+> active).
+> 
 
- Makefile |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+These design issues are fixed in the new mISDN socket branch.
+The old mISDN design was too complicated because it allow access to
+every layer and build the ISDN stack dynamically, both feature were never
+needed in practice and contain many race conditions.
+The new design only has one core module and hardware specific modules
+with a very simple interface.
+The interface to the userspace are sockets (one per channel).
 
---- a/Makefile
-+++ b/Makefile
-@@ -1396,7 +1396,7 @@ define xtags
- 	    $(all-kconfigs) | xargs $1 -a \
- 		--langdef=kconfig \
- 		--language-force=kconfig \
--		--regex-kconfig='/^[[:blank:]]*config[[:blank:]]+([[:alnum:]_]+)/\1/'; \
-+		--regex-kconfig='/^[[:blank:]]*(menu|)config[[:blank:]]+([[:alnum:]_]+)/\2/'; \
- 	    $(all-defconfigs) | xargs -r $1 -a \
- 		--langdef=dotconfig \
- 		--language-force=dotconfig \
-@@ -1404,7 +1404,7 @@ define xtags
- 	elif $1 --version 2>&1 | grep -iq emacs; then \
- 	    $(all-sources) | xargs $1 -a; \
- 	    $(all-kconfigs) | xargs $1 -a \
--		--regex='/^[ \t]*config[ \t]+\([a-zA-Z0-9_]+\)/\1/'; \
-+		--regex='/^[ \t]*(menu|)config[ \t]+\([a-zA-Z0-9_]+\)/\2/'; \
- 	    $(all-defconfigs) | xargs -r $1 -a \
- 		--regex='/^#?[ \t]?\(CONFIG_[a-zA-Z0-9_]+\)/\1/'; \
- 	else \
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
