@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbYBVSA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbYBVSBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758968AbYBVSA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 13:00:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754969AbYBVSAH
+	id S1755813AbYBVSBB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 13:01:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760544AbYBVSAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 13:00:07 -0500
-Received: from mx2.compro.net ([216.54.166.4]:63643 "EHLO mx2.compro.net"
+	Fri, 22 Feb 2008 13:00:50 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:40928 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754856AbYBVSAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 13:00:04 -0500
-X-IronPort-AV: E=Sophos;i="4.25,392,1199682000"; 
-   d="scan'208";a="1745709"
-Message-ID: <47BF0CE2.306@compro.net>
-Date: Fri, 22 Feb 2008 12:56:50 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	id S1759223AbYBVSAt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 13:00:49 -0500
+Message-ID: <47BF0DCD.4060400@garzik.org>
+Date: Fri, 22 Feb 2008 13:00:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Mike Christie <michaelc@cs.wisc.edu>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu> <47BEFF5F.9020002@cs.wisc.edu>
-In-Reply-To: <47BEFF5F.9020002@cs.wisc.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Anders Eriksson <aeriksson@fastmail.fm>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: 2.6.25-rc2 + smartd = hang
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org>
+In-Reply-To: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Christie wrote:
-> Mike Christie wrote:
->> Mark Hounschell wrote:
->>> I seem to have run into some sort of regression in the SG_IO
->>> interface of 2.6.24.2. I have an application that up until 2.6.24
->>> worked fine. The 2.6.23.16 kernel works fine.
->>>
->>> During reads I get these kernel messages. Writes and other functions
->>> _seem_ OK. Actually basic
->>> reads  are working. Its with large BC reads using an io_vec list that
->>> the problem shows up.
->>>
->>
->> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
->> (/dev/sdX)?
+Anders Eriksson wrote:
+> Hi,
 > 
-> If you are doing SG_IO to the sg device, then I know of one regression
-> (well not regression exactly, but I fixed a bug but the patch got
-> partially overwritten by another patch and that caused a new bug). Both
-> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
-> SG_IO to the sg device.
+> Trying out 2.6.25-rc2 smartd always causes my box to hang. I can switch 
+> vt:s and the keyboard seems to work.
 > 
+> Using sysrq-e I noticed a callpath open -> ext3 -> journals -> sync_buffer -> 
+> io_scheduel -> generic_unplig_device.
+> 
+> I'd guess the open stems from smartd. Removing smartd from the startup, I'm 
+> now using rc2 fine...
+> 
+> I got a nice jpg showing it as well.
 
-Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
+The sysrq-e output is probably just standard ext3 journalling unrelated 
+to the problem...  what does dmesg say?  lspci?  What's your hardware setup?
 
-Thanks
-Mark
+	Jeff
+
+
+
