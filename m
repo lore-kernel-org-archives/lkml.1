@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763809AbYBVHEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbYBVHLA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763809AbYBVHEw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 02:04:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYBVHEn
+	id S1764051AbYBVHLA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 02:11:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753945AbYBVHKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 02:04:43 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:54355 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751715AbYBVHEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 02:04:42 -0500
-Date: Fri, 22 Feb 2008 18:04:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Frank Seidel <fseidel@suse.de>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for Feb 22
-Message-Id: <20080222180438.6b98ef9b.sfr@canb.auug.org.au>
-In-Reply-To: <47BE6F2E.4080704@suse.de>
-References: <20080222170421.9e17d143.sfr@canb.auug.org.au>
-	<47BE6F2E.4080704@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__22_Feb_2008_18_04_38_+1100_T7vg4kR6NnjcscaK"
+	Fri, 22 Feb 2008 02:10:49 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:47504 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753342AbYBVHKs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 02:10:48 -0500
+Message-ID: <47BE7463.9040706@linux.vnet.ibm.com>
+Date: Fri, 22 Feb 2008 12:36:11 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
+MIME-Version: 1.0
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       akpm@osdl.org, torvalds@osdl.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH] Document huge memory/cache overhead of memory controller
+ in Kconfig
+References: <20080220122338.GA4352@basil.nowhere.org> <47BC2275.4060900@linux.vnet.ibm.com> <200802211535.38932.nickpiggin@yahoo.com.au> <47BD546B.1050504@firstfloor.org> <47BD5A85.5010401@linux.vnet.ibm.com> <20080222155916.9cc4ca6e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20080222155916.9cc4ca6e.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__22_Feb_2008_18_04_38_+1100_T7vg4kR6NnjcscaK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+KAMEZAWA Hiroyuki wrote:
+> On Thu, 21 Feb 2008 16:33:33 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+>>> Another issue is that it will slightly increase TLB/cache
+>>> cost of the memory controller, but I think that would be a fair
+>>> trade off for it being zero cost when disabled but compiled
+>>> in.
+>>>
+>>> Doing it with vmalloc should be easy enough. I can do such
+>>> a patch later unless someone beats me to it...
+>>>
+>> I'll get to it, but I have too many things on my plate at the moment. KAMEZAWA
+>> also wanted to look at it. I looked through some vmalloc() internals yesterday
+>> and I am worried about allocating all the memory on a single node in a NUMA
+>> system and changing VMALLOC_XXXX on every architecture to provide more vmalloc
+>> space. I might be missing something obvious.
+>>
+> 
+> I'll post a series of patch to do that later (it's under debug now...)
+> I'm glad if people (including you) look it and give me advices.
+> 
 
-Hi Frank,
+Thank you so much for your help. I'll definitely look at it and review/test them.
 
-On Fri, 22 Feb 2008 07:43:58 +0100 Frank Seidel <fseidel@suse.de> wrote:
->
-> at least the bz2 tar i just looked at from that URL has a problem
-> with the prefix resulting to this toplevel extraction:
->=20
-> next-20080222arch
-> next-20080222block
-> ...
-> next-20080222virt
->=20
-> So, i guess you just missed the trailing slash for the prefix
-> parameter of git archive?
-> (should be --prefix=3Dnext-20080222/ afaik)
-
-Indeed.  Thanks. I am regenerating them now.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__22_Feb_2008_18_04_38_+1100_T7vg4kR6NnjcscaK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHvnQJTgG2atn1QN8RAjLQAKCD5xdsdrtk3JPH66kMZNKJ0Z4CdgCdFuCK
-O0+tIMtRrOkjyZuz9sJud84=
-=Kwys
------END PGP SIGNATURE-----
-
---Signature=_Fri__22_Feb_2008_18_04_38_+1100_T7vg4kR6NnjcscaK--
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
