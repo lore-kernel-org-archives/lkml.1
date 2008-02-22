@@ -1,84 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932685AbYBVEl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934116AbYBVElz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932685AbYBVEl1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 23:41:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758401AbYBVElT
+	id S934116AbYBVElz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 23:41:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758565AbYBVEll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 23:41:19 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54671 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758191AbYBVElS (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 23:41:18 -0500
-Date: Fri, 22 Feb 2008 15:41:12 +1100
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.25-rc3
-User-Agent: nail 11.25 7/29/05
+	Thu, 21 Feb 2008 23:41:41 -0500
+Received: from kuber.nabble.com ([216.139.236.158]:55081 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758401AbYBVElk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 23:41:40 -0500
+Message-ID: <15627654.post@talk.nabble.com>
+Date: Thu, 21 Feb 2008 20:41:39 -0800 (PST)
+From: zzCherring <zzjolin2005@hotmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: how to setup struct bio
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <20080222044112.9A2C658C4C0F@chook.melbourne.sgi.com>
-From: lachlan@sgi.com (Lachlan McIlroy)
+X-Nabble-From: zzjolin2005@hotmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from the for-linus branch:
-    git pull git://oss.sgi.com:8090/xfs/xfs-2.6.git for-linus
 
-This will update the following files:
+Hi,
+I am having problem reading first several blocks from disk(/dev/sda1, for
+example). Not sure if it is because i am not doing correctly as to creating
+struct bio, filling its fields and sending it down to block device, or it is
+because there are certain rools which prevent the first couple of blocks of
+disk from being read out, which sounds ridiculous.
 
- fs/xfs/Kbuild             |    6 --
- fs/xfs/Makefile           |  118 ++++++++++++++++++++++++++++++++++++++++++++-
- fs/xfs/Makefile-linux-2.6 |  117 --------------------------------------------
- 3 files changed, 117 insertions(+), 124 deletions(-)
- delete mode 100644 fs/xfs/Kbuild
+Following is how i am doing it now,
 
-through these commits:
+Thanks.
 
-commit 269cdfaf769f5cd831284cc831790c7c5038040f
-Author: Lachlan McIlroy <lachlan@redback.melbourne.sgi.com>
-Date:   Wed Nov 28 18:28:09 2007 +1100
 
-    [XFS] Added quota targets and removed dmapi directory
-    
-    Fixes build failures introduced by bad merge to mainline.
+// used in completion routine, trying to sync back to the calling //thread.
+struct __io_complete_d
+{
+wait_queue_head_t whead;
 
-commit 794f744b225aaf35742aac9e7b9dda96a9943413
-Author: Eric Sandeen <sandeen@sandeen.net>
-Date:   Tue Nov 27 16:59:56 2007 +1100
+unsigned int err;
+unsigned int len;
+unsigned int flags;
+};
 
-    [XFS] Fix up xfs out-of-tree builds. (a.k.a. external modules)
-    
-    Change -I include directives to find headers in the out-of-tree spot. This
-    allows a directory containing only xfs files to be built as:
-    
-    SGI-PV: 971186
-    SGI-Modid: xfs-linux-melb:xfs-kern:29878a
-    
-    Signed-off-by: Eric Sandeen <sandeen@sandeen.net>
-    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+// completion routine
+int io_complete_r( struct bio *b, unsigned int n, int err )
+{
+struct __io_complete_d *icd = 0;
 
-commit 58b7983d15a422d9616bdc4e245d5c31dfaefbe2
-Author: Andi Kleen <ak@suse.de>
-Date:   Tue Nov 27 16:53:47 2007 +1100
+if( b != 0 )
+{
+if( b->bi_private )
+{
+icd = ( struct __io_complete_d *)b->bi_private;
+icd->err = err;
+icd->len = n;
+icd->flags = 1;
+wake_up(&icd->whead);
+}
 
-    [XFS] Remove Makefile wrappers in XFS
-    
-    Makefile (and Kbuild) would include Makefile-linux-26 I doubt XFS will
-    really still compile on 2.4; so drop that. This moves Makefile-linux-26
-    into Makefile and drops Kbuild. Also having wrappers as both Kbuild and
-    Makefile seemed redundant anyways.
-    
-    The patch is relatively large because it renames a file, but no functional
-    changes.
-    
-    SGI-PV: 971050
-    SGI-Modid: xfs-linux-melb:xfs-kern:29781a
-    
-    Signed-off-by: Andi Kleen <ak@suse.de>
-    Signed-off-by: Donald Douwsma <donaldd@sgi.com>
-    Signed-off-by: Tim Shimmin <tes@sgi.com>
-    Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
+if( b->bi_destructor ) b->bi_destructor(b);
+}
+
+return err;
+}
+
+// alloc page, send bio down to block device
+struct page * read_from_disk(
+struct block_device *bdev,
+void *d,
+bio_end_io_t *io_complete,
+sector_t sect_off,
+unsigned int od
+)
+{
+struct bio *b = 0;
+struct page *pg = 0;
+
+if( bdev == 0 ) return 0;
+
+// having tried alloc_pages(as it is a macro), but failed somehow
+pg = __alloc_pages(GFP_KERNEL, od, contig_page_data.node_zonelists +
+(GFP_KERNEL & GFP_ZONEMASK));
+
+if( pg )
+{
+b = bio_alloc(GFP_KERNEL, 1);
+if( b == 0)
+{
+__free_pages( pg, od);
+pg = 0;
+
+return 0;
+}
+
+b->bi_sector = sect_off;
+b->bi_next = 0;
+b->bi_bdev = bdev;
+b->bi_end_io = io_complete;
+
+b->bi_private = d;
+
+bio_add_page( b, pg, PAGE_SIZE << od, 0 );
+
+submit_bio(0, b);
+
+}
+
+return pg;
+}
+
+// example using read_from_disk
+void example(
+struct block_device *bdev,
+unsigned int nblocks
+)
+{
+struct __io_complete_d *icd = 0;
+struct page *pg = 0;
+
+if( bdev == 0 )
+{
+return 0;
+}
+
+icd = kmalloc( GFP_KERNEL, sizeof(struct __io_complete_d));
+if(icd == 0)
+{
+goto __end;
+}
+
+memset( icd, 0, sizeof(struct __io_complete_d));
+icd->flags = 0;
+init_waitqueue_head( &icd->whead);
+
+pg = read_from_disk( bdev, icd, io_complete_r, nblock * BLOCK_SIZE
+/SECT_SIZE, 0 );
+if( pg == 0 ) goto __end;
+
+wait_event( icd->whead, icd->flags != 0 );
+
+if(icd->err == 0)
+{
+// After successfully reading from disk
+
+}
+//.....
+
+_end:
+if(icd)
+{
+kfree(icd);
+}
+if(pg)
+{
+__free_pages(pg, 0);
+}
+
+}
+-- 
+View this message in context: http://www.nabble.com/how-to-setup-struct-bio-tp15627654p15627654.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
+
