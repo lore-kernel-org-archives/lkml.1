@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934060AbYBVUFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbYBVUF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934060AbYBVUFQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbYBVT7t
+	id S1759826AbYBVUF5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:05:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932079AbYBVT7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:59:49 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52710 "EHLO smtp5.pp.htv.fi"
+	Fri, 22 Feb 2008 14:59:55 -0500
+Received: from smtp6.pp.htv.fi ([213.243.153.40]:34224 "EHLO smtp6.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763014AbYBVT7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:59:32 -0500
-Date: Fri, 22 Feb 2008 21:58:43 +0200
+	id S932403AbYBVT7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:59:53 -0500
+Date: Fri, 22 Feb 2008 21:59:05 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] make struct mempolicy.c:default_policy static
-Message-ID: <20080222195843.GJ1409@cs181133002.pp.htv.fi>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: clameter@sgi.com, mpm@selenic.com,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [2.6 patch] mm/slub.c: remove unneeded NULL check
+Message-ID: <20080222195905.GM1409@cs181133002.pp.htv.fi>
+References: <20080219224922.GO31955@cs181133002.pp.htv.fi> <6f8gTuy3.1203515564.2078250.penberg@cs.helsinki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <6f8gTuy3.1203515564.2078250.penberg@cs.helsinki.fi>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patc makes the needlessly global struct default_policy static.
+On Wed, Feb 20, 2008 at 03:52:44PM +0200, Pekka Enberg wrote:
+> 
+> Hi Adrian,
+> 
+> On 2/20/2008, "Adrian Bunk" <bunk@kernel.org> wrote:
+> > The Coverity checker spotted the following inconsequent NULL checking
+> > introduced by commit 8ff12cfc009a2a38d87fa7058226fe197bb2696f:
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> > static inline int is_end(void *addr)
+> > {
+> >         return (unsigned long)addr & PAGE_MAPPING_ANON;
+> > }
+> > ...
+> > static void deactivate_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
+> > {
+> > ...
+> >         if (c->freelist)    <----------------------------------------
+> >                 stat(c, DEACTIVATE_REMOTE_FREES);
+> 
+> I spotted this too.
+
+I missed that.
+
+> c->freelist should never be NULL so why not send a
+> patch to Christoph?
+
+Patch below.
+
+cu
+Adrian
+
+
+<--  snip  -->
+
+
+There's no reason for checking c->freelist for being NULL here (and we'd 
+anyway Oops below if it was).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-4a69fc08292ebe8b7d202436a71926950a980c21 diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-index 59c4865..fd20b03 100644
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -149,7 +149,6 @@ extern void mpol_rebind_task(struct task_struct *tsk,
- extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
- extern void mpol_fix_fork_child_flag(struct task_struct *p);
+dae2a3c60f258f3ad2522b85d79b735a89d702f0 diff --git a/mm/slub.c b/mm/slub.c
+index 74c65af..072e0a6 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1404,8 +1404,7 @@ static void deactivate_slab(struct kmem_cache *s, struct kmem_cache_cpu *c)
+ 	struct page *page = c->page;
+ 	int tail = 1;
  
--extern struct mempolicy default_policy;
- extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
- 		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol);
- extern unsigned slab_node(struct mempolicy *policy);
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 6c7ba1a..f3118a8 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -105,7 +105,7 @@ static struct kmem_cache *sn_cache;
-    policied. */
- enum zone_type policy_zone = 0;
- 
--struct mempolicy default_policy = {
-+static struct mempolicy default_policy = {
- 	.refcnt = ATOMIC_INIT(1), /* never free it */
- 	.policy = MPOL_DEFAULT,
- };
-
+-	if (c->freelist)
+-		stat(c, DEACTIVATE_REMOTE_FREES);
++	stat(c, DEACTIVATE_REMOTE_FREES);
+ 	/*
+ 	 * Merge cpu freelist into freelist. Typically we get here
+ 	 * because both freelists are empty. So this is unlikely
