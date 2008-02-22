@@ -1,115 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936644AbYBVA6a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964897AbYBVA7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936644AbYBVA6a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:58:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933470AbYBVA6G
+	id S964897AbYBVA7K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:59:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbYBVA6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:58:06 -0500
-Received: from phunq.net ([64.81.85.152]:50682 "EHLO moonbase.phunq.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934859AbYBVA6D convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:58:03 -0500
-From: Daniel Phillips <phillips@phunq.net>
-To: David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-Date: Thu, 21 Feb 2008 16:57:00 -0800
-User-Agent: KMail/1.9.5
-Cc: Trond.Myklebust@netapp.com, chuck.lever@oracle.com, casey@schaufler-ca.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, selinux@tycho.nsa.gov,
-       linux-security-module@vger.kernel.org
-References: <200802211444.04986.phillips@phunq.net> <28196.1203605703@redhat.com> <18063.1203638861@redhat.com>
-In-Reply-To: <18063.1203638861@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Content-Disposition: inline
-Message-Id: <200802211657.01704.phillips@phunq.net>
+	Thu, 21 Feb 2008 19:58:52 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:42687 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1754093AbYBVA6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:58:51 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Fri, 22 Feb 2008 11:58:19 +1100
+Message-ID: <20080222-114832-init-kconfig-8@tull.net>
+From: Nick Andrew <nick@nick-andrew.net>
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
+       Serge Hallyn <serue@us.ibm.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Subject: [PATCH 2.6.25-rc2 8/9] Kconfig: Improve init/Kconfig help descriptions - SLAB
+References: <20080219140609.GA26619@tull.net>
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 21 February 2008 16:07, David Howells wrote:
-> The way the client works is like this:
+Rewrite the help descriptions for clarity, accuracy and consistency.
 
-Thanks for the excellent ascii art, that cleared up the confusion right
-away.
+Kernel config options affected:
 
-> What are you trying to do exactly?  Are you actually playing with it, or just
-> looking at the numbers I've produced?
+  - SLUB_DEBUG
+  - SLAB
+  - SLUB
+  - SLOB
 
-Trying to see if you are offering enough of a win to justify testing it,
-and if that works out, then going shopping for a bin of rotten vegetables
-to throw at your design, which I hope you will perceive as useful.
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+---
+Try #3.
 
-In short I am looking for a reason to throw engineering effort at it.
->From the numbers you have posted I think you are missing some basic
-efficiencies that could take this design from the sorta-ok zone to wow!
-
-I think you may already be in the wow zone for taking load off a server
-and I know of applications where an NFS server gets hammered so badly
-that having the client suck a little in the unloaded case is a price
-worth paying.  But the whole idea would be much more attractive if the
-regressions were smaller.
-
-> > Who is supposed to win big?  Is this mainly about reducing the load on 
-> > the server, or is the client supposed to win even with a lightly loaded 
-> > server?
-> 
-> These are difficult questions to answer.  The obvious answer to both is "it
-> depends", and the real answer to both is "it's a compromise".
-> 
-> Inserting a cache adds overhead: you have to look in the cache to see if your
-> objects are mirrored there, and then you have to look in the cache to see if
-> the data you want is stored there; and then you might have to go to the server
-> anyway and then schedule a copy to be stored in the cache.
-
-But looking up the object in the cache should be nearly free - much less
-than a microsecond per block.  If not then there are design issues.  I
-suspect that you are doing yourself a disservice by going all the way
-through the vfs to do this cache lookup, but this needs to be proved.
-
-> The characteristics of this type of cache depend on a number of things: the
-> filesystem backing it being the most obvious variable, but also how fragmented
-> it is and the properties of the disk drive or drives it is on.
-
-Double caching and vm unawareness of that has to hurt.
-
-> The metadata problem is quite a tricky one since it increases with the number
-> of files you're dealing with.  As things stand in my patches, when NFS, for
-> example, wants to access a new inode, it first has to go to the server to
-> lookup the NFS file handle, and only then can it go to the cache to find out if
-> there's a matching object in the case.
-
-So without the persistent cache it can omit the LOOKUP and just send the
-filehandle as part of the READ?
-
-> Worse, the cache must then perform 
-> several synchronous disk bound metadata operations before it can be possible to
-> read from the cache.  Worse still, this means that a read on the network file
-> cannot proceed until (a) we've been to the server *plus* (b) we've been to the
-> disk.
-> 
-> The reason my client going to my server is so quick is that the server has the 
-> dcache and the pagecache preloaded, so that across-network lookup operations
-> are really, really quick, as compared to the synchronous slogging of the local
-> disk to find the cache object.
-
-Doesn't that just mean you have to preload the lookup table for the
-persistent cache so you can determine whether you are caching the data
-for a filehandle without going to disk?
-
-> I can probably improve this a little by pre-loading the subindex directories
-> (hash tables) that I use to reduce the directory size in the cache, but I don't
-> know by how much.
-
-Ah I should have read ahead.  I think the correct answer is "a lot".
-Your big can-t-get-there-from-here is the round trip to the server to
-determine whether you should read from the local cache.  Got any ideas?
-
-And where is the Trond-meister in all of this?
-
-Regards,
-
-Daniel
+--- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
++++ b/init/Kconfig	2008-02-20 09:50:54.000000000 +1100
+@@ -683,31 +683,48 @@ config SLUB_DEBUG
+ 	bool "Enable SLUB debugging support" if EMBEDDED
+ 	depends on SLUB
+ 	help
++	  Enable debugging on the "SLUB" slab allocator.
++
+ 	  SLUB has extensive debug support features. Disabling these can
+ 	  result in significant savings in code size. This also disables
+ 	  SLUB sysfs support. /sys/slab will not exist and there will be
+ 	  no support for cache validation etc.
+ 
++	  If unsure, say N.
++
+ choice
+ 	prompt "Choose SLAB allocator"
+ 	default SLUB
+ 	help
+-	   This option allows to select a slab allocator.
++	   This option selects a slab allocator.
++
++	   A slab is a contiguous area of kernel memory. Slabs are of
++	   fixed size (1 or more times the page size) and are used as
++	   the container for allocation of kernel data structures. This
++	   reduces memory fragmentation and makes allocation very fast,
++	   improving kernel performance.
++
++	   "SLUB" is the default slab allocator.
++
++	   See wikipedia:Slab_allocation for more details.
+ 
+ config SLAB
+ 	bool "SLAB"
+ 	help
+-	  The regular slab allocator that is established and known to work
+-	  well in all environments. It organizes cache hot objects in
+-	  per cpu and per node queues. SLAB is the default choice for
+-	  a slab allocator.
++	  SLAB is the original slab allocator that is established and
++	  known to work well in all environments. It organizes cache
++	  hot objects in per-CPU and per-node queues.
++
++	  SLAB has been superseded by SLUB.
+ 
+ config SLUB
+ 	bool "SLUB (Unqueued Allocator)"
+ 	help
+ 	   SLUB is a slab allocator that minimizes cache line usage
+-	   instead of managing queues of cached objects (SLAB approach).
+-	   Per cpu caching is realized using slabs of objects instead
++	   instead of managing queues of cached objects (the SLAB
++	   approach).
++
++	   Per-CPU caching is realized using slabs of objects instead
+ 	   of queues of objects. SLUB can use memory efficiently
+ 	   and has enhanced diagnostics.
+ 
+@@ -715,9 +732,11 @@ config SLOB
+ 	depends on EMBEDDED
+ 	bool "SLOB (Simple Allocator)"
+ 	help
+-	   SLOB replaces the stock allocator with a drastically simpler
+-	   allocator. SLOB is generally more space efficient but
+-	   does not perform as well on large systems.
++	   SLOB is a drastically simpler allocator for use in embedded
++	   systems.
++
++	   SLOB is generally more space efficient but does not perform
++	   as well on large systems.
+ 
+ endchoice
+ 
