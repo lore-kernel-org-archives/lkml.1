@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbYBVUEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934060AbYBVUFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933886AbYBVUEm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932295AbYBVT7r
+	id S934060AbYBVUFQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:05:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932367AbYBVT7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:59:47 -0500
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:44833 "EHLO smtp4.pp.htv.fi"
+	Fri, 22 Feb 2008 14:59:49 -0500
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:52710 "EHLO smtp5.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932067AbYBVT7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:59:36 -0500
-Date: Fri, 22 Feb 2008 21:58:47 +0200
+	id S1763014AbYBVT7c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:59:32 -0500
+Date: Fri, 22 Feb 2008 21:58:43 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Greg KH <greg@kroah.com>
-Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-kernel@vger.kernel.org,
-       linux-pci@atrey.karlin.mff.cuni.cz
-Subject: [2.6 patch] pci/pcie/aer/aerdrv_acpi.c: remove unneeded NULL check
-Message-ID: <20080222195847.GK1409@cs181133002.pp.htv.fi>
-References: <20080219192902.GD31955@cs181133002.pp.htv.fi> <20080220054758.GB31832@kroah.com> <20080220075628.GD31955@cs181133002.pp.htv.fi> <20080220160935.GA2658@kroah.com>
+To: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make struct mempolicy.c:default_policy static
+Message-ID: <20080222195843.GJ1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080220160935.GA2658@kroah.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 20, 2008 at 08:09:35AM -0800, Greg KH wrote:
-> On Wed, Feb 20, 2008 at 09:56:28AM +0200, Adrian Bunk wrote:
-> > On Tue, Feb 19, 2008 at 09:47:58PM -0800, Greg KH wrote:
-> > > On Tue, Feb 19, 2008 at 09:29:02PM +0200, Adrian Bunk wrote:
-> > > > The Coverity checker spotted the following inconsequent NULL checking 
-> > > > introduced by commit 3c75e23784e6ed5f4841de43d0750fd9b37bafcb:
-> > > > 
-> > > > <--  snip  -->
-> > > > 
-> > > > ...
-> > > > int aer_osc_setup(struct pcie_device *pciedev)
-> > > > {
-> > > > ...            vvvvvvvvv
-> > > >         while (pdev->bus && pdev->bus->self)
-> > > >                 pdev = pdev->bus->self;
-> > > 
-> > > That could probably change to just pdev->bus->self, as a bus should
-> > > always be there for a pdev, so I don't see this as a problem.
-> > 
-> > I'm not claiming this specific case was a problem.
-> 
-> Well, Coverity did :)
-
-It only said it's once checked and once not.
-
-> > When a NULL check is only performed in some cases that's sometimes a bug 
-> > that has to be fixed and in most cases a not required check that should 
-> > be removed at some point in time.
-> 
-> I agree, patches are always welcome...
-
-Patch below.
-
-> thanks,
-> 
-> greg k-h
-
-cu
-Adrian
-
-
-<--  snip  -->
-
-
-There's no reason for checking pdev->bus for being NULL here (and we'd 
-anyway Oops 3 lines below if it was).
+This patc makes the needlessly global struct default_policy static.
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-74832021c82be6e2ed6055f4f25dbf152df67cf5 diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
-index 8c199ae..1e2a858 100644
---- a/drivers/pci/pcie/aer/aerdrv_acpi.c
-+++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
-@@ -34,7 +34,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
- 	acpi_handle handle = 0;
+4a69fc08292ebe8b7d202436a71926950a980c21 diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
+index 59c4865..fd20b03 100644
+--- a/include/linux/mempolicy.h
++++ b/include/linux/mempolicy.h
+@@ -149,7 +149,6 @@ extern void mpol_rebind_task(struct task_struct *tsk,
+ extern void mpol_rebind_mm(struct mm_struct *mm, nodemask_t *new);
+ extern void mpol_fix_fork_child_flag(struct task_struct *p);
  
- 	/* Find root host bridge */
--	while (pdev->bus && pdev->bus->self)
-+	while (pdev->bus->self)
- 		pdev = pdev->bus->self;
- 	handle = acpi_get_pci_rootbridge_handle(
- 		pci_domain_nr(pdev->bus), pdev->bus->number);
+-extern struct mempolicy default_policy;
+ extern struct zonelist *huge_zonelist(struct vm_area_struct *vma,
+ 		unsigned long addr, gfp_t gfp_flags, struct mempolicy **mpol);
+ extern unsigned slab_node(struct mempolicy *policy);
+diff --git a/mm/mempolicy.c b/mm/mempolicy.c
+index 6c7ba1a..f3118a8 100644
+--- a/mm/mempolicy.c
++++ b/mm/mempolicy.c
+@@ -105,7 +105,7 @@ static struct kmem_cache *sn_cache;
+    policied. */
+ enum zone_type policy_zone = 0;
+ 
+-struct mempolicy default_policy = {
++static struct mempolicy default_policy = {
+ 	.refcnt = ATOMIC_INIT(1), /* never free it */
+ 	.policy = MPOL_DEFAULT,
+ };
 
