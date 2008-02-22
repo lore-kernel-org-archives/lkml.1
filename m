@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936573AbYBVWbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933749AbYBVWfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936573AbYBVWbf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758060AbYBVWbU
+	id S933749AbYBVWfZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:35:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754579AbYBVWfK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:31:20 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:41650 "EHLO smtps.tip.net.au"
+	Fri, 22 Feb 2008 17:35:10 -0500
+Received: from mx1.suse.de ([195.135.220.2]:55042 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757439AbYBVWbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:31:18 -0500
-Date: Sat, 23 Feb 2008 09:31:06 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mark Fasheh <mark.fasheh@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Ocfs2 patches for linux-next
-Message-Id: <20080223093106.dc2179a1.sfr@canb.auug.org.au>
-In-Reply-To: <20080222204256.GG27865@ca-server1.us.oracle.com>
-References: <20080222204256.GG27865@ca-server1.us.oracle.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.8; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__23_Feb_2008_09_31_06_+1100_pjocH=yMwRWagEPd"
+	id S1751516AbYBVWfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 17:35:08 -0500
+Date: Fri, 22 Feb 2008 14:32:52 -0800
+From: Greg KH <gregkh@suse.de>
+To: Oliver Pinter <oliver.pntr@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/23] 2.6.22-stable review
+Message-ID: <20080222223252.GA19799@suse.de>
+References: <20080222213927.GA8686@suse.de> <20080222214416.GA8879@suse.de> <6101e8c40802221403m3f6974a4le09b5c86f6b2ccfd@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6101e8c40802221403m3f6974a4le09b5c86f6b2ccfd@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__23_Feb_2008_09_31_06_+1100_pjocH=yMwRWagEPd
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Feb 22, 2008 at 11:03:02PM +0100, Oliver Pinter wrote:
+> ok, thanks, when i find requied patch for 2.6.22.y, then i'm send it.
 
-Hi Mark,
+Hm, no, I really don't want to do a .22 release after this next one.  We
+already have a .23 and .24 -stable releases going, I don't have the time
+or energy to keep .22 running as well.
 
-On Fri, 22 Feb 2008 12:42:56 -0800 Mark Fasheh <mark.fasheh@oracle.com> wro=
-te:
->
-> Here's another git tree to add to linux-next.
->=20
-> Ocfs2 cluster file system:
->=20
-> git://git.kernel.org/pub/scm/linux/kernel/git/mfasheh/ocfs2.git linux-next
+It had a nice long life, it's time to just let it go :)
 
-Added, thanks.
+thanks,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__23_Feb_2008_09_31_06_+1100_pjocH=yMwRWagEPd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFHv002TgG2atn1QN8RApJTAJ9QsxbFQ9yaJssae4ejFxlkZRmApQCfRc09
-Vg9A5+u3VC+1czhYJFmZVRA=
-=WJlW
------END PGP SIGNATURE-----
-
---Signature=_Sat__23_Feb_2008_09_31_06_+1100_pjocH=yMwRWagEPd--
+greg k-h
