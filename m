@@ -1,147 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936094AbYBVAwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762974AbYBVAwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936094AbYBVAwF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:52:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761209AbYBVAvw
+	id S1762974AbYBVAwc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:52:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbYBVAwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:51:52 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:55143 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1756961AbYBVAvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:51:51 -0500
-X-Spam-Check-By: mail.local.tull.net
-Date: Fri, 22 Feb 2008 11:51:20 +1100
-Message-ID: <20080222-114832-init-kconfig-3@tull.net>
-From: Nick Andrew <nick@nick-andrew.net>
-To: trivial@kernel.org
-Cc: linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       Serge Hallyn <serue@us.ibm.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Subject: [PATCH 2.6.25-rc2 3/9] Kconfig: Improve init/Kconfig help descriptions - NAMESPACES
-References: <20080219140609.GA26619@tull.net>
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
+	Thu, 21 Feb 2008 19:52:14 -0500
+Received: from el-out-1112.google.com ([209.85.162.178]:9652 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936410AbYBVAwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:52:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZzBYvz5QnjM/wCzI+Lf9R3QTM/Wlr4bCiB4D1TuccpnGM4BskE+sckBbLAUkWnKTed12i818zN5jQc7q87h8zd7iOl6INzkA3XpZ3Xe0nty18m53Zzp5ZnylEfKTyb+1twVUbsU+47jsBQv4redRjlsZs4MyBvLwrN4hTjGGeH4=
+Message-ID: <b6a2187b0802211652x304daa2ci36a76a76a2fcb82@mail.gmail.com>
+Date: Fri, 22 Feb 2008 08:52:09 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Jesse Barnes" <jesse.barnes@intel.com>
+Subject: Re: [Suspend-devel] 2.6.25-rc2 System no longer powers off aftersuspend-to-disk. Screen becomes green.
+Cc: "Romano Giannetti" <romano@dea.icai.upcomillas.es>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>,
+       "Dave Airlie" <airlied@linux.ie>, "Greg KH" <gregkh@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <200802211646.31603.jesse.barnes@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com>
+	 <200802211623.55450.jesse.barnes@intel.com>
+	 <b6a2187b0802211642i17730ccav6744b614c086df72@mail.gmail.com>
+	 <200802211646.31603.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rewrite the help descriptions for clarity, accuracy and consistency.
+On Fri, Feb 22, 2008 at 8:46 AM, Jesse Barnes <jesse.barnes@intel.com> wrote:
 
-Kernel config options affected:
+>  Your s2ram script is doing your STD also?  Seems counterintuitive.  Anyway,
+>  some machines also re-POST the GPU on resume from S3; maybe yours is doing
+>  that.
 
-  - NAMESPACES
-  - UTS_NS
-  - IPC_NS
-  - USER_NS
-  - PID_NS
+It's s2ram to do STR, not STD. Sorry for the confusion. But the key
+point is there's no GREEN for STR. Mr Green only appear with STD.
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
-Try #3.
-
---- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
-+++ b/init/Kconfig	2008-02-22 09:01:09.000000000 +1100
-@@ -414,31 +414,71 @@ config NAMESPACES
- 	bool "Namespaces support" if EMBEDDED
- 	default !EMBEDDED
- 	help
--	  Provides the way to make tasks work with different objects using
--	  the same id. For example same IPC id may refer to different objects
--	  or same user id or pid may refer to different tasks when used in
--	  different namespaces.
-+	  Select various namespace options.
-+
-+	  Namespaces allow different kernel objects (such as processes
-+	  or sockets) to have the same ID in different namespaces.
-+	  Identifiers like process IDs, which historically were globally
-+	  unique, will now be unique only within each PID namespace.
-+	  Each task can refer only to PIDs within the same namespace
-+	  as the task itself.
-+
-+	  Namespaces are used by container systems (i.e. vservers)
-+	  to provide isolation between the containers.
-+
-+	  This option does not affect any kernel code directly; it merely
-+	  allows you to select namespace options below.
-+
-+	  Answer Y if you will be using a container system, and you
-+	  will probably want to enable all the namespace options
-+	  below.
- 
- config UTS_NS
- 	bool "UTS namespace"
- 	depends on NAMESPACES
- 	help
--	  In this namespace tasks see different info provided with the
--	  uname() system call
-+	  Enable support for multiple UTS system attributes.
-+
-+	  Each UTS namespace provides an individual view of the
-+	  information returned by the uname() system call including
-+	  hostname, kernel version and domain name.
-+
-+	  This is used by container systems (e.g. vservers) so that
-+	  each container has its own hostname and other attributes.
-+	  Tasks in the container are placed in the UTS namespace
-+	  corresponding to the container.
-+
-+	  Answer Y if you will be using a container system.
- 
- config IPC_NS
- 	bool "IPC namespace"
- 	depends on NAMESPACES && SYSVIPC
- 	help
--	  In this namespace tasks work with IPC ids which correspond to
--	  different IPC objects in different namespaces
-+	  Enable support for namespace-specific IPC IDs.
-+
-+	  IPC IDs will be unique only within each IPC namespace.
-+
-+	  This is used by container systems (e.g. vservers).
-+	  Tasks in the container are placed in the IPC namespace
-+	  corresponding to the container.
-+
-+	  Answer Y if you will be using a container system.
- 
- config USER_NS
- 	bool "User namespace (EXPERIMENTAL)"
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
--	  This allows containers, i.e. vservers, to use user namespaces
--	  to provide different user info for different servers.
-+	  Enable experimental support for user namespaces.
-+
-+	  This is a function used by container-based virtualisation systems
-+	  (e.g. vservers). User namespaces are intended to ensure that
-+	  processes with the same uid which are in different containers are
-+	  isolated from each other.
-+
-+	  Currently user namespaces provide separate accounting, while
-+	  isolation must be provided using SELinux or a custom security
-+	  module.
-+
- 	  If unsure, say N.
- 
- config PID_NS
-@@ -446,12 +486,16 @@ config PID_NS
- 	default n
- 	depends on NAMESPACES && EXPERIMENTAL
- 	help
--	  Suport process id namespaces.  This allows having multiple
--	  process with the same pid as long as they are in different
--	  pid namespaces.  This is a building block of containers.
-+	  Enable experimental support for hierarchical process id namespaces.
- 
--	  Unless you want to work with an experimental feature
--	  say N here.
-+	  This is a function used by container-based virtualisation
-+	  systems (e.g. vservers).  Each process will have a distinct
-+	  Process ID in each PID namespace which the process is in.
-+	  Processes in the container are placed in the PID namespace
-+	  corresponding to the container, and cannot see or affect
-+	  processes in any parent PID namespace.
-+
-+	  If unsure, say N.
- 
- config BLK_DEV_INITRD
- 	bool "Initial RAM filesystem and RAM disk (initramfs/initrd) support"
+Thanks,
+Jeff.
