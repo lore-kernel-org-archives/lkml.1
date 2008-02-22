@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764016AbYBVWpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764418AbYBVWqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764016AbYBVWpf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:45:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757806AbYBVWpI
+	id S1764418AbYBVWqL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:46:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761506AbYBVWpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:45:08 -0500
-Received: from 136-022.dsl.labridge.com ([206.117.136.22]:3855 "EHLO
-	mail.perches.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1758565AbYBVWpG (ORCPT
+	Fri, 22 Feb 2008 17:45:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:48211 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758078AbYBVWpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:45:06 -0500
-Subject: Re: [PATCH 20/20] x86: Coding Style fixes to
-	arch/x86/xen/multicalls.c
-From: Joe Perches <joe@perches.com>
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-Cc: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       tglx <tglx@linutronix.de>, Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080222231159.34dd5b5a@paolo-desktop>
-References: <20080222231159.34dd5b5a@paolo-desktop>
-Content-Type: text/plain
-Date: Fri, 22 Feb 2008 14:43:37 -0800
-Message-Id: <1203720217.19319.99.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0-2mdv2008.0 
+	Fri, 22 Feb 2008 17:45:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Qua0iiMLLu/3IvTbpM7XCdk5nSe0c7LXC5+SnAw/G2RUrPAf2cwXEvOX53uBIO79TOypcTDLF3dLREh/u9TTX6REZQtSsh0OjZZv6yaNFBG4fJl/LDk3fPXOKVGQaPVXWJFLC4tsuOS5ziR37VcQZQEygJT2HmEtl884EwyO2kc=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH] ide: remove redundant comment from ide_unregister()
+Date: Fri, 22 Feb 2008 23:57:07 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200802222357.07781.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2008-02-22 at 23:11 +0100, Paolo Ciarrocchi wrote:
-> File is now error free.
-> Compile tested.
-> 
-> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-> ---
->  arch/x86/xen/multicalls.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/x86/xen/multicalls.c b/arch/x86/xen/multicalls.c
-> index 5e6f36f..5791eb2 100644
-> --- a/arch/x86/xen/multicalls.c
-> +++ b/arch/x86/xen/multicalls.c
-> @@ -76,7 +76,7 @@ void xen_mc_flush(void)
->  		if (ret) {
->  			printk(KERN_ERR "%d multicall(s) failed: cpu %d\n",
->  			       ret, smp_processor_id());
-> -			for(i = 0; i < b->mcidx; i++) {
-> +			for (i = 0; i < b->mcidx; i++) {
->  				printk("  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
+Identical comment is present in ide_hwif_release_regions() documentation.
 
-The printk needs a KERN_ERR prefix
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+goes after "hpt366: fix section mismatch warnings" patch in IDE quilt tree
 
+ drivers/ide/ide.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
+Index: b/drivers/ide/ide.c
+===================================================================
+--- a/drivers/ide/ide.c
++++ b/drivers/ide/ide.c
+@@ -590,11 +590,6 @@ void ide_unregister(unsigned int index, 
+ 		hwif->extra_ports = 0;
+ 	}
+ 
+-	/*
+-	 * Note that we only release the standard ports,
+-	 * and do not even try to handle any extra ports
+-	 * allocated for weird IDE interface chipsets.
+-	 */
+ 	ide_hwif_release_regions(hwif);
+ 
+ 	/* copy original settings */
