@@ -1,75 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936450AbYBVAx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936447AbYBVAxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936450AbYBVAx3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 19:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756961AbYBVAxA
+	id S936447AbYBVAxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 19:53:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935921AbYBVAxT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 19:53:00 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:52381 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756789AbYBVAw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 19:52:58 -0500
-X-Sasl-enc: SvK5a1Mg8urY7vxp1K8HMcfuevggmEZjgs248GxUkL65 1203641576
-Message-ID: <47BE1CE5.1030001@imap.cc>
-Date: Fri, 22 Feb 2008 01:52:53 +0100
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Patrick McHardy <kaber@trash.net>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org
-Subject: Re: 2.6.25-rc2-mm1 - several bugs and a crash
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <47BC982C.7050402@imap.cc> <47BD6072.4000407@trash.net> <47BE1A03.30300@imap.cc>
-In-Reply-To: <47BE1A03.30300@imap.cc>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCCD2F034FE8C131B9A0DD061"
+	Thu, 21 Feb 2008 19:53:19 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:60973 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S935790AbYBVAxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 21 Feb 2008 19:53:14 -0500
+X-Spam-Check-By: mail.local.tull.net
+Date: Fri, 22 Feb 2008 11:52:44 +1100
+Message-ID: <20080222-114832-init-kconfig-4@tull.net>
+From: Nick Andrew <nick@nick-andrew.net>
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
+       Serge Hallyn <serue@us.ibm.com>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Subject: [PATCH 2.6.25-rc2 4/9] Kconfig: Improve init/Kconfig help descriptions - AUDIT
+References: <20080219140609.GA26619@tull.net>
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCCD2F034FE8C131B9A0DD061
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+Rewrite the help descriptions for clarity, accuracy and consistency.
 
-Am 22.02.2008 01:40 schrieb Tilman Schmidt:
->>
->>     [NETFILTER]: nf_conntrack: fix smp_processor_id() in preemptible c=
-ode warning
->=20
-> Yes, it does; and the system also survives substantially longer.
-> (IOW, it hasn't crashed on me so far.)
+Kernel config options affected:
 
-Which of course it did the second after I sent off that mail. :-(
-No message at all this time at the time of the crash, even though
-I had "tail -f /var/log/messages" running in an ssh session.
+  - AUDIT
+  - AUDITSYSCALL
 
-So the nf_conntrack BUG is fixed, but the crash (and of course the
-swapper "spinlock bad magic" BUG) persists.
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+---
+Try #3.
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigCCD2F034FE8C131B9A0DD061
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFHvhzmMdB4Whm86/kRAuBrAJ9l0FIXZ9jvWnVoxMJyliSMUoOs9gCfd7io
-AsVKB8OH/pIgpWucpICt9hw=
-=UIri
------END PGP SIGNATURE-----
-
---------------enigCCD2F034FE8C131B9A0DD061--
+--- a/init/Kconfig	2008-02-20 09:34:48.000000000 +1100
++++ b/init/Kconfig	2008-02-21 09:15:18.000000000 +1100
+@@ -218,20 +218,37 @@ config AUDIT
+ 	bool "Auditing support"
+ 	depends on NET
+ 	help
+-	  Enable auditing infrastructure that can be used with another
+-	  kernel subsystem, such as SELinux (which requires this for
+-	  logging of avc messages output).  Does not do system-call
+-	  auditing without CONFIG_AUDITSYSCALL.
++	  Enable an auditing infrastructure that can be used with another
++	  kernel subsystem, such as Security-Enhanced Linux (SELinux),
++	  which requires this option for logging of security related
++	  messages.
++
++	  With this option, the kernel can use netlink to pass audit
++	  messages to an audit daemon process. Otherwise, audit messages
++	  are logged to syslog.
++
++	  See <http://www.nsa.gov/selinux/> for more information
++	  on Security-Enhanced Linux.
++
++	  CONFIG_AUDITSYSCALL (see below) is also required for
++	  system-call auditing.
++
++	  If unsure, say N.
+ 
+ config AUDITSYSCALL
+ 	bool "Enable system-call auditing support"
+ 	depends on AUDIT && (X86 || PPC || PPC64 || S390 || IA64 || UML || SPARC64|| SUPERH)
+ 	default y if SECURITY_SELINUX
+ 	help
+-	  Enable low-overhead system-call auditing infrastructure that
++	  Enable a low-overhead system-call auditing infrastructure that
+ 	  can be used independently or with another kernel subsystem,
+-	  such as SELinux.  To use audit's filesystem watch feature, please
+-	  ensure that INOTIFY is configured.
++	  such as SELinux.
++
++	  To use audit's filesystem watch feature, please ensure
++	  that CONFIG_INOTIFY is enabled. See the 'File systems'
++	  menu for Inotify file change notification support.
++
++	  If unsure, say N.
+ 
+ config AUDIT_TREE
+ 	def_bool y
