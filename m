@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934141AbYBVMZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933391AbYBVM3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934141AbYBVMZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 07:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbYBVMZV
+	id S933391AbYBVM3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 07:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbYBVM3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 07:25:21 -0500
-Received: from mail.suse.de ([195.135.220.2]:38967 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755215AbYBVMZT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 07:25:19 -0500
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86_64: make amd quad core 8 socket system not be clustered_box
-From: Andi Kleen <andi@firstfloor.org>
-References: <200802210258.45011.yinghai.lu@sun.com>
-Date: Fri, 22 Feb 2008 13:25:18 +0100
-In-Reply-To: <200802210258.45011.yinghai.lu@sun.com> (Yinghai Lu's message of "Thu\, 21 Feb 2008 02\:58\:44 -0800")
-Message-ID: <p73hcg189g1.fsf@bingen.suse.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 22 Feb 2008 07:29:35 -0500
+Received: from nf-out-0910.google.com ([64.233.182.184]:34095 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754624AbYBVM3e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 07:29:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=dy6heMbjqNvhhxXGioKDDm03hxZHWk+neXizr1zPAEVKZ2+44HjGbsObp8pN8iUVWTgAwg7fX0o+e/xMR6qxOmdvJjalF7e587nOeA4udeaN1iAcGaJJTSUxPZ4+3HRwADI3wmIXo5iU3IkZKSUmsk3vjDEidMcclpLdmXryzo8=
+Message-ID: <e2e108260802220429l5857c3edj351246ee31dd2a3e@mail.gmail.com>
+Date: Fri, 22 Feb 2008 13:29:31 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "David Newall" <davidn@davidnewall.com>
+Subject: Re: [ofa-general] Re: Merging of completely unreviewed drivers
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Adrian Bunk" <bunk@kernel.org>,
+       "Greg Kroah-Hartman" <greg@kroah.com>,
+       "Roland Dreier" <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Glenn Streiff" <gstreiff@neteffect.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Faisal Latif" <flatif@neteffect.com>
+In-Reply-To: <47BE2985.6020305@davidnewall.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	 <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	 <20080221154951.GA28328@cs181133002.pp.htv.fi>
+	 <adahcg2awag.fsf@cisco.com>
+	 <20080221210124.GD28328@cs181133002.pp.htv.fi>
+	 <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	 <m3tzk1q3rt.fsf@maximus.localdomain>
+	 <47BE2985.6020305@davidnewall.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yinghai Lu <Yinghai.Lu@Sun.COM> writes:
+On Fri, Feb 22, 2008 at 2:46 AM, David Newall <davidn@davidnewall.com> wrote:
+> Krzysztof Halasa wrote:
+>  > Perhaps we should increase line length limit, 132 should be fine.
+>  > Especially useful with long printk() lines and long arithmetic
+>  > expressions.
+>
+>  Yes; or even longer.  80 characters might have made sense on a screen
+>  when the alternative was 80 characters on a punched card, but on a
+>  modern computer it's very restrictive.  That's especially true with the
+>  deep indents that you quickly get in C.  Even short lines often need to
+>  be split when you put a few tabs in front of them, and that makes
+>  comprehension that bit harder, not to mention looks ugly.
 
-> quad core 8 socket system will have apic id lifting.the apic id range could
-> be [4, 0x23]. or [8, 0x27]. apic_is_clustered_box will think that need to three clusters
-> and that is large than 2. So it is treated as clustered_box.
->
-> and will get
->
-> Marking TSC unstable due to TSCs unsynchronized
->
-> even the CPUs have X86_FEATURE_CONSTANT_TSC set.
->
-> this patch offset back the apic before get apic clusterid.
->
-> or use dmi to get apic_is_clustered?
+There is a reason to limit line length: scientific research has shown
+that readability of regular texts is optimal for a line length between
+55 and 65 characters. My experience is that the readability of source
+code decreases when the lines are very long (more than 160
+characters).
 
-The clustered check is for Summit and es7000 systems
-On 64bit systems it might be actually possible to trigger
-this based on SLIT instead. But you'll need to check with
-the IBM Summit/Unisys es7000 developers if that works or not
-
-If you don't want to do that the safer way would be probably
-the check if there are holes between the CPUs APIC numbers.
-If yes then it's likely clustered mode. I think that would
-be better than to disable it unconditionally for apic lifting
-like your patches does.
-
--Andi
+Bart Van Assche.
