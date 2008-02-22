@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763354AbYBVRtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932176AbYBVRtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763354AbYBVRtO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:49:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbYBVRrP
+	id S932176AbYBVRtn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762779AbYBVRrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:47:15 -0500
-Received: from cantor.suse.de ([195.135.220.2]:57974 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:47:47 -0500
+Received: from ns2.suse.de ([195.135.220.15]:49431 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763552AbYBVRrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:47:13 -0500
-Date: Fri, 22 Feb 2008 18:47:12 +0100
-Message-ID: <s5h1w74yjbz.wl%tiwai@suse.de>
+	id S1757884AbYBVRrp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:47:45 -0500
+Date: Fri, 22 Feb 2008 18:47:44 +0100
+Message-ID: <s5hzltsx4qn.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 15/16] [ALSA] hda-intel - Fix Oops with ATI HDMI devices
+Subject: [PATCH 16/16] [ALSA] bt87X: fix freeing of shared interrupt
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,28 +26,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver gets Oops with ATI HDMI devices due to the wrong calculation
-of index for playback streams.  This patch fixes it.  Reference:
-	https://bugtrack.alsa-project.org/alsa-bug/view.php?id=3746
+Call free_irq() after iounmap() because other devices could trigger our
+shared interrupt handler.
 
+From: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/hda/hda_intel.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ sound/pci/bt87x.c |    9 +++------
+ 1 files changed, 3 insertions(+), 6 deletions(-)
 
-diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index a1098bb..4be36c8 100644
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -1818,7 +1818,7 @@ static int __devinit azx_create(struct snd_card *card, struct pci_dev *pci,
- 		 */
- 		chip->playback_streams = (gcap & (0xF << 12)) >> 12;
- 		chip->capture_streams = (gcap & (0xF << 8)) >> 8;
--		chip->playback_index_offset = (gcap & (0xF << 12)) >> 12;
-+		chip->playback_index_offset = chip->capture_streams;
- 		chip->capture_index_offset = 0;
- 	} else {
- 		/* gcap didn't give any info, switching to old method */
+diff --git a/sound/pci/bt87x.c b/sound/pci/bt87x.c
+index c9a2421..4ecdd63 100644
+--- a/sound/pci/bt87x.c
++++ b/sound/pci/bt87x.c
+@@ -681,15 +681,12 @@ static struct snd_kcontrol_new snd_bt87x_capture_source = {
+ 
+ static int snd_bt87x_free(struct snd_bt87x *chip)
+ {
+-	if (chip->mmio) {
++	if (chip->mmio)
+ 		snd_bt87x_stop(chip);
+-		if (chip->irq >= 0)
+-			synchronize_irq(chip->irq);
+-
+-		iounmap(chip->mmio);
+-	}
+ 	if (chip->irq >= 0)
+ 		free_irq(chip->irq, chip);
++	if (chip->mmio)
++		iounmap(chip->mmio);
+ 	pci_release_regions(chip->pci);
+ 	pci_disable_device(chip->pci);
+ 	kfree(chip);
 -- 
 1.5.3.8
 
