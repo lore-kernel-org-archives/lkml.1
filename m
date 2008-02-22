@@ -1,39 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755208AbYBVPcz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYBVPo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755208AbYBVPcz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 10:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbYBVPcp
+	id S1755720AbYBVPo0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 10:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYBVPoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 10:32:45 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:59410 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752071AbYBVPcp (ORCPT
+	Fri, 22 Feb 2008 10:44:17 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:42032 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753465AbYBVPoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 10:32:45 -0500
-Date: Fri, 22 Feb 2008 07:30:43 -0800
-From: Greg KH <greg@kroah.com>
-To: Kohei KaiGai <kaigai@ak.jp.nec.com>
-Cc: "Andrew G. Morgan" <morgan@kernel.org>, serue@us.ibm.com,
-       linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] exporting capability name/code pairs (final)
-Message-ID: <20080222153043.GC10954@kroah.com>
-References: <47BE2A29.4010302@ak.jp.nec.com> <47BE8A10.3080103@kernel.org> <47BE99BC.2060707@ak.jp.nec.com>
+	Fri, 22 Feb 2008 10:44:16 -0500
+Date: Fri, 22 Feb 2008 07:43:08 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
+In-Reply-To: <20080222075950.GB2660@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.1.00.0802220739430.19896@woody.linux-foundation.org>
+References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BE99BC.2060707@ak.jp.nec.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 06:45:32PM +0900, Kohei KaiGai wrote:
-> I believe it is correct assumption that long type and pointers have
-> same width in the linux kernel. Please tell me, if it is wrong.
 
-That is correct, it is one of the assumptions that is safe to make.  But
-you should fix the compiler warning :)
 
-thanks,
+On Fri, 22 Feb 2008, Sam Ravnborg wrote:
+>
+> This is a regression. Can you please revert this commit.
 
-greg k-h
+Not really. The thing is, CONFIG_CC_STACKPROTECTOR has never done anything 
+at all, now it does, and it shows that it never worked.
+
+So the commit that made it do something shouldn't be reverted, but 
+CONFIG_CC_STACKPROTECTOR should be marked BROKEN, because it obviously is 
+broken right now.
+
+But keeping the config option, and just not making it do anything is 
+misleading and wrong.
+
+So just something like this? To make sure normal people don't enable it..
+
+			Linus
+
+---
+ arch/x86/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 3be2305..4a88cf7 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -1054,7 +1054,7 @@ config SECCOMP
+ 
+ config CC_STACKPROTECTOR
+ 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
+-	depends on X86_64 && EXPERIMENTAL
++	depends on X86_64 && EXPERIMENTAL && BROKEN
+ 	help
+          This option turns on the -fstack-protector GCC feature. This
+ 	  feature puts, at the beginning of critical functions, a canary
