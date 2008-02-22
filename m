@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932786AbYBVUrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763549AbYBVUv2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932786AbYBVUrM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:47:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbYBVUqf
+	id S1763549AbYBVUv2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:51:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbYBVUvT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 15:46:35 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:27328 "EHLO
+	Fri, 22 Feb 2008 15:51:19 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:39060 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754013AbYBVUqc (ORCPT
+	with ESMTP id S1754388AbYBVUvR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 15:46:32 -0500
+	Fri, 22 Feb 2008 15:51:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=ia1CaBNW+km1Gh5afTgTH8g7MDFt+bqE9KI2qbSj4T9Do/rYPxFnAi/Ll0z4y8peQRK2MQ1VBLtEIATYIeRHblB25yA1ZzSNbnuz+Yyy2e6PvPA8vg+6QJX116Teuph5pBholx0H9ijcCL/su+6pjEKrEiKpsfaAvzWki3ZGf/k=
+        b=tmSAoJipSbKJABPEaUXzzrD+MkZmEOJ6JBb0x2HAy1yrS+oQpqYhvlA/8I6arHRTuZ+ymzkfpI4jmYozXaIQ5DMaTis1HVE1f/an0vsz7ZKrxja0UGeWkl+RjMJKsRfZoR+KgVsU+ybwwIQbMN6NbqzScvV9EOc9wBVIBgOeTgo=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH] qd65xx: remove commented out code
-Date: Fri, 22 Feb 2008 21:58:24 +0100
+Subject: [PATCH] ide: remove ide-tape documentation from Documentation/ide.txt
+Date: Fri, 22 Feb 2008 22:05:32 +0100
 User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
 Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
@@ -25,61 +25,73 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802222158.24652.bzolnier@gmail.com>
+Message-Id: <200802222205.32903.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+More complete documentation is available in Documentation/ide/ide-tape.txt.
+
 Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/legacy/qd65xx.c |   37 -------------------------------------
- 1 file changed, 37 deletions(-)
+ Documentation/ide.txt |   47 -----------------------------------------------
+ 1 file changed, 47 deletions(-)
 
-Index: b/drivers/ide/legacy/qd65xx.c
+Index: b/Documentation/ide.txt
 ===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -334,43 +334,6 @@ static void __init qd6580_port_init_devs
- 	hwif->drives[1].drive_data = t2;
- }
+--- a/Documentation/ide.txt
++++ b/Documentation/ide.txt
+@@ -279,53 +279,6 @@ You also need to use "probe" kernel para
  
--/*
-- * qd_unsetup:
-- *
-- * called to unsetup an ata channel : back to default values, unlinks tuning
-- */
--/*
--static void __exit qd_unsetup(ide_hwif_t *hwif)
--{
--	u8 config = hwif->config_data;
--	int base = hwif->select_data;
--	void *set_pio_mode = (void *)hwif->set_pio_mode;
+ ================================================================================
+ 
+-IDE ATAPI streaming tape driver
+--------------------------------
 -
--	if (hwif->chipset != ide_qd65xx)
--		return;
+-This driver is a part of the Linux ide driver and works in co-operation
+-with linux/drivers/block/ide.c.
 -
--	printk(KERN_NOTICE "%s: back to defaults\n", hwif->name);
+-The driver, in co-operation with ide.c, basically traverses the
+-request-list for the block device interface. The character device
+-interface, on the other hand, creates new requests, adds them
+-to the request-list of the block device, and waits for their completion.
 -
--	hwif->selectproc = NULL;
--	hwif->set_pio_mode = NULL;
+-Pipelined operation mode is now supported on both reads and writes.
 -
--	if (set_pio_mode == (void *)qd6500_set_pio_mode) {
--		// will do it for both
--		outb(QD6500_DEF_DATA, QD_TIMREG(&hwif->drives[0]));
--	} else if (set_pio_mode == (void *)qd6580_set_pio_mode) {
--		if (QD_CONTROL(hwif) & QD_CONTR_SEC_DISABLED) {
--			outb(QD6580_DEF_DATA, QD_TIMREG(&hwif->drives[0]));
--			outb(QD6580_DEF_DATA2, QD_TIMREG(&hwif->drives[1]));
--		} else {
--			outb(hwif->channel ? QD6580_DEF_DATA2 : QD6580_DEF_DATA, QD_TIMREG(&hwif->drives[0]));
--		}
--	} else {
--		printk(KERN_WARNING "Unknown qd65xx tuning fonction !\n");
--		printk(KERN_WARNING "keeping settings !\n");
--	}
--}
--*/
+-The block device major and minor numbers are determined from the
+-tape's relative position in the ide interfaces, as explained in ide.c.
 -
- static const struct ide_port_info qd65xx_port_info __initdata = {
- 	.chipset		= ide_qd65xx,
- 	.host_flags		= IDE_HFLAG_IO_32BIT |
+-The character device interface consists of the following devices:
+-
+- ht0		major 37, minor 0	first  IDE tape, rewind on close.
+- ht1		major 37, minor 1	second IDE tape, rewind on close.
+- ...
+- nht0		major 37, minor 128	first  IDE tape, no rewind on close.
+- nht1		major 37, minor 129	second IDE tape, no rewind on close.
+- ...
+-
+-Run /dev/MAKEDEV to create the above entries.
+-
+-The general magnetic tape commands compatible interface, as defined by
+-include/linux/mtio.h, is accessible through the character device.
+-
+-General ide driver configuration options, such as the interrupt-unmask
+-flag, can be configured by issuing an ioctl to the block device interface,
+-as any other ide device.
+-
+-Our own ide-tape ioctl's can be issued to either the block device or
+-the character device interface.
+-
+-Maximal throughput with minimal bus load will usually be achieved in the
+-following scenario:
+-
+-	1.	ide-tape is operating in the pipelined operation mode.
+-	2.	No buffering is performed by the user backup program.
+-
+-
+-
+-================================================================================
+-
+ Some Terminology
+ ----------------
+ IDE = Integrated Drive Electronics, meaning that each drive has a built-in
