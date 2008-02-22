@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761565AbYBVWm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbYBVWoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761565AbYBVWm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757214AbYBVWl6
+	id S934268AbYBVWoU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752129AbYBVWoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:41:58 -0500
-Received: from wolverine02.qualcomm.com ([199.106.114.251]:9335 "EHLO
-	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932530AbYBVWl4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:41:56 -0500
-X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="775794"
-Message-ID: <47BF4FB1.80205@qualcomm.com>
-Date: Fri, 22 Feb 2008 14:41:53 -0800
-From: Max Krasnyanskiy <maxk@qualcomm.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Tejun Heo <htejun@gmail.com>, rusty@rustcorp.com.au,
+	Fri, 22 Feb 2008 17:44:12 -0500
+Received: from khc.piap.pl ([195.187.100.11]:36304 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbYBVWoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 17:44:11 -0500
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Module loading/unloading and "The Stop Machine"
-References: <47ABC08C.8010101@qualcomm.com> <47B3BD51.1080706@gmail.com>	<47BE245F.3030809@qualcomm.com> <47BE27AE.8050009@gmail.com>	<47BE29A0.6040409@qualcomm.com> <p73prup8awh.fsf@bingen.suse.de>
-In-Reply-To: <p73prup8awh.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2>
+	<5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
+	<20080221154951.GA28328@cs181133002.pp.htv.fi>
+	<adahcg2awag.fsf@cisco.com>
+	<20080221210124.GD28328@cs181133002.pp.htv.fi>
+	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
+	<m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org>
+	<m3k5kxq2ih.fsf@maximus.localdomain> <20080222184518.GB6060@ucw.cz>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 22 Feb 2008 23:44:09 +0100
+In-Reply-To: <20080222184518.GB6060@ucw.cz> (Pavel Machek's message of "Fri\, 22 Feb 2008 19\:45\:18 +0100")
+Message-ID: <m3zlts393a.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+Pavel Machek <pavel@ucw.cz> writes:
 
-> Max Krasnyanskiy <maxk@qualcomm.com> writes:
->> static struct module *load_module(void __user *umod,
->>                                  unsigned long len,
->>                                  const char __user *uargs)
->> {
->>      ...
->>
->>      /* Now sew it into the lists so we can get lockdep and oops
->>         * info during argument parsing.  Noone should access us, since
->>         * strong_try_module_get() will fail. */
->>        stop_machine_run(__link_module, mod, NR_CPUS);
->>      ...
->> }
-> 
-> Wow you found some really bad code. I bet it wouldn't be that
-> difficult to fix the code to allow oops safe list insertion
-> without using the big stop machine overkill hammer.
-Let me know if you have something in mind. When I get a chance I'll stare
-some more at that code and try to come up with an alternative solution.
+> Zaurus is one example, second is small screen where you need big font
+> to keep it readable (x60 on desk).
 
-Thanx
-Max
+Come on, are you doing Linux kernel development on PDA?
+-- 
+Krzysztof Halasa
