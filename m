@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbYBVEYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764560AbYBVEe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764895AbYBVEYn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 23:24:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbYBVEYe
+	id S1764560AbYBVEe1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 23:34:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbYBVEeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 23:24:34 -0500
-Received: from an-out-0708.google.com ([209.85.132.244]:17731 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754849AbYBVEYd (ORCPT
+	Thu, 21 Feb 2008 23:34:18 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:36579 "EHLO
+	e28esmtp04.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752864AbYBVEeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 23:24:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=xO+dAWHS90YM0uhEB27PffvsR+yUoqiWL8AlHojIOjiqzeTZh05QCrW2j32MQyqAiWa3bi7o1FSx6Y/LP644LChyH6cCdLujoYuVwuVnXASQCkqdFy/qvdSfJHyS//wgWvaZlSdLPBe35XOOa0vFsT4z3wJV9wucUhw+0FFRPA8=
-Message-ID: <97a0a9ac0802212024w62dbfb03ye62c51744e853b36@mail.gmail.com>
-Date: Thu, 21 Feb 2008 21:24:32 -0700
-From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [RFC] [PATCH] Fix b43 driver build for arm
-Cc: "Michael Buesch" <mb@bu3sch.de>,
-       "Russell King" <rmk+lkml@arm.linux.org.uk>,
-       linux-kernel@vger.kernel.org, linville@tuxdriver.com,
-       stefano.brivio@polimi.it, "Linus Torvalds" <torvalds@osdl.org>,
-       "Andrew Morton" <akpm@osdl.org>, viro@ftp.linux.org.uk
-In-Reply-To: <20080220193709.GD21139@uranus.ravnborg.org>
+	Thu, 21 Feb 2008 23:34:17 -0500
+Message-ID: <47BE4FB5.5040902@linux.vnet.ibm.com>
+Date: Fri, 22 Feb 2008 09:59:41 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.12 (X11/20071129)
 MIME-Version: 1.0
+To: menage@google.com
+CC: akpm@linux-foundation.org, xemul@openvz.org, balbir@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
+References: <20080221203518.544461000@menage.corp.google.com> <20080221205525.349180000@menage.corp.google.com>
+In-Reply-To: <20080221205525.349180000@menage.corp.google.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <97a0a9ac0802181403ja79c32v864b093414b2755@mail.gmail.com>
-	 <200802191141.26952.mb@bu3sch.de>
-	 <97a0a9ac0802191644x693cd34cq6b167756df9c65f4@mail.gmail.com>
-	 <200802201544.05192.mb@bu3sch.de>
-	 <20080220193709.GD21139@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Sam
+menage@google.com wrote:
+> Update the memory controller to use read_uint for its
+> limit/usage/failcnt control files, calling the new
+> res_counter_read_uint() function.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
+> 
 
-On Wed, Feb 20, 2008 at 12:37 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
+Hi, Paul,
 
->  Option 1) is the worst of the three as that can cost
->  of many hours bug-hunting.
->  Option 3) may seem optimal but I do not like to add more
->  complexity to this part of the build. And really I do not
->  know a reliable way to detech when we do cross builds anyway.
->
->  Leaving us with option 2) that is simple, strighforward and harmless.
-
-Are you willing to sign off on and commit the patch?
-
-Gordon
+Looks good, except for the name uint(), can we make it u64(). Integers are 32
+bit on both ILP32 and LP64, but we really read/write 64 bit values.
 
 -- 
-Gordon Farquharson
-GnuPG Key ID: 32D6D676
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
