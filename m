@@ -1,57 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762802AbYBVLQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765171AbYBVLRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762802AbYBVLQZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 06:16:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbYBVLQO
+	id S1765171AbYBVLRk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 06:17:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753853AbYBVLRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 06:16:14 -0500
-Received: from twin.jikos.cz ([213.151.79.26]:54320 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752985AbYBVLQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 06:16:13 -0500
-Date: Fri, 22 Feb 2008 12:16:02 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Anders Eriksson <aeriksson@fastmail.fm>
-cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: lockdep warning
-In-Reply-To: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org>
-Message-ID: <Pine.LNX.4.64.0802221214020.7699@twin.jikos.cz>
-References: <20080222104049.BD95A93C12F@tippex.mynet.homeunix.org>
+	Fri, 22 Feb 2008 06:17:33 -0500
+Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:62897 "EHLO
+	outbound4-wa4-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756174AbYBVLRb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 06:17:31 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0JWN0LR-04-VDW-01
+X-Server-Uuid: 9D002D81-0D89-4A8A-BDDE-D174997CF0D6
+Date: Fri, 22 Feb 2008 12:15:18 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and
+ running in KVM
+Message-ID: <20080222111518.GA6504@amd.com>
+References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com>
+ <20080221203748.GA9031@elte.hu> <47BDFBDE.5040102@zytor.com>
+ <20080222094513.GA6269@elte.hu> <47BE9CB7.5070609@zytor.com>
+ <20080222100044.GA6807@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20080222100044.GA6807@elte.hu>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Feb 2008 11:15:18.0565 (UTC)
+ FILETIME=[34E41D50:01C87544]
+X-WSS-ID: 6BA071430QK12173640-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008, Anders Eriksson wrote:
+On Fri, Feb 22, 2008 at 11:00:44AM +0100, Ingo Molnar wrote:
+> 
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+> > Ingo Molnar wrote:
+> >> * H. Peter Anvin <hpa@zytor.com> wrote:
+> >>
+> >>>> I'm not sure how we could detect pure Qemu instances - perhaps it should 
+> >>>> define some special MSR or something?
+> >>> Perhaps they should fix the Qemu BIOS to actually simulate working MSRs; 
+> >>> if nothing else, they should set up the default MTRR to be cachable.
+> >>
+> >> btw., should KVM do the same?
+> >
+> > Yes.  Especially since they share a BIOS.
+> 
+> ok. Then i guess we should just leave the warning and the backtrace in 
+> place until they get a fix done?
 
-> I found this is a newly booted 2.6.25-rc2's syslog.
-> Feb 21 20:46:33 tippex BUG: rwlock wrong owner on CPU#0, runscript.sh/2633, d2c04084
-> Feb 21 20:46:33 tippex Pid: 2633, comm: runscript.sh Not tainted 2.6.25-rc2 #3
-> Feb 21 20:46:33 tippex [<c02342d0>] rwlock_bug+0x50/0x60
-> Feb 21 20:46:33 tippex [<c0234356>] _raw_write_unlock+0x56/0x60
-> Feb 21 20:46:33 tippex [<c040365d>] _write_unlock+0x1d/0x50
-> Feb 21 20:46:33 tippex [<c03289be>] neigh_timer_handler+0x18e/0x2d0
-> Feb 21 20:46:33 tippex [<c0125449>] run_timer_softirq+0x119/0x180
-> Feb 21 20:46:33 tippex [<c013856d>] ? lock_release_holdtime+0x5d/0x80
-> Feb 21 20:46:33 tippex [<c0328830>] ? neigh_timer_handler+0x0/0x2d0
-> Feb 21 20:46:33 tippex [<c0121a64>] __do_softirq+0x54/0xb0
-> Feb 21 20:46:33 tippex [<c0121af5>] do_softirq+0x35/0x40
-> Feb 21 20:46:33 tippex [<c0121cb4>] irq_exit+0x44/0x50
-> Feb 21 20:46:33 tippex [<c0105757>] do_IRQ+0x47/0x80
-> Feb 21 20:46:33 tippex [<c01039c3>] common_interrupt+0x23/0x28
-> Feb 21 20:46:33 tippex =======================
+No. I don't agree. The MTRRs are set up by the BIOS because it knows the
+hardware best (I know this is only true in theory). The OS should
+basically trust the BIOS MTRR settings. If the OS can't trust the BIOS,
+like on real hardware, the check and the warning is necessary. If the OS
+can trust the BIOS, like running in a KVM or QEMU virtual machine, it
+should just ignore the case where all MTRRs are blank.
 
-This needs to be CCed to netdev.
-
-Any chance that
-
-	git revert 69cc64d8d92
-
-makes this report go away?
+Joerg
 
 -- 
-Jiri Kosina
-SUSE Labs
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
 
