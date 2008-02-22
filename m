@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbYBVUBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764394AbYBVUCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760742AbYBVUBo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:01:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765770AbYBVT7O
+	id S1764394AbYBVUCP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:02:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765893AbYBVT7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:59:14 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52692 "EHLO smtp5.pp.htv.fi"
+	Fri, 22 Feb 2008 14:59:17 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:44811 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765576AbYBVT7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:59:12 -0500
-Date: Fri, 22 Feb 2008 21:58:23 +0200
+	id S1765787AbYBVT7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:59:15 -0500
+Date: Fri, 22 Feb 2008 21:58:26 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] proper pid{hash,map}_init() prototypes
-Message-ID: <20080222195823.GF1409@cs181133002.pp.htv.fi>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] kernel/ns_cgroup.c should #include <linux/nsproxy.h>
+Message-ID: <20080222195826.GG1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -22,40 +23,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds proper prototypes for pid{hash,map}_init() in 
-include/linux/pid_namespace.h
+Every file should include the headers containing the externs its global 
+functions (in this case for ns_cgroup_clone()).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-
- include/linux/pid_namespace.h |    3 +++
- init/main.c                   |    2 --
- 2 files changed, 3 insertions(+), 2 deletions(-)
-
-279d377cacc55d031230ed98370726dbd8c82602 diff --git a/include/linux/pid_namespace.h b/include/linux/pid_namespace.h
-index fcd61fa..2ce9521 100644
---- a/include/linux/pid_namespace.h
-+++ b/include/linux/pid_namespace.h
-@@ -85,4 +85,7 @@ static inline struct task_struct *task_child_reaper(struct task_struct *tsk)
- 	return tsk->nsproxy->pid_ns->child_reaper;
- }
+d3446a02068091d59425c51bde1daea777398e44 diff --git a/kernel/ns_cgroup.c b/kernel/ns_cgroup.c
+index aead4d6..659f321 100644
+--- a/kernel/ns_cgroup.c
++++ b/kernel/ns_cgroup.c
+@@ -7,6 +7,7 @@
+ #include <linux/module.h>
+ #include <linux/cgroup.h>
+ #include <linux/fs.h>
++#include <linux/nsproxy.h>
  
-+void pidhash_init(void);
-+void pidmap_init(void);
-+
- #endif /* _LINUX_PID_NS_H */
-diff --git a/init/main.c b/init/main.c
-index 7dd9916..696e5f1 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -84,8 +84,6 @@ extern void init_IRQ(void);
- extern void fork_init(unsigned long);
- extern void mca_init(void);
- extern void sbus_init(void);
--extern void pidhash_init(void);
--extern void pidmap_init(void);
- extern void prio_tree_init(void);
- extern void radix_tree_init(void);
- extern void free_initmem(void);
-
+ struct ns_cgroup {
+ 	struct cgroup_subsys_state css;
