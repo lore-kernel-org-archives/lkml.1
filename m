@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbYBVQnm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbYBVQuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbYBVQnm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:43:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbYBVQne
+	id S1758162AbYBVQuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:50:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbYBVQtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:43:34 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:55992 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbYBVQnd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:43:33 -0500
-Date: Fri, 22 Feb 2008 08:43:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] xen: Implement getgeo for Xen virtual block device.
-In-Reply-To: <p73lk5d89ra.fsf@bingen.suse.de>
-Message-ID: <alpine.LFD.1.00.0802220827520.19896@woody.linux-foundation.org>
-References: <47BDE731.60801@goop.org> <alpine.LFD.1.00.0802211315190.19896@woody.linux-foundation.org> <47BDEA5E.4070800@goop.org> <alpine.LFD.1.00.0802211337220.19896@woody.linux-foundation.org> <p73lk5d89ra.fsf@bingen.suse.de>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Feb 2008 11:49:55 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:59540 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706AbYBVQtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:49:53 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200802220852.26584.chris.mason@oracle.com>
+References: <200802220852.26584.chris.mason@oracle.com> <28196.1203605703@redhat.com> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk> <17916.1203636833@redhat.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: dhowells@redhat.com, Daniel Phillips <phillips@phunq.net>,
+       Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
+       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 00/37] Permit filesystem local caching
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Fri, 22 Feb 2008 16:47:27 +0000
+Message-ID: <25210.1203698847@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Mason <chris.mason@oracle.com> wrote:
+
+> Thanks for trying this, of course I'll ask you to try again with the latest 
+> v0.13 code, it has a number of optimizations especially for CPU usage.
+
+Here you go.  The numbers are very similar.
+
+David
+
+=================================
+FEW BIG FILES TEST ON BTRFS v0.13
+=================================
+
+Completely cold caches:
+
+	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
+	real    0m2.202s
+	user    0m0.000s
+	sys     0m1.716s
+	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
+	real    0m4.212s
+	user    0m0.000s
+	sys     0m0.896s
+
+Warm BTRFS pagecache, cold NFS pagecache:
+
+	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
+	real    0m0.197s
+	user    0m0.000s
+	sys     0m0.192s
+	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
+	real    0m0.376s
+	user    0m0.000s
+	sys     0m0.372s
+
+Warm on-disk cache, cold pagecaches:
+
+	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
+	real    0m1.543s
+	user    0m0.004s
+	sys     0m1.448s
+	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
+	real    0m3.111s
+	user    0m0.000s
+	sys     0m2.856s
 
 
-On Fri, 22 Feb 2008, Andi Kleen wrote:
->
-> Linus Torvalds <torvalds@linux-foundation.org> writes:
-> >
-> > (*) I keed, I keed. Of *course* I'll have to fix things like this in the 
-> > future too. But hopefully not quite as often.
-> 
-> The pragmatic solution would be to just fix the scripts to accept From
-> everywhere @)
+==================================================
+MANY SMALL/MEDIUM FILE READING TEST ON BTRFS v0.13
+==================================================
 
-I worry about that. We've actually had to tighten up the scripts over time 
-to not assign meaning to things, because people put various things in the 
-free-form descriptions, and it's really bad to corrupt the description.
+Completely cold caches:
 
-This isn't a problem with things like "Signed-off-by:" etc tags, because 
-they have no automated meaning and don't really change the commit itself, 
-but the "From:"/"Date:"/"Subject:" markers at the head of the message 
-really do have real meaning, and get removed from the commit message and 
-instead get put into the SCM headers.
+	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
+	real    0m31.575s
+	user    0m0.176s
+	sys     0m6.316s
 
-So I'd rather have the rules be very strict and not cause any surprises, 
-than have loose rules and then occasionally an email has a "From:" in the 
-middle and my scripts get all confused.
+Warm BTRFS pagecache, cold NFS pagecache:
 
-It's not a *huge* problem, and my gut feel is that it's getting rarer as 
-people learn. Rigth now we have about 86,000 commits in the mainline git 
-history, and 807 (less than 1%) of those have a 'From:' in the message. 
-And in many cases, that "From:" was at the head, so there are simply 
-people who do not *use* the standard scripts and making the scripts accept 
-it everywhere wouldn't have helped anyway!
+	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
+	real    0m16.081s
+	user    0m0.164s
+	sys     0m5.528s
 
-And in the great majority of cases - at least the ones I looked at - 
-authorship actually got attributed correctly. And in some of the cases, 
-the "From:" really *was* part of the message, and removing it would have 
-been wrong. See for example 22e78fafbdf84883f70eb4944cf658fc23c4a1f4 where 
-the From: was about an email exchange (it gave the rigth author anyway, 
-but without that line the commit message would have made less sense).
+Warm on-disk cache, cold pagecaches:
 
-There are a few other cases with "From:" in the middle, where the From: 
-doesn't mean authorship (but attributes fixes to the patch, for example). 
-It's admittedly fairly rare, but it shows that it happens (I found 
-something like four occurrences of that before I got too bored).
+	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
+	real    2m15.245s
+	user    0m0.064s
+	sys     0m2.808s
 
-			Linus
