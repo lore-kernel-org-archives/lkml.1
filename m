@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936568AbYBVCGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765665AbYBVCQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936568AbYBVCGy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 21 Feb 2008 21:06:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935878AbYBVCGk
+	id S1765665AbYBVCQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 21 Feb 2008 21:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbYBVCQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 21 Feb 2008 21:06:40 -0500
-Received: from zeniv.linux.org.uk ([195.92.253.2]:40013 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758423AbYBVCGi (ORCPT
+	Thu, 21 Feb 2008 21:16:49 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:21933 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754541AbYBVCQr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 21 Feb 2008 21:06:38 -0500
-Date: Fri, 22 Feb 2008 02:06:15 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: David Newall <davidn@davidnewall.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-Message-ID: <20080222020615.GE27894@ZenIV.linux.org.uk>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFF1@venom2> <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <m3tzk1q3rt.fsf@maximus.localdomain> <47BE2985.6020305@davidnewall.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <47BE2985.6020305@davidnewall.com>
-User-Agent: Mutt/1.4.2.3i
+	Thu, 21 Feb 2008 21:16:47 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5235"; a="758258"
+Message-ID: <47BE3088.3050602@qualcomm.com>
+Date: Thu, 21 Feb 2008 18:16:40 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: rusty@rustcorp.com.au, Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Module loading/unloading and "The Stop Machine"
+References: <47ABC08C.8010101@qualcomm.com> <47B3BD51.1080706@gmail.com> <47BE245F.3030809@qualcomm.com> <47BE27AE.8050009@gmail.com> <47BE29A0.6040409@qualcomm.com> <47BE2C7B.4000507@gmail.com>
+In-Reply-To: <47BE2C7B.4000507@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 12:16:45PM +1030, David Newall wrote:
-> Krzysztof Halasa wrote:
-> > Linus Torvalds <torvalds@linux-foundation.org> writes:
-> >> I'm personally of the opinion that a lot of checkpatch "fixes" are 
-> >> anything but. That mainly concerns fixing overlong lines
-> >>     
-> >
-> > Perhaps we should increase line length limit, 132 should be fine.
-> > Especially useful with long printk() lines and long arithmetic
-> > expressions.
-> >   
+Tejun Heo wrote:
+> Max Krasnyanskiy wrote:
+>> Tejun Heo wrote:
+>>> Max Krasnyanskiy wrote:
+>>>> Thanks for the info. I guess I missed that from the code. In any case
+>>>> that seems like a pretty heavy refcounting mechanism. In a sense that
+>>>> every time something is loaded or unloaded entire machine freezes,
+>>>> potentially for several milliseconds. Normally it's not a big deal. But
+>>>> once you get more and more CPUs and/or start using realtime apps this
+>>>> becomes a big deal.
+>>> Module loading doesn't involve stop_machine last time I checked.  It's a
+>>> big deal when unloading a module but it's actually a very good trade off
+>>> because it makes much hotter path (module_get/put) much cheaper.  If
+>>> your application can't stand stop_machine, simply don't unload a module.
+>> static struct module *load_module(void __user *umod,
+>>                                  unsigned long len,
+>>                                  const char __user *uargs)
+>> {
+>>      ...
+>>
+>>      /* Now sew it into the lists so we can get lockdep and oops
+>>         * info during argument parsing.  Noone should access us, since
+>>         * strong_try_module_get() will fail. */
+>>        stop_machine_run(__link_module, mod, NR_CPUS);
+>>      ...
+>> }
 > 
-> 
-> Yes; or even longer.  80 characters might have made sense on a screen
-> when the alternative was 80 characters on a punched card, but on a
-> modern computer it's very restrictive.  That's especially true with the
-> deep indents that you quickly get in C
+> Ah... right.  That part doesn't have anything to do with module
+> reference counting as the comment suggests and can probably be removed
+> by updating how kallsyms synchronize against module load/unload.
 
-... if your style is lousy.  I agree that situation with printks is
-not normal in that respect and I certainly have no love for the
-checkpatch nonsense, but pressure to keep the fucking nesting depth
-low is a Good Thing(tm).
+That list (updated by __link_module) is accessed in couple of other places. ie outside symbol
+lookup stuff used for kallsyms.
+
+Max
