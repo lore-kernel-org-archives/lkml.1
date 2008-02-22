@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935093AbYBVFPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755497AbYBVFbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935093AbYBVFPs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 00:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934588AbYBVFLi
+	id S1755497AbYBVFbs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 00:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751439AbYBVFbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 00:11:38 -0500
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:56728 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755744AbYBVFL2 (ORCPT
-	<rfc822;@sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 00:11:28 -0500
-Message-ID: <47BE5AB0.7060206@sgi.com>
-Date: Fri, 22 Feb 2008 16:16:32 +1100
-From: Lachlan McIlroy <lachlan@sgi.com>
-Reply-To: lachlan@sgi.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 22 Feb 2008 00:31:37 -0500
+Received: from mx1.suse.de ([195.135.220.2]:49000 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751472AbYBVFbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 00:31:36 -0500
+Message-ID: <47BE5E26.1040102@suse.de>
+Date: Fri, 22 Feb 2008 06:31:18 +0100
+From: Frank Seidel <fseidel@suse.de>
+Organization: SUSE LINUX Products GmbH
+User-Agent: Thunderbird 2.0.0.9 (X11/20071114)
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: Re: [GIT PULL] XFS update for 2.6.25-rc3
-References: <20080222044209.AD5C558C4C0F@chook.melbourne.sgi.com> <47BE571E.4000802@garzik.org>
-In-Reply-To: <47BE571E.4000802@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Andy Whitcroft <apw@shadowen.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: first tree
+References: <20080215003537.8911ce35.sfr@canb.auug.org.au>	<20080214160231.GC10713@shadowen.org>	<20080221012332.dc1948ac.sfr@canb.auug.org.au> <20080220084747.77553451.randy.dunlap@oracle.com> <47BE1225.7030808@suse.de> <47BE137F.3030704@oracle.com>
+In-Reply-To: <47BE137F.3030704@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Lachlan McIlroy wrote:
->>     Remove empty file fs/xfs/Makefile-linux-2.6.
-> 
-> Already in the upstream kernel...
-That's funny - I didn't see this change come through.  Oh well... thanks.
+Randy Dunlap wrote:
+> Looks close.  It needs to be scriptable (not just a dynamically generated
+> link) and have predictable names.  As long as those are true, then it
+> should be great.
 
-> 
-> 
->> commit 1803f3389b7ac9ed33ea561b3b94e22e2864a95d
->> Author: Linus Torvalds <torvalds@woody.linux-foundation.org>
->> Date:   Wed Feb 20 19:55:09 2008 -0800
->>
->>     Remove empty file remnants that were left in the tree by mistake
->>         Noted by various people (Sam, Jeff, Roland..)
->>         Commit 58b7983d15a422d9616bdc4e245d5c31dfaefbe2 intended to 
->> remove the
->>     xfs "Makefile-linux-2.6" file, but it was mistakenly still left in 
->> the
->>     tree as a empty file, and would cause git to correctly complain 
->> about a
->>     tracked file being removed after a "make distclean" (which removes 
->> empty
->>     files as garbage).
->>         And the asm-x86/desc_64.h file was supposed to be removed by 
->> commit
->>     c81c6ca45a69478c7877b729af1942d2b80ef582, but instead stayed around
->>     containing just a single newline.
->>         Get rid of them both properly.
->>         Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Yes, i would have scripted it when it tourned out to be of use for others.
+But as i just saw Stephen already has something ready for this :-)
+
+Thanks,
+Frank
