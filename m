@@ -1,83 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935960AbYBVWZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936724AbYBVW0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935960AbYBVWZe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 17:25:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936616AbYBVWVP
+	id S936724AbYBVW0S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 17:26:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936057AbYBVWWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 17:21:15 -0500
-Received: from py-out-1112.google.com ([64.233.166.178]:26044 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936612AbYBVWVM (ORCPT
+	Fri, 22 Feb 2008 17:22:48 -0500
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:2040 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935412AbYBVWWq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 17:21:12 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Stp72xf/RebQs0X5u8LF65qPuqrHr/k5Wsir/pLBDa7egoFCYLoFBV4+NI1LmblKslFGI+8sAxc+UDf/XXaQc2jmec2uH8KLlQCdB2WmCFMkho9kdCGYh3FnCXDLMRjZ9CjM9egnAikY3Pi7iO6arim46tHvaO337CJcFbrvBgs=
-Message-ID: <47BF4AC5.7070507@gmail.com>
-Date: Fri, 22 Feb 2008 17:20:53 -0500
-From: Gregory Haskins <gregory.haskins.ml@gmail.com>
-Reply-To: gregory.haskins@gmail.com
-User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
+	Fri, 22 Feb 2008 17:22:46 -0500
+X-IronPort-AV: E=McAfee;i="5200,2160,5236"; a="775360"
+Message-ID: <47BF4B32.5030808@qualcomm.com>
+Date: Fri, 22 Feb 2008 14:22:42 -0800
+From: Max Krasnyanskiy <maxk@qualcomm.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, ak@suse.de, gregkh@suse.de, sdietrich@novell.com,
-       pmorreale@novell.com, mkohari@novell.com
-Subject: Re: [PATCH [RT] 11/14] optimize the !printk fastpath through the
- lock acquisition
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152722.4804.77478.stgit@novell1.haskins.net> <20080222191837.GE6060@ucw.cz>
-In-Reply-To: <20080222191837.GE6060@ucw.cz>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: markh@compro.net, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH sched-devel 0/7] CPU isolation extensions
+References: <47BE35B7.2070104@qualcomm.com> <1203680600.6242.20.camel@lappy>	 <47BED03A.5070707@compro.net> <1203688786.6242.27.camel@lappy>
+In-Reply-To: <1203688786.6242.27.camel@lappy>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
+Peter Zijlstra wrote:
+> On Fri, 2008-02-22 at 08:38 -0500, Mark Hounschell wrote:
 > 
->> Decorate the printk path with an "unlikely()"
->>
->> Signed-off-by: Gregory Haskins <ghaskins@novell.com>
->> ---
->>
->>  kernel/rtmutex.c |    8 ++++----
->>  1 files changed, 4 insertions(+), 4 deletions(-)
->>
->> diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
->> index 122f143..ebdaa17 100644
->> --- a/kernel/rtmutex.c
->> +++ b/kernel/rtmutex.c
->> @@ -660,12 +660,12 @@ rt_spin_lock_fastlock(struct rt_mutex *lock,
->>  		void fastcall (*slowfn)(struct rt_mutex *lock))
->>  {
->>  	/* Temporary HACK! */
->> -	if (!current->in_printk)
->> -		might_sleep();
->> -	else if (in_atomic() || irqs_disabled())
->> +	if (unlikely(current->in_printk) && (in_atomic() || irqs_disabled()))
->>  		/* don't grab locks for printk in atomic */
->>  		return;
->>  
->> +	might_sleep();
+>>>> List of commits
+>>>>    cpuisol: Make cpu isolation configrable and export isolated map
+>>>  
+>>> cpu_isolated_map was a bad hack when it was introduced, I feel we should
+>>> deprecate it and fully integrate the functionality into cpusets. That would
+>>> give a much more flexible end-result.
+>>>
+>>> CPU-sets can already isolate cpus by either creating a cpu outside of any set,
+>>> or a set with a single cpu not shared by any other sets.
+>>>
+>> Peter, what about when I am NOT using cpusets and are disabled in my config but
+>> I still want to use this?
 > 
-> I think you changed the code here... you call might_sleep() in
-> different cases afaict.
+> Then you enable it?
+I'm with Mark on this one. For example if I have two core machine I do not need cpusets
+to manage them.
+Plus like I explained in prev email cpuset is higher level API. We can think of a way to
+integrated them if needed.
 
-Agreed, but it's still correct afaict.  I added an extra might_sleep() 
-to a path that really might sleep.  I should have mentioned that in the 
-header.
+>>>>    cpuisol: Do not schedule workqueues on the isolated CPUs
+>>>  
+>>> (per-cpu workqueues, the single ones are treated in the previous section)
+>>>
+>>> I still strongly disagree with this approach. Workqueues are passive, they
+>>> don't do anything unless work is provided to them. By blindly not starting them
+>>> you handicap the system and services that rely on them.
+>>>
+>> Have things changed since since my first bad encounter with Workqueues.
+>> I am referring to this thread. 
+>>
+>> http://kerneltrap.org/mailarchive/linux-kernel/2007/5/29/97039 
+> 
+> Just means you get to fix those problems. By blindly not starting them
+> you introduce others.
 
-In any case, its moot.  Andi indicated this patch is probably a no-op so 
-I was considering dropping it on the v2 pass.
+Please give me an example of what you have in mind.
+Also if you look at the patch (which I've now posted properly) it's not just not starting them.
+I also redirected all future scheduled work to non-isolated CPU. ie If work is scheduled on the
+isolated CPU this work is treated as if the work queue is single threaded. As I explained before
+most subsystem do not care which CPU actually gets to execute the work. Oprofile is the only
+one I know of that breaks because it cannot collect the stats from the isolated CPUs. I'm thinking
+of a different solution for oprofile, maybe collection samples through IPIs or something.
 
-Regards,
--Greg
-
-
-
+Max
