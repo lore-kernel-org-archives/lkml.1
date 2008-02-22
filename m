@@ -1,69 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935203AbYBVNqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933895AbYBVNxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935203AbYBVNqb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 08:46:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763021AbYBVNqX
+	id S933895AbYBVNxW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 08:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759178AbYBVNxN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 08:46:23 -0500
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:61473 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762485AbYBVNqW (ORCPT
+	Fri, 22 Feb 2008 08:53:13 -0500
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56222 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756993AbYBVNxM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 08:46:22 -0500
-Date: Fri, 22 Feb 2008 08:46:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: gregory.haskins@gmail.com, Gregory Haskins <ghaskins@novell.com>,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       bill.huey@gmail.com, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, ak@suse.de, gregkh@suse.de, sdietrich@novell.com,
-       pmorreale@novell.com, mkohari@novell.com
-Subject: Re: [PATCH [RT] 05/14] rearrange rt_spin_lock sleep
-In-Reply-To: <20080222133541.GA8868@elte.hu>
-Message-ID: <Pine.LNX.4.58.0802220845060.15391@gandalf.stny.rr.com>
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
- <20080221152651.4804.4702.stgit@novell1.haskins.net> <47BECE30.8030100@gmail.com>
- <20080222133541.GA8868@elte.hu>
+	Fri, 22 Feb 2008 08:53:12 -0500
+Message-ID: <47BED3C3.5020500@s5r6.in-berlin.de>
+Date: Fri, 22 Feb 2008 14:53:07 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.12) Gecko/20080201 SeaMonkey/1.1.8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org, torvalds@osdl.org
+Subject: Re: [RFC/PATCH] Update coding standard to avoid ungrepable printk
+ format strings
+References: <20080222132612.GA11717@basil.nowhere.org>
+In-Reply-To: <20080222132612.GA11717@basil.nowhere.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> --- linux.orig/Documentation/CodingStyle
+> +++ linux/Documentation/CodingStyle
+> @@ -83,20 +83,32 @@ preferred limit.
+>  Statements longer than 80 columns will be broken into sensible chunks.
+>  Descendants are always substantially shorter than the parent and are placed
+>  substantially to the right. The same applies to function headers with a long
+> -argument list. Long strings are as well broken into shorter strings. The
+> -only exception to this is where exceeding 80 columns significantly increases
+> -readability and does not hide information.
+> +argument list.
+>  
+> -void fun(int a, int b, int c)
+> -{
+> -	if (condition)
+> -		printk(KERN_WARNING "Warning this is a long printk with "
+> -						"3 parameters a: %u b: %u "
+> -						"c: %u \n", a, b, c);
+> -	else
+> -		next_statement;
+> +It is not recommended to break printk format strings into smaller strings.
 
-Gregory,
+Instead of a new recommendation (from now on we recommend something
+contrary to what we required up until yesterday --- let's go unwrap
+strings everywhere in the kernel now), how about simply saying that
+printk format strings are not subject to the 80 column rule?
+Or keep the old text and insert after "increases readability":  "or
+helps full-text searching".  And delete the example code.
 
-I guess we should have just read Documentation/memory-barriers.text
+> +The problem with doing this is that it makes it much harder to grep
+> +for the error messages in the source if they are split up over multiple
+> +lines. And grepping for error messages is fairly important for debugging.
+> +So for the special case of printk format strings (or formatting any other
+> +user visible error message) the normal 80 character column rule
+> +does not apply. Or alternatively it is ok to violate the indentation
+> +rule for the format string only if that makes the end not exceed
+> +80 characters. For example
+> +
+> +void function(void)
+> +{
+> +	if (...) {
+> +		if (...) {
+> +			printk(
+> + "very very long formatting string with argument %d and argument %d\n",
+> +				a, b);
+> +		}
+> +	}
+>  }
 
-Here's the snippet:
+Here is one vote against this indentation exception.
 
+PS:  Could someone implement this for checkpatch.pl:
 
-Any atomic operation that modifies some state in memory and returns
-information
-about the state (old or new) implies an SMP-conditional general memory
-barrier
-(smp_mb()) on each side of the actual operation (with the exception of
-explicit lock operations, described later).  These include:
-
-        xchg();
-        cmpxchg();
-        atomic_cmpxchg();
-        atomic_inc_return();
-        atomic_dec_return();
-        atomic_add_return();
-        atomic_sub_return();
-        atomic_inc_and_test();
-        atomic_dec_and_test();
-        atomic_sub_and_test();
-        atomic_add_negative();
-        atomic_add_unless();
-        test_and_set_bit();
-        test_and_clear_bit();
-        test_and_change_bit();
-
-
--- Steve
-
+	WARN_ON(hunk_is_in("Documentation/CodingStyle") &&
+		lines_added > lines_removed);
+-- 
+Stefan Richter
+-=====-==--- --=- =-==-
+http://arcgraph.de/sr/
