@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763773AbYBVLaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765756AbYBVLeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763773AbYBVLaV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 06:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbYBVLaK
+	id S1765756AbYBVLeb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 06:34:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756814AbYBVLeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 06:30:10 -0500
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:49392 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750809AbYBVLaI (ORCPT
+	Fri, 22 Feb 2008 06:34:24 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50903 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754251AbYBVLeX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 06:30:08 -0500
-X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Fri, 22 Feb 2008 06:30:08 EST
-Date: Fri, 22 Feb 2008 12:00:24 +0100
-From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
-Subject: [PATCH] let XEN depend on PAE
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: xen-devel@lists.xensource.com
-Message-id: <47BEAB48.7050900@nets.rwth-aachen.de>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-15
-Content-transfer-encoding: 7BIT
-X-IronPort-AV: E=Sophos;i="4.25,390,1199660400";   d="scan'208";a="51605764"
-User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
+	Fri, 22 Feb 2008 06:34:23 -0500
+Subject: Re: Kernel oops with bluetooth usb dongle
+From: David Woodhouse <dwmw2@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Quel Qun <kelk1@comcast.net>, Dave Young <hidave.darkstar@gmail.com>,
+       Marcel Holtmann <marcel@holtmann.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jiri Kosina <jkosina@suse.cz>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.1.00.0802220813180.7583@apollo.tec.linutronix.de>
+References: <022220080240.25836.47BE362900072A1C000064EC2200761394CE05040A05@comcast.net>
+	 <alpine.LFD.1.00.0802220813180.7583@apollo.tec.linutronix.de>
+Content-Type: text/plain
+Date: Fri, 22 Feb 2008 20:34:09 +0900
+Message-Id: <1203680049.5771.44.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8.dwmw2.1) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-As paravirtualized xen guests won't work with !X86_PAE, change the Kconfig
-accordingly.
+On Fri, 2008-02-22 at 08:23 +0100, Thomas Gleixner wrote:
+> 
+> +       del_timer(&conn->info_timer);
+> +
+>         hcon->l2cap_data = NULL;
+>         kfree(conn);
 
-Signed-off-by: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Shouldn't that be del_timer_sync() ?
 
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index 4d5f264..2035238 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -6,7 +6,7 @@ config XEN
-    bool "Xen guest support"
-    select PARAVIRT
-    depends on X86_32
--   depends on X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES && !(X86_VISWS ||
-X86_VOYAGER)
-+   depends on X86_PAE && X86_CMPXCHG && X86_TSC && !NEED_MULTIPLE_NODES &&
-!(X86_VISWS || X86_VOYAGER)
-    help
-      This is the Linux Xen port.  Enabling this will allow the
-      kernel to boot in a paravirtualized environment under the
+-- 
+dwmw2
 
