@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935268AbYBVFM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935483AbYBVFNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935268AbYBVFM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 00:12:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbYBVFIC
+	id S935483AbYBVFNf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 00:13:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbYBVFIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 00:08:02 -0500
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:35782 "EHLO
+	Fri, 22 Feb 2008 00:08:05 -0500
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:35784 "EHLO
 	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751016AbYBVFHv (ORCPT
+	with ESMTP id S1751073AbYBVFHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 22 Feb 2008 00:07:51 -0500
 From: Isaku Yamahata <yamahata@valinux.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: linux-ia64@vger.kernel.org, yamahata@valinux.co.jp
-Subject: [PATCH 10/11] xen: import include/xen/interface/callback.h which ia64/xen needs.
-Date: Fri, 22 Feb 2008 14:07:47 +0900
-Message-Id: <12036568693397-git-send-email-yamahata@valinux.co.jp>
+Subject: [PATCH 08/11] xen: replace callers of alloc_vm_area()/free_vm_area() with xen_ prefixed one.
+Date: Fri, 22 Feb 2008 14:07:45 +0900
+Message-Id: <12036568693857-git-send-email-yamahata@valinux.co.jp>
 X-Mailer: git-send-email 1.5.3
 In-Reply-To: <12036568683779-git-send-email-yamahata@valinux.co.jp>
 References: <12036568683779-git-send-email-yamahata@valinux.co.jp>
@@ -23,138 +23,87 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Don't use alloc_vm_area()/free_vm_area() directly, instead define
+xen_alloc_vm_area()/xen_free_vm_area() and use them.
+
+alloc_vm_area()/free_vm_area() are used to allocate/free area which
+are for grant table mapping. Xen/x86 grant table is based on virtual
+address so that alloc_vm_area()/free_vm_area() are suitable.
+On the other hand Xen/ia64 (and Xen/powerpc) grant table is based on
+pseudo physical address (guest physical address) so that allocation
+should be done differently.
+The original version of xenified Linux/IA64 have its own
+allocate_vm_area()/free_vm_area() definitions which don't allocate vm area
+contradictory to those names.
+Now vanilla Linux already has its definitions so that it's impossible
+to have IA64 definitions of allocate_vm_area()/free_vm_area().
+Instead introduce xen_allocate_vm_area()/xen_free_vm_area() and use them.
 
 Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
 ---
- include/xen/interface/callback.h |  119 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 119 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/interface/callback.h
+ drivers/xen/grant-table.c          |    2 +-
+ drivers/xen/xenbus/xenbus_client.c |    6 +++---
+ include/asm-x86/xen/hypervisor.h   |    3 +++
+ 3 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/include/xen/interface/callback.h b/include/xen/interface/callback.h
-new file mode 100644
-index 0000000..04c8b5d
---- /dev/null
-+++ b/include/xen/interface/callback.h
-@@ -0,0 +1,119 @@
-+/******************************************************************************
-+ * callback.h
-+ *
-+ * Register guest OS callbacks with Xen.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2006, Ian Campbell
-+ */
+diff --git a/drivers/xen/grant-table.c b/drivers/xen/grant-table.c
+index 95016fd..9fcde20 100644
+--- a/drivers/xen/grant-table.c
++++ b/drivers/xen/grant-table.c
+@@ -478,7 +478,7 @@ static int gnttab_map(unsigned int start_idx, unsigned int end_idx)
+ 
+ 	if (shared == NULL) {
+ 		struct vm_struct *area;
+-		area = alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
++		area = xen_alloc_vm_area(PAGE_SIZE * max_nr_grant_frames());
+ 		BUG_ON(area == NULL);
+ 		shared = area->addr;
+ 	}
+diff --git a/drivers/xen/xenbus/xenbus_client.c b/drivers/xen/xenbus/xenbus_client.c
+index 9fd2f70..0f86b0f 100644
+--- a/drivers/xen/xenbus/xenbus_client.c
++++ b/drivers/xen/xenbus/xenbus_client.c
+@@ -399,7 +399,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
+ 
+ 	*vaddr = NULL;
+ 
+-	area = alloc_vm_area(PAGE_SIZE);
++	area = xen_alloc_vm_area(PAGE_SIZE);
+ 	if (!area)
+ 		return -ENOMEM;
+ 
+@@ -409,7 +409,7 @@ int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
+ 		BUG();
+ 
+ 	if (op.status != GNTST_okay) {
+-		free_vm_area(area);
++		xen_free_vm_area(area);
+ 		xenbus_dev_fatal(dev, op.status,
+ 				 "mapping in shared page %d from domain %d",
+ 				 gnt_ref, dev->otherend_id);
+@@ -508,7 +508,7 @@ int xenbus_unmap_ring_vfree(struct xenbus_device *dev, void *vaddr)
+ 		BUG();
+ 
+ 	if (op.status == GNTST_okay)
+-		free_vm_area(area);
++		xen_free_vm_area(area);
+ 	else
+ 		xenbus_dev_error(dev, op.status,
+ 				 "unmapping page at handle %d error %d",
+diff --git a/include/asm-x86/xen/hypervisor.h b/include/asm-x86/xen/hypervisor.h
+index 138ee8a..31836ad 100644
+--- a/include/asm-x86/xen/hypervisor.h
++++ b/include/asm-x86/xen/hypervisor.h
+@@ -57,6 +57,9 @@ extern struct shared_info *HYPERVISOR_shared_info;
+ extern struct start_info *xen_start_info;
+ #define is_initial_xendomain() (xen_start_info->flags & SIF_INITDOMAIN)
+ 
++#define xen_alloc_vm_area(size)	alloc_vm_area(size)
++#define xen_free_vm_area(area)	free_vm_area(area)
 +
-+#ifndef __XEN_PUBLIC_CALLBACK_H__
-+#define __XEN_PUBLIC_CALLBACK_H__
-+
-+#include "xen.h"
-+
-+/*
-+ * Prototype for this hypercall is:
-+ *   long callback_op(int cmd, void *extra_args)
-+ * @cmd        == CALLBACKOP_??? (callback operation).
-+ * @extra_args == Operation-specific extra arguments (NULL if none).
-+ */
-+
-+/* ia64, x86: Callback for event delivery. */
-+#define CALLBACKTYPE_event                 0
-+
-+/* x86: Failsafe callback when guest state cannot be restored by Xen. */
-+#define CALLBACKTYPE_failsafe              1
-+
-+/* x86/64 hypervisor: Syscall by 64-bit guest app ('64-on-64-on-64'). */
-+#define CALLBACKTYPE_syscall               2
-+
-+/*
-+ * x86/32 hypervisor: Only available on x86/32 when supervisor_mode_kernel
-+ *     feature is enabled. Do not use this callback type in new code.
-+ */
-+#define CALLBACKTYPE_sysenter_deprecated   3
-+
-+/* x86: Callback for NMI delivery. */
-+#define CALLBACKTYPE_nmi                   4
-+
-+/*
-+ * x86: sysenter is only available as follows:
-+ * - 32-bit hypervisor: with the supervisor_mode_kernel feature enabled
-+ * - 64-bit hypervisor: 32-bit guest applications on Intel CPUs
-+ *                      ('32-on-32-on-64', '32-on-64-on-64')
-+ *                      [nb. also 64-bit guest applications on Intel CPUs
-+ *                           ('64-on-64-on-64'), but syscall is preferred]
-+ */
-+#define CALLBACKTYPE_sysenter              5
-+
-+/*
-+ * x86/64 hypervisor: Syscall by 32-bit guest app on AMD CPUs
-+ *                    ('32-on-32-on-64', '32-on-64-on-64')
-+ */
-+#define CALLBACKTYPE_syscall32             7
-+
-+/*
-+ * Disable event deliver during callback? This flag is ignored for event and
-+ * NMI callbacks: event delivery is unconditionally disabled.
-+ */
-+#define _CALLBACKF_mask_events             0
-+#define CALLBACKF_mask_events              (1U << _CALLBACKF_mask_events)
-+
-+/*
-+ * Register a callback.
-+ */
-+#define CALLBACKOP_register                0
-+struct callback_register {
-+    uint16_t type;
-+    uint16_t flags;
-+    xen_callback_t address;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(callback_register);
-+
-+/*
-+ * Unregister a callback.
-+ *
-+ * Not all callbacks can be unregistered. -EINVAL will be returned if
-+ * you attempt to unregister such a callback.
-+ */
-+#define CALLBACKOP_unregister              1
-+struct callback_unregister {
-+    uint16_t type;
-+    uint16_t _unused;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(callback_unregister);
-+
-+#if __XEN_INTERFACE_VERSION__ < 0x00030207
-+#undef CALLBACKTYPE_sysenter
-+#define CALLBACKTYPE_sysenter CALLBACKTYPE_sysenter_deprecated
-+#endif
-+
-+#endif /* __XEN_PUBLIC_CALLBACK_H__ */
-+
-+/*
-+ * Local variables:
-+ * mode: C
-+ * c-set-style: "BSD"
-+ * c-basic-offset: 4
-+ * tab-width: 4
-+ * indent-tabs-mode: nil
-+ * End:
-+ */
+ /* arch/i386/mach-xen/evtchn.c */
+ /* Force a proper event-channel callback from Xen. */
+ extern void force_evtchn_callback(void);
 -- 
 1.5.3
 
