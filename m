@@ -1,110 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933654AbYBVMrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934507AbYBVMsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933654AbYBVMrm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 07:47:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbYBVMrf
+	id S934507AbYBVMsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 07:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbYBVMsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 07:47:35 -0500
-Received: from sacred.ru ([62.205.161.221]:45205 "EHLO sacred.ru"
+	Fri, 22 Feb 2008 07:48:47 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40882 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbYBVMre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 07:47:34 -0500
-Message-ID: <47BEC459.6090207@openvz.org>
-Date: Fri, 22 Feb 2008 15:47:21 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	id S1752768AbYBVMsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 07:48:46 -0500
+Date: Fri, 22 Feb 2008 13:48:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and
+	running in KVM
+Message-ID: <20080222124830.GA25902@elte.hu>
+References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com> <20080221203748.GA9031@elte.hu> <47BDFBDE.5040102@zytor.com> <20080222094513.GA6269@elte.hu> <47BE9CB7.5070609@zytor.com> <20080222100044.GA6807@elte.hu> <20080222111518.GA6504@amd.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH 1/3] Consolidate checks for whether or not to ignore a signal
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (sacred.ru [62.205.161.221]); Fri, 22 Feb 2008 15:47:11 +0300 (MSK)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080222111518.GA6504@amd.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both sig_ignored() and do_sigactoin() check for signr to be explicitly 
-or implicitly ignored. Introduce a helper for them.
 
-This patch is aimed to help handling signals by pid namespace's
-init, and was derived from one of Oleg's patches
-https://lists.linux-foundation.org/pipermail/containers/2007-December/009308.html
-so, if he doesn't mind, he should be considered as an author.
+* Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> > ok. Then i guess we should just leave the warning and the backtrace 
+> > in place until they get a fix done?
+> 
+> No. I don't agree. The MTRRs are set up by the BIOS because it knows 
+> the hardware best (I know this is only true in theory). The OS should 
+> basically trust the BIOS MTRR settings. If the OS can't trust the 
+> BIOS, like on real hardware, the check and the warning is necessary. 
+> If the OS can trust the BIOS, like running in a KVM or QEMU virtual 
+> machine, it should just ignore the case where all MTRRs are blank.
 
----
- kernel/signal.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
+well, i can agree with the warning being pointless on KVM paravirt, but 
+it's not pointless in the Qemu context.
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 56ebcc3..c32f990 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -39,11 +39,19 @@
- 
- static struct kmem_cache *sigqueue_cachep;
- 
-+static int __sig_ignored(struct task_struct *t, int sig)
-+{
-+	void __user *handler;
-+
-+	/* Is it explicitly or implicitly ignored? */
-+
-+	handler = t->sighand->action[sig - 1].sa.sa_handler;
-+	return handler == SIG_IGN ||
-+		(handler == SIG_DFL && sig_kernel_ignore(sig));
-+}
- 
- static int sig_ignored(struct task_struct *t, int sig)
- {
--	void __user * handler;
--
- 	/*
- 	 * Tracers always want to know about signals..
- 	 */
-@@ -58,10 +66,7 @@ static int sig_ignored(struct task_struct *t, int sig)
- 	if (sigismember(&t->blocked, sig) || sigismember(&t->real_blocked, sig))
- 		return 0;
- 
--	/* Is it explicitly or implicitly ignored? */
--	handler = t->sighand->action[sig-1].sa.sa_handler;
--	return   handler == SIG_IGN ||
--		(handler == SIG_DFL && sig_kernel_ignore(sig));
-+	return __sig_ignored(t, sig);
- }
- 
- /*
-@@ -2307,13 +2312,14 @@ sys_rt_sigqueueinfo(int pid, int sig, siginfo_t __user *uinfo)
- 
- int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
- {
-+	struct task_struct *t = current;
- 	struct k_sigaction *k;
- 	sigset_t mask;
- 
- 	if (!valid_signal(sig) || sig < 1 || (act && sig_kernel_only(sig)))
- 		return -EINVAL;
- 
--	k = &current->sighand->action[sig-1];
-+	k = &t->sighand->action[sig-1];
- 
- 	spin_lock_irq(&current->sighand->siglock);
- 	if (oact)
-@@ -2334,9 +2340,7 @@ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
- 		 *   (for example, SIGCHLD), shall cause the pending signal to
- 		 *   be discarded, whether or not it is blocked"
- 		 */
--		if (act->sa.sa_handler == SIG_IGN ||
--		   (act->sa.sa_handler == SIG_DFL && sig_kernel_ignore(sig))) {
--			struct task_struct *t = current;
-+		if (__sig_ignored(t, sig)) {
- 			sigemptyset(&mask);
- 			sigaddset(&mask, sig);
- 			rm_from_queue_full(&mask, &t->signal->shared_pending);
--- 
-1.5.3.4
+we fundamentall _dont_ trust the BIOS's MTRR settings, just check the 
+very function that you modified: mtrr_trim_uncached_memory() - that 
+function handles _exactly_ a case where a BIOS messes up MTRR's. This 
+problem has caused real user-side breakage and just not emitting a 
+warning because Qemu is lazy to emulate a proper PC is not a strong 
+enough argument.
 
+so i've applied the KVM bits but the warning stays for Qemu.
 
+	Ingo
