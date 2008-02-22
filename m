@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933755AbYBVUDw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbYBVUEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933755AbYBVUDw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 15:03:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759348AbYBVT7q
+	id S933886AbYBVUEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 15:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932295AbYBVT7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:59:46 -0500
-Received: from smtp5.pp.htv.fi ([213.243.153.39]:52717 "EHLO smtp5.pp.htv.fi"
+	Fri, 22 Feb 2008 14:59:47 -0500
+Received: from smtp4.pp.htv.fi ([213.243.153.38]:44833 "EHLO smtp4.pp.htv.fi"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761790AbYBVT7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:59:41 -0500
-Date: Fri, 22 Feb 2008 21:58:52 +0200
+	id S932067AbYBVT7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:59:36 -0500
+Date: Fri, 22 Feb 2008 21:58:47 +0200
 From: Adrian Bunk <bunk@kernel.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Greg KH <gregkh@suse.de>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] usb/serial/io_ti.c: remove unneeded NULL check
-Message-ID: <20080222195852.GL1409@cs181133002.pp.htv.fi>
-References: <20080219224915.GN31955@cs181133002.pp.htv.fi> <20080219232556.GB1963@suse.de> <2c0942db0802191538k79f93ca5p93a1883a449f3bb0@mail.gmail.com> <20080222101016.37128803@core>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-kernel@vger.kernel.org,
+       linux-pci@atrey.karlin.mff.cuni.cz
+Subject: [2.6 patch] pci/pcie/aer/aerdrv_acpi.c: remove unneeded NULL check
+Message-ID: <20080222195847.GK1409@cs181133002.pp.htv.fi>
+References: <20080219192902.GD31955@cs181133002.pp.htv.fi> <20080220054758.GB31832@kroah.com> <20080220075628.GD31955@cs181133002.pp.htv.fi> <20080220160935.GA2658@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20080222101016.37128803@core>
+In-Reply-To: <20080220160935.GA2658@kroah.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 10:10:16AM +0000, Alan Cox wrote:
-> > Either the test of port->tty here is unneeded:
+On Wed, Feb 20, 2008 at 08:09:35AM -0800, Greg KH wrote:
+> On Wed, Feb 20, 2008 at 09:56:28AM +0200, Adrian Bunk wrote:
+> > On Tue, Feb 19, 2008 at 09:47:58PM -0800, Greg KH wrote:
+> > > On Tue, Feb 19, 2008 at 09:29:02PM +0200, Adrian Bunk wrote:
+> > > > The Coverity checker spotted the following inconsequent NULL checking 
+> > > > introduced by commit 3c75e23784e6ed5f4841de43d0750fd9b37bafcb:
+> > > > 
+> > > > <--  snip  -->
+> > > > 
+> > > > ...
+> > > > int aer_osc_setup(struct pcie_device *pciedev)
+> > > > {
+> > > > ...            vvvvvvvvv
+> > > >         while (pdev->bus && pdev->bus->self)
+> > > >                 pdev = pdev->bus->self;
+> > > 
+> > > That could probably change to just pdev->bus->self, as a bus should
+> > > always be there for a pdev, so I don't see this as a problem.
 > > 
-> >  if (port->tty)
-> >                port->tty->low_latency = low_latency;
-> > 
-> > ...or the lack of test of port->tty here is a mistake:
-> > 
-> > 	 edge_set_termios (port, port->tty->termios);
+> > I'm not claiming this specific case was a problem.
 > 
-> Interesting - so coverity doesn't understand the BKL. It's producing the
-> right answer, for the right reason but the assumption it makes isn't 100%
-> safe.
+> Well, Coverity did :)
 
-Coverity doesn't perform magic.
-It simply notices that it's once checked and once dereferenced 
-unconditionally.
+It only said it's once checked and once not.
 
-> The check can go.
+> > When a NULL check is only performed in some cases that's sometimes a bug 
+> > that has to be fixed and in most cases a not required check that should 
+> > be removed at some point in time.
+> 
+> I agree, patches are always welcome...
 
-Thanks, patch below.
+Patch below.
 
-> Alan
+> thanks,
+> 
+> greg k-h
 
 cu
 Adrian
@@ -58,23 +71,22 @@ Adrian
 
 
 There's no reason for checking pdev->bus for being NULL here (and we'd 
-anyway Oops below if it was).
+anyway Oops 3 lines below if it was).
 
 Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
 ---
-afefd6935c788b3e4071092ebc04c4d356dd7496 diff --git a/drivers/usb/serial/io_ti.c b/drivers/usb/serial/io_ti.c
-index cd34059..700683c 100644
---- a/drivers/usb/serial/io_ti.c
-+++ b/drivers/usb/serial/io_ti.c
-@@ -1944,8 +1944,7 @@ static int edge_open (struct usb_serial_port *port, struct file * filp)
- 	if (edge_port == NULL)
- 		return -ENODEV;
+74832021c82be6e2ed6055f4f25dbf152df67cf5 diff --git a/drivers/pci/pcie/aer/aerdrv_acpi.c b/drivers/pci/pcie/aer/aerdrv_acpi.c
+index 8c199ae..1e2a858 100644
+--- a/drivers/pci/pcie/aer/aerdrv_acpi.c
++++ b/drivers/pci/pcie/aer/aerdrv_acpi.c
+@@ -34,7 +34,7 @@ int aer_osc_setup(struct pcie_device *pciedev)
+ 	acpi_handle handle = 0;
  
--	if (port->tty)
--		port->tty->low_latency = low_latency;
-+	port->tty->low_latency = low_latency;
- 
- 	port_number = port->number - port->serial->minor;
- 	switch (port_number) {
+ 	/* Find root host bridge */
+-	while (pdev->bus && pdev->bus->self)
++	while (pdev->bus->self)
+ 		pdev = pdev->bus->self;
+ 	handle = acpi_get_pci_rootbridge_handle(
+ 		pci_domain_nr(pdev->bus), pdev->bus->number);
 
