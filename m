@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbYBVPo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756439AbYBVPrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbYBVPo0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 10:44:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753629AbYBVPoR
+	id S1756439AbYBVPrO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 10:47:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754280AbYBVPq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 10:44:17 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:42032 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753465AbYBVPoQ (ORCPT
+	Fri, 22 Feb 2008 10:46:59 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:35211 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754185AbYBVPq6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 10:44:16 -0500
-Date: Fri, 22 Feb 2008 07:43:08 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Regression [Was: Boot hang with stack protector on x86_64]
-In-Reply-To: <20080222075950.GB2660@uranus.ravnborg.org>
-Message-ID: <alpine.LFD.1.00.0802220739430.19896@woody.linux-foundation.org>
-References: <Xine.LNX.4.64.0802221121340.20800@us.intercode.com.au> <20080222075950.GB2660@uranus.ravnborg.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
+	Fri, 22 Feb 2008 10:46:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XKv9C2mdJU2GBiH3rp9rKLuNqg0tBlQbmO3tVHx3fQhar5NxBABNmUTYjYn9Fs2qJz4GcESvhgGyqRH+5Qqpi/OCZsT0R2jfoR69eheL7jlfrPWWOXdITPas9VH8ZWtVJ0rGCQiKxQWAxkeaEPhcasLB9IvxgQvN0hcMDDGcqO0=
+Message-ID: <c6b1100b0802220746s3441d28cj92896618bbb57bde@mail.gmail.com>
+Date: Fri, 22 Feb 2008 15:46:54 +0000
+From: "Chris Clayton" <chris2553@googlemail.com>
+To: ivdoorn@gmail.com
+Subject: Re: 2.6.25-rc2 regression in rt61pci wireless driver
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+In-Reply-To: <200802181911.32128.IvDoorn@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <c6b1100b0802160406l24fed9dcje1dbfc8907fd7a16@mail.gmail.com>
+	 <200802181911.32128.IvDoorn@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ivo,
 
-
-On Fri, 22 Feb 2008, Sam Ravnborg wrote:
+On 18/02/2008, Ivo van Doorn <ivdoorn@gmail.com> wrote:
+> Hi,
 >
-> This is a regression. Can you please revert this commit.
 
-Not really. The thing is, CONFIG_CC_STACKPROTECTOR has never done anything 
-at all, now it does, and it shows that it never worked.
+[...]
 
-So the commit that made it do something shouldn't be reverted, but 
-CONFIG_CC_STACKPROTECTOR should be marked BROKEN, because it obviously is 
-broken right now.
+> Above traces should be enough, but to determine where rt2x00 broke
+>  down approximatly I need to have a few test result on specific moments.
+>  Could you test the kernel with the following versions:
+>
+>  rt2x00 2.0.11   2d68de3efa62655d551092f5c787505735d561ad
+>  rt2x00 2.0.12   a3c7aa58df7df80aa05f166fe3e42482247164cf
+>  rt2x00 2.0.13   5a6012e105ae1664cd2841c33bf59fbdd8d4dbcc
+>
+>  Checking those out is simply a matter of:
+>  git branch 2.0.11 2d68de3efa62655d551092f5c787505735d561ad
+>  git checkout 2.0.11
+>
 
-But keeping the config option, and just not making it do anything is 
-misleading and wrong.
+OK, we seem to be struggling a little, so I've built an installed git
+and cloned Linus' 2.6 tree. My wireless network dies after a few pings
+with rt2x00 2.0.11.
 
-So just something like this? To make sure normal people don't enable it..
+>  No further bisecting is needed, but with above tests I can at least
+>  narrow it down to find the cause of this issue.
+>
 
-			Linus
+If you need me to bisect, just shout. Please be patient though, I'm
+exploring new territory here :-)
 
----
- arch/x86/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 3be2305..4a88cf7 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1054,7 +1054,7 @@ config SECCOMP
- 
- config CC_STACKPROTECTOR
- 	bool "Enable -fstack-protector buffer overflow detection (EXPERIMENTAL)"
--	depends on X86_64 && EXPERIMENTAL
-+	depends on X86_64 && EXPERIMENTAL && BROKEN
- 	help
-          This option turns on the -fstack-protector GCC feature. This
- 	  feature puts, at the beginning of critical functions, a canary
+Chris
+>  Thanks.
+>
+>
+>  Ivo
+>
+>
+
+
+-- 
+Beauty is in the eye of the beerholder.
