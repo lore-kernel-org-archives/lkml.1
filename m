@@ -1,57 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765570AbYBVLTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbYBVLXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765570AbYBVLTw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 06:19:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbYBVLTp
+	id S1764101AbYBVLXW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 06:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbYBVLXP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 06:19:45 -0500
-Received: from mail0.scram.de ([78.47.204.202]:48763 "EHLO mail.scram.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753853AbYBVLTn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 06:19:43 -0500
-X-Spam-Score: -4.217
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
- * -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
- *      [score: 0.0000]
- *  0.2 AWL AWL: From: address is in the auto white-list
-Message-ID: <47BEAF00.50106@scram.de>
-Date: Fri, 22 Feb 2008 12:16:16 +0100
-From: Jochen Friedrich <jochen@scram.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.9 (X11/20080110)
+	Fri, 22 Feb 2008 06:23:15 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:24115 "EHLO
+	outbound3-va3-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750991AbYBVLXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 06:23:14 -0500
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.11;Service: EHS
+X-WSS-ID: 0JWN0TV-04-VK2-01
+X-Server-Uuid: C391E81C-6590-4A2B-9214-A04D45AF4E95
+Date: Fri, 22 Feb 2008 12:18:04 +0100
+From: "Joerg Roedel" <joerg.roedel@amd.com>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] X86: don't print a warning when MTRR are blank and
+ running in KVM
+Message-ID: <20080222111804.GB6504@amd.com>
+References: <1203605414-4958-1-git-send-email-joerg.roedel@amd.com>
+ <86802c440802211154h28ef0170m59c42bdd8de76358@mail.gmail.com>
 MIME-Version: 1.0
-To: Jean Delvare <khali@linux-fr.org>
-CC: Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
-Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale CPM1/CPM2
- controllers
-References: <47A1C4E9.4000003@scram.de> <20080221130520.12b01553@hyperion.delvare>
-In-Reply-To: <20080221130520.12b01553@hyperion.delvare>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <86802c440802211154h28ef0170m59c42bdd8de76358@mail.gmail.com>
+User-Agent: mutt-ng/devel-r804 (Linux)
+X-OriginalArrivalTime: 22 Feb 2008 11:18:04.0411 (UTC)
+ FILETIME=[97BE34B0:01C87544]
+X-WSS-ID: 6BA070782IW12860791-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean,
-
->> +/*
->> + * Wait for patch from Jon Smirl
->> + * #include "powerpc-common.h"
->> + */
+On Thu, Feb 21, 2008 at 11:54:00AM -0800, Yinghai Lu wrote:
+> On Thu, Feb 21, 2008 at 6:50 AM, Joerg Roedel <joerg.roedel@amd.com> wrote:
+> > Inside a KVM virtual machine the MTRRs are usually blank. This confuses Linux
+> >  and causes a warning message at boot. This patch removes that warning message
+> >  when running Linux as a KVM guest.
+> >
+> >  Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+> >  ---
+> >   arch/x86/kernel/cpu/mtrr/main.c |    7 +++++--
+> >   1 files changed, 5 insertions(+), 2 deletions(-)
+> >
+> >  diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+> >  index b6e136f..47e624c 100644
+> >  --- a/arch/x86/kernel/cpu/mtrr/main.c
+> >  +++ b/arch/x86/kernel/cpu/mtrr/main.c
+> >  @@ -43,6 +43,7 @@
+> >   #include <asm/uaccess.h>
+> >   #include <asm/processor.h>
+> >   #include <asm/msr.h>
+> >  +#include <asm/kvm_para.h>
+> >   #include "mtrr.h"
+> >
+> >   u32 num_var_ranges = 0;
+> >  @@ -687,12 +688,14 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+> >         }
+> >
+> >         /* kvm/qemu doesn't have mtrr set right, don't trim them all */
+> >  -       if (!highest_pfn) {
+> >  +       if (!highest_pfn && !kvm_para_available()) {
+> >                 printk(KERN_WARNING "WARNING: strange, CPU MTRRs all blank?\n");
+> >                 WARN_ON(1);
+> >  -               return 0;
+> >         }
+> >
+> >  +       if (!highest_pfn)
+> >  +               return 0;
+> >  +
+> >         if (highest_pfn < end_pfn) {
+> >                 printk(KERN_WARNING "WARNING: BIOS bug: CPU MTRRs don't cover"
+> >                         " all of memory, losing %luMB of RAM.\n",
+> >  --
+> >  1.5.3.7
+> >
 > 
-> It doesn't make sense to merge this comment upstream.
+> Doest that WARN_ON(1) hurt?
 
-I know you don't like the patch from Jon Smirl and you also explained your reasons.
-Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
+Yes. It inidicates a problem where there isn't one. In a virtual machine
+MTRRs make absolutly no sense and so they should all be blank there.
 
-1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
-2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
-   or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
-3. use a glue layer with a translation map.
+Joerg
 
-What is the preferred way to do this?
+-- 
+           |           AMD Saxony Limited Liability Company & Co. KG
+ Operating |         Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+ System    |                  Register Court Dresden: HRA 4896
+ Research  |              General Partner authorized to represent:
+ Center    |             AMD Saxony LLC (Wilmington, Delaware, US)
+           | General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
 
-Thanks,
-Jochen
+
