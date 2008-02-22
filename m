@@ -1,152 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbYBVQQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbYBVQSa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758480AbYBVQQy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:16:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbYBVQQo
+	id S1758679AbYBVQSa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYBVQSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:16:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:35402 "EHLO mx1.redhat.com"
+	Fri, 22 Feb 2008 11:18:21 -0500
+Received: from mail0.lsil.com ([147.145.40.20]:50620 "EHLO mail0.lsil.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755061AbYBVQQl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:16:41 -0500
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <17916.1203636833@redhat.com>
-References: <17916.1203636833@redhat.com> <28196.1203605703@redhat.com> <200802201907.40406.phillips@phunq.net> <20080220160557.4715.66608.stgit@warthog.procyon.org.uk>
-Cc: dhowells@redhat.com, Daniel Phillips <phillips@phunq.net>,
-       Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
-       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 00/37] Permit filesystem local caching
-X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
-Date: Fri, 22 Feb 2008 16:14:35 +0000
-Message-ID: <19020.1203696875@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+	id S1755080AbYBVQST convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:18:19 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Date: Fri, 22 Feb 2008 09:17:33 -0700
+Message-ID: <9738BCBE884FDB42801FAD8A7769C26501F6979B@NAMAIL1.ad.lsil.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB cmds with sense info
+Thread-Index: Acgx9Krd+BU9hV11RZWgo5JcfegcdQAwCr4gEK4lRgA=
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>, "Matthew Wilcox" <matthew@wil.cx>
+Cc: <linux-scsi@vger.kernel.org>, <James.Bottomley@SteelEye.com>,
+       <akpm@osdl.org>, <linux-kernel@vger.kernel.org>,
+       "Patro, Sumant" <Sumant.Patro@lsi.com>,
+       "Kolli, Neela" <Neela.Kolli@lsi.com>
+X-OriginalArrivalTime: 22 Feb 2008 16:17:35.0465 (UTC) FILETIME=[6F536D90:01C8756E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+James,
 
-> > > Have you got before/after benchmark results?
-> > 
-> > See attached.
+What is the status for this patch?  We need to submit more patches based
+on the acceptance of this patch.
+
+Thanks.
+
+Bo Yang 
+
+-----Original Message-----
+From: Yang, Bo 
+Sent: Thursday, November 29, 2007 1:24 PM
+To: 'Matthew Wilcox'
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: RE: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+cmds with sense info
+
+
+Matthew,
+
+I think my last email confused you. Here are the points for submitting
+this patch:
+
+1. It is only to add the ia64 support to our driver.  This is why we add
+the ia64 flag.
+
+2. We did not change the implementation for x86 and x86_64.  The
+implementation for them with u32 * is there from day one.
+
+3. What I wanted to convey in my previous mail is that if one uses a 64
+bit application (s)he may need to test for all functionality again.	
+
+Regards.
+
+Bo Yang
+
+-----Original Message-----
+From: Matthew Wilcox [mailto:matthew@wil.cx]
+Sent: Wednesday, November 28, 2007 2:27 PM
+To: Yang, Bo
+Cc: linux-scsi@vger.kernel.org; James.Bottomley@SteelEye.com;
+akpm@osdl.org; linux-kernel@vger.kernel.org; Patro, Sumant; Kolli, Neela
+Subject: Re: [PATCH 1/1] scsi: megaraid_sas - Fix random failure of DCDB
+cmds with sense info
+
+On Wed, Nov 28, 2007 at 12:08:37PM -0700, Yang, Bo wrote:
+> Matthew,
 > 
-> Attached here are results using BTRFS (patched so that it'll work at all)
-> rather than Ext3 on the client on the partition backing the cache.
+> Yes, as I mentioned, our applications are built in 32-bit environment 
+> (except for ia64).
+> We may see a different behavior if we build it in 64-bit for x86-64. 
 
-And here are XFS results.
+Then this patch isn't acceptable.  You need to find a way which works
+for both 32-bit and 64-bit applications.
 
-Tuning XFS makes a *really* big difference for the lots of small/medium files
-being tarred case.  However, in general BTRFS is much better.
-
-David
----
-
-
-=========================
-FEW BIG FILES TEST ON XFS
-=========================
-
-Completely cold caches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m2.286s
-	user    0m0.000s
-	sys     0m1.828s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m4.228s
-	user    0m0.000s
-	sys     0m1.360s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.058s
-	user    0m0.000s
-	sys     0m0.060s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m0.122s
-	user    0m0.000s
-	sys     0m0.120s
-
-Warm XFS pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m0.181s
-	user    0m0.000s
-	sys     0m0.180s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m1.034s
-	user    0m0.000s
-	sys     0m0.404s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time cat /warthog/bigfile >/dev/null
-	real    0m1.540s
-	user    0m0.000s
-	sys     0m0.256s
-	[root@andromeda ~]# time cat /warthog/biggerfile >/dev/null
-	real    0m3.003s
-	user    0m0.000s
-	sys     0m0.532s
-
-
-==========================================
-MANY SMALL/MEDIUM FILE READING TEST ON XFS
-==========================================
-
-Completely cold caches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    4m56.827s
-	user    0m0.180s
-	sys     0m6.668s
-
-Warm NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m15.084s
-	user    0m0.212s
-	sys     0m5.008s
-
-Warm XFS pagecache, cold NFS pagecache:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    0m13.547s
-	user    0m0.220s
-	sys     0m5.652s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    4m36.316s
-	user    0m0.148s
-	sys     0m4.440s
-
-
-=======================================================
-MANY SMALL/MEDIUM FILE READING TEST ON AN OPTIMISED XFS
-=======================================================
-
-mkfs.xfs -d agcount=4 -l size=128m,version=2 /dev/sda6
-
-
-Completely cold caches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    3m44.033s
-	user    0m0.248s
-	sys     0m6.632s
-
-Warm on-disk cache, cold pagecaches:
-
-	[root@andromeda ~]# time tar cf - /warthog/aaa >/dev/zero
-	real    3m8.582s
-	user    0m0.108s
-	sys     0m3.420s
+--
+Intel are signing my paycheques ... these opinions are still mine "Bill,
+look, we understand that you're interested in selling us this operating
+system, but compare it to ours.  We can't possibly take such a
+retrograde step."
