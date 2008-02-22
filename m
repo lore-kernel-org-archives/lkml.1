@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbYBVRlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761451AbYBVRlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbYBVRlQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:41:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYBVRk7
+	id S1761451AbYBVRlx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:41:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbYBVRln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:40:59 -0500
-Received: from mail.suse.de ([195.135.220.2]:57002 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 12:41:43 -0500
+Received: from mx1.suse.de ([195.135.220.2]:57086 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753768AbYBVRk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:40:57 -0500
-Date: Fri, 22 Feb 2008 18:40:56 +0100
-Message-ID: <s5hd4qoyjmf.wl%tiwai@suse.de>
+	id S1755385AbYBVRlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:41:42 -0500
+Date: Fri, 22 Feb 2008 18:41:41 +0100
+Message-ID: <s5hbq68yjl6.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 07/16] [ALSA] oxygen: fix line-in recording selection
+Subject: [PATCH 08/16] [ALSA] soc - duplicate strcasecmp test for "rj-master" in mpc8610_hpcd_probe()
 In-Reply-To: <s5hoda8yjza.wl%tiwai@suse.de>
 References: <s5hoda8yjza.wl%tiwai@suse.de>
 User-Agent: Wanderlust/2.15.5 (Almost Unreal) SEMI/1.14.6 (Maruoka)
@@ -26,115 +26,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The GPIO pin 0 of the CM9780 must be set when muting the line input even
-on non-Xonar cards.
+In linus' git tree I found this problem. Is it also in the alsa tree?
+please confirm it's the right fix. The patch was not yet tested.
 
-From: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+From: Roel Kluin <12o3l@tiscali.nl>
+Signed-off-by: Roel Kluin <12o3l@tiscali.nl>
+Acked-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 ---
- sound/pci/oxygen/oxygen.c |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+ sound/soc/fsl/mpc8610_hpcd.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/sound/pci/oxygen/oxygen.c b/sound/pci/oxygen/oxygen.c
-index f31a0eb..9a9941b 100644
---- a/sound/pci/oxygen/oxygen.c
-+++ b/sound/pci/oxygen/oxygen.c
-@@ -28,7 +28,9 @@
-  * GPIO 1 -> DFS1 of AK5385
-  */
- 
-+#include <linux/mutex.h>
- #include <linux/pci.h>
-+#include <sound/ac97_codec.h>
- #include <sound/control.h>
- #include <sound/core.h>
- #include <sound/initval.h>
-@@ -37,6 +39,7 @@
- #include <sound/tlv.h>
- #include "oxygen.h"
- #include "ak4396.h"
-+#include "cm9780.h"
- 
- MODULE_AUTHOR("Clemens Ladisch <clemens@ladisch.de>");
- MODULE_DESCRIPTION("C-Media CMI8788 driver");
-@@ -75,6 +78,8 @@ MODULE_DEVICE_TABLE(pci, oxygen_ids);
- #define GPIO_AK5385_DFS_DOUBLE	0x0001
- #define GPIO_AK5385_DFS_QUAD	0x0002
- 
-+#define GPIO_LINE_MUTE		CM9780_GPO0
-+
- #define WM8785_R0	0
- #define WM8785_R1	1
- #define WM8785_R2	2
-@@ -180,16 +185,23 @@ static void wm8785_init(struct oxygen *chip)
- 	snd_component_add(chip->card, "WM8785");
- }
- 
-+static void cmi9780_init(struct oxygen *chip)
-+{
-+	oxygen_ac97_clear_bits(chip, 0, CM9780_GPIO_STATUS, GPIO_LINE_MUTE);
-+}
-+
- static void generic_init(struct oxygen *chip)
- {
- 	ak4396_init(chip);
- 	wm8785_init(chip);
-+	cmi9780_init(chip);
- }
- 
- static void meridian_init(struct oxygen *chip)
- {
- 	ak4396_init(chip);
- 	ak5385_init(chip);
-+	cmi9780_init(chip);
- }
- 
- static void generic_cleanup(struct oxygen *chip)
-@@ -285,6 +297,27 @@ static void set_ak5385_params(struct oxygen *chip,
- 			      value, GPIO_AK5385_DFS_MASK);
- }
- 
-+static void cmi9780_switch_hook(struct oxygen *chip, unsigned int codec,
-+				unsigned int reg, int mute)
-+{
-+	if (codec != 0)
-+		return;
-+	switch (reg) {
-+	case AC97_LINE:
-+		oxygen_write_ac97_masked(chip, 0, CM9780_GPIO_STATUS,
-+					 mute ? GPIO_LINE_MUTE : 0,
-+					 GPIO_LINE_MUTE);
-+		break;
-+	case AC97_MIC:
-+	case AC97_CD:
-+	case AC97_AUX:
-+		if (!mute)
-+			oxygen_ac97_set_bits(chip, 0, CM9780_GPIO_STATUS,
-+					     GPIO_LINE_MUTE);
-+		break;
-+	}
-+}
-+
- static const DECLARE_TLV_DB_LINEAR(ak4396_db_scale, TLV_DB_GAIN_MUTE, 0);
- 
- static int ak4396_control_filter(struct snd_kcontrol_new *template)
-@@ -308,6 +341,7 @@ static const struct oxygen_model model_generic = {
- 	.set_adc_params = set_wm8785_params,
- 	.update_dac_volume = update_ak4396_volume,
- 	.update_dac_mute = update_ak4396_mute,
-+	.ac97_switch_hook = cmi9780_switch_hook,
- 	.model_data_size = sizeof(struct generic_data),
- 	.dac_channels = 8,
- 	.used_channels = OXYGEN_CHANNEL_A |
-@@ -331,6 +365,7 @@ static const struct oxygen_model model_meridian = {
- 	.set_adc_params = set_ak5385_params,
- 	.update_dac_volume = update_ak4396_volume,
- 	.update_dac_mute = update_ak4396_mute,
-+	.ac97_switch_hook = cmi9780_switch_hook,
- 	.model_data_size = sizeof(struct generic_data),
- 	.dac_channels = 8,
- 	.used_channels = OXYGEN_CHANNEL_B |
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index f26c4b2..a00aac7 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -315,7 +315,7 @@ static int mpc8610_hpcd_probe(struct of_device *ofdev,
+ 		machine_data->dai_format = SND_SOC_DAIFMT_LEFT_J;
+ 		machine_data->codec_clk_direction = SND_SOC_CLOCK_IN;
+ 		machine_data->cpu_clk_direction = SND_SOC_CLOCK_OUT;
+-	} else if (strcasecmp(sprop, "rj-master") == 0) {
++	} else if (strcasecmp(sprop, "rj-slave") == 0) {
+ 		machine_data->dai_format = SND_SOC_DAIFMT_RIGHT_J;
+ 		machine_data->codec_clk_direction = SND_SOC_CLOCK_OUT;
+ 		machine_data->cpu_clk_direction = SND_SOC_CLOCK_IN;
 -- 
 1.5.3.8
 
