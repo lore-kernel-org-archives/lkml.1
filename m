@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759807AbYBVQ4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbYBVQ6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759807AbYBVQ4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYBVQ4i
+	id S1759773AbYBVQ6a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbYBVQ6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:56:38 -0500
-Received: from rtr.ca ([76.10.145.34]:4310 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752001AbYBVQ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:56:37 -0500
-Message-ID: <47BEFEC4.7090904@rtr.ca>
-Date: Fri, 22 Feb 2008 11:56:36 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 22 Feb 2008 11:58:21 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:58423 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbYBVQ6U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 11:58:20 -0500
+Message-ID: <47BEFEC8.6020301@zytor.com>
+Date: Fri, 22 Feb 2008 08:56:40 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: david@lang.hm
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org,
-       suspend-devel List <suspend-devel@lists.sourceforge.net>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk.
- Screen becomes green.
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802201241.30952.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201256040.7833@woody.linux-foundation.org> <200802201344.11643.jesse.barnes@intel.com> <alpine.LFD.1.00.0802201355590.7833@woody.linux-foundation.org> <alpine.LFD.1.00.0802210819560.1777@xo-0C-FC-0F.localdomain>
-In-Reply-To: <alpine.LFD.1.00.0802210819560.1777@xo-0C-FC-0F.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Matt Domsch <Matt_Domsch@dell.com>, akpm@linux-foundation.org,
+       Tim Gardner <tim.gardner@canonical.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] add default mode CONFIG_EDD_OFF=n, override with edd={on,off}
+References: <20080222162252.GB32088@auslistsprd01.us.dell.com> <20080222085307.e04af07f.randy.dunlap@oracle.com>
+In-Reply-To: <20080222085307.e04af07f.randy.dunlap@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-..
-> I've been watching for kexec hibernate for a little while now, and the 
-> last I saw was that acpi was incompatible with the kexec hibernate (but 
-> the suspend folks were still claiming that devices needed to be put in 
-> the 'right mode' not just powered off. I've been waiting to see this 
-> resolved.
-..
+Randy Dunlap wrote:
+> 
+> Where is "sk" valid (parsed) as a value for "edd="?
+> I see "skip" or "skipmbr"....
+> or is that just a typo, should be "skip[mbr]"?
+> 
 
-Yeah, exactly.  What's so special about poweroff on hibernation?
-Why even bother with the special "S4" state there?
-I want a real full poweroff, or at least I think I do.  Why wouldn't I?
+It used to only parse the first two letters; we now have a proper 
+command-line parser.
 
-????
+	-hpa
