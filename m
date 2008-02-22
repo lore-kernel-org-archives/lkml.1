@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbYBVThN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbYBVToU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbYBVThN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 14:37:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbYBVTg5
+	id S1760901AbYBVToU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 14:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYBVToB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 14:36:57 -0500
-Received: from zeratul.whoi.edu ([128.128.76.62]:35342 "EHLO mx1.whoi.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756704AbYBVTgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 14:36:55 -0500
-Message-ID: <47BF2455.8030904@whoi.edu>
-Date: Fri, 22 Feb 2008 14:36:53 -0500
-From: Ned Forrester <nforrester@whoi.edu>
-Organization: Woods Hole Oceanographic Institution
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Fri, 22 Feb 2008 14:44:01 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:50206 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753353AbYBVTn7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 14:43:59 -0500
+Date: Fri, 22 Feb 2008 11:43:41 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Bill Huey (hui)" <bill.huey@gmail.com>
+Cc: Andi Kleen <ak@suse.de>, Gregory Haskins <ghaskins@novell.com>,
+       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kevin@hilman.org, cminyard@mvista.com,
+       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
+       dsaxena@plexity.net, gregkh@suse.de, sdietrich@novell.com,
+       pmorreale@novell.com, mkohari@novell.com
+Subject: Re: [PATCH [RT] 08/14] add a loop counter based timeout mechanism
+Message-ID: <20080222194341.GE11213@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152707.4804.59177.stgit@novell1.haskins.net> <200802211741.10299.ak@suse.de> <20080222190814.GD11213@linux.vnet.ibm.com> <9810cff90802221119j23818e74g2721512a693a0a01@mail.gmail.com> <9810cff90802221121s216f69f4k4a5f39eaaf11dd7f@mail.gmail.com>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net, marc.pignat@hevs.ch,
-       linux-kernel@vger.kernel.org, anemo@mba.ocn.ne.jp
-Subject: Re: [spi-devel-general] [PATCH] atmel_spi: support zero length	 transfer
-References: <20080221.005432.07645461.anemo@mba.ocn.ne.jp> <200802201855.02605.marc.pignat@hevs.ch> <20080221.105233.41199605.nemoto@toshiba-tops.co.jp> <200802211026.17816.marc.pignat@hevs.ch> <20080221192334.EE97A230A58@adsl-69-226-248-13.dsl.pltn13.pacbell.net> <47BED734.5030002@whoi.edu> <20080222190228.2B0CB28E363@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-In-Reply-To: <20080222190228.2B0CB28E363@adsl-69-226-248-13.dsl.pltn13.pacbell.net>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9810cff90802221121s216f69f4k4a5f39eaaf11dd7f@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Brownell wrote:
->> However, if the transfer is by DMA, note that the PXA255 and PXA270
->> Developer's Manuals have the following language regarding DMA lengths:
->>
->> 	LEN = 0 means zero bytes for descriptor-fetch transactions.
->> 	LEN = 0 is an invalid setting for no-descriptor-fetch
->> 	transactions. ...
->>
->> Because the pxa2xx_spi driver does not currently use DMA descriptors,
->> zero length DMAs are invalid.
+On Fri, Feb 22, 2008 at 11:21:14AM -0800, Bill Huey (hui) wrote:
+> On Fri, Feb 22, 2008 at 11:19 AM, Bill Huey (hui) <bill.huey@gmail.com> wrote:
+> >  Yeah, I'm not very keen on having a constant there without some
+> >  contention instrumentation to see how long the spins are. It would be
+> >  better to just let it run until either task->on_cpu is off or checking
+> >  if the "current" in no longer matches the mutex owner for the runqueue
+> >  in question. At that point, you know the thread isn't running.
+> >  Spinning on something like that is just a waste of time. It's for that
+> >  reason that doing in the spin outside of a preempt critical section
+> >  isn't really needed
 > 
-> In that case the pxa2xx_spi driver should add a special case to
-> avoid starting such transfers in DMA mode.
+> Excuse me, I meant to say "...isn't a problem".
 
-So, what I think you said is that it would be better for pxa2xx_spi to
-silently ignore a zero-length message, passing it back with the rest of
-the message when all is complete, than to reject the message.  I see no
-reason why that could not be done, though it may be tricky to set other
-things like SSP modes and chip select and *not* start the DMA.  It would
-have to be tested, so I'm not sure when I could try that.
+The fixed-time spins are very useful in cases where the critical section
+is almost always very short but can sometimes be very long.  In such
+cases, you would want to spin until either ownership changes or it is
+apparent that the current critical-section instance will be long.
 
->> I agree with Marc: any such delay will be undefined, in the general
->> case.  It might work for a specific driver implementation.
-> 
-> Is that what Marc said?  I couldn't tell.  In any case, I disagree;
-> the semantics of that delay are clearly define.
+I believe that there are locks in the Linux kernel that have this
+"mostly short but sometimes long" hold-time property.
 
-Maybe I am missing something.  Aren't we talking about a transfer in a
-message, with or without other transfers, who's only unique
-characteristic is that that its length is zero?    What is clearly
-defined about what should happen during that transfer?  I think (maybe
-we are all confused) that Marc and I are talking about the delay, likely
-short, caused by the processing or ignoring of that zero length transfer.
-
-Or are you and Atsushi talking about using spi_transfer.delay_usecs
-*with* a zero length transfer to effectively put a delay between the
-assertion of CS and the start of the first clock?  If so, then I guess I
-missed the original point.  Sorry.
-
---
-
-By the way, reading spi.h again, it looks like spi_transfer.delay_usecs
-is supposed to be implemented between the last bit movement of a
-transfer and any change of CS at the end of a transfer.  Is that right?
- I think that pxa2xx_spi is dropping CS, if requested, immediately at
-the end of transfer, and then putting spi_transfer.delay_usecs between
-that transfer and the next.
-
--- 
-Ned Forrester                                       nforrester@whoi.edu
-Oceanographic Systems Lab                                  508-289-2226
-Applied Ocean Physics and Engineering Dept.
-Woods Hole Oceanographic Institution          Woods Hole, MA 02543, USA
-http://www.whoi.edu/sbl/liteSite.do?litesiteid=7212
-http://www.whoi.edu/hpb/Site.do?id=1532
-http://www.whoi.edu/page.do?pid=10079
-
+							Thanx, Paul
