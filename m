@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761965AbYBVRDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761358AbYBVRFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761965AbYBVRDz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 12:03:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbYBVRDq
+	id S1761358AbYBVRFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 12:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757376AbYBVRFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 12:03:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43303 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756477AbYBVRDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 12:03:45 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: 2.6.25-rc2 System no longer powers off after suspend-to-disk. Screen becomes green.
-Date: Fri, 22 Feb 2008 18:02:17 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       lkml <linux-kernel@vger.kernel.org>, Dave Airlie <airlied@linux.ie>,
-       linux-acpi@vger.kernel.org, Greg KH <gregkh@suse.de>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <alpine.LFD.1.00.0802210819560.1777@xo-0C-FC-0F.localdomain> <47BEFEC4.7090904@rtr.ca>
-In-Reply-To: <47BEFEC4.7090904@rtr.ca>
+	Fri, 22 Feb 2008 12:05:37 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:56810 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756953AbYBVRFg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 12:05:36 -0500
+Date: Fri, 22 Feb 2008 09:04:59 -0800
+From: Greg KH <greg@kroah.com>
+To: Kohei KaiGai <kaigai@ak.jp.nec.com>
+Cc: morgan@kernel.org, serue@us.ibm.com, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] exporting capability name/code pairs (final)
+Message-ID: <20080222170459.GB18524@kroah.com>
+References: <47BE2A26.1080806@ak.jp.nec.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802221802.18640.rjw@sisk.pl>
+In-Reply-To: <47BE2A26.1080806@ak.jp.nec.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 22 of February 2008, Mark Lord wrote:
-> david@lang.hm wrote:
-> ..
-> > I've been watching for kexec hibernate for a little while now, and the 
-> > last I saw was that acpi was incompatible with the kexec hibernate (but 
-> > the suspend folks were still claiming that devices needed to be put in 
-> > the 'right mode' not just powered off. I've been waiting to see this 
-> > resolved.
-> ..
+On Fri, Feb 22, 2008 at 10:49:26AM +0900, Kohei KaiGai wrote:
+> [1/3] Add a private data field within kobj_attribute structure.
+
+Your "Subject" did not line up with this description, please change your
+patch sending format for the next time.
+
+> This patch add a private data field, declared as void *, within kobj_attribute
+> structure. The _show() and _store() method in the sysfs attribute entries can
+> refer this information to identify what entry is accessed.
+> It makes easier to share a single method implementation with several similar
+> entries, like ones to export the list of capabilities the running kernel
+> supported.
 > 
-> Yeah, exactly.  What's so special about poweroff on hibernation?
-> Why even bother with the special "S4" state there?
+> Signed-off-by: KaiGai Kohei <kaigai@ak.jp.nec.com>
 
-(1) To be able to wake up with the help of devices that can't wake
-    the system up from S5 (power off)
-(2) To handle some platform devices appropriately over the cycle
+This looks fine, but I'll not take it unless the documentation is
+updated, as well as the sample code.
 
-> I want a real full poweroff, or at least I think I do.  Why wouldn't I?
-> 
-> ????
+thanks,
 
-You may want that, some people may not want it.
-
-We are supposed to handle S4, the BIOS/platform may expect us to do that, so
-IMO this is a good enough reason to do it.  Especially that we can.
-
-Thanks,
-Rafael
+greg k-h
