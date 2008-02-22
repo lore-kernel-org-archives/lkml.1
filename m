@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758968AbYBVQyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbYBVQyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758968AbYBVQyI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 11:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754169AbYBVQxz
+	id S1760032AbYBVQyl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 11:54:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbYBVQy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 11:53:55 -0500
-Received: from rgminet01.oracle.com ([148.87.113.118]:30456 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753895AbYBVQxx (ORCPT
+	Fri, 22 Feb 2008 11:54:28 -0500
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:34470 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754169AbYBVQy0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 11:53:53 -0500
-Date: Fri, 22 Feb 2008 08:53:07 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Matt Domsch <Matt_Domsch@dell.com>
-Cc: akpm@linux-foundation.org, hpa@zytor.com,
-       Tim Gardner <tim.gardner@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] add default mode CONFIG_EDD_OFF=n, override with
- edd={on,off}
-Message-Id: <20080222085307.e04af07f.randy.dunlap@oracle.com>
-In-Reply-To: <20080222162252.GB32088@auslistsprd01.us.dell.com>
-References: <20080222162252.GB32088@auslistsprd01.us.dell.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Fri, 22 Feb 2008 11:54:26 -0500
+Date: Fri, 22 Feb 2008 17:54:45 +0100
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Subject: Re: [Xen-devel] [PATCH] let XEN depend on PAE
+In-reply-to: <47BEFA4C.6030400@goop.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xen-devel@lists.xensource.com
+Message-id: <47BEFE55.7020703@nets.rwth-aachen.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15
+Content-transfer-encoding: 7BIT
+X-IronPort-AV: E=Sophos;i="4.25,392,1199660400";   d="scan'208";a="51665299"
+References: <47BEAB48.7050900@nets.rwth-aachen.de> <47BEFA4C.6030400@goop.org>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 22 Feb 2008 10:22:52 -0600 Matt Domsch wrote:
-
->  Documentation/kernel-parameters.txt |    3 +--
->  arch/x86/boot/edd.c                 |   10 +++++++++-
->  drivers/firmware/Kconfig            |    9 +++++++++
->  3 files changed, 19 insertions(+), 3 deletions(-)
+Jeremy Fitzhardinge schrieb:
+> Arnd Hannemann wrote:
+>> As paravirtualized xen guests won't work with !X86_PAE, change the
+>> Kconfig
+>> accordingly.
+>>   
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 9a5b665..3e6f0f5 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -625,8 +625,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  	eata=		[HW,SCSI]
->  
->  	edd=		[EDD]
-> -			Format: {"of[f]" | "sk[ipmbr]"}
-> -			See comment in arch/i386/boot/edd.S
-> +			Format: {"off" | "on" | "sk[ipmbr]"}
+> !PAE is supposed to work, but it is a rarely used configuration.  How
+> does it fail?
+> 
+>    J
+> 
 
-Where is "sk" valid (parsed) as a value for "edd="?
-I see "skip" or "skipmbr"....
-or is that just a typo, should be "skip[mbr]"?
+This is with 2.6.24.2, but latest-git looks the same:
+I also tried with 2.6.23 which crashes instantly, without any output of the guest.
 
+[    0.599806] 1 multicall(s) failed: cpu 0
+[    0.599816]   call  1/2: op=26 arg=[c1051860] result=0
+[    0.599825]   call  2/2: op=14 arg=[bf9c7000] result=-22
+[    0.599841] ------------[ cut here ]------------
+[    0.599851] kernel BUG at arch/x86/xen/multicalls.c:103!
+[    0.599861] invalid opcode: 0000 [#1] SMP
+[    0.599871] Modules linked in:
+[    0.599879]
+[    0.599885] Pid: 1, comm: init Not tainted (2.6.24.2 #6)
+[    0.599895] EIP: 0061:[<c0101b7c>] EFLAGS: 00010202 CPU: 0
+[    0.599910] EIP is at xen_mc_flush+0x19c/0x1b0
+[    0.599919] EAX: 00000000 EBX: c10510a0 ECX: c1051060 EDX: c1051060
+[    0.599930] ESI: 00000002 EDI: 00000001 EBP: c2417c10 ESP: c2417be4
+[    0.599940]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: e021
+[    0.599951] Process init (pid: 1, ti=c2417000 task=c2416ab0 task.ti=c2417000)
+[    0.599960] Stack: c0443c98 00000002 00000002 0000000e bf9c7000 ffffffea c1051060 00000200
+[    0.599984]        00000067 c193fffc bf9c7000 c2417c18 c0101112 c2417c5c c0166dfc c193ce40
+[    0.600006]        c193e5c0 c0000000 c193e5c0 00001000 c0000000 c193ce40 c198e71c c10331cc
+[    0.600029] Call Trace:
+[    0.600036]  [<c0107a6a>] show_trace_log_lvl+0x1a/0x30
+[    0.600050]  [<c0107b29>] show_stack_log_lvl+0xa9/0xd0
+[    0.600062]  [<c0107c1a>] show_registers+0xca/0x1e0
+[    0.600074]  [<c0107e4a>] die+0x11a/0x250
+[    0.600085]  [<c0108003>] do_trap+0x83/0xb0
+[    0.600096]  [<c0108318>] do_invalid_op+0x88/0xa0
+[    0.600108]  [<c03e89d2>] error_code+0x72/0x80
+[    0.600121]  [<c0101112>] xen_leave_lazy+0x12/0x20
+[    0.600134]  [<c0166dfc>] move_page_tables+0x27c/0x300
+[    0.600149]  [<c0174762>] setup_arg_pages+0x162/0x2a0
+[    0.600162]  [<c019cad3>] load_elf_binary+0x3d3/0x1bd0
+[    0.600175]  [<c0173f92>] search_binary_handler+0x92/0x200
+[    0.600190]  [<c019b1ef>] load_script+0x1bf/0x200
+[    0.600202]  [<c0173f92>] search_binary_handler+0x92/0x200
+[    0.600215]  [<c0175bab>] do_execve+0x15b/0x180
+[    0.600227]  [<c0104a2e>] sys_execve+0x2e/0x80
+[    0.600241]  [<c0106342>] syscall_call+0x7/0xb
+[    0.600253]  =======================
+[    0.600259] Code: 24 08 89 44 24 0c 89 74 24 04 c7 04 24 98 3c 44 c0 e8 c9 36 02 00 8b 45 ec 83 c3 20 8b 90 00 0b 00 00 39 d6 72 c0 e9 04 ff ff ff <0f> 0b eb fe 0f 0b eb fe 8d b6 00 00 00 00 8d bf 00 00 00 00 55
+[    0.600370] EIP: [<c0101b7c>] xen_mc_flush+0x19c/0x1b0 SS:ESP e021:c2417be4
+[    0.600393] ---[ end trace a686db401f06e173 ]---
+[    0.600403] Kernel panic - not syncing: Attempted to kill init!
 
->  	eisa_irq_edge=	[PARISC,HW]
->  			See header of drivers/parisc/eisa.c.
-> diff --git a/arch/x86/boot/edd.c b/arch/x86/boot/edd.c
-> index 8721dc4..4191805 100644
-> --- a/arch/x86/boot/edd.c
-> +++ b/arch/x86/boot/edd.c
-> @@ -128,17 +128,25 @@ void query_edd(void)
->  {
->  	char eddarg[8];
->  	int do_mbr = 1;
-> +#ifdef CONFIG_EDD_OFF
-> +	int do_edd = 0;
-> +#else
->  	int do_edd = 1;
-> +#endif
->  	int be_quiet;
->  	int devno;
->  	struct edd_info ei, *edp;
->  	u32 *mbrptr;
->  
->  	if (cmdline_find_option("edd", eddarg, sizeof eddarg) > 0) {
-> -		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip"))
-> +		if (!strcmp(eddarg, "skipmbr") || !strcmp(eddarg, "skip")) {
-> +			do_edd = 1;
->  			do_mbr = 0;
-> +		}
->  		else if (!strcmp(eddarg, "off"))
->  			do_edd = 0;
-> +		else if (!strcmp(eddarg, "on"))
-> +			do_edd = 1;
->  	}
->  
->  	be_quiet = cmdline_find_option_bool("quiet");
-> diff --git a/drivers/firmware/Kconfig b/drivers/firmware/Kconfig
-> index 05f02a3..c28e33f 100644
-> --- a/drivers/firmware/Kconfig
-> +++ b/drivers/firmware/Kconfig
-> @@ -17,6 +17,15 @@ config EDD
->            obscure configurations. Most disk controller BIOS vendors do
->            not yet implement this feature.
->  
-> +config EDD_OFF
-> +	bool "Sets default behavior for EDD detection to off"
-> +	depends on EDD
-> +	default n
-> +	help
-> +	  Say Y if you want EDD disabled by default, even though it is compiled into the
-> +	  kernel. Say N if you want EDD enabled by default. EDD can be dynamically set
-> +	  using the kernel parameter 'edd={on|skipmbr|off}'.
-> +
->  config EFI_VARS
->  	tristate "EFI Variable Support via sysfs"
->  	depends on EFI
+full dmesg, config here:
+http://lists.xensource.com/archives/html/xen-devel/2008-02/msg00716.html
 
----
-~Randy
+Best regards,
+Arnd Hannemann
+
