@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbYBWVpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbYBWVxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763680AbYBWVpm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 16:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbYBWVpg
+	id S1757494AbYBWVxw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 16:53:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751448AbYBWVxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 16:45:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50198 "EHLO ogre.sisk.pl"
+	Sat, 23 Feb 2008 16:53:46 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:53127 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756360AbYBWVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 16:45:35 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: 2.6.25-rc2 hangs after "Suspending console(s)"
-Date: Sat, 23 Feb 2008 22:43:50 +0100
-User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
-Cc: linux-kernel@vger.kernel.org
-References: <20080218002815.GA4612@dose.home.local> <20080219085222.GA5328@dose.home.local> <20080220072917.GB15866@dose.home.local>
-In-Reply-To: <20080220072917.GB15866@dose.home.local>
+	id S1751414AbYBWVxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 16:53:45 -0500
+Date: Sat, 23 Feb 2008 16:53:44 -0500
+From: Jeff Garzik <jeff@garzik.org>
+To: Ke Wei <kewei@marvell.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org
+Subject: [PATCH] mvsas: fix build warning, clean prototypes
+Message-ID: <20080223215344.GA28102@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802232243.51190.rjw@sisk.pl>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 20 of February 2008, Tino Keitel wrote:
-> On Tue, Feb 19, 2008 at 09:52:22 +0100, Tino Keitel wrote:
-> > On Mon, Feb 18, 2008 at 20:49:04 +0100, Pavel Machek wrote:
-> > > On Mon 2008-02-18 01:28:15, Tino Keitel wrote:
-> > > > Hi folks,
-> > > > 
-> > > > with 2.6.25-rc2, my Mac mini Core Duo hangs at suspend. The last
-> > > > message on the console is "Suspending console(s)". I also tried some
-> > > > other versions after 2.6.24, all of them fail with this hang.
-> > > 
-> > > Try adding 'no_console_suspend' to kernel command line.
-> > 
-> > Thanks, that gave a bit insight. The last message is now:
-> > 
-> > ACPI: PCI interrupt for device 0000:00:02.0 disabled
-> > 
-> > This is my graphics card:
-> > 
-> > 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile
-> > 945GM/GMS, 943/940GML Express Integrated Graphics Controller
-> > 
-> > So it looks like the recent changes that should repair console
-> > sudpend/resume for Intel graphics broke suspend for me.
-> 
-> It looks like I was wrong. It also hangs when the i915 module isn't
-> loaded.
+- Fix build 'make randconfig' build warning spotted by Toralf Foerster:
 
-Please have a look at: http://bugzilla.kernel.org/show_bug.cgi?id=10065
+drivers/scsi/mvsas.c: In function 'mvs_hexdump':
+drivers/scsi/mvsas.c:715: error: implicit declaration of function 'isalnum'
 
-Thanks,
-Rafael
+- Remove unneeded prototypes (spotted by hch)
+
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+NOTE:  A proper fix, as noted in initial review (and by hch), would
+be to convert this driver over to using lib/hexdump.c, to eliminate
+a hand-rolled hexdump function.
+
+
+ drivers/scsi/mvsas.c |   13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
+
+diff --git a/drivers/scsi/mvsas.c b/drivers/scsi/mvsas.c
+index 30e20e6..d4a6ac3 100755
+--- a/drivers/scsi/mvsas.c
++++ b/drivers/scsi/mvsas.c
+@@ -35,6 +35,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
++#include <linux/ctype.h>
+ #include <scsi/libsas.h>
+ #include <asm/io.h>
+ 
+@@ -632,15 +633,6 @@ static int mvs_phy_control(struct asd_sas_phy *sas_phy, enum phy_func func,
+ 			   void *funcdata);
+ static u32 mvs_read_phy_ctl(struct mvs_info *mvi, u32 port);
+ static void mvs_write_phy_ctl(struct mvs_info *mvi, u32 port, u32 val);
+-static u32 mvs_read_port(struct mvs_info *mvi, u32 off, u32 off2, u32 port);
+-static void mvs_write_port(struct mvs_info *mvi, u32 off, u32 off2,
+-				u32 port, u32 val);
+-static u32 mvs_read_port_cfg_data(struct mvs_info *mvi, u32 port);
+-static void mvs_write_port_cfg_data(struct mvs_info *mvi, u32 port, u32 val);
+-static void mvs_write_port_cfg_addr(struct mvs_info *mvi, u32 port, u32 addr);
+-static u32 mvs_read_port_vsr_data(struct mvs_info *mvi, u32 port);
+-static void mvs_write_port_vsr_data(struct mvs_info *mvi, u32 port, u32 val);
+-static void mvs_write_port_vsr_addr(struct mvs_info *mvi, u32 port, u32 addr);
+ static u32 mvs_read_port_irq_stat(struct mvs_info *mvi, u32 port);
+ static void mvs_write_port_irq_stat(struct mvs_info *mvi, u32 port, u32 val);
+ static void mvs_write_port_irq_mask(struct mvs_info *mvi, u32 port, u32 val);
+@@ -649,9 +641,6 @@ static u32 mvs_read_port_irq_mask(struct mvs_info *mvi, u32 port);
+ static u32 mvs_is_phy_ready(struct mvs_info *mvi, int i);
+ static void mvs_detect_porttype(struct mvs_info *mvi, int i);
+ static void mvs_update_phyinfo(struct mvs_info *mvi, int i, int get_st);
+-static void mvs_free_reg_set(struct mvs_info *mvi, struct mvs_port *port);
+-static u8 mvs_assign_reg_set(struct mvs_info *mvi, struct mvs_port *port);
+-static u32 mvs_is_sig_fis_received(u32 irq_status);
+ 
+ static int mvs_scan_finished(struct Scsi_Host *, unsigned long);
+ static void mvs_scan_start(struct Scsi_Host *);
