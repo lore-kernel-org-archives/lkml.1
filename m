@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762577AbYBWUhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764216AbYBWUhs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762577AbYBWUhZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 15:37:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbYBWUhM
+	id S1764216AbYBWUhs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 15:37:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbYBWUhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 15:37:12 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:2486 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbYBWUhK (ORCPT
+	Sat, 23 Feb 2008 15:37:19 -0500
+Received: from qb-out-0506.google.com ([72.14.204.229]:64721 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755334AbYBWUhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 15:37:10 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=oB/PdT9qV12RSXLxtaPHIsVrJlXwNln4AaH0txqCf66nD+7OwC0ADW0yVjrsO3Cu8
-	c4XOTln1Lb3as3GW/Owiw==
-Message-ID: <6599ad830802231236s5b633290x2199323ffcf8e5cf@mail.gmail.com>
-Date: Sat, 23 Feb 2008 12:36:59 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/8] sched: rt-group: interface
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       tong.n.li@intel.com
-In-Reply-To: <1203798389.6242.98.camel@lappy>
+	Sat, 23 Feb 2008 15:37:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sQ97p0nZYTtRpFFMwzxdOWg3SgdRQiyhl3WlekNwA0WYo9NW4Of47jmRpa3+2JLBYRAVoeYXWIKf9SWxPkrxFXILZDpVqo0Gz6wqqvxqs8n4XrOaGSPvswr4z8sxWANlUrxdQwizR0BDY1nwbq/ywwn44GrDs6MlXOUiozY6CGU=
+Message-ID: <f19298770802231237m520e0158ldce3ae422796ae3b@mail.gmail.com>
+Date: Sat, 23 Feb 2008 23:37:13 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Michael Buesch" <mb@bu3sch.de>
+Subject: Re: [PATCH] Fix the bcm43xx driver breakage in 2.6.24/25.
+Cc: "Larry Finger" <Larry.Finger@lwfinger.net>,
+       "Stefano Brivio" <stefano.brivio@polimi.it>,
+       "Jeff Garzik" <jgarzik@pobox.com>, "Greg KH" <greg@kroah.com>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, "Ingo Molnar" <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200802231720.21920.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080204210258.118479000@chello.nl>
-	 <20080204211836.968632000@chello.nl>
-	 <6599ad830802231148w518d937cyd75d1d0a35702d9d@mail.gmail.com>
-	 <1203796668.6242.82.camel@lappy>
-	 <6599ad830802231202q6584557fte44f4976eacc6e89@mail.gmail.com>
-	 <1203798389.6242.98.camel@lappy>
+References: <47C01D03.9030601@gmail.com> <200802231720.21920.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 12:26 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Sat, Feb 23, 2008 at 7:20 PM, Michael Buesch <mb@bu3sch.de> wrote:
+> On Saturday 23 February 2008 14:17:55 Alexey Zaytsev wrote:
+>  > diff --git a/drivers/net/wireless/bcm43xx/Kconfig b/drivers/net/wireless/bcm43xx/Kconfig
+>  > index 0159701..afb8f43 100644
+>  > --- a/drivers/net/wireless/bcm43xx/Kconfig
+>  > +++ b/drivers/net/wireless/bcm43xx/Kconfig
+>  > @@ -1,6 +1,6 @@
+>  >  config BCM43XX
+>  >       tristate "Broadcom BCM43xx wireless support (DEPRECATED)"
+>  > -     depends on PCI && IEEE80211 && IEEE80211_SOFTMAC && WLAN_80211 && EXPERIMENTAL
+>  > +     depends on PCI && IEEE80211 && IEEE80211_SOFTMAC && WLAN_80211 && (!SSB_B43_PCI_BRIDGE || SSB != y) && EXPERIMENTAL
 >
->  > In that case I guess I'll have to add signed versions of the
->  > read_uint/write_uint methods.
+>  so if SSB is m it will break module auto-loading, right?
 >
->  Yes, I looked at that, I found the interface somewhat unfortunate, it
->  would mean growing the struct with two more function pointers.
 
-Is that really a big deal? We're talking about a structure that has a
-small number (<10 in the current tree) of instances per cgroup
-subsystem.
-
-> Perhaps a
->  read and write function with abstract data would be better suited. That
->  would allow for this and more. Sadly it looses type information.
-
-If the size of the struct cftype really became a problem, I think the
-cleanest way to fix it would be to have a union of the potential
-function pointers, and add a field to specify which one is in use.
-
-Paul
+Right.
+If ssb == m, you can at least unload the ssb module manually, or
+specify the right
+module to load. In the first patch I sent to you, it was
+"!SSB_B43_PCI_BRIDGE" instead of
+"(!SSB_B43_PCI_BRIDGE || SSB != y)", but I thought that there is no reason to
+completely hide the bcm43xx option if ssb is compiled as module.
