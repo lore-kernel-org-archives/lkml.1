@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937439AbYBWAs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937495AbYBWAsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937439AbYBWAs3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:48:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbYBWAf7
+	id S937495AbYBWAsy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:48:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933171AbYBWAgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:35:59 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55701 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:36:07 -0500
+Received: from mail.suse.de ([195.135.220.2]:45004 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935371AbYBWAf6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:35:58 -0500
-Date: Fri, 22 Feb 2008 16:31:20 -0800
+	id S1759178AbYBWAgE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:36:04 -0500
+Date: Fri, 22 Feb 2008 16:31:23 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 30/38] genirq: do not leave interupts enabled on free_irq
-Message-ID: <20080223003120.GE7268@suse.de>
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 31/38] S390: Fix futex_atomic_cmpxchg_std inline assembly.
+Message-ID: <20080223003123.GF7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="genirq-do-not-leave-interupts-enabled-on-free_irq.patch"
+Content-Disposition: inline; filename="s390-fix-futex_atomic_cmpxchg_std-inline-assembly.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,74 +38,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Thomas Gleixner <tglx@linutronix.de>
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-commit 89d694b9dbe769ca1004e01db0ca43964806a611
+commit: d5b02b3ff1d9a2e1074f559c84ed378cfa6fc3c0 upstream
 
-The default_disable() function was changed in commit:
+Add missing exception table entry so that the kernel can handle
+proctection exceptions as well on the cs instruction. Currently only
+specification exceptions are handled correctly.
+The missing entry allows user space to crash the kernel.
 
- 76d2160147f43f982dfe881404cfde9fd0a9da21
- genirq: do not mask interrupts by default
-
-It removed the mask function in favour of the default delayed
-interrupt disabling. Unfortunately this also broke the shutdown in
-free_irq() when the last handler is removed from the interrupt for
-those architectures which rely on the default implementations. Now we
-can end up with a enabled interrupt line after the last handler was
-removed, which can result in spurious interrupts.
-
-Fix this by adding a default_shutdown function, which is only
-installed, when the irqchip implementation does provide neither a
-shutdown nor a disable function.
-
-
-Pointed-out-by: Michael Hennerich <Michael.Hennerich@analog.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Tested-by: Michael Hennerich <Michael.Hennerich@analog.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- kernel/irq/chip.c |   20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+ arch/s390/lib/uaccess_std.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -246,6 +246,17 @@ static unsigned int default_startup(unsi
- }
+--- a/arch/s390/lib/uaccess_std.c
++++ b/arch/s390/lib/uaccess_std.c
+@@ -293,10 +293,10 @@ int futex_atomic_cmpxchg_std(int __user 
  
- /*
-+ * default shutdown function
-+ */
-+static void default_shutdown(unsigned int irq)
-+{
-+	struct irq_desc *desc = irq_desc + irq;
-+
-+	desc->chip->mask(irq);
-+	desc->status |= IRQ_MASKED;
-+}
-+
-+/*
-  * Fixup enable/disable function pointers
-  */
- void irq_chip_set_defaults(struct irq_chip *chip)
-@@ -256,8 +267,15 @@ void irq_chip_set_defaults(struct irq_ch
- 		chip->disable = default_disable;
- 	if (!chip->startup)
- 		chip->startup = default_startup;
-+	/*
-+	 * We use chip->disable, when the user provided its own. When
-+	 * we have default_disable set for chip->disable, then we need
-+	 * to use default_shutdown, otherwise the irq line is not
-+	 * disabled on free_irq():
-+	 */
- 	if (!chip->shutdown)
--		chip->shutdown = chip->disable;
-+		chip->shutdown = chip->disable != default_disable ?
-+			chip->disable : default_shutdown;
- 	if (!chip->name)
- 		chip->name = chip->typename;
- 	if (!chip->end)
+ 	asm volatile(
+ 		"   sacf 256\n"
+-		"   cs   %1,%4,0(%5)\n"
+-		"0: lr   %0,%1\n"
+-		"1: sacf 0\n"
+-		EX_TABLE(0b,1b)
++		"0: cs   %1,%4,0(%5)\n"
++		"1: lr   %0,%1\n"
++		"2: sacf 0\n"
++		EX_TABLE(0b,2b) EX_TABLE(1b,2b)
+ 		: "=d" (ret), "+d" (oldval), "=m" (*uaddr)
+ 		: "0" (-EFAULT), "d" (newval), "a" (uaddr), "m" (*uaddr)
+ 		: "cc", "memory" );
 
 -- 
