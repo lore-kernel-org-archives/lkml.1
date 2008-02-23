@@ -1,117 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753244AbYBWFme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbYBWFwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753244AbYBWFme (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 00:42:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbYBWFmZ
+	id S1753694AbYBWFwv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 00:52:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751077AbYBWFwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 00:42:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:43308 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750872AbYBWFmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 00:42:24 -0500
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
-Date: Sat, 23 Feb 2008 00:41:23 -0500
-User-Agent: KMail/1.9.5
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Nish Aravamudan <nish.aravamudan@gmail.com>,
-       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-References: <20080216002522.9c4bd0fb.akpm@linux-foundation.org> <20080222185648.GA6843@uranus.ravnborg.org> <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
-In-Reply-To: <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
+	Sat, 23 Feb 2008 00:52:41 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:52448 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbYBWFwk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 00:52:40 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Sat, 23 Feb 2008 06:48:12 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: "Greg KH" <greg@kroah.com>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
+       linux-kernel@vger.kernel.org
+References: <47BEAF3B.3080809@protei.ru> <20080222221233.GC9510@kroah.com> <f19298770802221445p21cedad5yd20864cfd3e36b3@mail.gmail.com>
+In-Reply-To: <f19298770802221445p21cedad5yd20864cfd3e36b3@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802230041.24272.lenb@kernel.org>
+Message-Id: <200802230648.12908.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-works for me!
+On Friday 22 February 2008, Alexey Zaytsev wrote:
+> Well, it looks like Michael is not the bcm43xx maintaner. I sent the
+> patch to him,
+> because it was his code that broke the driver, and I thought it would
+> be easy for him to review my patch, as it touches his code.
 
-applied.
+See? I'm tired of this "how dare can you break my kernel!?" bullshit.
+That's exactly the reason why I NACKed this patch.
+I do _not_ understand the KConfig SELECT logic. And I do think almost
+nobody does understand how that all works together.
+In the past people came with similiar patches like yours that looked
+obviously OK. They said sentences like "it is trivial to get the SELECT
+logics right". But it turned out they were wrong and it introduced
+other regressions that I was made responsible for.
 
-thanks,
--len
+SELECT is _extremely_ difficult to get right, as it completely ignores
+dependencies. See all this FOOBAR_POSSIBLE select logic that we use
+in SSB to get SELECT working correctly with dependencies.
 
-ps.  CONFIG_ACPI_CUSTOM_DSDT's only use is to guard the use of
-CONFIG_ACPI_CUSTOM_DSDT_FILE:
+So my solution for this particular breakage you are seeing here is
+to wait for the bcm43xx removal, which will happen soon. That will
+fix it and will have almost zero chance to introduce new bugs.
 
-#ifdef CONFIG_ACPI_CUSTOM_DSDT
-#include CONFIG_ACPI_CUSTOM_DSDT_FILE
-#endif
+> Well, if you read my first email, that is exactly what I intended to
+> do, but even if
+> Michael would be able to fix the b43 driver to work with my hardware, the code
+> will only show up in 2.6.25, leaving some 2.6.24 users with broken
+> wifi. So I thought
 
-we could get rid of it if cpp could so something like
+Blah. The people with a bcm4311 revision 1 wireless card plus a bcm44xx ethernet card.
+You can count those people on two fingers.
 
-#if (CONFIG_ACPI_CUSTOM_DSDT_FILE != "")
-#include CONFIG_ACPI_CUSTOM_DSDT_FILE
-#endif
-
-but it doesn't look like cpp has a concept of strings in expressions.
-
-On Friday 22 February 2008 14:25, Randy Dunlap wrote:
-> Let's see what the ACPI people think about this change.
+> it would be a good thing to add my simple fix that enabled the old driver to the
+> -stable tree, so that we could have working wifi soon.
 > 
-> Thanks, Sam.
-> ---
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Make ACPI_CUSTOM_DSDT boolean config symbol a hidden and derived
-> value, based on the value of ACPI_CUSTOM_DSDT_FILE (string).
-> Only the latter is presented to the user as a config option.
-> 
-> This fixes problems with "make randconfig" setting ACPI_CUSTOM_DSDT
-> but leaving ACPI_CUSTOM_DSDT_FILE empty/blank.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  drivers/acpi/Kconfig |   19 +++++++++----------
->  1 file changed, 9 insertions(+), 10 deletions(-)
-> 
-> --- linux-2.6.25-rc2-git5.orig/drivers/acpi/Kconfig
-> +++ linux-2.6.25-rc2-git5/drivers/acpi/Kconfig
-> @@ -283,24 +283,23 @@ config ACPI_TOSHIBA
->  	  If you have a legacy free Toshiba laptop (such as the Libretto L1
->  	  series), say Y.
->  
-> -config ACPI_CUSTOM_DSDT
-> -	bool "Include Custom DSDT"
-> +config ACPI_CUSTOM_DSDT_FILE
-> +	string "Custom DSDT Table file to include"
-> +	default ""
->  	depends on !STANDALONE
-> -	default n 
->  	help
->  	  This option supports a custom DSDT by linking it into the kernel.
->  	  See Documentation/acpi/dsdt-override.txt
->  
-> -	  If unsure, say N.
-> -
-> -config ACPI_CUSTOM_DSDT_FILE
-> -	string "Custom DSDT Table file to include"
-> -	depends on ACPI_CUSTOM_DSDT
-> -	default ""
-> -	help
->  	  Enter the full path name to the file which includes the AmlCode
->  	  declaration.
->  
-> +	  If unsure, don't enter a file name.
-> +
-> +config ACPI_CUSTOM_DSDT
-> +	bool
-> +	default ACPI_CUSTOM_DSDT_FILE != ""
-> +
->  config ACPI_CUSTOM_DSDT_INITRD
->  	bool "Read Custom DSDT from initramfs"
->  	depends on BLK_DEV_INITRD
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> This is still my intension, I'll resend to the proper maintainters.
+
+Ok thanks. We'll see if it really was a simple fix then.
+If it turns out to break something you will get mail. :)
+You can send this patch to a netdev maintainer or the wireless maintainer.
+Maybe one of those will sign it off. Good luck.
