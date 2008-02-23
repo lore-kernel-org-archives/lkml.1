@@ -1,116 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936944AbYBWBBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbYBWBHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936944AbYBWBBq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 20:01:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760006AbYBWBBN
+	id S1760455AbYBWBHa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 20:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751629AbYBWBHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 20:01:13 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:36331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756585AbYBWBBK (ORCPT
+	Fri, 22 Feb 2008 20:07:14 -0500
+Received: from elasmtp-galgo.atl.sa.earthlink.net ([209.86.89.61]:56858 "EHLO
+	elasmtp-galgo.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751198AbYBWBHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 20:01:10 -0500
-Date: Fri, 22 Feb 2008 17:00:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Jesse Barnes <jesse.barnes@intel.com>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       Romano Giannetti <romano@dea.icai.upcomillas.es>,
-       Dave Airlie <airlied@linux.ie>, Greg KH <gregkh@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: i915 hibernation patch (was: Re: [Suspend-devel] 2.6.25-rc2
- System no longer powers off aftersuspend-to-disk. Screen becomes green.)
-In-Reply-To: <200802230031.20292.rjw@sisk.pl>
-Message-ID: <alpine.LFD.1.00.0802221653000.21332@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0802210101050.3576@boston.corp.fedex.com> <200802211713.20713.jesse.barnes@intel.com> <200802211744.35563.jesse.barnes@intel.com> <200802230031.20292.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 22 Feb 2008 20:07:12 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=KMPzQXrXL73ndQl2D+Rdc4kZePa6beDsrb2CenW27aY8J0IaKa79SewVgM3jn69S;
+  h=Message-ID:Date:From:Reply-To:To:Subject:Cc:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Mailer:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <9643105.1203728826946.JavaMail.root@elwamui-rustique.atl.sa.earthlink.net>
+Date: Fri, 22 Feb 2008 17:07:06 -0800 (GMT-08:00)
+From: erblichs <erblichs@earthlink.net>
+Reply-To: erblichs <erblichs@earthlink.net>
+To: linux-kernel@vger.kernel.org
+Subject: RFE: __alloc_pages() SLAB_PANIC & gfp_mask
+Cc: erblichs@earthlink.net
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Mailer: EarthLink Zoo Mail 1.0
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79512e875a395cc2042d0a89d3a7a76294350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 209.86.224.48
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Group,
 
 
-On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
+           Currrently I do not subscribe to this mail alias, so please
+           keep the cc.
 
-> --- linux-2.6.orig/drivers/char/drm/i915_drv.c
-> +++ linux-2.6/drivers/char/drm/i915_drv.c
-> @@ -222,6 +222,7 @@ static void i915_restore_vga(struct drm_
->  			   dev_priv->saveGR[0x18]);
->  
->  	/* Attribute controller registers */
-> +	inb(st01);
->  	for (i = 0; i < 20; i++)
->  		i915_write_ar(st01, i, dev_priv->saveAR[i], 0);
->  	inb(st01); /* switch back to index mode */
+           Currently a few calls exist where WAIT is specified (
+           (GFP_KERNEL)for the slab/slob allocators and also as an
+           additional argument, SLAB_PANIC is checked against the
+           return of the request for memory allocation. SLAB_PANIC
+           is not passed to __alloc_pages() as part of the gfp_mask.
 
-I'm doing this part separately, please drop it - it has nothing to do with 
-the rest of the patch.
+           If the memory allocation fails, and the flag is turned
+           on, then a panic will ensure.. There is a very simple fix
+           for this. The assumption is too basicly ASSERT a guarantee
+           that memory failure in this case will not occur.
 
-I'd also suggest that you just add a helper function like
+           The suggestion is to add the SLAB_PANIC arg to the gfp_mask,
+           add it to the mask in the SLAB/SLUB callers,
+           and have that checked within __alloc_pages 
+           if a mem alloc failure is about to occur 
+           after the check for no WAITers.
 
-	int pm_event_powerdown(struct pm_message mesg)
-	{
-		return mesg.event >= PM_EVENT_SUSPEND;
-	}
+           If it is set, then force additional loops within the function.
 
-or something, so that you can have code like
+           This would remove new cache creates from causing a panic when
+           a low memory condition exists.
 
-	if (pm_event_powerdown(mesg))
-		pci_set_power_state(pdev, PCI_D3hot);
-
-instead of the test for EVENT_SUSPEND/HIBERNATE explicitly.
-
-Of course, the places that already do a switch-statement are much better 
-kept that way and just add PM_EVENT_HIBERNATE to the list.
-
-> --- linux-2.6.orig/drivers/pci/pci.c
-> +++ linux-2.6/drivers/pci/pci.c
-> @@ -554,6 +554,7 @@ pci_power_t pci_choose_state(struct pci_
->  	case PM_EVENT_PRETHAW:
->  		/* REVISIT both freeze and pre-thaw "should" use D0 */
->  	case PM_EVENT_SUSPEND:
-> +	case PM_EVENT_HIBERNATE:
->  		return PCI_D3hot;
-
-Didn't you miss the apci_pci_choose_state() thing that also needs this 
-extension?
-
-> Index: linux-2.6/drivers/usb/host/u132-hcd.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/usb/host/u132-hcd.c
-> +++ linux-2.6/drivers/usb/host/u132-hcd.c
-> @@ -3214,14 +3214,18 @@ static int u132_suspend(struct platform_
->                  return -ESHUTDOWN;
->          } else {
->                  int retval = 0;
-> -                if (state.event == PM_EVENT_FREEZE) {
-> +
-> +		switch (state.event) {
-> +		case PM_EVENT_FREEZE:
->                          retval = u132_bus_suspend(hcd);
-> -                } else if (state.event == PM_EVENT_SUSPEND) {
-> +			break;
-> +		case PM_EVENT_SUSPEND:
-> +		case PM_EVENT_HIBERNATE:
->                          int ports = MAX_U132_PORTS;
->                          while (ports-- > 0) {
->                                  port_power(u132, ports, 0);
->                          }
-> -                }
-> +			break;
->                  if (retval == 0)
->                          pdev->dev.power.power_state = state;
->                  return retval;
-
-Looks like a missing close-brace to me there - you removed the final '}'.
-
-Or am I blind?
-
-Apart from those issues it looks fine to me.
-
-			Linus
+           Mitchell Erblich
