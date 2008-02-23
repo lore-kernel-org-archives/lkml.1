@@ -1,119 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765986AbYBWDCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763406AbYBWDOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765986AbYBWDCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 22:02:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757091AbYBWDCm
+	id S1763406AbYBWDOG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 22:14:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755997AbYBWDNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 22:02:42 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:38491 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756337AbYBWDCk (ORCPT
+	Fri, 22 Feb 2008 22:13:55 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:44323 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754247AbYBWDNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 22:02:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=rce/4QI3b9losWCdqcw+d1xlTPfQcRhOs074wnwUcw4OBfwHShpD9l4b+f+AvdJoYDS9OofVu2ZaWWlsxxM7M1ZqFW01k8sG0fKZ54htkOITlLMyg6TI8aVa4fVmcGhN3Sr1XMFnPDChThHpRGJJYpPzUjsIM3UmyG9m1kqdd90=
-Message-ID: <ec7f7ee70802221902i1d4877afkad86bca0e2a9b479@mail.gmail.com>
-Date: Sat, 23 Feb 2008 05:02:40 +0200
-From: "Boaz Harrosh" <bharrosh@panasas.com>
-To: "Greg KH" <gregkh@suse.de>,
-       "James Bottomley" <James.Bottomley@hansenpartnership.com>
-Subject: Re: [patch 33/38] SCSI: gdth: scan for scsi devices
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
-       "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>,
-       "Chris Wedgwood" <reviews@ml.cw.f00f.org>,
-       "Michael Krufky" <mkrufky@linuxtv.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       "Domenico Andreoli" <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20080223003130.GH7268@suse.de>
+	Fri, 22 Feb 2008 22:13:54 -0500
+Date: Sat, 23 Feb 2008 11:13:50 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: build #373 issue for v2.6.25-rc2-477-g1a4c6be in ./crypto/authenc.c
+Message-ID: <20080223031350.GA18824@gondor.apana.org.au>
+References: <200802221323.19718.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <20080223001946.979768610@mini.kroah.org>
-	 <20080223002907.GA7268@suse.de> <20080223003130.GH7268@suse.de>
-X-Google-Sender-Auth: f69d2dff04b92a33
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200802221323.19718.toralf.foerster@gmx.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 2:31 AM, Greg KH <gregkh@suse.de> wrote:
->
->  2.6.24-stable review patch.  If anyone has any objections, please let us
->  know.
->
->  ------------------
->  From: Boaz Harrosh <bharrosh@panasas.com>
->
->  commit: 61c92814dc324b541391757062ff02fbf3b08086
->
->  The patch: "gdth: switch to modern scsi host registration"
->
->  missed one simple fact when moving a way from scsi_module.c.
->  That is to call scsi_scan_host() on the probed host.
->  With this the gdth driver from 2.6.24 is again able to
->  see drives and boot.
->
->  Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
->  Tested-by: Joerg Dorchain <joerg@dorchain.net>
->  Tested-by: Stefan Priebe <s.priebe@allied-internet.ag>
->  Tested-by: Jon Chelton <jchelton@ffpglobal.com>
->  Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
->  Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
->
->  ---
->   drivers/scsi/gdth.c |    9 +++++++++
->   1 file changed, 9 insertions(+)
->
->  --- a/drivers/scsi/gdth.c
->  +++ b/drivers/scsi/gdth.c
->  @@ -4838,6 +4838,9 @@ static int __init gdth_isa_probe_one(ulo
->         if (error)
->                 goto out_free_coal_stat;
->         list_add_tail(&ha->list, &gdth_instances);
->  +
->  +       scsi_scan_host(shp);
->  +
->         return 0;
->
->   out_free_coal_stat:
->  @@ -4965,6 +4968,9 @@ static int __init gdth_eisa_probe_one(us
->         if (error)
->                 goto out_free_coal_stat;
->         list_add_tail(&ha->list, &gdth_instances);
->  +
->  +       scsi_scan_host(shp);
->  +
->         return 0;
->
->   out_free_ccb_phys:
->  @@ -5102,6 +5108,9 @@ static int __init gdth_pci_probe_one(gdt
->         if (error)
->                 goto out_free_coal_stat;
->         list_add_tail(&ha->list, &gdth_instances);
->  +
->  +       scsi_scan_host(shp);
->  +
->         return 0;
->
->   out_free_coal_stat:
->
->  --
+On Fri, Feb 22, 2008 at 12:23:15PM +0000, Toralf Förster wrote:
+> Hello,
+> 
+> the build with the attached .config failed, make ends with:
+> ...
+>   CC      arch/x86/lib/strstr_32.o
+>   CC      arch/x86/lib/usercopy_32.o
+>   AR      arch/x86/lib/lib.a
+>   LD      vmlinux.o
+>   MODPOST vmlinux.o
+> WARNING: modpost: Found 15 section mismatch(es).
+> To see full details build your kernel with:
+> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
+>   GEN     .version
+>   CHK     include/linux/compile.h
+>   UPD     include/linux/compile.h
+>   CC      init/version.o
+>   LD      init/built-in.o
+>   LD      .tmp_vmlinux1
+> crypto/built-in.o: In function `crypto_authenc_alloc':
+> authenc.c:(.text+0x10f4f): undefined reference to `crypto_grab_skcipher'
+> make: *** [.tmp_vmlinux1] Error 1
 
-Greg, James Hi
+This patch should fix the problem.
 
-This patch is not enough, and will not return a gdth system to working
-order. With this patch disks
-will show up again, only to crash later. All the 5 patches I sent are
-needed, to return to a working
-state. James please apply to mainline, so they can be accepted into stable.
-of the 5 only 2 I have seen in mainline. 3 are missing.
-(if they were submitted, I might have missed them, as I'm traveling, then sorry)
-
-Boaz
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-- 
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 898acc5..69f1be6 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -575,6 +575,7 @@ config CRYPTO_TEST
+ config CRYPTO_AUTHENC
+ 	tristate "Authenc support"
+ 	select CRYPTO_AEAD
++	select CRYPTO_BLKCIPHER
+ 	select CRYPTO_MANAGER
+ 	select CRYPTO_HASH
+ 	help
