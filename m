@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761578AbYBWVng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbYBWVpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761578AbYBWVng (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 16:43:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbYBWVn0
+	id S1763680AbYBWVpm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 16:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbYBWVpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 16:43:26 -0500
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47566
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756149AbYBWVnZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 16:43:25 -0500
-From: Rob Landley <rob@landley.net>
-Organization: Boundaries Unlimited
-To: "Samuel Masham" <samuel.masham@gmail.com>
-Subject: Re: 2.6.24 panics initializing ne2k in mips.
-Date: Sat, 23 Feb 2008 15:43:22 -0600
-User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
-Cc: "Ralf Baechle" <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
-       linux-mips@vger.kernel.org
-References: <200801280217.38273.rob@landley.net> <200802221619.40103.rob@landley.net> <93564eb70802222356u261d452aq8a3ad6ccc146d8dc@mail.gmail.com>
-In-Reply-To: <93564eb70802222356u261d452aq8a3ad6ccc146d8dc@mail.gmail.com>
+	Sat, 23 Feb 2008 16:45:36 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50198 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756360AbYBWVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 16:45:35 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.25-rc2 hangs after "Suspending console(s)"
+Date: Sat, 23 Feb 2008 22:43:50 +0100
+User-Agent: KMail/1.9.6 (enterprise 20070904.708012)
+Cc: linux-kernel@vger.kernel.org
+References: <20080218002815.GA4612@dose.home.local> <20080219085222.GA5328@dose.home.local> <20080220072917.GB15866@dose.home.local>
+In-Reply-To: <20080220072917.GB15866@dose.home.local>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200802231543.22810.rob@landley.net>
+Message-Id: <200802232243.51190.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 February 2008 01:56:42 Samuel Masham wrote:
-> On Sat, Feb 23, 2008 at 7:19 AM, Rob Landley <rob@landley.net> wrote:
-> >  The patches that fixed it for me were:
-> >
-> >  http://kernel.org/hg/index.cgi/linux-2.6/rev/85295
-> >  http://kernel.org/hg/index.cgi/linux-2.6/rev/85296
-> >
-> >  Which, as you can see, were already committed to the kernel repository
-> > during the 2.6.25 merge window.
-...
-> This fixes the 2.6.24 kernel for qemu, I would like to see these
-> patches put into the stable series.
->
-> Is that OK for everyone? if they are in the 2.6.25 tree then we just
-> send the commit ids to the stable team...
+On Wednesday, 20 of February 2008, Tino Keitel wrote:
+> On Tue, Feb 19, 2008 at 09:52:22 +0100, Tino Keitel wrote:
+> > On Mon, Feb 18, 2008 at 20:49:04 +0100, Pavel Machek wrote:
+> > > On Mon 2008-02-18 01:28:15, Tino Keitel wrote:
+> > > > Hi folks,
+> > > > 
+> > > > with 2.6.25-rc2, my Mac mini Core Duo hangs at suspend. The last
+> > > > message on the console is "Suspending console(s)". I also tried some
+> > > > other versions after 2.6.24, all of them fail with this hang.
+> > > 
+> > > Try adding 'no_console_suspend' to kernel command line.
+> > 
+> > Thanks, that gave a bit insight. The last message is now:
+> > 
+> > ACPI: PCI interrupt for device 0000:00:02.0 disabled
+> > 
+> > This is my graphics card:
+> > 
+> > 00:02.0 VGA compatible controller [0300]: Intel Corporation Mobile
+> > 945GM/GMS, 943/940GML Express Integrated Graphics Controller
+> > 
+> > So it looks like the recent changes that should repair console
+> > sudpend/resume for Intel graphics broke suspend for me.
+> 
+> It looks like I was wrong. It also hangs when the i915 module isn't
+> loaded.
 
-Sounds good to me:
+Please have a look at: http://bugzilla.kernel.org/show_bug.cgi?id=10065
 
-24649c00ca334955ac7d8a79f5a7834fc7ea441d
-46f4f8f665080900e865392f4b3593be463bf0d8
-
-Rob
--- 
-"One of my most productive days was throwing away 1000 lines of code."
-  - Ken Thompson.
+Thanks,
+Rafael
