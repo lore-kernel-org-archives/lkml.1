@@ -1,106 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760189AbYBWQXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759361AbYBWQ2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760189AbYBWQXS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 11:23:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbYBWQXK
+	id S1759361AbYBWQ2g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 11:28:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbYBWQ22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 11:23:10 -0500
-Received: from x346.tv-sign.ru ([89.108.83.215]:38225 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752927AbYBWQXJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 11:23:09 -0500
-Date: Sat, 23 Feb 2008 19:27:05 +0300
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, dmitry.adamushko@gmail.com,
-       a.p.zijlstra@chello.nl, apw@shadowen.org, mingo@elte.hu,
-       nickpiggin@yahoo.com.au, paulmck@linux.vnet.ibm.com,
-       rusty@rustcorp.com.au, Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: + kthread-add-a-missing-memory-barrier-to-kthread_stop.patch added to -mm tree
-Message-ID: <20080223162705.GA7686@tv-sign.ru>
-References: <200802230733.m1N7XnMu018253@imap1.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 23 Feb 2008 11:28:28 -0500
+Received: from vs166246.vserver.de ([62.75.166.246]:52458 "EHLO
+	vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752674AbYBWQ21 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 11:28:27 -0500
+From: Michael Buesch <mb@bu3sch.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Date: Sat, 23 Feb 2008 17:27:54 +0100
+User-Agent: KMail/1.9.6 (enterprise 0.20070907.709405)
+Cc: Alexey Zaytsev <zaytsev.a@protei.ru>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <47BEAF3B.3080809@protei.ru> <200802221848.37902.mb@bu3sch.de> <20080223110751.GN23833@elte.hu>
+In-Reply-To: <20080223110751.GN23833@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200802230733.m1N7XnMu018253@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+Message-Id: <200802231727.54351.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(s/mm-commits/lkml, cc Steven and Linus).
+On Saturday 23 February 2008 12:07:51 Ingo Molnar wrote:
+> I have to say, after having observed multiple incidents around b43 in 
+> the past few months you are one of the worst driver maintainers i've 
+> ever seen on lkml: you are ignoring regressions, you are frequently 
+> insulting our testers and now you even have the gall to NAK a patch to 
 
-On 02/22, Andrew Morton wrote:
-> 
-> From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-> 
-> We must ensure that kthread_stop_info.k has been updated before kthread's
-> wakeup.  This is required to properly support the use of kthread_should_stop()
-> in the main loop of kthread.
-> 
-> wake_up_process() doesn't imply a full memory barrier,
-> so we add an explicit one.
+The insults being? A few quotes, please.
 
-I tried to raise the similar issue twice without success.
+> _your own buggy driver code_ without providing an alternative fix. 
+> Kudos.
 
-> --- a/kernel/kthread.c~kthread-add-a-missing-memory-barrier-to-kthread_stop
-> +++ a/kernel/kthread.c
-> @@ -53,6 +53,19 @@ static struct kthread_stop_info kthread_
->   * When someone calls kthread_stop() on your kthread, it will be woken
->   * and this will return true.  You should then return, and your return
->   * value will be passed through to kthread_stop().
-> + *
-> + * In order to safely use kthread_stop() for kthread, there is a requirement
-> + * on how its main loop has to be orginized. Namely, the sequence of
-> + * events that lead to kthread being blocked (schedule()) has to be
-> + * ordered as follows:
-> + *
-> + * - set_current_state(TASK_INTERRUPTIBLE);
-> + * - if (kthread_should_stop()) break;
-> + * - schedule() or similar.
-> + *
-> + * set_current_state() implies a full memory barrier. kthread_stop()
-> + * has a matching barrier right after an update of kthread_stop_info.k
-> + * and before kthread's wakeup.
->   */
->  int kthread_should_stop(void)
->  {
-> @@ -211,6 +224,15 @@ int kthread_stop(struct task_struct *k)
->  
->  	/* Now set kthread_should_stop() to true, and wake it up. */
->  	kthread_stop_info.k = k;
-> +
-> +	/*
-> +	 * We must ensure that kthread_stop_info.k has been updated before
-> +	 * the following wakeup. This is required to properly support the use
-> +	 * of kthread_should_stop() in the main loop of kthread
-> +	 * (see description of kthread_should_stop() for more details).
-> +	 */
-> +	smp_mb();
-> +
->  	wake_up_process(k);
->  	put_task_struct(k);
+How dare can you break my kernel, yeah... . We know that.
+That my patches _fixed_ the kernel for thousands of people doesn't
+matter. What matters is the one person for whom it broke. So let's
+apply a questionable fix for it that we don't understand. Hopefully
+that fixes it and doesn't break it again for somebody else... .
 
-I think we should fix wake_up_process() instead.
+I provided an alternative fix. In my very first email.
+Ingo, if you know that this fix is right, then please sign it off
+so we can apply it.
 
-Please look at http://marc.info/?l=linux-kernel&m=118503598307267
-and at this thread: http://marc.info/?t=116275561700001
-
-In short: wake_up_process() doesn't imply mb(), this means that _in theory_
-the commonly used code like
-
-	set_current_state(TASK_INTERRUPTIBLE);
-	if (CONDITION)
-		return;
-	schedule();
-
-is racy wrt
-
-	CONDITION = 1;
-	wake_up_process(p);
-
-I'll be happy to be wrong though, please correct me.
-
-Oleg.
-
+-- 
+Greetings Michael.
