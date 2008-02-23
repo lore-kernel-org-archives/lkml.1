@@ -1,110 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763696AbYBWVHv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932137AbYBWVIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763696AbYBWVHv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 16:07:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbYBWVHk
+	id S932137AbYBWVIT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 16:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757835AbYBWVH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 16:07:40 -0500
-Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:41581 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756283AbYBWVHj convert rfc822-to-8bit (ORCPT
+	Sat, 23 Feb 2008 16:07:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.180]:5700 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764183AbYBWVHy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 16:07:39 -0500
-From: Junio C Hamano <gitster@pobox.com>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.4.3
-cc: linux-kernel@vger.kernel.org
-Date: Sat, 23 Feb 2008 13:07:24 -0800
-Message-ID: <7vr6f31iwj.fsf@gitster.siamese.dyndns.org>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Sat, 23 Feb 2008 16:07:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ZEO3wr8SU5fyfbTAOE2sJJDnHSjDgG9LgvNWVPWr3RFAKHTylPT7gVjoMFYo8BIJ/XUTOZ0o1mG17IcV8cFZ+jEtMF94NHt7p2SKSksPJ0Go/wMrCipcvZq9X5aRzxjpX7T3yeSH334q6R9HQt+K85kgbQ/3q71TRy77fc7B2oc=
+Message-ID: <b647ffbd0802231307h68a34f9buba004be3505d19d3@mail.gmail.com>
+Date: Sat, 23 Feb 2008 22:07:53 +0100
+From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: + kthread-add-a-missing-memory-barrier-to-kthread_stop.patch added to -mm tree
+Cc: "Oleg Nesterov" <oleg@tv-sign.ru>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, apw@shadowen.org, "Ingo Molnar" <mingo@elte.hu>,
+       nickpiggin@yahoo.com.au, paulmck@linux.vnet.ibm.com,
+       rusty@rustcorp.com.au, "Steven Rostedt" <rostedt@goodmis.org>,
+       linux-arch@vger.kernel.org
+In-Reply-To: <alpine.LFD.1.00.0802231202380.21332@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200802230733.m1N7XnMu018253@imap1.linux-foundation.org>
+	 <20080223162705.GA7686@tv-sign.ru>
+	 <alpine.LFD.1.00.0802230937530.21332@woody.linux-foundation.org>
+	 <20080223182258.GA19946@tv-sign.ru>
+	 <alpine.LFD.1.00.0802231044240.21332@woody.linux-foundation.org>
+	 <b647ffbd0802231151w481fdcb5hc2a3972e7fd03f69@mail.gmail.com>
+	 <alpine.LFD.1.00.0802231202380.21332@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.5.4.3 is available at the
-usual places:
+On 23/02/2008, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>  On Sat, 23 Feb 2008, Dmitry Adamushko wrote:
+>  >
+>  > it's not a LOAD that escapes *out* of the region. It's a MODIFY that gets *in*:
+>
+>
+> Not with the smp_wmb(). That's the whole point.
+>
+>  Ie the patch I'm suggesting is sufficient is appended, and the point is
+>  that any write before the critical region will be ordered wrt the critical
+>  region because of the write barrier before the spinlock (which itself is a
+>  write).
 
-  http://www.kernel.org/pub/software/scm/git/
+Yeah, good point!
 
-  git-1.5.4.3.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.4.3.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.4.3.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.4.3-1.$arch.rpm	(RPM)
+(heh... I wouldn't dare to say this 'obvious thing' only to Anton
+Blanchard who is "the only person who always 'have a point' by
+definition" :-))
 
-Largest user visible change in this is RPM packaging updates by
-Kristian Høgsberg.  'git-core' will only be pure git without
-pulling foreign SCM packages in as its dependencies anymore when
-you do "yum install git-core".
+> This is also why I mentioned that if you have a really odd architecure
+> that considers spinlocks to be "outside" the normal cache coherency
+> domain, that would be broken, but I cannot think of a single valid case of
+> that, and I consider it insane.
 
-----------------------------------------------------------------
+Yeah, some potential implementations come into my mind but, I guess,
+they are as far away from real hardware as science-fiction from
+science :-/
 
-GIT v1.5.4.3 Release Notes
-==========================
+So how should we proceed with this issue?
 
-Fixes since v1.5.4.2
---------------------
+let's use your patch and declare try_to_wake_up() a 'full' mb for the case:
 
- * RPM spec used to pull in everything with 'git'.  This has been
-   changed so that 'git' package contains just the core parts,
-   and we now supply 'git-all' metapackage to slurp in everything.
-   This should match end user's expectation better.
+MODIFY
+try_to_wake_up
+LOAD or MODIFY (that take place either after or inside try_to_wake_up())
 
- * When some refs failed to update, git-push reported "failure"
-   which was unclear if some other refs were updated or all of
-   them failed atomically (the answer is the former).  Reworded
-   the message to clarify this.
+so we'll fix (lots of) potentially problematic cases with a single shot.
 
- * "git clone" from a repository whose HEAD was misconfigured
-   did not set up the remote properly.  Now it tries to do
-   better.
+and
 
- * Updated git-push documentation to clarify what "matching"
-   means, in order to reduce user confusion.
+LOAD
+try_to_wake_up()
+LOAD or MODIFY
 
- * Updated git-add documentation to clarify "add -u" operates in
-   the current subdirectory you are in, just like other commands.
+is probably not that common so we don't care.
 
- * git-gui updates to work on OSX and Windows better.
 
-----------------------------------------------------------------
-
-Changes since v1.5.4.2 are as follows:
-
-Gerrit Pape (1):
-      git-clone.sh: properly configure remote even if remote's head is dangling
-
-Jay Soffian (2):
-      git-gui: support Git Gui.app under OS X 10.5
-      send-email: squelch warning due to comparing undefined $_ to ""
-
-Jeff King (4):
-      push: indicate partialness of error message
-      Documentation/push: clarify matching refspec behavior
-      push: document the status output
-      hash: fix lookup_hash semantics
-
-Junio C Hamano (1):
-      GIT 1.5.4.3
-
-Kristian H淡gsberg (1):
-      Rename git-core rpm to just git and rename the meta-pacakge to git-all.
-
-Miklos Vajna (1):
-      Documentation/git-stash: document options for git stash list
-
-Pekka Kaitaniemi (1):
-      Clarified the meaning of git-add -u in the documentation
-
-Shawn O. Pearce (5):
-      git-gui: Ensure error dialogs always appear over all other windows
-      git-gui: Paper bag fix error dialogs opening over the main window
-      git-gui: Default TCL_PATH to same location as TCLTK_PATH
-      git-gui: Avoid hardcoded Windows paths in Cygwin package files
-      git-gui: Focus insertion point at end of strings in repository chooser
-
-Wincent Colaiuta (1):
-      git-gui: relax "dirty" version detection
-
+-- 
+Best regards,
+Dmitry Adamushko
