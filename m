@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761491AbYBWSwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbYBWS4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761491AbYBWSwt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbYBWSwj
+	id S1760902AbYBWS4v (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 13:56:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbYBWS4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:52:39 -0500
-Received: from rv-out-0910.google.com ([209.85.198.190]:12214 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754000AbYBWSwj (ORCPT
+	Sat, 23 Feb 2008 13:56:41 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44362 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754372AbYBWS4k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:52:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dBUGYNfsT3qDmd5B0GIOKDQtIVd96eVR+9IsqOqMDaaUsPbftvEJNQn6blynIbqIHi2xHeQss9iYPFTkJ4WkZ4bh76ge+BdV5Orx3VpX/hdtcniPE5ojzasj3zi1gVTQTwihOLChrZYimhzB9tLbxNkI1CqnUk3SKyURo7C/sJU=
-Message-ID: <19f34abd0802231052x926c873p3ceef7904a120087@mail.gmail.com>
-Date: Sat, 23 Feb 2008 19:52:38 +0100
-From: "Vegard Nossum" <vegard.nossum@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
-Cc: "Jeff Garzik" <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080223183138.59d18e26@core>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 23 Feb 2008 13:56:40 -0500
+Date: Sat, 23 Feb 2008 10:55:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ilpo =?ISO-8859-1?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 0/8]: uninline & uninline
+Message-Id: <20080223105517.4d706511.akpm@linux-foundation.org>
+In-Reply-To: <p734pbz95lx.fsf@bingen.suse.de>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+	<20080223000220.e9229c99.akpm@linux-foundation.org>
+	<p734pbz95lx.fsf@bingen.suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <19f34abd0802230948n3b98b7d2kd67ca9c2f8fbbd47@mail.gmail.com>
-	 <20080223183138.59d18e26@core>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 7:31 PM, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> O> I don't see the connection between (no-)smp and ata. Something with
->
-> > interrupt routing/IPI, missing irq ack? Booting another !SMP kernel
->  > works fine. The problem also exists in 2.6.24-rc2.
->
->  Almost certainly interrupt routing try smp but with noapic and see if it
->  fails as well ?
+On Sat, 23 Feb 2008 14:15:06 +0100 Andi Kleen <andi@firstfloor.org> wrote:
 
-noapic works fine.
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> 
+> >> -41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
+> >
+> > This is a surprise.  I expect that the -mm-only
+> > profile-likely-unlikely-macros.patch is the cause of this and mainline
+> > doesn't have this problem.
+> 
+> Shouldn't they only have overhead when the respective CONFIG is enabled?
 
+yup.
 
-V
+> > If true, then this likely/unlikely bloat has probably spread into a lot of
+> > your other results and it all should be redone against mainline, sorry :(
+> >
+> > (I'm not aware of anyone having used profile-likely-unlikely-macros.patch
+> > in quite some time.  That's unfortunate because it has turned up some
+> > fairly flagrant code deoptimisations)
+> 
+> Is there any reason they couldn't just be merged to mainline? 
+> 
+> I think it's a useful facility.
+
+ummm, now why did we made that decision...  I think we decided that it's
+the sort of thing which one person can run once per few months and that
+will deliver its full value.  I can maintain it in -mm and we're happy - no
+need to add it to mainline.  No strong feelings either way really.
+
+It does have the downside that the kernel explodes if someone adds unlikely
+or likely to the vdso code and I need to occasionally hunt down new
+additions and revert them in that patch.  That makes it a bit of a
+maintenance burden.
+
