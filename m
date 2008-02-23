@@ -1,126 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757401AbYBWPKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbYBWPQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757401AbYBWPKN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 10:10:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbYBWPKF
+	id S1758834AbYBWPQh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 10:16:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754463AbYBWPQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 10:10:05 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:58882 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753286AbYBWPKB (ORCPT
+	Sat, 23 Feb 2008 10:16:27 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42151 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754321AbYBWPQ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 10:10:01 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=W9ydSNJO/Uwwb4AeU8sCEUlh0g2nLpgKhOL5cTA64G9FllMvW5tBjjHH/Sk+P1h7G
-	yJYJb4SpEf8sWMWubocQA==
-Message-ID: <6599ad830802230709m5f0cbf8aia2710bd832408ba7@mail.gmail.com>
-Date: Sat, 23 Feb 2008 07:09:50 -0800
-From: "Paul Menage" <menage@google.com>
-To: "Paul Jackson" <pj@sgi.com>
-Subject: Re: Tiny cpusets -- cpusets for small systems?
-Cc: "KOSAKI Motohiro" <kosaki.motohiro@jp.fujitsu.com>,
-       "Max Krasnyanskiy" <maxk@qualcomm.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       "Andreas Dilger" <adilger@sun.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Daniel Spang" <daniel.spang@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
-       "Jon Masters" <jonathan@jonmasters.org>,
-       "Marcelo Tosatti" <marcelo@kvack.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Rik van Riel" <riel@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20080223060911.e1d13cc1.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 23 Feb 2008 10:16:26 -0500
+Subject: [GIT PATCH] scsi fixes for 2.6.25-rc2
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 23 Feb 2008 09:13:33 -0600
+Message-Id: <1203779614.3139.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-1.fc8) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080223060911.e1d13cc1.pj@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 4:09 AM, Paul Jackson <pj@sgi.com> wrote:
-> A couple of proposals have been made recently by people working Linux
->  on smaller systems, for improving realtime isolation and memory
->  pressure handling:
->
->  (1) cpu isolation for hard(er) realtime
->         http://lkml.org/lkml/2008/2/21/517
->         Max Krasnyanskiy <maxk@qualcomm.com>
->         [PATCH sched-devel 0/7] CPU isolation extensions
->
->  (2) notify user space of tight memory
->         http://lkml.org/lkml/2008/2/9/144
->         KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->         [PATCH 0/8][for -mm] mem_notify v6
->
->  In both cases, some of us have responded "why not use cpusets", and the
->  original submitters have replied "cpusets are too fat"  (well, they
->  were more diplomatic than that, but I guess I can say that ;)
+This is the latest crop of bug fixes plus one new driver: mvsas.  We're
+still in the throes of trying to fix aic94xx/libsas error handling, so
+the fix here isn't complete (but it is much better than before).
 
-Having read those threads, it looks to me as though:
+The patch is available here:
 
-- the parts of Max's problem that would be solved by cpusets can be
-mostly accomplished just via sched_setaffinity()
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-- Motohiro wants to add a new system-wide API that you would also like
-to have available on a per-cpuset basis. (Why not just add two access
-points for the same feature?)
+The short changelog is:
 
-I'm don't think that either of these would be enough to justify big
-changes to cpusets or cgroups, although eliminating bloat is always a
-good thing.
+Adrian Bunk (4):
+      qlogicpt: section fixes
+      mptbase: fix use-after-free's
+      iscsi transport: make 2 functions static
+      lpfc: make lpfc_disable_node() static
 
->  The primary semantic limit I'd suggest would be supporting exactly
->  one layer depth of cpusets, not a full hierarchy.  So one could still
->  successfully issue from user space 'mkdir /dev/cpuset/foo', but trying
->  to do 'mkdir /dev/cpuset/foo/bar' would fail.  This reminds me of
->  very early FAT file systems, which had just a single, fixed size
->  root directory ;).  There might even be a configurable fixed upper
->  limit on how many /dev/cpuset/* directories were allowed, further
->  simplifying the locking and dynamic memory behavior of this apparatus.
+Alan Cox (1):
+      megaraid: outb_p extermination
 
-I'm not sure that either of these would make much difference to the
-overall footprint.
+Daniel Drake (1):
+      arcmsr: fix message allocation
 
-A single layer of cpusets would allow you to simplify
-validate_change() but not much else.
+David Somayajulu (1):
+      qla4xxx: fix up residual handling
 
-I don't see how a fixed upper limit on the number of cpusets makes the
-locking sufficiently simpler to save much code.
+FUJITA Tomonori (5):
+      stex: stex_internal_copy should be called with sg_count in struct st_ccb
+      stex: stex_direct_copy shouldn't call dma_map_sg
+      ips: fix data buffer accessors conversion bug
+      qla2xxx: fix compile warning for printk format
+      scsi_debug: disable clustering
 
->
->  How this extends to cgroups I don't know; for now I suspect that most
->  cgroup module development is motivated by the needs of larger systems,
->  not smaller systems.  However, cpusets is now a module client of
->  cgroups, and it is cgroups that now provides cpusets with its interface
->  to the vfs infrastructure.  It would seem unfortunate if this relation
->  was not continued with tiny cpusets.  Perhaps someone can imagine a tiny
->  cgroups?  This might be the most difficult part of this proposal.
+James Bottomley (7):
+      libsas: correctly flush the LU queue on error recovery
+      aic94xx: fix sequencer hang on error recovery
+      libsas: fix error handling
+      gdth: don't call pci_free_consistent under spinlock
+      aic7xx: mitigate HOST_MSG_LOOP invalid SCB ff panic
+      fas216: fix up the previous fas216 commit
+      aic94xx: fix REQ_TASK_ABORT and REQ_DEVICE_RESET
 
-If we wanted to go this way, I can imagine a cgroups config option
-that forces just a single hierarchy, which would allow a bunch of
-simplifications that would save plenty of text.
+Jeff Garzik (1):
+      mvsas: Add Marvell 6440 SAS/SATA driver
 
->
->  Looking at some IA64 sn2 config builds I have laying about, I see the
->  following text sizes for a couple of versions, showing the growth of
->  the cpuset/cgroup apparatus over time:
->
->         25933   2.6.18-rc3-mm1/kernel/cpuset.o (Aug 2006)
->  vs.
->         37823   2.6.25-rc2-mm1/kernel/cgroup.o (Feb 2008)
->         19558   2.6.25-rc2-mm1/kernel/cpuset.o
->
->  So the total has grown from 25933 to 57381 text bytes (note that
->  this is IA64 arch; most arch's will have proportionately smaller
->  text sizes.)
+Kai Makisara (1):
+      st: compile fix when DEBUG set to one
 
-On x86_64 they're:
+Ke Wei (1):
+      mvsas: convert from rough draft to working driver
 
-cgroup.o: 17348
-cpuset.o: 8533
+Kyle McMartin (1):
+      mpt fusion: kill warnings in mptbase.h on parisc64
 
-Paul
+Matthew Wilcox (1):
+      lpfc: Balance locking
+
+Yinghai Lu (1):
+      ses: fix data corruption
+
+
+And the diffstat:
+
+ drivers/message/fusion/mptbase.c    |    4 
+ drivers/message/fusion/mptbase.h    |    2 
+ drivers/scsi/Kconfig                |   10 
+ drivers/scsi/Makefile               |    1 
+ drivers/scsi/aic7xxx/aic7xxx_core.c |   11 
+ drivers/scsi/aic94xx/aic94xx_scb.c  |   14 
+ drivers/scsi/aic94xx/aic94xx_tmf.c  |    4 
+ drivers/scsi/arcmsr/arcmsr_hba.c    |   26 
+ drivers/scsi/arm/fas216.h           |    2 
+ drivers/scsi/gdth_proc.c            |    6 
+ drivers/scsi/ips.c                  |    2 
+ drivers/scsi/libsas/sas_scsi_host.c |   68 
+ drivers/scsi/lpfc/lpfc_crtn.h       |    1 
+ drivers/scsi/lpfc/lpfc_hbadisc.c    |    2 
+ drivers/scsi/lpfc/lpfc_sli.c        |   18 
+ drivers/scsi/megaraid.c             |   10 
+ drivers/scsi/mvsas.c                | 2981 ++++++++++++++++++++++++++++++++++++
+ drivers/scsi/qla2xxx/qla_dfs.c      |    2 
+ drivers/scsi/qla4xxx/ql4_isr.c      |    3 
+ drivers/scsi/qlogicpti.c            |   12 
+ drivers/scsi/scsi_debug.c           |    2 
+ drivers/scsi/scsi_transport_iscsi.c |    4 
+ drivers/scsi/ses.c                  |  126 -
+ drivers/scsi/st.c                   |   11 
+ drivers/scsi/st.h                   |    1 
+ drivers/scsi/stex.c                 |   44 
+ 26 files changed, 3184 insertions(+), 183 deletions(-)
+
+James
+
+
