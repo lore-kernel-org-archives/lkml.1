@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761319AbYBWSTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757036AbYBWSTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761319AbYBWSTf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:19:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbYBWSTJ
+	id S1757036AbYBWSTv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 13:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbYBWSTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:19:09 -0500
-Received: from wx-out-0506.google.com ([66.249.82.233]:64346 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755350AbYBWSTH (ORCPT
+	Sat, 23 Feb 2008 13:19:19 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:36613 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758524AbYBWSTS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:19:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tubBJiErQnayZNACxPymdLno7SSf8PtTLOqiEhmJjWWteeURDiR1gII+2qGspDMvryIFtvxO2progCQx2ffwXaYrwb9S8muN8fCLWKRCXBlhIwvkpD+0IUaLJvfFx79DeQb8oZtQ9DYX3Sd0e5irNXgjMZaRY7rfMSqyLLSvCCQ=
-Message-ID: <998d0e4a0802231019v2bd14a9nc5b2bbad3c2923d6@mail.gmail.com>
-Date: Sat, 23 Feb 2008 19:19:06 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>, git@vger.kernel.org
-Subject: Re: Question about your git habits
-In-Reply-To: <998d0e4a0802230910o1cd087f1y6b2398cfde4cfe08@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 23 Feb 2008 13:19:18 -0500
+Date: Sat, 23 Feb 2008 10:18:43 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Liam Girdwood <lg@opensource.wolfsonmicro.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 4/6] regulator: regulator core.
+Message-Id: <20080223101843.d7c001e7.akpm@linux-foundation.org>
+In-Reply-To: <20080223095217.GA28356@flint.arm.linux.org.uk>
+References: <1203527351.4071.92.camel@localhost.localdomain>
+	<20080223000538.e1f086e1.akpm@linux-foundation.org>
+	<20080223095217.GA28356@flint.arm.linux.org.uk>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0802230221140.21077@fbirervta.pbzchgretzou.qr>
-	 <20080223020913.GL27894@ZenIV.linux.org.uk>
-	 <998d0e4a0802221823h3ba53097gf64fcc2ea826302b@mail.gmail.com>
-	 <998d0e4a0802221847m431aa136xa217333b0517b962@mail.gmail.com>
-	 <20080223113952.GA4936@hashpling.org>
-	 <998d0e4a0802230508w12f236baiaf2d9ab5f364670a@mail.gmail.com>
-	 <20080223131749.GA5811@hashpling.org>
-	 <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
-	 <20080223140153.GB5811@hashpling.org>
-	 <998d0e4a0802230910o1cd087f1y6b2398cfde4cfe08@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The google's gmail made a crap my last message that it did wrap
-my message of X lines to the crap of (X+o) lines misconfiguring
-my original lines of the message.
+On Sat, 23 Feb 2008 09:52:17 +0000 Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
 
-    I don't see the motives of Google crapping my original lines
-    of the messages that i had sended.
+> On Sat, Feb 23, 2008 at 12:05:38AM -0800, Andrew Morton wrote:
+> > On Wed, 20 Feb 2008 17:09:11 +0000 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> > 
+> > > This patch provides the regulator framework core. The core also provides a
+> > > sysfs interface for userspace information.
+> > > 
+> > > ...
+> > >
+> > > +
+> > > +/* We need to undef the current macro (from include/asm/current.h) otherwise
+> > > + * our "current" sysfs entry becomes "(get_current())".
+> > > + */
+> > > +#undef current
+> > 
+> > err, no ;)  Please rename your stuff.
+> 
+> Renaming is not an option - "current" is an electronic term for which
+> there is no alternative.
+
+amps, milliamps, amperage (the latter of which I've always disliked)
+
+>  The real problem is this __ATTR macro crap:
+> 
+> +       __ATTR(current, 0444, regulator_uA_show, NULL),
+
+This interface would actually be *improved* if that sysfs file were named
+"microamps" rather than "current".  Because its units become
+self-documenting.  Similarly, s/voltage/millivolts/g
+
+> #define __ATTR(_name,_mode,_show,_store) { \
+> 	.attr = {.name = __stringify(_name), .mode = _mode },	\
+> 	.show	= _show,					\
+> 	.store	= _store,					\
+> }
+> 
+> If __ATTR allowed the name to be passed as a string, instead of stupidly
+> stringifying it, then this wouldn't be needed.  So I suggest that the
+> #undef stands _until_ we fix this stupid macro.
+
+yeah, macros suck.
+
+>  Or we rename the
+> "current" macro to something that doesn't clash with accepted scientific
+> and engineering terminology.
