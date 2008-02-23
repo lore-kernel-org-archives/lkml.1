@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbYBWEhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbYBWEjZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbYBWEhl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 23:37:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbYBWEgx
+	id S1761067AbYBWEjZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 23:39:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYBWEjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 23:36:53 -0500
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:36805 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751802AbYBWEgv (ORCPT
+	Fri, 22 Feb 2008 23:39:17 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:3955 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751684AbYBWEjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 23:36:51 -0500
-Message-ID: <47BFA37F.10806@keyaccess.nl>
-Date: Sat, 23 Feb 2008 05:39:27 +0100
-From: Rene Herman <rene.herman@keyaccess.nl>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071031)
+	Fri, 22 Feb 2008 23:39:17 -0500
+Date: Fri, 22 Feb 2008 23:39:15 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <200802230230.04466.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0802222310380.4478-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Chase Venters <chase.venters@clientec.com>
-CC: linux-kernel@vger.kernel.org, git@vger.kernel.org
-Subject: Re: Question about your git habits
-References: <200802221837.37680.chase.venters@clientec.com>
-In-Reply-To: <200802221837.37680.chase.venters@clientec.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -1.0 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 23-02-08 01:37, Chase Venters wrote:
+On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
 
-> Or perhaps you create a temporary topical branch for each thing you are 
-> working on, and commit arbitrary changes then checkout another branch
-> when you need to change gears, finally --squashing the intermediate
-> commits when a particular piece of work is done?
+> Unfortunately, I missed your Bugzilla comment at
+> http://bugzilla.kernel.org/show_bug.cgi?id=10030#c28
 
-No very specific advice to give but this is what I do and then pull all 
-(compilable) topic branches into a "local" branch for complation. Just 
-wanted to remark that a definite downside is that switching branches a lot 
-also touches the tree a lot and hence tends to trigger quite unwelcome 
-amounts of recompiles. Using ccache would proably be effective in this 
-situation but I keep neglecting to check it out...
+Strange...  But obviously you did see it eventually.
 
-Rene
+> Well, in the face of it, I'm considering to remove the code that
+> acquires device semaphores from the suspend core for now.  Evidently, this
+> change turns out to be painfully premature.
+
+I wonder if that's really the best thing.  How would we then learn 
+about drivers trying to register or unregister a device during a sleep 
+transition?
+
+Do you think it might be possible instead to somehow allow these
+unregistrations to go through, while still failing or blocking
+registrations?  It shouldn't be too hard to modify the driver core so
+that it calls the driver's remove() method without trying to acquire
+dev->sem if your in_suspend_context() test succeeds.
+
+I have to admit, I still don't understand what's going on with the MMC 
+driver.  Why is there a workqueue involved?  If the workqueue fails to 
+unregister the device, why should it bother the suspend routine?  After 
+all, if the suspend routine can afford to wait for the workqueue to 
+finish then it could just as well afford to do the unregistration 
+itself.
+
+> Also, we have apparent problems with pm_sleep_lock()
+> being take in device_add() (see
+> http://bugzilla.kernel.org/show_bug.cgi?id=9874).
+
+We'll have to get more information from the bug reporter to figure out 
+what really happened there.
+
+Ultimately it may turn out some drivers just aren't very careful about
+when they try to register new devices.  Doing the registration by way
+of a workqueue can be problematic if the workqueue happens to run
+during a system sleep transition.  That will still be true if you
+revert the acquire-all-semaphores patch.
+
+Alan Stern
+
