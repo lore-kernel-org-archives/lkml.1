@@ -1,312 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbYBWCSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756093AbYBWCSw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbYBWCSM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 21:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbYBWCR4
+	id S1756093AbYBWCSw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 21:18:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754939AbYBWCSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 21:17:56 -0500
-Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:37516 "HELO
-	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
-	id S1754007AbYBWCRz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 21:17:55 -0500
-X-Spam-Check-By: mail.local.tull.net
-From: Nick Andrew <nick@nick-andrew.net>
-Subject: [PATCH spelling] Tighten up the use of loose
-To: trivial@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Date: Sat, 23 Feb 2008 13:17:22 +1100
-Message-ID: <20080223021612.20028.24816.stgit@marcab.local.tull.net>
-User-Agent: StGIT/0.14.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 22 Feb 2008 21:18:38 -0500
+Received: from waste.org ([66.93.16.53]:35900 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754649AbYBWCSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 21:18:37 -0500
+Subject: Re: [RFC][PATCH] make /proc/pid/pagemap work with huge pages and
+	return page size
+From: Matt Mackall <mpm@selenic.com>
+To: Hans Rosenfeld <hans.rosenfeld@amd.com>
+Cc: linux-kernel@vger.kernel.org, haveblue@us.ibm.com
+In-Reply-To: <20080220135743.GA10127@escobedo.amd.com>
+References: <20080220135743.GA10127@escobedo.amd.com>
+Content-Type: text/plain
+Date: Sat, 23 Feb 2008 10:18:16 +0800
+Message-Id: <1203733096.14838.154.camel@cinder.waste.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 
 Content-Transfer-Encoding: 7bit
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'Lose' is when you don't win or you've lost something, and 'loose'
-is when something isn't tight. I just want to tighten up the
-spelling a bit regarding some loose comments.
+(sorry for the delay, travelling)
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
-Yes, this is a digression.
+On Wed, 2008-02-20 at 14:57 +0100, Hans Rosenfeld wrote:
+> The current code for /proc/pid/pagemap does not work with huge pages (on
+> x86). The code will make no difference between a normal pmd and a huge
+> page pmd, trying to parse the contents of the huge page as ptes. Another
+> problem is that there is no way to get information about the page size a
+> specific mapping uses.
+> 
+> Also, the current way the "not present" and "swap" bits are encoded in
+> the returned pfn isn't very clean, especially not if this interface is
+> going to be extended.
 
+Fair.
 
- Documentation/edac.txt                          |    2 +-
- Documentation/filesystems/hfs.txt               |    2 +-
- arch/mips/kernel/vpe.c                          |    2 +-
- arch/sh/lib64/c-checksum.c                      |    4 ++--
- drivers/char/serial167.c                        |    2 +-
- drivers/media/dvb/ttpci/av7110.c                |    2 +-
- drivers/message/i2o/i2o_block.c                 |    2 +-
- drivers/misc/ibmasm/event.c                     |    2 +-
- drivers/net/spider_net.c                        |    2 +-
- drivers/serial/mpc52xx_uart.c                   |    4 ++--
- drivers/usb/serial/ftdi_sio.c                   |    2 +-
- fs/jffs2/fs.c                                   |    2 +-
- fs/ntfs/aops.c                                  |    2 +-
- include/linux/securebits.h                      |    2 +-
- mm/migrate.c                                    |    2 +-
- mm/slub.c                                       |    4 ++--
- net/ieee80211/softmac/ieee80211softmac_module.c |    2 +-
- net/wireless/wext.c                             |    2 +-
- 18 files changed, 21 insertions(+), 21 deletions(-)
+> I propose to change /proc/pid/pagemap to return a pseudo-pte instead of
+> just a raw pfn. The pseudo-pte will contain:
+> 
+> - 58 bits for the physical address of the first byte in the page, even
+>   less bits would probably be sufficient for quite a while
+> 
+> - 4 bits for the page size, with 0 meaning native page size (4k on x86,
+>   8k on alpha, ...) and values 1-15 being specific to the architecture
+>   (I used 1 for 2M, 2 for 4M and 3 for 1G for x86)
+> 
+> - a "swap" bit indicating that a not present page is paged out, with the
+>   physical address field containing page file number and block number
+>   just like before
+> 
+> - a "present" bit just like in a real pte
 
+This is ok-ish, but I can't say I like it much. Especially the page size
+field.
 
-diff --git a/Documentation/edac.txt b/Documentation/edac.txt
-index a5c3684..bad5fef 100644
---- a/Documentation/edac.txt
-+++ b/Documentation/edac.txt
-@@ -280,7 +280,7 @@ Polling period control file:
- 
- 	The time period, in milliseconds, for polling for error information.
- 	Too small a value wastes resources.  Too large a value might delay
--	necessary handling of errors and might loose valuable information for
-+	necessary handling of errors and might lose valuable information for
- 	locating the error.  1000 milliseconds (once each second) is the current
- 	default. Systems which require all the bandwidth they can get, may
- 	increase this.
-diff --git a/Documentation/filesystems/hfs.txt b/Documentation/filesystems/hfs.txt
-index bd0fa77..28f0225 100644
---- a/Documentation/filesystems/hfs.txt
-+++ b/Documentation/filesystems/hfs.txt
-@@ -61,7 +61,7 @@ the a little strange:
-    Finder's metadata.
-  o They are however created (with default values), deleted and renamed
-    along with the corresponding data fork or directory.
-- o Copying files to a different filesystem will loose those attributes
-+ o Copying files to a different filesystem will lose those attributes
-    that are essential for MacOS to work.
- 
- 
-diff --git a/arch/mips/kernel/vpe.c b/arch/mips/kernel/vpe.c
-index eed2dc4..c6cf1ae 100644
---- a/arch/mips/kernel/vpe.c
-+++ b/arch/mips/kernel/vpe.c
-@@ -1112,7 +1112,7 @@ static int vpe_release(struct inode *inode, struct file *filp)
- 
- 	/* It's good to be able to run the SP and if it chokes have a look at
- 	   the /dev/rt?. But if we reset the pointer to the shared struct we
--	   loose what has happened. So perhaps if garbage is sent to the vpe
-+	   lose what has happened. So perhaps if garbage is sent to the vpe
- 	   device, use it as a trigger for the reset. Hopefully a nice
- 	   executable will be along shortly. */
- 	if (ret < 0)
-diff --git a/arch/sh/lib64/c-checksum.c b/arch/sh/lib64/c-checksum.c
-index 5dfbd8b..83d0776 100644
---- a/arch/sh/lib64/c-checksum.c
-+++ b/arch/sh/lib64/c-checksum.c
-@@ -35,7 +35,7 @@ static inline unsigned short foldto16(unsigned long x)
- 
- static inline unsigned short myfoldto16(unsigned long long x)
- {
--	/* Fold down to 32-bits so we don't loose in the typedef-less
-+	/* Fold down to 32-bits so we don't lose in the typedef-less
- 	   network stack.  */
- 	/* 64 to 33 */
- 	x = (x & 0xffffffff) + (x >> 32);
-@@ -199,7 +199,7 @@ __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr,
- 	result = (__force u64) saddr + (__force u64) daddr +
- 		 (__force u64) sum + ((len + proto) << 8);
- 
--	/* Fold down to 32-bits so we don't loose in the typedef-less
-+	/* Fold down to 32-bits so we don't lose in the typedef-less
- 	   network stack.  */
- 	/* 64 to 33 */
- 	result = (result & 0xffffffff) + (result >> 32);
-diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-index df8cd0c..201eb83 100644
---- a/drivers/char/serial167.c
-+++ b/drivers/char/serial167.c
-@@ -418,7 +418,7 @@ static irqreturn_t cd2401_rxerr_interrupt(int irq, void *dev_id)
- 							     TTY_OVERRUN);
- 					/*
- 					   If the flip buffer itself is
--					   overflowing, we still loose
-+					   overflowing, we still lose
- 					   the next incoming character.
- 					 */
- 					if (tty_buffer_request_room(tty, 1) !=
-diff --git a/drivers/media/dvb/ttpci/av7110.c b/drivers/media/dvb/ttpci/av7110.c
-index 0e5701b..a24fa6c 100644
---- a/drivers/media/dvb/ttpci/av7110.c
-+++ b/drivers/media/dvb/ttpci/av7110.c
-@@ -2784,7 +2784,7 @@ static void av7110_irq(struct saa7146_dev* dev, u32 *isr)
- 		 * we must do it here even though saa7146_core did it already),
- 		 * and b) that if we were to disable an edge triggered irq
- 		 * (like the gpio irqs sadly are) temporarily we would likely
--		 * loose some. This sucks :-(
-+		 * lose some. This sucks :-(
- 		 */
- 		SAA7146_IER_DISABLE(av7110->dev, MASK_19);
- 		SAA7146_ISR_CLEAR(av7110->dev, MASK_19);
-diff --git a/drivers/message/i2o/i2o_block.c b/drivers/message/i2o/i2o_block.c
-index a953148..704843e 100644
---- a/drivers/message/i2o/i2o_block.c
-+++ b/drivers/message/i2o/i2o_block.c
-@@ -354,7 +354,7 @@ static inline void i2o_block_sglist_free(struct i2o_block_request *ireq)
-  *	@req: the request to prepare
-  *
-  *	Allocate the necessary i2o_block_request struct and connect it to
-- *	the request. This is needed that we not loose the SG list later on.
-+ *	the request. This is needed that we not lose the SG list later on.
-  *
-  *	Returns BLKPREP_OK on success or BLKPREP_DEFER on failure.
-  */
-diff --git a/drivers/misc/ibmasm/event.c b/drivers/misc/ibmasm/event.c
-index fda6a4d..68a0a5b 100644
---- a/drivers/misc/ibmasm/event.c
-+++ b/drivers/misc/ibmasm/event.c
-@@ -50,7 +50,7 @@ static void wake_up_event_readers(struct service_processor *sp)
-  * Store the event in the circular event buffer, wake up any sleeping
-  * event readers.
-  * There is no reader marker in the buffer, therefore readers are
-- * responsible for keeping up with the writer, or they will loose events.
-+ * responsible for keeping up with the writer, or they will lose events.
-  */
- void ibmasm_receive_event(struct service_processor *sp, void *data, unsigned int data_size)
- {
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index bccae7e..092b57d 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -790,7 +790,7 @@ spider_net_set_low_watermark(struct spider_net_card *card)
-  * spider_net_release_tx_chain releases the tx descriptors that spider has
-  * finished with (if non-brutal) or simply release tx descriptors (if brutal).
-  * If some other context is calling this function, we return 1 so that we're
-- * scheduled again (if we were scheduled) and will not loose initiative.
-+ * scheduled again (if we were scheduled) and will not lose initiative.
-  */
- static int
- spider_net_release_tx_chain(struct spider_net_card *card, int brutal)
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index a638f23..1e5bd15 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -602,8 +602,8 @@ mpc52xx_uart_set_termios(struct uart_port *port, struct ktermios *new,
- 	/* Update the per-port timeout */
- 	uart_update_timeout(port, new->c_cflag, baud);
- 
--	/* Do our best to flush TX & RX, so we don't loose anything */
--	/* But we don't wait indefinitly ! */
-+	/* Do our best to flush TX & RX, so we don't lose anything */
-+	/* But we don't wait indefinitely ! */
- 	j = 5000000;	/* Maximum wait */
- 	/* FIXME Can't receive chars since set_termios might be called at early
- 	 * boot for the console, all stuff is not yet ready to receive at that
-diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index 76db2fe..57a39d7 100644
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -1149,7 +1149,7 @@ static int  ftdi_open (struct usb_serial_port *port, struct file *filp)
- 			priv->interface, buf, 0, WDR_TIMEOUT);
- 
- 	/* Termios defaults are set by usb_serial_init. We don't change
--	   port->tty->termios - this would loose speed settings, etc.
-+	   port->tty->termios - this would lose speed settings, etc.
- 	   This is same behaviour as serial.c/rs_open() - Kuba */
- 
- 	/* ftdi_set_termios  will send usb control messages */
-diff --git a/fs/jffs2/fs.c b/fs/jffs2/fs.c
-index e26ea78..4c8c34a 100644
---- a/fs/jffs2/fs.c
-+++ b/fs/jffs2/fs.c
-@@ -377,7 +377,7 @@ int jffs2_remount_fs (struct super_block *sb, int *flags, char *data)
- 	/* We stop if it was running, then restart if it needs to.
- 	   This also catches the case where it was stopped and this
- 	   is just a remount to restart it.
--	   Flush the writebuffer, if neccecary, else we loose it */
-+	   Flush the writebuffer, if necessary, else we lose it */
- 	if (!(sb->s_flags & MS_RDONLY)) {
- 		jffs2_stop_garbage_collect_thread(c);
- 		down(&c->alloc_sem);
-diff --git a/fs/ntfs/aops.c b/fs/ntfs/aops.c
-index 00e9ccd..54059b5 100644
---- a/fs/ntfs/aops.c
-+++ b/fs/ntfs/aops.c
-@@ -1298,7 +1298,7 @@ done:
- 	if (unlikely(err && err != -ENOMEM)) {
- 		/*
- 		 * Set page error if there is only one ntfs record in the page.
--		 * Otherwise we would loose per-record granularity.
-+		 * Otherwise we would lose per-record granularity.
- 		 */
- 		if (ni->itype.index.block_size == PAGE_CACHE_SIZE)
- 			SetPageError(page);
-diff --git a/include/linux/securebits.h b/include/linux/securebits.h
-index 5b06178..c0c430d 100644
---- a/include/linux/securebits.h
-+++ b/include/linux/securebits.h
-@@ -14,7 +14,7 @@ extern unsigned securebits;
- #define SECURE_NOROOT            0
- 
- /* When set, setuid to/from uid 0 does not trigger capability-"fixes"
--   to be compatible with old programs relying on set*uid to loose
-+   to be compatible with old programs relying on set*uid to lose
-    privileges. When unset, setuid doesn't change privileges. */
- #define SECURE_NO_SETUID_FIXUP   2
- 
-diff --git a/mm/migrate.c b/mm/migrate.c
-index a73504f..333db6c 100644
---- a/mm/migrate.c
-+++ b/mm/migrate.c
-@@ -514,7 +514,7 @@ static int writeout(struct address_space *mapping, struct page *page)
- 	/*
- 	 * A dirty page may imply that the underlying filesystem has
- 	 * the page on some queue. So the page must be clean for
--	 * migration. Writeout may mean we loose the lock and the
-+	 * migration. Writeout may mean we lose the lock and the
- 	 * page state is no longer what we checked for earlier.
- 	 * At this point we know that the migration attempt cannot
- 	 * be successful.
-diff --git a/mm/slub.c b/mm/slub.c
-index 74c65af..70930ea 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -744,7 +744,7 @@ static int check_object(struct kmem_cache *s, struct page *page,
- 	if (!check_valid_pointer(s, page, get_freepointer(s, p))) {
- 		object_err(s, page, p, "Freepointer corrupt");
- 		/*
--		 * No choice but to zap it and thus loose the remainder
-+		 * No choice but to zap it and thus lose the remainder
- 		 * of the free objects in this slab. May cause
- 		 * another error because the object count is now wrong.
- 		 */
-@@ -4241,7 +4241,7 @@ static void sysfs_slab_remove(struct kmem_cache *s)
- 
- /*
-  * Need to buffer aliases during bootup until sysfs becomes
-- * available lest we loose that information.
-+ * available lest we lose that information.
-  */
- struct saved_alias {
- 	struct kmem_cache *s;
-diff --git a/net/ieee80211/softmac/ieee80211softmac_module.c b/net/ieee80211/softmac/ieee80211softmac_module.c
-index 07505ca..88c0be7 100644
---- a/net/ieee80211/softmac/ieee80211softmac_module.c
-+++ b/net/ieee80211/softmac/ieee80211softmac_module.c
-@@ -269,7 +269,7 @@ void ieee80211softmac_init_bss(struct ieee80211softmac_device *mac)
- 	struct ieee80211softmac_bss_info *bssinfo = &mac->bssinfo;
- 
- 	/* TODO: We need some kind of state machine to lower the default rates
--	 *       if we loose too many packets.
-+	 *       if we lose too many packets.
- 	 */
- 	/* Change the default txrate to the highest possible value.
- 	 * The txrate machine will lower it, if it is too high.
-diff --git a/net/wireless/wext.c b/net/wireless/wext.c
-index 2c569b6..fb15b07 100644
---- a/net/wireless/wext.c
-+++ b/net/wireless/wext.c
-@@ -64,7 +64,7 @@
-  *	o Remove spy_offset from struct iw_handler_def
-  *	o Start deprecating dev->get_wireless_stats, output a warning
-  *	o If IW_QUAL_DBM is set, show dBm values in /proc/net/wireless
-- *	o Don't loose INVALID/DBM flags when clearing UPDATED flags (iwstats)
-+ *	o Don't lose INVALID/DBM flags when clearing UPDATED flags (iwstats)
-  *
-  * v8 - 17.02.06 - Jean II
-  *	o RtNetlink requests support (SET/GET)
+But I don't really have many ideas here. Perhaps having a bit saying
+"this entry is really a continuation of the previous one". Then any page
+size can be trivially represented. This might also make the code on both
+sides simpler?
+  
+> By shortening the field for the physical address, some more interesting
+> information could be included, like read/write permissions and the like.
+> The page size could also be returned directly, 6 bits could be used to
+> express any page shift in a 64 bit system, but I found the encoded page
+> size more useful for my specific use case.
+> 
+> 
+> The attached patch changes the /proc/pid/pagemap code to use such a
+> pseudo-pte. The huge page handling is currently limited to 2M/4M pages
+> on x86, 1G pages will need some more work. To keep the simple mapping of
+> virtual addresses to file index intact, any huge page pseudo-pte is
+> replicated in the user buffer to map the equivalent range of small
+> pages. 
+> 
+> Note that I had to move the pmd_pfn() macro from asm-x86/pgtable_64.h to
+> asm-x86/pgtable.h, it applies to both 32 bit and 64 bit x86.
+> 
+> Other architectures will probably need other changes to support huge
+> pages and return the page size.
+> 
+> I think that the definition of the pseudo-pte structure and the page
+> size codes should be made available through a header file, but I didn't
+> do this for now.
+> 
+> Signed-Off-By: Hans Rosenfeld <hans.rosenfeld@amd.com>
+> 
+> ---
+>  fs/proc/task_mmu.c           |   68 +++++++++++++++++++++++++++++------------
+>  include/asm-x86/pgtable.h    |    2 +
+>  include/asm-x86/pgtable_64.h |    1 -
+>  3 files changed, 50 insertions(+), 21 deletions(-)
+> 
+> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> index 49958cf..58af588 100644
+> --- a/fs/proc/task_mmu.c
+> +++ b/fs/proc/task_mmu.c
+> @@ -527,16 +527,23 @@ struct pagemapread {
+>  	char __user *out, *end;
+>  };
+>  
+> -#define PM_ENTRY_BYTES sizeof(u64)
+> -#define PM_RESERVED_BITS    3
+> -#define PM_RESERVED_OFFSET  (64 - PM_RESERVED_BITS)
+> -#define PM_RESERVED_MASK    (((1LL<<PM_RESERVED_BITS)-1) << PM_RESERVED_OFFSET)
+> -#define PM_SPECIAL(nr)      (((nr) << PM_RESERVED_OFFSET) | PM_RESERVED_MASK)
+> -#define PM_NOT_PRESENT      PM_SPECIAL(1LL)
+> -#define PM_SWAP             PM_SPECIAL(2LL)
+> -#define PM_END_OF_BUFFER    1
+> -
+> -static int add_to_pagemap(unsigned long addr, u64 pfn,
+> +struct ppte {
+> +	uint64_t paddr:58;
+> +	uint64_t psize:4;
+> +	uint64_t swap:1;
+> +	uint64_t present:1;
+> +};
+> +
+> +#ifdef CONFIG_X86
+> +#define PM_PSIZE_1G      3
+> +#define PM_PSIZE_4M      2
+> +#define PM_PSIZE_2M      1
+> +#endif
+> +
+> +#define PM_ENTRY_BYTES   sizeof(struct ppte)
+> +#define PM_END_OF_BUFFER 1
+> +
+> +static int add_to_pagemap(unsigned long addr, struct ppte ppte,
+>  			  struct pagemapread *pm)
+>  {
+>  	/*
+> @@ -545,13 +552,13 @@ static int add_to_pagemap(unsigned long addr, u64 pfn,
+>  	 * the pfn.
+>  	 */
+>  	if (pm->out + PM_ENTRY_BYTES >= pm->end) {
+> -		if (copy_to_user(pm->out, &pfn, pm->end - pm->out))
+> +		if (copy_to_user(pm->out, &ppte, pm->end - pm->out))
+>  			return -EFAULT;
+>  		pm->out = pm->end;
+>  		return PM_END_OF_BUFFER;
+>  	}
+>  
+> -	if (put_user(pfn, pm->out))
+> +	if (copy_to_user(pm->out, &ppte, sizeof(ppte)))
+>  		return -EFAULT;
+>  	pm->out += PM_ENTRY_BYTES;
+>  	return 0;
+> @@ -564,7 +571,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
+>  	unsigned long addr;
+>  	int err = 0;
+>  	for (addr = start; addr < end; addr += PAGE_SIZE) {
+> -		err = add_to_pagemap(addr, PM_NOT_PRESENT, pm);
+> +		err = add_to_pagemap(addr, (struct ppte) {0, 0, 0, 0}, pm);
+>  		if (err)
+>  			break;
+>  	}
+> @@ -574,7 +581,7 @@ static int pagemap_pte_hole(unsigned long start, unsigned long end,
+>  u64 swap_pte_to_pagemap_entry(pte_t pte)
+>  {
+>  	swp_entry_t e = pte_to_swp_entry(pte);
+> -	return PM_SWAP | swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
+> +	return swp_type(e) | (swp_offset(e) << MAX_SWAPFILES_SHIFT);
+>  }
+>  
+>  static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+> @@ -584,16 +591,37 @@ static int pagemap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	pte_t *pte;
+>  	int err = 0;
+>  
+> +#ifdef CONFIG_X86
+> +	if (pmd_huge(*pmd)) {
+> +		struct ppte ppte = { 
+> +			.paddr = pmd_pfn(*pmd) << PAGE_SHIFT,
+> +			.psize = (HPAGE_SHIFT == 22 ?
+> +				  PM_PSIZE_4M : PM_PSIZE_2M),
+> +			.swap  = 0,
+> +			.present = 1,
+> +		};
+> +
+> +		for(; addr != end; addr += PAGE_SIZE) {
+> +			err = add_to_pagemap(addr, ppte, pm);
+> +			if (err)
+> +				return err;
+> +		}
+> +	} else
+> +#endif
+>  	for (; addr != end; addr += PAGE_SIZE) {
+> -		u64 pfn = PM_NOT_PRESENT;
+> +		struct ppte ppte = { 0, 0, 0, 0};
+> +
+>  		pte = pte_offset_map(pmd, addr);
+> -		if (is_swap_pte(*pte))
+> -			pfn = swap_pte_to_pagemap_entry(*pte);
+> -		else if (pte_present(*pte))
+> -			pfn = pte_pfn(*pte);
+> +		if (is_swap_pte(*pte)) {
+> +			ppte.swap = 1;
+> +			ppte.paddr = swap_pte_to_pagemap_entry(*pte);
+> +		} else if (pte_present(*pte)) {
+> +			ppte.present = 1;
+> +			ppte.paddr = pte_pfn(*pte) << PAGE_SHIFT;
+> +		}
+>  		/* unmap so we're not in atomic when we copy to userspace */
+>  		pte_unmap(pte);
+> -		err = add_to_pagemap(addr, pfn, pm);
+> +		err = add_to_pagemap(addr, ppte, pm);
+>  		if (err)
+>  			return err;
+>  	}
+> diff --git a/include/asm-x86/pgtable.h b/include/asm-x86/pgtable.h
+> index 174b877..76bc8a8 100644
+> --- a/include/asm-x86/pgtable.h
+> +++ b/include/asm-x86/pgtable.h
+> @@ -181,6 +181,8 @@ static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
+>  		      pgprot_val(pgprot)) & __supported_pte_mask);
+>  }
+>  
+> +#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+> +
+>  static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
+>  {
+>  	pteval_t val = pte_val(pte);
+> diff --git a/include/asm-x86/pgtable_64.h b/include/asm-x86/pgtable_64.h
+> index 02bd4aa..094a538 100644
+> --- a/include/asm-x86/pgtable_64.h
+> +++ b/include/asm-x86/pgtable_64.h
+> @@ -216,7 +216,6 @@ static inline int pud_large(pud_t pte)
+>  #define pmd_none(x)	(!pmd_val(x))
+>  #define pmd_present(x)	(pmd_val(x) & _PAGE_PRESENT)
+>  #define pfn_pmd(nr,prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val(prot)))
+> -#define pmd_pfn(x)  ((pmd_val(x) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+>  
+>  #define pte_to_pgoff(pte) ((pte_val(pte) & PHYSICAL_PAGE_MASK) >> PAGE_SHIFT)
+>  #define pgoff_to_pte(off) ((pte_t) { .pte = ((off) << PAGE_SHIFT) | _PAGE_FILE })
+> -- 
+> 1.5.3.7
+> 
+-- 
+Mathematics is the supreme nostalgia of our time.
 
