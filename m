@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYBWJVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbYBWJW3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760966AbYBWJVa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYBWJVR
+	id S1764051AbYBWJW3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:22:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYBWJWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:21:17 -0500
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:40339 "EHLO
-	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753927AbYBWJVO (ORCPT
+	Sat, 23 Feb 2008 04:22:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:18689 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755033AbYBWJWF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:21:14 -0500
-Message-ID: <47BFE468.70104@linux.vnet.ibm.com>
-Date: Sat, 23 Feb 2008 14:46:24 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Sat, 23 Feb 2008 04:22:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=W36QD508IFnzhfpiDiL98SGmOf93tEoK6wap+h8JQlxzqFGkm3fMjWERL8qbwPlgpciZukKthZLJ3edwsAAqrRyyhFgbsJw5aw0Yp/d73puPRGJFkDO6CAkevBMeAiwLfYqA4YqiMZVwTv+3JK/pbB2pg4bzO2aFXaWuaPgZfbk=
+Date: Sat, 23 Feb 2008 12:21:36 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Q] x86 - boot/header.S
+Message-ID: <20080223092136.GC6747@cvg>
+References: <20080223082026.GA6747@cvg> <86802c440802230044sbfc909t656aadf5729b31c2@mail.gmail.com> <20080223090739.GB6747@cvg> <20080223091817.GC12161@uranus.ravnborg.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: menage@google.com, xemul@openvz.org, balbir@in.ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
-References: <20080221203518.544461000@menage.corp.google.com> <20080221205525.349180000@menage.corp.google.com> <47BE4FB5.5040902@linux.vnet.ibm.com> <20080223000426.adf5c75a.akpm@linux-foundation.org>
-In-Reply-To: <20080223000426.adf5c75a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080223091817.GC12161@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 22 Feb 2008 09:59:41 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
->> menage@google.com wrote:
->>> Update the memory controller to use read_uint for its
->>> limit/usage/failcnt control files, calling the new
->>> res_counter_read_uint() function.
->>>
->>> Signed-off-by: Paul Menage <menage@google.com>
->>>
->> Hi, Paul,
->>
->> Looks good, except for the name uint(), can we make it u64(). Integers are 32
->> bit on both ILP32 and LP64, but we really read/write 64 bit values.
->>
-> 
-> yup, I agree.  Even though I don't know what ILP32 and LP64 are ;)
+[Sam Ravnborg - Sat, Feb 23, 2008 at 10:18:17AM +0100]
+| On Sat, Feb 23, 2008 at 12:07:39PM +0300, Cyrill Gorcunov wrote:
+| > [Yinghai Lu - Sat, Feb 23, 2008 at 12:44:49AM -0800]
+| > | On Sat, Feb 23, 2008 at 12:20 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > | > Hi Peter, Sam,
+| > | >
+| > | >  could you take a look on x86/boot/header.S:280 please?
+| > | >
+| > | >  # Zero the bss
+| > | >         movw    $__bss_start, %di
+| > | >         movw    $_end+3, %cx
+| > | >         xorl    %eax, %eax
+| > | >         subw    %di, %cx
+| > | >         shrw    $2, %cx
+| > | >         rep; stosl
+| > | >
+| > | >  I wonder why is $_end there instead of $__bss_stop?
+| > | >  Well, accroding to vmlinux_32.lsd both _end and __bss_stop
+| > | >  are the same BUT __bss_stop is more convenient methink.
+| > | >  Would it be usefull to change?
+| > | 
+| > | we should have head32.c like head64.c
+| > | and x86_32_start_kernel.
+| > | 
+| > | Eric's patch long time ago...
+| > | 
+| > | YH
+| > | 
+| > 
+| > Hi Yinghai,
+| > 
+| > thanks for reply BUT that is not the point (or maybe I miss something).
+| > 
+| > Look, we only have head64.c - there is no head32.c at all. Both
+| > vmlinux_32/64.lds defines _end exactly the same as __bss_stop. So in
+| > code which DO fillup bss section with zeros the prefered name is
+| > __bss_stop. The only thing I'm trying to say that it would be clean
+| > naming scheme and I think it would help for further review - instead
+| > of searching all over x86 files to find _end definition __bss_stop
+| > tell us WHAT we are zeroing from the code.
+| 
+| We should introduce head32.c and then we can use the exact same function
+| as 64 bit does:
+| 
+| /* Don't add a printk in there. printk relies on the PDA which is not initialized
+|    yet. */
+| static void __init clear_bss(void)
+| {
+|         memset(__bss_start, 0,
+|                (unsigned long) __bss_stop - (unsigned long) __bss_start);
+| }
+| 
+| This answers your Q.
+| 
+| I already resubmitted Eric's original patch to introduce head32.c as I also
+| liked the cleanup in two Makefiles.
+| 
+| 	Sam
+| 
 
-ILP32 and LP64 are programming models. They stand for Integer, Long, Pointer 32
-bit for 32 bit systems and Long, Pointer 64 bit for 64 bit systems (which
-implies integers are 32 bit).
+thanks Sam, i just saw your patch.
 
--- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+		- Cyrill -
