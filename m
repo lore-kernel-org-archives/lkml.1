@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937181AbYBWAr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936948AbYBWAr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937181AbYBWAr2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:47:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbYBWAfu
+	id S936948AbYBWAr4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935308AbYBWAf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:35:50 -0500
-Received: from ns.suse.de ([195.135.220.2]:44958 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 19:35:56 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44991 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765592AbYBWAfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:35:47 -0500
-Date: Fri, 22 Feb 2008 16:31:16 -0800
+	id S933373AbYBWAfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:35:54 -0500
+Date: Fri, 22 Feb 2008 16:31:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,18 +20,20 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 28/38] hrtimer: check relative timeouts for overflow
-Message-ID: <20080223003116.GC7268@suse.de>
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 29/38] hrtimer: catch expired CLOCK_REALTIME timers early
+Message-ID: <20080223003118.GD7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hrtimer-check-relative-timeouts-for-overflow.patch"
+Content-Disposition: inline; filename="hrtimer-catch-expired-clock_realtime-timers-early.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+
 
 2.6.24-stable review patch.  If anyone has any objections, please let us
 know.
@@ -39,150 +41,52 @@ know.
 ------------------
 From: Thomas Gleixner <tglx@linutronix.de>
 
-commit: 5a7780e725d1bb4c3094fcc12f1c5c5faea1e988
+commit 63070a79ba482c274bad10ac8c4b587a3e011f2c
 
-Various user space callers ask for relative timeouts. While we fixed
-that overflow issue in hrtimer_start(), the sites which convert
-relative user space values to absolute timeouts themself were uncovered.
+A CLOCK_REALTIME timer, which has an absolute expiry time less than
+the clock realtime offset calls with a negative delta into the clock
+events code and triggers the WARN_ON() there.
 
-Instead of putting overflow checks into each place add a function
-which does the sanity checking and convert all affected callers to use
-it.
+This is a false positive and needs to be prevented. Check the result
+of timer->expires - timer->base->offset right away and return -ETIME
+right away.
 
 Thanks to Frans Pop, who reported the problem and tested the fixes.
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
 Tested-by: Frans Pop <elendil@planet.nl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- include/linux/ktime.h |    2 ++
- kernel/futex.c        |    2 +-
- kernel/futex_compat.c |    2 +-
- kernel/hrtimer.c      |   38 +++++++++++++++++++++-----------------
- kernel/posix-timers.c |    8 +++++---
- 5 files changed, 30 insertions(+), 22 deletions(-)
+ kernel/hrtimer.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
---- a/include/linux/ktime.h
-+++ b/include/linux/ktime.h
-@@ -310,6 +310,8 @@ static inline ktime_t ktime_sub_us(const
- 	return ktime_sub_ns(kt, usec * 1000);
- }
- 
-+extern ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs);
-+
- /*
-  * The resolution of the clocks. The resolution value is returned in
-  * the clock_getres() system call to give application programmers an
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -2094,7 +2094,7 @@ asmlinkage long sys_futex(u32 __user *ua
- 
- 		t = timespec_to_ktime(ts);
- 		if (cmd == FUTEX_WAIT)
--			t = ktime_add(ktime_get(), t);
-+			t = ktime_add_safe(ktime_get(), t);
- 		tp = &t;
- 	}
- 	/*
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -175,7 +175,7 @@ asmlinkage long compat_sys_futex(u32 __u
- 
- 		t = timespec_to_ktime(ts);
- 		if (cmd == FUTEX_WAIT)
--			t = ktime_add(ktime_get(), t);
-+			t = ktime_add_safe(ktime_get(), t);
- 		tp = &t;
- 	}
- 	if (cmd == FUTEX_REQUEUE || cmd == FUTEX_CMP_REQUEUE)
 --- a/kernel/hrtimer.c
 +++ b/kernel/hrtimer.c
-@@ -325,6 +325,24 @@ unsigned long ktime_divns(const ktime_t 
- }
- #endif /* BITS_PER_LONG >= 64 */
+@@ -427,6 +427,8 @@ static int hrtimer_reprogram(struct hrti
+ 	ktime_t expires = ktime_sub(timer->expires, base->offset);
+ 	int res;
  
-+/*
-+ * Add two ktime values and do a safety check for overflow:
-+ */
++	WARN_ON_ONCE(timer->expires.tv64 < 0);
 +
-+ktime_t ktime_add_safe(const ktime_t lhs, const ktime_t rhs)
-+{
-+	ktime_t res = ktime_add(lhs, rhs);
-+
-+	/*
-+	 * We use KTIME_SEC_MAX here, the maximum timeout which we can
-+	 * return to user space in a timespec:
-+	 */
-+	if (res.tv64 < 0 || res.tv64 < lhs.tv64 || res.tv64 < rhs.tv64)
-+		res = ktime_set(KTIME_SEC_MAX, 0);
-+
-+	return res;
-+}
-+
- /* High resolution timer related functions */
- #ifdef CONFIG_HIGH_RES_TIMERS
- 
-@@ -682,13 +700,7 @@ hrtimer_forward(struct hrtimer *timer, k
- 		 */
- 		orun++;
- 	}
--	timer->expires = ktime_add(timer->expires, interval);
--	/*
--	 * Make sure, that the result did not wrap with a very large
--	 * interval.
--	 */
--	if (timer->expires.tv64 < 0)
--		timer->expires = ktime_set(KTIME_SEC_MAX, 0);
-+	timer->expires = ktime_add_safe(timer->expires, interval);
- 
- 	return orun;
- }
-@@ -839,7 +851,7 @@ hrtimer_start(struct hrtimer *timer, kti
- 	new_base = switch_hrtimer_base(timer, base);
- 
- 	if (mode == HRTIMER_MODE_REL) {
--		tim = ktime_add(tim, new_base->get_time());
-+		tim = ktime_add_safe(tim, new_base->get_time());
- 		/*
- 		 * CONFIG_TIME_LOW_RES is a temporary way for architectures
- 		 * to signal that they simply return xtime in
-@@ -848,16 +860,8 @@ hrtimer_start(struct hrtimer *timer, kti
- 		 * timeouts. This will go away with the GTOD framework.
- 		 */
- #ifdef CONFIG_TIME_LOW_RES
--		tim = ktime_add(tim, base->resolution);
-+		tim = ktime_add_safe(tim, base->resolution);
- #endif
--		/*
--		 * Careful here: User space might have asked for a
--		 * very long sleep, so the add above might result in a
--		 * negative number, which enqueues the timer in front
--		 * of the queue.
--		 */
--		if (tim.tv64 < 0)
--			tim.tv64 = KTIME_MAX;
- 	}
- 	timer->expires = tim;
- 
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -766,9 +766,11 @@ common_timer_set(struct k_itimer *timr, 
- 	/* SIGEV_NONE timers are not queued ! See common_timer_get */
- 	if (((timr->it_sigev_notify & ~SIGEV_THREAD_ID) == SIGEV_NONE)) {
- 		/* Setup correct expiry time for relative timers */
--		if (mode == HRTIMER_MODE_REL)
--			timer->expires = ktime_add(timer->expires,
--						   timer->base->get_time());
-+		if (mode == HRTIMER_MODE_REL) {
-+			timer->expires =
-+				ktime_add_safe(timer->expires,
-+					       timer->base->get_time());
-+		}
+ 	/*
+ 	 * When the callback is running, we do not reprogram the clock event
+ 	 * device. The timer callback is either running on a different CPU or
+@@ -437,6 +439,15 @@ static int hrtimer_reprogram(struct hrti
+ 	if (hrtimer_callback_running(timer))
  		return 0;
- 	}
+ 
++	/*
++	 * CLOCK_REALTIME timer might be requested with an absolute
++	 * expiry time which is less than base->offset. Nothing wrong
++	 * about that, just avoid to call into the tick code, which
++	 * has now objections against negative expiry values.
++	 */
++	if (expires.tv64 < 0)
++		return -ETIME;
++
+ 	if (expires.tv64 >= expires_next->tv64)
+ 		return 0;
  
 
 -- 
