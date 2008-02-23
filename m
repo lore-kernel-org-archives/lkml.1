@@ -1,194 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932553AbYBWBPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbYBWBXS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932553AbYBWBPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 20:15:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbYBWBPU
+	id S1758864AbYBWBXS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 20:23:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbYBWBXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 20:15:20 -0500
-Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:48607 "HELO
-	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751812AbYBWBPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 20:15:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=bKmvc2MQSv5v79ZWWW7VVDDhQZFFowvmC4jrBiVyhj9aEmWDjdgeW+0f81BtBdk3BDdPn2i4KvVwsicvw0CPbsfZAfWgNfSQ+YvcN2cfDRSZTYeuuCTbK/Dzi2Cg/vUSAyF6xHQlqhtatnSFhsAZQDR2n1HZekCtPt0W1j0R9eQ=  ;
-X-YMail-OSG: RUmg7dUVM1nvy688FZ9zfz4L5KPWnNLpE7msI2S2KBu5HQ_7H0lOm16KNYSMUmQCnutBHE9tRA--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.25-rc2-git] gpio:  <linux/gpio.h> and "no GPIO support here" stubs
-Date: Fri, 22 Feb 2008 17:12:17 -0800
-User-Agent: KMail/1.9.6
-Cc: lkml <linux-kernel@vger.kernel.org>, cbouatmailru@gmail.com,
-       Anton Vorontsov <avorontsov@ru.mvista.com>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802221712.17815.david-b@pacbell.net>
+	Fri, 22 Feb 2008 20:23:05 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36647 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbYBWBXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 20:23:01 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <200802221425.48535.phillips@phunq.net>
+References: <200802221425.48535.phillips@phunq.net> <200802211657.01704.phillips@phunq.net> <18063.1203638861@redhat.com> <20089.1203684531@redhat.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: dhowells@redhat.com, Trond.Myklebust@netapp.com, chuck.lever@oracle.com,
+       casey@schaufler-ca.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       selinux@tycho.nsa.gov, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 00/37] Permit filesystem local caching
+X-Mailer: MH-E 8.0.3+cvs; nmh 1.2-20070115cvs; GNU Emacs 23.0.50
+Date: Sat, 23 Feb 2008 01:22:38 +0000
+Message-ID: <25049.1203729758@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a <linux/gpio.h> defining fail/warn stubs for GPIO calls on platforms
-that don't support the GPIO programming interface.  That includes the
-arch-specific implementation glue otherwise.
+Daniel Phillips <phillips@phunq.net> wrote:
 
-This facilitates a new model for GPIO usage:  drivers that can use GPIOs
-if they're available, but don't require them.  One example of such a
-driver is NAND driver for various FreeScale chips.  On platforms update
-with GPIO support, they can be used instead of a worst-case delay to
-verify that the BUSY signal is off.
+> I am eventually going to suggest cutting the backing filesystem entirely out
+> of the picture,
 
-(Also includes a couple minor unrelated doc updates.)
+You still need a database to manage the cache.  A filesystem such as Ext3
+makes a very handy database for four reasons:
 
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
----
-Please include before 2.6.25-final ...
+ (1) It exists and works.
 
- Documentation/gpio.txt |   16 ++++++--
- include/linux/gpio.h   |   95 +++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 107 insertions(+), 4 deletions(-)
+ (2) It has a well defined interface within the kernel.
 
---- g26.orig/Documentation/gpio.txt	2008-02-22 16:20:36.000000000 -0800
-+++ g26/Documentation/gpio.txt	2008-02-22 17:02:00.000000000 -0800
-@@ -2,6 +2,9 @@ GPIO Interfaces
- 
- This provides an overview of GPIO access conventions on Linux.
- 
-+These calls use the gpio_* naming prefix.  No other calls should use that
-+prefix, or the related __gpio_* prefix.
-+
- 
- What is a GPIO?
- ===============
-@@ -69,11 +72,13 @@ in this document, but drivers acting as 
- not care how it's implemented.)
- 
- That said, if the convention is supported on their platform, drivers should
--use it when possible.  Platforms should declare GENERIC_GPIO support in
--Kconfig (boolean true), which multi-platform drivers can depend on when
--using the include file:
-+use it when possible.  Platforms must declare GENERIC_GPIO support in their
-+Kconfig (boolean true), and provide an <asm/gpio.h> file.  Drivers that can't
-+work without standard GPIO calls should have Kconfig entries which depend
-+on GENERIC_GPIO.  The GPIO calls are available, either as "real code" or as
-+optimized-away stubs, when drivers use the include file:
- 
--	#include <asm/gpio.h>
-+	#include <linux/gpio.h>
- 
- If you stick to this convention then it'll be easier for other developers to
- see what your code is doing, and help maintain it.
-@@ -326,6 +331,9 @@ pulldowns integrated on some platforms. 
- or support them in the same way; and any given board might use external
- pullups (or pulldowns) so that the on-chip ones should not be used.
- (When a circuit needs 5 kOhm, on-chip 100 kOhm resistors won't do.)
-+Likewise drive strength (2 mA vs 20 mA) and voltage (1.8V vs 3.3V) is a
-+platform-specific issue, as are models like (not) having a one-to-one
-+correspondence between configurable pins and GPIOs.
- 
- There are other system-specific mechanisms that are not specified here,
- like the aforementioned options for input de-glitching and wire-OR output.
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ g26/include/linux/gpio.h	2008-02-22 17:05:48.000000000 -0800
-@@ -0,0 +1,95 @@
-+#ifndef __LINUX_GPIO_H
-+#define __LINUX_GPIO_H
-+
-+/* see Documentation/gpio.txt */
-+
-+#ifdef CONFIG_GENERIC_GPIO
-+#include <asm/gpio.h>
-+
-+#else
-+
-+/*
-+ * Some platforms don't support the GPIO programming interface.
-+ *
-+ * In case some driver uses it anyway (it should normally have
-+ * depended on GENERIC_GPIO), these routines help the compiler
-+ * optimize out much GPIO-related code ... or trigger a runtime
-+ * warning when something is wrongly called.
-+ */
-+
-+static inline int gpio_is_valid(int number)
-+{
-+	return 0;
-+}
-+
-+static inline int gpio_request(unsigned gpio, const char *label)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline void gpio_free(unsigned gpio)
-+{
-+	/* GPIO can never have been requested */
-+	WARN_ON(1);
-+}
-+
-+static inline int gpio_direction_input(unsigned gpio)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int gpio_direction_output(unsigned gpio, int value)
-+{
-+	return -ENOSYS;
-+}
-+
-+static inline int gpio_get_value(unsigned gpio)
-+{
-+	/* GPIO can never have been requested or set as {in,out}put */
-+	WARN_ON(1);
-+	return 0;
-+}
-+
-+static inline void gpio_set_value(unsigned gpio, int value)
-+{
-+	/* GPIO can never have been requested or set as output */
-+	WARN_ON(1);
-+}
-+
-+static inline int gpio_cansleep(unsigned gpio)
-+{
-+	/* GPIO can never have been requested or set as {in,out}put */
-+	WARN_ON(1);
-+	return 0;
-+}
-+
-+static inline int gpio_get_value_cansleep(unsigned gpio)
-+{
-+	/* GPIO can never have been requested or set as {in,out}put */
-+	WARN_ON(1);
-+	return 0;
-+}
-+
-+static inline void gpio_set_value_cansleep(unsigned gpio, int value)
-+{
-+	/* GPIO can never have been requested or set as output */
-+	WARN_ON(1);
-+}
-+
-+static inline int gpio_to_irq(unsigned gpio)
-+{
-+	/* GPIO can never have been requested or set as input */
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
-+static inline int irq_to_gpio(unsigned irq)
-+{
-+	/* irq can never have been returned from gpio_to_irq() */
-+	WARN_ON(1);
-+	return -EINVAL;
-+}
-+
-+#endif
-+
-+#endif /* __LINUX_GPIO_H */
+ (3) I can place my cache on, say, my root partition on my laptop.  I don't
+     have to dedicate a partition to the cache.
+
+ (4) Userspace cache management tools (such as cachefilesd) have an already
+     existing interface to use: rmdir, unlink, open, getdents, etc..
+
+I do have a cache-on-blockdev thing, but it's basically a wandering tree
+filesystem inside.  It is, or was, much faster than ext3 on a clean cache, but
+it degrades horribly over time because my free space reclamation sucks - it
+gradually randomises the block allocation sequence over time.
+
+So, what would you suggest instead of a backing filesystem?
+
+> I really do not like idea of force fitting this cache into a generic
+> vfs model.  Sun was collectively smoking some serious crack when they
+> cooked that one up.  But there is also the ageless principle "isness is
+> more important than niceness".
+
+What do you mean?  I'm not doing it like Sun.  The cache is a side path from
+the netfs.  It should be transparent to the user, the VFS and the server.
+
+The only place it might not be transparent is that you might to have to
+instruct the netfs mount to use the cache.  I'd prefer to do it some other way
+than passing parameters to mount, though, as (1) this causes fun with NIS
+distributed automounter maps, and (2) people are asking for a finer grain of
+control than per-mountpoint.  Unfortunately, I can't seem to find a way to do
+it that's acceptable to Al.
+
+> Which would require a change to NFS, not an option because you hope to
+> work with standard servers?  Of course with years to think about this,
+> the required protocol changes were put into v4.  Not.
+
+I don't think there's much I can do about NFS.  It requires the filesystem
+from which the NFS server is dealing to have inode uniquifiers, which are then
+incorporated into the file handle.  I don't think the NFS protocol itself
+needs to change to support this.
+
+> Have you completely exhausted optimization ideas for the file handle
+> lookup?
+
+No, but there aren't many.  CacheFiles doesn't actually do very much, and it's
+hard to reduce that not very much.  The most obvious thing is to prepopulate
+the dcache, but that's at the expense of memory usage.
+
+Actually, if I cache the name => FH mapping I used last time, I can make a
+start on looking up in the cache whilst simultaneously accessing the server.
+If what's on the server has changed, I can ditch the speculative cache lookup
+I was making and start a new cache lookup.
+
+However, storing directory entries has penalties of its own, though it'll be
+necesary if we want to do disconnected operation.
+
+> > Where "lookup table" == "dcache".  That would be good yes.  cachefilesd
+> > prescans all the files in the cache, which ought to do just that, but it
+> > doesn't seem to be very effective.  I'm not sure why.
+> 
+> RCU?  Anyway, it is something to be tracked down and put right.
+
+cachefilesd runs in userspace.  It's possible it isn't doing enough to preload
+all the metadata.
+
+> What I tried to say.  So still... got any ideas?  That extra synchronous
+> network round trip is a killer.  Can it be made streaming/async to keep
+> throughput healthy?
+
+That's a per-netfs thing.  With the test rig I've got, it's going to the
+on-disk cache that's the killer.  Going over the network is much faster.
+
+See the results I posted.  For the tarball load, and using Ext3 to back the
+cache:
+
+	Cold NFS cache, no disk cache:		0m22.734s
+	Warm on-disk cache, cold pagecaches:	1m54.350s
+
+The problem is reading using tar is a worst case workload for this.  Everything
+it does is pretty much completely synchronous.
+
+One thing that might help is if things like tar and find can be made to use
+fadvise() on directories to hint to the filesystem (NFS, AFS, whatever) that
+it's going to access every file in those directories.
+
+Certainly AFS could make use of that: the directory is read as a file, and the
+netfs then parses the file to get a list of vnode IDs that that directory
+points to.  It could then do bulk status fetch operations to instantiate the
+inodes 50 at a time.
+
+I don't know whether NFS could use it.  Someone like Trond or SteveD or Chuck
+would have to answer that.
+
+David
