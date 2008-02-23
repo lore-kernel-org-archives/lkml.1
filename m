@@ -1,170 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762783AbYBWS7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbYBWTAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762783AbYBWS7d (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:59:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761149AbYBWS6a
+	id S1762947AbYBWTAA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:00:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbYBWS7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:58:30 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:7301 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759956AbYBWS61 (ORCPT
+	Sat, 23 Feb 2008 13:59:16 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:52477 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761884AbYBWS7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:58:27 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=PuHkWnAsmjMZF9/tAnZuSlUsHS2XMWXc5MT7QX+dwButbBp9xvu1lleW0bstqv2N+mkhX2UXYpmTTkeHy/2yDx4Ko0AxXGGwcVS6CiCoxF6TKR8l2TLJjXSn7KfIhht42R25UqNngkMQgh5QFf4ypvs+Edg4LUPUI5SptRil5tw=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/2] qd65xx: use IDE_HFLAG_SINGLE host flag
-Date: Sat, 23 Feb 2008 20:12:40 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: linux-kernel@vger.kernel.org
+	Sat, 23 Feb 2008 13:59:11 -0500
+Date: Sat, 23 Feb 2008 10:57:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dmitry.adamushko@gmail.com, a.p.zijlstra@chello.nl, apw@shadowen.org,
+       Ingo Molnar <mingo@elte.hu>, nickpiggin@yahoo.com.au,
+       paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au,
+       Steven Rostedt <rostedt@goodmis.org>, linux-arch@vger.kernel.org
+Subject: Re: + kthread-add-a-missing-memory-barrier-to-kthread_stop.patch
+ added to -mm tree
+In-Reply-To: <20080223182258.GA19946@tv-sign.ru>
+Message-ID: <alpine.LFD.1.00.0802231044240.21332@woody.linux-foundation.org>
+References: <200802230733.m1N7XnMu018253@imap1.linux-foundation.org> <20080223162705.GA7686@tv-sign.ru> <alpine.LFD.1.00.0802230937530.21332@woody.linux-foundation.org> <20080223182258.GA19946@tv-sign.ru>
+User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200802232012.40791.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Set IDE_HFLAG_SINGLE host flag in qd_probe() for QD6500 and QD6580
-  with the second port disabled.
 
-* Check for IDE_HFLAG_SINGLE in qd6580_port_init_devs() instead of
-  using cached value of QD6580 Control register.
 
-* Don't cache QD6580 Control register value in hwif->config_data
-  (bits 8-15) and remove no longer needed QD_CONTROL() macro.
+On Sat, 23 Feb 2008, Oleg Nesterov wrote:
+> 
+> Yes, but still I suspect wmb() is not enough. Note that try_to_wake_up()
+> first checks (reads) the task->state,
+> 
+> 	if (!(old_state & state))
+> 		goto out;
+> 
+> without the full mb() it is (in theory) possible that try_to_wake_up()
+> first reads TASK_RUNNING and only then sets CONDITION. IOW, STORE and
+> LOAD could be re-ordered.
 
-* Cache QD65xx base address in hwif->config_data (bits 8-15)
-  instead of hwif->select_data.
+No. The spinlock can have preceding stores (and loads, for that matter) 
+percolate *into* the locked region, but a spinlock can *not* have loads 
+(and stores) escape *out* of the region withou being totally broken. 
 
-* Set hwif->config_data in qd_probe() and remove qd_setup() helper.
+So the spinlock that predeces that load of "old_state" absolutely *must* 
+be a memory barrier as far as that load is concerned.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/legacy/qd65xx.c |   35 +++++++++++++++--------------------
- drivers/ide/legacy/qd65xx.h |    1 -
- 2 files changed, 15 insertions(+), 21 deletions(-)
+Spinlocks are just "one-way" permeable. They stop both reads and writes, 
+but they stop them from escaping up to earlier code (and the spin-unlock 
+in turn stops reads and writes within the critical section from escaping 
+down past the unlock).
 
-Index: b/drivers/ide/legacy/qd65xx.c
-===================================================================
---- a/drivers/ide/legacy/qd65xx.c
-+++ b/drivers/ide/legacy/qd65xx.c
-@@ -204,10 +204,11 @@ static void qd6500_set_pio_mode(ide_driv
- 
- static void qd6580_set_pio_mode(ide_drive_t *drive, const u8 pio)
- {
--	int base = HWIF(drive)->select_data;
-+	ide_hwif_t *hwif = drive->hwif;
- 	unsigned int cycle_time;
- 	int active_time   = 175;
- 	int recovery_time = 415; /* worst case values from the dos driver */
-+	u8 base = (hwif->config_data & 0xff00) >> 8;
- 
- 	if (drive->id && !qd_find_disk_type(drive, &active_time, &recovery_time)) {
- 		cycle_time = ide_pio_cycle_time(drive, pio);
-@@ -278,21 +279,10 @@ static int __init qd_testreg(int port)
- 	return (readreg != QD_TESTVAL);
- }
- 
--/*
-- * qd_setup:
-- *
-- * called to setup an ata channel : adjusts attributes & links for tuning
-- */
--
--static void __init qd_setup(ide_hwif_t *hwif, int base, int config)
--{
--	hwif->select_data = base;
--	hwif->config_data = config;
--}
--
- static void __init qd6500_port_init_devs(ide_hwif_t *hwif)
- {
--	u8 base = hwif->select_data, config = QD_CONFIG(hwif);
-+	u8 base = (hwif->config_data & 0xff00) >> 8;
-+	u8 config = QD_CONFIG(hwif);
- 
- 	hwif->drives[0].drive_data = QD6500_DEF_DATA;
- 	hwif->drives[1].drive_data = QD6500_DEF_DATA;
-@@ -301,9 +291,10 @@ static void __init qd6500_port_init_devs
- static void __init qd6580_port_init_devs(ide_hwif_t *hwif)
- {
- 	u16 t1, t2;
--	u8 base = hwif->select_data, config = QD_CONFIG(hwif);
-+	u8 base = (hwif->config_data & 0xff00) >> 8;
-+	u8 config = QD_CONFIG(hwif);
- 
--	if (QD_CONTROL(hwif) & QD_CONTR_SEC_DISABLED) {
-+	if (hwif->host_flags & IDE_HFLAG_SINGLE) {
- 		t1 = QD6580_DEF_DATA;
- 		t2 = QD6580_DEF_DATA2;
- 	} else
-@@ -370,13 +361,15 @@ static int __init qd_probe(int base)
- 		printk(KERN_DEBUG "qd6500: config=%#x, ID3=%u\n",
- 			config, QD_ID3);
- 
-+		d.host_flags |= IDE_HFLAG_SINGLE;
-+
- 		hwif = ide_find_port_slot(&d);
- 		if (hwif == NULL)
- 			return -ENOENT;
- 
- 		ide_init_port_hw(hwif, &hw[unit]);
- 
--		qd_setup(hwif, base, config);
-+		hwif->config_data = (base << 8) | config;
- 
- 		hwif->port_init_devs = qd6500_port_init_devs;
- 		hwif->set_pio_mode   = qd6500_set_pio_mode;
-@@ -412,13 +405,15 @@ static int __init qd_probe(int base)
- 
- 			printk(KERN_INFO "qd6580: single IDE board\n");
- 
-+			d.host_flags |= IDE_HFLAG_SINGLE;
-+
- 			hwif = ide_find_port_slot(&d);
- 			if (hwif == NULL)
- 				return -ENOENT;
- 
- 			ide_init_port_hw(hwif, &hw[unit]);
- 
--			qd_setup(hwif, base, config | (control << 8));
-+			hwif->config_data = (base << 8) | config;
- 
- 			hwif->port_init_devs = qd6580_port_init_devs;
- 			hwif->set_pio_mode   = qd6580_set_pio_mode;
-@@ -438,7 +433,7 @@ static int __init qd_probe(int base)
- 			hwif = ide_find_port();
- 			if (hwif) {
- 				ide_init_port_hw(hwif, &hw[0]);
--				qd_setup(hwif, base, config | (control << 8));
-+				hwif->config_data = (base << 8) | config;
- 				hwif->port_init_devs = qd6580_port_init_devs;
- 				hwif->set_pio_mode   = qd6580_set_pio_mode;
- 				hwif->selectproc     = qd65xx_select;
-@@ -448,7 +443,7 @@ static int __init qd_probe(int base)
- 			mate = ide_find_port();
- 			if (mate) {
- 				ide_init_port_hw(mate, &hw[1]);
--				qd_setup(mate, base, config | (control << 8));
-+				mate->config_data = (base << 8) | config;
- 				mate->port_init_devs = qd6580_port_init_devs;
- 				mate->set_pio_mode   = qd6580_set_pio_mode;
- 				hwif->selectproc     = qd65xx_select;
-Index: b/drivers/ide/legacy/qd65xx.h
-===================================================================
---- a/drivers/ide/legacy/qd65xx.h
-+++ b/drivers/ide/legacy/qd65xx.h
-@@ -30,7 +30,6 @@
- #define QD_ID3			((config & QD_CONFIG_ID3)!=0)
- 
- #define QD_CONFIG(hwif)		((hwif)->config_data & 0x00ff)
--#define QD_CONTROL(hwif)	(((hwif)->config_data & 0xff00) >> 8)
- 
- #define QD_TIMING(drive)	(byte)(((drive)->drive_data) & 0x00ff)
- #define QD_TIMREG(drive)	(byte)((((drive)->drive_data) & 0xff00) >> 8)
+But they definitely must stop that direction, and no loads or stores that 
+are inside the critical section can possibly be allowed to be done outside 
+of it, or the spinlock would be pointless.
+
+[ Yeah, yeah, I guess that in theory you could serialize spinlocks only 
+  against each other, and their serialization would be in a totally 
+  different "domain" from normal reads and writes, and then the spinlock 
+  wouldn't act as a barrier at all except for stuff that is literally 
+  inside another spinlock, but I don't think anybody really does that ]
+
+So I think a simple smp_wmb() should be ok.
+
+That said, I do not *mind* the notion of "smp_mb_before/after_spinlock()", 
+and just have architectures do whatever they want (with x86 just being a 
+no-op). I don't think it's wrong in any way, and may be the really 
+generic solution for some theoretical case where locking is done not by 
+using the normal cache coherency, but over a separate lock network. But I 
+would suggest against adding new abstractions unless there are real cases 
+of it mattering.
+
+(The biggest reason to do it in practice is probably architectures that 
+have a really slow smp_wmb() and that also have a spinlock that is already 
+serializing enough, but if this is only for one single use - in 
+try_to_wake_up() - even that doesn't really seem to be a very strong 
+argument).
+
+> A bit offtopic, but let's take another example, __queue_work()->insert_work().
+> With some trivial modification we can move set_wq_data() outside of cwq->lock.
+> But according to linux's memory model we still need wmb(), which is a bit
+> annoying. Perhaps we can also add smp_wmb_before_spinlock(). Not sure this
+> is not too ugly though.
+
+Is that really so performance-critical? We still need the spinlock for the 
+actual list manipulation, so why would we care?
+
+And the smp_wmb() really should be free. It's literally free on x86, but 
+doing a write barrier is generally a cheap operation on any sane 
+architecture (ie generally cheaper than a read barrier or a full barrier: 
+it should mostly be a matter of inserting a magic entry in the write 
+buffers).
+
+		Linus
