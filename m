@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbYBWS4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbYBWS5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760902AbYBWS4v (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:56:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbYBWS4l
+	id S1762051AbYBWS5y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 13:57:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756314AbYBWS5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:56:41 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44362 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754372AbYBWS4k (ORCPT
+	Sat, 23 Feb 2008 13:57:44 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:57984 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753150AbYBWS5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:56:40 -0500
-Date: Sat, 23 Feb 2008 10:55:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ilpo =?ISO-8859-1?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 0/8]: uninline & uninline
-Message-Id: <20080223105517.4d706511.akpm@linux-foundation.org>
-In-Reply-To: <p734pbz95lx.fsf@bingen.suse.de>
-References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<20080223000220.e9229c99.akpm@linux-foundation.org>
-	<p734pbz95lx.fsf@bingen.suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 23 Feb 2008 13:57:43 -0500
+Date: Sat, 23 Feb 2008 18:57:01 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: hch@infradead.org, akpm@linux-foundation.org, serue@us.ibm.com,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       haveblue@us.ibm.com
+Subject: Re: [patch 00/10] mount ownership and unprivileged mount syscall (v8)
+Message-ID: <20080223185701.GS27894@ZenIV.linux.org.uk>
+References: <20080205213616.343721693@szeredi.hu> <20080214222103.a5d8f4fe.akpm@linux-foundation.org> <20080215090120.GA6266@infradead.org> <20080215010951.163fe10e.akpm@linux-foundation.org> <20080215091438.GA24386@infradead.org> <E1JR4TX-000392-Cu@pomaz-ex.szeredi.hu> <20080223160956.GR27894@ZenIV.linux.org.uk> <E1JSyFN-0003dA-0a@pomaz-ex.szeredi.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1JSyFN-0003dA-0a@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 14:15:06 +0100 Andi Kleen <andi@firstfloor.org> wrote:
-
-> Andrew Morton <akpm@linux-foundation.org> writes:
+On Sat, Feb 23, 2008 at 06:33:13PM +0100, Miklos Szeredi wrote:
+> > 	c) just what is limited by that sysctl?  AFAICS, rbind is allowed
+> > if mountpoint is on user vfsmount and it seems to create vfsmounts without
+> > eating into that limit just fine...  What's the point of limiting the
+> > amount of vfsmounts marked user when you do not limit the number of vfsmount
+> > one can allocate?
 > 
-> 
-> >> -41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
-> >
-> > This is a surprise.  I expect that the -mm-only
-> > profile-likely-unlikely-macros.patch is the cause of this and mainline
-> > doesn't have this problem.
-> 
-> Shouldn't they only have overhead when the respective CONFIG is enabled?
+> The limit is there, so that unprivileged users cannot create insane
+> number of mounts.  It's just a safety thing, analogous to
+> /proc/sys/fs/file-max.
 
-yup.
+Can't they?  Looks like one can create any number of vfsmounts without
+getting more than one marked MNT_USER...
 
-> > If true, then this likely/unlikely bloat has probably spread into a lot of
-> > your other results and it all should be redone against mainline, sorry :(
-> >
-> > (I'm not aware of anyone having used profile-likely-unlikely-macros.patch
-> > in quite some time.  That's unfortunate because it has turned up some
-> > fairly flagrant code deoptimisations)
-> 
-> Is there any reason they couldn't just be merged to mainline? 
-> 
-> I think it's a useful facility.
+What are you trying to limit - vfsmounts or superblocks?  The former is
+not limited in your patchset at all, AFAICS - you can
+do while true; do
+	mount --bind /bin ~/my_directory;
+	mount --bind /sbin ~/my_directory;
+done
+indefinitely and all the bleeding stack of vfsmounts will be !MNT_USER.
+Or any number of similar schemes, really, without overmounting if you
+wish to avoid it.
 
-ummm, now why did we made that decision...  I think we decided that it's
-the sort of thing which one person can run once per few months and that
-will deliver its full value.  I can maintain it in -mm and we're happy - no
-need to add it to mainline.  No strong feelings either way really.
-
-It does have the downside that the kernel explodes if someone adds unlikely
-or likely to the vdso code and I need to occasionally hunt down new
-additions and revert them in that patch.  That makes it a bit of a
-maintenance burden.
-
+If you are trying to limit the number of superblocks (i.e. active instances
+of filesystems), then I'd say that vfsmounts make piss-poor proxies for
+those and it would be better to count the objects you really want to count...
