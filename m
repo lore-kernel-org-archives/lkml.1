@@ -1,49 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756832AbYBWN6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYBWOCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756832AbYBWN6W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 08:58:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbYBWN6N
+	id S1757567AbYBWOCT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 09:02:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYBWOCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 08:58:13 -0500
-Received: from khc.piap.pl ([195.187.100.11]:52089 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753625AbYBWN6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 08:58:12 -0500
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2>
-	<20080221154951.GA28328@cs181133002.pp.htv.fi>
-	<adahcg2awag.fsf@cisco.com>
-	<20080221210124.GD28328@cs181133002.pp.htv.fi>
-	<alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org>
-	<m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org>
-	<m3k5kxq2ih.fsf@maximus.localdomain> <20080222184518.GB6060@ucw.cz>
-	<m3zlts393a.fsf@maximus.localdomain>
-	<20080223094334.GA3081@elf.ucw.cz>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 23 Feb 2008 14:58:10 +0100
-In-Reply-To: <20080223094334.GA3081@elf.ucw.cz> (Pavel Machek's message of "Sat\, 23 Feb 2008 10\:43\:34 +0100")
-Message-ID: <m3ablrdbbh.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Sat, 23 Feb 2008 09:02:04 -0500
+Received: from pih-relay08.plus.net ([212.159.14.134]:44490 "EHLO
+	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbYBWOCB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 09:02:01 -0500
+Date: Sat, 23 Feb 2008 14:01:53 +0000
+From: Charles Bailey <charles@hashpling.org>
+To: "J.C. Pizarro" <jcpiza@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, git@vger.kernel.org
+Subject: Re: Question about your git habits
+Message-ID: <20080223140153.GB5811@hashpling.org>
+References: <Pine.LNX.4.64.0802230221140.21077@fbirervta.pbzchgretzou.qr> <20080223014445.GK27894@ZenIV.linux.org.uk> <7vfxvk4f07.fsf@gitster.siamese.dyndns.org> <20080223020913.GL27894@ZenIV.linux.org.uk> <998d0e4a0802221823h3ba53097gf64fcc2ea826302b@mail.gmail.com> <998d0e4a0802221847m431aa136xa217333b0517b962@mail.gmail.com> <20080223113952.GA4936@hashpling.org> <998d0e4a0802230508w12f236baiaf2d9ab5f364670a@mail.gmail.com> <20080223131749.GA5811@hashpling.org> <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
+X-Plusnet-Relay: aae52d1c7b637927eeb4b1f7c3ac7fe0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Sat, Feb 23, 2008 at 02:36:59PM +0100, J.C. Pizarro wrote:
+> On 2008/2/23, Charles Bailey <charles@hashpling.org> wrote:
+> >
+> > It shouldn't matter how aggressively the repositories are packed or what
+> >  the binary differences are between the pack files are. git clone
+> >  should (with the --reference option) generate a new pack for you with
+> >  only the missing objects. If these objects are ~52 MiB then a lot has
+> >  been committed to the repository, but you're not going to be able to
+> >  get around a big download any other way.
+> 
+> You're wrong, nothing has to be commited ~52 MiB to the repository.
+> 
+> I'm not saying "commit", i'm saying
+> 
+> "Assume A & B binary git repos and delta_B-A another binary file, i
+> request built
+> B' = A + delta_B-A where is verified SHA1(B') = SHA1(B) for avoiding
+> corrupting".
+> 
+> Assume B is the higher repacked version of "A + minor commits of the day"
+> as if B was optimizing 24 hours more the minimum spanning tree. Wow!!!
+> 
 
->> Come on, are you doing Linux kernel development on PDA?
->
-> I review patches on it, sometimes, yes.
+I'm not sure that I understand where you are going with this.
+Originally, you stated that if you clone a 775 MiB repository on day
+one, and then you clone it again on day two when it was 777 MiB, then
+you currently have to download 775 + 777 MiB of data, whereas you
+could download a 52 MiB binary diff. I have no idea where that value
+of 52 MiB comes from, and I've no idea how many objects were committed
+between day one and day two. If we're going to talk about details,
+then you need to provide more details about your scenario.
 
-I take it the "sometimes" is the key word :-)
--- 
-Krzysztof Halasa
+Having said that, here is my original point in some more detail. git
+repositories are not binary blobs, they are object databases. Better
+than this, they are databases of immutable objects. This means that to
+get the difference between one database and another, you only need to
+add the objects that are missing from the other database. If the two
+databases are actually a database and the same database at short time
+interval later, then almost all the objects are going to be common and
+the difference will be a small set of objects. Using git:// this set
+of objects can be efficiently transfered as a pack file. You may have
+a corner case scenario where the following isn't true, but in my
+experience an incremental pack file will be a more compact
+representation of this difference than a binary difference of two
+aggressively repacked git repositories as generated by a generic
+binary difference engine.
+
+I'm sorry if I've misunderstood your last point. Perhaps you could
+expand in the exact issue that are having if I have, as I'm not sure
+that I've really answered your last message.
+
