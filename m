@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbYBWPhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756298AbYBWPsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbYBWPhj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 10:37:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbYBWPhb
+	id S1756298AbYBWPsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 10:48:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbYBWPr6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 10:37:31 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:60677 "EHLO e5.ny.us.ibm.com"
+	Sat, 23 Feb 2008 10:47:58 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:37248 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbYBWPha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 10:37:30 -0500
-Date: Sat, 23 Feb 2008 09:36:58 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morgan <morgan@kernel.org>
-Subject: Re: [PATCH 1/1] file capabilities: simplify signal check
-Message-ID: <20080223153658.GA26634@sergelap.austin.ibm.com>
-References: <20080220161550.GA14630@sergelap.austin.ibm.com> <20080223000243.e6efb30f.akpm@linux-foundation.org>
+	id S1751939AbYBWPr5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 10:47:57 -0500
+From: Andreas Schwab <schwab@suse.de>
+To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       petkovbb@gmail.com, j-nomura@ce.jp.nec.com
+Subject: Re: 2.6.25-rc1/2 CD/DVD burning broken
+References: <jelk5k62uy.fsf@sykes.suse.de>
+	<58cb370e0802180759h4d44b9bci86f02919a48c7979@mail.gmail.com>
+	<20080218.135827.74754725.k-ueda@ct.jp.nec.com>
+X-Yow: This is a NO-FRILLS flight -- hold th' CANADIAN BACON!!
+Date: Sat, 23 Feb 2008 16:47:50 +0100
+In-Reply-To: <20080218.135827.74754725.k-ueda@ct.jp.nec.com> (Kiyoshi Ueda's
+	message of "Mon\, 18 Feb 2008 13\:58\:27 -0500 \(EST\)")
+Message-ID: <jek5kvisih.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080223000243.e6efb30f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andrew Morton (akpm@linux-foundation.org):
-> On Wed, 20 Feb 2008 10:15:50 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
-> 
-> > >From bd076c7245d02be0cc01b7c09bd7170ec5946492 Mon Sep 17 00:00:00 2001
-> > From: Serge E. Hallyn <serue@us.ibm.com>
-> > Date: Sun, 17 Feb 2008 20:28:07 -0500
-> > Subject: [PATCH 1/1] file capabilities: simplify signal check
-> > 
-> > Simplify the uid equivalence check in cap_task_kill().  Anyone
-> > can kill a process owned by the same uid.
-> > 
-> > Without this patch wireshark is reported to fail.
-> 
-> Strange that a patch titled "simplify...." actually fixes a bug.
+Kiyoshi Ueda <k-ueda@ct.jp.nec.com> writes:
 
-Sorry.  Yeah that's a bad subject.
+> Could you try this patch?
+> I've only done a compile test, so this patch may not work.
 
-> > Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> > Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
-> > ---
-> >  security/commoncap.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/security/commoncap.c b/security/commoncap.c
-> > index 5aba826..bb0c095 100644
-> > --- a/security/commoncap.c
-> > +++ b/security/commoncap.c
-> > @@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
-> >  	 * allowed.
-> >  	 * We must preserve legacy signal behavior in this case.
-> >  	 */
-> > -	if (p->euid == 0 && p->uid == current->uid)
-> > +	if (p->uid == current->uid)
-> >  		return 0;
-> >  
-> >  	/* sigcont is permitted within same session */
-> 
-> I've marked this as needed-in-2.6.24.  Was that appropriate?
+Unfortunately, that is not enough to get DVD burning working again.
+This is the error that growisofs is getting:
 
-Yes, thanks.  I doubt wireshark is the only thing that'll break
-otherwise.
+ioctl(6, SG_IO, {'S', SG_DXFER_TO_DEV, cmd[10]=[2a, 00, 00, 00, 03, 10, 00, 00, 10, 00], mx_sb_len=64, iovec_count=0, dxfer_len=32768, timeout=60000, flags=0x3, data[32768]=["\360R\360\314Wt\277\241\36.\347\356L$\201]\210\372_~]I\213\366\253SV\2\372\356\312\257"...], status=02, masked_status=01, sb[0]=[], host_status=0, driver_status=0, resid=32768, duration=0, info=0x1}) = 0
+write(2, ":-( unable to WRITE@LBA=310h: ", 30) = 30
 
-thanks,
--serge
+It looks like the sense buffer is not filled in.  In a successfully run
+of growisfs under 2.6.24.2 the sense code is "LONG WRITE IN PROGRESS".
+
+I also see that resid always equals dxfer_len even when the transfer was
+successful, although growisofs does not seem to care.  With 2.6.24.2
+resid is only non-zero when a sense error occurred.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
