@@ -1,69 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbYBWWGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbYBWWO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbYBWWGz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 17:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754928AbYBWWGg
+	id S1755965AbYBWWO0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 17:14:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbYBWWOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 17:06:36 -0500
-Received: from www.tglx.de ([62.245.132.106]:33161 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754753AbYBWWGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 17:06:35 -0500
-Date: Sat, 23 Feb 2008 23:05:22 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       zippel@linux-m68k.org, schwab@suse.de, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Make the kernel NTP code hand 64-bit *unsigned* values
- to do_div() [try #3]
-In-Reply-To: <20080223130743.02caa1ab.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802232302110.7583@apollo.tec.linutronix.de>
-References: <20080221165035.16571.67531.stgit@warthog.procyon.org.uk> <20080223000455.a0f543e1.akpm@linux-foundation.org> <alpine.LFD.1.00.0802232200300.7583@apollo.tec.linutronix.de> <20080223130743.02caa1ab.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 23 Feb 2008 17:14:14 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:47721 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752759AbYBWWON (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 17:14:13 -0500
+X-Mailer: exmh version 2.7.2 04/02/2003 (gentoo 2.7.2) with nmh-1.2
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+cc: Jeff Garzik <jeff@garzik.org>, aeriksson@fastmail.fm,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.25-rc2 + smartd = hang 
+In-reply-to: <20080223063943.4EF77364D5@smtp02.mtu.ru> 
+References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <47BF0DCD.4060400@garzik.org> <20080222185645.9DD9C93C12F@tippex.mynet.homeunix.org> <47BF3DE3.4000100@rtr.ca> <20080222213932.3403F93C12F@tippex.mynet.homeunix.org> <47BF45E4.4020006@garzik.org> <20080223063943.4EF77364D5@smtp02.mtu.ru>
+Comments: In-reply-to Andrey Borzenkov <arvidjaar@mail.ru>
+   message dated "Sat, 23 Feb 2008 09:39:46 +0300."
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Date: Sat, 23 Feb 2008 23:13:59 +0100
+From: Anders Eriksson <aeriksson@fastmail.fm>
+Message-Id: <20080223221400.0F97B2DC002@tippex.mynet.homeunix.org>
+X-Originating-IP: 83.252.237.4
+X-Scan-Result: No virus found in message 1JT2dF-0005ay-9M.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1JT2dF-0005ay-9M 4a13406899ab4a0b6d7d3b4d6404a4cf
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008, Andrew Morton wrote:
-> > > Thomas, do you consider ntp to fall under git-hrt?
-> > 
-> > I'll pick it up.
-> > 
-> OK.  And this is still
-> git+ssh://master.kernel.org/pub/scm/linux/kernel/git/tglx/linux-2.6-hrt.git#mm,
-> yes?
 
-Yes
- 
-> Can we please define the scope of that tree?
 
-Primary scope is hrtimer, posixtimer, clockevents & Co.
 
-In the last month I fed a lot of timekeeping/ntp stuff via -hrt as
-well. If there is no objection, I'm happy to provide the sink for
-those.
+arvidjaar@mail.ru said:
+> the comment on the very top of drivers/ata says:
+> tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers" 
 
-> Please review
-> 
-> fix-shadowed-variables-in-kernel-posix-cpu-timersc.patch
-> timers-simplify-lockdep-stuff.patch
-> hrtimers-simplify-lockdep-stuff.patch
-> kill-double_spin_lock.patch
-> ntp-make-the-kernel-ntp-code-hand-64-bit-unsigned-values-to-do_div.patch
-> 
-> from http://userweb.kernel.org/~akpm/mmotm/broken-out/.  I think they're
-> all probably git-hrt material.
 
-Will do tomorrow, when I'm more awake.
-
-> Can we get that tree into linux-next too please?
-
-Will contact Stephen.
-
-Thanks,
-
-	tglx
+That's the one I was referring to.
 
