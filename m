@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbYBWJYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762592AbYBWJ1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762997AbYBWJYW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:24:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYBWJYH
+	id S1762592AbYBWJ1g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750957AbYBWJ1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:24:07 -0500
-Received: from n27.bullet.mail.mud.yahoo.com ([68.142.200.142]:40830 "HELO
-	n27.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751058AbYBWJYE (ORCPT
+	Sat, 23 Feb 2008 04:27:21 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:32922 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbYBWJ1T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:24:04 -0500
-X-Yahoo-Newman-Id: 642026.11065.bm@omp424.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=asZSzRSvdngER38/6bqQlbxzeEkJNC+js+TEICFpNHt1u644+sqM205qvfyCHwaXtBlJqr0GkDEbkAt0q827MUmlX97oudCf4c9IPLTUlLd+UjtZEFqys8jOWObI24Un64OlV+81NgsJqiF4O2IebDJkTL0re8plq4yQHQbRERE=  ;
-X-YMail-OSG: QSvRuscVM1kXvPz2Y9X24FjG9L.V949nbQVL8g82ZM1QEYkfbvJXf6m3OkSnnNxpSKBaSDRkyA--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
-Date: Sat, 23 Feb 2008 20:23:51 +1100
-User-Agent: KMail/1.9.5
-Cc: Eric Dumazet <dada1@cosmosbay.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-References: <47BDBC23.10605@cosmosbay.com> <1203632765.6112.20.camel@lappy>
-In-Reply-To: <1203632765.6112.20.camel@lappy>
+	Sat, 23 Feb 2008 04:27:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=Y1dQDeKDH4QPfpsZ1HOv1117QIao4gVJoknTm4i7fwxtqbJOOVwv9ZnyJNMxI3J/7ShQj7IIh57oKnKvXr3mj+0qOVJqd68KEq2D5kWVi3Bn3YO/BKuZ9g3mlFuCmGKw3o0o+jd1V6cQFr+7isJ+oeQzYLMfYm3x0JoKN8//CGo=
+Date: Sat, 23 Feb 2008 12:27:10 +0300
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/16] (Resend) Use get_personality()
+Message-ID: <20080223092710.GD2262@martell.zuzino.mipt.ru>
+References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com> <20080223085101.GC2262@martell.zuzino.mipt.ru> <20080223.165944.37229792.xiyou.wangcong@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802232023.52352.nickpiggin@yahoo.com.au>
+In-Reply-To: <20080223.165944.37229792.xiyou.wangcong@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Alexey Dobriyan <adobriyan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 22 February 2008 09:26, Peter Zijlstra wrote:
-> On Thu, 2008-02-21 at 19:00 +0100, Eric Dumazet wrote:
-> > Some oprofile results obtained while using tbench on a 2x2 cpu machine
-> > were very surprising.
-> >
-> > For example, loopback_xmit() function was using high number of cpu
-> > cycles to perform the statistic updates, supposed to be real cheap
-> > since they use percpu data
-> >
-> >         pcpu_lstats = netdev_priv(dev);
-> >         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
-> >         lb_stats->packets++;  /* HERE : serious contention */
-> >         lb_stats->bytes += skb->len;
-> >
-> >
-> > struct pcpu_lstats is a small structure containing two longs. It
-> > appears that on my 32bits platform, alloc_percpu(8) allocates a single
-> > cache line,  instead of giving to each cpu a separate cache line.
-> >
-> > Using the following patch gave me impressive boost in various
-> > benchmarks ( 6 % in tbench) (all percpu_counters hit this bug too)
-> >
-> > Long term fix (ie >= 2.6.26) would be to let each CPU allocate their
-> > own block of memory, so that we dont need to roudup sizes to
-> > L1_CACHE_BYTES, or merging the SGI stuff of course...
-> >
-> > Note : SLUB vs SLAB is important here to *show* the improvement, since
-> > they dont have the same minimum allocation sizes (8 bytes vs 32
-> > bytes). This could very well explain regressions some guys reported
-> > when they switched to SLUB.
->
-> I've complained about this false sharing as well, so until we get the
-> new and improved percpu allocators,
+On Sat, Feb 23, 2008 at 04:59:44PM +0800, WANG Cong wrote:
+> From: Alexey Dobriyan <adobriyan@gmail.com>
+> Subject: Re: [PATCH 00/16] (Resend) Use get_personality()
 
-What I don't understand is why the slab allocators have something like
-this in it:
+> > On Sat, Feb 23, 2008 at 04:14:03PM +0800, WANG Cong wrote:
+> > > This patchset makes the macro get_personality function alike
+> > > and teaches code to use get_personality() instead of explicit
+> > > reference.
+> > > 
+> > > [I am sorry if you've received multiple copied of this, since
+> > >  my git-send-email doesn't work well. ]
+> > 
+> > Yes, but why? "current->personality" is way more understandable than
+> > your macro because task subject to dereference is very visible.
+> 
+> Use get_personality() can hide the task_struct internals a bit.
 
-        if ((flags & SLAB_HWCACHE_ALIGN) &&
-                        size > cache_line_size() / 2)
-                return max_t(unsigned long, align, cache_line_size());
+->personality is going to become something less trivial?
+Sorry, but you sound like C++ people writing tons of pointless get/set
+wrappers. And your get_personality() is worse -- C++ would write it as
 
-If you ask for HWCACHE_ALIGN, then you should get it. I don't
-understand, why do they think they knows better than the caller?
-Things like this are just going to lead to very difficult to track
-performance problems. Possibly correctness problems in rare cases.
+	current->personality()
 
-There could be another flag for "maybe align".
+and again, even here, it's immediately visible that current task is
+involved, not some other task.
 
+> And I don't think using the macro to access it is less understandable.
+> Since 'current' won't be NULL, whether the dereference is visible is
+> not important.
+
+It's not about NULL vs non-NULL at all.
