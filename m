@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbYBWJSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbYBWJVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbYBWJSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:18:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbYBWJSJ
+	id S1760966AbYBWJVa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:21:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbYBWJVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:18:09 -0500
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57000 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753831AbYBWJSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:18:07 -0500
-Date: Sat, 23 Feb 2008 10:18:17 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] x86 - boot/header.S
-Message-ID: <20080223091817.GC12161@uranus.ravnborg.org>
-References: <20080223082026.GA6747@cvg> <86802c440802230044sbfc909t656aadf5729b31c2@mail.gmail.com> <20080223090739.GB6747@cvg>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20080223090739.GB6747@cvg>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 23 Feb 2008 04:21:17 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:40339 "EHLO
+	e28esmtp07.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753927AbYBWJVO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 04:21:14 -0500
+Message-ID: <47BFE468.70104@linux.vnet.ibm.com>
+Date: Sat, 23 Feb 2008 14:46:24 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: menage@google.com, xemul@openvz.org, balbir@in.ibm.com,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2/2] ResCounter: Use read_uint in memory controller
+References: <20080221203518.544461000@menage.corp.google.com> <20080221205525.349180000@menage.corp.google.com> <47BE4FB5.5040902@linux.vnet.ibm.com> <20080223000426.adf5c75a.akpm@linux-foundation.org>
+In-Reply-To: <20080223000426.adf5c75a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 12:07:39PM +0300, Cyrill Gorcunov wrote:
-> [Yinghai Lu - Sat, Feb 23, 2008 at 12:44:49AM -0800]
-> | On Sat, Feb 23, 2008 at 12:20 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-> | > Hi Peter, Sam,
-> | >
-> | >  could you take a look on x86/boot/header.S:280 please?
-> | >
-> | >  # Zero the bss
-> | >         movw    $__bss_start, %di
-> | >         movw    $_end+3, %cx
-> | >         xorl    %eax, %eax
-> | >         subw    %di, %cx
-> | >         shrw    $2, %cx
-> | >         rep; stosl
-> | >
-> | >  I wonder why is $_end there instead of $__bss_stop?
-> | >  Well, accroding to vmlinux_32.lsd both _end and __bss_stop
-> | >  are the same BUT __bss_stop is more convenient methink.
-> | >  Would it be usefull to change?
-> | 
-> | we should have head32.c like head64.c
-> | and x86_32_start_kernel.
-> | 
-> | Eric's patch long time ago...
-> | 
-> | YH
-> | 
+Andrew Morton wrote:
+> On Fri, 22 Feb 2008 09:59:41 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Hi Yinghai,
+>> menage@google.com wrote:
+>>> Update the memory controller to use read_uint for its
+>>> limit/usage/failcnt control files, calling the new
+>>> res_counter_read_uint() function.
+>>>
+>>> Signed-off-by: Paul Menage <menage@google.com>
+>>>
+>> Hi, Paul,
+>>
+>> Looks good, except for the name uint(), can we make it u64(). Integers are 32
+>> bit on both ILP32 and LP64, but we really read/write 64 bit values.
+>>
 > 
-> thanks for reply BUT that is not the point (or maybe I miss something).
-> 
-> Look, we only have head64.c - there is no head32.c at all. Both
-> vmlinux_32/64.lds defines _end exactly the same as __bss_stop. So in
-> code which DO fillup bss section with zeros the prefered name is
-> __bss_stop. The only thing I'm trying to say that it would be clean
-> naming scheme and I think it would help for further review - instead
-> of searching all over x86 files to find _end definition __bss_stop
-> tell us WHAT we are zeroing from the code.
+> yup, I agree.  Even though I don't know what ILP32 and LP64 are ;)
 
-We should introduce head32.c and then we can use the exact same function
-as 64 bit does:
+ILP32 and LP64 are programming models. They stand for Integer, Long, Pointer 32
+bit for 32 bit systems and Long, Pointer 64 bit for 64 bit systems (which
+implies integers are 32 bit).
 
-/* Don't add a printk in there. printk relies on the PDA which is not initialized
-   yet. */
-static void __init clear_bss(void)
-{
-        memset(__bss_start, 0,
-               (unsigned long) __bss_stop - (unsigned long) __bss_start);
-}
-
-This answers your Q.
-
-I already resubmitted Eric's original patch to introduce head32.c as I also
-liked the cleanup in two Makefiles.
-
-	Sam
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
