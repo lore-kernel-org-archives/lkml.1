@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbYBWAWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbYBWAWp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763269AbYBWAWH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbYBWATa
+	id S1754032AbYBWAWp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:22:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932594AbYBWATi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:19:30 -0500
-Received: from ns2.suse.de ([195.135.220.15]:53858 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:19:38 -0500
+Received: from mx1.suse.de ([195.135.220.2]:42941 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754197AbYBWAT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:19:27 -0500
-Date: Fri, 22 Feb 2008 16:17:36 -0800
+	id S932547AbYBWATg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:19:36 -0500
+Date: Fri, 22 Feb 2008 16:17:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: [patch 7/8] Be more robust about bad arguments in get_user_pages()
-Message-ID: <20080223001736.GH27727@suse.de>
+       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 8/8] x86_64: CPA, fix cache attribute inconsistency bug
+Message-ID: <20080223001739.GI27727@suse.de>
 References: <20080223001123.939868182@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="be-more-robust-about-bad-arguments-in-get_user_pages.patch"
+Content-Disposition: inline; filename="x86_64-cpa-fix-cache-attribute-inconsistency-bug.patch"
 In-Reply-To: <20080223001702.GA27727@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,47 +38,58 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-From: Jonathan Corbet <corbet@lwn.net>
+From: Ingo Molnar <mingo@elte.hu>
 
-patch 900cf086fd2fbad07f72f4575449e0d0958f860f in mainline.
+no upstream git id as the code has been rewritten.
 
-So I spent a while pounding my head against my monitor trying to figure
-out the vmsplice() vulnerability - how could a failure to check for
-*read* access turn into a root exploit? It turns out that it's a buffer
-overflow problem which is made easy by the way get_user_pages() is
-coded.
+fix CPA cache attribute bug in v2.6.23. When phys_base is nonzero
+(when CONFIG_RELOCATABLE=y) then change_page_attr_addr() miscalculates
+the secondary alias address by -14 MB (depending on the configured
+offset).
 
-In particular, "len" is a signed int, and it is only checked at the
-*end* of a do {} while() loop.  So, if it is passed in as zero, the loop
-will execute once and decrement len to -1.  At that point, the loop will
-proceed until the next invalid address is found; in the process, it will
-likely overflow the pages array passed in to get_user_pages().
+The default 64-bit kernels of Fedora and Ubuntu are affected:
 
-I think that, if get_user_pages() has been asked to grab zero pages,
-that's what it should do.  Thus this patch; it is, among other things,
-enough to block the (already fixed) root exploit and any others which
-might be lurking in similar code.  I also think that the number of pages
-should be unsigned, but changing the prototype of this function probably
-requires some more careful review.
+   $ grep RELOCA /boot/config-2.6.23.9-85.fc8
+     CONFIG_RELOCATABLE=y
 
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+   $ grep RELOC /boot/config-2.6.22-14-generic
+     CONFIG_RELOCATABLE=y
+
+and probably on many other distros as well.
+
+the bug affects all pages in the first 40 MB of physical RAM that
+are allocated by some subsystem that does ioremap_nocache() on them:
+
+       if (__pa(address) < KERNEL_TEXT_SIZE) {
+
+Hence we might leave page table entries with inconsistent cache
+attributes around (pages mapped at both UnCacheable and Write-Back),
+and we can also set the wrong kernel text pages to UnCacheable.
+
+the effects of this bug can be random slowdowns and other misbehavior.
+If for example AGP allocates its aperture pages into the first 40 MB
+of physical RAM, then the -14 MB bug might mark random kernel texto
+pages as uncacheable, slowing down a random portion of the 64-bit
+kernel until the AGP driver is unloaded.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/memory.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86_64/mm/pageattr.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -981,6 +981,8 @@ int get_user_pages(struct task_struct *t
- 	int i;
- 	unsigned int vm_flags;
- 
-+	if (len <= 0)
-+		return 0;
- 	/* 
- 	 * Require read or write permissions.
- 	 * If 'force' is set, we only require the "MAY" flags.
+--- a/arch/x86_64/mm/pageattr.c
++++ b/arch/x86_64/mm/pageattr.c
+@@ -207,7 +207,7 @@ int change_page_attr_addr(unsigned long 
+ 		if (__pa(address) < KERNEL_TEXT_SIZE) {
+ 			unsigned long addr2;
+ 			pgprot_t prot2;
+-			addr2 = __START_KERNEL_map + __pa(address);
++			addr2 = __START_KERNEL_map + __pa(address) - phys_base;
+ 			/* Make sure the kernel mappings stay executable */
+ 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
+ 			err = __change_page_attr(addr2, pfn, prot2,
 
 -- 
