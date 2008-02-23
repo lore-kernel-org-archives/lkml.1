@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935580AbYBWAgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935239AbYBWAgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935580AbYBWAgH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:36:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763792AbYBWAd1
+	id S935239AbYBWAgh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:36:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764889AbYBWAdc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:33:27 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55251 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:33:32 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:55269 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763378AbYBWAd0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:33:26 -0500
-Date: Fri, 22 Feb 2008 16:29:51 -0800
+	id S1764301AbYBWAda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:33:30 -0500
+Date: Fri, 22 Feb 2008 16:29:56 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, jack@suse.cz
-Subject: [patch 06/38] quota: turn quotas off when remounting read-only
-Message-ID: <20080223002951.GG7268@suse.de>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, greg@kroah.com,
+       chris@sous-sol.org, Dave Chinner <dgc@sgi.com>,
+       Lachlan McIlroy <lachlan@sgi.com>
+Subject: [patch 07/38] XFS: Fix oops in xfs_file_readdir()
+Message-ID: <20080223002956.GH7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="quota-turn-quotas-off-when-remounting-read-only.patch"
+Content-Disposition: inline; filename="xfs-fix-oops-in-xfs_file_readdir.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,34 +39,43 @@ know.
 
 ------------------
  
+ From: David Chinner <dgc@sgi.com>
 
-From: Jan Kara <jack@suse.cz>
+patch 450790a2c51e6d9d47ed30dbdcf486656b8e186f in mainline.
 
-patch 66191dc622f5ff0a541524c4e96fdacfacfda206 in mainline.
+Several occurrences of oops in xfs_file_readdir() on ia32 have been
+reported since 2.6.24 was released. This is a regression introduced
+in 2.6.24 and is relatively easy to hit. The patch below fixes the
+problem.
 
-Turn off quotas before filesystem is remounted read only.  Otherwise quota
-will try to write to read-only filesystem which does no good...  We could
-also just refuse to remount ro when quota is enabled but turning quota off
-is consistent with what we do on umount.
 
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Dave Chinner <dgc@sgi.com>
+Signed-off-by: Lachlan McIlroy <lachlan@sgi.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/super.c |    1 +
- 1 file changed, 1 insertion(+)
+ fs/xfs/linux-2.6/xfs_file.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -603,6 +603,7 @@ int do_remount_sb(struct super_block *sb
- 			mark_files_ro(sb);
- 		else if (!fs_may_remount_ro(sb))
- 			return -EBUSY;
-+		DQUOT_OFF(sb);
+--- a/fs/xfs/linux-2.6/xfs_file.c
++++ b/fs/xfs/linux-2.6/xfs_file.c
+@@ -350,8 +350,8 @@ xfs_file_readdir(
+ 
+ 		size = buf.used;
+ 		de = (struct hack_dirent *)buf.dirent;
+-		curr_offset = de->offset /* & 0x7fffffff */;
+ 		while (size > 0) {
++			curr_offset = de->offset /* & 0x7fffffff */;
+ 			if (filldir(dirent, de->name, de->namlen,
+ 					curr_offset & 0x7fffffff,
+ 					de->ino, de->d_type)) {
+@@ -362,7 +362,6 @@ xfs_file_readdir(
+ 				       sizeof(u64));
+ 			size -= reclen;
+ 			de = (struct hack_dirent *)((char *)de + reclen);
+-			curr_offset = de->offset /* & 0x7fffffff */;
+ 		}
  	}
  
- 	if (sb->s_op->remount_fs) {
 
 -- 
