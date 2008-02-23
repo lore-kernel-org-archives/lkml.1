@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762219AbYBWIDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbYBWIE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762219AbYBWIDy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:03:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbYBWIDf
+	id S1758839AbYBWIE2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758388AbYBWIDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:03:35 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44208 "EHLO
+	Sat, 23 Feb 2008 03:03:40 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:55161 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757388AbYBWIDe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:03:34 -0500
-Date: Sat, 23 Feb 2008 00:02:14 -0800
+	by vger.kernel.org with ESMTP id S1757852AbYBWIDh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 03:03:37 -0500
+Date: Sat, 23 Feb 2008 00:02:20 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: =?ISO-8859-1?B?IklscG8gSuRydmluZW4i?= <ilpo.jarvinen@helsinki.fi>
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        David Miller <davem@davemloft.net>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [RFC PATCH 8/8] Jhash in too big for inlining, move under lib/
-Message-Id: <20080223000214.81b1390a.akpm@linux-foundation.org>
-In-Reply-To: <1203515238-22848-9-git-send-email-ilpo.jarvinen@helsinki.fi>
+Subject: Re: [RFC PATCH 0/8]: uninline & uninline
+Message-Id: <20080223000220.e9229c99.akpm@linux-foundation.org>
+In-Reply-To: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
 References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-2-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-3-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-4-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-5-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-6-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-7-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-8-git-send-email-ilpo.jarvinen@helsinki.fi>
-	<1203515238-22848-9-git-send-email-ilpo.jarvinen@helsinki.fi>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 15:47:18 +0200 "Ilpo Järvinen" <ilpo.jarvinen@helsinki.fi> wrote:
+On Wed, 20 Feb 2008 15:47:10 +0200 "Ilpo J__rvinen" <ilpo.jarvinen@helsinki.fi> wrote:
 
-> vmlinux.o:
->  62 functions changed, 66 bytes added, 10935 bytes removed, diff: -10869
-> 
-> ...+ these to lib/jhash.o:
->  jhash_3words: 112
->  jhash2: 276
->  jhash: 475
-> 
-> select for networking code might need a more fine-grained approach.
+> Ok, here's the top of the list (10000+ bytes):
 
-It should be possible to use a modular jhash.ko.  The things which you
-have identified as clients of the jhash library are usually loaded as modules.
+This is good stuff - thanks.
 
-But in the case where someone does (say) NFSD=y we do need jhash.o linked into
-vmlinux also.  This is doable in Kconfig but I always forget how.  Adrian, Sam
-and Randy are the repositories of knowledge here ;)
+> -41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
+
+This is a surprise.  I expect that the -mm-only
+profile-likely-unlikely-macros.patch is the cause of this and mainline
+doesn't have this problem.
+
+If true, then this likely/unlikely bloat has probably spread into a lot of
+your other results and it all should be redone against mainline, sorry :(
+
+(I'm not aware of anyone having used profile-likely-unlikely-macros.patch
+in quite some time.  That's unfortunate because it has turned up some
+fairly flagrant code deoptimisations)
