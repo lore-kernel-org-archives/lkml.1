@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbYBWJnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYBWJqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759389AbYBWJnU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYBWJnN
+	id S1760746AbYBWJqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:46:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYBWJqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:43:13 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38730 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753276AbYBWJnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:43:12 -0500
-Date: Sat, 23 Feb 2008 10:43:34 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
-       Glenn Streiff <gstreiff@NetEffect.com>,
-       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <greg@kroah.com>
-Subject: Re: Merging of completely unreviewed drivers
-Message-ID: <20080223094334.GA3081@elf.ucw.cz>
-References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org> <m3k5kxq2ih.fsf@maximus.localdomain> <20080222184518.GB6060@ucw.cz> <m3zlts393a.fsf@maximus.localdomain>
+	Sat, 23 Feb 2008 04:46:04 -0500
+Received: from vuizook.err.no ([85.19.215.103]:56587 "EHLO vuizook.err.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753516AbYBWJqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 04:46:02 -0500
+Date: Sat, 23 Feb 2008 10:18:55 +0100
+From: Mike Hommey <mh@glandium.org>
+To: Daniel Barkalow <barkalow@iabervon.org>
+Cc: Chase Venters <chase.venters@clientec.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: Question about your git habits
+Message-ID: <20080223091855.GA18942@glandium.org>
+References: <200802221837.37680.chase.venters@clientec.com> <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m3zlts393a.fsf@maximus.localdomain>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
+X-GPG-Fingerprint: A479 A824 265C B2A5 FC54  8D1E DE4B DA2C 54FD 2A58
+Organization: glandium.org
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2008-02-22 23:44:09, Krzysztof Halasa wrote:
-> Pavel Machek <pavel@ucw.cz> writes:
+On Fri, Feb 22, 2008 at 11:10:48PM -0500, Daniel Barkalow wrote:
+> I find that the sequence of changes I make is pretty much unrelated to the 
+> sequence of changes that end up in the project's history, because my 
+> changes as I make them involve writing a lot of stubs (so I can build) and 
+> then filling them out. It's beneficial to have version control on this so 
+> that, if I screw up filling out a stub, I can get back to where I was.
 > 
-> > Zaurus is one example, second is small screen where you need big font
-> > to keep it readable (x60 on desk).
+> Having made a complete series, I then generate a new series of commits, 
+> each of which does one thing, without any bugs that I've resolved, such 
+> that the net result is the end of the messy history, except with any 
+> debugging or useless stuff skipped. It's this series that gets merged into 
+> the project history, and I discard the other history.
 > 
-> Come on, are you doing Linux kernel development on PDA?
+> The real trick is that the early patches in a lot of series often refactor 
+> existing code in ways that are generally good and necessary for your 
+> eventual outcome, but which you'd never think of until you've written more 
+> of the series. Generating a new commit sequence is necessary to end up 
+> with a history where it looks from the start like you know where you're 
+> going and have everything done that needs to be done when you get to the 
+> point of needing it. Furthermore, you want to be able to test these 
+> commits in isolation, without the distraction of the changes that actually 
+> prompted them, which means that you want to have your working tree is a 
+> state that you never actually had it in as you were developing the end 
+> result.
+> 
+> This means that you'll usually want to rewrite commits for any series that 
+> isn't a single obvious patch, so it's not a big deal to commit any time 
+> you want to work on some different branch.
 
-I review patches on it, sometimes, yes.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I do that so much that I have this alias:
+        reorder = !sh -c 'git rebase -i --onto $0 $0 $1'
+
+... and actually pass it only one argument most of the time.
+
+Mike
