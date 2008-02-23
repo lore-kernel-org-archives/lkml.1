@@ -1,58 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934961AbYBWAyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937734AbYBWAyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934961AbYBWAyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763809AbYBWAnp
+	id S937734AbYBWAyp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:54:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935123AbYBWAqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:43:45 -0500
-Received: from wr-out-0506.google.com ([64.233.184.227]:42059 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936920AbYBWAnn (ORCPT
+	Fri, 22 Feb 2008 19:46:42 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:60443 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937054AbYBWAqj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:43:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Z8hUhEazIkT35FjvfbeL18z8mxSrkrBFw/XmRISygmTtYrUiOx7bIsdERSsLTkxiC9HYun0/ZDBb4lWzRByIA+GvZmkQzpkA3JRktJGL0qS+yND5WJTvTaYzBSaNnDlJHm764/tYoMk3QiprwfS8wekrDpzu+hh5p+IKkLJXPjM=
-Message-ID: <9810cff90802221643g7d993af4k33f29fb4a4663407@mail.gmail.com>
-Date: Fri, 22 Feb 2008 16:43:40 -0800
-From: "Bill Huey (hui)" <bill.huey@gmail.com>
-To: gregory.haskins@gmail.com
-Subject: Re: [PATCH [RT] 11/14] optimize the !printk fastpath through the lock acquisition
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Gregory Haskins" <ghaskins@novell.com>,
-       mingo@elte.hu, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       rostedt@goodmis.org, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kevin@hilman.org, cminyard@mvista.com,
-       dsingleton@mvista.com, dwalker@mvista.com, npiggin@suse.de,
-       dsaxena@plexity.net, ak@suse.de, gregkh@suse.de, sdietrich@novell.com,
-       pmorreale@novell.com, mkohari@novell.com
-In-Reply-To: <47BF4AC5.7070507@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 22 Feb 2008 19:46:39 -0500
+Date: Fri, 22 Feb 2008 16:46:17 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [patch 34/38] kbuild: allow -fstack-protector to take effect
+Message-ID: <20080222164617.50c8ec2e@laptopd505.fenrus.org>
+In-Reply-To: <20080223003133.GI7268@suse.de>
+References: <20080223001946.979768610@mini.kroah.org>
+	<20080223003133.GI7268@suse.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.2.0 (GTK+ 2.12.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20080221152504.4804.8724.stgit@novell1.haskins.net>
-	 <20080221152722.4804.77478.stgit@novell1.haskins.net>
-	 <20080222191837.GE6060@ucw.cz> <47BF4AC5.7070507@gmail.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 2:20 PM, Gregory Haskins
-<gregory.haskins.ml@gmail.com> wrote:
->  Agreed, but it's still correct afaict.  I added an extra might_sleep()
->  to a path that really might sleep.  I should have mentioned that in the
->  header.
->
->  In any case, its moot.  Andi indicated this patch is probably a no-op so
->  I was considering dropping it on the v2 pass.
+On Fri, 22 Feb 2008 16:31:33 -0800
+Greg KH <gregkh@suse.de> wrote:
 
-The might_sleep is annotation and well as a conditional preemption
-point for the regular kernel. You might want to do a schedule check
-there, but it's the wrong function if memory serves me correctly. It's
-reserved for things that actually are design to sleep. The rt_spin*()
-function are really a method of preserving BKL semantics across real
-schedule() calls. You'd have to use something else instead for that
-purpose like cond_reschedule() instead.
+> 2.6.24-stable review patch.  If anyone has any objections, please let
+> us know.
 
-bill
+
+not ready for -stable yet. if ever for backporting (doubtful)
+
+> 
+> ------------------
+> From: Sam Ravnborg <sam@ravnborg.org>
+> 
+> commit: e06b8b98da071f7dd78fb7822991694288047df0
+> 
+> Arjan van de Ven <arjan@infradead.org> wrote:
+> ===
+> I just read the excellent LWN writeup of the vmsplice
+> security thing, and that got me wondering why this attack
+> wasn't stopped by the CONFIG_CC_STACKPROTECTOR option...
+> because it plain should have been...
+> 
+> Some analysis later.. it turns out that the following line
+> in the top level Makefile, added by you in October 2007,
+> entirely disables CONFIG_CC_STACKPROTECTOR ;(
+> With this line removed the exploit will be nicely stopped.
+> 
+> CFLAGS          += $(call cc-option, -fno-stack-protector)
+> 
+> Now I realize that certain distros have patched gcc to
+> compensate for their lack of distro wide CFLAGS, and it's
+> great to work around that... but would there be a way to NOT
+> disable this for CONFIG_CC_STACKPROTECTOR please?
+> It would have made this exploit not possible for those kernels
+> that enable this feature (and that includes distros like Fedora)
+> ===
+> 
+> Move the assignment to KBUILD_CFLAGS up before including
+> the arch specific Makefile so arch makefiles may override
+> the setting.
+> 
+> Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Arjan van de Ven <arjan@infradead.org>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> ---
+>  Makefile |    7 ++++---
+>  1 file changed, 4 insertions(+), 3 deletions(-)
+> 
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -507,6 +507,10 @@ else
+>  KBUILD_CFLAGS	+= -O2
+>  endif
+>  
+> +# Force gcc to behave correct even for buggy distributions
+> +# Arch Makefiles may override this setting
+> +KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> +
+>  include $(srctree)/arch/$(SRCARCH)/Makefile
+>  
+>  ifdef CONFIG_FRAME_POINTER
+> @@ -520,9 +524,6 @@ KBUILD_CFLAGS	+= -g
+>  KBUILD_AFLAGS	+= -gdwarf-2
+>  endif
+>  
+> -# Force gcc to behave correct even for buggy distributions
+> -KBUILD_CFLAGS         += $(call cc-option, -fno-stack-protector)
+> -
+>  # arch Makefile may override CC so keep this after arch Makefile is
+> included NOSTDINC_FLAGS += -nostdinc -isystem $(shell $(CC)
+> -print-file-name=include) CHECKFLAGS     += $(NOSTDINC_FLAGS)
+> 
+
+
+-- 
+If you want to reach me at my work email, use arjan@linux.intel.com
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
