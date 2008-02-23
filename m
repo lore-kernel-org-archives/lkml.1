@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbYBVX7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932951AbYBWACU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933913AbYBVX7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 18:59:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757724AbYBVX7l
+	id S932951AbYBWACU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:02:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757852AbYBWACM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 18:59:41 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:32786 "EHLO mx1.redhat.com"
+	Fri, 22 Feb 2008 19:02:12 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40837 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760508AbYBVX7k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 18:59:40 -0500
-Date: Fri, 22 Feb 2008 18:59:14 -0500
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org, arjan@infradead.org,
-       gregkh@suse.de, stable@kernel.org, stable-commits@vger.kernel.org
-Subject: Re: [stable] patch
-	kbuild-allow-fstack-protector-to-take-effect.patch added to
-	2.6.24-stable tree
-Message-ID: <20080222235914.GC20829@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
-	linux-kernel@vger.kernel.org, sam@ravnborg.org, arjan@infradead.org,
-	gregkh@suse.de, stable@kernel.org, stable-commits@vger.kernel.org
-References: <200802190005.m1J05SKP017015@hera.kernel.org> <20080222230103.CC4EF14540D0@imap.suse.de> <20080222230604.GA20829@redhat.com> <20080222231808.GA30669@kroah.com> <20080222233407.GB20829@redhat.com> <20080222234216.GA25809@kroah.com>
+	id S1758737AbYBWACK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:02:10 -0500
+Date: Fri, 22 Feb 2008 18:02:06 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] kernel/ns_cgroup.c should #include
+	<linux/nsproxy.h>
+Message-ID: <20080223000206.GA14216@sergelap.austin.ibm.com>
+References: <20080222195826.GG1409@cs181133002.pp.htv.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080222234216.GA25809@kroah.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20080222195826.GG1409@cs181133002.pp.htv.fi>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 03:42:16PM -0800, Greg Kroah-Hartman wrote:
+Quoting Adrian Bunk (bunk@kernel.org):
+> Every file should include the headers containing the externs its global 
+> functions (in this case for ns_cgroup_clone()).
+> 
+> Signed-off-by: Adrian Bunk <bunk@kernel.org>
 
- > >  > I thought that thread was for the much larger patches, not just this
- > >  > Makefile change.
- > > 
- > > At the least we'll likely want to also pick up the other stack protector fixes
- > > that went into .25rc if we turn it on in .24
- > 
- > Hm, that sounds like a new feature :)
- > 
- > I thought the makefile change was just a bugfix in the broken makefile.
+Seems fine...  and a good way to ensure that the prototype and
+definition match.
 
-Well, it is. But it'll cause it to enable something that has been broken for a while.
-FWIW, I think having the stack protector reenabled in -stable is a worthwhile goal,
-but only once it's stabilised for a while in the development tree.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-My fear by just reenabling this for -stable is that when distros push out updates
-based on the latest -stable, we'll see more systems like James' problematic system.
+thanks,
+-serge
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+> 
+> ---
+> d3446a02068091d59425c51bde1daea777398e44 diff --git a/kernel/ns_cgroup.c b/kernel/ns_cgroup.c
+> index aead4d6..659f321 100644
+> --- a/kernel/ns_cgroup.c
+> +++ b/kernel/ns_cgroup.c
+> @@ -7,6 +7,7 @@
+>  #include <linux/module.h>
+>  #include <linux/cgroup.h>
+>  #include <linux/fs.h>
+> +#include <linux/nsproxy.h>
+> 
+>  struct ns_cgroup {
+>  	struct cgroup_subsys_state css;
