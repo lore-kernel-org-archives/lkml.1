@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753535AbYBWM3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756694AbYBWMbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753535AbYBWM3u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 07:29:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbYBWM3g
+	id S1756694AbYBWMbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 07:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753167AbYBWMbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 07:29:36 -0500
-Received: from rv-out-0910.google.com ([209.85.198.186]:39380 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751985AbYBWM3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 07:29:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=tYfioKuMauc01s4vPZUtoxWWqN3l9sZ9s+1XVQXzBb3/WmSIBiPNGM1dEkFpLrRHKTEOt10qhGvAmiTLBheHkDFXiLd7t4moJfY1tCOEpESLeK7KP5E6jR3e9T6x7/VmybMajxBaA5jSLkFGB2L3qRhgNcCQR1WhrIna1SPDNNc=
-Message-ID: <84144f020802230429t181f0503r5629658ca39c699b@mail.gmail.com>
-Date: Sat, 23 Feb 2008 14:29:33 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
-In-Reply-To: <20080223122222.GA323@elte.hu>
+	Sat, 23 Feb 2008 07:31:09 -0500
+Received: from mx2.suse.de ([195.135.220.15]:40992 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751849AbYBWMbH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 07:31:07 -0500
+Date: Sat, 23 Feb 2008 13:31:00 +0100
+From: Andi Kleen <ak@suse.de>
+To: gregory.haskins@gmail.com
+Cc: paulmck@linux.vnet.ibm.com, Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       "Bill Huey (hui)" <bill.huey@gmail.com>, Andi Kleen <ak@suse.de>,
+       Gregory Haskins <ghaskins@novell.com>, mingo@elte.hu,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, rostedt@goodmis.org,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kevin@hilman.org, cminyard@mvista.com, dsingleton@mvista.com,
+       dwalker@mvista.com, npiggin@suse.de, dsaxena@plexity.net,
+       gregkh@suse.de, pmorreale@novell.com, mkohari@novell.com
+Subject: Re: [PATCH [RT] 08/14] add a loop counter based timeout mechanism
+Message-ID: <20080223123100.GB9021@bingen.suse.de>
+References: <20080221152504.4804.8724.stgit@novell1.haskins.net> <20080221152707.4804.59177.stgit@novell1.haskins.net> <200802211741.10299.ak@suse.de> <20080222190814.GD11213@linux.vnet.ibm.com> <9810cff90802221119j23818e74g2721512a693a0a01@mail.gmail.com> <9810cff90802221121s216f69f4k4a5f39eaaf11dd7f@mail.gmail.com> <20080222194341.GE11213@linux.vnet.ibm.com> <1203710145.4772.107.camel@sven.thebigcorporation.com> <20080222202316.GF11213@linux.vnet.ibm.com> <47BF46AF.7010200@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>
-	 <20080223001130.d8922136.akpm@linux-foundation.org>
-	 <84144f020802230351o24b11282vbb1cecf518d91825@mail.gmail.com>
-	 <20080223122222.GA323@elte.hu>
-X-Google-Sender-Auth: 6e53fe4381d2617b
+In-Reply-To: <47BF46AF.7010200@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+> *) compute the context-switch pair time average for the system.  This is 
+> your time threshold (CSt).
 
-On Sat, Feb 23, 2008 at 2:22 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  As a comparison, here's a session of a newbie developer, meeting
->  oprofile for the first time in his life (using a fresh package,
->  oprofile-0.9.3-6.fc8):
+This is not a uniform time. Consider the difference between
+context switch on the same hyperthread, context switch between cores
+on a die, context switch between sockets, context switch between
+distant numa nodes. You could have several orders of magnitude
+between all those.
+
 >
->   ---------------------->
->   [ Newbie: WTF, no GUI tool? ]
->   [ Narrator: we lose 90% of the developers at this point. ]
+> *) For each lock, maintain an average hold-time (AHt) statistic (I am 
+> assuming this can be done cheaply...perhaps not).
 
-In all fairness, there's a GUI for oprofile too [1] but I don't think
-it supports call trees as sysprof does which is IMHO the killer
-feature of the latter.
+That would assume that the hold times are very uniform. But what happens
+when you e.g. have a workload where 50% of the lock aquisitions are short 
+and 30% are long? 
 
-  1. http://labs.o-hand.com/oprofileui/
+I'm a little sceptical of such "too clever" algorithms.
+
+-Andi
