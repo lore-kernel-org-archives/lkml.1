@@ -1,50 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762024AbYBWTqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762430AbYBWTsm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762024AbYBWTqV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756419AbYBWTqN
+	id S1762430AbYBWTsm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:48:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbYBWTsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:46:13 -0500
-Received: from testure.choralone.org ([194.9.77.134]:41586 "EHLO
-	testure.choralone.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbYBWTqM (ORCPT
+	Sat, 23 Feb 2008 14:48:33 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:1663 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753503AbYBWTsc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:46:12 -0500
-Date: Sat, 23 Feb 2008 14:45:31 -0500
-From: Dave Jones <davej@codemonkey.org.uk>
-To: Gabriel C <crazy@frugalware.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Gabriel C <nix.or.die@googlemail.com>, Dave Airlie <airlied@linux.ie>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Doug Thompson <dougthompson@xmission.com>, Greg KH <greg@kroah.com>
-Subject: Re: modular intel-agp does not work on my box
-Message-ID: <20080223194531.GA929@codemonkey.org.uk>
-Mail-Followup-To: Dave Jones <davej@codemonkey.org.uk>,
-	Gabriel C <crazy@frugalware.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Gabriel C <nix.or.die@googlemail.com>,
-	Dave Airlie <airlied@linux.ie>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Doug Thompson <dougthompson@xmission.com>, Greg KH <greg@kroah.com>
-References: <47BE222B.2080500@googlemail.com> <alpine.DEB.0.82.0802220205410.3412@skynet.skynet.ie> <47BE32C7.5060008@googlemail.com> <47BE4125.3080503@googlemail.com> <20080222041921.GD21061@codemonkey.org.uk> <20080223000355.42219a89.akpm@linux-foundation.org> <20080223181414.GA24313@codemonkey.org.uk> <47C07457.1060606@frugalware.org>
+	Sat, 23 Feb 2008 14:48:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=U4y31mxRaMMZkaKGWNFcHxeWEywgPXhGFtck8zCSF9vVrVsj0mkFptAMN/aT09GOc
+	OFfIjDR921DKWLHVr0I1w==
+Message-ID: <6599ad830802231148w518d937cyd75d1d0a35702d9d@mail.gmail.com>
+Date: Sat, 23 Feb 2008 11:48:23 -0800
+From: "Paul Menage" <menage@google.com>
+To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 3/8] sched: rt-group: interface
+Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       tong.n.li@intel.com
+In-Reply-To: <20080204211836.968632000@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <47C07457.1060606@frugalware.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+References: <20080204210258.118479000@chello.nl>
+	 <20080204211836.968632000@chello.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 08:30:31PM +0100, Gabriel C wrote:
+On Mon, Feb 4, 2008 at 1:03 PM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+>  +static int cpu_rt_runtime_write(struct cgroup *cgrp, struct cftype *cft,
+>  +                               struct file *file,
+>  +                               const char __user *userbuf,
+>  +                               size_t nbytes, loff_t *unused_ppos)
+>  +{
+>  +       char buffer[64];
+>  +       int retval = 0;
+>  +       s64 val;
+>  +       char *end;
+>  +
+>  +       if (!nbytes)
+>  +               return -EINVAL;
+>  +       if (nbytes >= sizeof(buffer))
+>  +               return -E2BIG;
+>  +       if (copy_from_user(buffer, userbuf, nbytes))
+>  +               return -EFAULT;
+>  +
+>  +       buffer[nbytes] = 0;     /* nul-terminate */
+>  +
+>  +       /* strip newline if necessary */
+>  +       if (nbytes && (buffer[nbytes-1] == '\n'))
+>  +               buffer[nbytes-1] = 0;
+>  +       val = simple_strtoll(buffer, &end, 0);
+>  +       if (*end)
+>  +               return -EINVAL;
+>  +
+>  +       /* Pass to subsystem */
+>  +       retval = sched_group_set_rt_runtime(cgroup_tg(cgrp), val);
+>  +       if (!retval)
+>  +               retval = nbytes;
+>  +       return retval;
+>   }
+>
+>  -static u64 cpu_rt_ratio_read_uint(struct cgroup *cgrp, struct cftype *cft)
+>  -{
+>  -       struct task_group *tg = cgroup_tg(cgrp);
+>  +static ssize_t cpu_rt_runtime_read(struct cgroup *cgrp, struct cftype *cft,
+>  +                                  struct file *file,
+>  +                                  char __user *buf, size_t nbytes,
+>  +                                  loff_t *ppos)
+>  +{
+>  +       char tmp[64];
+>  +       long val = sched_group_rt_runtime(cgroup_tg(cgrp));
+>  +       int len = sprintf(tmp, "%ld\n", val);
+>
+>  -       return (u64) tg->rt_ratio;
+>  +       return simple_read_from_buffer(buf, nbytes, ppos, tmp, len);
+>   }
 
- > What does happen if one builds both into the kernel ? ( eg: all the *_AGP* Y , and all the *_EDAC* y ) 
- > 
- > Guessing no one of them will work ?
+What's the reason that you can't use the cgroup read_uint/write_uint
+methods for this? Is it just because you have -1 as your "unlimited"
+value.
 
-First one to init wins.
+If so, could we avoid that problem by using 0 rather than -1 as the
+"unlimited" value? It looks from what I've read in the Documentation
+changes as though 0 isn't really a meaningful value.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Paul
