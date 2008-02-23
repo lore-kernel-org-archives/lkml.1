@@ -1,162 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759972AbYBWXbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbYBWXb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759972AbYBWXbj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 18:31:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbYBWX2F
+	id S1760360AbYBWXb6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 18:31:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758492AbYBWX3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 18:28:05 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:5187 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757494AbYBWX2D (ORCPT
+	Sat, 23 Feb 2008 18:29:15 -0500
+Received: from netrider.rowland.org ([192.131.102.5]:1175 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758442AbYBWX3M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 18:28:03 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:references:user-agent:date:from:to:cc:
-	subject:content-disposition;
-	b=Oem48ptGMqjiNa51WemBJD3sk6/87yBVtR+BHh9XhenM+8cGW+Z42jThZmnl94f98
-	WzyCp1+r4K3rSTpW9YqSQ==
-Message-Id: <20080223232618.606225000@menage.corp.google.com>
-References: <20080223224725.115590000@menage.corp.google.com>
-User-Agent: quilt/0.45-1
-Date: Sat, 23 Feb 2008 14:47:34 -0800
-From: menage@google.com
-To: akpm@linux-foundation.org, balbir@in.ibm.com, pj@sgi.com,
-       Pavel Emelianov <xemul@openvz.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: [PATCH 09/10] CGroup API files: Move "releasable" to cgroup_debug subsystem
-Content-Disposition: inline; filename=move_releasable.patch
+	Sat, 23 Feb 2008 18:29:12 -0500
+Date: Sat, 23 Feb 2008 18:29:10 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
+In-Reply-To: <200802232116.54188.rjw@sisk.pl>
+Message-ID: <Pine.LNX.4.44L0.0802231805120.20022-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "releasable" control file provided by the cgroup framework exports
-the state of a per-cgroup flag that's related to the notify-on-release
-feature. This isn't really generally useful, unless you're trying to
-debug this particular feature of cgroups.
+On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
 
-This patch moves the "releasable" file to the cgroup_debug subsystem.
+> Ultimately no, it's not.  However, we are now late in the -rc2 time frame and
+> the release of -rc3 seems to be imminent.  At this point, IMO, that's the
+> safest thing to do.  BTW, appended is the patch I'd like to get applied.
 
-Signed-off-by: Paul Menage <menage@google.com>
+In the interest of having a safe release, I guess you're right.  It's 
+unfortunate, though -- there's no good way to get thorough testing 
+without putting the code in Linus's tree.
 
----
- include/linux/cgroup.h |   11 +++++++++++
- kernel/cgroup.c        |   23 -----------------------
- kernel/cgroup_debug.c  |   12 +++++++++++-
- 3 files changed, 22 insertions(+), 24 deletions(-)
+> > How would we then learn about drivers trying to register or unregister a
+> > device during a sleep transition?
+> 
+> I think we should fix the ones we know about and try to reintroduce this
+> change in the 2.6.26 time frame.  It also seems reasonable to reconsider what
+> we want to achieve, as there may be a better way to do that.
 
-Index: cgroup-2.6.25-rc2-mm1/include/linux/cgroup.h
+Below is my suggested approach, based on yours.  It might even solve
+the MMC problem, who knows?  And it adds some potentially useful
+debugging, although it would be better to dump just the stack of
+suspending_task.  Do you know how to do that from within a timer
+routine?
+
+I still have no clear idea about what's going on with the ACPI bug in 
+#9874.  However perhaps the bug wouldn't occur if we blocked device 
+registration until after the resume was finished, instead of failing it 
+outright.  Since the registration in this case was done in a workqueue 
+thread, blocking wouldn't cause an immediate deadlock.
+
+Alan Stern
+
+
+
+Index: usb-2.6/drivers/base/power/main.c
 ===================================================================
---- cgroup-2.6.25-rc2-mm1.orig/include/linux/cgroup.h
-+++ cgroup-2.6.25-rc2-mm1/include/linux/cgroup.h
-@@ -88,6 +88,17 @@ static inline void css_put(struct cgroup
- 		__css_put(css);
- }
+--- usb-2.6.orig/drivers/base/power/main.c
++++ usb-2.6/drivers/base/power/main.c
+@@ -25,6 +25,7 @@
+ #include <linux/pm.h>
+ #include <linux/resume-trace.h>
+ #include <linux/rwsem.h>
++#include <linux/sched.h>
  
-+/* bits in struct cgroup flags field */
-+enum {
-+	/* Control Group is dead */
-+	CGRP_REMOVED,
-+	/* Control Group has previously had a child cgroup or a task,
-+	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set) */
-+	CGRP_RELEASABLE,
-+	/* Control Group requires release notifications to userspace */
-+	CGRP_NOTIFY_ON_RELEASE,
-+};
+ #include "../base.h"
+ #include "power.h"
+@@ -59,6 +60,13 @@ static DECLARE_RWSEM(pm_sleep_rwsem);
+ 
+ int (*platform_enable_wakeup)(struct device *dev, int is_on);
+ 
++static struct task_struct *suspending_task;
 +
- struct cgroup {
- 	unsigned long flags;		/* "unsigned long" so bitops work */
- 
-Index: cgroup-2.6.25-rc2-mm1/kernel/cgroup.c
-===================================================================
---- cgroup-2.6.25-rc2-mm1.orig/kernel/cgroup.c
-+++ cgroup-2.6.25-rc2-mm1/kernel/cgroup.c
-@@ -119,17 +119,6 @@ static int root_count;
-  */
- static int need_forkexit_callback;
- 
--/* bits in struct cgroup flags field */
--enum {
--	/* Control Group is dead */
--	CGRP_REMOVED,
--	/* Control Group has previously had a child cgroup or a task,
--	 * but no longer (only if CGRP_NOTIFY_ON_RELEASE is set) */
--	CGRP_RELEASABLE,
--	/* Control Group requires release notifications to userspace */
--	CGRP_NOTIFY_ON_RELEASE,
--};
--
- /* convenient tests for these bits */
- inline int cgroup_is_removed(const struct cgroup *cgrp)
- {
-@@ -1299,7 +1288,6 @@ enum cgroup_filetype {
- 	FILE_DIR,
- 	FILE_TASKLIST,
- 	FILE_NOTIFY_ON_RELEASE,
--	FILE_RELEASABLE,
- 	FILE_RELEASE_AGENT,
- };
- 
-@@ -2169,11 +2157,6 @@ static u64 cgroup_read_notify_on_release
- 	return notify_on_release(cgrp);
- }
- 
--static u64 cgroup_read_releasable(struct cgroup *cgrp, struct cftype *cft)
--{
--	return test_bit(CGRP_RELEASABLE, &cgrp->flags);
--}
--
- /*
-  * for the common functions, 'private' gives the type of file
-  */
-@@ -2193,12 +2176,6 @@ static struct cftype files[] = {
- 		.write = cgroup_common_file_write,
- 		.private = FILE_NOTIFY_ON_RELEASE,
- 	},
--
--	{
--		.name = "releasable",
--		.read_u64 = cgroup_read_releasable,
--		.private = FILE_RELEASABLE,
--	}
- };
- 
- static struct cftype cft_release_agent = {
-Index: cgroup-2.6.25-rc2-mm1/kernel/cgroup_debug.c
-===================================================================
---- cgroup-2.6.25-rc2-mm1.orig/kernel/cgroup_debug.c
-+++ cgroup-2.6.25-rc2-mm1/kernel/cgroup_debug.c
-@@ -1,5 +1,5 @@
- /*
-- * kernel/ccontainer_debug.c - Example cgroup subsystem that
-+ * kernel/cgroup_debug.c - Example cgroup subsystem that
-  * exposes debug info
-  *
-  * Copyright (C) Google Inc, 2007
-@@ -62,6 +62,11 @@ static u64 current_css_set_refcount_read
- 	return count;
- }
- 
-+static u64 releasable_read(struct cgroup *cgrp, struct cftype *cft)
++bool in_suspend_context(void)
 +{
-+	return test_bit(CGRP_RELEASABLE, &cgrp->flags);
++	return (suspending_task == current);
 +}
 +
- static struct cftype files[] =  {
- 	{
- 		.name = "cgroup_refcount",
-@@ -81,6 +86,11 @@ static struct cftype files[] =  {
- 		.name = "current_css_set_refcount",
- 		.read_u64 = current_css_set_refcount_read,
- 	},
-+
-+	{
-+		.name = "releasable",
-+		.read_u64 = releasable_read,
-+	}
- };
+ /**
+  *	device_pm_add - add a device to the list of active devices
+  *	@dev:	Device to be added to the list
+@@ -94,14 +102,15 @@ void device_pm_remove(struct device *dev
+ 			/* No suspend in progress, wait on dev->sem */
+ 			down(&dev->sem);
+ 			up_read(&pm_sleep_rwsem);
+-		} else {
+-			/* Suspend in progress, we may deadlock */
++		} else if (!in_suspend_context()) {
++			/* Suspending in another task, we may deadlock */
+ 			dev_warn(dev, "Suspicious %s during suspend\n",
+ 				__FUNCTION__);
+ 			dump_stack();
+ 			/* The user has been warned ... */
+ 			down(&dev->sem);
+ 		}
++			/* Otherwise we're okay */
+ 	}
+ 	pr_debug("PM: Removing info for %s:%s\n",
+ 		 dev->bus ? dev->bus->name : "No Bus",
+@@ -272,6 +281,7 @@ static void dpm_resume(void)
+ 		mutex_lock(&dpm_list_mtx);
+ 	}
+ 	mutex_unlock(&dpm_list_mtx);
++	suspending_task = NULL;
+ }
  
- static int debug_populate(struct cgroup_subsys *ss, struct cgroup *cont)
+ /**
+@@ -410,6 +420,17 @@ int device_power_down(pm_message_t state
+ }
+ EXPORT_SYMBOL_GPL(device_power_down);
+ 
++/* Provide debugging info if we hang or deadlock during suspend */
++static struct timer_list suspend_timer;
++
++static void suspend_timeout(unsigned long _dev)
++{
++	struct device *dev = (struct device *) _dev;
++
++	dev_err(dev, "deadlock during suspend!\n");
++	show_state();
++}
++
+ /**
+  *	suspend_device - Save state of one device.
+  *	@dev:	Device.
+@@ -419,6 +440,10 @@ int suspend_device(struct device *dev, p
+ {
+ 	int error = 0;
+ 
++	/* Provide debugging output in case of a deadlock */
++	setup_timer(&suspend_timer, suspend_timeout, (unsigned long) dev);
++	mod_timer(&suspend_timer, jiffies + 5*HZ);
++
+ 	if (dev->power.power_state.event) {
+ 		dev_dbg(dev, "PM: suspend %d-->%d\n",
+ 			dev->power.power_state.event, state.event);
+@@ -441,6 +466,8 @@ int suspend_device(struct device *dev, p
+ 		error = dev->bus->suspend(dev, state);
+ 		suspend_report_result(dev->bus->suspend, error);
+ 	}
++
++	del_timer_sync(&suspend_timer);
+ 	return error;
+ }
+ 
+@@ -460,6 +487,7 @@ static int dpm_suspend(pm_message_t stat
+ {
+ 	int error = 0;
+ 
++	suspending_task = current;
+ 	mutex_lock(&dpm_list_mtx);
+ 	while (!list_empty(&dpm_locked)) {
+ 		struct list_head *entry = dpm_locked.prev;
+Index: usb-2.6/drivers/base/power/power.h
+===================================================================
+--- usb-2.6.orig/drivers/base/power/power.h
++++ usb-2.6/drivers/base/power/power.h
+@@ -11,6 +11,7 @@ static inline struct device *to_device(s
+ 	return container_of(entry, struct device, power.entry);
+ }
+ 
++extern bool in_suspend_context(void);
+ extern void device_pm_add(struct device *);
+ extern void device_pm_remove(struct device *);
+ extern int pm_sleep_lock(void);
+@@ -18,6 +19,10 @@ extern void pm_sleep_unlock(void);
+ 
+ #else /* CONFIG_PM_SLEEP */
+ 
++static inline bool in_suspend_context(void)
++{
++	return false;
++}
+ 
+ static inline void device_pm_add(struct device *dev)
+ {
+Index: usb-2.6/drivers/base/dd.c
+===================================================================
+--- usb-2.6.orig/drivers/base/dd.c
++++ usb-2.6/drivers/base/dd.c
+@@ -325,10 +325,18 @@ void device_release_driver(struct device
+ 	 * If anyone calls device_release_driver() recursively from
+ 	 * within their ->remove callback for the same device, they
+ 	 * will deadlock right here.
++	 *
++	 * We avoid locking dev->sem if we are in the context of a
++	 * task doing a system suspend, in order that drivers can
++	 * unregister devices from within their suspend() methods.
++	 * This is okay because the suspending task will already own
++	 * all the device semaphores.
+ 	 */
+-	down(&dev->sem);
++	if (!in_suspend_context())
++		down(&dev->sem);
+ 	__device_release_driver(dev);
+-	up(&dev->sem);
++	if (!in_suspend_context())
++		up(&dev->sem);
+ }
+ EXPORT_SYMBOL_GPL(device_release_driver);
+ 
 
---
