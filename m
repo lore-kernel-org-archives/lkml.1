@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765054AbYBWLVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765054AbYBWLYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765054AbYBWLVV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 06:21:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYBWLVK
+	id S1765054AbYBWLYf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 06:24:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbYBWLY1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 06:21:10 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:64267 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752722AbYBWLVI (ORCPT
+	Sat, 23 Feb 2008 06:24:27 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:53519 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751945AbYBWLY0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 06:21:08 -0500
-Message-ID: <47C00091.8000404@cfl.rr.com>
-Date: Sat, 23 Feb 2008 06:16:33 -0500
-From: Mark Hounschell <dmarkh@cfl.rr.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
+	Sat, 23 Feb 2008 06:24:26 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 23 Feb 2008 12:23:30 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 0/2] firewire: endinaness warnings (was Re: sparse - make
+ __CHECK_ENDIAN__ default enabled?)
+To: linux1394-devel@lists.sourceforge.net
+cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Kristian Hoegsberg <krh@bitplanet.net>,
+       Jarod Wilson <jwilson@redhat.com>
+In-Reply-To: <1203545913.25307.47.camel@brick>
+Message-ID: <tkrat.e2bfb30f2c0ae70a@s5r6.in-berlin.de>
+References: <20080220220326.GA22328@uranus.ravnborg.org>
+ <1203545913.25307.47.camel@brick>
 MIME-Version: 1.0
-To: Mike Christie <michaelc@cs.wisc.edu>
-CC: markh@compro.net, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tony Battersby <tonyb@cybernetics.com>
-Subject: Re: New 2.6.24.2 SG_IO SCSI problems
-References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu> <47BEFF5F.9020002@cs.wisc.edu> <47BF0CE2.306@compro.net> <47BF40D7.5050301@compro.net> <47BF4BD0.7080008@cs.wisc.edu>
-In-Reply-To: <47BF4BD0.7080008@cs.wisc.edu>
-X-Enigmail-Version: 0.95.5
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Christie wrote:
-> Mark Hounschell wrote:
->> Mark Hounschell wrote:
->>> Mike Christie wrote:
->>>> Mike Christie wrote:
->>>>> Mark Hounschell wrote:
->>>>>> I seem to have run into some sort of regression in the SG_IO
->>>>>> interface of 2.6.24.2. I have an application that up until 2.6.24
->>>>>> worked fine. The 2.6.23.16 kernel works fine.
->>>>>>
->>>>>> During reads I get these kernel messages. Writes and other functions
->>>>>> _seem_ OK. Actually basic
->>>>>> reads  are working. Its with large BC reads using an io_vec list that
->>>>>> the problem shows up.
->>>>>>
->>>>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
->>>>> (/dev/sdX)?
->>>> If you are doing SG_IO to the sg device, then I know of one regression
->>>> (well not regression exactly, but I fixed a bug but the patch got
->>>> partially overwritten by another patch and that caused a new bug). Both
->>>> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
->>>> SG_IO to the sg device.
->>>>
->>> Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
->>>
->>> Thanks
->>> Mark
->>> -
->>  
->> 2.6.25-rc2 does fix the problem I'm having. I don't suppose there is a
->> patch
->> lying around for 2.6.24.2??
->>
+On 20 Feb, Harvey Harrison wrote on LKML:
+> On Wed, 2008-02-20 at 23:03 +0100, Sam Ravnborg wrote:
+>> Hi Harvey.
+>> 
+>> Can I ask you to look into the worst offenders so we
+>> can make -D__CHECK_ENDIAN__ enabled per default
+>> in the kernel.
+>> Or maybe we should do it anyway?
 > 
-> I attached a backport of the patch from Tony (added as cc) that is in
-> 2.6.25-rc2. Could you try it out against 2.6.24.2 just to make sure it
-> was this patch, then we can send it to stable.
+> Well, I've got the worst of fs and drivers/ata done so far, still
+> weeping over the 5500 warnings in drivers. (X86_32 allyesconfig).
+> People ignore the existing warnings anyway, why not toss a few more
+> on the pile?
 > 
+> I'll look them over tonight and see how bad it would be.
 
-Sorry it took so long. This does fix my problem. I hope it's not to late
-for 2.6.24.3
+I looked into drivers/firewire and drivers/ieee1394.  As expected, there
+are quite a lot endianess related warnings in the latter because this is
+code from way before sparse was regularly used.
 
-Regards
-Mark
+There are also a few warnings in the former, even though sparse checks
+were run before submission of the whole drivers/firewire stack.  I will
+follow up with two patches:
+	1/2 firewire: endianess fix
+	2/2 firewire: endianess annotations
+Whether the "fix" is really a fix remains to be seen; I don't have a big
+endian Linux box myself.
+-- 
+Stefan Richter
+-=====-==--- --=- =-===
+http://arcgraph.de/sr/
+
