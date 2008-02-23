@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbYBWIK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbYBWIKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933389AbYBWIK1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:10:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765463AbYBWIIe
+	id S933913AbYBWIKp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765428AbYBWIIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:08:34 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:44643 "EHLO
+	Sat, 23 Feb 2008 03:08:35 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:53225 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765428AbYBWIIc (ORCPT
+	by vger.kernel.org with ESMTP id S932617AbYBWIId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:08:32 -0500
-Date: Sat, 23 Feb 2008 00:05:12 -0800
+	Sat, 23 Feb 2008 03:08:33 -0500
+Date: Sat, 23 Feb 2008 00:04:30 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: mgross@linux.intel.com
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]iova-lockdep-false-alarm-fix.
-Message-Id: <20080223000512.0c2e469c.akpm@linux-foundation.org>
-In-Reply-To: <20080221003528.GA5566@linux.intel.com>
-References: <20080221003528.GA5566@linux.intel.com>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: VT notifier fix for VT switch
+Message-Id: <20080223000430.074b3648.akpm@linux-foundation.org>
+In-Reply-To: <20080221202640.GA10976@implementation>
+References: <20080221202640.GA10976@implementation>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,47 +26,25 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 21 Feb 2008 21:26:40 +0100 Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
 
-> Subject: [PATCH]iova-lockdep-false-alarm-fix.
-
-Nice English titles, please...
-
-On Wed, 20 Feb 2008 16:35:28 -0800 mark gross <mgross@linux.intel.com> wrote:
-
-> lockdep goes off on the iova copy_reserved_iova because it and a
-> function it calls grabs locks in the from, and the to of the copy
-> operation.
+> Notify when VT switch is complete.
 > 
-> This patch gives the reserved_ioval_list locks special lockdep classes.
+> Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 > 
-> 
-
-Confused.  Why not fix the ranking inconsistency instead?
-
-Your changelog doesn't tell us why this isn't a real bug?
-
-> Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
-> ===================================================================
-> --- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-20 15:52:23.000000000 -0800
-> +++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-20 16:08:27.000000000 -0800
-> @@ -1127,6 +1127,8 @@
+> --- linux-2.6.24-orig/drivers/char/vt.c	2008-01-25 09:32:06.000000000 +0100
+> +++ linux-2.6.24-perso/drivers/char/vt.c	2008-02-21 15:51:13.000000000 +0100
+> @@ -702,6 +702,7 @@
+>  	if (is_switch) {
+>  		set_leds();
+>  		compute_shiftstate();
+> +		notify_update(vc);
+>  	}
 >  }
 >  
->  static struct iova_domain reserved_iova_list;
-> +static struct lock_class_key reserved_alloc_key;
-> +static struct lock_class_key reserved_rbtree_key;
->  
->  static void dmar_init_reserved_ranges(void)
->  {
-> @@ -1137,6 +1139,11 @@
->  
->  	init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
->  
-> +	lockdep_set_class(&reserved_iova_list.iova_alloc_lock,
-> +		&reserved_alloc_key);
-> +	lockdep_set_class(&reserved_iova_list.iova_rbtree_lock,
-> +		&reserved_rbtree_key);
-> +
->  	/* IOAPIC ranges shouldn't be accessed by DMA */
->  	iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
->  		IOVA_PFN(IOAPIC_RANGE_END));
+
+The changelog is too terse, sorry.  What is the reason for making this
+change?  What are the user-visible effects of not having this change?  If
+it fixes a bug, should it be backported to 2.6.24.x and earlier?
+
+etcetera.
