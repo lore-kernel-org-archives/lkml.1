@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764688AbYBWIF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765054AbYBWIGv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764688AbYBWIF7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:05:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762066AbYBWIDw
+	id S1765054AbYBWIGv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:06:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762838AbYBWIEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:03:52 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:38405 "EHLO
+	Sat, 23 Feb 2008 03:04:06 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:32773 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761790AbYBWIDt (ORCPT
+	by vger.kernel.org with ESMTP id S1762754AbYBWIEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:03:49 -0500
-Date: Sat, 23 Feb 2008 00:02:43 -0800
+	Sat, 23 Feb 2008 03:04:04 -0500
+Date: Sat, 23 Feb 2008 00:03:23 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, Andrew Morgan <morgan@kernel.org>
-Subject: Re: [PATCH 1/1] file capabilities: simplify signal check
-Message-Id: <20080223000243.e6efb30f.akpm@linux-foundation.org>
-In-Reply-To: <20080220161550.GA14630@sergelap.austin.ibm.com>
-References: <20080220161550.GA14630@sergelap.austin.ibm.com>
+To: Haavard Skinnemoen <hskinnemoen@atmel.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Subject: Re: [PATCH] macb: Fix speed setting
+Message-Id: <20080223000323.ac3eafa4.akpm@linux-foundation.org>
+In-Reply-To: <1203612065-18192-1-git-send-email-hskinnemoen@atmel.com>
+References: <20080221.225054.61509660.anemo@mba.ocn.ne.jp>
+	<1203612065-18192-1-git-send-email-hskinnemoen@atmel.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,38 +28,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 10:15:50 -0600 "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On Thu, 21 Feb 2008 17:41:05 +0100 Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
 
-> >From bd076c7245d02be0cc01b7c09bd7170ec5946492 Mon Sep 17 00:00:00 2001
-> From: Serge E. Hallyn <serue@us.ibm.com>
-> Date: Sun, 17 Feb 2008 20:28:07 -0500
-> Subject: [PATCH 1/1] file capabilities: simplify signal check
+> From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 > 
-> Simplify the uid equivalence check in cap_task_kill().  Anyone
-> can kill a process owned by the same uid.
-> 
-> Without this patch wireshark is reported to fail.
+> Fix NCFGR.SPD setting on 10Mbps.  This bug was introduced by
+> conversion to generic PHY layer in kernel 2.6.23.
 
-Strange that a patch titled "simplify...." actually fixes a bug.
+So..  shouldn't we fix it in 2.6.23.x and 2.6.24.x?
 
-> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-> Signed-off-by: Andrew G. Morgan <morgan@kernel.org>
+> Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 > ---
->  security/commoncap.c |    2 +-
+>  drivers/net/macb.c |    2 +-
 >  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/security/commoncap.c b/security/commoncap.c
-> index 5aba826..bb0c095 100644
-> --- a/security/commoncap.c
-> +++ b/security/commoncap.c
-> @@ -552,7 +552,7 @@ int cap_task_kill(struct task_struct *p, struct siginfo *info,
->  	 * allowed.
->  	 * We must preserve legacy signal behavior in this case.
->  	 */
-> -	if (p->euid == 0 && p->uid == current->uid)
-> +	if (p->uid == current->uid)
->  		return 0;
+> diff --git a/drivers/net/macb.c b/drivers/net/macb.c
+> index 81bf005..1d210ed 100644
+> --- a/drivers/net/macb.c
+> +++ b/drivers/net/macb.c
+> @@ -148,7 +148,7 @@ static void macb_handle_link_change(struct net_device *dev)
 >  
->  	/* sigcont is permitted within same session */
+>  			if (phydev->duplex)
+>  				reg |= MACB_BIT(FD);
+> -			if (phydev->speed)
+> +			if (phydev->speed == SPEED_100)
+>  				reg |= MACB_BIT(SPD);
+>  
+>  			macb_writel(bp, NCFGR, reg);
 
-I've marked this as needed-in-2.6.24.  Was that appropriate?
