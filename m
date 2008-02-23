@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbYBWNhS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758115AbYBWNh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756563AbYBWNhS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 08:37:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753939AbYBWNhE
+	id S1758115AbYBWNh7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 08:37:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbYBWNhq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 08:37:04 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:47901 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753800AbYBWNhB (ORCPT
+	Sat, 23 Feb 2008 08:37:46 -0500
+Received: from wx-out-0506.google.com ([66.249.82.226]:51937 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756997AbYBWNhb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 08:37:01 -0500
+	Sat, 23 Feb 2008 08:37:31 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=R39/cM3xSzwYw5H9Gi6Og/EaTLVs1ChPusfT4F9ystuMnkNN2TMd4dT2GtD03L4pEHJxTMab6OMLGW4Z6cOgkmTozgANiiWsWxzo3ZZWeIRL0b6K/cZeiQFqPg4GMTEQ89k4PTL9guqvqG7IpSE0+ISxha9uyYs4eDOagogJuDc=
-Message-ID: <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
-Date: Sat, 23 Feb 2008 14:36:59 +0100
-From: "J.C. Pizarro" <jcpiza@gmail.com>
-To: "Charles Bailey" <charles@hashpling.org>,
-       LKML <linux-kernel@vger.kernel.org>, git@vger.kernel.org
-Subject: Re: Question about your git habits
-In-Reply-To: <20080223131749.GA5811@hashpling.org>
+        h=message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=J7MzJKnRcFS/6HOwKwOM/t2DPs5AWRNaIf7I0Mt8cXjzF7pqidBlgT8udVY45r4kjfU9P2GvJ3sm7CCGBKvBBbz2sUjxaHJBeo9aK5rDoGo6UqafUAGW1szXJ4bdoBD4/ZNd+7PDxlhYN8lSq4j/5Njsy7H1k7FxoqIb3nJbSho=
+Message-ID: <6278d2220802230537m810ce2che694159de3fc3318@mail.gmail.com>
+Date: Sat, 23 Feb 2008 13:37:29 +0000
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Stephen Oberholtzer" <oliverklozoff@gmail.com>
+Subject: Re: How to diagnose a process stuck in D state?
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <200802221837.37680.chase.venters@clientec.com>
-	 <Pine.LNX.4.64.0802230221140.21077@fbirervta.pbzchgretzou.qr>
-	 <20080223014445.GK27894@ZenIV.linux.org.uk>
-	 <7vfxvk4f07.fsf@gitster.siamese.dyndns.org>
-	 <20080223020913.GL27894@ZenIV.linux.org.uk>
-	 <998d0e4a0802221823h3ba53097gf64fcc2ea826302b@mail.gmail.com>
-	 <998d0e4a0802221847m431aa136xa217333b0517b962@mail.gmail.com>
-	 <20080223113952.GA4936@hashpling.org>
-	 <998d0e4a0802230508w12f236baiaf2d9ab5f364670a@mail.gmail.com>
-	 <20080223131749.GA5811@hashpling.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2008/2/23, Charles Bailey <charles@hashpling.org> wrote:
-> On Sat, Feb 23, 2008 at 02:08:35PM +0100, J.C. Pizarro wrote:
->  >
->  > But if the repos are aggressively repacked then the bit to bit differences
->  > are not ~2 MiB.
+Stephen,
+
+On 22 Feb, 23:10, "Stephen Oberholtzer" <oliverklozoff@gmail.com> wrote:
+> First off: I'm not subscribed to the list (I don't think I could
+> handle the volume), so please make sure you CC me if you reply.
 >
+> I run an application on one of my machines; it often hangs, with the
+> process stuck D state.  When this happens, the process sticks around
+> until I reboot the machine.
 >
-> It shouldn't matter how aggressively the repositories are packed or what
->  the binary differences are between the pack files are. git clone
->  should (with the --reference option) generate a new pack for you with
->  only the missing objects. If these objects are ~52 MiB then a lot has
->  been committed to the repository, but you're not going to be able to
->  get around a big download any other way.
+> I have tried the following to start diagnosing the problem:
+>
+> * Running 'ps -axl' shows "-" in the wchan column.
+> * The contents of /proc/pid/wchan say "_stext".
+> * 'strace -p pid' says "Process pid attached - interrupt to quit" and
+> stops responding.  Sending SIGINT and SIGTERM have no effect on the
+> strace process, although kill -11 (SIGSEGV, my personal favorite) does
+> work.
+>
+> This is very confusing.  I would greatly appreciate it if someone
+> could tell me how a process can enter D state without being in a
+> syscall, and what I can do to start tracking down the cause.
 
-You're wrong, nothing has to be commited ~52 MiB to the repository.
+wchan shows where the process is sleeping - probably a kernel mutex or
+lock here. This doesn't help much, but the stack signature will.
 
-I'm not saying "commit", i'm saying
+Enable and use the sys-request mechanism (via terminal, keyboard or
+serial) eg sysrq-T to dump the stack frames of all processes,
+including this.
 
-"Assume A & B binary git repos and delta_B-A another binary file, i
-request built
-B' = A + delta_B-A where is verified SHA1(B') = SHA1(B) for avoiding
-corrupting".
+Unsurprisingly, it's documented in the kernel Documentation directory.
 
-Assume B is the higher repacked version of "A + minor commits of the day"
-as if B was optimizing 24 hours more the minimum spanning tree. Wow!!!
+> (By the way: This is on amd64, 2.6.23. I'm updating to 2.6.24.2 right
+> now, on the off chance that whatever was causing the problem has been
+> fixed.)
+
+Daniel
+-- 
+Daniel J Blueman
