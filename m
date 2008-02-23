@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbYBWAdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbYBWAeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932444AbYBWAdm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:33:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760230AbYBWAdI
+	id S933913AbYBWAeB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:34:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760575AbYBWAdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:33:08 -0500
-Received: from ns2.suse.de ([195.135.220.15]:55200 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:33:10 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44622 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759651AbYBWAdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:33:05 -0500
-Date: Fri, 22 Feb 2008 16:29:28 -0800
+	id S1760206AbYBWAdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:33:07 -0500
+Date: Fri, 22 Feb 2008 16:29:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -20,15 +20,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sam Ravnborg <sam@ravnborg.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 01/38] SPARC/SPARC64: Fix usage of .section .sched.text in
-	assembler code.
-Message-ID: <20080223002928.GB7268@suse.de>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [patch 02/38] NETFILTER: nf_conntrack_tcp: conntrack reopening fix
+Message-ID: <20080223002934.GC7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sparc-sparc64-fix-usage-of-.section-.sched.text-in-assembler-code.patch"
+Content-Disposition: inline; filename="netfilter-nf_conntrack_tcp-conntrack-reopening-fix.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,43 +42,107 @@ know.
 
 ------------------
  
- [SPARC/SPARC64]: Fix usage of .section .sched.text in assembler code.
+ From: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
 
-Upstream commit: c6d64c16bb193c8ca2ccc0b3c556a4574a02408b
+[NETFILTER]: nf_conntrack_tcp: conntrack reopening fix
 
-ld will generate an unique named section when assembler do not use
-"ax" but gcc does. Add the missing annotation.
+[Upstream commits b2155e7f + d0c1fd7a]
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+TCP connection tracking in netfilter did not handle TCP reopening
+properly: active close was taken into account for one side only and
+not for any side, which is fixed now. The patch includes more comments
+to explain the logic how the different cases are handled.
+The bug was discovered by Jeff Chua.
+
+Signed-off-by: Jozsef Kadlecsik <kadlec@blackhole.kfki.hu>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
----
- arch/sparc/lib/rwsem.S   |    2 +-
- arch/sparc64/lib/rwsem.S |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
---- a/arch/sparc/lib/rwsem.S
-+++ b/arch/sparc/lib/rwsem.S
-@@ -7,7 +7,7 @@
- #include <asm/ptrace.h>
- #include <asm/psr.h>
+--- a/net/netfilter/nf_conntrack_proto_tcp.c
++++ b/net/netfilter/nf_conntrack_proto_tcp.c
+@@ -135,7 +135,7 @@ enum tcp_bit_set {
+  * CLOSE_WAIT:	ACK seen (after FIN)
+  * LAST_ACK:	FIN seen (after FIN)
+  * TIME_WAIT:	last ACK seen
+- * CLOSE:	closed connection
++ * CLOSE:	closed connection (RST)
+  *
+  * LISTEN state is not used.
+  *
+@@ -834,8 +834,21 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 	case TCP_CONNTRACK_SYN_SENT:
+ 		if (old_state < TCP_CONNTRACK_TIME_WAIT)
+ 			break;
+-		if ((conntrack->proto.tcp.seen[!dir].flags &
+-			IP_CT_TCP_FLAG_CLOSE_INIT)
++		/* RFC 1122: "When a connection is closed actively,
++		 * it MUST linger in TIME-WAIT state for a time 2xMSL
++		 * (Maximum Segment Lifetime). However, it MAY accept
++		 * a new SYN from the remote TCP to reopen the connection
++		 * directly from TIME-WAIT state, if..."
++		 * We ignore the conditions because we are in the
++		 * TIME-WAIT state anyway.
++		 *
++		 * Handle aborted connections: we and the server
++		 * think there is an existing connection but the client
++		 * aborts it and starts a new one.
++		 */
++		if (((conntrack->proto.tcp.seen[dir].flags
++		      | conntrack->proto.tcp.seen[!dir].flags)
++		     & IP_CT_TCP_FLAG_CLOSE_INIT)
+ 		    || (conntrack->proto.tcp.last_dir == dir
+ 		        && conntrack->proto.tcp.last_index == TCP_RST_SET)) {
+ 			/* Attempt to reopen a closed/aborted connection.
+@@ -848,18 +861,25 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 		}
+ 		/* Fall through */
+ 	case TCP_CONNTRACK_IGNORE:
+-		/* Ignored packets:
++		/* Ignored packets: 
++		 *
++		 * Our connection entry may be out of sync, so ignore
++		 * packets which may signal the real connection between
++		 * the client and the server.
+ 		 *
+ 		 * a) SYN in ORIGINAL
+ 		 * b) SYN/ACK in REPLY
+ 		 * c) ACK in reply direction after initial SYN in original.
++		 *
++		 * If the ignored packet is invalid, the receiver will send 
++		 * a RST we'll catch below.
+ 		 */
+ 		if (index == TCP_SYNACK_SET
+ 		    && conntrack->proto.tcp.last_index == TCP_SYN_SET
+ 		    && conntrack->proto.tcp.last_dir != dir
+ 		    && ntohl(th->ack_seq) ==
+ 			     conntrack->proto.tcp.last_end) {
+-			/* This SYN/ACK acknowledges a SYN that we earlier
++			/* b) This SYN/ACK acknowledges a SYN that we earlier
+ 			 * ignored as invalid. This means that the client and
+ 			 * the server are both in sync, while the firewall is
+ 			 * not. We kill this session and block the SYN/ACK so
+@@ -884,7 +904,7 @@ static int tcp_packet(struct nf_conn *conntrack,
+ 		write_unlock_bh(&tcp_lock);
+ 		if (LOG_INVALID(IPPROTO_TCP))
+ 			nf_log_packet(pf, 0, skb, NULL, NULL, NULL,
+-				  "nf_ct_tcp: invalid packed ignored ");
++				  "nf_ct_tcp: invalid packet ignored ");
+ 		return NF_ACCEPT;
+ 	case TCP_CONNTRACK_MAX:
+ 		/* Invalid packet */
+@@ -938,8 +958,7 @@ static int tcp_packet(struct nf_conn *conntrack,
  
--	.section .sched.text
-+	.section .sched.text, "ax"
- 	.align	4
- 
- 	.globl		___down_read
---- a/arch/sparc64/lib/rwsem.S
-+++ b/arch/sparc64/lib/rwsem.S
-@@ -6,7 +6,7 @@
- 
- #include <asm/rwsem-const.h>
- 
--	.section	.sched.text
-+	.section	.sched.text, "ax"
- 
- 	.globl		__down_read
- __down_read:
+ 	conntrack->proto.tcp.state = new_state;
+ 	if (old_state != new_state
+-	    && (new_state == TCP_CONNTRACK_FIN_WAIT
+-		|| new_state == TCP_CONNTRACK_CLOSE))
++	    && new_state == TCP_CONNTRACK_FIN_WAIT)
+ 		conntrack->proto.tcp.seen[dir].flags |= IP_CT_TCP_FLAG_CLOSE_INIT;
+ 	timeout = conntrack->proto.tcp.retrans >= nf_ct_tcp_max_retrans
+ 		  && *tcp_timeouts[new_state] > nf_ct_tcp_timeout_max_retrans
+_______________________________________________
+stable mailing list
+stable@linux.kernel.org
+http://linux.kernel.org/mailman/listinfo/stable
 
 -- 
