@@ -1,69 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbYBWMei@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbYBWMgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbYBWMei (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 07:34:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757003AbYBWMeA
+	id S1755478AbYBWMgy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 07:36:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752377AbYBWMgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 07:34:00 -0500
-Received: from relay1.sgi.com ([192.48.171.29]:38173 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756593AbYBWMd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 07:33:58 -0500
-From: Paul Jackson <pj@sgi.com>
-To: akpm@linux-foundation.org
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Paul Menage <menage@google.com>, Paul Jackson <pj@sgi.com>,
-       linux-kernel@vger.kernel.org, Cliff Wickman <cpw@sgi.com>
-Date: Sat, 23 Feb 2008 04:33:57 -0800
-Message-Id: <20080223123357.2668.56473.sendpatchset@jackhammer.engr.sgi.com>
-Subject: [PATCH] cgroup: fix sparse warning of shadow symbol in cgroup.c
+	Sat, 23 Feb 2008 07:36:47 -0500
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:54050 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753030AbYBWMgq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 07:36:46 -0500
+Date: Sat, 23 Feb 2008 13:37:08 +0100
+From: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+Subject: Re: [Xen-devel] [PATCH] let XEN depend on PAE
+In-reply-to: <47BF266F.5020806@nets.rwth-aachen.de>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xen-devel@lists.xensource.com, Chris Wright <chrisw@sous-sol.org>
+Message-id: <47C01374.5030608@nets.rwth-aachen.de>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-15
+Content-transfer-encoding: 7BIT
+X-IronPort-AV: E=Sophos;i="4.25,394,1199660400";   d="scan'208";a="51793165"
+References: <47BEAB48.7050900@nets.rwth-aachen.de> <47BEFA4C.6030400@goop.org>
+ <47BEFE55.7020703@nets.rwth-aachen.de> <47BF1B8F.5090701@goop.org>
+ <47BF266F.5020806@nets.rwth-aachen.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20071022)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Jackson <pj@sgi.com>
+Arnd Hannemann wrote:
+> Jeremy Fitzhardinge wrote:
+>> Arnd Hannemann wrote:
+>>> This is with 2.6.24.2, but latest-git looks the same:
+>>> I also tried with 2.6.23 which crashes instantly, without any output
+>>> of the guest.
+>>>   
+>> I'm not too surprised.  Non-PAE Xen is a bit of a rarity, and it only
+>> gets tested rarely.  Chris Wright did spend some time on it a while ago,
+>> but I don't know that its had any real attention since.  I've been
+>> making sure non-PAE compiles, but I've been lax about testing it.
+>> This is the first usermode exec, I guess?  The backtrace is a bit odd;
+>> I've never seen a problem in move_page_tables before.
+> 
+> Yes its trying to execute the first script in initramfs, I also tried with initramdisk
+> and got a similar error. (move_page_tables also involved)
+> 
+>> Does "xm dmesg" tell you what Xen is complaining about?  You may need to
+>> compile with debug=y in Config.mk.
+> 
+> (XEN) mm.c:645:d44 Non-privileged (44) attempt to map I/O space 00000000
+> 
+> I will recompile with debug=y and post the output.
 
-Fix a code warning: symbol 'p' shadows an earlier one
+I recompiled with debug=y but no more information than above message...
 
-This is a reincarnation of Harvey Harrison's patch:
-	cpuset: sparse warnings in cpuset.c
+[snip]
 
-Independently, Cliff Wickman moved the affected code,
-from kernel/cpuset.c to kernel/cgroup.c, in his patch:
-	cpusets: update_cpumask revision
+Arnd
 
-Signed-off-by: Paul Jackson <pj@sgi.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Cliff Wickman <cpw@sgi.com>
-
----
- kernel/cgroup.c |   10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
-
---- 2.6.25-rc2-mm1.orig/kernel/cgroup.c	2008-02-16 01:04:48.000000000 -0800
-+++ 2.6.25-rc2-mm1/kernel/cgroup.c	2008-02-23 04:19:44.006614677 -0800
-@@ -1897,14 +1897,14 @@ int cgroup_scan_tasks(struct cgroup_scan
- 
- 	if (heap->size) {
- 		for (i = 0; i < heap->size; i++) {
--			struct task_struct *p = heap->ptrs[i];
-+			struct task_struct *q = heap->ptrs[i];
- 			if (i == 0) {
--				latest_time = p->start_time;
--				latest_task = p;
-+				latest_time = q->start_time;
-+				latest_task = q;
- 			}
- 			/* Process the task per the caller's callback */
--			scan->process_task(p, scan);
--			put_task_struct(p);
-+			scan->process_task(q, scan);
-+			put_task_struct(q);
- 		}
- 		/*
- 		 * If we had to process any tasks at all, scan again
-
--- 
-                          I won't rest till it's the best ...
-                          Programmer, Linux Scalability
-                          Paul Jackson <pj@sgi.com> 1.650.933.1373
