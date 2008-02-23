@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbYBWIUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbYBWIVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbYBWIUm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:20:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764058AbYBWIJb
+	id S1756274AbYBWIVP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:21:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764493AbYBWIJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:09:31 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:53044 "EHLO
+	Sat, 23 Feb 2008 03:09:32 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:34938 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933038AbYBWII7 (ORCPT
+	by vger.kernel.org with ESMTP id S1765952AbYBWIJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:08:59 -0500
-Date: Sat, 23 Feb 2008 00:06:13 -0800
+	Sat, 23 Feb 2008 03:09:06 -0500
+Date: Sat, 23 Feb 2008 00:06:06 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 17/28] netvm: hook skb allocation to reserves
-Message-Id: <20080223000613.123c57b6.akpm@linux-foundation.org>
-In-Reply-To: <20080220150307.507134000@chello.nl>
+       netdev@vger.kernel.org, trond.myklebust@fys.uio.no,
+       Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 10/28] mm: memory reserve management
+Message-Id: <20080223000606.d7474c91.akpm@linux-foundation.org>
+In-Reply-To: <20080220150306.548965000@chello.nl>
 References: <20080220144610.548202000@chello.nl>
-	<20080220150307.507134000@chello.nl>
+	<20080220150306.548965000@chello.nl>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,53 +30,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 Feb 2008 15:46:27 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+On Wed, 20 Feb 2008 15:46:20 +0100 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> Change the skb allocation api to indicate RX usage and use this to fall back to
-> the reserve when needed. SKBs allocated from the reserve are tagged in
-> skb->emergency.
+> Generic reserve management code. 
 > 
-> Teach all other skb ops about emergency skbs and the reserve accounting.
+> It provides methods to reserve and charge. Upon this, generic alloc/free style
+> reserve pools could be build, which could fully replace mempool_t
+> functionality.
 > 
-> Use the (new) packet split API to allocate and track fragment pages from the
-> emergency reserve. Do this using an atomic counter in page->index. This is
-> needed because the fragments have a different sharing semantic than that
-> indicated by skb_shinfo()->dataref. 
-> 
-> Note that the decision to distinguish between regular and emergency SKBs allows
-> the accounting overhead to be limited to the later kind.
-> 
-> ...
->
-> +static inline void skb_get_page(struct sk_buff *skb, struct page *page)
+> It should also allow for a Banker's algorithm replacement of __GFP_NOFAIL.
+
+Generally: the comments in this code are a bit straggly and hard to follow.
+They'd be worth a revisit.
+
+> +/*
+> + * Simple output of the reserve tree in: /proc/reserve_info
+> + * Example:
+> + *
+> + * localhost ~ # cat /proc/reserve_info
+> + * total reserve                  8156K (0/544817)
+> + *   total network reserve          8156K (0/544817)
+> + *     network TX reserve             196K (0/49)
+> + *       protocol TX pages              196K (0/49)
+> + *     network RX reserve             7960K (0/544768)
+> + *       IPv6 route cache               1372K (0/4096)
+> + *       IPv4 route cache               5468K (0/16384)
+> + *       SKB data reserve               1120K (0/524288)
+> + *         IPv6 fragment cache            560K (0/262144)
+> + *         IPv4 fragment cache            560K (0/262144)
+> + */
+
+Well, "Simple" was a freudian typo.  Not designed for programmatic parsing,
+I see.
+
+> +static __init int mem_reserve_proc_init(void)
 > +{
-> +	get_page(page);
-> +	if (skb_emergency(skb))
-> +		atomic_inc(&page->frag_count);
+> +	struct proc_dir_entry *entry;
+> +
+> +	entry = create_proc_entry("reserve_info", S_IRUSR, NULL);
+
+I think we're supposed to use proc_create().  Blame Alexey.
+
+> +	if (entry)
+> +		entry->proc_fops = &mem_reserve_opterations;
+> +
+> +	return 0;
 > +}
 > +
-> +static inline void skb_put_page(struct sk_buff *skb, struct page *page)
-> +{
-> +	if (skb_emergency(skb) && atomic_dec_and_test(&page->frag_count))
-> +		rx_emergency_put(PAGE_SIZE);
-> +	put_page(page);
-> +}
+> +__initcall(mem_reserve_proc_init);
 
-I'm thinking we should do `#define slowcall inline' then use that in the future.
-
->  static void skb_release_data(struct sk_buff *skb)
->  {
->  	if (!skb->cloned ||
->  	    !atomic_sub_return(skb->nohdr ? (1 << SKB_DATAREF_SHIFT) + 1 : 1,
->  			       &skb_shinfo(skb)->dataref)) {
-> +		int size;
-> +
-> +#ifdef NET_SKBUFF_DATA_USES_OFFSET
-> +		size = skb->end;
-> +#else
-> +		size = skb->end - skb->head;
-> +#endif
-
-The patch adds rather a lot of ifdefs.
+module_init() is more trendy.
 
 
