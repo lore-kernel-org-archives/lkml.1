@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936898AbYBWAkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936989AbYBWAk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936898AbYBWAkh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:40:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760430AbYBWAei
+	id S936989AbYBWAk5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934593AbYBWAem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:34:38 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55466 "EHLO mx2.suse.de"
+	Fri, 22 Feb 2008 19:34:42 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55487 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764109AbYBWAeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:34:36 -0500
-Date: Fri, 22 Feb 2008 16:30:29 -0800
+	id S1764545AbYBWAek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:34:40 -0500
+Date: Fri, 22 Feb 2008 16:30:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,12 +21,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Julian Anastasov <ja@ssi.bg>, "David S. Miller" <davem@davemloft.net>
-Subject: [patch 15/38] IPV4: fib_trie: apply fixes from fib_hash
-Message-ID: <20080223003029.GP7268@suse.de>
+Subject: [patch 16/38] IPV4: fib: fix route replacement, fib_info is shared
+Message-ID: <20080223003033.GQ7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv4-fib_trie-apply-fixes-from-fib_hash.patch"
+Content-Disposition: inline; filename="ipv4-fib-fix-route-replacement-fib_info-is-shared.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,36 +37,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
-Upstream commit: 936f6f8e1bc46834bbb3e3fa3ac13ab44f1e7ba6
+Upstream commit: c18865f39276435abb9286f9a816cb5b66c99a00
 
-	Update fib_trie with some fib_hash fixes:
-- check for duplicate alternative routes for prefix+tos+priority when
-replacing route
-- properly insert by matching tos together with priority
-- fix alias walking to use list_for_each_entry_continue for insertion
-and deletion when fa_head is not NULL
-- copy state from fa to new_fa on replace (not a problem for now)
-- additionally, avoid replacement without error if new route is same,
-as Joonwoo Park suggests.
+fib_info can be shared by many route prefixes but we don't want
+duplicate alternative routes for a prefix+tos+priority. Last change
+was not correct to check fib_treeref because it accounts usage from
+other prefixes. Additionally, avoid replacement without error if new
+route is same, as Joonwoo Park suggests.
 
 Signed-off-by: Julian Anastasov <ja@ssi.bg>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/fib_trie.c |   57 ++++++++++++++++++++++++++++++++--------------------
- 1 file changed, 36 insertions(+), 21 deletions(-)
+ net/ipv4/fib_hash.c |   47 +++++++++++++++++++++++++++++++----------------
+ 1 file changed, 31 insertions(+), 16 deletions(-)
 
---- a/net/ipv4/fib_trie.c
-+++ b/net/ipv4/fib_trie.c
-@@ -1203,20 +1203,45 @@ static int fn_trie_insert(struct fib_tab
- 	 * and we need to allocate a new one of those as well.
- 	 */
+--- a/net/ipv4/fib_hash.c
++++ b/net/ipv4/fib_hash.c
+@@ -434,19 +434,43 @@ static int fn_hash_insert(struct fib_tab
  
--	if (fa && fa->fa_info->fib_priority == fi->fib_priority) {
+ 	if (fa && fa->fa_tos == tos &&
+ 	    fa->fa_info->fib_priority == fi->fib_priority) {
 -		struct fib_alias *fa_orig;
-+	if (fa && fa->fa_tos == tos &&
-+	    fa->fa_info->fib_priority == fi->fib_priority) {
 +		struct fib_alias *fa_first, *fa_match;
  
  		err = -EEXIST;
@@ -81,7 +74,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 +		fa_match = NULL;
 +		fa_first = fa;
 +		fa = list_entry(fa->fa_list.prev, struct fib_alias, fa_list);
-+		list_for_each_entry_continue(fa, fa_head, fa_list) {
++		list_for_each_entry_continue(fa, &f->fn_alias, fa_list) {
 +			if (fa->fa_tos != tos)
 +				break;
 +			if (fa->fa_info->fib_priority != fi->fib_priority)
@@ -106,33 +99,24 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
  				goto out;
 -
 +			}
- 			err = -ENOBUFS;
- 			new_fa = kmem_cache_alloc(fn_alias_kmem, GFP_KERNEL);
- 			if (new_fa == NULL)
-@@ -1228,7 +1253,7 @@ static int fn_trie_insert(struct fib_tab
- 			new_fa->fa_type = cfg->fc_type;
- 			new_fa->fa_scope = cfg->fc_scope;
- 			state = fa->fa_state;
--			new_fa->fa_state &= ~FA_S_ACCESSED;
-+			new_fa->fa_state = state & ~FA_S_ACCESSED;
- 
- 			list_replace_rcu(&fa->fa_list, &new_fa->fa_list);
- 			alias_free_mem_rcu(fa);
-@@ -1245,20 +1270,11 @@ static int fn_trie_insert(struct fib_tab
+ 			write_lock_bh(&fib_hash_lock);
+ 			fi_drop = fa->fa_info;
+ 			fa->fa_info = fi;
+@@ -469,20 +493,11 @@ static int fn_hash_insert(struct fib_tab
  		 * uses the same scope, type, and nexthop
  		 * information.
  		 */
 -		fa_orig = fa;
--		list_for_each_entry(fa, fa_orig->fa_list.prev, fa_list) {
+-		fa = list_entry(fa->fa_list.prev, struct fib_alias, fa_list);
+-		list_for_each_entry_continue(fa, &f->fn_alias, fa_list) {
 -			if (fa->fa_tos != tos)
 -				break;
 -			if (fa->fa_info->fib_priority != fi->fib_priority)
 -				break;
 -			if (fa->fa_type == cfg->fc_type &&
 -			    fa->fa_scope == cfg->fc_scope &&
--			    fa->fa_info == fi) {
+-			    fa->fa_info == fi)
 -				goto out;
--			}
 -		}
 +		if (fa_match)
 +			goto out;
@@ -141,19 +125,7 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 -			fa = fa_orig;
 +			fa = fa_first;
  	}
+ 
  	err = -ENOENT;
- 	if (!(cfg->fc_nlflags & NLM_F_CREATE))
-@@ -1614,9 +1630,8 @@ static int fn_trie_delete(struct fib_tab
- 	pr_debug("Deleting %08x/%d tos=%d t=%p\n", key, plen, tos, t);
- 
- 	fa_to_delete = NULL;
--	fa_head = fa->fa_list.prev;
--
--	list_for_each_entry(fa, fa_head, fa_list) {
-+	fa = list_entry(fa->fa_list.prev, struct fib_alias, fa_list);
-+	list_for_each_entry_continue(fa, fa_head, fa_list) {
- 		struct fib_info *fi = fa->fa_info;
- 
- 		if (fa->fa_tos != tos)
 
 -- 
