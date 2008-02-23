@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbYBWSgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761519AbYBWShn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbYBWSgw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 13:36:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbYBWSgo
+	id S1761519AbYBWShn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 13:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbYBWShf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 13:36:44 -0500
-Received: from smtp121.sbc.mail.sp1.yahoo.com ([69.147.64.94]:46517 "HELO
-	smtp121.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755675AbYBWSgn (ORCPT
+	Sat, 23 Feb 2008 13:37:35 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37987 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757088AbYBWShe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 13:36:43 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=gB8LiFKiDKMtACil+m6K5j6nNmxFUnXhApbrfwfK0J20WyaIka5HXhFNabcubRsqWWVwDSIdSUb6TEhJWRiDYZpsArww8aGZ5s7QZ31r5WbrEY3ycKTXLJLNGPNhqq7GR+tBRBJxgAtph5QhBbYaMDR24EG3MWojZbt4YX+YSSM=  ;
-X-YMail-OSG: CDBIwfAVM1m_eBXoBInICf_Iz1.tRg8Gm2nMQt1DP3knMOO50_4PNlqUzuFu4lW7LxSyyIlslQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/6] regulator: consumer driver regulator control framework.
-Date: Sat, 23 Feb 2008 10:36:42 -0800
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Liam Girdwood <lg@opensource.wolfsonmicro.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <1203527333.4071.89.camel@localhost.localdomain> <20080223000528.c01e1b51.akpm@linux-foundation.org>
-In-Reply-To: <20080223000528.c01e1b51.akpm@linux-foundation.org>
+	Sat, 23 Feb 2008 13:37:34 -0500
+Date: Sat, 23 Feb 2008 13:37:31 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, akpm@osdl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/16] (Resend) Use get_personality()
+Message-ID: <20080223183731.GA26852@infradead.org>
+References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com> <20080223085101.GC2262@martell.zuzino.mipt.ru> <20080223.165944.37229792.xiyou.wangcong@gmail.com> <20080223092710.GD2262@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200802231036.42652.david-b@pacbell.net>
+In-Reply-To: <20080223092710.GD2262@martell.zuzino.mipt.ru>
+User-Agent: Mutt/1.5.17 (2007-11-01)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 23 February 2008, Andrew Morton wrote:
-> On Wed, 20 Feb 2008 17:08:53 +0000 Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
-> > +#define mV_to_uV(mV)	(mV * 1000)
-> > +#define uV_to_mV(uV)	(uV / 1000)
-> > +#define V_to_uV(V)	(mV_to_uV(V * 1000))
-> > +#define uV_to_V(uV)	(uV_to_mV(uV) / 1000)
-> > +#define mA_to_uA(mA)	(mA * 1000)
-> > +#define uA_to_mA(uA)	(uA / 1000)
-> > +#define A_to_uA(A)	(mA_to_uA(A * 1000))
-> > +#define uA_to_A(uA)	(uA_to_mA(uA) / 1000)
+On Sat, Feb 23, 2008 at 12:27:10PM +0300, Alexey Dobriyan wrote:
+> > Use get_personality() can hide the task_struct internals a bit.
 > 
-> hm.  It might be nicer to make these static inline functions.  Especially
-> if the code is consistent about what C type is used to represent voltage
-> and current.
+> ->personality is going to become something less trivial?
+> Sorry, but you sound like C++ people writing tons of pointless get/set
+> wrappers. And your get_personality() is worse -- C++ would write it as
+> 
+> 	current->personality()
+> 
+> and again, even here, it's immediately visible that current task is
+> involved, not some other task.
 
-And if not ... then be sure to use e.g. ((mV) * 1000), ((uV) / 1000) etc
-so that params like "x + 23" can't cause chaos.
+Yes, completely agreement.  While I might have introduced this gem
+back then it is entirely stupid if you think about it.  Please send
+patches to kill get_personality and just use current->personality
+instead.
 
-(FWIW oth these points -- use inlines, parenthesize params -- are also
-found in Documentation/CodingStyle.)
+Thanks.
