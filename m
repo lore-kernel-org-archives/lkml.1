@@ -1,112 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753467AbYBWMmE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756870AbYBWMnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753467AbYBWMmE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 07:42:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYBWMlt
+	id S1756870AbYBWMnt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 07:43:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbYBWMnk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 07:41:49 -0500
-Received: from wx-out-0506.google.com ([66.249.82.224]:10298 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbYBWMls (ORCPT
+	Sat, 23 Feb 2008 07:43:40 -0500
+Received: from smtp-106-saturday.nerim.net ([62.4.16.106]:60131 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751294AbYBWMnj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 07:41:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=p9eA3kZew/XkvjWJP4USMCwFO4RNWjIo811kvBCaXv+02jRG1Lsr9BqA8e3PqMkoj2XkhZifODWUA7SJIZP1XGRTWcb3QMiKN5mATW1giwUOom+GtnWr1WMI4goAmcV1K4fpPUpRn/niC6Mqemxh8EsJSsjS/br4FgXxvO/2RaM=
-Message-ID: <661de9470802230441o43954211wfe77495a89f3677a@mail.gmail.com>
-Date: Sat, 23 Feb 2008 18:11:46 +0530
-From: "Balbir Singh" <balbir@in.ibm.com>
-Reply-To: balbir@in.ibm.com
-To: linux-kernel@vger.kernel.org
-Subject: Re: + cgroup-memory-controller-document-huge-memory-cache-overhead-in-kconfig.patch added to -mm tree
-Cc: mm-commits@vger.kernel.org, andi@firstfloor.org, ak@suse.de,
-       menage@google.com
-In-Reply-To: <200802230732.m1N7WmLQ018100@imap1.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 23 Feb 2008 07:43:39 -0500
+Date: Sat, 23 Feb 2008 13:43:35 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Jochen Friedrich <jochen@scram.de>
+Cc: Scott Wood <scottwood@freescale.com>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Vitaly Bordug <vitb@kernel.crashing.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>, i2c@lm-sensors.org
+Subject: Re: [PATCHv4 2.6.25] i2c: adds support for i2c bus on Freescale
+ CPM1/CPM2  controllers
+Message-ID: <20080223134335.0f5c7d79@hyperion.delvare>
+In-Reply-To: <47BEAF00.50106@scram.de>
+References: <47A1C4E9.4000003@scram.de>
+	<20080221130520.12b01553@hyperion.delvare>
+	<47BEAF00.50106@scram.de>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200802230732.m1N7WmLQ018100@imap1.linux-foundation.org>
-X-Google-Sender-Auth: 665149ebafc4f6e2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 1:02 PM,  <akpm@linux-foundation.org> wrote:
->
->  The patch titled
->      cgroup memory controller: document huge memory/cache overhead in Kconfig
->  has been added to the -mm tree.  Its filename is
->      cgroup-memory-controller-document-huge-memory-cache-overhead-in-kconfig.patch
->
->  Before you just go and hit "reply", please:
->    a) Consider who else should be cc'ed
->    b) Prefer to cc a suitable mailing list as well
->    c) Ideally: find the original patch on the mailing list and do a
->       reply-to-all to that, adding suitable additional cc's
->
->  *** Remember to use Documentation/SubmitChecklist when testing your code ***
->
->  See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
->  out what to do about this
->
->  The current -mm tree may be found at http://userweb.kernel.org/~akpm/mmotm/
->
->  ------------------------------------------------------
->  Subject: cgroup memory controller: document huge memory/cache overhead in Kconfig
->  From: Andi Kleen <andi@firstfloor.org>
->
->  Document huge memory/cache overhead of memory controller in Kconfig
->
->  I was a little surprised that 2.6.25-rc* increased struct page for the
->  memory controller.  At least on many x86-64 machines it will not fit into a
->  single cache line now anymore and also costs considerable amounts of RAM.
->  At earlier review I remembered asking for a external data structure for
->  this.
->
->  It's also quite unobvious that a innocent looking Kconfig option with a
->  single line Kconfig description has such a negative effect.
->
->  This patch attempts to document these disadvantages at least so that users
->  configuring their kernel can make a informed decision.
->
->  Signed-off-by: Andi Kleen <ak@suse.de>
->  Cc: Balbir Singh <balbir@in.ibm.com>
->  Acked-by: Paul Menage <menage@google.com>
->  Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->  ---
->
->   init/Kconfig |    8 ++++++++
->   1 file changed, 8 insertions(+)
->
->  diff -puN init/Kconfig~cgroup-memory-controller-document-huge-memory-cache-overhead-in-kconfig init/Kconfig
->  --- a/init/Kconfig~cgroup-memory-controller-document-huge-memory-cache-overhead-in-kconfig
->  +++ a/init/Kconfig
->  @@ -394,6 +394,14 @@ config CGROUP_MEM_CONT
->           Provides a memory controller that manages both page cache and
->           RSS memory.
->
->  +         Note that setting this option increases fixed memory overhead
->  +         associated with each page of memory in the system by 4/8 bytes
->  +         and also increases cache misses because struct page on many 64bit
->  +         systems will not fit into a single cache line anymore.
->  +
->  +         Only enable when you're ok with these trade offs and really
->  +         sure you need the memory controller.
->  +
+Hi Jochen,
 
-Andrew,
+On Fri, 22 Feb 2008 12:16:16 +0100, Jochen Friedrich wrote:
+> Hi Jean,
+> 
+> >> +/*
+> >> + * Wait for patch from Jon Smirl
+> >> + * #include "powerpc-common.h"
+> >> + */
+> > 
+> > It doesn't make sense to merge this comment upstream.
+> 
+> I know you don't like the patch from Jon Smirl and you also explained your reasons.
+> Fortunately, I2c no longer uses numeric device IDs but names. So what are the alternatives?
+> 
+> 1. modify the I2c subsystem to accept OF names additionally to I2c names (proposed by Jon smirl).
 
-I asked Andi what architectures have a cacheline size such that 56
-bytes would fit in the cache, but 64 bytes would not. I have not heard
-back. I would like Andi's approval to change the text to
+The problem I have with this is that it breaks compatibility. The chip
+name is not only used for device/driver matching, it is also exported
+to userspace as a sysfs attribute ("name"). Applications might rely on
+it. At least libsensors does.
 
-         Note that setting this option increases fixed memory overhead
-         associated with each page of memory in the system by 4/8 bytes
-         Only enable when you're ok with these trade offs and really
-         sure you need the memory controller.
+One way to work around the problem would be to use separate fields for
+device/driver matching and the "name" attribute. However, this will add
+some complexity to the i2c-core code and cost some memory as well, so
+it is far from perfect.
 
-Andi, please confirm at the earliest.
+> 2. record the I2c name in the dts tree, either as seperate tag (like linux,i2c-name="<i2c-name>")
+>    or as additional compatible entry (like compatible="...", "linux,<i2c-name>").
 
-Balbir
+This would work, and it would require almost no change to the current
+i2c-core code, but I thought that these dts files were not under our
+control?
+
+The problem I see with this approach is that the name translation would
+have to be done for each dts file, rather than just once for each device
+type. This means more work, but maybe this can be done if at least part
+of it is automated. I admit that I never considered this option because
+I considered the dts files as read-only. If this assumption was
+incorrect, then maybe this is the best solution. Can you please
+elaborate on the details of this proposal?
+
+> 3. use a glue layer with a translation map.
+
+This is what we do at the moment (see i2c_devices in
+arch/powerpc/sysdev/fsl_soc.c). Jon Smirl is worried that it won't
+scale well though, and I can't disagree.
+
+> What is the preferred way to do this?
+
+I still have to think about it. I didn't have much time to work on this
+during the last 2 weeks, hopefully I will fine some time to experiment
+again soon. As I underlined before, my patch set affects no less than 5
+subsystems with different needs and expectations, it's no trivial
+change.
+
+-- 
+Jean Delvare
