@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757733AbYBWJjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbYBWJnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757733AbYBWJjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbYBWJjM
+	id S1759389AbYBWJnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbYBWJnN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:39:12 -0500
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:57419 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbYBWJjL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:39:11 -0500
-To: greg@kroah.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-In-reply-to: <20080222231934.GA30703@kroah.com> (message from Greg KH on Fri,
-	22 Feb 2008 15:19:34 -0800)
-Subject: Re: [stable] [patch] fuse: fix permission checking
-References: <E1JPxjP-0004sQ-5O@pomaz-ex.szeredi.hu> <20080222231934.GA30703@kroah.com>
-Message-Id: <E1JSqqR-00035e-8N@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Sat, 23 Feb 2008 10:38:59 +0100
+	Sat, 23 Feb 2008 04:43:13 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38730 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753276AbYBWJnM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 04:43:12 -0500
+Date: Sat, 23 Feb 2008 10:43:34 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@kernel.org>, Roland Dreier <rdreier@cisco.com>,
+       Glenn Streiff <gstreiff@NetEffect.com>,
+       Faisal Latif <flatif@NetEffect.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <greg@kroah.com>
+Subject: Re: Merging of completely unreviewed drivers
+Message-ID: <20080223094334.GA3081@elf.ucw.cz>
+References: <5E701717F2B2ED4EA60F87C8AA57B7CC0794FFFF@venom2> <20080221154951.GA28328@cs181133002.pp.htv.fi> <adahcg2awag.fsf@cisco.com> <20080221210124.GD28328@cs181133002.pp.htv.fi> <alpine.LFD.1.00.0802211310370.19896@woody.linux-foundation.org> <m3tzk1q3rt.fsf@maximus.localdomain> <47BE0C12.604@garzik.org> <m3k5kxq2ih.fsf@maximus.localdomain> <20080222184518.GB6060@ucw.cz> <m3zlts393a.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3zlts393a.fsf@maximus.localdomain>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, Feb 15, 2008 at 11:23:47AM +0100, Miklos Szeredi wrote:
-> > This is for 2.6.25 and 2.6.24.y, but NOT for 2.6.23.y.
-> > 
-> > Thanks,
-> > Miklos
-> > ----
-> > 
-> > From: Miklos Szeredi <mszeredi@suse.cz>
-> > 
-> > I added a nasty local variable shadowing bug to fuse in 2.6.24, with
-> > the result, that the 'default_permissions' mount option is basically
-> > ignored.
+On Fri 2008-02-22 23:44:09, Krzysztof Halasa wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
 > 
-> When this goes into Linus's tree, can you let us know along with the git
-> commit id?
+> > Zaurus is one example, second is small screen where you need big font
+> > to keep it readable (x60 on desk).
+> 
+> Come on, are you doing Linux kernel development on PDA?
 
-I'd really like to see this in 2.6.24.3.  How much time is left?
-Should I bypass Andrew and submit to Linus ASAP?
-
-Thanks,
-Miklos
+I review patches on it, sometimes, yes.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
