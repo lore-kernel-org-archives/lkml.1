@@ -1,52 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761060AbYBWR46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761426AbYBWR5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761060AbYBWR46 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 12:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbYBWR4n
+	id S1761426AbYBWR5S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 12:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757947AbYBWR4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 12:56:43 -0500
-Received: from ug-out-1314.google.com ([66.249.92.172]:64835 "EHLO
+	Sat, 23 Feb 2008 12:56:51 -0500
+Received: from ug-out-1314.google.com ([66.249.92.173]:63916 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754046AbYBWR4l (ORCPT
+	with ESMTP id S1755388AbYBWR4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 12:56:41 -0500
+	Sat, 23 Feb 2008 12:56:49 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=to:subject:cc:message-id:from:date;
-        b=PFRvKAFsWKUisyxij1m/vmrslOIGXgOlG3inv4EeWFaiwGIwYaDZuxpvLJpF5IbyYbJRSH4eAklWqkninsEWfbIPyt3Mbw2zK04NjdCrjM1zQLAWoUHuGfXvaqnwYZAjGr9Gllx/q5kTzOdshTFGKz8PzOuf8c3hS5ETG/AgZw8=
+        b=XZ/wyK0XV4wb9mW+315trn3rwpkI0t/zTy4PsUAgzbocVDzuMPV48hNjhF9r6uQmDuBo9YrHNQ90XHjhtc2HBul+cYDJtxSoODmCTDeUEdaXbLmaA5sRJKJKyMWXa/m7lApX9nDHw4/1KEOJoBtWCEKjgWuXI0WUmFxG1aH+srQ=
 To: netdev@vger.kernel.org
-Subject: [PATCH 1/2]via-rhine.c: Use-register-offset-definition-for-WOLcgClr
+Subject: [PATCH 2/2]via-rhine.c: Write-Wake-on-LAN-options-in-_real-time_-not-at-shutdown
 Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1JSybz-0004BD-Tu@elite>
+Message-Id: <E1JSyc9-0004BM-BS@elite>
 From: Laura Garcia <nevola@gmail.com>
-Date: Sat, 23 Feb 2008 18:56:35 +0100
+Date: Sat, 23 Feb 2008 18:56:45 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use register offset definition for WOLcgClr. This patch does not 
-change the driver behaviour.
+Write Wake-on-LAN options in _real time_ not at shutdown. It might
+be safe in case of power outage.
 
 Signed-off-by: Laura Garcia Liebana <nevola@gmail.com>
 
 	modified:   drivers/net/via-rhine.c
 ---
- drivers/net/via-rhine.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/via-rhine.c |   76 +++++++++++++++++++++++++---------------------
+ 1 files changed, 41 insertions(+), 35 deletions(-)
 
 diff --git a/drivers/net/via-rhine.c b/drivers/net/via-rhine.c
-index 7c851b1..8c9d6ae 100644
+index 8c9d6ae..7723ec0 100644
 --- a/drivers/net/via-rhine.c
 +++ b/drivers/net/via-rhine.c
-@@ -1893,7 +1893,7 @@ static void rhine_shutdown (struct pci_dev *pdev)
+@@ -418,6 +418,7 @@ static void rhine_tx(struct net_device *dev);
+ static int rhine_rx(struct net_device *dev, int limit);
+ static void rhine_error(struct net_device *dev, int intr_status);
+ static void rhine_set_rx_mode(struct net_device *dev);
++static void rhine_write_wol(struct net_device *dev);
+ static struct net_device_stats *rhine_get_stats(struct net_device *dev);
+ static int netdev_ioctl(struct net_device *dev, struct ifreq *rq, int cmd);
+ static const struct ethtool_ops netdev_ethtool_ops;
+@@ -1772,7 +1773,7 @@ static void rhine_get_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ 	struct rhine_private *rp = netdev_priv(dev);
  
- 	/* Make sure we use pattern 0, 1 and not 4, 5 */
- 	if (rp->quirks & rq6patterns)
--		iowrite8(0x04, ioaddr + 0xA7);
+ 	if (!(rp->quirks & rqWOL))
+-		return;
++		return; /* Nothing to do for non-WOL adapters */
+ 
+ 	spin_lock_irq(&rp->lock);
+ 	wol->supported = WAKE_PHY | WAKE_MAGIC |
+@@ -1788,7 +1789,7 @@ static int rhine_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ 		      WAKE_UCAST | WAKE_MCAST | WAKE_BCAST;	/* Untested */
+ 
+ 	if (!(rp->quirks & rqWOL))
+-		return -EINVAL;
++		return -EINVAL; /* Nothing to do for non-WOL adapters */
+ 
+ 	if (wol->wolopts & ~support)
+ 		return -EINVAL;
+@@ -1797,9 +1798,47 @@ static int rhine_set_wol(struct net_device *dev, struct ethtool_wolinfo *wol)
+ 	rp->wolopts = wol->wolopts;
+ 	spin_unlock_irq(&rp->lock);
+ 
++	rhine_write_wol(dev);
++
+ 	return 0;
+ }
+ 
++static void rhine_write_wol(struct net_device *dev)
++{
++	struct rhine_private *rp = netdev_priv(dev);
++	void __iomem *ioaddr = rp->base;
++
++	rhine_power_init(dev);
++
++	/* Make sure we use pattern 0, 1 and not 4, 5 */
++	if (rp->quirks & rq6patterns)
 +		iowrite8(0x04, ioaddr + WOLcgClr);
++
++	if (rp->wolopts & WAKE_MAGIC) {
++		iowrite8(WOLmagic, ioaddr + WOLcrSet);
++		/*
++		 * Turn EEPROM-controlled wake-up back on -- some hardware may
++		 * not cooperate otherwise.
++		 */
++		iowrite8(ioread8(ioaddr + ConfigA) | 0x03, ioaddr + ConfigA);
++	}
++
++	if (rp->wolopts & (WAKE_BCAST|WAKE_MCAST))
++		iowrite8(WOLbmcast, ioaddr + WOLcgSet);
++
++	if (rp->wolopts & WAKE_PHY)
++		iowrite8(WOLlnkon | WOLlnkoff, ioaddr + WOLcrSet);
++
++	if (rp->wolopts & WAKE_UCAST)
++		iowrite8(WOLucast, ioaddr + WOLcrSet);
++
++	if (rp->wolopts) {
++		/* Enable legacy WOL (for old motherboards) */
++		iowrite8(0x01, ioaddr + PwcfgSet);
++		iowrite8(ioread8(ioaddr + StickyHW) | 0x04, ioaddr + StickyHW);
++	}
++}
++
+ static const struct ethtool_ops netdev_ethtool_ops = {
+ 	.get_drvinfo		= netdev_get_drvinfo,
+ 	.get_settings		= netdev_get_settings,
+@@ -1886,39 +1925,6 @@ static void rhine_shutdown (struct pci_dev *pdev)
+ 	struct rhine_private *rp = netdev_priv(dev);
+ 	void __iomem *ioaddr = rp->base;
  
- 	if (rp->wolopts & WAKE_MAGIC) {
- 		iowrite8(WOLmagic, ioaddr + WOLcrSet);
+-	if (!(rp->quirks & rqWOL))
+-		return; /* Nothing to do for non-WOL adapters */
+-
+-	rhine_power_init(dev);
+-
+-	/* Make sure we use pattern 0, 1 and not 4, 5 */
+-	if (rp->quirks & rq6patterns)
+-		iowrite8(0x04, ioaddr + WOLcgClr);
+-
+-	if (rp->wolopts & WAKE_MAGIC) {
+-		iowrite8(WOLmagic, ioaddr + WOLcrSet);
+-		/*
+-		 * Turn EEPROM-controlled wake-up back on -- some hardware may
+-		 * not cooperate otherwise.
+-		 */
+-		iowrite8(ioread8(ioaddr + ConfigA) | 0x03, ioaddr + ConfigA);
+-	}
+-
+-	if (rp->wolopts & (WAKE_BCAST|WAKE_MCAST))
+-		iowrite8(WOLbmcast, ioaddr + WOLcgSet);
+-
+-	if (rp->wolopts & WAKE_PHY)
+-		iowrite8(WOLlnkon | WOLlnkoff, ioaddr + WOLcrSet);
+-
+-	if (rp->wolopts & WAKE_UCAST)
+-		iowrite8(WOLucast, ioaddr + WOLcrSet);
+-
+-	if (rp->wolopts) {
+-		/* Enable legacy WOL (for old motherboards) */
+-		iowrite8(0x01, ioaddr + PwcfgSet);
+-		iowrite8(ioread8(ioaddr + StickyHW) | 0x04, ioaddr + StickyHW);
+-	}
+-
+ 	/* Hit power state D3 (sleep) */
+ 	if (!avoid_D3)
+ 		iowrite8(ioread8(ioaddr + StickyHW) | 0x03, ioaddr + StickyHW);
 -- 
 1.5.3.8
 
