@@ -1,50 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932891AbYBWLTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765054AbYBWLVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932891AbYBWLTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 06:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751945AbYBWLS7
+	id S1765054AbYBWLVV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 06:21:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbYBWLVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 06:18:59 -0500
-Received: from rv-out-0910.google.com ([209.85.198.191]:62628 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755363AbYBWLS6 (ORCPT
+	Sat, 23 Feb 2008 06:21:10 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:64267 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752722AbYBWLVI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 06:18:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=CAbS7Du02qUvDZHgIqR8aE5N/s0svybl5sZwzjV7S9N5k+qE95d46gZ7Rg6TPPgE+7bZQyB2+WuoVmkoQ9wussuBgwLO5YuEbOVZ81BvAC6jgJL1DQwEO43/4OJfftH9TTdb+r6jtt7dNv1IN2LQ9bfioBVs69hlFF+xLh+MxII=
-Message-ID: <84144f020802230318hec5fe97h84c797a56b0dd5db@mail.gmail.com>
-Date: Sat, 23 Feb 2008 13:18:57 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: bcm43xx regression in 2.6.24 (with patch)
-Cc: "Michael Buesch" <mb@bu3sch.de>, "Alexey Zaytsev" <zaytsev.a@protei.ru>,
-       "Greg KH" <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20080223110751.GN23833@elte.hu>
+	Sat, 23 Feb 2008 06:21:08 -0500
+Message-ID: <47C00091.8000404@cfl.rr.com>
+Date: Sat, 23 Feb 2008 06:16:33 -0500
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20070801)
 MIME-Version: 1.0
+To: Mike Christie <michaelc@cs.wisc.edu>
+CC: markh@compro.net, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tony Battersby <tonyb@cybernetics.com>
+Subject: Re: New 2.6.24.2 SG_IO SCSI problems
+References: <47BD9588.9080803@compro.net> <47BEFD4B.9060803@cs.wisc.edu> <47BEFF5F.9020002@cs.wisc.edu> <47BF0CE2.306@compro.net> <47BF40D7.5050301@compro.net> <47BF4BD0.7080008@cs.wisc.edu>
+In-Reply-To: <47BF4BD0.7080008@cs.wisc.edu>
+X-Enigmail-Version: 0.95.5
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de>
-	 <47BF101F.30301@protei.ru> <200802221848.37902.mb@bu3sch.de>
-	 <20080223110751.GN23833@elte.hu>
-X-Google-Sender-Auth: 5b7af3a849194706
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 1:07 PM, Ingo Molnar <mingo@elte.hu> wrote:
->  I have to say, after having observed multiple incidents around b43 in
->  the past few months you are one of the worst driver maintainers i've
->  ever seen on lkml: you are ignoring regressions, you are frequently
->  insulting our testers and now you even have the gall to NAK a patch to
->  _your own buggy driver code_ without providing an alternative fix.
->  Kudos.
+Mike Christie wrote:
+> Mark Hounschell wrote:
+>> Mark Hounschell wrote:
+>>> Mike Christie wrote:
+>>>> Mike Christie wrote:
+>>>>> Mark Hounschell wrote:
+>>>>>> I seem to have run into some sort of regression in the SG_IO
+>>>>>> interface of 2.6.24.2. I have an application that up until 2.6.24
+>>>>>> worked fine. The 2.6.23.16 kernel works fine.
+>>>>>>
+>>>>>> During reads I get these kernel messages. Writes and other functions
+>>>>>> _seem_ OK. Actually basic
+>>>>>> reads  are working. Its with large BC reads using an io_vec list that
+>>>>>> the problem shows up.
+>>>>>>
+>>>>> Are you doing SG_IO to the sg device (/dev/sg*) or to the block device
+>>>>> (/dev/sdX)?
+>>>> If you are doing SG_IO to the sg device, then I know of one regression
+>>>> (well not regression exactly, but I fixed a bug but the patch got
+>>>> partially overwritten by another patch and that caused a new bug). Both
+>>>> bugs are fixed in 2.6.25-rc2. Could you try that out if you are doing
+>>>> SG_IO to the sg device.
+>>>>
+>>> Yes, I'm using /dev/sg*. And yes again I'll checkout 2.6.25-rc2 ASIC.
+>>>
+>>> Thanks
+>>> Mark
+>>> -
+>>  
+>> 2.6.25-rc2 does fix the problem I'm having. I don't suppose there is a
+>> patch
+>> lying around for 2.6.24.2??
+>>
+> 
+> I attached a backport of the patch from Tony (added as cc) that is in
+> 2.6.25-rc2. Could you try it out against 2.6.24.2 just to make sure it
+> was this patch, then we can send it to stable.
+> 
 
-Agreed. Alexey, did you identify a specific git commit that caused the
-regression? Can we just revert that from 2.6.24? Michael, even if
-_you're_ planning to remove bcm43xx we must not let it regress until
-it's gone.
+Sorry it took so long. This does fix my problem. I hope it's not to late
+for 2.6.24.3
+
+Regards
+Mark
