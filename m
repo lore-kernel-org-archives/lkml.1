@@ -1,94 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937368AbYBWAxC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937415AbYBWAxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937368AbYBWAxC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:53:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935795AbYBWAgh
+	id S937415AbYBWAxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:53:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933373AbYBWAnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:36:37 -0500
-Received: from mail.suse.de ([195.135.220.2]:45081 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935239AbYBWAgf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:36:35 -0500
-Date: Fri, 22 Feb 2008 16:31:43 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <andi@firstfloor.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 38/38] x86_64: CPA, fix cache attribute inconsistency bug
-Message-ID: <20080223003143.GM7268@suse.de>
-References: <20080223001946.979768610@mini.kroah.org>
+	Fri, 22 Feb 2008 19:43:39 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:38024 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1763914AbYBWAnb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:43:31 -0500
+X-Spam-Check-By: mail.local.tull.net
+From: Nick Andrew <nick@nick-andrew.net>
+Subject: [PATCH try #1] Kconfig: cleanup usr/Kconfig help descriptions
+To: trivial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Date: Sat, 23 Feb 2008 11:43:00 +1100
+Message-ID: <20080223003118.16651.69344.stgit@marcab.local.tull.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86_64-cpa-fix-cache-attribute-inconsistency-bug.patch"
-In-Reply-To: <20080223002907.GA7268@suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.24-stable review patch.  If anyone has any objections, please let us
-know.
+Modify the help descriptions of usr/Kconfig for clarity, accuracy and consistency.
 
-------------------
-From: Ingo Molnar <mingo@elte.hu>
+This patch mostly clarifies what INITRAMFS_SOURCE does, i.e. optionally
+build a CPIO archive of the initial root filesystem (initramfs) and
+compress it and link it into the kernel.  Note that usually the initramfs
+is separate, and loaded by a bootloader (and I give a list of the common
+ones, for clarity).
 
-(no matching git id as the upstream code is rewritten)
+Correct the filename of gen_init_cpio.c and clarify that any filenames
+specified contain lists of directives for the archive builder, rather than
+files to be added directly into the archive.
 
-fix CPA cache attribute bug in v2.6.24. When phys_base is nonzero (when 
-CONFIG_RELOCATABLE=y) then change_page_attr_addr() miscalculates the 
-secondary alias address by -14 MB (depending on the configured offset).
+Improve grammar on INITRAMFS_ROOT_UID and INITRAMFS_ROOT_GID and
+use consistent terminology.
 
-The default 64-bit kernels of Fedora and Ubuntu are affected:
-
-   $ grep RELOCA /boot/config-2.6.23.9-85.fc8
-     CONFIG_RELOCATABLE=y
-
-   $ grep RELOC /boot/config-2.6.22-14-generic
-     CONFIG_RELOCATABLE=y
-
-and probably on many other distros as well.
-
-the bug affects all pages in the first 40 MB of physical RAM that
-are allocated by some subsystem that does ioremap_nocache() on them:
-
-       if (__pa(address) < KERNEL_TEXT_SIZE) {
-
-Hence we might leave page table entries with inconsistent cache
-attributes around (pages mapped at both UnCacheable and Write-Back),
-and we can also set the wrong kernel text pages to UnCacheable.
-
-the effects of this bug can be random slowdowns and other misbehavior.
-If for example AGP allocates its aperture pages into the first 40 MB
-of physical RAM, then the -14 MB bug might mark random kernel texto
-pages as uncacheable, slowing down a random portion of the 64-bit
-kernel until the AGP driver is unloaded.
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
 ---
- arch/x86/mm/pageattr_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I think I might be starting to get the hang of this :-)
 
---- a/arch/x86/mm/pageattr_64.c
-+++ b/arch/x86/mm/pageattr_64.c
-@@ -207,7 +207,7 @@ int change_page_attr_addr(unsigned long 
- 		if (__pa(address) < KERNEL_TEXT_SIZE) {
- 			unsigned long addr2;
- 			pgprot_t prot2;
--			addr2 = __START_KERNEL_map + __pa(address);
-+			addr2 = __START_KERNEL_map + __pa(address) - phys_base;
- 			/* Make sure the kernel mappings stay executable */
- 			prot2 = pte_pgprot(pte_mkexec(pfn_pte(0, prot)));
- 			err = __change_page_attr(addr2, pfn, prot2,
 
--- 
+ usr/Kconfig |   51 +++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 33 insertions(+), 18 deletions(-)
+
+
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 86cecb5..0ad8713 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -6,41 +6,56 @@ config INITRAMFS_SOURCE
+ 	string "Initramfs source file(s)"
+ 	default ""
+ 	help
+-	  This can be either a single cpio archive with a .cpio suffix or a
+-	  space-separated list of directories and files for building the
+-	  initramfs image.  A cpio archive should contain a filesystem archive
+-	  to be used as an initramfs image.  Directories should contain a
+-	  filesystem layout to be included in the initramfs image.  Files
+-	  should contain entries according to the format described by the
+-	  "usr/gen_init_cpio" program in the kernel tree.
++	  Specify the contents of an early userspace image to be linked
++	  into the kernel image.
++
++	  A booting kernel usually obtains an initramfs image from a
++	  bootloader (e.g. loadlin, lilo or grub). Alternately one can
++	  be built and linked into the kernel image using this option.
++
++	  You can specify either a single cpio archive filename with a .cpio
++	  suffix or a space-separated list of directories and files for
++	  building the initramfs image. The result will be a compressed
++	  cpio archive containing a filesystem layout which will be
++	  used as an initramfs image by the booting kernel.
++
++	  A cpio archive should contain a filesystem layout which will
++	  become the initramfs image.
++
++	  Directories should contain a filesystem layout to be included
++	  into the initramfs image.
++
++	  Files should contain a list of directives according to the
++	  format described by the <file:usr/gen_init_cpio.c> program in
++	  the kernel tree.
+ 
+ 	  When multiple directories and files are specified then the
+ 	  initramfs image will be the aggregate of all of them.
+ 
+ 	  See <file:Documentation/early-userspace/README> for more details.
+ 
+-	  If you are not sure, leave it blank.
++	  If unsure, leave it blank.
+ 
+ config INITRAMFS_ROOT_UID
+ 	int "User ID to map to 0 (user root)"
+ 	depends on INITRAMFS_SOURCE!=""
+ 	default "0"
+ 	help
+-	  This setting is only meaningful if the INITRAMFS_SOURCE is
+-	  contains a directory.  Setting this user ID (UID) to something
+-	  other than "0" will cause all files owned by that UID to be
+-	  owned by user root in the initial ramdisk image.
++	  This setting is only meaningful if INITRAMFS_SOURCE contains
++	  a directory.	Setting this user ID (UID) to something other
++	  than "0" will cause all files owned by that UID in the source
++	  directories to be owned by user root in the initramfs image.
+ 
+-	  If you are not sure, leave it set to "0".
++	  If unsure, leave it set to "0".
+ 
+ config INITRAMFS_ROOT_GID
+ 	int "Group ID to map to 0 (group root)"
+ 	depends on INITRAMFS_SOURCE!=""
+ 	default "0"
+ 	help
+-	  This setting is only meaningful if the INITRAMFS_SOURCE is
+-	  contains a directory.  Setting this group ID (GID) to something
+-	  other than "0" will cause all files owned by that GID to be
+-	  owned by group root in the initial ramdisk image.
++	  This setting is only meaningful if INITRAMFS_SOURCE contains
++	  a directory.	Setting this group ID (GID) to something other
++	  than "0" will cause all files owned by that GID in the source
++	  directories to be owned by group root in the initramfs image.
+ 
+-	  If you are not sure, leave it set to "0".
++	  If unsure, leave it set to "0".
+
