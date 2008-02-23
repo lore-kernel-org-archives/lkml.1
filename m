@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbYBWTDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbYBWTLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762466AbYBWTDA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYBWTCw
+	id S1761554AbYBWTLd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:11:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756563AbYBWTLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:02:52 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:54462 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753759AbYBWTCv (ORCPT
+	Sat, 23 Feb 2008 14:11:24 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:50193 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755883AbYBWTLY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:02:51 -0500
-Date: Sat, 23 Feb 2008 11:01:58 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-Message-Id: <20080223110158.62a3ad6e.akpm@linux-foundation.org>
-In-Reply-To: <84144f020802230654y3913447bh39390fdd78a96cf3@mail.gmail.com>
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>
-	<20080223001130.d8922136.akpm@linux-foundation.org>
-	<84144f020802230654y3913447bh39390fdd78a96cf3@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Feb 2008 14:11:24 -0500
+Date: Sat, 23 Feb 2008 11:06:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mgross@linux.intel.com, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] copyright owner and author clean up for intel iommu
+	and related files
+Message-ID: <20080223190649.GA8641@kroah.com>
+References: <20080221181555.GA9593@linux.intel.com> <20080223000443.da075061.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20080223000443.da075061.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 16:54:49 +0200 "Pekka Enberg" <penberg@cs.helsinki.fi> wrote:
-
-> On Sat, Feb 23, 2008 at 10:11 AM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
-> >  Seems a poor idea to me.  Sure, oprofile is "hard to set up", but not if
-> >  your distributor already did it for you.
-> >
-> >  Sidebar: the code uses the utterly crappy register_timer_hook() which
-> >
-> >  a) is woefully misnamed and
-> >
-> >  b) is racy and
-> >
-> >  c) will disrupt oprofile if it is being used.  And vice versa.
+On Sat, Feb 23, 2008 at 12:04:43AM -0800, Andrew Morton wrote:
+> On Thu, 21 Feb 2008 10:15:55 -0800 mark gross <mgross@linux.intel.com> wrote:
 > 
-> I wonder if sysprof should hook to the same interrupt as oprofile then?
+> > Index: linux-2.6.24-mm1/drivers/pci/dmar.c
+> 
+> I guess this is strictly a greg-pci-tree thing.  Greg, how do you want
+> to play intel-iommu?
 
-oprofile uses register_timer_hook() for its oh-crap-nothing-else-works
-fallback iirc.  It's a useful fallback: I used it a few centuries ago on
-some el-cheapo VIA CPU-based thing we had at Digeo.
+Yes, I'll take those.  I'm pretty sure I even have the hardware here to
+test that the code doesn't crash :)
 
-It's unclear to me whether all this stuff works with NO_HZ=y, btw.  Didn't
-we just lose the regular timer interrupts which these clients depend upon?
+thanks,
 
+greg k-h
