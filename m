@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbYBWTX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758981AbYBWTat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761180AbYBWTX3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbYBWTXW
+	id S1758981AbYBWTat (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:30:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752211AbYBWTak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:23:22 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:60005 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752211AbYBWTXV (ORCPT
+	Sat, 23 Feb 2008 14:30:40 -0500
+Received: from fonzie.hosting9000.com ([85.214.50.12]:38584 "EHLO
+	fonzie.hosting9000.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752184AbYBWTak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:23:21 -0500
-Date: Sat, 23 Feb 2008 11:22:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Greg KH <greg@kroah.com>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [stable] [patch] fuse: fix permission checking
-Message-Id: <20080223112251.f797c4b6.akpm@linux-foundation.org>
-In-Reply-To: <20080223190859.GB8641@kroah.com>
-References: <E1JPxjP-0004sQ-5O@pomaz-ex.szeredi.hu>
-	<20080222231934.GA30703@kroah.com>
-	<E1JSqqR-00035e-8N@pomaz-ex.szeredi.hu>
-	<20080223190859.GB8641@kroah.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 23 Feb 2008 14:30:40 -0500
+Message-ID: <47C07457.1060606@frugalware.org>
+Date: Sat, 23 Feb 2008 20:30:31 +0100
+From: Gabriel C <crazy@frugalware.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071204)
+MIME-Version: 1.0
+To: Dave Jones <davej@codemonkey.org.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>, Dave Airlie <airlied@linux.ie>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Gabriel C <crazy@frugalware.org>,
+       Doug Thompson <dougthompson@xmission.com>, Greg KH <greg@kroah.com>
+Subject: Re: modular intel-agp does not work on my box
+References: <47BE222B.2080500@googlemail.com> <alpine.DEB.0.82.0802220205410.3412@skynet.skynet.ie> <47BE32C7.5060008@googlemail.com> <47BE4125.3080503@googlemail.com> <20080222041921.GD21061@codemonkey.org.uk> <20080223000355.42219a89.akpm@linux-foundation.org> <20080223181414.GA24313@codemonkey.org.uk>
+In-Reply-To: <20080223181414.GA24313@codemonkey.org.uk>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008 11:08:59 -0800 Greg KH <greg@kroah.com> wrote:
-
-> On Sat, Feb 23, 2008 at 10:38:59AM +0100, Miklos Szeredi wrote:
-> > > On Fri, Feb 15, 2008 at 11:23:47AM +0100, Miklos Szeredi wrote:
-> > > > This is for 2.6.25 and 2.6.24.y, but NOT for 2.6.23.y.
-> > > > 
-> > > > Thanks,
-> > > > Miklos
-> > > > ----
-> > > > 
-> > > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > > > 
-> > > > I added a nasty local variable shadowing bug to fuse in 2.6.24, with
-> > > > the result, that the 'default_permissions' mount option is basically
-> > > > ignored.
-> > > 
-> > > When this goes into Linus's tree, can you let us know along with the git
-> > > commit id?
-> > 
-> > I'd really like to see this in 2.6.24.3.  How much time is left?
-> > Should I bypass Andrew and submit to Linus ASAP?
+Dave Jones wrote:
+> On Sat, Feb 23, 2008 at 12:03:55AM -0800, Andrew Morton wrote:
+>  
+>  > >  > You are right without EDAC built , agp modular does work fine. I'm on 2.6.25-rc2-00477-g1a4c6be right now.
+>  > >  > So it is an EDAC bug ?
+>  > >  
+>  > > No, it's a failing of the pci driver model. It currently doesn't
+>  > > allow more than one driver to be bound to a single PCI device.
+>  > > For multi-function devices like bridges, this means we see problems
+>  > > like the one you mention.
+>  > 
+>  > Well that sounds pretty bad.  What will distros do about this?
 > 
-> There will be a .24.4 soon afterward (week or so), so don't feel like
-> you have to rush.  Unless this is some kind of security issue?
+> either
+> *  ship both modular, and let the user decide which one he wants.
+
+If you do so you have to blacklist one by default because udev will magically load both.
+
+> *  build just one of them (typically agp)
+> *  build them both, and let the above bug happen
+
+Well the bug was not with both build into the kernel. 
+CONFIG_EDAC=Y CONFIG_EDAC_<something>=m, CONFIG_AGP=m CONFIG_AGP_INTEL=m breaks agp already.
+
+> *  build agp into the kernel, and edac modular, breaking edac
+>    for a minority.
+
+What does happen if one builds both into the kernel ? ( eg: all the *_AGP* Y , and all the *_EDAC* y ) 
+
+Guessing no one of them will work ?
+
+>  
+>  > Is there something short-term-and-sleazy we can do to "fix" it?
+> 
+> not that I'm aware of.  I think Greg has been working on a long-term fix.
+> 
+> 	Dave
 > 
 
-I'll be sending a bunch of fixes to Linus this weekend, including this patch.
+Gabriel
