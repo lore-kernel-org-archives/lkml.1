@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764420AbYBWVDO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764542AbYBWVEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764420AbYBWVDO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 16:03:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761318AbYBWVCx
+	id S1764542AbYBWVEW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 16:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761703AbYBWVEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 16:02:53 -0500
-Received: from www.tglx.de ([62.245.132.106]:47123 "EHLO www.tglx.de"
+	Sat, 23 Feb 2008 16:04:00 -0500
+Received: from x346.tv-sign.ru ([89.108.83.215]:38046 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761127AbYBWVCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 16:02:52 -0500
-Date: Sat, 23 Feb 2008 22:01:55 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: David Howells <dhowells@redhat.com>, torvalds@linux-foundation.org,
-       zippel@linux-m68k.org, schwab@suse.de, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Make the kernel NTP code hand 64-bit *unsigned* values
- to do_div() [try #3]
-In-Reply-To: <20080223000455.a0f543e1.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.1.00.0802232200300.7583@apollo.tec.linutronix.de>
-References: <20080221165035.16571.67531.stgit@warthog.procyon.org.uk> <20080223000455.a0f543e1.akpm@linux-foundation.org>
-User-Agent: Alpine 1.00 (LFD 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1758201AbYBWVD7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 16:03:59 -0500
+Date: Sun, 24 Feb 2008 00:03:29 +0300
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Adamushko <dmitry.adamushko@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       a.p.zijlstra@chello.nl, apw@shadowen.org, Ingo Molnar <mingo@elte.hu>,
+       nickpiggin@yahoo.com.au, paulmck@linux.vnet.ibm.com,
+       rusty@rustcorp.com.au, Steven Rostedt <rostedt@goodmis.org>,
+       linux-arch@vger.kernel.org
+Subject: [PATCH, 3rd resend] documentation: atomic_add_unless() doesn't imply mb() on failure
+Message-ID: <20080223210329.GA221@tv-sign.ru>
+References: <200802230733.m1N7XnMu018253@imap1.linux-foundation.org> <20080223162705.GA7686@tv-sign.ru> <alpine.LFD.1.00.0802230937530.21332@woody.linux-foundation.org> <20080223182258.GA19946@tv-sign.ru> <alpine.LFD.1.00.0802231044240.21332@woody.linux-foundation.org> <b647ffbd0802231151w481fdcb5hc2a3972e7fd03f69@mail.gmail.com> <alpine.LFD.1.00.0802231202380.21332@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.1.00.0802231202380.21332@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008, Andrew Morton wrote:
+(sorry for being offtpoic, but while experts are here...)
 
-> On Thu, 21 Feb 2008 16:50:35 +0000 David Howells <dhowells@redhat.com> wrote:
-> 
-> > From: David Howells <dhowells@redhat.com>
-> > 
-> > The kernel NTP code shouldn't hand 64-bit *signed* values to do_div().  Make it
-> > instead hand 64-bit unsigned values.  This gets rid of a couple of warnings.
-> 
-> On certain architectures.  It would have bene nice to mention what those
-> architectures are, and to quote the warnings.  Next time, please ;)
-> 
-> > Signed-off-by: David Howells <dhowells@redhat.com>
-> > ---
-> > 
-> >  kernel/time/ntp.c |   12 +++++++-----
-> 
-> Thomas, do you consider ntp to fall under git-hrt?
+A "typical" implementation of atomic_add_unless() can return 0 immediately
+after the first atomic_read() (before doing cmpxchg). In that case it doesn't
+provide any barrier semantics. See include/asm-ia64/atomic.h as an example.
 
-I'll pick it up.
+We should either change the implementation, or fix the docs.
 
-Thanks,
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+Acked-by: Nick Piggin <npiggin@suse.de>
 
-	tglx
+ Documentation/atomic_ops.txt      |    3 ++-
+ Documentation/memory-barriers.txt |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
+
+--- t/Documentation/atomic_ops.txt~doc_aau	2008-01-14 23:43:11.000000000 +0300
++++ t/Documentation/atomic_ops.txt	2008-02-23 23:53:12.000000000 +0300
+@@ -186,7 +186,8 @@ If the atomic value v is not equal to u,
+ returns non zero. If v is equal to u then it returns zero. This is done as
+ an atomic operation.
+ 
+-atomic_add_unless requires explicit memory barriers around the operation.
++atomic_add_unless requires explicit memory barriers around the operation
++unless it fails (returns 0).
+ 
+ atomic_inc_not_zero, equivalent to atomic_add_unless(v, 1, 0)
+ 
+--- t/Documentation/memory-barriers.txt~doc_aau	2008-01-14 23:43:11.000000000 +0300
++++ t/Documentation/memory-barriers.txt	2008-02-23 23:53:12.000000000 +0300
+@@ -1493,7 +1493,7 @@ explicit lock operations, described late
+ 	atomic_dec_and_test();
+ 	atomic_sub_and_test();
+ 	atomic_add_negative();
+-	atomic_add_unless();
++	atomic_add_unless();	/* when succeeds (returns 1) */
+ 	test_and_set_bit();
+ 	test_and_clear_bit();
+ 	test_and_change_bit();
 
