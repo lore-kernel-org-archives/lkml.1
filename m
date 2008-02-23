@@ -1,45 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbYBWKJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764426AbYBWKMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762258AbYBWKJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 05:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753079AbYBWKJL
+	id S1764426AbYBWKMU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 05:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbYBWKMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 05:09:11 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60869 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752868AbYBWKJJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 05:09:09 -0500
-Date: Sat, 23 Feb 2008 11:08:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 08/16] x86: use get_personality()
-Message-ID: <20080223100849.GC23833@elte.hu>
-References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com> <12037544671847-git-send-email-xiyou.wangcong@gmail.com> <1203754478165-git-send-email-xiyou.wangcong@gmail.com> <1203754488669-git-send-email-xiyou.wangcong@gmail.com> <12037544991876-git-send-email-xiyou.wangcong@gmail.com> <1203754509934-git-send-email-xiyou.wangcong@gmail.com> <1203754519825-git-send-email-xiyou.wangcong@gmail.com> <12037545311452-git-send-email-xiyou.wangcong@gmail.com> <12037545424136-git-send-email-xiyou.wangcong@gmail.com>
-MIME-Version: 1.0
+	Sat, 23 Feb 2008 05:12:05 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:52931 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754109AbYBWKMB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 05:12:01 -0500
+Date: Sat, 23 Feb 2008 12:11:49 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: Re: [RFC PATCH 0/8]: uninline & uninline
+In-Reply-To: <20080223000220.e9229c99.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0802231004450.29504@kivilampi-30.cs.helsinki.fi>
+References: <1203515238-22848-1-git-send-email-ilpo.jarvinen@helsinki.fi>
+ <20080223000220.e9229c99.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12037545424136-git-send-email-xiyou.wangcong@gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 23 Feb 2008, Andrew Morton wrote:
 
-* WANG Cong <xiyou.wangcong@gmail.com> wrote:
+> On Wed, 20 Feb 2008 15:47:10 +0200 "Ilpo J__rvinen" <ilpo.jarvinen@helsinki.fi> wrote:
+> 
+> > -41525  2066 f, 3370 +, 44895 -, diff: -41525  IS_ERR 
+> 
+> This is a surprise. 
 
-> Use get_personality() macro instead of explicit reference for x86 
-> code.
+It surprised me as well, there were something like 10 bytes I just 
+couldn't explain in IS_ERR size (kernel/uninlined.c: IS_ERR | +25). I was 
+to look into it deeper but didn't have the .o's at hand right away, not so 
+trivial to store results of 5000+ build results except some carefully 
+picked textual output :-)... Hmm, I'll add logging for the disassembly of 
+the uninlined stuff into the next run, that won't cost too much...
 
-thanks, applied.
+> I expect that the -mm-only
+> profile-likely-unlikely-macros.patch is the cause of this and mainline
+> doesn't have this problem.
 
-	Ingo
+Ahaa, this explain it, I suspected that there was something (un)likely 
+related elsewhere as well, no wonder why I couldn't reproduce the 25 bytes 
+result in my quick copy-pasted non-kernel test...
+
+> If true, then this likely/unlikely bloat has probably spread into a lot of
+> your other results and it all should be redone against mainline, sorry :(
+
+It isn't that troublesome to redo them, it's mainly automatic combined 
+with impatient waiting from my behalf :-)... The spreading problem is 
+probably true, to some extent. I did some runs also with carefully 
+selected CONFIG.*DEBUG.* off under include/net/ earlier, in general it 
+made very little difference, if something bloats, it usually does that 
+regardless of .config. There are probably couple of exceptions when the 
+size is on the boundary where it's very close of being useful to uninline 
+it.
+
+One interesting thing in there was that the largest offenders are quite 
+small per call-site but due to vast number of them even a small benefit 
+buys off a lot in kernel wide results. I suspect the differences due to 
+(un)likely will be negligle, because the IS_ERR with all its trivialness 
+is now mostly -15, so anything clearly larger than that will likely still 
+be a win x n (where n is quite large).
+
+Anyway, I'll see when I get the new set of tests running... :-) I'd prefer 
+with CONFIG.*DEBUG off to get larger picture about non-debug builds too
+(especially the scatterlist.h things interest me a lot), do you think that 
+would do as well?
+
+Thanks for your comments, I found them very useful.
+
+
+-- 
+ i.
