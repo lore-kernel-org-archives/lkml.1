@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756360AbYBWLvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763440AbYBWLwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756360AbYBWLvp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 06:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750813AbYBWLvg
+	id S1763440AbYBWLwa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 06:52:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757479AbYBWLwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 06:51:36 -0500
-Received: from rv-out-0910.google.com ([209.85.198.187]:46276 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbYBWLvf (ORCPT
+	Sat, 23 Feb 2008 06:52:15 -0500
+Received: from wx-out-0506.google.com ([66.249.82.224]:37038 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755947AbYBWLvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 06:51:35 -0500
+	Sat, 23 Feb 2008 06:51:45 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=HFoneDe6J6fmP3JUhRioi131Qhb8QkRQoQUQbKEt/bsvbzJtTsi827g6OXt1rLqg6SwDs6fy1LXQ23tidGxg4h9FfrH9/rf7yi7bxBLW8/8wthLByq8N+CWHALoMlwiGScF2ralP6eG+ZM5/MLUHrrQSTm8PX9BZIj+zHevE7es=
-Message-ID: <84144f020802230351o24b11282vbb1cecf518d91825@mail.gmail.com>
-Date: Sat, 23 Feb 2008 13:51:34 +0200
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86: add the debugfs interface for the sysprof tool
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, sandmann@redhat.com, tglx@tglx.de, hpa@zytor.com
-In-Reply-To: <20080223001130.d8922136.akpm@linux-foundation.org>
+        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=l50+qCATIqa39r9D3pZOh2mSvkElW+BG3kdpXj941EF67NKZM4ySfR0z5TnWB7Ycu5/7OBqtGMNp8/kh9RRD6P4iVYZXlkzPO3roz8pNiplGmJ942r43c23VNj8P90cuJJDqLWHDHPJ+gyJfUGvm2/+FeX2cTquNj5i/vB+1xhM=
+Message-ID: <f19298770802230351i7a1bdba8pcb1faf4af9b7d385@mail.gmail.com>
+Date: Sat, 23 Feb 2008 14:51:43 +0300
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Pekka Enberg" <penberg@cs.helsinki.fi>
+Subject: Re: bcm43xx regression in 2.6.24 (with patch)
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Michael Buesch" <mb@bu3sch.de>,
+       "Alexey Zaytsev" <zaytsev.a@protei.ru>, "Greg KH" <greg@kroah.com>,
+       linux-kernel@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <84144f020802230337s35c72b50wf8b892777bff42a2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20080219123756.6261c13c@laptopd505.fenrus.org>
-	 <20080223001130.d8922136.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 45b05e6646dc9ba1
+References: <47BEAF3B.3080809@protei.ru> <200802221513.58608.mb@bu3sch.de>
+	 <47BF101F.30301@protei.ru> <200802221848.37902.mb@bu3sch.de>
+	 <20080223110751.GN23833@elte.hu>
+	 <84144f020802230318hec5fe97h84c797a56b0dd5db@mail.gmail.com>
+	 <20080223112436.GA31304@elte.hu>
+	 <f19298770802230332s286b8ac4ldbd64b6996cba308@mail.gmail.com>
+	 <84144f020802230337s35c72b50wf8b892777bff42a2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 10:11 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  Seems a poor idea to me.  Sure, oprofile is "hard to set up", but not if
->  your distributor already did it for you.
+On Sat, Feb 23, 2008 at 2:37 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> On Sat, Feb 23, 2008 at 1:32 PM, Alexey Zaytsev
+>  <alexey.zaytsev@gmail.com> wrote:
+>  >  The problem is not with enabling both b43 and bcm43xx (will, whis won't work
+>  >  anyway, and there is no chance fixing it). The problem is with enabling the
+>  >  bcm43xx wifi driver and the b44 Ethernet driver. The ethernet driver then
+>  >  wrongly autosolects some config options that prevent the bcm43xx
+>  >  driver from loading, so I'm left with either no wifi or no ethenet.
+>
+>  So does reverting commit 753f492093da7a40141bfe083073400f518f4c68
+>  ("[B44]: port to native ssb support") fix the regression?
+>
 
-Have you tried sysprof? It's really nice to setup and use compared to
-oprofile when profiling user-space.
+Compiling it right now.
 
-On Sat, Feb 23, 2008 at 10:11 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
->  This code adds a new kernel->userspace interface which is not even
->  documented in code comments.  It appears to use a pollable debugfs file in
->  /proc somewhere, carrying an unspecified payload.
+I'm sure it fixes the problem, but I don't feel like we should revert
+it. I can't
+be sure it won't cause any other problems, and anyway, this does not look
+right a solution. Any other driver (rightfully) requiring the SSB_HOST would
+then also break the bcm43xx driver.
 
-Hmm, it does include <linux/proc_fs.h> but seems to set up a regular
-debugfs directory (usually mounted in /sys/debug) and not proc. Arjan?
+I'll send an simplified patch in a few minutes.
