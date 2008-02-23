@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbYBWOCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbYBWOEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbYBWOCT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 09:02:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754026AbYBWOCE
+	id S1758098AbYBWOEz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 09:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbYBWOEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 09:02:04 -0500
-Received: from pih-relay08.plus.net ([212.159.14.134]:44490 "EHLO
-	pih-relay08.plus.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752473AbYBWOCB (ORCPT
+	Sat, 23 Feb 2008 09:04:46 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:33567 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754365AbYBWOEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 09:02:01 -0500
-Date: Sat, 23 Feb 2008 14:01:53 +0000
-From: Charles Bailey <charles@hashpling.org>
-To: "J.C. Pizarro" <jcpiza@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, git@vger.kernel.org
-Subject: Re: Question about your git habits
-Message-ID: <20080223140153.GB5811@hashpling.org>
-References: <Pine.LNX.4.64.0802230221140.21077@fbirervta.pbzchgretzou.qr> <20080223014445.GK27894@ZenIV.linux.org.uk> <7vfxvk4f07.fsf@gitster.siamese.dyndns.org> <20080223020913.GL27894@ZenIV.linux.org.uk> <998d0e4a0802221823h3ba53097gf64fcc2ea826302b@mail.gmail.com> <998d0e4a0802221847m431aa136xa217333b0517b962@mail.gmail.com> <20080223113952.GA4936@hashpling.org> <998d0e4a0802230508w12f236baiaf2d9ab5f364670a@mail.gmail.com> <20080223131749.GA5811@hashpling.org> <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
+	Sat, 23 Feb 2008 09:04:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=QOPW6qjRjMglUVckeJB/n5gl6cAmkte50fTX0Wpr2ZE9nRAPSxpT/MPWP7Xf0RiwIf462asrUQ9jCkSrCI0QXF3D455rXL6sEv4ZR1EYIrHwUEPc8APoPwXOnP/yvlb8EL6MASlKTPHODr9dyw9PXr/1zWEXnJBkYL2p/67oF24=
+Date: Sat, 23 Feb 2008 15:04:36 +0100
+From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-ide <linux-ide@vger.kernel.org>
+Subject: [PATCH 00/10] IDE: Coding Style Fixes
+Message-ID: <20080223150436.6c09ce54@paolo-desktop>
+X-Mailer: Sylpheed-Claws 1.0.5 (GTK+ 1.2.10; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <998d0e4a0802230536w74e93ec3s40c77d52b183a419@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
-X-Plusnet-Relay: aae52d1c7b637927eeb4b1f7c3ac7fe0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 02:36:59PM +0100, J.C. Pizarro wrote:
-> On 2008/2/23, Charles Bailey <charles@hashpling.org> wrote:
-> >
-> > It shouldn't matter how aggressively the repositories are packed or what
-> >  the binary differences are between the pack files are. git clone
-> >  should (with the --reference option) generate a new pack for you with
-> >  only the missing objects. If these objects are ~52 MiB then a lot has
-> >  been committed to the repository, but you're not going to be able to
-> >  get around a big download any other way.
-> 
-> You're wrong, nothing has to be commited ~52 MiB to the repository.
-> 
-> I'm not saying "commit", i'm saying
-> 
-> "Assume A & B binary git repos and delta_B-A another binary file, i
-> request built
-> B' = A + delta_B-A where is verified SHA1(B') = SHA1(B) for avoiding
-> corrupting".
-> 
-> Assume B is the higher repacked version of "A + minor commits of the day"
-> as if B was optimizing 24 hours more the minimum spanning tree. Wow!!!
-> 
+Hi Bartlomiej,
+The following 10 patches remove a huge number of errors and warnings
+reported by checkpatch.pl from the IDE subsystem.
 
-I'm not sure that I understand where you are going with this.
-Originally, you stated that if you clone a 775 MiB repository on day
-one, and then you clone it again on day two when it was 777 MiB, then
-you currently have to download 775 + 777 MiB of data, whereas you
-could download a 52 MiB binary diff. I have no idea where that value
-of 52 MiB comes from, and I've no idea how many objects were committed
-between day one and day two. If we're going to talk about details,
-then you need to provide more details about your scenario.
+All the patches have been compile tested.
 
-Having said that, here is my original point in some more detail. git
-repositories are not binary blobs, they are object databases. Better
-than this, they are databases of immutable objects. This means that to
-get the difference between one database and another, you only need to
-add the objects that are missing from the other database. If the two
-databases are actually a database and the same database at short time
-interval later, then almost all the objects are going to be common and
-the difference will be a small set of objects. Using git:// this set
-of objects can be efficiently transfered as a pack file. You may have
-a corner case scenario where the following isn't true, but in my
-experience an incremental pack file will be a more compact
-representation of this difference than a binary difference of two
-aggressively repacked git repositories as generated by a generic
-binary difference engine.
 
-I'm sorry if I've misunderstood your last point. Perhaps you could
-expand in the exact issue that are having if I have, as I'm not sure
-that I've really answered your last message.
+Paolo Ciarrocchi (10):
+      IDE: Coding Style fixes to drivers/ide/pci/sis5513.c
+      IDE: Coding Style fixes to drivers/ide/legacy/umc8672.c
+      IDE: Coding Style fixes to drivers/ide/ide-pnp.c
+      IDE: Coding Style fixes to drivers/ide/setup-pci.c
+      IDE: Coding Style fixes to drivers/ide/ide-proc.c
+      IDE: Coding Style fixes to drivers/ide/legacy/ide-4drives.c
+      IDE: Coding Style fixes to drivers/ide/pci/slc90e66.c
+      IDE: Coding Style fixes to drivers/ide/pci/generic.c
+      IDE: Coding Style fixes to drivers/ide/pci/jmicron.c
+      IDE: Coding Style fixes to drivers/ide/pci/tc86c001.c
 
+ drivers/ide/ide-pnp.c            |   10 +-
+ drivers/ide/ide-proc.c           |  175 +++++++++++++++++------------------
+ drivers/ide/legacy/ide-4drives.c |    2 +-
+ drivers/ide/legacy/umc8672.c     |   53 +++++------
+ drivers/ide/pci/generic.c        |   50 +++++-----
+ drivers/ide/pci/jmicron.c        |    3 +-
+ drivers/ide/pci/sis5513.c        |  190 +++++++++++++++++++-------------------
+ drivers/ide/pci/slc90e66.c       |    6 +-
+ drivers/ide/pci/tc86c001.c       |   28 +++---
+ drivers/ide/setup-pci.c          |   45 ++++-----
+ 10 files changed, 274 insertions(+), 288 deletions(-)
+
+Ciao,
+            Paolo
