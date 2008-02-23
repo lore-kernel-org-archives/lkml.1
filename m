@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762466AbYBWTMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760389AbYBWTQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762466AbYBWTMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 14:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761665AbYBWTLf
+	id S1760389AbYBWTQr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 14:16:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbYBWTQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 14:11:35 -0500
-Received: from pentafluge.infradead.org ([213.146.154.40]:50197 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759442AbYBWTL1 (ORCPT
+	Sat, 23 Feb 2008 14:16:39 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:52387 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750810AbYBWTQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 14:11:27 -0500
-Date: Sat, 23 Feb 2008 11:08:59 -0800
-From: Greg KH <greg@kroah.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [stable] [patch] fuse: fix permission checking
-Message-ID: <20080223190859.GB8641@kroah.com>
-References: <E1JPxjP-0004sQ-5O@pomaz-ex.szeredi.hu> <20080222231934.GA30703@kroah.com> <E1JSqqR-00035e-8N@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1JSqqR-00035e-8N@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Sat, 23 Feb 2008 14:16:38 -0500
+Date: Sat, 23 Feb 2008 11:16:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/16] (Resend) Use get_personality()
+Message-Id: <20080223111629.4d8d2c7b.akpm@linux-foundation.org>
+In-Reply-To: <20080223183731.GA26852@infradead.org>
+References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com>
+	<20080223085101.GC2262@martell.zuzino.mipt.ru>
+	<20080223.165944.37229792.xiyou.wangcong@gmail.com>
+	<20080223092710.GD2262@martell.zuzino.mipt.ru>
+	<20080223183731.GA26852@infradead.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 10:38:59AM +0100, Miklos Szeredi wrote:
-> > On Fri, Feb 15, 2008 at 11:23:47AM +0100, Miklos Szeredi wrote:
-> > > This is for 2.6.25 and 2.6.24.y, but NOT for 2.6.23.y.
-> > > 
-> > > Thanks,
-> > > Miklos
-> > > ----
-> > > 
-> > > From: Miklos Szeredi <mszeredi@suse.cz>
-> > > 
-> > > I added a nasty local variable shadowing bug to fuse in 2.6.24, with
-> > > the result, that the 'default_permissions' mount option is basically
-> > > ignored.
+On Sat, 23 Feb 2008 13:37:31 -0500 Christoph Hellwig <hch@infradead.org> wrote:
+
+> On Sat, Feb 23, 2008 at 12:27:10PM +0300, Alexey Dobriyan wrote:
+> > > Use get_personality() can hide the task_struct internals a bit.
 > > 
-> > When this goes into Linus's tree, can you let us know along with the git
-> > commit id?
+> > ->personality is going to become something less trivial?
+> > Sorry, but you sound like C++ people writing tons of pointless get/set
+> > wrappers. And your get_personality() is worse -- C++ would write it as
+> > 
+> > 	current->personality()
+> > 
+> > and again, even here, it's immediately visible that current task is
+> > involved, not some other task.
 > 
-> I'd really like to see this in 2.6.24.3.  How much time is left?
-> Should I bypass Andrew and submit to Linus ASAP?
+> Yes, completely agreement.  While I might have introduced this gem
+> back then it is entirely stupid if you think about it.  Please send
+> patches to kill get_personality and just use current->personality
+> instead.
+> 
 
-There will be a .24.4 soon afterward (week or so), so don't feel like
-you have to rush.  Unless this is some kind of security issue?
+yup.
 
-thanks,
+We'll generally only add wrappers of this form if we need to provide
+alternative implementations, or if we expect that we shall do so in the
+future.
 
-greg k-h
