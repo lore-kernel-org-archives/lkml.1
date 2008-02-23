@@ -1,73 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbYBWPeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759738AbYBWPeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755242AbYBWPeR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 10:34:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750941AbYBWPeA
+	id S1759738AbYBWPeg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 10:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbYBWPeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 10:34:00 -0500
-Received: from lazybastard.de ([212.112.238.170]:42111 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750779AbYBWPd7 (ORCPT
+	Sat, 23 Feb 2008 10:34:07 -0500
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:57557 "EHLO
+	e28esmtp02.in.ibm.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751865AbYBWPeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 10:33:59 -0500
-Date: Sat, 23 Feb 2008 16:33:21 +0100
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Stephane Chazelas <stephane.chazelas@emerson.com>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2.6.24] block2mtd: removing a device and typo fixes
-Message-ID: <20080223153321.GC29143@lazybastard.org>
-References: <chaz20080212134751.GI30304@artesyncp.com> <chaz20080212161034.GJ30304@artesyncp.com> <20080219150822.GA29587@lazybastard.org> <200802192333.39707.arnd@arndb.de> <chaz20080220144339.GK4539@artesyncp.com> <20080220163042.GC5539@lazybastard.org> <chaz20080220170231.GV4539@artesyncp.com> <20080220172250.GA6873@lazybastard.org> <chaz20080220173053.GX4539@artesyncp.com>
+	Sat, 23 Feb 2008 10:34:04 -0500
+Date: Sat, 23 Feb 2008 21:03:56 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Nish Aravamudan <nish.aravamudan@gmail.com>,
+       Len Brown <lenb@kernel.org>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] [BUILD_FAILURE] 2.6.25-rc2-mm1 - Build Failure at acpi_os
+Message-ID: <20080223153356.GA7401@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <200802210208.47487.lenb@kernel.org> <29495f1d0802211054s26665d3cy1609d3347867cb16@mail.gmail.com> <20080221222245.GB30976@uranus.ravnborg.org> <29495f1d0802211738leb47f9ayf9b3ab6aa51b66cb@mail.gmail.com> <20080222180815.GB6434@uranus.ravnborg.org> <20080222101344.821ea02a.randy.dunlap@oracle.com> <20080222182737.GC6434@uranus.ravnborg.org> <47BF1492.20901@oracle.com> <20080222185648.GA6843@uranus.ravnborg.org> <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <chaz20080220173053.GX4539@artesyncp.com>
+In-Reply-To: <20080222112504.04e6b6a9.randy.dunlap@oracle.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 20 February 2008 17:30:53 +0000, Stephane Chazelas wrote:
-> > 
-> > Actually, there is /dev/mtd<x>.  Enable CONFIG_MTD_CHAR.
+On Fri, Feb 22, 2008 at 11:25:04AM -0800, Randy Dunlap wrote:
+> Let's see what the ACPI people think about this change.
 > 
-> Yes, my point ;). "block2mtd" creates a "mtd" out of a block
-> device and "mtdchar" and "mtdblock" create the "char" and
-> "block" devices out of the "mtd". This is a different concept
-> from "loop". With "loop", you make a block device out of a file,
-> but you do the ioctl on the target loop block device itself.
-> With block2mtd, you can't do that.
+> Thanks, Sam.
+> ---
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Make ACPI_CUSTOM_DSDT boolean config symbol a hidden and derived
+> value, based on the value of ACPI_CUSTOM_DSDT_FILE (string).
+> Only the latter is presented to the user as a config option.
+> 
+> This fixes problems with "make randconfig" setting ACPI_CUSTOM_DSDT
+> but leaving ACPI_CUSTOM_DSDT_FILE empty/blank.
+> 
+Thanks, the patch solves the build failure.
 
-The fact is that there is _no_ interface to manage mtd.  Part of the
-reason is this tradition to have seperate modules every couple of lines
-of code.  In other subsystems, CONFIG_MTD_CHAR would not exist and the
-code always be compiled in.  Simply to get _some_ interface to handle
-the device that is always there.
+Tested-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/acpi/Kconfig |   19 +++++++++----------
+ 1 file changed, 9 insertions(+), 10 deletions(-)
 
-Without going much deeper into that discussion, I consider it acceptable
-to depend on CONFIG_MTD_CHAR for things like device removal.  If you
-want device removal and explicitly don't want the extra code from
-mtdchar.c, send a patch or go find 500 bytes to save elsewhere. ;)
+--- linux-2.6.25-rc2-git5.orig/drivers/acpi/Kconfig
++++ linux-2.6.25-rc2-git5/drivers/acpi/Kconfig
+@@ -283,24 +283,23 @@ config ACPI_TOSHIBA
+        If you have a legacy free Toshiba laptop (such as the Libretto
+L1
+        series), say Y.
 
-With that out of the way, the question remains which interface we should
-have.  Independently of mimicking loop, I would like to have a generic
-interface for all mtd, not just block2mtd.  Whether it is "echo 1 >
-/sys/.../mtd/mtdN/remove" or an ioctl(), I don't care much about.
+-config ACPI_CUSTOM_DSDT
+-     bool "Include Custom DSDT"
++config ACPI_CUSTOM_DSDT_FILE
++     string "Custom DSDT Table file to include"
++     default ""
+      depends on !STANDALONE
+-     default n 
+      help
+        This option supports a custom DSDT by linking it into the
+kernel.
+        See Documentation/acpi/dsdt-override.txt
 
-> Actually, that's what I use block2mtd for, in combination with
-> "loop" to mount jffs2 filesystem images (always wondered if
-> there wasn't a simpler way, BTW (other than mtdram))
+-       If unsure, say N.
+-
+-config ACPI_CUSTOM_DSDT_FILE
+-     string "Custom DSDT Table file to include"
+-     depends on ACPI_CUSTOM_DSDT
+-     default ""
+-     help
+        Enter the full path name to the file which includes the AmlCode
+        declaration.
 
-Logfs can use a block device directly, which still leaves loop.
-Enhancing block2mtd to work with files shouldn't be too hard.  If anyone
-want a fun project to hack on...
++       If unsure, don't enter a file name.
++
++config ACPI_CUSTOM_DSDT
++     bool
++     default ACPI_CUSTOM_DSDT_FILE != ""
++
+ config ACPI_CUSTOM_DSDT_INITRD
+      bool "Read Custom DSDT from initramfs"
+      depends on BLK_DEV_INITRD
 
-Jörn
+After applying the patch and continuing with the same randconfig
+reported earlier, the build fails with following error
 
+drivers/acpi/thermal.c: In function ‘acpi_thermal_init’:
+drivers/acpi/thermal.c:1792: error: ‘thermal_dmi_table’ undeclared (first use in this function)
+drivers/acpi/thermal.c:1792: error: (Each undeclared identifier is reported only once
+drivers/acpi/thermal.c:1792: error: for each function it appears in.)
+make[2]: *** [drivers/acpi/thermal.o] Error 1
+make[1]: *** [drivers/acpi] Error 2
+make: *** [drivers] Error 2
+
+I have tested the patch for build failure only.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+--
+--- linux-2.6.25-rc2/drivers/acpi/Kconfig	2008-02-23 19:54:11.000000000 +0530
++++ linux-2.6.25-rc2/drivers/acpi/~Kconfig	2008-02-24 04:16:07.000000000 +0530
+@@ -187,7 +187,7 @@ config ACPI_HOTPLUG_CPU
+ 
+ config ACPI_THERMAL
+ 	tristate "Thermal Zone"
+-	depends on ACPI_PROCESSOR
++	depends on ACPI_PROCESSOR && DMI
+ 	select THERMAL
+ 	default y
+ 	help
 -- 
-Data dominates. If you've chosen the right data structures and organized
-things well, the algorithms will almost always be self-evident. Data
-structures, not algorithms, are central to programming.
--- Rob Pike
+Thanks & Regards,
+Kamalesh Babulal,
+Linux Technology Center,
+IBM, ISTL.
