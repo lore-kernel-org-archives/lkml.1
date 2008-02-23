@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756606AbYBWQ5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbYBWQ6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756606AbYBWQ5j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 11:57:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYBWQ5c
+	id S1759646AbYBWQ6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 11:58:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbYBWQ6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 11:57:32 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:43402 "EHLO mx1.redhat.com"
+	Sat, 23 Feb 2008 11:58:13 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:43427 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751708AbYBWQ5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 11:57:31 -0500
-Message-ID: <47C04FF7.4070100@redhat.com>
-Date: Sat, 23 Feb 2008 11:55:19 -0500
+	id S1752281AbYBWQ6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 11:58:12 -0500
+Message-ID: <47C05058.1030509@redhat.com>
+Date: Sat, 23 Feb 2008 11:56:56 -0500
 From: Chuck Ebbert <cebbert@redhat.com>
 Organization: Red Hat
 User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
@@ -25,18 +25,18 @@ CC: linux-kernel@vger.kernel.org, stable@kernel.org,
        Michael Krufky <mkrufky@linuxtv.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 0/8] 2.6.23-stable review
-References: <20080223001702.GA27727@suse.de>
-In-Reply-To: <20080223001702.GA27727@suse.de>
+Subject: Re: [patch 00/38] 2.6.24-stable review
+References: <20080223002907.GA7268@suse.de>
+In-Reply-To: <20080223002907.GA7268@suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/22/2008 07:17 PM, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.23.17 release.
-> There are 8 patches in this series, all will be posted as a response
+On 02/22/2008 07:29 PM, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.24.3 release.
+> There are 38 patches in this series, all will be posted as a response
 > to this one.  If anyone has any issues with these being applied, please
 > let us know.  If anyone is a maintainer of the proper subsystem, and
 > wants to add a Signed-off-by: line to the patch, please respond with it.
@@ -50,7 +50,7 @@ On 02/22/2008 07:17 PM, Greg KH wrote:
 > Anything received after that time might be too late.
 >
 
-Still missing this one? (trivial backport)
+Also still missing this one (backported):
 
 Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9d55b9923a1b7ea8193b8875c57ec940dc2ff027
 Commit:     9d55b9923a1b7ea8193b8875c57ec940dc2ff027
@@ -80,15 +80,15 @@ CommitDate: Fri Feb 1 17:45:14 2008 +0100
 
     Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	[cebbert@redhat.com: backport to 2.6.23]
+	[cebbert@redhat.com: backport to 2.6.24]
 
 ---
- include/asm-i386/futex.h   |    6 +++---
- include/asm-x86_64/futex.h |    6 +++---
+ include/asm-x86/futex_32.h   |    6 +++---
+ include/asm-x86/futex_64.h |    6 +++---
  2 files changed, 6 insertions(+), 6 deletions(-)
 
---- vanilla.orig/include/asm-i386/futex.h
-+++ vanilla/include/asm-i386/futex.h
+--- vanilla.orig/include/asm-x86/futex_32.h
++++ vanilla/include/asm-x86/futex_32.h
 @@ -28,7 +28,7 @@
  "1:	movl	%2, %0\n\
  	movl	%0, %3\n"					\
@@ -116,8 +116,8 @@ CommitDate: Fri Feb 1 17:45:14 2008 +0100
 
  		"2:	.section .fixup, \"ax\"			\n"
  		"3:	mov     %2, %0				\n"
---- vanilla.orig/include/asm-x86_64/futex.h
-+++ vanilla/include/asm-x86_64/futex.h
+--- vanilla.orig/include/asm-x86/futex_64.h
++++ vanilla/include/asm-x86/futex_64.h
 @@ -27,7 +27,7 @@
  "1:	movl	%2, %0\n\
  	movl	%0, %3\n"					\
@@ -145,5 +145,3 @@ CommitDate: Fri Feb 1 17:45:14 2008 +0100
 
  		"2:	.section .fixup, \"ax\"			\n"
  		"3:	mov     %2, %0				\n"
-
-
