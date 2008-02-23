@@ -1,65 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbYBWJqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762397AbYBWJrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbYBWJqQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:46:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbYBWJqE
+	id S1762397AbYBWJrn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:47:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbYBWJre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:46:04 -0500
-Received: from vuizook.err.no ([85.19.215.103]:56587 "EHLO vuizook.err.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753516AbYBWJqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:46:02 -0500
-Date: Sat, 23 Feb 2008 10:18:55 +0100
-From: Mike Hommey <mh@glandium.org>
-To: Daniel Barkalow <barkalow@iabervon.org>
-Cc: Chase Venters <chase.venters@clientec.com>, linux-kernel@vger.kernel.org,
-       git@vger.kernel.org
-Subject: Re: Question about your git habits
-Message-ID: <20080223091855.GA18942@glandium.org>
-References: <200802221837.37680.chase.venters@clientec.com> <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
+	Sat, 23 Feb 2008 04:47:34 -0500
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51149 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753640AbYBWJrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 04:47:33 -0500
+Date: Sat, 23 Feb 2008 10:47:54 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: Rafael Wysocki <rjw@sisk.pl>, paolo.ciarrocchi@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: acpi_wakeup_address in .data vs .bss (Fwd: [PATCH 18/20] x86:
+	Coding Style fixes to arch/x86/kernel/acpi/sleep.c)
+Message-ID: <20080223094754.GB3081@elf.ucw.cz>
+References: <200802230136.08926.lenb@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
-X-GPG-Fingerprint: A479 A824 265C B2A5 FC54  8D1E DE4B DA2C 54FD 2A58
-Organization: glandium.org
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <200802230136.08926.lenb@kernel.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 22, 2008 at 11:10:48PM -0500, Daniel Barkalow wrote:
-> I find that the sequence of changes I make is pretty much unrelated to the 
-> sequence of changes that end up in the project's history, because my 
-> changes as I make them involve writing a lot of stubs (so I can build) and 
-> then filling them out. It's beneficial to have version control on this so 
-> that, if I screw up filling out a stub, I can get back to where I was.
-> 
-> Having made a complete series, I then generate a new series of commits, 
-> each of which does one thing, without any bugs that I've resolved, such 
-> that the net result is the end of the messy history, except with any 
-> debugging or useless stuff skipped. It's this series that gets merged into 
-> the project history, and I discard the other history.
-> 
-> The real trick is that the early patches in a lot of series often refactor 
-> existing code in ways that are generally good and necessary for your 
-> eventual outcome, but which you'd never think of until you've written more 
-> of the series. Generating a new commit sequence is necessary to end up 
-> with a history where it looks from the start like you know where you're 
-> going and have everything done that needs to be done when you get to the 
-> point of needing it. Furthermore, you want to be able to test these 
-> commits in isolation, without the distraction of the changes that actually 
-> prompted them, which means that you want to have your working tree is a 
-> state that you never actually had it in as you were developing the end 
-> result.
-> 
-> This means that you'll usually want to rewrite commits for any series that 
-> isn't a single obvious patch, so it's not a big deal to commit any time 
-> you want to work on some different branch.
+On Sat 2008-02-23 01:36:08, Len Brown wrote:
+> was there any particular reason we forced acpi_wakeup_address into .data
+> instead of into .bss?
 
-I do that so much that I have this alias:
-        reorder = !sh -c 'git rebase -i --onto $0 $0 $1'
+In my tree it is in .bss already... ...I think that was done during
+"wakeup-to-.c" move.
 
-... and actually pass it only one argument most of the time.
+So this patch is okay.
 
-Mike
+But you actually might want to drop this, preventing merge
+conflict... 
+									Pavel
+
+> ----------  Forwarded Message  ----------
+> 
+> Subject: [PATCH 18/20] x86: Coding Style fixes to arch/x86/kernel/acpi/sleep.c
+> Date: Friday 22 February 2008 17:11
+> From: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+> To: hpa <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>, tglx <tglx@linutronix.de>
+> Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+> 
+> File is now error free.
+> Compile tested.
+> 
+> 
+> Signed-off-by: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+> ---
+>  arch/x86/kernel/acpi/sleep.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/acpi/sleep.c b/arch/x86/kernel/acpi/sleep.c
+> index 6bc815c..dd78326 100644
+> --- a/arch/x86/kernel/acpi/sleep.c
+> +++ b/arch/x86/kernel/acpi/sleep.c
+> @@ -13,7 +13,7 @@
+>  #include <asm/smp.h>
+>  
+>  /* address in low memory of the wakeup routine. */
+> -unsigned long acpi_wakeup_address = 0;
+> +unsigned long acpi_wakeup_address;
+>  unsigned long acpi_realmode_flags;
+>  extern char wakeup_start, wakeup_end;
+>  
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
