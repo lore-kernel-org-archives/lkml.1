@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936151AbYBWAg7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752094AbYBWAhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936151AbYBWAg7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 19:36:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932119AbYBWAdk
+	id S1752094AbYBWAhn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 19:37:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933236AbYBWAdu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 19:33:40 -0500
-Received: from ns.suse.de ([195.135.220.2]:44667 "EHLO mx1.suse.de"
+	Fri, 22 Feb 2008 19:33:50 -0500
+Received: from ns1.suse.de ([195.135.220.2]:44697 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765742AbYBWAdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 19:33:37 -0500
-Date: Fri, 22 Feb 2008 16:30:01 -0800
+	id S1755518AbYBWAdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 19:33:49 -0500
+Date: Fri, 22 Feb 2008 16:30:05 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,13 +20,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [patch 08/38] Fix dl2k constants
-Message-ID: <20080223003001.GI7268@suse.de>
+       Tony Battersby <tonyb@cybernetics.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 09/38] SCSI: sd: handle bad lba in sense information
+Message-ID: <20080223003005.GJ7268@suse.de>
 References: <20080223001946.979768610@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-dl2k-constants.patch"
+Content-Disposition: inline; filename="scsi-sd-handle-bad-lba-in-sense-information.patch"
 In-Reply-To: <20080223002907.GA7268@suse.de>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -38,36 +38,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 know.
 
 ------------------
- 
 
-patch 9c52fab2f187636b39afb0dcf562872ed42ab608 in mainline.
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-The MSSR constants didn't match the reality - bitfield declarations
-used to be correct (1000BT_FD - bit 11, 1000BT_HD - bit 10), but enum
-had them the other way round.  Went unnoticed until the switch from
-the bitfields use to the explicit arithmetics and I hadn't caught that one
-when verifying correctness of change...
+patch 366c246de9cec909c5eba4f784c92d1e75b4dc38 in mainline.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Some devices report medium error locations incorrectly.  Add guards to
+make sure the reported bad lba is actually in the request that caused
+it.  Additionally remove the large case statment for sector sizes and
+replace it with the proper u64 divisions.
+
+Tested-by: Mike Snitzer <snitzer@gmail.com>
+Cc: Stable Tree <stable@kernel.org>
+Cc: Tony Battersby <tonyb@cybernetics.com>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/dl2k.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/scsi/sd.c |   34 ++++++++++++++++------------------
+ 1 file changed, 16 insertions(+), 18 deletions(-)
 
---- a/drivers/net/dl2k.h
-+++ b/drivers/net/dl2k.h
-@@ -388,8 +388,8 @@ enum _mii_mssr {
- 	MII_MSSR_CFG_RES = 0x4000,
- 	MII_MSSR_LOCAL_RCV_STATUS = 0x2000,
- 	MII_MSSR_REMOTE_RCVR = 0x1000,
--	MII_MSSR_LP_1000BT_HD = 0x0800,
--	MII_MSSR_LP_1000BT_FD = 0x0400,
-+	MII_MSSR_LP_1000BT_FD = 0x0800,
-+	MII_MSSR_LP_1000BT_HD = 0x0400,
- 	MII_MSSR_IDLE_ERR_COUNT = 0x00ff,
- };
- 
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -907,6 +907,7 @@ static int sd_done(struct scsi_cmnd *SCp
+  	unsigned int xfer_size = SCpnt->request_bufflen;
+  	unsigned int good_bytes = result ? 0 : xfer_size;
+  	u64 start_lba = SCpnt->request->sector;
++	u64 end_lba = SCpnt->request->sector + (xfer_size / 512);
+  	u64 bad_lba;
+ 	struct scsi_sense_hdr sshdr;
+ 	int sense_valid = 0;
+@@ -945,26 +946,23 @@ static int sd_done(struct scsi_cmnd *SCp
+ 			goto out;
+ 		if (xfer_size <= SCpnt->device->sector_size)
+ 			goto out;
+-		switch (SCpnt->device->sector_size) {
+-		case 256:
++		if (SCpnt->device->sector_size < 512) {
++			/* only legitimate sector_size here is 256 */
+ 			start_lba <<= 1;
+-			break;
+-		case 512:
+-			break;
+-		case 1024:
+-			start_lba >>= 1;
+-			break;
+-		case 2048:
+-			start_lba >>= 2;
+-			break;
+-		case 4096:
+-			start_lba >>= 3;
+-			break;
+-		default:
+-			/* Print something here with limiting frequency. */
+-			goto out;
+-			break;
++			end_lba <<= 1;
++		} else {
++			/* be careful ... don't want any overflows */
++			u64 factor = SCpnt->device->sector_size / 512;
++			do_div(start_lba, factor);
++			do_div(end_lba, factor);
+ 		}
++
++		if (bad_lba < start_lba  || bad_lba >= end_lba)
++			/* the bad lba was reported incorrectly, we have
++			 * no idea where the error is
++			 */
++			goto out;
++
+ 		/* This computation should always be done in terms of
+ 		 * the resolution of the device's medium.
+ 		 */
 
 -- 
