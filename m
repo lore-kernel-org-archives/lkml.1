@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbYBWJGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbYBWJIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbYBWJGx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:06:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934170AbYBWJGT
+	id S1760395AbYBWJIf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:08:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbYBWJIQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:06:19 -0500
-Received: from palinux.external.hp.com ([192.25.206.14]:58005 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933915AbYBWJGP (ORCPT
+	Sat, 23 Feb 2008 04:08:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:60963 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbYBWJIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:06:15 -0500
-Date: Sat, 23 Feb 2008 02:06:13 -0700
-From: Matthew Wilcox <matthew@wil.cx>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Kyle McMartin <kyle@parisc-linux.org>
-Subject: Accessor macros vs reference counting
-Message-ID: <20080223090613.GJ16995@parisc-linux.org>
-References: <12037544592096-git-send-email-xiyou.wangcong@gmail.com> <12037544671847-git-send-email-xiyou.wangcong@gmail.com> <1203754478165-git-send-email-xiyou.wangcong@gmail.com> <1203754488669-git-send-email-xiyou.wangcong@gmail.com> <12037544991876-git-send-email-xiyou.wangcong@gmail.com> <1203754509934-git-send-email-xiyou.wangcong@gmail.com>
+	Sat, 23 Feb 2008 04:08:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=I+7FBeqTDGIGzEvtZJ28jesskEqOpY8br1ZePaIYhvne0NFelZtDNGIm4ictpcAXA162SE6ugR7rtAFLzskGVfgYz3CrVwyOFZiOgoec8KnxjBgvGyK/EDdiCJHhuoNQIc/FEy4G4G2rr3iRDWsk5oYOtJc4GYKM2hJ7tVRHtzc=
+Date: Sat, 23 Feb 2008 12:07:39 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Q] x86 - boot/header.S
+Message-ID: <20080223090739.GB6747@cvg>
+References: <20080223082026.GA6747@cvg> <86802c440802230044sbfc909t656aadf5729b31c2@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1203754509934-git-send-email-xiyou.wangcong@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <86802c440802230044sbfc909t656aadf5729b31c2@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Feb 23, 2008 at 04:14:08PM +0800, WANG Cong wrote:
-> Use get_personality() macro instead of explicit reference
-> for parisc code.
-> -	if (personality(current->personality) == PER_LINUX32
-> +	if (personality(get_personality()) == PER_LINUX32
+[Yinghai Lu - Sat, Feb 23, 2008 at 12:44:49AM -0800]
+| On Sat, Feb 23, 2008 at 12:20 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+| > Hi Peter, Sam,
+| >
+| >  could you take a look on x86/boot/header.S:280 please?
+| >
+| >  # Zero the bss
+| >         movw    $__bss_start, %di
+| >         movw    $_end+3, %cx
+| >         xorl    %eax, %eax
+| >         subw    %di, %cx
+| >         shrw    $2, %cx
+| >         rep; stosl
+| >
+| >  I wonder why is $_end there instead of $__bss_stop?
+| >  Well, accroding to vmlinux_32.lsd both _end and __bss_stop
+| >  are the same BUT __bss_stop is more convenient methink.
+| >  Would it be usefull to change?
+| 
+| we should have head32.c like head64.c
+| and x86_32_start_kernel.
+| 
+| Eric's patch long time ago...
+| 
+| YH
+| 
 
-Hm.  We have an interesting clash of conventions here.
+Hi Yinghai,
 
-On the one hand, we have the java-style accessor convention.
-get_personality()/set_personality().
+thanks for reply BUT that is not the point (or maybe I miss something).
 
-On the other hand, we have reference counting.  get_cpu()/put_cpu().
+Look, we only have head64.c - there is no head32.c at all. Both
+vmlinux_32/64.lds defines _end exactly the same as __bss_stop. So in
+code which DO fillup bss section with zeros the prefered name is
+__bss_stop. The only thing I'm trying to say that it would be clean
+naming scheme and I think it would help for further review - instead
+of searching all over x86 files to find _end definition __bss_stop
+tell us WHAT we are zeroing from the code.
 
-When I first saw this patch, I assumed the latter (and went looking for
-the missing put_), but _personality is of the former style.  I have one
-suggestion (that nobody is going to like), which is that we suffix
-reference-counting functions with _ref, ie:
-
-get_cpu_ref()
-put_cpu_ref()
-pci_get_device_ref()
-pci_put_device_ref()
-pci_dev_get_ref()
-pci_dev_put_ref()
-
-(PCI is actually a good example here; it has "get" referring both to
-refcounting and to accessors)
-
--- 
-Intel are signing my paycheques ... these opinions are still mine
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+		- Cyrill -
