@@ -1,60 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756841AbYBWW7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbYBWXF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756841AbYBWW7n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 17:59:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbYBWW7e
+	id S1756199AbYBWXF4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 18:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbYBWXFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 17:59:34 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:25379 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750897AbYBWW7d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 17:59:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=gN2kl5kRV05T/CcKcdjZ3A5q3YmW9VAVpOvjAhA2haLwadRCsNB4l+fu/NU8z5EVIWM3XNF7eLSIfdL8lQATxyD+RmkK4/9NNGbwgLWVAe/vIaiJfHf1YFAAd4reJEeB8shndlFVy9nDhEYlSblQomuXbc1wQNJQG++jRdFH4bU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Anders Eriksson <aeriksson@fastmail.fm>
-Subject: Re: 2.6.25-rc2 + smartd = hang
-Date: Sun, 24 Feb 2008 00:12:36 +0100
-User-Agent: KMail/1.9.6 (enterprise 0.20071204.744707)
-Cc: Mark Lord <liml@rtr.ca>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <20080222165122.8D2BB93C12F@tippex.mynet.homeunix.org> <20080222213932.3403F93C12F@tippex.mynet.homeunix.org> <20080223221721.5C8502DC002@tippex.mynet.homeunix.org>
-In-Reply-To: <20080223221721.5C8502DC002@tippex.mynet.homeunix.org>
+	Sat, 23 Feb 2008 18:05:48 -0500
+Received: from yoi5.greathalifaxhome.com ([66.180.172.116]:49256 "HELO
+	vps1.tull.net" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with SMTP
+	id S1754544AbYBWXFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 18:05:47 -0500
+X-Spam-Check-By: mail.local.tull.net
+From: Nick Andrew <nick@nick-andrew.net>
+Subject: [PATCH try #1] Kconfig: cleanup block/Kconfig help descriptions
+To: trivial@kernel.org
+Cc: linux-kernel@vger.kernel.org
+Date: Sun, 24 Feb 2008 10:05:06 +1100
+Message-ID: <20080223225640.20233.12405.stgit@marcab.local.tull.net>
+User-Agent: StGIT/0.14.1
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200802240012.36571.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Modify the help descriptions of block/Kconfig for clarity, accuracy and consistency.
 
-Hi,
+Refactor the BLOCK description a bit. The wording "This permits ... to be
+removed" isn't quite right; the block layer is removed when the option
+is disabled, whereas most descriptions talk about what happens when the
+option is enabled. Reformat the list of what is affected by disabling the
+block layer.
 
-On Saturday 23 February 2008, Anders Eriksson wrote:
-> 
-> aeriksson@fastmail.fm said:
-> >> But at this point libata is working much better than the old IDE stuff, and
-> >> it really is worth moving things over if you can. 
-> >
-> > Ok, I'll take a stab at that tomorrow. Two things... 
-> 
-> Having switched to ata_piix i can confirm that smartd doesn't hand the system 
-> anymore.
-> 
-> Still.. There seem to be a bug vs. the old drivers somewhere. Will that be 
-> addressed, or should there be a big warning for the old stuff (DEPRECATED?)
+Add more examples of large block devices to LBD and strive for technical
+accuracy; block devices of size _exactly_ 2TB require CONFIG_LBD,
+not only "bigger than 2TB". Also try to say (perhaps not very clearly)
+that the config option is only needed when you want to have individual
+block devices of size >= 2TB, for example if you had 3 x 1TB disks in
+your computer you'd have a total storage size of 3TB but you wouldn't
+need the option unless you want to aggregate those disks into a RAID
+or LVM.
 
-Could you try bisecting it down to the guilty commit using git-bisect?
+Improve terminology and grammar on BLK_DEV_IO_TRACE.
 
-[ the "old" stuff got few hundred commits in 2.6.25 ]
+I also added the boilerplate "If unsure, say N" to most options.
 
-Thanks,
-Bart
+Precisely say "2TB and larger" for LSF.
+
+Indent the help text for BLK_DEV_BSG by 2 spaces in accordance with
+the standard.
+
+Signed-off-by: Nick Andrew <nick@nick-andrew.net>
+---
+I'm not sure why LSF has "If unsure, say Y." I would have thought it
+pretty uncommon to have such large files. Also if you need LSF, you
+probably need LBD (can NFS handle 2TB+ files?). Is this a safety
+feature? How often is Grandma going to mount a filesystem containing
+2TB+ sized files?
+
+Also the description for BLK_DEV_BSG is pretty obscure. Can anybody
+suggest why you'd want to do this or what tools you can use or even
+some documentation?
+
+
+ block/Kconfig |   65 +++++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 42 insertions(+), 23 deletions(-)
+
+
+diff --git a/block/Kconfig b/block/Kconfig
+index 9bda7bc..a3d8509 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -5,14 +5,18 @@ menuconfig BLOCK
+        bool "Enable the block layer" if EMBEDDED
+        default y
+        help
+-	 This permits the block layer to be removed from the kernel if it's not
+-	 needed (on some embedded devices for example).  If this option is
+-	 disabled, then blockdev files will become unusable and some
+-	 filesystems (such as ext3) will become unavailable.
++	 Provide block layer support for the kernel.
+ 
+-	 This option will also disable SCSI character devices and USB storage
+-	 since they make use of various block layer definitions and
+-	 facilities.
++	 Disable this option to remove the block layer support from the
++	 kernel. This may be useful for embedded devices.
++
++	 If this option is disabled:
++
++	   - block device files will become unusable
++	   - some filesystems (such as ext3) will become unavailable.
++
++	 Also, SCSI character devices and USB storage will be disabled since
++	 they make use of various block layer definitions and facilities.
+ 
+ 	 Say Y here unless you know you really don't want to mount disks and
+ 	 suchlike.
+@@ -23,9 +27,20 @@ config LBD
+ 	bool "Support for Large Block Devices"
+ 	depends on !64BIT
+ 	help
+-	  Say Y here if you want to attach large (bigger than 2TB) discs to
+-	  your machine, or if you want to have a raid or loopback device
+-	  bigger than 2TB.  Otherwise say N.
++	  Enable block devices of size 2TB and larger.
++
++	  This option is required to support the full capacity of large
++	  (2TB+) block devices, including RAID, disk, Network Block Device,
++	  Logical Volume Manager (LVM) and loopback.
++
++	  For example, RAID devices are frequently bigger than the capacity
++	  of the largest individual hard drive.
++
++	  This option is not required if you have individual disk drives
++	  which total 2TB+ and you are not aggregating the capacity into
++	  a large block device (e.g. using RAID or LVM).
++
++	  If unsure, say N.
+ 
+ config BLK_DEV_IO_TRACE
+ 	bool "Support for tracing block io actions"
+@@ -33,19 +48,21 @@ config BLK_DEV_IO_TRACE
+ 	select RELAY
+ 	select DEBUG_FS
+ 	help
+-	  Say Y here, if you want to be able to trace the block layer actions
++	  Say Y here if you want to be able to trace the block layer actions
+ 	  on a given queue. Tracing allows you to see any traffic happening
+-	  on a block device queue. For more information (and the user space
+-	  support tools needed), fetch the blktrace app from:
++	  on a block device queue. For more information (and the userspace
++	  support tools needed), fetch the blktrace tools from:
+ 
+ 	  git://brick.kernel.dk/data/git/blktrace.git
+ 
++	  If unsure, say N.
++
+ config LSF
+ 	bool "Support for Large Single Files"
+ 	depends on !64BIT
+ 	help
+-	  Say Y here if you want to be able to handle very large files (bigger
+-	  than 2TB), otherwise say N.
++	  Say Y here if you want to be able to handle very large files (2TB
++	  and larger), otherwise say N.
+ 
+ 	  If unsure, say Y.
+ 
+@@ -53,14 +70,16 @@ config BLK_DEV_BSG
+ 	bool "Block layer SG support v4 (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+ 	---help---
+-	Saying Y here will enable generic SG (SCSI generic) v4 support
+-	for any block device.
+-
+-	Unlike SG v3 (aka block/scsi_ioctl.c drivers/scsi/sg.c), SG v4
+-	can handle complicated SCSI commands: tagged variable length cdbs
+-	with bidirectional data transfers and generic request/response
+-	protocols (e.g. Task Management Functions and SMP in Serial
+-	Attached SCSI).
++	  Saying Y here will enable generic SG (SCSI generic) v4 support
++	  for any block device.
++
++	  Unlike SG v3 (aka block/scsi_ioctl.c drivers/scsi/sg.c), SG v4
++	  can handle complicated SCSI commands: tagged variable length cdbs
++	  with bidirectional data transfers and generic request/response
++	  protocols (e.g. Task Management Functions and SMP in Serial
++	  Attached SCSI).
++
++	  If unsure, say N.
+ 
+ endif # BLOCK
+ 
+
