@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbYBWNia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758628AbYBWNjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbYBWNia (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 08:38:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756906AbYBWNiI
+	id S1758628AbYBWNjW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 08:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbYBWNjF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 08:38:08 -0500
-Received: from wr-out-0506.google.com ([64.233.184.231]:56243 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758176AbYBWNiG (ORCPT
+	Sat, 23 Feb 2008 08:39:05 -0500
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45507 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755478AbYBWNjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 08:38:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=E+0nkPojjCfN6ycSnBVmXOxk7PbVWfJd3JQ+Fm0BIdLcL9jVFwaoRN4Z9BQNj4qTYRavgF3dcoLmEhcnz0lE1/HNBO/OCwGKMPFbLHCgwbvH/A0LklpsqMgtozLozpgIkcQrl120YeFUdRnsOAAnmomc820PZ7kcN16/QIJIgUw=
-Message-ID: <4d8e3fd30802230538k7be1cc6bja9130e65fc6f5997@mail.gmail.com>
-Date: Sat, 23 Feb 2008 14:38:02 +0100
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: [PATCH] Change a WARN message in checkpatch
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4d8e3fd30801280713n7139223fj91adca85c76b60ad@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 23 Feb 2008 08:39:04 -0500
+Date: Sat, 23 Feb 2008 13:38:54 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: haveblue@us.ibm.com, linux-kernel@vger.kernel.org, hch@lst.de,
+       akpm@osdl.org
+Subject: Re: [PATCH 09/30] r/o bind mounts: drop write during emergency remount
+Message-ID: <20080223133854.GQ27894@ZenIV.linux.org.uk>
+References: <20080215223721.9E0A088A@kernel> <20080215223732.42E46571@kernel> <E1JR8rj-0003ul-Di@pomaz-ex.szeredi.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20080114232913.2555d392@paolo-desktop>
-	 <20080128145605.GI12910@shadowen.org>
-	 <4d8e3fd30801280713n7139223fj91adca85c76b60ad@mail.gmail.com>
+In-Reply-To: <E1JR8rj-0003ul-Di@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 28, 2008 at 4:13 PM, Paolo Ciarrocchi
-<paolo.ciarrocchi@gmail.com> wrote:
->
-> On Jan 28, 2008 3:56 PM, Andy Whitcroft <apw@shadowen.org> wrote:
->  > On Mon, Jan 14, 2008 at 11:29:13PM +0100, Paolo Ciarrocchi wrote:
->  > > Hi Andy,
->  > > When I started using checkpatch I was confused by the following WARN message:
->  > >
->  > >       no space between function name and open parenthesis
->  > >
->  > > I thought the problem was that a space was missing while the truth is the opposite.
->  > >
->  > > How about the following patch?
->  >
->  > I can see how that language would be confusing.  Your patch makes the
->  > english clearer, but somehow seems clumsy.  There must be a better way
->  > to say this.  I will think on it and see what I can come up with.
->
->  Fair enought, I'm not English mother tongue and I'm sure you can come
->  up with a better
->  sentence :-)
+On Mon, Feb 18, 2008 at 05:29:15PM +0100, Miklos Szeredi wrote:
+> >  	file_list_lock();
+> >  	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
+> > -		if (S_ISREG(f->f_path.dentry->d_inode->i_mode) && file_count(f))
+> > -			f->f_mode &= ~FMODE_WRITE;
+> > +		struct vfsmount *mnt;
+> > +		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
+> > +		       continue;
+> > +		if (!file_count(f))
+> > +			continue;
+> > +		if (!(f->f_mode & FMODE_WRITE))
+> > +			continue;
+> > +		f->f_mode &= ~FMODE_WRITE;
+> > +		mnt = f->f_path.mnt;
+> 
+> AFAICS an mntget() is needed here to make sure mnt doesn't go away
+> after releasing file_list_lock.
 
-AFAICS the problem is still present.
+	Good catch, but... that's not all.  We also have to move
+drop_file_write_access() in __fput() past the file_kill(), or we'll
+get a race here - CPU 1 enters that loop, sees ->f_count 1, checks
+that file is writable, CPU 2 does final fput() and proceeds to
+do drop_file_write_access() and mnt_drop_write().  CPU 1, in the
+meanwhile, removes FMODE_WRITE and goes on to do mnt_drop_write()
+itself.
 
-Ciao,
--- 
-Paolo
-http://paolo.ciarrocchi.googlepages.com/
+	Oh, well...  Fixed.
