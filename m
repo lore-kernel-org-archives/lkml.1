@@ -1,123 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765049AbYBWDqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762759AbYBWEFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765049AbYBWDqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 22:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757812AbYBWDqJ
+	id S1762759AbYBWEFA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 22 Feb 2008 23:05:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758969AbYBWEEX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 22:46:09 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:40792 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756493AbYBWDqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 22:46:08 -0500
-Date: Fri, 22 Feb 2008 21:45:39 -0600
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Nick Andrew <nick@nick-andrew.net>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, trivial@kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Emelyanov <xemul@openvz.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Paul Menage <menage@google.com>,
-       Paul Jackson <pj@sgi.com>, Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Subject: Re: [PATCH 2.6.25-rc2 3/9] Kconfig: Improve init/Kconfig help
-	descriptions - NAMESPACES
-Message-ID: <20080223034539.GA22100@sergelap.austin.ibm.com>
-References: <20080219140609.GA26619@tull.net> <200802220010.m1M0Auqn024414@e5.ny.us.ibm.com> <20080222221412.GA12383@sergelap.austin.ibm.com> <20080223011258.GH2169@tull.net>
+	Fri, 22 Feb 2008 23:04:23 -0500
+Received: from pentafluge.infradead.org ([213.146.154.40]:43828 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbYBWEEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 22 Feb 2008 23:04:10 -0500
+Date: Fri, 22 Feb 2008 19:52:04 -0800
+From: Greg KH <greg@kroah.com>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Greg KH <gregkh@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       jejb@kernel.org, "Theodore Ts'o" <tytso@mit.edu>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>, torvalds@linux-foundation.org,
+       Justin Forbes <jmforbes@linuxtx.org>, linux-kernel@vger.kernel.org,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Domenico Andreoli <cavokz@gmail.com>,
+       Randy Dunlap <rdunlap@xenotime.net>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Dave Jones <davej@redhat.com>, akpm@linux-foundation.org,
+       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [stable] [patch 33/38] SCSI: gdth: scan for scsi devices
+Message-ID: <20080223035204.GA25980@kroah.com>
+References: <20080223001946.979768610@mini.kroah.org> <20080223002907.GA7268@suse.de> <20080223003130.GH7268@suse.de> <ec7f7ee70802221902i1d4877afkad86bca0e2a9b479@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20080223011258.GH2169@tull.net>
+In-Reply-To: <ec7f7ee70802221902i1d4877afkad86bca0e2a9b479@mail.gmail.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Nick Andrew (nick@nick-andrew.net):
-> On Fri, Feb 22, 2008 at 04:14:12PM -0600, Serge E. Hallyn wrote:
-> > Quoting Nick Andrew (nick@nick-andrew.net):
-> > >  config UTS_NS
-> > >  	bool "UTS namespace"
-> > >  	depends on NAMESPACES
-> > >  	help
-> > > -	  In this namespace tasks see different info provided with the
-> > > -	  uname() system call
-> > > +	  Enable support for multiple UTS system attributes.
-> > > +
-> > > +	  Each UTS namespace provides an individual view of the
-> > > +	  information returned by the uname() system call including
-> > > +	  hostname, kernel version and domain name.
-> > > +
-> > > +	  This is used by container systems (e.g. vservers) so that
-> > > +	  each container has its own hostname and other attributes.
-> > > +	  Tasks in the container are placed in the UTS namespace
-> > > +	  corresponding to the container.
-> > 
-> > this paragraph reads a little weird...  really what happens is that
-> > each forked task is in the same UTS namespace as its parent, unless
-> > it was cloned with CLONE_NEWUTS or has done unshare(CLONE_NEWUTS),
-> > in which case it receives a copy.
+On Sat, Feb 23, 2008 at 05:02:40AM +0200, Boaz Harrosh wrote:
+> On Sat, Feb 23, 2008 at 2:31 AM, Greg KH <gregkh@suse.de> wrote:
+> >
+> >  2.6.24-stable review patch.  If anyone has any objections, please let us
+> >  know.
+> >
+> >  ------------------
+> >  From: Boaz Harrosh <bharrosh@panasas.com>
+> >
+> >  commit: 61c92814dc324b541391757062ff02fbf3b08086
+> >
+> >  The patch: "gdth: switch to modern scsi host registration"
+> >
+> >  missed one simple fact when moving a way from scsi_module.c.
+> >  That is to call scsi_scan_host() on the probed host.
+> >  With this the gdth driver from 2.6.24 is again able to
+> >  see drives and boot.
+> >
+> >  Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> >  Tested-by: Joerg Dorchain <joerg@dorchain.net>
+> >  Tested-by: Stefan Priebe <s.priebe@allied-internet.ag>
+> >  Tested-by: Jon Chelton <jchelton@ffpglobal.com>
+> >  Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> >  Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> >  ---
+> >   drivers/scsi/gdth.c |    9 +++++++++
+> >   1 file changed, 9 insertions(+)
+> >
+> >  --- a/drivers/scsi/gdth.c
+> >  +++ b/drivers/scsi/gdth.c
+> >  @@ -4838,6 +4838,9 @@ static int __init gdth_isa_probe_one(ulo
+> >         if (error)
+> >                 goto out_free_coal_stat;
+> >         list_add_tail(&ha->list, &gdth_instances);
+> >  +
+> >  +       scsi_scan_host(shp);
+> >  +
+> >         return 0;
+> >
+> >   out_free_coal_stat:
+> >  @@ -4965,6 +4968,9 @@ static int __init gdth_eisa_probe_one(us
+> >         if (error)
+> >                 goto out_free_coal_stat;
+> >         list_add_tail(&ha->list, &gdth_instances);
+> >  +
+> >  +       scsi_scan_host(shp);
+> >  +
+> >         return 0;
+> >
+> >   out_free_ccb_phys:
+> >  @@ -5102,6 +5108,9 @@ static int __init gdth_pci_probe_one(gdt
+> >         if (error)
+> >                 goto out_free_coal_stat;
+> >         list_add_tail(&ha->list, &gdth_instances);
+> >  +
+> >  +       scsi_scan_host(shp);
+> >  +
+> >         return 0;
+> >
+> >   out_free_coal_stat:
+> >
+> >  --
 > 
-> You mean only the third paragraph, right? I hope the other two are
-> accurate.
+> Greg, James Hi
 > 
-> I'm trying to describe how the feature is used by container systems
-> and my description is obviously inaccurate. There are subtle semantic
-> differences between the way the different namespaces work, which you've
-> pointed out. I think mentioning CLONE_NEWUTS or other flags is too
-> technical for help descriptions.
-> 
-> For UTS_NS and IPC_NS I think I could remove that paragraph because
-> the end user hint "Answer Y if you will be using a container system"
-> remains. For USER_NS and PID_NS however, these features are tagged
-> EXPERIMENTAL so the hint is "If unsure, say N" and I think I need
-> to at least mention the use in container systems or find some better
-> clarifying description which doesn't get too technical.
-> 
-> > > +	  This is used by container systems (e.g. vservers).
-> > > +	  Tasks in the container are placed in the IPC namespace
-> > > +	  corresponding to the container.
-> > 
-> > Same as with UTS, except that upon CLONE_NEWIPC the task receives a
-> > blank new ipc namespace, not a copy of the original.
-> 
-> Per above my response is to remove the paragraph.
-> 
-> > >  config PID_NS
-> > > [...]
-> > >  	default n
-> > >  	depends on NAMESPACES && EXPERIMENTAL
-> > >  	help
-> > > -	  Suport process id namespaces.  This allows having multiple
-> > > -	  process with the same pid as long as they are in different
-> > > -	  pid namespaces.  This is a building block of containers.
-> > > +	  Enable experimental support for hierarchical process id namespaces.
-> > > 
-> > > -	  Unless you want to work with an experimental feature
-> > > -	  say N here.
-> > > +	  This is a function used by container-based virtualisation
-> > > +	  systems (e.g. vservers).  Each process will have a distinct
-> > > +	  Process ID in each PID namespace which the process is in.
-> > > +	  Processes in the container are placed in the PID namespace
-> > > +	  corresponding to the container, and cannot see or affect
-> > > +	  processes in any parent PID namespace.
-> > 
-> > A cloned process inherits the pid namespace hierarchy from its
-> > parent.  If it was cloned with CLONE_NEWPID, the hierarchy is
-> > topped with one additional newly created pid namespace.  This
-> > is the only pid namespace in which the new process will be able
-> > to see processes, while it will be visible in all namespaces in
-> > its pidns hierarchy.
-> 
-> Yes, I understand that. Would you agree that your problem is with the
-> wording "Processes in the container are placed in the PID namespace
-> corresponding to the container"? And that this is the part that needs
-> to be fixed?
+> This patch is not enough, and will not return a gdth system to working
+> order. With this patch disks
+> will show up again, only to crash later. All the 5 patches I sent are
+> needed, to return to a working
+> state. James please apply to mainline, so they can be accepted into stable.
+> of the 5 only 2 I have seen in mainline. 3 are missing.
+> (if they were submitted, I might have missed them, as I'm traveling, then sorry)
 
-Yup.
+Ok, I'll take this for now, and let James send me any further ones he
+deems necessary.
 
 thanks,
--serge
 
-> ... todo = revisit these descriptions soon, not today though
-> 
-> Nick.
-> -- 
-> PGP Key ID = 0x418487E7                      http://www.nick-andrew.net/
-> PGP Key fingerprint = B3ED 6894 8E49 1770 C24A  67E3 6266 6EB9 4184 87E7
+greg k-h
