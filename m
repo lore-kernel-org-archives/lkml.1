@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757949AbYBWNTh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbYBWNTw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757949AbYBWNTh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 08:19:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757444AbYBWNTX
+	id S1758334AbYBWNTw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 08:19:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757995AbYBWNTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 08:19:23 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:1623 "EHLO SMTP02.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753777AbYBWNTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 08:19:22 -0500
+	Sat, 23 Feb 2008 08:19:39 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:12965 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757947AbYBWNTh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 08:19:37 -0500
 X-SBRS: 2.8
-X-MesageID: 43201649
+X-MesageID: 43201687
 X-Ironport-Server: ftlpip02.citrite.net
 X-Remote-IP: 216.142.71.134
 X-Policy: $Relay
 X-IronPort-AV: E=Sophos;i="4.25,394,1199682000"; 
-   d="scan'208";a="43201649"
-Date: Sat, 23 Feb 2008 14:15:55 +0100
+   d="scan'208";a="43201687"
+Date: Sat, 23 Feb 2008 14:17:47 +0100
 From: Samuel Thibault <samuel.thibault@ens-lyon.org>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
        Dmitry Torokhov <dtor@mail.ru>, Jiri Kosina <jkosina@suse.cz>
-Subject: [PATCH] Braille screen reader fixes
-Message-ID: <20080223131555.GD4244@implementation>
+Subject: [PATCH] Braille screen reader documentation
+Message-ID: <20080223131747.GE4244@implementation>
 Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
 	Andrew Morton <akpm@linux-foundation.org>,
 	linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>,
@@ -36,47 +37,59 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Braille screen reader fixes:
-- console_cmdline's brl_options field is only required when braille
-console support is enabled.
-- Use strlcpy to copy the console name.
-- braille console support depends on VT support.
+Document the console=brl option and the usage of the braille screen
+reader.
 
 Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
---- linux-2.6.24.1-orig/kernel/printk.c	2008-02-21 12:09:06.000000000 +0100
-+++ linux-2.6.24.1-perso/kernel/printk.c	2008-02-23 12:57:42.000000000 +0100
-@@ -105,7 +105,9 @@ struct console_cmdline
- 	char	name[8];			/* Name of the driver	    */
- 	int	index;				/* Minor dev. to use	    */
- 	char	*options;			/* Options for the driver   */
-+#ifdef CONFIG_A11Y_BRAILLE_CONSOLE
- 	char	*brl_options;			/* Options for braille driver */
-+#endif
- };
+--- linux-2.6.24.1-orig/Documentation/kernel-parameters.txt	2008-01-25 09:31:45.000000000 +0100
++++ linux-2.6.24.1-perso/Documentation/kernel-parameters.txt	2008-02-23 13:21:27.000000000 +0100
+@@ -463,6 +463,11 @@
+ 			switching to the matching ttyS device later.  The
+ 			options are the same as for ttyS, above.
  
- #define MAX_CMDLINECONSOLES 8
-@@ -789,10 +791,11 @@ static int __add_preferred_console
- 	if (!brl_options)
- 		selected_console = i;
- 	c = &console_cmdline[i];
--	memcpy(c->name, name, sizeof(c->name));
--	c->name[sizeof(c->name) - 1] = 0;
-+	strlcpy(c->name, name, sizeof(c->name));
- 	c->options = options;
-+#ifdef CONFIG_A11Y_BRAILLE_CONSOLE
- 	c->brl_options = brl_options;
-+#endif
- 	c->index = idx;
- 	return 0;
- }
---- linux-2.6.24.1-orig/drivers/accessibility/Kconfig	2008-02-23 13:32:38.000000000 +0100
-+++ linux-2.6.24.1-perso/drivers/accessibility/Kconfig	2008-02-23 13:23:21.000000000 +0100
-@@ -8,6 +8,7 @@ menuconfig ACCESSIBILITY
- if ACCESSIBILITY
- config A11Y_BRAILLE_CONSOLE
- 	bool "Console on braille device"
-+	depends on VT
- 	depends on SERIAL_CORE_CONSOLE
- 	---help---
- 	  Enables console output on a braille device connected to a 8250
++                If the device connected to the port is not a TTY but a braille
++                device, prepend "brl," before the device type, for instance
++			console=brl,ttyS0
++		For now, only VisioBraille is supported.
++
+ 	earlycon=	[KNL] Output early console device and options.
+ 		uart[8250],io,<addr>[,options]
+ 		uart[8250],mmio,<addr>[,options]
+--- linux-2.6.24.1-orig/Documentation/braille-console.txt	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.24.1-perso/Documentation/braille-console.txt	2008-02-23 13:20:31.000000000 +0100
+@@ -0,0 +1,34 @@
++                       Linux Braille Console
++
++To get early boot messages on a braille device (before userspace screen
++readers can start), you first need to compile the support for the usual serial
++console (see serial-console.txt), and for braille device (in Device Drivers -
++Accessibility).
++
++Then you need to specify a console=brl, option on the kernel command line, the
++format is:
++
++	console=brl,serial_options...
++
++where serial_options... are the same as described in serial-console.txt
++
++So for instance you can use console=brl,ttyS0 if the braille device is connected
++to the first serial port, and console=brl,ttyS0,115200 to override the baud rate
++to 115200, etc.
++
++By default, the braille device will just show the last kernel message (console
++mode).  To review previous messages, press the Insert key to switch to the VT
++review mode.  In review mode, the arrow keys permit to browse in the VT content,
++page up/down keys go at the top/bottom of the screen, and the home key goes back
++to the cursor, hence providing very basic screen reviewing facility.
++
++Sound feedback can be obtained by adding the braille_console.sound=1 kernel
++parameter.
++
++For simplicity, only one braille console can be enabled, other uses of
++console=brl,... will be discarded.  Also note that it does not interfere with
++the console selection mecanism described in serial-console.txt
++
++For now, only the VisioBraille device is supported.
++
++Samuel Thibault <samuel.thibault@ens-lyon.org>
