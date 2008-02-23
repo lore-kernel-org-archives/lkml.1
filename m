@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764567AbYBWKCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762319AbYBWKEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764567AbYBWKCI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 05:02:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758469AbYBWKBy
+	id S1762319AbYBWKEJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 05:04:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754309AbYBWKD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 05:01:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53894 "EHLO mx3.mail.elte.hu"
+	Sat, 23 Feb 2008 05:03:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48288 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbYBWKBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 05:01:52 -0500
-Date: Sat, 23 Feb 2008 11:01:40 +0100
+	id S1753594AbYBWKD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 05:03:56 -0500
+Date: Sat, 23 Feb 2008 11:03:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Joe Perches <joe@perches.com>
-Cc: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>, hpa <hpa@zytor.com>,
-       tglx <tglx@linutronix.de>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 20/20] x86: Coding Style fixes to
-	arch/x86/xen/multicalls.c
-Message-ID: <20080223100140.GA23833@elte.hu>
-References: <20080222231159.34dd5b5a@paolo-desktop> <1203720217.19319.99.camel@localhost>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: introduce kernel/head32.c
+Message-ID: <20080223100343.GB23833@elte.hu>
+References: <20080223090534.GA12161@uranus.ravnborg.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1203720217.19319.99.camel@localhost>
+In-Reply-To: <20080223090534.GA12161@uranus.ravnborg.org>
 User-Agent: Mutt/1.5.17 (2007-11-01)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,18 +37,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Joe Perches <joe@perches.com> wrote:
+* Sam Ravnborg <sam@ravnborg.org> wrote:
 
-> >  			printk(KERN_ERR "%d multicall(s) failed: cpu %d\n",
-> >  			       ret, smp_processor_id());
-> > -			for(i = 0; i < b->mcidx; i++) {
-> > +			for (i = 0; i < b->mcidx; i++) {
-> >  				printk("  call %2d/%d: op=%lu arg=[%lx] result=%ld\n",
+> >From 7143f15993be4709e59c43fb65b086a8402e589b Mon Sep 17 00:00:00 2001
+> From: ebiederm@xmission.com (Eric W. Biederman)
+> Date: Sat, 23 Feb 2008 09:58:20 +0100
+> Subject: [PATCH] x86: introduce kernel/head32.c
 > 
-> The printk needs a KERN_ERR prefix
+> Copy x86_64 and add a head32.c so we can start moving early
+> architecture initialization out of assembly.
 
-yes - but we prefer to isolate the "does not change the .o in any way" 
-cleanups from cleanups that materially change kernel behavior. (such as 
-printing something else)
+thanks, applied.
 
 	Ingo
