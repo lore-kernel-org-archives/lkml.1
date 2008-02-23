@@ -1,25 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763885AbYBWIJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933389AbYBWIK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763885AbYBWIJk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 03:09:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764848AbYBWIGI
+	id S933389AbYBWIK1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 03:10:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765463AbYBWIIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 03:06:08 -0500
-Received: from smtp1.linux-foundation.org ([207.189.120.13]:51191 "EHLO
+	Sat, 23 Feb 2008 03:08:34 -0500
+Received: from smtp1.linux-foundation.org ([207.189.120.13]:44643 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761711AbYBWIFb (ORCPT
+	by vger.kernel.org with ESMTP id S1765428AbYBWIIc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 03:05:31 -0500
-Date: Sat, 23 Feb 2008 00:05:07 -0800
+	Sat, 23 Feb 2008 03:08:32 -0500
+Date: Sat, 23 Feb 2008 00:05:12 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: David Brownell <david-b@pacbell.net>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] atmel_spi: Fix clock polarity
-Message-Id: <20080223000507.3863d71f.akpm@linux-foundation.org>
-In-Reply-To: <20080221.111138.41629131.nemoto@toshiba-tops.co.jp>
-References: <20080221.111138.41629131.nemoto@toshiba-tops.co.jp>
+To: mgross@linux.intel.com
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]iova-lockdep-false-alarm-fix.
+Message-Id: <20080223000512.0c2e469c.akpm@linux-foundation.org>
+In-Reply-To: <20080221003528.GA5566@linux.intel.com>
+References: <20080221003528.GA5566@linux.intel.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,11 +26,47 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 21 Feb 2008 11:11:38 +0900 (JST) Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
 
-> This patch is already in mm tree as atmel_spi-fix-clock-polarity.patch.
-> I just rewrite description slightly and add my signed-off and acked-by
-> from Haavard Skinnemoen.
+> Subject: [PATCH]iova-lockdep-false-alarm-fix.
 
-I had it queued for 2.6.26 which I guess was wrong.  I'll bump it into
-2.6.25.  Is it needed in 2.6.24.x?
+Nice English titles, please...
+
+On Wed, 20 Feb 2008 16:35:28 -0800 mark gross <mgross@linux.intel.com> wrote:
+
+> lockdep goes off on the iova copy_reserved_iova because it and a
+> function it calls grabs locks in the from, and the to of the copy
+> operation.
+> 
+> This patch gives the reserved_ioval_list locks special lockdep classes.
+> 
+> 
+
+Confused.  Why not fix the ranking inconsistency instead?
+
+Your changelog doesn't tell us why this isn't a real bug?
+
+> Index: linux-2.6.24-mm1/drivers/pci/intel-iommu.c
+> ===================================================================
+> --- linux-2.6.24-mm1.orig/drivers/pci/intel-iommu.c	2008-02-20 15:52:23.000000000 -0800
+> +++ linux-2.6.24-mm1/drivers/pci/intel-iommu.c	2008-02-20 16:08:27.000000000 -0800
+> @@ -1127,6 +1127,8 @@
+>  }
+>  
+>  static struct iova_domain reserved_iova_list;
+> +static struct lock_class_key reserved_alloc_key;
+> +static struct lock_class_key reserved_rbtree_key;
+>  
+>  static void dmar_init_reserved_ranges(void)
+>  {
+> @@ -1137,6 +1139,11 @@
+>  
+>  	init_iova_domain(&reserved_iova_list, DMA_32BIT_PFN);
+>  
+> +	lockdep_set_class(&reserved_iova_list.iova_alloc_lock,
+> +		&reserved_alloc_key);
+> +	lockdep_set_class(&reserved_iova_list.iova_rbtree_lock,
+> +		&reserved_rbtree_key);
+> +
+>  	/* IOAPIC ranges shouldn't be accessed by DMA */
+>  	iova = reserve_iova(&reserved_iova_list, IOVA_PFN(IOAPIC_RANGE_START),
+>  		IOVA_PFN(IOAPIC_RANGE_END));
