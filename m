@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761067AbYBWEjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbYBWFER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761067AbYBWEjZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 22 Feb 2008 23:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbYBWEjR
+	id S1753434AbYBWFER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 00:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbYBWFD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 22 Feb 2008 23:39:17 -0500
-Received: from netrider.rowland.org ([192.131.102.5]:3955 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751684AbYBWEjR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 22 Feb 2008 23:39:17 -0500
-Date: Fri, 22 Feb 2008 23:39:15 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Pierre Ossman <drzeus-mmc@drzeus.cx>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 10030] Suspend doesn't work when SD card is inserted
-In-Reply-To: <200802230230.04466.rjw@sisk.pl>
-Message-ID: <Pine.LNX.4.44L0.0802222310380.4478-100000@netrider.rowland.org>
+	Sat, 23 Feb 2008 00:03:57 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:60907 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750712AbYBWFD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 23 Feb 2008 00:03:56 -0500
+Message-ID: <47BFA938.3050504@garzik.org>
+Date: Sat, 23 Feb 2008 00:03:52 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Daniel Barkalow <barkalow@iabervon.org>
+CC: Chase Venters <chase.venters@clientec.com>, linux-kernel@vger.kernel.org,
+       git@vger.kernel.org
+Subject: Re: Question about your git habits
+References: <200802221837.37680.chase.venters@clientec.com> <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
+In-Reply-To: <alpine.LNX.1.00.0802222249480.19024@iabervon.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.3 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 23 Feb 2008, Rafael J. Wysocki wrote:
+Daniel Barkalow wrote:
+> I find that the sequence of changes I make is pretty much unrelated to the 
+> sequence of changes that end up in the project's history, because my 
+> changes as I make them involve writing a lot of stubs (so I can build) and 
+> then filling them out. It's beneficial to have version control on this so 
+> that, if I screw up filling out a stub, I can get back to where I was.
+> 
+> Having made a complete series, I then generate a new series of commits, 
+> each of which does one thing, without any bugs that I've resolved, such 
+> that the net result is the end of the messy history, except with any 
+> debugging or useless stuff skipped. It's this series that gets merged into 
+> the project history, and I discard the other history.
+> 
+> The real trick is that the early patches in a lot of series often refactor 
+> existing code in ways that are generally good and necessary for your 
+> eventual outcome, but which you'd never think of until you've written more 
+> of the series.
 
-> Unfortunately, I missed your Bugzilla comment at
-> http://bugzilla.kernel.org/show_bug.cgi?id=10030#c28
+That summarizes well how I do original development, too.  Whether its a 
+branch of an existing repo, or a newly cloned repo, when working on new 
+code I will do a first pass, committing as I go to provide useful 
+checkpoints.
 
-Strange...  But obviously you did see it eventually.
+Once I reach a satisfactory state, I'll refactor the patches so that 
+they make sense for upstream submission.
 
-> Well, in the face of it, I'm considering to remove the code that
-> acquires device semaphores from the suspend core for now.  Evidently, this
-> change turns out to be painfully premature.
+	Jeff
 
-I wonder if that's really the best thing.  How would we then learn 
-about drivers trying to register or unregister a device during a sleep 
-transition?
-
-Do you think it might be possible instead to somehow allow these
-unregistrations to go through, while still failing or blocking
-registrations?  It shouldn't be too hard to modify the driver core so
-that it calls the driver's remove() method without trying to acquire
-dev->sem if your in_suspend_context() test succeeds.
-
-I have to admit, I still don't understand what's going on with the MMC 
-driver.  Why is there a workqueue involved?  If the workqueue fails to 
-unregister the device, why should it bother the suspend routine?  After 
-all, if the suspend routine can afford to wait for the workqueue to 
-finish then it could just as well afford to do the unregistration 
-itself.
-
-> Also, we have apparent problems with pm_sleep_lock()
-> being take in device_add() (see
-> http://bugzilla.kernel.org/show_bug.cgi?id=9874).
-
-We'll have to get more information from the bug reporter to figure out 
-what really happened there.
-
-Ultimately it may turn out some drivers just aren't very careful about
-when they try to register new devices.  Doing the registration by way
-of a workqueue can be problematic if the workqueue happens to run
-during a system sleep transition.  That will still be true if you
-revert the acquire-all-semaphores patch.
-
-Alan Stern
 
