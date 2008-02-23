@@ -1,97 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbYBWJW3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762997AbYBWJYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbYBWJW3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 23 Feb 2008 04:22:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbYBWJWI
+	id S1762997AbYBWJYW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 23 Feb 2008 04:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbYBWJYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 23 Feb 2008 04:22:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:18689 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755033AbYBWJWF (ORCPT
+	Sat, 23 Feb 2008 04:24:07 -0500
+Received: from n27.bullet.mail.mud.yahoo.com ([68.142.200.142]:40830 "HELO
+	n27.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751058AbYBWJYE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 23 Feb 2008 04:22:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=W36QD508IFnzhfpiDiL98SGmOf93tEoK6wap+h8JQlxzqFGkm3fMjWERL8qbwPlgpciZukKthZLJ3edwsAAqrRyyhFgbsJw5aw0Yp/d73puPRGJFkDO6CAkevBMeAiwLfYqA4YqiMZVwTv+3JK/pbB2pg4bzO2aFXaWuaPgZfbk=
-Date: Sat, 23 Feb 2008 12:21:36 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Q] x86 - boot/header.S
-Message-ID: <20080223092136.GC6747@cvg>
-References: <20080223082026.GA6747@cvg> <86802c440802230044sbfc909t656aadf5729b31c2@mail.gmail.com> <20080223090739.GB6747@cvg> <20080223091817.GC12161@uranus.ravnborg.org>
+	Sat, 23 Feb 2008 04:24:04 -0500
+X-Yahoo-Newman-Id: 642026.11065.bm@omp424.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=asZSzRSvdngER38/6bqQlbxzeEkJNC+js+TEICFpNHt1u644+sqM205qvfyCHwaXtBlJqr0GkDEbkAt0q827MUmlX97oudCf4c9IPLTUlLd+UjtZEFqys8jOWObI24Un64OlV+81NgsJqiF4O2IebDJkTL0re8plq4yQHQbRERE=  ;
+X-YMail-OSG: QSvRuscVM1kXvPz2Y9X24FjG9L.V949nbQVL8g82ZM1QEYkfbvJXf6m3OkSnnNxpSKBaSDRkyA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] alloc_percpu() fails to allocate percpu data
+Date: Sat, 23 Feb 2008 20:23:51 +1100
+User-Agent: KMail/1.9.5
+Cc: Eric Dumazet <dada1@cosmosbay.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+References: <47BDBC23.10605@cosmosbay.com> <1203632765.6112.20.camel@lappy>
+In-Reply-To: <1203632765.6112.20.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20080223091817.GC12161@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200802232023.52352.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Sam Ravnborg - Sat, Feb 23, 2008 at 10:18:17AM +0100]
-| On Sat, Feb 23, 2008 at 12:07:39PM +0300, Cyrill Gorcunov wrote:
-| > [Yinghai Lu - Sat, Feb 23, 2008 at 12:44:49AM -0800]
-| > | On Sat, Feb 23, 2008 at 12:20 AM, Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-| > | > Hi Peter, Sam,
-| > | >
-| > | >  could you take a look on x86/boot/header.S:280 please?
-| > | >
-| > | >  # Zero the bss
-| > | >         movw    $__bss_start, %di
-| > | >         movw    $_end+3, %cx
-| > | >         xorl    %eax, %eax
-| > | >         subw    %di, %cx
-| > | >         shrw    $2, %cx
-| > | >         rep; stosl
-| > | >
-| > | >  I wonder why is $_end there instead of $__bss_stop?
-| > | >  Well, accroding to vmlinux_32.lsd both _end and __bss_stop
-| > | >  are the same BUT __bss_stop is more convenient methink.
-| > | >  Would it be usefull to change?
-| > | 
-| > | we should have head32.c like head64.c
-| > | and x86_32_start_kernel.
-| > | 
-| > | Eric's patch long time ago...
-| > | 
-| > | YH
-| > | 
-| > 
-| > Hi Yinghai,
-| > 
-| > thanks for reply BUT that is not the point (or maybe I miss something).
-| > 
-| > Look, we only have head64.c - there is no head32.c at all. Both
-| > vmlinux_32/64.lds defines _end exactly the same as __bss_stop. So in
-| > code which DO fillup bss section with zeros the prefered name is
-| > __bss_stop. The only thing I'm trying to say that it would be clean
-| > naming scheme and I think it would help for further review - instead
-| > of searching all over x86 files to find _end definition __bss_stop
-| > tell us WHAT we are zeroing from the code.
-| 
-| We should introduce head32.c and then we can use the exact same function
-| as 64 bit does:
-| 
-| /* Don't add a printk in there. printk relies on the PDA which is not initialized
-|    yet. */
-| static void __init clear_bss(void)
-| {
-|         memset(__bss_start, 0,
-|                (unsigned long) __bss_stop - (unsigned long) __bss_start);
-| }
-| 
-| This answers your Q.
-| 
-| I already resubmitted Eric's original patch to introduce head32.c as I also
-| liked the cleanup in two Makefiles.
-| 
-| 	Sam
-| 
+On Friday 22 February 2008 09:26, Peter Zijlstra wrote:
+> On Thu, 2008-02-21 at 19:00 +0100, Eric Dumazet wrote:
+> > Some oprofile results obtained while using tbench on a 2x2 cpu machine
+> > were very surprising.
+> >
+> > For example, loopback_xmit() function was using high number of cpu
+> > cycles to perform the statistic updates, supposed to be real cheap
+> > since they use percpu data
+> >
+> >         pcpu_lstats = netdev_priv(dev);
+> >         lb_stats = per_cpu_ptr(pcpu_lstats, smp_processor_id());
+> >         lb_stats->packets++;  /* HERE : serious contention */
+> >         lb_stats->bytes += skb->len;
+> >
+> >
+> > struct pcpu_lstats is a small structure containing two longs. It
+> > appears that on my 32bits platform, alloc_percpu(8) allocates a single
+> > cache line,  instead of giving to each cpu a separate cache line.
+> >
+> > Using the following patch gave me impressive boost in various
+> > benchmarks ( 6 % in tbench) (all percpu_counters hit this bug too)
+> >
+> > Long term fix (ie >= 2.6.26) would be to let each CPU allocate their
+> > own block of memory, so that we dont need to roudup sizes to
+> > L1_CACHE_BYTES, or merging the SGI stuff of course...
+> >
+> > Note : SLUB vs SLAB is important here to *show* the improvement, since
+> > they dont have the same minimum allocation sizes (8 bytes vs 32
+> > bytes). This could very well explain regressions some guys reported
+> > when they switched to SLUB.
+>
+> I've complained about this false sharing as well, so until we get the
+> new and improved percpu allocators,
 
-thanks Sam, i just saw your patch.
+What I don't understand is why the slab allocators have something like
+this in it:
 
-		- Cyrill -
+        if ((flags & SLAB_HWCACHE_ALIGN) &&
+                        size > cache_line_size() / 2)
+                return max_t(unsigned long, align, cache_line_size());
+
+If you ask for HWCACHE_ALIGN, then you should get it. I don't
+understand, why do they think they knows better than the caller?
+Things like this are just going to lead to very difficult to track
+performance problems. Possibly correctness problems in rare cases.
+
+There could be another flag for "maybe align".
+
